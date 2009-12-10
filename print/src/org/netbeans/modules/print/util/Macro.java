@@ -63,7 +63,6 @@ public enum Macro {
     PRINTED_TIME; // time of printing
 
     public interface Listener {
-
         void pressed(Macro macro);
     }
 

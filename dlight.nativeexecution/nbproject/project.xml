@@ -148,6 +148,9 @@
                 <friend>com.sun.cloud.impl.rest</friend>
                 <friend>com.sun.cloud.test</friend>
                 <friend>com.sun.cloud.ui</friend>
+                <friend>com.sun.tools.debugger.gdb</friend>
+                <friend>com.sun.tools.debugger.dbx</friend>
+                <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>org.netbeans.libs.sunstudio</friend>
                 <friend>org.netbeans.modules.cnd</friend>

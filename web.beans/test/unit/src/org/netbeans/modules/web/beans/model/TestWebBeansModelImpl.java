@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,40 +37,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.beans.model;
 
-package org.netbeans.modules.cnd.discovery.project;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
+import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation;
+import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.junit.Test;
 
 /**
+ * @author ads
  *
- * @author Alexander Simon
  */
-public class SpeedcrunchTestCase extends MakeProjectTestBase {
-
-    public SpeedcrunchTestCase() {
-        super("QT");
+public class TestWebBeansModelImpl extends WebBeansModelImplementation {
+    
+    TestWebBeansModelImpl(ModelUnit unit){
+        super(unit);
+        myProvider = new TestWebBeansModelProviderImpl( this );
+    }
+    
+    public MetadataModel<WebBeansModel> createTestModel( ){
+        return MetadataModelFactory.createMetadataModel( this );
     }
 
+   /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.AbstractModelImplementation#getProvider()
+     */
     @Override
-    protected List<String> requiredTools() {
-        List<String> res = new ArrayList<String>(super.requiredTools());
-        res.add("qmake");
-        res.add("cmake");
-        return res;
+    protected TestWebBeansModelProviderImpl getProvider() {
+        return myProvider;
     }
-
-    @Test
-    public void testSpeedcrunch(){
-        // need QT4.3
-        performTestProject("http://speedcrunch.googlecode.com/files/speedcrunch-0.10.1.tar.gz", null, false);
-    }
+    
+    private TestWebBeansModelProviderImpl myProvider; 
 }
-

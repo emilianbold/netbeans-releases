@@ -155,14 +155,13 @@ public final class PrintAction extends IconAction {
 
     private void findPrintable(Container container, List<JComponent> printable) {
         if (container.isShowing() && isPrintable(container)) {
-//out("see: " + container.getClass().getName());
             printable.add((JComponent) container);
         }
-        Component[] components = container.getComponents();
+        Component[] children = container.getComponents();
 
-        for (Component component : components) {
-            if (component instanceof Container) {
-                findPrintable((Container) component, printable);
+        for (Component child : children) {
+            if (child instanceof Container) {
+                findPrintable((Container) child, printable);
             }
         }
     }

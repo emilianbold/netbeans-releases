@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,13 +40,34 @@
  */
 package org.netbeans.modules.web.beans.api.model;
 
+import javax.lang.model.element.Element;
+
 
 /**
+ * This exception could be thrown when injection point deifinition 
+ * contains error. 
  * @author ads
  *
  */
-public class UnsatisfiedDependencyException extends WebBeansModelException {
+public class InjectionPointDefinitionError extends Exception {
 
-    private static final long serialVersionUID = 6270526405295562000L;
-
+    public InjectionPointDefinitionError(Element errorElement, String msg) {
+        super( msg );
+        myElement = errorElement;
+    }
+    
+    /**
+     * There could be errors detected when element is checked as injection point.
+     * In most such cases possible injection point is the error element.
+     * But in some cases error could be detected on enclosing element.
+     * F.e. method could be wrongly defined . In this case its parameters
+     * cannot be considered as correct injection points.     
+     * 
+     * @return element that is wrongly defined
+     */
+    public Element getErrorElement(){
+        return myElement;
+    }
+    
+    private Element myElement;
 }

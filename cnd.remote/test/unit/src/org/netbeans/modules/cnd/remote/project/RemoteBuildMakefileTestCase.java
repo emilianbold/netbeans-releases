@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.remote.project;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
@@ -126,6 +126,6 @@ public class RemoteBuildMakefileTestCase extends RemoteBuildTestBase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(RemoteBuildMakefileTestCase.class);
+        return new RemoteDevelopmentFirstTest(RemoteBuildMakefileTestCase.class);
     }
 }

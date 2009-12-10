@@ -365,7 +365,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
 
     public Future<OperationState> deploy(final OperationStateListener stateListener,
             final File application, final String name, final String contextRoot, Map properties) {
-        CommandRunner mgr = new CommandRunner(getCommandFactory(), getInstanceProperties(), stateListener);
+        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
         
         return mgr.deploy(application, name, contextRoot, properties);
     }
@@ -377,22 +377,26 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
         
     public Future<OperationState> redeploy(final OperationStateListener stateListener, 
             final String name, final String contextRoot) {
-        CommandRunner mgr = new CommandRunner(getCommandFactory(), getInstanceProperties(), stateListener);
+        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
         return mgr.redeploy(name, contextRoot);
     }
 
     public Future<OperationState> undeploy(final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(getCommandFactory(), getInstanceProperties(), stateListener);
+        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
         return mgr.undeploy(name);
     }
     
     public Future<OperationState> execute(ServerCommand command) {
-        CommandRunner mgr = new CommandRunner(getCommandFactory(), getInstanceProperties());
+        CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties());
         return mgr.execute(command);
     }
     
+    private Future<OperationState> execute(boolean irr, ServerCommand command) {
+        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(), getInstanceProperties());
+        return mgr.execute(command);
+    }
     public AppDesc [] getModuleList(String container) {
-        CommandRunner mgr = new CommandRunner(getCommandFactory(), getInstanceProperties());
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),getCommandFactory(), getInstanceProperties());
         int total = 0;
         Map<String, List<AppDesc>> appMap = mgr.getApplications(container);
         Collection<List<AppDesc>> appLists = appMap.values();
@@ -410,7 +414,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
     }
 
     public Map<String, ResourceDesc> getResourcesMap(String type) {
-        CommandRunner mgr = new CommandRunner(getCommandFactory(), getInstanceProperties());
+        CommandRunner mgr = new CommandRunner(isReallyRunning(),getCommandFactory(), getInstanceProperties());
         Map<String, ResourceDesc> resourcesMap = new HashMap<String, ResourceDesc>();
         List<ResourceDesc> resourcesList = mgr.getResources(type);
         for (ResourceDesc resource : resourcesList) {
@@ -512,7 +516,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
             long start = System.nanoTime();
             Commands.LocationCommand command = new Commands.LocationCommand();
             try {
-                Future<OperationState> result = execute(command);
+                Future<OperationState> result = execute(true,command);
                 if(result.get(timeout, units) == OperationState.COMPLETED) {
                     long end = System.nanoTime();
                     Logger.getLogger("glassfish").log(Level.FINE, command.getCommand() + " responded in " + (end - start)/1000000 + "ms");  // NOI18N
@@ -537,7 +541,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
                     // !PW temporary while some server versions support __locations
                     // and some do not but are still V3 and might the ones the user
                     // is using.
-                    result = execute(new Commands.VersionCommand());
+                    result = execute(true, new Commands.VersionCommand());
                     isReady = result.get(timeout, units) == OperationState.COMPLETED;
                     break;
                 } else {
@@ -676,7 +680,7 @@ public class CommonServerSupport implements GlassfishModule, RefreshModulesCooki
 
     private void updateHttpPort() {
         GetPropertyCommand gpc = new GetPropertyCommand("*.http-listener-1.port"); // NOI18N
-        Future<OperationState> result2 = execute(gpc);
+        Future<OperationState> result2 = execute(true, gpc);
         try {
             if (result2.get(10, TimeUnit.SECONDS) == OperationState.COMPLETED) {
                 Map<String, String> retVal = gpc.getData();

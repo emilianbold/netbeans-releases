@@ -116,11 +116,13 @@ public class CommandRunner extends BasicTask<OperationState> {
     /** Has been the last access to  manager web app authorized? */
     private boolean authorized;
     private final CommandFactory cf;
+    private final boolean isReallyRunning;
     
     
-    public CommandRunner(CommandFactory cf, Map<String, String> properties, OperationStateListener... stateListener) {
+    public CommandRunner(boolean isReallyRunning, CommandFactory cf, Map<String, String> properties, OperationStateListener... stateListener) {
         super(properties, stateListener);
         this.cf =cf;
+        this.isReallyRunning = isReallyRunning;
     }
     
     /**
@@ -357,6 +359,11 @@ public class CommandRunner extends BasicTask<OperationState> {
     public OperationState call() {
         fireOperationStateChanged(OperationState.RUNNING, "MSG_ServerCmdRunning", // NOI18N
                 serverCmd.toString(), instanceName);
+
+        if (!isReallyRunning) {
+            return fireOperationStateChanged(OperationState.FAILED, "MSG_ServerCmdFailedIncorrectInstance", // NOI18N
+                    serverCmd.toString(), instanceName);
+        }
         
         boolean httpSucceeded = false;
         boolean commandSucceeded = false;

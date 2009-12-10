@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,13 +38,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.api.model;
+package org.netbeans.modules.web.beans.model;
+
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+
+import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation;
+import org.netbeans.modules.web.beans.impl.model.WebBeansModelProviderImpl;
+
 
 
 /**
  * @author ads
  *
  */
-public class IncorrectProducer extends UnsatisfiedDependencyException {
+public class TestWebBeansModelProviderImpl extends WebBeansModelProviderImpl {
 
+    TestWebBeansModelProviderImpl(TestWebBeansModelImpl testWebBeansModelImpl )
+    {
+        myModelImpl = testWebBeansModelImpl;
+    }
+
+    protected Result findParameterInjectable( VariableElement element,
+            DeclaredType parentType)
+    {
+        return super.findParameterInjectable(element, parentType, myModelImpl);
+    }
+
+    protected Result doFindVariableInjectable( VariableElement element,
+            TypeMirror elementType, boolean injectRequired )
+    {
+        return super.doFindVariableInjectable(element, elementType, myModelImpl,
+                injectRequired);
+    }
+
+    protected Result findVariableInjectable( VariableElement element,
+            DeclaredType parentType)
+    {
+        return super.findVariableInjectable(element, parentType, myModelImpl);
+    }
+    
+    protected Result getResult( Result result ,WebBeansModelImplementation model ){
+        return result;
+    }
+
+    private TestWebBeansModelImpl myModelImpl;
 }

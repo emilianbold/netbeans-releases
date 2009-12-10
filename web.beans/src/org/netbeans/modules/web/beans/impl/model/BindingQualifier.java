@@ -38,24 +38,70 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.api.model;
+package org.netbeans.modules.web.beans.impl.model;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 
 
 /**
  * @author ads
  *
  */
-public class InitializedFieldException extends UnsatisfiedDependencyException {
+class BindingQualifier extends PersistentObject {
 
-    private static final long serialVersionUID = -4848201391687050514L;
-
-    public InitializedFieldException(String initialValue){
-        myInitialValue = initialValue;
+    BindingQualifier( AnnotationModelHelper helper, TypeElement typeElement, 
+            String annotation ) 
+    {
+        super(helper, typeElement);
+        myAnnotation = annotation;
+        refresh( typeElement);
     }
     
-    public String getInitialValue(){
-        return myInitialValue;
+    String getAnnotationName(){
+        return myAnnotation;
     }
     
-    private String myInitialValue;
+    boolean refresh( TypeElement type ) {
+        List<? extends AnnotationMirror> allAnnotationMirrors = 
+            getHelper().getCompilationController().getElements().
+                getAllAnnotationMirrors(type);
+        Map<String, ? extends AnnotationMirror> annotationsByType = 
+                getHelper().getAnnotationsByType( allAnnotationMirrors );
+        if ( annotationsByType.get( getAnnotationName()) != null ){
+            return true;
+        }
+        return  AnnotationObjectProvider.checkSuper(type, getAnnotationName(), 
+                getHelper())!= null;
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals( Object obj ) {
+        if ( obj instanceof BindingQualifier ){
+            return ((BindingQualifier)obj).getTypeElement().equals( getTypeElement()); 
+        }
+        else {
+            return false;
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return getTypeElement().hashCode();
+    }
+    
+    private String myAnnotation;
+
 }

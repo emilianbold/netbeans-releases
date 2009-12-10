@@ -42,12 +42,12 @@
 package org.netbeans.api.editor.settings;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
@@ -114,7 +114,7 @@ public final class AttributesUtilities {
                 map.put(attrKey, attrValue);
             }
         }
-        
+
         return new Immutable(map);
     }
 
@@ -136,7 +136,7 @@ public final class AttributesUtilities {
         } else if (sets.length == 1) {
             return sets[0];
         } else {
-            ArrayList<AttributeSet> all = new ArrayList<AttributeSet>();
+            LinkedList<AttributeSet> all = new LinkedList<AttributeSet>();
 
             for(AttributeSet s : sets) {
                 if (s instanceof AttributesUtilities.Composite) {
@@ -153,7 +153,7 @@ public final class AttributesUtilities {
             } if (all.size() == 1) {
                 return all.get(0);
             } else {
-                return new Composite(all.toArray(new AttributeSet[all.size()]));
+                return new Composite(all);
             }
         }
     }
@@ -336,14 +336,14 @@ public final class AttributesUtilities {
 
     private static final class Composite implements AttributeSet {
         
-        private final AttributeSet [] delegates;
+        private final List<AttributeSet> delegates;
         
-        public Composite(AttributeSet... delegates) {
-            this.delegates = delegates;
+        public Composite(List<AttributeSet> delegates) {
+            this.delegates = Collections.unmodifiableList(delegates);
         }
 
         public List<AttributeSet> getDelegates() {
-            return Arrays.asList(delegates);
+            return delegates;
         }
         
         public boolean isEqual(AttributeSet attr) {
@@ -369,7 +369,7 @@ public final class AttributesUtilities {
                     return true;
                 }
             }
-            
+
             return false;
         }
 
@@ -387,7 +387,7 @@ public final class AttributesUtilities {
             		current = current.getResolveParent();
             	}
             }
-            
+
             return null;
         }
 
@@ -413,20 +413,20 @@ public final class AttributesUtilities {
                     return true;
                 }
             }
-            
+
             return false;
         }
         
         private Collection<?> getAllKeys() {
             HashSet<Object> allKeys = new HashSet<Object>();
-            
+
             for(AttributeSet delegate : delegates) {
                 for(Enumeration<?> keys = delegate.getAttributeNames(); keys.hasMoreElements(); ) {
                     Object key = keys.nextElement();
                     allKeys.add(key);
                 }
             }
-            
+
             return allKeys;
         }
     } // End of Composite class

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,70 +38,66 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model;
+package org.netbeans.modules.web.beans.api.model;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.TypeElement;
-
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 
 
 /**
+ * Represent eligible for injection element search result. 
+ * 
  * @author ads
  *
  */
-class Binding extends PersistentObject {
-
-    Binding( AnnotationModelHelper helper, TypeElement typeElement, 
-            String annotation ) 
-    {
-        super(helper, typeElement);
-        myAnnotation = annotation;
-        refresh( typeElement);
+public class Result {
+    
+    public Result( VariableElement var , TypeMirror type, Element injectable){
+        myVar = var;
+        myType = type;
+        myInjectable = injectable;
     }
     
-    String getAnnotationName(){
-        return myAnnotation;
+    public Result( VariableElement var , TypeMirror type){
+        this( var, type, null);
     }
     
-    boolean refresh( TypeElement type ) {
-        List<? extends AnnotationMirror> allAnnotationMirrors = 
-            getHelper().getCompilationController().getElements().
-                getAllAnnotationMirrors(type);
-        Map<String, ? extends AnnotationMirror> annotationsByType = 
-                getHelper().getAnnotationsByType( allAnnotationMirrors );
-        if ( annotationsByType.get( getAnnotationName()) != null ){
-            return true;
-        }
-        return  AnnotationObjectProvider.checkSuper(type, getAnnotationName(), 
-                getHelper())!= null;
-    }
-    
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
+    /**
+     * <code>null</code> is returned if there is no eligible element for injection
+     * ( no element which could be a pretender).
+     * 
+     * it could be a result of unsatisfied or ambiguous dependency.
+     * F.e. unsatisfied dependency : there is a pretender satisfy typesafe 
+     * resolution but something incorrect ( parameterized type is not valid , etc. ). 
+     * Ambiguous dependency : there are a number of appropriate elements.
+     *
+     * 
+     * @return element ( type definition, production field/method) 
+     * that is used in injected point identified by {@link #getVariable()}
      */
-    @Override
-    public boolean equals( Object obj ) {
-        if ( obj instanceof Binding ){
-            return ((Binding)obj).getTypeElement().equals( getTypeElement()); 
-        }
-        else {
-            return false;
-        }
+    public Element getElement(){
+        return myElement;
     }
     
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
+    /**
+     * @return element injection point which is used for injectable search
      */
-    @Override
-    public int hashCode() {
-        return getTypeElement().hashCode();
+    public VariableElement getVariable(){
+        return myVar;
     }
     
-    private String myAnnotation;
+    public TypeMirror getVariableType(){
+        return myType;
+    }
+    
+    
+    protected void setElement( Element element ){
+        myElement = element;
+    }
 
+    private Element myElement;
+    private final VariableElement myVar;
+    private final TypeMirror myType;
+    private final Element myInjectable;
 }

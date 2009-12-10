@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,57 +31,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.beans.impl.model;
 
-import java.util.Set;
+package org.netbeans.modules.cnd.discovery.project;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
- * @author ads
  *
+ * @author Alexander Simon
  */
-class PoliciesTypeFilter<T extends Element> extends Filter<T> {
-    
-    static <T extends Element> PoliciesTypeFilter<T> get(Class<T> clazz )
-    {
-        assertElement(clazz);
-        if ( clazz.equals(TypeElement.class )){
-            return (PoliciesTypeFilter<T>) 
-                new PoliciesTypeFilter<TypeElement>( TypeElement.class );
-        }
-        else if ( clazz.equals(Element.class )){
-            return (PoliciesTypeFilter<T>) 
-            new PoliciesTypeFilter<Element>( Element.class );
-        }
-        return null;
-    }
-    
-    private PoliciesTypeFilter( Class<T> clazz ){
-        myClass = clazz;
-    }
-    
-    void init( WebBeansModelImplementation model ) {
-        // TODO Auto-generated method stub
-        
+public class CMakeDiscoverySuiteTest extends CndBaseTestSuite {
+
+    public CMakeDiscoverySuiteTest() {
+        super("C/C++ CMake Discovery Test"); // NOI18N
+
+        //addTestSuite(CMakeTestCase.class);
+        addTestSuite(MysqlConnectorTestCase.class);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.Filter#filter(java.util.Set)
-     */
-    @Override
-    void filter( Set<T> set ) {
-        super.filter(set);
+    public static Test suite() {
+        TestSuite suite = new CMakeDiscoverySuiteTest();
+        return suite;
     }
-    
-    private WebBeansModelImplementation getImplementation(){
-        return myModel;
-    }
-    
-    private Class<T> myClass;
-    private WebBeansModelImplementation myModel;
-
 }

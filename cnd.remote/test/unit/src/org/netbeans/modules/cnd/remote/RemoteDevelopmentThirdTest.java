@@ -64,18 +64,18 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
  *
  * @author Sergey Grinev
  */
-public class RemoteDevelopmentTest extends CndBaseTestSuite {
+public class RemoteDevelopmentThirdTest extends CndBaseTestSuite {
 
     public static final String PLATFORMS_SECTION = "remote.platforms";
     public static final String DEFAULT_SECTION = "remote";
 
-    public RemoteDevelopmentTest(Class testClass) {
+    public RemoteDevelopmentThirdTest(Class testClass) {
         this(testClass.getName(), testClass);
     }
 
     // Why are tests just Test, not NativeExecutionBaseTestCase?
     // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RemoteDevelopmentTest(String name, Test... tests) {
+    public RemoteDevelopmentThirdTest(String name, Test... tests) {
         setName(name);
         for (Test test : tests) {
             addTest(test);
@@ -84,41 +84,24 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
 
     // Why are tests just Test, not NativeExecutionBaseTestCase?
     // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RemoteDevelopmentTest(String name, Collection<Test> tests) {
+    public RemoteDevelopmentThirdTest(String name, Collection<Test> tests) {
         setName(name);
         for (Test test : tests) {
             addTest(test);
         }
     }
 
-    public RemoteDevelopmentTest() {
-        this("Remote Development", // NOI18N
-             MappingsTestCase.class,
-             TransportTestCase.class,
-             UploadTestCase.class,
-             DownloadTestCase.class,
-             RemoteBinaryServiceTestCase.class,
-             RemoteUtilTestCase.class,
-             ServerListTestCase.class,
-             ZipSyncWorkerTestCase.class,
-             HostSetupTestCase.class,
-             RemoteFileTestCase.class,
-             RemoteFileSupportTestCase.class,
-             RemoteFileSystemTestCase.class,
-             RemoteBuildSamplesTestCase.class,
-             RemoteBuildMakefileTestCase.class,
-             RemoteBinaryServiceTestCase.class,
-             RfsGnuRemoteBuildTestCase.class,
-             RfsSunStudioRemoteBuildTestCase.class);
+    public RemoteDevelopmentThirdTest() {
+        this("Remote Development", RemoteBuildSamplesTestCase.class);
     }
 
 
-    private RemoteDevelopmentTest(String name, Class... testClasses) {
+    private RemoteDevelopmentThirdTest(String name, Class... testClasses) {
         super(name, PLATFORMS_SECTION, testClasses);
     }
 
     public static Test suite() {
-        TestSuite suite = new RemoteDevelopmentTest();
+        TestSuite suite = new RemoteDevelopmentThirdTest();
         return suite;
     }
 }

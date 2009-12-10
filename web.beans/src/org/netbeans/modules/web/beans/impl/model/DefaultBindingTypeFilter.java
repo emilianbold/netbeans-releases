@@ -43,17 +43,17 @@ import javax.lang.model.type.DeclaredType;
 /**
  * @author ads
  */
-class CurrentBindingTypeFilter<T extends Element> extends Filter<T> {
+class DefaultBindingTypeFilter<T extends Element> extends Filter<T> {
 
-    static <T extends Element> CurrentBindingTypeFilter<T> get( Class<T> clazz )
+    static <T extends Element> DefaultBindingTypeFilter<T> get( Class<T> clazz )
     {
         assertElement(clazz);
         // could be changed to cached ThreadLocal access
         if (clazz.equals(Element.class)) {
-            return (CurrentBindingTypeFilter<T>) new CurrentBindingTypeFilter<Element>();
+            return (DefaultBindingTypeFilter<T>) new DefaultBindingTypeFilter<Element>();
         }
         else if (clazz.equals(TypeElement.class)) {
-            return (CurrentBindingTypeFilter<T>) new CurrentBindingTypeFilter<TypeElement>();
+            return (DefaultBindingTypeFilter<T>) new DefaultBindingTypeFilter<TypeElement>();
         }
         return null;
     }
@@ -77,25 +77,33 @@ class CurrentBindingTypeFilter<T extends Element> extends Filter<T> {
             List<? extends AnnotationMirror> allAnnotationMirrors = getImplementation()
                     .getHelper().getCompilationController().getElements()
                     .getAllAnnotationMirrors(element);
-            Set<String> bindingNames = new HashSet<String>();
+            Set<String> qualifierNames = new HashSet<String>();
             for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
                 DeclaredType annotationType = annotationMirror
                         .getAnnotationType();
                 TypeElement annotationElement = (TypeElement) annotationType
                         .asElement();
-                if (isBinding(annotationElement)) {
-                    bindingNames.add(annotationElement.getQualifiedName()
-                            .toString());
+                String annotationName = annotationElement.getQualifiedName()
+                    .toString();
+                if ( WebBeansModelProviderImpl.ANY_QUALIFIER_ANNOTATION.equals(
+                        annotationName) || 
+                        WebBeansModelProviderImpl.NAMED_QUALIFIER_ANNOTATION.equals(
+                                annotationName))
+                {
+                    continue;
+                }
+                if (isQualifier(annotationElement)) {
+                    qualifierNames.add(annotationName);
                 }
             }
-            if ( bindingNames.contains(
-                    WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION))
+            if ( qualifierNames.contains(
+                    WebBeansModelProviderImpl.DEFAULT_QUALIFIER_ANNOTATION))
             {
                 continue;
             }
             if ( (element instanceof TypeElement) && (
                 AnnotationObjectProvider.checkSuper((TypeElement)element, 
-                        WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION, 
+                        WebBeansModelProviderImpl.DEFAULT_QUALIFIER_ANNOTATION, 
                         getImplementation().getHelper())!=null ))
             {
                     continue;
@@ -104,19 +112,19 @@ class CurrentBindingTypeFilter<T extends Element> extends Filter<T> {
                 Element specialized = 
                     MemberCheckerFilter.getSpecialized( element, 
                             getImplementation(), 
-                            WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION);
+                            WebBeansModelProviderImpl.DEFAULT_QUALIFIER_ANNOTATION);
                 if ( specialized!= null){
                     continue;
                 }
             }
-            if (bindingNames.size() != 0) {
+            if (qualifierNames.size() != 0) {
                 iterator.remove();
             }
         }
     }
 
-    private boolean isBinding( TypeElement annotationElement ) {
-        return AnnotationObjectProvider.isBinding(annotationElement, 
+    private boolean isQualifier( TypeElement annotationElement ) {
+        return AnnotationObjectProvider.isQualifier(annotationElement, 
                 getImplementation().getHelper());
     }
 

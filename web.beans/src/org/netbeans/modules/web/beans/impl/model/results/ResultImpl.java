@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,15 +38,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.api.model;
+package org.netbeans.modules.web.beans.impl.model.results;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+
+import org.netbeans.modules.web.beans.api.model.Result;
 
 
 /**
  * @author ads
  *
  */
-public class WebBeansModelException extends Exception {
+public class ResultImpl extends Result {
 
-    private static final long serialVersionUID = 8859984690145450257L;
+    public ResultImpl( VariableElement var, TypeMirror elementType ,
+            Set<TypeElement> declaredTypes, 
+            Map<Element, List<DeclaredType>> productionElements) 
+    {
+        super(var, elementType);
+        myDeclaredTypes = declaredTypes;
+        myProductions = productionElements;
+    }
 
+    public Set<TypeElement> getTypeElements() {
+        return myDeclaredTypes;
+    }
+    
+    public Set<Element> getProductions() {
+        return myProductions.keySet();
+    }
+
+    public Map<Element, List<DeclaredType>>  getAllProductions(){
+        return myProductions;
+    }
+
+    private Set<TypeElement> myDeclaredTypes;
+    private Map<Element, List<DeclaredType>> myProductions;
 }

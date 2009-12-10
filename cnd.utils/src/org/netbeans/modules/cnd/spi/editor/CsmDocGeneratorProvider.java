@@ -37,27 +37,58 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.project;
+package org.netbeans.modules.cnd.spi.editor;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import java.util.List;
+import javax.swing.text.Document;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Alexander Simon
  */
-public class LongDiscovery1SuiteTest extends CndBaseTestSuite {
+public abstract class CsmDocGeneratorProvider {
+    private static CsmDocGeneratorProvider DEFAULT = new Default();
 
-    public LongDiscovery1SuiteTest() {
-        super("C/C++ Discovery Test"); // NOI18N
-
-        //addTestSuite(CMakeTestCase.class);
-        addTestSuite(MysqlConnectorTestCase.class);
+    public static CsmDocGeneratorProvider getDefault(){
+        return DEFAULT;
     }
 
-    public static Test suite() {
-        TestSuite suite = new LongDiscovery1SuiteTest();
-        return suite;
+    protected CsmDocGeneratorProvider() {
+    }
+
+    public abstract Function getFunction(Document doc, int position);
+
+    public static interface Function {
+        String getReturnType();
+        List<Parameter> getParametes();
+    }
+
+    public static interface Parameter {
+        String getType();
+        String getName();
+    }
+
+    private static final class Default extends CsmDocGeneratorProvider {
+        private final Lookup.Result<CsmDocGeneratorProvider> res;
+        Default() {
+            res = Lookup.getDefault().lookupResult(CsmDocGeneratorProvider.class);
+        }
+
+        private CsmDocGeneratorProvider getService(){
+            for (CsmDocGeneratorProvider selector : res.allInstances()) {
+                return selector;
+            }
+            return null;
+        }
+
+        @Override
+        public Function getFunction(Document doc, int position) {
+            CsmDocGeneratorProvider provider = getService();
+            if (provider != null) {
+                return provider.getFunction(doc, position);
+            }
+            return null;
+        }
     }
 }
