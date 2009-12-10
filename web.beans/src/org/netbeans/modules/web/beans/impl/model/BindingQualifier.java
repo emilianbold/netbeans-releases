@@ -54,9 +54,9 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Persisten
  * @author ads
  *
  */
-class Binding extends PersistentObject {
+class BindingQualifier extends PersistentObject {
 
-    Binding( AnnotationModelHelper helper, TypeElement typeElement, 
+    BindingQualifier( AnnotationModelHelper helper, TypeElement typeElement, 
             String annotation ) 
     {
         super(helper, typeElement);
@@ -86,8 +86,8 @@ class Binding extends PersistentObject {
      */
     @Override
     public boolean equals( Object obj ) {
-        if ( obj instanceof Binding ){
-            return ((Binding)obj).getTypeElement().equals( getTypeElement()); 
+        if ( obj instanceof BindingQualifier ){
+            return ((BindingQualifier)obj).getTypeElement().equals( getTypeElement()); 
         }
         else {
             return false;

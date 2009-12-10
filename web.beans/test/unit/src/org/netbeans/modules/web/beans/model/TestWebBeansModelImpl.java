@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,63 +38,38 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xdm.model;
+package org.netbeans.modules.web.beans.model;
 
-import java.util.List;
-
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.web.beans.xml.BeansElement;
-import org.netbeans.modules.web.beans.xml.Deploy;
-import org.netbeans.modules.web.beans.xml.Type;
-import org.netbeans.modules.web.beans.xml.WebBeansModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
+import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation;
+import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 
 
 /**
  * @author ads
  *
  */
-public class SyncUpdateTest extends NbTestCase {
-
-    public SyncUpdateTest( String name ) {
-        super(name);
-    }
-
-    public void testDeploy() throws Exception{
-        WebBeansModel model = Util.loadRegistryModel("empty-beans.xml");
-        
-        Util.setDocumentContentTo(model, "deploy-beans.xml");
-        
-        List<BeansElement> elements = model.getBeans().getElements();
-        assertEquals( 2 ,  elements.size());
-        
-        List<Type> types = ((Deploy)elements.get(1 )).getTypes();
-        assertEquals( 1,  types.size());
+public class TestWebBeansModelImpl extends WebBeansModelImplementation {
+    
+    TestWebBeansModelImpl(ModelUnit unit){
+        super(unit);
+        myProvider = new TestWebBeansModelProviderImpl( this );
     }
     
-    public void testType() throws Exception{
-        WebBeansModel model = Util.loadRegistryModel("empty-beans.xml");
-        
-        Util.setDocumentContentTo(model, "type-beans.xml");
-        
-        List<BeansElement> elements = model.getBeans().getElements();
-        assertEquals( 1 ,  elements.size());
-        
-        List<Type> types = (model.getBeans().getChildren(Deploy.class).get(0)).getTypes();
-        assertEquals( 2,  types.size());
-        
-        boolean type1Found = false;
-        boolean type2Found = false;
-        for (Type type : types) {
-            String text = type.getText();
-            if ( text.equals("type1")){
-                type1Found = true;
-            }
-            else if ( text.equals( "type2")){
-                type2Found = true;
-            }
-        }
-        
-        assertTrue( "Type with 'type1' value is not found",  type1Found );
-        assertTrue( "Type with 'type2' value is not found",  type2Found );
+    public MetadataModel<WebBeansModel> createTestModel( ){
+        return MetadataModelFactory.createMetadataModel( this );
     }
+
+   /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.AbstractModelImplementation#getProvider()
+     */
+    @Override
+    protected TestWebBeansModelProviderImpl getProvider() {
+        return myProvider;
+    }
+    
+    private TestWebBeansModelProviderImpl myProvider; 
 }

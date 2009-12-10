@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,24 +38,24 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.api.model;
+package org.netbeans.modules.web.beans.impl.model.results;
+
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+
+import org.netbeans.modules.web.beans.api.model.Result;
 
 
 /**
  * @author ads
  *
  */
-public class InitializedFieldException extends UnsatisfiedDependencyException {
+public class DefinitionErrorResult extends Result {
 
-    private static final long serialVersionUID = -4848201391687050514L;
+    public DefinitionErrorResult( VariableElement var, TypeMirror type,
+            String error ) 
+    {
+        super(var, type);
+    }
 
-    public InitializedFieldException(String initialValue){
-        myInitialValue = initialValue;
-    }
-    
-    public String getInitialValue(){
-        return myInitialValue;
-    }
-    
-    private String myInitialValue;
 }

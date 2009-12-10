@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,56 +38,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model;
+package org.netbeans.modules.web.beans.model;
 
-import java.util.Set;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation;
+import org.netbeans.modules.web.beans.impl.model.WebBeansModelProviderImpl;
+
 
 
 /**
  * @author ads
  *
  */
-class PoliciesTypeFilter<T extends Element> extends Filter<T> {
-    
-    static <T extends Element> PoliciesTypeFilter<T> get(Class<T> clazz )
+public class TestWebBeansModelProviderImpl extends WebBeansModelProviderImpl {
+
+    TestWebBeansModelProviderImpl(TestWebBeansModelImpl testWebBeansModelImpl )
     {
-        assertElement(clazz);
-        if ( clazz.equals(TypeElement.class )){
-            return (PoliciesTypeFilter<T>) 
-                new PoliciesTypeFilter<TypeElement>( TypeElement.class );
-        }
-        else if ( clazz.equals(Element.class )){
-            return (PoliciesTypeFilter<T>) 
-            new PoliciesTypeFilter<Element>( Element.class );
-        }
-        return null;
-    }
-    
-    private PoliciesTypeFilter( Class<T> clazz ){
-        myClass = clazz;
-    }
-    
-    void init( WebBeansModelImplementation model ) {
-        // TODO Auto-generated method stub
-        
+        myModelImpl = testWebBeansModelImpl;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.Filter#filter(java.util.Set)
-     */
-    @Override
-    void filter( Set<T> set ) {
-        super.filter(set);
+    protected Result findParameterInjectable( VariableElement element,
+            DeclaredType parentType)
+    {
+        return super.findParameterInjectable(element, parentType, myModelImpl);
     }
-    
-    private WebBeansModelImplementation getImplementation(){
-        return myModel;
-    }
-    
-    private Class<T> myClass;
-    private WebBeansModelImplementation myModel;
 
+    protected Result doFindVariableInjectable( VariableElement element,
+            TypeMirror elementType, boolean injectRequired )
+    {
+        return super.doFindVariableInjectable(element, elementType, myModelImpl,
+                injectRequired);
+    }
+
+    protected Result findVariableInjectable( VariableElement element,
+            DeclaredType parentType)
+    {
+        return super.findVariableInjectable(element, parentType, myModelImpl);
+    }
+    
+    protected Result getResult( Result result ,WebBeansModelImplementation model ){
+        return result;
+    }
+
+    private TestWebBeansModelImpl myModelImpl;
 }

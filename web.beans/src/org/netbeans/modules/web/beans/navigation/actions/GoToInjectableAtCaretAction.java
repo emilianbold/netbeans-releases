@@ -82,10 +82,8 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.api.model.AmbiguousDependencyException;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
 import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
 import org.netbeans.modules.web.beans.navigation.AmbiguousInjectablesModel;
 import org.netbeans.modules.web.beans.navigation.InjectablesPopup;
@@ -241,59 +239,60 @@ public final class GoToInjectableAtCaretAction extends BaseAction {
             final MetadataModel<WebBeansModel> metaModel, 
             final Object[] variablePath )
     {
-        VariableElement var = findVariable(model, variablePath);
-        if ( var == null ){
-            return;
-        }
-        try {
-            if (model.isInjectionPoint(var)) {
-                try {
-                    Element injectable = model.getInjectable(var);
-                    if ( injectable == null ){
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                                GoToInjectableAtCaretAction.class, 
-                                "LBL_InjectableNotFound"), 
-                                StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-                        return;
-                    }
-                    final ElementHandle<Element> handle = ElementHandle
-                            .create(injectable);
-                    final ClasspathInfo classpathInfo = model.getCompilationController().
-                    getClasspathInfo();
-                    SwingUtilities.invokeLater( new Runnable() {
-                        
-                        public void run() {
-                            ElementOpen.open( classpathInfo, handle);
-                        }
-                    });
-                }
-                catch (final AmbiguousDependencyException adExcpeption) {
-                    final List<AnnotationMirror> bindings = model.getBindings(var );
-                    final VariableElement varElement = var;
-                    final CompilationController controller = model.getCompilationController();
-                    if ( SwingUtilities.isEventDispatchThread()){
-                        showPopup( adExcpeption , varElement, bindings, 
-                                controller , metaModel , 
-                                component);
-                    }
-                    else {
-                        SwingUtilities.invokeLater( new Runnable() {
-                            public void run() {
-                                showPopup(adExcpeption, varElement, bindings, 
-                                        controller, metaModel, 
-                                        component);
-                            }
-                        });
-                    }
-                }
-            }
-        }
-        catch (WebBeansModelException e) {
-            /*
-             * TODO : one need somehow notice user that injection point has
-             * inconsistency
-             */
-        }
+        //TODO:
+//        VariableElement var = findVariable(model, variablePath);
+//        if ( var == null ){
+//            return;
+//        }
+//        try {
+//            if (model.isInjectionPoint(var)) {
+//                try {
+//                    Element injectable = model.getInjectable(var);
+//                    if ( injectable == null ){
+//                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
+//                                GoToInjectableAtCaretAction.class, 
+//                                "LBL_InjectableNotFound"), 
+//                                StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+//                        return;
+//                    }
+//                    final ElementHandle<Element> handle = ElementHandle
+//                            .create(injectable);
+//                    final ClasspathInfo classpathInfo = model.getCompilationController().
+//                    getClasspathInfo();
+//                    SwingUtilities.invokeLater( new Runnable() {
+//                        
+//                        public void run() {
+//                            ElementOpen.open( classpathInfo, handle);
+//                        }
+//                    });
+//                }
+//                catch (final AmbiguousDependencyException adExcpeption) {
+//                    final List<AnnotationMirror> bindings = model.getBindings(var );
+//                    final VariableElement varElement = var;
+//                    final CompilationController controller = model.getCompilationController();
+//                    if ( SwingUtilities.isEventDispatchThread()){
+//                        showPopup( adExcpeption , varElement, bindings, 
+//                                controller , metaModel , 
+//                                component);
+//                    }
+//                    else {
+//                        SwingUtilities.invokeLater( new Runnable() {
+//                            public void run() {
+//                                showPopup(adExcpeption, varElement, bindings, 
+//                                        controller, metaModel, 
+//                                        component);
+//                            }
+//                        });
+//                    }
+//                }
+//            }
+//        }
+//        catch (WebBeansModelException e) {
+//            /*
+//             * TODO : one need somehow notice user that injection point has
+//             * inconsistency
+//             */
+//        }
     }
 
 
@@ -401,7 +400,7 @@ public final class GoToInjectableAtCaretAction extends BaseAction {
         return variable[1] !=null ;
     }
     
-    private void showPopup( AmbiguousDependencyException adExcpeption , 
+/*    private void showPopup( AmbiguousDependencyException adExcpeption , 
             VariableElement var , List<AnnotationMirror> bindings , 
             CompilationController controller, MetadataModel<WebBeansModel> model ,
             JTextComponent target ) 
@@ -428,7 +427,7 @@ public final class GoToInjectableAtCaretAction extends BaseAction {
         catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
-    }
+    }*/
 
 
     private void setVariablePath( Object[] variableAtCaret,

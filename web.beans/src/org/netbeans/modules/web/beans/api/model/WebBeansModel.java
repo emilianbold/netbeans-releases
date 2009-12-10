@@ -45,6 +45,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationController;
@@ -63,60 +64,75 @@ public final class WebBeansModel {
     }
 
     /**
-     * Find injectable type that is used for given injection point.
-     * <code>null</code> is returned if there is no eligible element for injection
-     * ( no element which could be a pretender).
-     * Exception could be thrown if there are unsatisfied or ambiguous dependency.
-     * F.e. unsatisfied dependency : there is a pretender satisfy typesafe 
-     * resolution but something incorrect ( parameterized type is not valid , etc. ). 
-     * Ambiguous dependency : there are a number of appropriate elements.
-     * In this case various subclasses of WebBeansModelException will be thrown.   
+     * Find injectable element that is used for given injection point.
+     * 
+     * <code>parentType</code> parameter could be a null . In this case 
+     * type definition which contains <code>element</code> is used as parentType.  
+     * This parameter is needed when <code>element</code> is defined in 
+     * superclass and this superclass is generic. In this case <code>element</code>
+     * type ( TypeMirror ) could vary respectively subclass definition ( it could uses
+     * real class in generic type parameter ). Type of element in this case
+     * is not just <code>element.asType()<code>. It is 
+     * <code>CompilationInfo.getTypes().asMemberOf(parentType,element)<code>.
+     * This is significant difference.  
+     *    
      * @param element injection point
-     * @return type that is used in injected point identified by <code>element</code>
-     * @throws exception if there are problems with injectable identifying  
+     * @param parentType parent type of <code>element</code>
+     * @return search result information
      */
-    public Element getInjectable( VariableElement element ) 
-        throws WebBeansModelException 
+    public Result getInjectable( VariableElement element , DeclaredType parentType ) 
     {
         if ( getProvider() == null ){
             return null;
         }
-        return getProvider().getInjectable(element, getModelImplementation());
+        return getProvider().getInjectable(element, parentType, 
+                getModelImplementation());
     }
     
     /**
-     * Find injectable types that could be used for given injection point.
-     * This method differs from {@link #getInjectable(VariableElement)}
+     * Find injectable elements that could be used for given injection point.
+     * This method differs from {@link #getInjectable(VariableElement, DeclaredType)}
      * by injection point type. Injection point could be defined via 
      * programmatic lookup which is dynamically specify injectable type.
      * Such situation appears when injection point uses Instance<?> interface. 
      * In case of @Any binding usage this list will contain all 
      * possible binding types for <code>element</code>  ( all beans 
      * that implements or extends type parameter for Instance<> ). 
+     * 
+     * See <code>parentType</code> parameter explanation in 
+     * {@link #getInjectable(VariableElement, DeclaredType)}.
+     * 
      * @param element injection point
-     * @return types that is used in injected point identified by <code>element</code>
+     * @param parentType parent type of <code>element</code>
+     * @return search result information
      */
-    public List<Element> getInjectables( VariableElement element ){
+    public Result lookupInjectables( VariableElement element , 
+            DeclaredType parentType)
+    {
         if ( getProvider() == null ){
             return null;
         }
-        return getProvider().getInjectables(element, getModelImplementation());
+        return getProvider().lookupInjectables(element, parentType,
+                getModelImplementation());
     }
     
     /**
-     * Test if variable element is injection point. 
-     * It means that it has some bean type as type and binding annotations.
-     * It differs from {@link #isDynamicInjectionPoint(VariableElement)}.
-     * In the latter method injection point is used for programmatic 
-     * lookup. Refer to javadoc of this method.
+     * Test if variable element is injection point.
+     * <pre> 
+     * Two cases possible here:
+     * - element has @Inject annotation
+     * - element is parameter of method which is annotated with @Inject 
+     * </pre> 
+     * 
      * @param element element for check
      * @return true if element is simple injection point
      * @throws WebBeansModelException if <code>element</code> could be injection 
      * point but something wrong ( f.e. it has bindings and has no @Produces 
-     * annotation bit it is initialized ).   
+     * annotation bit it is initialized ).
+     * @throws InjectionPointDefinitionError if element definition contains error   
      */
-    public boolean isInjectionPoint( VariableElement element ) 
-        throws WebBeansModelException 
+    public boolean isInjectionPoint( VariableElement element )  
+        throws InjectionPointDefinitionError
     {
         if ( getProvider() == null ){
             return false;
@@ -129,16 +145,13 @@ public final class WebBeansModel {
      * programmatic lookup. It could happen if variable declared via 
      * Instance<?> interface with binding annotations.
      * Typesafe resolution in this case could not be done 
-     * statically and method {@link #getInjectables(VariableElement)} should
+     * statically and method 
+     * {@link #lookupInjectables(VariableElement, DeclaredType)} should
      * be used to access to possible bean types.
      * @param element  element for check
      * @return true if element is dynamic injection point
-     * @throws WebBeansModelException if <code>element</code> could be injection 
-     * point but something wrong ( f.e. it has bindings and has no @Produces 
-     * annotation bit it is initialized ). 
      */
     public boolean isDynamicInjectionPoint( VariableElement element ) 
-        throws WebBeansModelException 
     {
         if ( getProvider() == null ){
             return false;
@@ -166,14 +179,14 @@ public final class WebBeansModel {
     }
     
     /**
-     * Returns all bindings for <code>element</code>.
+     * Returns all qualifiers for <code>element</code>.
      * <code>element</code> could be variable ( injection point , producer field ),
      * type element ( bean type with binding ) and production method. 
      * @param element element with bindings
      * @return list of all bindings for <code>element</code>
      */
-    public List<AnnotationMirror> getBindings( Element element ){
-        return getProvider().getBindings( element , getModelImplementation());
+    public List<AnnotationMirror> getQualifiers( Element element ){
+        return getProvider().getQualifiers( element , getModelImplementation());
     }
     
     public AbstractModelImplementation getModelImplementation(){
@@ -181,7 +194,7 @@ public final class WebBeansModel {
     }
     
     private WebBeansModelProvider getProvider(){
-        return Lookup.getDefault().lookup( WebBeansModelProvider.class);
+        return getModelImplementation().getProvider();
     }
     
     private AbstractModelImplementation myImpl;
