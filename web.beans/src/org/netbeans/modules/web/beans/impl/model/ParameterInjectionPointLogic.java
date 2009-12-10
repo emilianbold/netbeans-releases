@@ -48,8 +48,14 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
+import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.impl.model.results.DefinitionErrorResult;
+import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -58,35 +64,83 @@ import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
  */
 abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
 
-    private static final String INITIALIZER_ANNOTATION = 
-            "javax.enterprise.inject.Initializer";                  // NOI18N
-    
-    private static final String DISPOSES_ANNOTATION = 
+    static final String DISPOSES_ANNOTATION = 
             "javax.enterprise.inject.Disposes";                     // NOI18N
     
-    private static final String OBSERVES_ANNOTATION = 
+    static final String OBSERVES_ANNOTATION = 
             "javax.enterprise.event.Observes";                      // NOI18N
-
-    protected Element findParameterInjectable( VariableElement element , 
-            WebBeansModelImplementation model) throws WebBeansModelException 
+    
+    protected Result findParameterInjectable( VariableElement element , 
+            DeclaredType parentType , WebBeansModelImplementation model) 
     {
-        ExecutableElement parent = (ExecutableElement)element.getEnclosingElement();
-        Set<Element> injectables = null;
+        DeclaredType parent = parentType;
+        if ( parent == null ){
+            TypeElement type = 
+                model.getHelper().getCompilationController().getElementUtilities().
+                    enclosingTypeElement(element);
+            boolean isDeclaredType = ( type.asType() instanceof DeclaredType );
+            if ( isDeclaredType ){
+                parent = (DeclaredType)type.asType();
+            }
+            if ( !isDeclaredType) {
+                return new DefinitionErrorResult(element,  parentType, 
+                        NbBundle.getMessage(WebBeansModelProviderImpl.class, 
+                                "ERR_BadParent", element.getSimpleName(),
+                                 type!= null? type.toString(): null));
+            }
+        }
+        ExecutableElement parentMethod = (ExecutableElement)element.
+            getEnclosingElement();
+        ExecutableType methodType = (ExecutableType)model.getHelper().
+            getCompilationController().getTypes().asMemberOf(parent, 
+                    parentMethod );
+        List<? extends TypeMirror> parameterTypes = methodType.getParameterTypes();
+        
+        boolean isInjectionPoint = false;
+        /*
+         * Check if method has parameters as injection points.
+         * F.e. disposer method has only one parameter with @Disposes annotation.
+         * All other its parameters are injection points. 
+         */
+        List<? extends VariableElement> parameters = parentMethod.getParameters();
+        int index =0;
+        for (int i=0; i<parameters.size() ; i++ ) {
+            VariableElement variableElement = parameters.get(i);
+            if ( variableElement.equals( element )){
+                index = i;
+            }
+            else if ( AnnotationObjectProvider.hasAnnotation(variableElement,
+                    DISPOSES_ANNOTATION, model.getHelper()) ||
+                    AnnotationObjectProvider.hasAnnotation(variableElement,
+                            OBSERVES_ANNOTATION, model.getHelper()) )
+            {
+                isInjectionPoint = true;
+            }
+        }
+        TypeMirror elementType = parameterTypes.get(index);
+        
+        Result result = null;
         boolean disposes = AnnotationObjectProvider.hasAnnotation( element, 
                 DISPOSES_ANNOTATION, model.getHelper());
-        if ( AnnotationObjectProvider.hasAnnotation( parent, 
-                INITIALIZER_ANNOTATION, model.getHelper()) ||
-                AnnotationObjectProvider.hasAnnotation( parent, 
-                        PRODUCER_ANNOTATION, model.getHelper()) || disposes )
+        boolean observes = AnnotationObjectProvider.hasAnnotation( element, 
+                OBSERVES_ANNOTATION, model.getHelper());
+        if ( isInjectionPoint || AnnotationObjectProvider.hasAnnotation( parentMethod, 
+                INJECT_ANNOTATION, model.getHelper()) ||
+                AnnotationObjectProvider.hasAnnotation( parentMethod, 
+                        PRODUCER_ANNOTATION, model.getHelper()) || disposes||
+                        observes)
         {
-            injectables = findVariableInjectable(element, model , true );
+            result = doFindVariableInjectable(element, elementType, 
+                    model , false );
         }
         if ( disposes ){
-            if( injectables!= null && injectables.size() >0 ){
+            if( result instanceof ResultImpl ){
+                ((ResultImpl) result).getTypeElements().clear();
+                Set<Element> productions = ((ResultImpl) result).getProductions();
                 TypeElement enclosingTypeElement = model.getHelper().
                     getCompilationController().getElementUtilities().
                         enclosingTypeElement(element);
-                for (Iterator<Element> iterator = injectables.iterator(); 
+                for (Iterator<Element> iterator = productions.iterator(); 
                     iterator.hasNext(); ) 
                 {
                     Element injectable = iterator.next();
@@ -103,46 +157,12 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
                 return null;
             }
         }
-        if ( AnnotationObjectProvider.hasAnnotation( element, 
-                                    OBSERVES_ANNOTATION, model.getHelper()))
-        {
-            /*
-             * From the spec : if the event parameter does not explicitly 
-             * declare any binding, the observer method observes events with no binding.
-             * 
-             * TODO : if there is no binding type for parameter then
-             * one needs to find elements without bindings ( they 
-             * should not have any binding at all even explicit @Current
-             * binding ).   
-             * This is just implementor elements ( filtered by binding absence ). 
-             */
-            injectables = findVariableInjectable(element, model , false );
-        }
-        boolean isInjectionPoint = false;
-        List<? extends VariableElement> parameters = parent.getParameters();
-        /*
-         * Check if method has parameters as injection points.
-         * Parameter should differs from lead parameter ( parameter that define 
-         * method with special meaning ) .
-         */
-        for (VariableElement variableElement : parameters) {
-            if ( !variableElement.equals( element ) && 
-                    AnnotationObjectProvider.hasAnnotation(variableElement, 
-                    DISPOSES_ANNOTATION, model.getHelper()) ||
-                    AnnotationObjectProvider.hasAnnotation(variableElement, 
-                            OBSERVES_ANNOTATION, model.getHelper()) )
-            {
-                isInjectionPoint = true;
-                break;
-            }
-        }
+
         if ( isInjectionPoint ){
-            injectables = findVariableInjectable(element, model , true );
+            return getResult(result, model );
         }
-        
-        if ( injectables == null ){
+        else {
             return null;
         }
-        return getResult(injectables, model );
     }
 }
