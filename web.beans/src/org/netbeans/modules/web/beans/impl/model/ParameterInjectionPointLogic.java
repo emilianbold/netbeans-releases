@@ -154,7 +154,7 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
                 }
             }
             else {
-                return null;
+                return result;
             }
         }
 
@@ -162,6 +162,7 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
             return getResult(result, model );
         }
         else {
+            // TODO : change to DefinitionErrorResult instance. null is bad return value
             return null;
         }
     }
