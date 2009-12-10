@@ -36,6 +36,18 @@ fi
 
 TIP=`hg log -r . --template '{node}'`
 
-hg push -r $TIP https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo" || exit 9
+if hg push -r $TIP https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo"; then
+    echo Push OK.
+else
+    HEADS=`hg heads --template "{node} XX{branches}XX\n" | grep XXXX | cut -f 1 -d ' ' | wc -l`
+    hg incoming http://hg.netbeans.org/"$push_repo"
+    STATUS=$?
+    if [ $HEAD = 1 ] && [ $STATUS = 0 ]; then
+        hg push -f -r $TIP https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo" || exit 9
+    else
+        echo Heads ($HEAD) or incomming changesets ($STATUS)
+        exit 9
+    fi
+fi
 unset BASETIP
 exit 0
