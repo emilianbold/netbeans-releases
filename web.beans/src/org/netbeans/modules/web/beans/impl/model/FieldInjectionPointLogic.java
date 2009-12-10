@@ -155,6 +155,13 @@ abstract class FieldInjectionPointLogic {
         return result;
     }
     
+    protected void filterBeans( Result result) {
+        if ( result instanceof ResultImpl ){
+            BeansFilter filter = BeansFilter.get();
+            filter.filter(((ResultImpl)result).getTypeElements() );
+        }
+    }
+    
     protected Result doFindVariableInjectable( VariableElement element,
             TypeMirror elementType, WebBeansModelImplementation modelImpl ,
             boolean injectRequired)
@@ -174,7 +181,7 @@ abstract class FieldInjectionPointLogic {
          * type has @Default qualifier by default. So it should
          * be also considered as injectable.  
          */
-        boolean defaultQualifier = quilifierAnnotations.size() == 0;
+        boolean defaultQualifier = !anyQualifier && quilifierAnnotations.size() == 0;
         /*
          * The @New target is 
          * @Target(value={FIELD,PARAMETER})
@@ -798,13 +805,6 @@ abstract class FieldInjectionPointLogic {
         MemberBindingFilter<T> filter = MemberBindingFilter.get( clazz );
         filter.init( bindingAnnotations, impl );
         filter.filter( elementsWithBindings );
-    }
-    
-    private void filterBeans( Result result) {
-        if ( result instanceof ResultImpl ){
-            BeansFilter filter = BeansFilter.get();
-            filter.filter(((ResultImpl)result).getTypeElements() );
-        }
     }
     
     private static class InjectionPointDefinitionError extends Exception{

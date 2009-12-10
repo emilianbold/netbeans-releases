@@ -77,7 +77,7 @@ public class CurrentTest extends CommonTestCase {
         
     }
     
-/*    public void testDefault() throws IOException, InterruptedException{
+    public void testDefault() throws IOException, InterruptedException{
         TestUtilities.copyStringToFileObject(srcFO, "foo/SuperClass.java",
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
@@ -642,5 +642,5 @@ public class CurrentTest extends CommonTestCase {
         assertEquals(0, typeElements.size());
         assertEquals(0, productions.size());
     }
-*/
+
 }
