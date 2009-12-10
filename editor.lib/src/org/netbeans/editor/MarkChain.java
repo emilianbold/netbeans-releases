@@ -42,7 +42,6 @@
 package org.netbeans.editor;
 
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.Position;
 
 /**
@@ -279,7 +278,7 @@ public class MarkChain {
     }
 
 
-    public String toString() {
+    public @Override String toString() {
         return "MarkChain: curMark=" + curMark + ", mark chain: " // NOI18N
                + (chain != null ? ("\n" + chain.toStringChain()) : "Empty"); // NOI18N
     }
