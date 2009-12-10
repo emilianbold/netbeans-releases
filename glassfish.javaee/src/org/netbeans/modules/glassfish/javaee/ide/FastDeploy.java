@@ -96,7 +96,7 @@ public class FastDeploy extends IncrementalDeployment {
      * @return 
      */
     public ProgressObject initialDeploy(Target target, J2eeModule module, ModuleConfiguration configuration, final File dir) {
-        final String moduleName = Utils.computeModuleID(module, dir, Integer.toString(hashCode()));
+        final String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(Utils.computeModuleID(module, dir, Integer.toString(hashCode())));
         String contextRoot = null;
         // XXX fix cast -- need error instance for ProgressObject to return errors
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) target, moduleName,
@@ -247,7 +247,7 @@ public class FastDeploy extends IncrementalDeployment {
             if (dest.isFile() || (dest.isDirectory() && !dest.canWrite())) {
                throw new IllegalStateException();
             }
-            String moduleName = Utils.computeModuleID(app, null, null);
+            String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(Utils.computeModuleID(app, null, null));
             String dirName = "gfdeploy"; // NOI18N
             if (null != moduleName) {
                 dirName += "/"+moduleName; // NOI18N
