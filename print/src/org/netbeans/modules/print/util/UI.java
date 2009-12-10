@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.print.ui;
+package org.netbeans.modules.print.util;
 
 import java.awt.Component;
 import java.awt.Container;
