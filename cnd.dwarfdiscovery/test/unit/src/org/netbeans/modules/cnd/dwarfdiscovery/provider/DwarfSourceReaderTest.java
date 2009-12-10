@@ -610,7 +610,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         String name = "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP/HTIOP_Acceptor_Impl.cpp";
         grepBase.put(name, grep);
         if (Utilities.isWindows()) {
-            // this is hack for testing on windows an object file created on unix
+             //this is hack for testing on windows an object file created on unix
             name = ":"+name.replace('/', '\\');
             for (char c = 'A'; c <= 'Z'; c++) {
                 grepBase.put(c+name, grep);
@@ -735,8 +735,9 @@ public class DwarfSourceReaderTest extends NbTestCase {
     private DwarfSource getDwarfSource(String resource, final List<String> systemPath, final Map<String, String> ignore, final Map<String,GrepEntry> grepBase){
         File dataDir = getDataDir();
         String objFileName = dataDir.getAbsolutePath()+resource;
+        Dwarf dump = null;
         try {
-            Dwarf dump = new Dwarf(objFileName);
+            dump = new Dwarf(objFileName);
             List <CompilationUnit> units = dump.getCompilationUnits();
             if (units != null && units.size() > 0) {
                 for (CompilationUnit cu : units) {
@@ -769,6 +770,10 @@ public class DwarfSourceReaderTest extends NbTestCase {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            if (dump != null) {
+                dump.dispose();
+            }
         }
         return null;
     }

@@ -132,6 +132,7 @@ public class FileMagic {
     private static final class MyRandomAccessFile extends RandomAccessFile {
 
         private static final int BUF_SIZE = Integer.getInteger("cnd.dwarfdump.random_access_file_buffer_size", 8 * 1024); // NOI18N
+        private static final int BUF_ALIGNMENT = 1024; // NOI18N
         private String fileName;
         private byte buffer[] = new byte[BUF_SIZE];
         private int buf_end = 0;
@@ -157,11 +158,18 @@ public class FileMagic {
             if (TRACE_STATISTIC) {
                 countOfBufferReads++;
             }
+            int shift = (int)(real_pos%BUF_ALIGNMENT);
+            if (real_pos-shift >= BUF_ALIGNMENT) {
+                shift += BUF_ALIGNMENT;
+            }
+            if (shift > 0) {
+                super.seek(real_pos-shift);
+            }
             int n = super.read(buffer, 0, BUF_SIZE);
             if (n >= 0) {
-                real_pos += n;
+                real_pos += n - shift;
                 buf_end = n;
-                buf_pos = 0;
+                buf_pos = shift;
             }
             return n;
         }
