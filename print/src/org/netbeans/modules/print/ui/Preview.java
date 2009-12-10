@@ -79,7 +79,7 @@ import org.netbeans.spi.print.PrintPage;
 import org.netbeans.spi.print.PrintProvider;
 import org.netbeans.modules.print.util.Config;
 import org.netbeans.modules.print.util.Percent;
-import static org.netbeans.modules.print.ui.UI.*;
+import static org.netbeans.modules.print.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

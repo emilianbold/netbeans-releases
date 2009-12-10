@@ -51,7 +51,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.netbeans.api.print.PrintManager;
-import static org.netbeans.modules.print.ui.UI.*;
+import static org.netbeans.modules.print.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

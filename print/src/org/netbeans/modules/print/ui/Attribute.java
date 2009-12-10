@@ -67,7 +67,7 @@ import org.openide.DialogDescriptor;
 import org.netbeans.modules.print.util.Percent;
 import org.netbeans.modules.print.util.Macro;
 import org.netbeans.modules.print.util.Config;
-import static org.netbeans.modules.print.ui.UI.*;
+import static org.netbeans.modules.print.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
