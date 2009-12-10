@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.WeakHashMap;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -338,11 +339,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         if (!AUTOMATIC_REFRESH_ENABLED) {
             return;
         }
-        Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
-            public void run() {
-                hgFolderEventsHandler.initializeFor(file);
-            }
-        });
+        hgFolderEventsHandler.initializeFor(file);
     }
 
     /**
@@ -389,6 +386,14 @@ public class MercurialInterceptor extends VCSInterceptor {
         private final HashMap<File, Long> hgFolders = new HashMap<File, Long>(5);
         private final HashMap<File, Set<File>> seenRoots = new HashMap<File, Set<File>>(5);
         private final WeakHashMap<File, FileObject[]> hgFolderChildren = new WeakHashMap<File, FileObject[]>(5);
+
+        private final HashSet<File> filesToInitialize = new HashSet<File>();
+        private RequestProcessor rp = new RequestProcessor("MercurialInterceptorEventsHandlerRP", 1); //NOI18N
+        private RequestProcessor.Task initializingTask = rp.create(new Runnable() {
+            public void run() {
+                initializeFiles();
+            }
+        });
 
         /**
          *
@@ -441,26 +446,9 @@ public class MercurialInterceptor extends VCSInterceptor {
             }
         }
 
-        private void initializeFor (File file) {
-            // select repository root for the file and finds it's .hg folder
-            File repositoryRoot = Mercurial.getInstance().getRepositoryRoot(file);
-            if (repositoryRoot != null) {
-                File hgFolder = HgUtils.getHgFolderForRoot(repositoryRoot);
-                if (!addSeenRoot(repositoryRoot, file)) {
-                    synchronized (hgFolders) {
-                        // this means the repository has not yet been scanned, so scan it
-                        Mercurial.STATUS_LOG.fine("pingRepositoryRootFor: planning a scan for " + repositoryRoot.getAbsolutePath() + " - " + file.getAbsolutePath()); //NOI18N
-                        reScheduleRefresh(4000, file);
-                        if (!hgFolders.containsKey(hgFolder)) {
-                            if (hgFolder.isDirectory()) {
-                                // however there might be NO .hg folder, especially for just initialized repositories
-                                // so keep the reference only for existing and valid .hg folders
-                                hgFolders.put(hgFolder, null);
-                                refreshHgFolderTimestamp(hgFolder, hgFolder.lastModified());
-                            }
-                        }
-                    }
-                }
+        public void initializeFor (File file) {
+            if (addFileToInitialize(file)) {
+                initializingTask.schedule(500);
             }
         }
 
@@ -493,6 +481,50 @@ public class MercurialInterceptor extends VCSInterceptor {
                      seenRoots.put(repositoryRoot, seenRootsForRepository = new HashSet<File>());
                  }
                  return seenRootsForRepository;
+            }
+        }
+
+        private boolean addFileToInitialize(File file) {
+            synchronized (filesToInitialize) {
+                return filesToInitialize.add(file);
+            }
+        }
+
+        private File getFileToInitialize () {
+            File nextFile = null;
+            synchronized (filesToInitialize) {
+                Iterator<File> iterator = filesToInitialize.iterator();
+                if (iterator.hasNext()) {
+                    nextFile = iterator.next();
+                    iterator.remove();
+                }
+            }
+            return nextFile;
+        }
+        
+        private void initializeFiles () {
+            File file = null;
+            while ((file = getFileToInitialize()) != null) {
+                // select repository root for the file and finds it's .hg folder
+                File repositoryRoot = Mercurial.getInstance().getRepositoryRoot(file);
+                if (repositoryRoot != null) {
+                    File hgFolder = HgUtils.getHgFolderForRoot(repositoryRoot);
+                    if (!addSeenRoot(repositoryRoot, file)) {
+                        synchronized (hgFolders) {
+                            // this means the repository has not yet been scanned, so scan it
+                            Mercurial.STATUS_LOG.fine("pingRepositoryRootFor: planning a scan for " + repositoryRoot.getAbsolutePath() + " - " + file.getAbsolutePath()); //NOI18N
+                            reScheduleRefresh(4000, file);
+                            if (!hgFolders.containsKey(hgFolder)) {
+                                if (hgFolder.isDirectory()) {
+                                    // however there might be NO .hg folder, especially for just initialized repositories
+                                    // so keep the reference only for existing and valid .hg folders
+                                    hgFolders.put(hgFolder, null);
+                                    refreshHgFolderTimestamp(hgFolder, hgFolder.lastModified());
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
