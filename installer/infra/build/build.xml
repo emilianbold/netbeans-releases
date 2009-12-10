@@ -325,7 +325,7 @@
         -->
 
 	<set property="nb.full.version"
-             value="6.8.0.0.${nb.build.number}"/>
+             value="6.9.0.0.${nb.build.number}"/>
 
         <set property="nb.zip.files.prefix"
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
@@ -337,7 +337,7 @@
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
 	
         <set property="jdk.bundle.files.suffix"
-             value="nb-6_8"/>
+             value="nb-6_9"/>
 	
 	<set property="nb.bundles.output.dir"
              value="${output.dir}/bundles"/>
