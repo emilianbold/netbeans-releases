@@ -28,6 +28,12 @@ public class NamespaceIndexFilter<T extends ElementHandle> {
         this.prefix = QualifiedName.create(requestPrefix);
     }
 
+    public NamespaceIndexFilter(QualifiedName qname) {
+        super();
+        this.requestPrefix = qname.toString();
+        this.prefix = qname;
+    }
+
     /**
      * @return the prefixStr
      */
