@@ -153,4 +153,45 @@ public class UtilsTest extends NbTestCase {
         f = Utils.getFileFromPattern("nottasubdir/nottaDir"+Utils.VERSIONED_JAR_SUFFIX_MATCHER, dataDir);
         assertNull(f);
     }
+    /**
+     * Test of sanitizeName method, of class Commands.
+     */
+    @Test
+    public void testSanitizeName() {
+        System.out.println("sanitizeName");
+        String name = "aa";
+        String expResult = "aa";
+        String result = Utils.sanitizeName(name);
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        name = "1a";
+        expResult = "1a";
+        result = Utils.sanitizeName(name);
+        assertEquals(expResult, result);
+        name = "_a";
+        expResult = "_a";
+        result = Utils.sanitizeName(name);
+        assertEquals(expResult, result);
+        name = ".a";
+        expResult = "_.a";
+        result = Utils.sanitizeName(name);
+        assertEquals(expResult, result);
+        name = "foo(bar)";
+        expResult = "_foo_bar_";
+        result = Utils.sanitizeName(name);
+        assertEquals(expResult, result);
+        name = "foo((bar)";
+        expResult = "_foo__bar_";
+        result = Utils.sanitizeName(name);
+        assertEquals(expResult, result);
+        name = ".a()";
+        expResult = "_.a__";
+        result = Utils.sanitizeName(name);
+        assertEquals(expResult, result);
+        name = null;
+        expResult = null;
+        result = Utils.sanitizeName(name);
+        assertEquals(expResult, result);
+    }
+
 }
