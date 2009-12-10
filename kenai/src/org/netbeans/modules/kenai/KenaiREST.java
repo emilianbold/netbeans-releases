@@ -204,9 +204,9 @@ public class KenaiREST extends KenaiImpl {
     }
 
     @Override
-    public Collection<UserData> getProjectMembers(String name) throws KenaiException {
-        MembersListData members = loadPage(baseURL.toString() + "/api/projects/"+name+"/members.json", MembersListData.class, null);
-        return new LazyList(members, MembersListData.class, null);
+    public Collection<UserData> getProjectMembers(String name, PasswordAuthentication pa) throws KenaiException {
+        MembersListData members = loadPage(baseURL.toString() + "/api/projects/"+name+"/members.json", MembersListData.class, pa);
+        return new LazyList(members, MembersListData.class, pa);
     }
 
     @Override

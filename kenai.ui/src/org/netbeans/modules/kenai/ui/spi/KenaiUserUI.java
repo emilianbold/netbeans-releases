@@ -168,7 +168,7 @@ public final class KenaiUserUI {
                 ChatTopComponent tc = ChatTopComponent.findInstance();
                 tc.open();
                 tc.requestActive();
-                tc.setActivePrivate(user.getUserName());
+                tc.setActivePrivate(user.getFQN());
                 tc.insertToActiveChat(message);
                 tc.requestFocus();
             }

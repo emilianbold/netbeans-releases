@@ -41,12 +41,12 @@ package org.netbeans.modules.kenai.api;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.HashMap;
-import java.util.HashSet;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.PacketExtension;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smackx.packet.MUCUser;
 import org.netbeans.modules.kenai.UserData;
 
 /**
@@ -57,11 +57,6 @@ public final class KenaiUser {
 
     public static final String PROP_PRESENCE = "Presence";
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    /*
-     * users cache <FQN, instance>
-     */
-    private static final HashMap<String, KenaiUser> users = new HashMap();
-    private static final HashSet<String> onlineUsers = new HashSet<String>();
     UserData data;
     private Kenai kenai;
 
@@ -138,44 +133,39 @@ public final class KenaiUser {
         assert name !=null;
         assert name.contains("@"): "username must be FQN";
         assert !name.contains("/"): "username cannot contain '/'";
-        synchronized (users) {
+        Kenai k = getKenai(name);
+        synchronized (k.users) {
             Kenai kenai = KenaiManager.getDefault().getKenai("https://" + name.substring(name.indexOf('@')+1));
-            KenaiUser user = users.get(name + "@" + kenai.getUrl().getHost());
+            KenaiUser user = k.users.get(name + "@" + kenai.getUrl().getHost());
             if (user==null) {
                 user = new KenaiUser(kenai, name + "@" + kenai.getUrl().getHost());
-                users.put(name + "@" + kenai.getUrl().getHost(), user);
+                k.users.put(name + "@" + kenai.getUrl().getHost(), user);
             }
             return user;
         }
     }
 
     public static int getOnlineUserCount() {
-        synchronized (onlineUsers) {
-            return onlineUsers.size();
+        int i = 0;
+        for (Kenai k : KenaiManager.getDefault().getKenais()) {
+            synchronized (k.onlineUsers) {
+                i += k.onlineUsers.size();
+            }
         }
+        return i;
     }
     
     static KenaiUser get(Kenai kenai, UserData data) {
-        synchronized (users) {
-            KenaiUser user = users.get(data.user_name);
+        synchronized (kenai.users) {
+            KenaiUser user = kenai.users.get(data.user_name);
             if (user!=null) {
                 user.data = data;
             } else {
                 user = new KenaiUser(kenai, data);
-                users.put(data.user_name, user);
+                kenai.users.put(data.user_name, user);
             }
             return user;
         }
-    }
-
-
-    static synchronized void clear() {
-        synchronized (users) {
-            users.clear();
-        }
-        synchronized (onlineUsers) {
-            onlineUsers.clear();
-    }
     }
 
     /**
@@ -184,7 +174,7 @@ public final class KenaiUser {
      * @return the value of online
      */
     public boolean isOnline() {
-        return isOnline(this.getUserName());
+        return isOnline(this.getUserName() + "@" +kenai.getUrl().getHost());
     }
 
     /**
@@ -211,8 +201,21 @@ public final class KenaiUser {
      * @return
      */
     public static boolean isOnline(String user) {
-        synchronized (onlineUsers) {
-            return onlineUsers.contains(user);
+        assert user !=null;
+        assert user.contains("@"): "username must be FQN";
+        assert !user.contains("/"): "username cannot contain '/'";
+        Kenai k = getKenai(user);
+        synchronized (k.onlineUsers) {
+            return k.onlineUsers.contains(StringUtils.parseName(user));
+        }
+    }
+
+    private static Kenai getKenai(String jid) {
+        if (jid.contains("@muc.")) {
+            final String server = StringUtils.parseServer(jid);
+            return KenaiManager.getDefault().getKenai("https://" + server.substring(4));
+        } else {
+            return KenaiManager.getDefault().getKenai("https://" + StringUtils.parseServer(jid));
         }
     }
 
@@ -221,14 +224,16 @@ public final class KenaiUser {
         public void processPacket(Packet packet) {
             Presence presence = (Presence) packet;
             String from = presence.getFrom();
-            if (null != packet.getExtension("x", "http://jabber.org/protocol/muc#user")) {
-                String user = StringUtils.parseResource(from);
+            Kenai k = getKenai(from);
+            final MUCUser mucUser = (MUCUser) packet.getExtension("x", "http://jabber.org/protocol/muc#user");
+            if (null != mucUser) {
+                String user = StringUtils.parseName(mucUser.getItem().getJid());
                 if (presence.getType() == Presence.Type.available) {
-                    synchronized (onlineUsers) {
-                        onlineUsers.add(user);
+                    synchronized (k.onlineUsers) {
+                        k.onlineUsers.add(user);
                     }
-                    synchronized (users) {
-                        KenaiUser u = users.get(user);
+                    synchronized (k.users) {
+                        KenaiUser u = k.users.get(user);
                         if (u != null) {
                             u.propertyChangeSupport.firePropertyChange(PROP_PRESENCE,
                                     presence.getType() != Presence.Type.available, presence.getType() == Presence.Type.available);
@@ -236,11 +241,11 @@ public final class KenaiUser {
                     }
 
                 } else if (presence.getType() == Presence.Type.unavailable) {
-                    synchronized (onlineUsers) {
-                        onlineUsers.remove(user);
+                    synchronized (k.onlineUsers) {
+                        k.onlineUsers.remove(user);
                     }
-                    synchronized (users) {
-                        KenaiUser u = users.get(user);
+                    synchronized (k.users) {
+                        KenaiUser u = k.users.get(user);
                         if (u != null) {
                             u.propertyChangeSupport.firePropertyChange(PROP_PRESENCE,
                                     presence.getType() != Presence.Type.available, presence.getType() == Presence.Type.available);

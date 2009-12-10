@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.net.PasswordAuthentication;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -54,9 +55,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.jdesktop.swingx.JXBusyLabel;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.*;
 import org.netbeans.modules.kenai.ui.Utilities;
+import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.*;
@@ -164,7 +167,8 @@ public class ChatTopComponent extends TopComponent {
                         String name = chats.getComponentAt(index).getName();
                         if (name!=null) {
                             ChatNotifications.getDefault().removeGroup(name);
-                            name = name.substring(name.indexOf('.') + 1);
+                            //TODO: WTH is this line?
+                            //name = name.substring(name.indexOf('.') + 1);
                             ChatNotifications.getDefault().removePrivate(name);
                         }
                     }
@@ -173,7 +177,7 @@ public class ChatTopComponent extends TopComponent {
             }
         };
 
-        Kenai.getDefault().addPropertyChangeListener(new KenaiL());
+        KenaiManager.getDefault().addPropertyChangeListener(new KenaiL());
         chats.addChangeListener(changeListener);
         chats.addPropertyChangeListener(TabbedPaneFactory.PROP_CLOSE, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -298,11 +302,11 @@ public class ChatTopComponent extends TopComponent {
     }
 
     public void setActiveGroup(String name) {
+        Utilities.assertJid(name);
         ChatNotifications.getDefault().removeGroup(name);
         int indexOfTab = getTab(name); 
         if (indexOfTab < 0) {
-            //TODO: check this
-            MultiUserChat muc = KenaiConnection.getDefault(KenaiConnection.getKenai(name)).getChat(name);
+            MultiUserChat muc = KenaiConnection.getDefault(KenaiConnection.getKenai(name)).getChat(StringUtils.parseName(name));
             if (muc != null) {
                 ChatPanel chatPanel = new ChatPanel(muc);
                 addChat(chatPanel);
@@ -315,10 +319,11 @@ public class ChatTopComponent extends TopComponent {
         }
     }
     public void setActivePrivate(String name) {
+        Utilities.assertJid(name);
         ChatNotifications.getDefault().removePrivate(name);
         int indexOfTab = getTab(createPrivateName(name));
         if (indexOfTab < 0) {
-            ChatPanel chatPanel = new ChatPanel(name + '@' + Kenai.getDefault().getUrl().getHost());
+            ChatPanel chatPanel = new ChatPanel(name);
             addChat(chatPanel);
             indexOfTab = chats.getTabCount() - 1;
             chats.setSelectedComponent(chatPanel);
@@ -344,10 +349,11 @@ public class ChatTopComponent extends TopComponent {
         int idx = chats.getTabCount();
         chats.add(chatPanel);
         try {
-            if (!chatPanel.isPrivate())
-                chats.setTitleAt(idx, Kenai.getDefault().getProject(chatPanel.getName()).getDisplayName());
-            else {
-                chats.setTitleAt(idx, chatPanel.getName().substring(chatPanel.getName().indexOf('.')+1));
+            if (!chatPanel.isPrivate()) {
+                Kenai k = KenaiConnection.getKenai(chatPanel.getName());
+                chats.setTitleAt(idx, k.getProject(StringUtils.parseName(chatPanel.getName())).getDisplayName());
+            } else {
+                chats.setTitleAt(idx, new KenaiUserUI(chatPanel.getName()).getUserName());
             }
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
@@ -380,10 +386,12 @@ public class ChatTopComponent extends TopComponent {
     }
 
     public static boolean isGroupInitedAndVisible(String name) {
+        Utilities.assertJid(name);
         return instance==null?false:instance.isShowing()&&instance.isOpened()&&instance.open.contains(name) && name.equals(instance.chats.getSelectedComponent().getName());
     }
 
     public static boolean isPrivateInitedAndVisible(String name) {
+        Utilities.assertJid(name);
         return instance==null?false:instance.isShowing()&&instance.isOpened()&& name.equals(instance.chats.getSelectedComponent().getName());
     }
 
@@ -392,28 +400,29 @@ public class ChatTopComponent extends TopComponent {
     private void putChats() {
         initInProgress =true;
         for (KenaiConnection kec: KenaiConnection.getAllInstances()) {
-        final Collection<MultiUserChat> chs = kec.getChats();
-        if (chs.size()==1) {
-            final MultiUserChat next = chs.iterator().next();
-            ChatPanel chatPanel = new ChatPanel(next);
-            addChat(chatPanel);
-        } else if (chs.size()!=0) {
-            String s = prefs.get(Kenai.getDefault().getUrl().getHost()+KENAI_OPEN_CHATS_PREF + Kenai.getDefault().getPasswordAuthentication().getUserName(),""); // NOI18N
-            if (s.length() > 1) {
-                ChatPanel chatPanel = null;
-                for (String chat : s.split(",")) { // NOI18N
-                    MultiUserChat muc = kec.getChat(chat);
-                    if (muc != null) {
-                        chatPanel = new ChatPanel(muc);
-                        addChat(chatPanel);
-                    } else {
-                        Logger.getLogger(ChatTopComponent.class.getName()).warning("Cannot find chat " + chat);
+            final Collection<MultiUserChat> chs = kec.getChats();
+            if (chs.size() == 1) {
+                final MultiUserChat next = chs.iterator().next();
+                ChatPanel chatPanel = new ChatPanel(next);
+                addChat(chatPanel);
+            } else if (chs.size() != 0) {
+                String s = prefs.get(kec.getKenai().getUrl().getHost() + KENAI_OPEN_CHATS_PREF + kec.getKenai().getPasswordAuthentication().getUserName(), ""); // NOI18N
+                if (s.length() > 1) {
+                    ChatPanel chatPanel = null;
+                    for (String chat : s.split(",")) { // NOI18N
+                        MultiUserChat muc = kec.getChat(chat);
+                        if (muc != null) {
+                            chatPanel = new ChatPanel(muc);
+                            addChat(chatPanel);
+                        } else {
+                            Logger.getLogger(ChatTopComponent.class.getName()).warning("Cannot find chat " + chat);
+                        }
+                    }
+                    if (chatPanel != null) {
+                        ChatNotifications.getDefault().removeGroup(chatPanel.getName());
                     }
                 }
-                if (chatPanel!=null)
-                    ChatNotifications.getDefault().removeGroup(chatPanel.getName());
             }
-        }
         }
         validate();
         initInProgress =false;
@@ -578,7 +587,7 @@ public class ChatTopComponent extends TopComponent {
             UIUtils.showLogin();
         } else {
             if (!Utilities.isChatSupported(kenai)) {
-                JOptionPane.showMessageDialog(retryLink, NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.ChatNotAvailable", Kenai.getDefault().getName()));
+                JOptionPane.showMessageDialog(retryLink, NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.ChatNotAvailable", kenai.getName()));
              } else {
                 RequestProcessor.getDefault().post(new Runnable() {
 
@@ -704,15 +713,26 @@ public class ChatTopComponent extends TopComponent {
     }
 
     private void storeOpenChats() {
-        StringBuffer b = new StringBuffer();
+        HashMap<Kenai, StringBuffer> hm = new HashMap<Kenai, StringBuffer>();
+        StringBuffer b;
         Iterator<String> it = open.iterator();
         while (it.hasNext()) {
-            b.append(it.next());
+            String i = it.next();
+            Kenai k = KenaiConnection.getKenai(i);
+            b = hm.get(k);
+            if (b == null) {
+                b=new StringBuffer();
+                hm.put(k, b);
+            }
+            b.append(StringUtils.parseName(i));
             if (it.hasNext()) {
                 b.append(","); // NOI18N
             }
         }
-        prefs.put(Kenai.getDefault().getUrl().getHost()+KENAI_OPEN_CHATS_PREF + Kenai.getDefault().getPasswordAuthentication().getUserName(), b.toString()); // NOI18N
+
+        for (Entry<Kenai, StringBuffer> entry:hm.entrySet()) {
+            prefs.put(entry.getKey().getUrl().getHost()+KENAI_OPEN_CHATS_PREF + entry.getKey().getPasswordAuthentication().getUserName(),entry.getValue().toString()); // NOI18N
+        }
     }
 
     final class KenaiL implements PropertyChangeListener {
@@ -721,7 +741,7 @@ public class ChatTopComponent extends TopComponent {
             if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        Kenai.Status s = Kenai.getDefault().getStatus();
+                        Kenai.Status s = ((Kenai) e.getSource()).getStatus();
                         if (s != Kenai.Status.ONLINE) {
                             loginLink.setText(NbBundle.getMessage(ChatTopComponent.class, s==Kenai.Status.OFFLINE?"ChatTopComponent.loginLink.text":"ChatTopComponent.loginLink.startChat")); // NOI18N
                         }

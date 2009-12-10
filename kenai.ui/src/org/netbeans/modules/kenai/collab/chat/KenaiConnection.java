@@ -73,6 +73,7 @@ import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.Utilities;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -136,6 +137,10 @@ public class KenaiConnection implements PropertyChangeListener {
         return kc;
     }
 
+    public Kenai getKenai() {
+        return kenai;
+    }
+
     public static KenaiProject getKenaiProject(String room) {
         assert !room.contains("/") : "room name cannot contain '/'";
         String kenaiUrl = "https://" + room.substring(room.indexOf("@muc.")+"@muc.".length());
@@ -154,7 +159,14 @@ public class KenaiConnection implements PropertyChangeListener {
 
 
     public static Kenai getKenai(String jid) {
-        String kenaiUrl = "https://" + jid.substring(jid.indexOf("@"));
+        Utilities.assertJid(jid);
+        int index = jid.indexOf("@muc.");
+        if (index<0) {
+            index = jid.indexOf("@") + 1;
+        } else {
+            index+=5;
+        }
+        String kenaiUrl = "https://" + jid.substring(index);
         return KenaiManager.getDefault().getKenai(kenaiUrl);
     }
 
@@ -199,6 +211,7 @@ public class KenaiConnection implements PropertyChangeListener {
 
 
     public synchronized Chat joinPrivate(String jid, PacketListener lsn) {
+        Utilities.assertJid(jid);
         Chat result = privateChats.get(jid);
         if (result == null) {
             result = KenaiConnection.getKenai(jid).getXMPPConnection().getChatManager().createChat(jid, null);
@@ -312,7 +325,7 @@ public class KenaiConnection implements PropertyChangeListener {
 
         public void processPacket(Packet packet) {
             final Message msg = (Message) packet;
-            final String name = StringUtils.parseName(msg.getFrom());
+            final String name = StringUtils.parseBareAddress(msg.getFrom());
             LinkedList<Message> thisQ = privateMessageQueue.get(name);
             if (thisQ==null) {
                 thisQ = new LinkedList<Message>();
@@ -365,12 +378,15 @@ public class KenaiConnection implements PropertyChangeListener {
                 }
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        if (chatNotifications.isEnabled(name) && (listener == null || !ChatTopComponent.isGroupInitedAndVisible(name))) {
+                        if (chatNotifications.isEnabled(StringUtils.parseBareAddress(msg.getFrom())) && (listener == null || !ChatTopComponent.isGroupInitedAndVisible(StringUtils.parseBareAddress(msg.getFrom())))) {
                             chatNotifications.addGroupMessage(msg);
                         } else {
-                            //TODO: fixme
-                            //chatNotifications.getMessagingHandle(name).notifyMessageReceived(msg);
-                            //chatNotifications.getMessagingHandle(name).notifyMessagesRead();
+                            try {
+                                chatNotifications.getMessagingHandle(kenai.getProject(name)).notifyMessageReceived(msg);
+                                chatNotifications.getMessagingHandle(kenai.getProject(name)).notifyMessagesRead();
+                            } catch (KenaiException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
                     }
                 });
@@ -415,10 +431,12 @@ public class KenaiConnection implements PropertyChangeListener {
      * @return
      */
     public synchronized MultiUserChat getChat(String name) {
+        assert !name.contains("@") : "getChat does not accept FQNs";
         return groupChats.get(name);
     }
 
     public synchronized Chat getPrivateChat(String jid) {
+        Utilities.assertJid(jid);
         return privateChats.get(jid);
     }
 
@@ -483,7 +501,6 @@ public class KenaiConnection implements PropertyChangeListener {
     private String USER;
     
     /**
-     * TODO: should return kenai account name
      * @return
      */
     private String getUserName() {

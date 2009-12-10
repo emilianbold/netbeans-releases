@@ -81,7 +81,7 @@ public abstract class KenaiImpl {
      */
     public abstract ProjectData getProject(String name, PasswordAuthentication pa) throws KenaiException;
 
-    public abstract Collection<UserData> getProjectMembers(String name) throws KenaiException;
+    public abstract Collection<UserData> getProjectMembers(String name, PasswordAuthentication pa) throws KenaiException;
 
     /**
      * Asks whether a person is authorized to perform an activity on a particular project.

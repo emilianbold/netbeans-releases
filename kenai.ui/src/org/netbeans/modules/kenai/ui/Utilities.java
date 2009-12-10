@@ -72,26 +72,29 @@ public class Utilities {
     private static HashMap<String, Boolean> chatSupported = new HashMap();
 
     public static boolean isChatSupported(Kenai kenai) {
-        return false;
+        String kenaiHost = kenai.getUrl().getHost();
+        Boolean b = chatSupported.get(kenaiHost);
+        if (b==null) {
+            b=Boolean.FALSE;
+            try {
+                for (KenaiService service : kenai.getServices()) {
+                    if (service.getType() == KenaiService.Type.CHAT) {
+                        b = Boolean.TRUE;
+                        break;
+                    }
+                }
+            } catch (KenaiException ex) {
+                Logger.getLogger(Utilities.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                return false;
+            }
+            chatSupported.put(kenaiHost, b);
+        }
+        return b;
     }
-//TODO: enable this
-//        String kenaiHost = kenai.getUrl().getHost();
-//        Boolean b = chatSupported.get(kenaiHost);
-//        if (b==null) {
-//            b=Boolean.FALSE;
-//            try {
-//                for (KenaiService service : kenai.getServices()) {
-//                    if (service.getType() == KenaiService.Type.CHAT) {
-//                        b = Boolean.TRUE;
-//                        break;
-//                    }
-//                }
-//            } catch (KenaiException ex) {
-//                Logger.getLogger(Utilities.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-//                return false;
-//            }
-//            chatSupported.put(kenaiHost, b);
-//        }
-//        return b;
-//    }
+
+    public static void assertJid(String name) {
+        assert name!=null;
+        assert name.contains("@"): "name must be FQN";
+        assert !name.contains("/"): "name cannot contain '/'";
+    }
 }

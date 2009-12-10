@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import javax.swing.Icon;
@@ -125,7 +126,15 @@ public final class Kenai implements Comparable<Kenai> {
 //    private static final String DEFAULT_INSTANCE_PREF="kenai.default.instance";
 //    private static final String INSTANCES_PREF="kenai.instances";
 
+    /**
+     * users cache <name, instance>
+     */
+    final HashMap<String, KenaiUser> users = new HashMap();
 
+    /**
+     * online users
+     */
+    final HashSet<String> onlineUsers = new HashSet<String>();
 
     final HashMap<String, WeakReference<KenaiProject>> projectsCache = new HashMap<String, WeakReference<KenaiProject>>();
 
@@ -392,7 +401,7 @@ public final class Kenai implements Comparable<Kenai> {
     }
 
     Collection<KenaiProjectMember> getProjectMembers(String name) throws KenaiException {
-        Collection<UserData> usrs = impl.getProjectMembers(name);
+        Collection<UserData> usrs = impl.getProjectMembers(name, auth);
         return new LazyCollection(usrs);
     }
 
@@ -690,7 +699,14 @@ public final class Kenai implements Comparable<Kenai> {
             return;
         }
         xmppConnection.disconnect();
-        KenaiUser.clear();
+
+        synchronized (users) {
+            users.clear();
+        }
+        synchronized (onlineUsers) {
+            onlineUsers.clear();
+        }
+
         XMPPConnection temp = xmppConnection;
         xmppConnection = null;
         temp.removePacketListener(packetListener);

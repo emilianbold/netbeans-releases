@@ -453,9 +453,8 @@ public class ChatPanel extends javax.swing.JPanel {
 //        users.setModel(new BuddyListModel(ctrl.getRoster()));
 //        chat.addParticipantListener(getBuddyListModel());
         if (!isPrivate()) {
-            //TODO: uncomment me
-            //MessagingHandleImpl handle = ChatNotifications.getDefault().getMessagingHandle(getName());
-            //handle.addPropertyChangeListener(new PresenceListener());
+            MessagingHandleImpl handle = ChatNotifications.getDefault().getMessagingHandle(KenaiConnection.getKenaiProject(muc));
+            handle.addPropertyChangeListener(new PresenceListener());
         }
         //KenaiConnection.getDefault().join(chat);
         inbox.setBackground(Color.WHITE);

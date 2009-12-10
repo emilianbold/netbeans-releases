@@ -65,13 +65,17 @@ public class FakeRosterGroup implements Comparable<FakeRosterGroup> {
         return StringUtils.parseName(muc.getRoom());
     }
 
+    public String getJid() {
+        return muc.getRoom();
+    }
+
     public Collection<FakeRosterEntry> getEntries() {
         TreeSet<FakeRosterEntry> entries = new TreeSet();
         Iterator<String> i = muc.getOccupants();
         while (i.hasNext()) {
             String name = i.next();
             if (!StringUtils.parseResource(name).equals(KenaiConnection.getKenaiProject(muc).getKenai().getPasswordAuthentication().getUserName())) {
-                entries.add(new FakeRosterEntry(name));
+                entries.add(new FakeRosterEntry(muc.getOccupant(name)));
             }
         }
         return entries;

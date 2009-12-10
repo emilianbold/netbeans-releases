@@ -90,7 +90,7 @@ public class MemberHandleImpl extends MemberHandle {
 
     @Override
     public boolean hasMessages() {
-        return ChatNotifications.getDefault().hasNewPrivateMessages(getName());
+        return ChatNotifications.getDefault().hasNewPrivateMessages(delegate.getKenaiUser().getFQN());
     }
 
     @Override

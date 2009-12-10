@@ -84,7 +84,7 @@ public class MemberAccessorImpl extends MemberAccessor {
         return new AbstractAction(NbBundle.getMessage(MemberAccessorImpl.class, "CTL_StartChat")) {
 
             public void actionPerformed(ActionEvent e) {
-                new KenaiUserUI(member.getName()).startChat();
+                new KenaiUserUI(member.getFQN()).startChat();
             }
         };
     }

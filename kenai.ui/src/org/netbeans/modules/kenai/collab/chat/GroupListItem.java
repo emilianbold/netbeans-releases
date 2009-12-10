@@ -90,7 +90,7 @@ public class GroupListItem implements ContactListItem {
     }
 
     public void openChat() {
-        ChatTopComponent.findInstance().setActiveGroup(group.getName());
+        ChatTopComponent.findInstance().setActiveGroup(group.getJid());
     }
 
     public Icon getIcon() {
@@ -98,8 +98,6 @@ public class GroupListItem implements ContactListItem {
     }
 
     public boolean hasMessages() {
-        //TODO: fix me
-        //return ChatNotifications.getDefault().getMessagingHandle(group.getName()).getMessageCount()>0;
-        return true;
+        return ChatNotifications.getDefault().getMessagingHandle(group.getKenaiProject()).getMessageCount()>0;
     }
 }

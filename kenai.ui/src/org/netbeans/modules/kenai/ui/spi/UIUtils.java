@@ -108,7 +108,7 @@ public final class UIUtils {
      * @deprecated 
      */
     @Deprecated
-    public static synchronized boolean tryLogin(Kenai kenai, boolean force) {
+    public static synchronized boolean tryLogin(final Kenai kenai, boolean force) {
         if (kenai.getStatus()!=Kenai.Status.OFFLINE) {
             return true;
         }
