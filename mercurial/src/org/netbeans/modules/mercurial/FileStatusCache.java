@@ -263,12 +263,24 @@ public class FileStatusCache {
      * @return always returns a not null value
      */
     public FileInformation getCachedStatus(final File file) {
+        return getCachedStatus(file, true);
+    }
+
+    /**
+     * Fast version of {@link #getStatus(java.io.File)}.
+     * @param file
+     * @param seenInUI false value means the file/folder is not visible in UI and thus cannot trigger initial hg status scan
+     * @return always returns a not null value
+     */
+    private FileInformation getCachedStatus(final File file, boolean seenInUI) {
         FileInformation info = getInfo(file); // cached value
         LOG.log(Level.FINER, "getCachedStatus for file {0}: {1}", new Object[] {file, info}); //NOI18N
+        boolean triggerHgScan = false;
         if (info == null) {
             if (hg.isManaged(file)) {
                 // ping repository scan, this means it has not yet been scanned
-                hg.getMercurialInterceptor().pingRepositoryRootFor(file);
+                // but scan only files/folders visible in IDE
+                triggerHgScan = seenInUI;
                 // fast ignore-test
                 info = checkForIgnoredFile(file);
                 if (file.isDirectory()) {
@@ -300,6 +312,12 @@ public class FileStatusCache {
                 info = file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_NOTMANAGED;
             }
             LOG.log(Level.FINER, "getCachedStatus: default for file {0}: {1}", new Object[] {file, info}); //NOI18N
+        } else {
+            triggerHgScan = seenInUI && !info.wasSeenInUi();
+        }
+        if (triggerHgScan) {
+            info.setSeenInUI(true); // next time this file/folder will not trigger the hg scan
+            hg.getMercurialInterceptor().pingRepositoryRootFor(file);
         }
         return info;
     }
@@ -426,54 +444,7 @@ public class FileStatusCache {
                 filesUnderRoot = new HashSet<File>();
                 rootFiles.put(repository, filesUnderRoot);
             }
-            boolean added = false;
-            for (File fileUnderRoot : filesUnderRoot) {
-                // try to find a common parent for planned files
-                File childCandidate = file;
-                File ancestorCandidate = fileUnderRoot;
-                added = true;
-                if (childCandidate.equals(ancestorCandidate) || ancestorCandidate.equals(repository)) {
-                    // file has already been inserted or scan is planned for the whole repository root
-                    break;
-                }
-                if (childCandidate.equals(repository)) {
-                    // plan the scan for the whole repository root
-                    ancestorCandidate = childCandidate;
-                } else {
-                    if (file.getAbsolutePath().length() < fileUnderRoot.getAbsolutePath().length()) {
-                        // ancestor's path is too short to be the child's parent
-                        ancestorCandidate = file;
-                        childCandidate = fileUnderRoot;
-                    }
-                    if (!Utils.isAncestorOrEqual(ancestorCandidate, childCandidate)) {
-                        ancestorCandidate = Utils.getCommonParent(childCandidate, ancestorCandidate);
-                    }
-                }
-                if (ancestorCandidate == fileUnderRoot) {
-                    // already added
-                    break;
-                } else if (!FULL_REPO_SCAN_ENABLED && ancestorCandidate != childCandidate && ancestorCandidate.equals(repository)) {
-                    // common ancestor is the repo root and neither one of the candidates was originally the repo root
-                    // do not scan the whole clone, it might be a performance killer
-                    added = false;
-                } else if (ancestorCandidate != null) {
-                    // file is under the repository root
-                    if (ancestorCandidate.equals(repository)) {
-                        // adding the repository, there's no need to leave all other files
-                        filesUnderRoot.clear();
-                    } else {
-                        filesUnderRoot.remove(fileUnderRoot);
-                    }
-                    filesUnderRoot.add(ancestorCandidate);
-                    break;
-                } else {
-                    added = false;
-                }
-            }
-            if (!added) {
-                // not added yet
-                filesUnderRoot.add(file);
-            }
+            HgUtils.prepareRootFiles(repository, filesUnderRoot, file);
         }
         if (Mercurial.STATUS_LOG.isLoggable(Level.FINE)) {
             Mercurial.STATUS_LOG.fine("refreshAll: starting status scan for " + rootFiles.values() + " after " + (System.currentTimeMillis() - startTime)); //NOI18N
@@ -570,7 +541,7 @@ public class FileStatusCache {
         FileInformation info;
         // update all managed parents
         File child = file;
-        while ((parent = parent.getParentFile()) != null && (info = getCachedStatus(parent)) != null && (info.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+        while ((parent = parent.getParentFile()) != null && (info = getCachedStatus(parent, false)) != null && (info.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
             if (!info.isDirectory()) {
                 info = createFolderFileInformation(parent, null);
             }
