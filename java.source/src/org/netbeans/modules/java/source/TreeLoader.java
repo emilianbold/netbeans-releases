@@ -203,7 +203,12 @@ public class TreeLoader extends LazyTreeLoader {
             dumpCouplingAbort(new CouplingAbort(clazz, t), null);
         }
     }
-    
+
+    @Override
+    public void updateContext(Context context) {
+        this.context = context;
+    }
+
     public final void startPartialReparse () {
         this.partialReparse = true;
     }

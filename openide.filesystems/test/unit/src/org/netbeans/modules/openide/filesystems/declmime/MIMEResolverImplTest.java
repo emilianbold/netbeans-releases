@@ -306,6 +306,13 @@ public class MIMEResolverImplTest extends NbTestCase {
         assertMimeType(resolver, null, "cpp.not");
     }
 
+    /** Test c declarative MIME resolver. It must be case insensitive on windows too (#176448). */
+    public void testCResolver() {
+        MIMEResolver resolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("c-resolver.xml"));
+        assertMimeType(resolver, "text/x-c", "c.c");
+        assertMimeType(resolver, "text/x-c++", "cplusplus.C");
+    }
+
     /** Test exit element in MIME resolver. */
     public void testExitResolver() {
         MIMEResolver resolver = MIMEResolverImpl.forDescriptor(resolversRoot.getFileObject("exit-resolver.xml"));

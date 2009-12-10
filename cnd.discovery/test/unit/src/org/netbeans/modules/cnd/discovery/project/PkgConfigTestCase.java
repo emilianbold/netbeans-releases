@@ -45,7 +45,7 @@ import org.junit.Test;
  *
  * @author Alexander Simon
  */
-public class PkgConfigTestCase extends MakeProjectBase {
+public class PkgConfigTestCase extends MakeProjectTestBase {
 
     public PkgConfigTestCase() {
         super("PkgConfig");

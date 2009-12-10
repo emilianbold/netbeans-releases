@@ -435,14 +435,14 @@
         -->
         
 	<set property="glassfish-mod-sun.milestone.number"      value="74"/>
-	<set property="glassfish-mod-sun.milestone.number.real" value="74"/>
+	<set property="glassfish-mod-sun.milestone.number.real" value="74b"/>
 	<set property="glassfish-mod-sun.build.type"            value=""/>
-	<set property="glassfish-mod-sun.build.number"          value="0"/>
+	<set property="glassfish-mod-sun.build.number"          value="2"/>
 
 	<set property="glassfish-mod.milestone.number"      value="74"/>
-	<set property="glassfish-mod.milestone.number.real" value="74"/>
+	<set property="glassfish-mod.milestone.number.real" value="74b"/>
 	<set property="glassfish-mod.build.type"            value=""/>
-	<set property="glassfish-mod.build.number"          value="0"/>
+	<set property="glassfish-mod.build.number"          value="2"/>
 	
 
         <!--

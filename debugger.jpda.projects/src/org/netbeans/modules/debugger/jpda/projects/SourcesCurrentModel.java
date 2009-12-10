@@ -689,8 +689,8 @@ NodeActionsProvider {
                             unorderedOriginalSourceRoots = unorderedSR.toArray(new String[] {});
                             int pi = sourcePathPermutation[index];
                             for (int j = 0; j < sourcePathPermutation.length; j++) {
-                                if (sourcePathPermutation[k] > pi) {
-                                    sourcePathPermutation[k]--;
+                                if (sourcePathPermutation[j] > pi) {
+                                    sourcePathPermutation[j]--;
                                 }
                             }
                             for (int j = index; j < (sourcePathPermutation.length - 1); j++) {
@@ -704,6 +704,9 @@ NodeActionsProvider {
                             sortedOriginalSourceRoots = sortedSR.toArray(new String[] {});
                         }
                     }
+                    
+                    sourcePathPermutation = resize(sourcePathPermutation, -k);
+
                     saveAdditionalSourceRoots();
                     saveDisabledSourceRoots();
                     SourcePathProviderImpl.storeSourceRootsOrder(projectRoot, unorderedOriginalSourceRoots, sourcePathPermutation);

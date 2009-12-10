@@ -171,6 +171,7 @@ class RfsLocalController implements Runnable {
             file = CndFileUtils.normalizeFile(file);
             if (file.isDirectory()) {
                 String toRemoteFilePathName = mapper.getRemotePath(file.getAbsolutePath());
+                addFileGatheringInfo(filesToFeed, file, toRemoteFilePathName);
                 File[] children = file.listFiles(filter);
                 if (children != null) {
                     for (File child : children) {

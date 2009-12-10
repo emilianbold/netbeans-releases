@@ -68,6 +68,23 @@
 		<dtd-name>java-web-start-access</dtd-name>
 		<bean-name>JavaWebStartAccess</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.client.JavaWebStartAccess</implements>
+        <user-code>
+            public void setJnlpDoc(boolean value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunApplicationClient.VERSION_5_0_0);
+            }
+
+            public boolean isJnlpDoc() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunApplicationClient.VERSION_5_0_0);
+            }
+
+            public void setJnlpDocHref(java.lang.String value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunApplicationClient.VERSION_5_0_0);
+            }
+
+            public String getJnlpDocHref() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunApplicationClient.VERSION_5_0_0);
+            }
+        </user-code>
 	</meta-element>
 	<meta-element>
 		<dtd-name>context-root</dtd-name>

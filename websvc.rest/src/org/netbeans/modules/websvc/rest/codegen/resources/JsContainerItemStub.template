@@ -20,6 +20,10 @@ __GENERIC_NAME__.prototype = {
       return this.uri;
    },
 
+   getItems : function() {
+      return null;
+   },
+
 __GETTER_SETTER_METHODS__
 
    init : function() {

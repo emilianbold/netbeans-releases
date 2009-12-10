@@ -46,9 +46,10 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
-import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
+import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
@@ -58,24 +59,23 @@ import org.openide.util.Lookup;
  *
  * @author Sergey Grinev
  */
-public class RemoteFileTestCase extends CndBaseTestCase {
+public class RemoteFileTestCase extends RemoteTestBase {
 
     public RemoteFileTestCase(String name, ExecutionEnvironment testExecutionEnvironment) {
         super(name, testExecutionEnvironment);
-        if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentTest.DEFAULT_SECTION, "logging.finest")) {
+        if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentFirstTest.DEFAULT_SECTION, "logging.finest")) {
             Logger.getLogger("cnd.remote.logger").setLevel(Level.ALL);
         }
     }
 
     @ForAllEnvironments(section="remote.platforms")
     public void testPlainFile() throws Exception {
-        CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
         final String tmpFile = getTempName();
-        cmd.run(getTestExecutionEnvironment(), "rm "+ tmpFile, null);
+        ProcessUtils.execute(getTestExecutionEnvironment(), "rm", tmpFile);
         File remoteFile = RemoteFile.create(getTestExecutionEnvironment(), tmpFile);
         assert remoteFile instanceof RemoteFile;
         assert !remoteFile.exists();
-        cmd.run(getTestExecutionEnvironment(), "echo 123 > "+ tmpFile, null);
+        ProcessUtils.execute(getTestExecutionEnvironment(), "touch", tmpFile);
         assert remoteFile.exists();
         assert remoteFile.isFile();
         assert !remoteFile.isDirectory();
@@ -92,11 +92,9 @@ public class RemoteFileTestCase extends CndBaseTestCase {
     @ForAllEnvironments(section="remote.platforms")
     public void testDirectoryStructure() throws Exception {
         final String tempDir = getTempName();
-        CommandProvider cmdProvider = Lookup.getDefault().lookup(CommandProvider.class);
-        assert cmdProvider != null;
-        String cmd = String.format("sh -c \"rm -rf %1$s; mkdir %1$s; touch %1$s/1; touch %1$s/2; touch %1$s/3\"", tempDir);
+        String script = String.format("rm -rf %1$s; mkdir %1$s; touch %1$s/1; touch %1$s/2; touch %1$s/3", tempDir);
         final ExecutionEnvironment env = getTestExecutionEnvironment();
-        assert cmdProvider.run( env,cmd, null) == 0;
+        assertEquals("The return code of a script " + script, 0, ProcessUtils.execute(env, "sh", "-c", script).exitCode);
         File remoteFile = RemoteFile.create(env, tempDir);
         assert remoteFile instanceof RemoteFile;
         assert !remoteFile.isFile();
@@ -117,8 +115,12 @@ public class RemoteFileTestCase extends CndBaseTestCase {
     @ForAllEnvironments(section="remote.platforms")
     public void testReader() throws FileNotFoundException, IOException {
         final String tempFile = getTempName();
-        CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
-        assert cmd.run(getTestExecutionEnvironment(), String.format("sh -c \"rm -rf %1$s; echo 1 > %1$s; echo 2 >> %1$s; echo 3 >> %1$s; echo 4 >> %1$s\"", tempFile), null) == 0;
+        String script = String.format("rm -rf %1$s; echo 1 > %1$s; echo 2 >> %1$s; echo 3 >> %1$s; echo 4 >> %1$s", tempFile);
+        ProcessUtils.ExitStatus es = ProcessUtils.execute(
+                getTestExecutionEnvironment(),
+                "sh", "-c",
+                script);
+        assertEquals("The return code of a script " + script, 0, es.exitCode);
         BufferedReader in = new BufferedReader(RemoteFile.createReader( RemoteFile.create(getTestExecutionEnvironment(), tempFile) ));
         int i = 1;
         while (true) {

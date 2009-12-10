@@ -351,6 +351,21 @@ made subject to such option by the copyright holder.
         <class package="org.netbeans.spi.viewmodel" name="AsynchronousModelFilter" />
         <issue number="172694"/>
     </change>
+    <change>
+        <api name="ViewModelAPI"/>
+        <summary>Drag and Drop support.</summary>
+        <version major="1" minor="24"/>
+        <date day="4" month="12" year="2009"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deletion="no" addition="yes" modification="no"/>
+        <description>
+            This API introduce DnDNodeModel and DnDNodeModelFilter that
+            can be used by clients to implement Drag and Drop.
+        </description>
+        <class package="org.netbeans.spi.viewmodel" name="DnDNodeModel" />
+        <class package="org.netbeans.spi.viewmodel" name="DnDNodeModelFilter" />
+        <issue number="177506"/>
+    </change>
 
 
 </changes>

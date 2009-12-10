@@ -40,12 +40,12 @@
  */
 package org.netbeans.modules.mercurial.ui.annotate;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 import javax.swing.*;
 import java.io.File;
 import java.util.*;
-import java.awt.event.ActionEvent;
 import org.openide.nodes.Node;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
@@ -79,19 +79,13 @@ import org.openide.NotifyDescriptor;
  */
 public class AnnotateAction extends ContextAction {
     
-    private final VCSContext context;
-    
-    public AnnotateAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
-    }
-    
-    public boolean isEnabled() {
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         if(!HgUtils.isFromHgRepository(context)) {
             return false;
         }
 
-        Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
         if (context.getRootFiles().size() > 0 && activatedEditorCookie(nodes) != null) {
             FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
             File file = activatedFile(nodes);
@@ -114,8 +108,12 @@ public class AnnotateAction extends ContextAction {
         } 
     } 
 
-    public void performAction(ActionEvent e) {
-        Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
+    protected String getBaseName(Node[] nodes) {
+        return visible(nodes) ? "CTL_MenuItem_HideAnnotations" : "CTL_MenuItem_ShowAnnotations"; //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
         if (visible(nodes)) {
             JEditorPane pane = activatedEditorPane(nodes);
             AnnotationBarManager.hideAnnotationBar(pane);
@@ -148,10 +146,6 @@ public class AnnotateAction extends ContextAction {
 
         final AnnotationBar ab = AnnotationBarManager.showAnnotationBar(currentPane);
         ab.setAnnotationMessage(NbBundle.getMessage(AnnotateAction.class, "CTL_AnnotationSubstitute")); // NOI18N;
-        if (revision != null) {
-            // showing annotations from past, the referenced file differs from the one being displayed
-            ab.setReferencedFile(file);
-        }
 
         final File repository = Mercurial.getInstance().getRepositoryRoot(file);
         if (repository == null) {
@@ -161,6 +155,10 @@ public class AnnotateAction extends ContextAction {
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
+                if (revision != null) {
+                    // showing annotations from past, the referenced file differs from the one being displayed
+                    ab.setReferencedFile(file);
+                }
                 OutputLogger logger = getLogger();
                 logger.outputInRed(
                         NbBundle.getMessage(AnnotateAction.class,
@@ -284,7 +282,7 @@ public class AnnotateAction extends ContextAction {
      */
     private JEditorPane activatedEditorPane(Node[] nodes) {
         EditorCookie ec = activatedEditorCookie(nodes);
-        if (ec != null) {
+        if (ec != null && EventQueue.isDispatchThread()) {
             JEditorPane[] panes = ec.getOpenedPanes();
             if (panes != null && panes.length > 0) {
                 return panes[0];

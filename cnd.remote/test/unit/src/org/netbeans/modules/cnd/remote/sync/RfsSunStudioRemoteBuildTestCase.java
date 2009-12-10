@@ -41,7 +41,7 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
@@ -61,12 +61,6 @@ public class RfsSunStudioRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase 
         super(testName, execEnv);       
     }
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        setupHost("rfs");
-    }
-
     @ForAllEnvironments
     public void testBuildRfsSampleArgsSunStudio() throws Exception {
         setDefaultCompilerSet("SunStudio");
@@ -77,6 +71,6 @@ public class RfsSunStudioRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase 
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(RfsSunStudioRemoteBuildTestCase.class);
+        return new RemoteDevelopmentFirstTest(RfsSunStudioRemoteBuildTestCase.class);
     }
 }

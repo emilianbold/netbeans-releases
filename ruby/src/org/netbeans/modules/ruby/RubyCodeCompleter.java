@@ -917,6 +917,8 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                             for (String n : actions) {
                                 suggestions.add("'" + n + "'");
                             }
+                        } else if ("status".equals(type)) {
+                            return RubyHttpStatusCodeCompleter.complete(proposals, request, anchor, caseSensitive, target);
                         }
                     }
                 }

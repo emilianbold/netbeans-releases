@@ -292,6 +292,9 @@ implements Executor {
             return ;
         } catch (IllegalThreadStateExceptionWrapper ex) {
             return ;
+        } catch (IndexOutOfBoundsException ex) {
+            // No frames on the thread => nowhere to exit to.
+            return ;
         }
         String classType = ReferenceTypeWrapper.name(LocationWrapper.declaringType(loc));
         String methodName = TypeComponentWrapper.name(LocationWrapper.method(loc));

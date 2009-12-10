@@ -229,7 +229,27 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
     public void invokeAction(final String command, final Lookup context)
             throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
+            FileObject dir = project.getProjectDirectory();
             DefaultProjectOperations.performDefaultDeleteOperation(project);
+            // #177993 - since we are not using source groups for scripts/html
+            // they are not deleted
+            if (dir.isValid()) {
+                try {
+                    FileObject fo = dir.getFileObject("html"); //NOI18N
+                    if (fo != null) {
+                        fo.delete();
+                    }
+                    fo = dir.getFileObject("scripts"); //NOI18N
+                    if (fo != null) {
+                        fo.delete();
+                    }
+                    if (dir.getChildren().length == 0) {
+                        dir.delete();
+                    }
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            }
             return;
         }
 
@@ -281,7 +301,7 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
                         CardState state = card.getState();
                         CardInfo info = card.getCapability(CardInfo.class);
                         StartCapability starter = card.getCapability(StartCapability.class);
-                        if (start && state.isNotRunning()) {
+                        if (starter != null && start && state.isNotRunning()) {
                             try {
                                 StatusDisplayer.getDefault().setStatusText(
                                     NbBundle.getMessage(JCProjectActionProvider.class,
@@ -327,6 +347,7 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
                                 String platformName = platform.getSystemName();
                                 CardInfo info = card.getCapability(CardInfo.class);
                                 String cardName = info == null ? card.toString() : info.getSystemId();
+                                //XXX probably only needed for RI
                                 DataObject dob = Utils.findDeviceForPlatform(platformName, cardName);
                                 NodeRefresher n = dob == null ? null :
                                     dob.getLookup().lookup(NodeRefresher.class);
@@ -350,7 +371,8 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
             throw new IllegalArgumentException(
                     "Command not supported by Java Card project: " + command);
         }
-        return project.getPlatform() != null && project.getCard() != null;
+        return COMMAND_DELETE.equals(command) ||
+                project.getPlatform() != null && project.getCard() != null;
     }
 
     private void updateModifiedFiles() {

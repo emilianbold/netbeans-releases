@@ -77,6 +77,7 @@ public class AutoUpdate extends Task {
     private File dir;
     private File cluster;
     private URL catalog;
+    private boolean force;
 
     public void setUpdateCenter(URL u) {
         catalog = u;
@@ -90,6 +91,11 @@ public class AutoUpdate extends Task {
         this.cluster = dir;
     }
 
+    /** Forces rewrite even the version of a module is not newer */
+    public void setForce(boolean force) {
+        this.force = force;
+    }
+
     public Modules createModules() {
         final Modules m = new Modules();
         modules.add(m);
@@ -100,6 +106,9 @@ public class AutoUpdate extends Task {
     public void execute() throws BuildException {
         if ((dir != null) == (cluster != null)) {
             throw new BuildException("Specify either todir or installdir");
+        }
+        if (catalog == null) {
+            throw new BuildException("Specify updatecenter");
         }
 
         Map<String,List<String>> installed;
@@ -115,16 +124,23 @@ public class AutoUpdate extends Task {
 
 
         // no userdir
-        Map<String, ModuleItem> units = AutoUpdateCatalogParser.getUpdateItems(catalog, catalog, this);
+        Map<String, ModuleItem> units;
+        try {
+            units = AutoUpdateCatalogParser.getUpdateItems(catalog, catalog, this);
+        } catch (IOException ex) {
+            throw new BuildException(ex.getMessage(), ex);
+        }
         for (ModuleItem uu : units.values()) {
-            if (!matches(uu.getCodeName())) {
+            if (!matches(uu.getCodeName(), uu.targetcluster)) {
                 continue;
             }
             log("found module: " + uu, Project.MSG_VERBOSE);
             List<String> info = installed.get(uu.getCodeName());
             if (info != null && !uu.isNewerThan(info.get(0))) {
                 log("Version " + info.get(0) + " of " + uu.getCodeName() + " is up to date", Project.MSG_VERBOSE);
-                continue;
+                if (!force) {
+                    continue;
+                }
             }
             if (info == null) {
                 log(uu.getCodeName() + " is not present, downloading version " + uu.getSpecVersion(), Project.MSG_INFO);
@@ -212,8 +228,17 @@ public class AutoUpdate extends Task {
         }
     }
 
-    private boolean matches(String cnb) {
+    private boolean matches(String cnb, String targetCluster) {
         for (Modules ps : modules) {
+            if (ps.clusters != null) {
+                if (targetCluster == null) {
+                    continue;
+                }
+                if (!ps.clusters.matcher(targetCluster).matches()) {
+                    continue;
+                }
+            }
+
             if (ps.pattern.matcher(cnb).matches()) {
                 return true;
             }
@@ -282,9 +307,14 @@ public class AutoUpdate extends Task {
 
     public static final class Modules {
         Pattern pattern;
+        Pattern clusters;
 
         public void setIncludes(String regExp) {
             pattern = Pattern.compile(regExp);
+        }
+
+        public void setClusters(String regExp) {
+            clusters = Pattern.compile(regExp);
         }
     }
 }

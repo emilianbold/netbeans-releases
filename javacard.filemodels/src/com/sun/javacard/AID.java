@@ -178,6 +178,20 @@ public class AID {
                     throw new IllegalArgumentException(Portability.getString(
                             "BAD_PIX_HEX", PIX), nfe); //NOI18N
                 }
+                for (char c : RID.toCharArray()) {
+                    if (Character.isLowerCase(c)) {
+                        String s = new String(new char[] { c });
+                        throw new IllegalArgumentException(Portability.getString(
+                                "LOWER_CASE_IN_RID", s)); //NOI18N
+                    }
+                }
+                for (char c : PIX.toCharArray()) {
+                    if (Character.isLowerCase(c)) {
+                        String s = new String(new char[] { c });
+                        throw new IllegalArgumentException(Portability.getString(
+                                "LOWER_CASE_IN_PIX", s)); //NOI18N
+                    }
+                }
                 return new AID(rid, pix);
             } else if (m.groupCount() == 1) {
                 //0 length PIX is legal
@@ -191,6 +205,13 @@ public class AID {
                     throw new IllegalArgumentException(
                             Portability.getString(
                             "RID_is_not_5_bytes_long")); //NOI18N
+                }
+                for (char c : RID.toCharArray()) {
+                    if (Character.isLowerCase(c)) {
+                        String s = new String(new char[] { c });
+                        throw new IllegalArgumentException(Portability.getString(
+                                "LOWER_CASE_IN_RID", s)); //NOI18N
+                    }
                 }
                 byte[] b = new byte[RID.length() / 2];
                 try {
@@ -238,6 +259,9 @@ public class AID {
 
     public static AID generateApplicationAid(byte[] RID, String packageName, String clazz) {
         byte[] PIX = packageHash(packageName, 5);
+        if (PIX.length == 0) { //Issue #177837 - if you enter . for the
+            PIX = packageHash("com.foo.bar.baz.myapp", 5);
+        }
         PIX[PIX.length - 1] = byteHash(clazz);
         return new AID(RID, PIX);
     }
@@ -269,7 +293,7 @@ public class AID {
     }
 
     private static byte[] packageHash(String packageName, int maxBytes) {
-        if (packageName.length() == 0) { //default package, randomize
+        if (packageName.length() <= 1) { //default package, randomize
             Random r = new Random (System.currentTimeMillis());
             byte[] result = new byte[maxBytes];
             r.nextBytes(result);

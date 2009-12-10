@@ -143,7 +143,7 @@ class AutoUpdateCatalogParser extends DefaultHandler {
 
     private static Map<String, ModuleItem> cache;
     private static URI cacheURI;
-    synchronized static Map<String, ModuleItem> getUpdateItems (URL url, URL provider, Task task) {
+    synchronized static Map<String, ModuleItem> getUpdateItems (URL url, URL provider, Task task) throws IOException {
 
         Map<String, ModuleItem> items = new HashMap<String, ModuleItem> ();
         URI base;
@@ -167,8 +167,10 @@ class AutoUpdateCatalogParser extends DefaultHandler {
                 saxParser.parse(is, new AutoUpdateCatalogParser(items, provider, base));
                 cacheURI = base;
                 cache = items;
+            } catch (IOException ex) {
+                throw ex;
             } catch (Exception ex) {
-                ERR.log(Level.INFO, "Failed to parse " + base, ex);
+                throw (IOException)new IOException(ex.getMessage()).initCause(ex);
             } finally {
                 if (is != null && is.getByteStream() != null) {
                     try {
@@ -194,38 +196,26 @@ class AutoUpdateCatalogParser extends DefaultHandler {
         return res;
     }
     
-    private static InputSource getInputSource(URL toParse, URL p, URI base) {
-        InputStream is = null;
-        try {            
-            is = toParse.openStream ();
-            if (isGzip (p)) {
-                try {
-                    is = new GZIPInputStream(is);
-                } catch (IOException e) {
-                    ERR.log (Level.INFO,
-                            "The file at " + toParse +
-                            ", corresponding to the catalog at " + p +
-                            ", does not look like the gzip file, trying to parse it as the pure xml" , e);
-                    //#150034
-                    // Sometimes the .xml.gz file is downloaded as the pure .xml file due to the strange content-encoding processing
-                    is.close();
-                    is = null;
-                    is = toParse.openStream();
-                }
+    private static InputSource getInputSource(URL toParse, URL p, URI base) throws IOException {
+        InputStream is = toParse.openStream ();
+        if (isGzip (p)) {
+            try {
+                is = new GZIPInputStream(is);
+            } catch (IOException e) {
+                ERR.log (Level.INFO,
+                        "The file at " + toParse +
+                        ", corresponding to the catalog at " + p +
+                        ", does not look like the gzip file, trying to parse it as the pure xml" , e);
+                //#150034
+                // Sometimes the .xml.gz file is downloaded as the pure .xml file due to the strange content-encoding processing
+                is.close();
+                is = null;
+                is = toParse.openStream();
             }
-            InputSource src = new InputSource(new BufferedInputStream (is));
-            src.setSystemId(base.toString());
-            return src;
-        } catch (IOException ex) {
-            if(is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                }
-            }
-            ERR.log (Level.SEVERE, "Cannot estabilish input stream for " + toParse , ex);
-            return new InputSource();
         }
+        InputSource src = new InputSource(new BufferedInputStream (is));
+        src.setSystemId(base.toString());
+        return src;
     }
     
     private Stack<String> currentGroup = new Stack<String> ();

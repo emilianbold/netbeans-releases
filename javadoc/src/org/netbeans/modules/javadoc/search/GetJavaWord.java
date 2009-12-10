@@ -65,14 +65,10 @@ final class GetJavaWord extends Object {
         Node[] n = TopComponent.getRegistry ().getActivatedNodes ();
 
         if (n.length == 1) {
-            EditorCookie ec = (EditorCookie) n[0].getCookie (EditorCookie.class);
+            EditorCookie ec = n[0].getLookup().lookup(EditorCookie.class);
             if (ec != null) {
-                JEditorPane[] panes = ec.getOpenedPanes ();
-                if ( panes == null )
-                    return null;
-                if (panes.length > 0) {
-                    return forPane(panes[0]);
-                }
+                JEditorPane pane = NbDocument.findRecentEditorPane(ec);
+                return pane == null ? null : forPane(pane);
             }
         }
 

@@ -232,6 +232,14 @@ class DependencyChecker extends Object {
                     ok = false;
                 } else if (! module.getImplementationVersion ().equals (dep.getVersion ())) {
                     ok = false;
+                } else if (dep.getName ().indexOf ('/') == -1 || module.getCodeName().indexOf('/') !=-1) { // NOI18N
+                    //COMPARE_IMPL with implicit release version specified - see Issue #177737
+                    if(dep.getName ().equals (module.getCodeName ())) {
+                        //release version specified in both dependency and module codename, and the same - since different release versions are handled separately
+                        ok  = true;
+                    } else {
+                        ok = false;
+                    }
                 } else {
                     ok = true;
                 }

@@ -358,6 +358,24 @@ public class HgCommand {
         GUARDED_COMMANDS.add(HG_UPDATE_ALL_CMD);
     }
 
+    private static final HashSet<String> REPOSITORY_NOMODIFICATION_COMMANDS;
+    static {
+        REPOSITORY_NOMODIFICATION_COMMANDS = new HashSet<String>(8);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_ANNOTATE_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_CAT_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_EXPORT_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_INCOMING_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_LOG_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_OUTGOING_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_OUT_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_PUSH_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_STATUS_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_TIP_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VERIFY_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VERSION_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VIEW_CMD);
+    }
+
     /**
      * Merge working directory with the head revision
      * Merge the contents of the current working directory and the
@@ -2170,22 +2188,9 @@ public class HgCommand {
         if (repositoryUrl == null ) return null;
         if (revision == null ) return null;
 
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_PARENT_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repositoryUrl);
-        command.add(HG_FLAG_REV_CMD);
-        command.add(revision);
-        command.add("--template={rev}\t");                              //NOI18N
-
-        List<String> list = null;
-        if (file != null) command.add(file.getAbsolutePath());
-        list = exec(command);
         String parentRevision = "-1";                                   //NOI18N
-        if (!list.isEmpty() && !isErrorAbort(list.get(0))) {
-            String[] revisions = list.get(0).split("\t");               //NOI18N
+        String[] revisions = getParents(repositoryUrl, file, revision);
+        if (revisions != null) {
             if (revisions.length > 1) {
                 String rev1 = revisions[0].trim();
                 String rev2 = revisions[1].trim();
@@ -2198,6 +2203,37 @@ public class HgCommand {
             }
         }
         return parentRevision;
+    }
+
+    /**
+     * Returns parent revisions of the given file
+     * @param repositoryUrl cannot be null
+     * @param file revisions of this file will be returned
+     * @param revision if not null, returns parents of this revision limited on the file
+     * @return parent revisions
+     * @throws HgException
+     */
+    public static String[] getParents (String repositoryUrl, File file, String revision) throws HgException {
+        if (repositoryUrl == null ) return null;
+        List<String> command = new ArrayList<String>();
+        command.add(getHgCommand());
+        command.add(HG_PARENT_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repositoryUrl);
+        if (revision != null) {
+            command.add(HG_FLAG_REV_CMD);
+            command.add(revision);
+        }
+        command.add("--template={rev}\t");                              //NOI18N
+
+        List<String> list = null;
+        if (file != null) command.add(file.getAbsolutePath());
+        list = exec(command);
+        String[] revisions = null;
+        if (!list.isEmpty() && !isErrorAbort(list.get(0))) {
+            revisions = list.get(0).split("\t");               //NOI18N
+        }
+        return revisions;
     }
 
 
@@ -2616,6 +2652,8 @@ public class HgCommand {
         }
         logCommand(command);
         File outputStyleFile = null;
+        File repository = null;
+        final String hgCommand = getHgCommandName(command); // command name
         try {
             try {
                 outputStyleFile = createOutputStyleFile(command);
@@ -2630,8 +2668,6 @@ public class HgCommand {
                     envOrig.put(s.substring(0, s.indexOf('=')), s.substring(s.indexOf('=') + 1));
                 }
             }
-            File repository;
-            final String hgCommand = getHgCommandName(command); // command name
             if (isGuardedCommand(hgCommand) && (repository = getRepositoryFromCommand(command, hgCommand)) != null) {
                 // indexing is supposed to be disabled for the time the command is running
                 return runWithoutIndexing(new Callable<List<String>>() {
@@ -2645,6 +2681,14 @@ public class HgCommand {
         } finally{
             if (outputStyleFile != null) {
                 outputStyleFile.delete();
+            }
+            if (modifiesRepository(hgCommand)) {
+                if (repository == null) {
+                    repository = getRepositoryFromCommand(command, hgCommand);
+                }
+                if (repository != null) {
+                    Mercurial.getInstance().refreshWorkingCopyTimestamp(repository);
+                }
             }
         }
     }
@@ -3347,6 +3391,10 @@ public class HgCommand {
      */
     private static boolean isGuardedCommand(String hgCommand) {
         return GUARDED_COMMANDS.contains(hgCommand);
+    }
+
+    private static boolean modifiesRepository (String hgCommand) {
+        return !REPOSITORY_NOMODIFICATION_COMMANDS.contains(hgCommand);
     }
 
     /**

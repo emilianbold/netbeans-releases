@@ -105,6 +105,7 @@ import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.visualizers.api.ColumnsUIMapping;
+import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.Outline;
@@ -150,7 +151,9 @@ public class FunctionsListViewVisualizer extends JPanel implements
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); // NOI18N
     private static final boolean useHtmlFormat;
-    private static final String htmlDisabledColorFormat;
+    private static final Color htmlEnabledForeground;
+    private static final Color htmlDisabledForeground;
+    private static final Color tooltipBG;
 //    private final FocusTraversalPolicy focusPolicy = new FocusTraversalPolicyImpl() ;
     private Map<Integer, Boolean> ascColumnValues = new HashMap<Integer, Boolean>();
     private final SourceSupportProvider sourceSupportProvider;
@@ -159,13 +162,14 @@ public class FunctionsListViewVisualizer extends JPanel implements
         String property = System.getProperty("FunctionsListViewVisualizer.usehtml", "true"); // NOI18N
         useHtmlFormat = "true".equalsIgnoreCase(property); // NOI18N
 
-        Color dlc = UIManager.getDefaults().getColor("Label.disabledForeground"); // NOI18N
+        htmlEnabledForeground = getColor("FormattedTextField.foreground", Color.BLACK); // NOI18N
+        htmlDisabledForeground = getColor("FormattedTextField.inactiveForeground", Color.GRAY); // NOI18N
+        tooltipBG = getColor("ToolTip.background", Color.YELLOW); // NOI18N
+    }
 
-        if (dlc == null) {
-            dlc = Color.GRAY;
-        }
-
-        htmlDisabledColorFormat = String.format("<font color='#%02x%02x%02x'>", dlc.getRed(), dlc.getGreen(), dlc.getBlue()) + "%s</font>"; // NOI18N
+    private static Color getColor(String propName, Color defaultColor) {
+        Color result = UIManager.getDefaults().getColor(propName);
+        return result == null ? defaultColor : result;
     }
 
     public FunctionsListViewVisualizer(FunctionsListDataProvider dataProvider, FunctionsListViewVisualizerConfiguration configuration) {
@@ -191,7 +195,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
         outline.getTableHeader().setReorderingAllowed(false);
         outline.setRootVisible(false);
         outline.putClientProperty("ComputingTooltip", Boolean.TRUE); // NOI18N
-        outline.setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode());
+        outline.setDefaultRenderer(Object.class, new ExtendedTableCellRendererForNode(explorerManager));
         outline.setDefaultRenderer(Node.Property.class, new FunctionsListSheetCell.OutlineSheetCell(outlineView.getOutline(), metrics));
         outline.addMouseListener(new MouseAdapter() {
 
@@ -800,7 +804,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
             String infoSuffix = null;
 
             if (action.isEnabled()) {
-                result.append(dispName);
+                result.append("<font color='black'>" + dispName + "</font>"); // NOI18N
 
                 SourceFileInfo sourceInfo = action.getSource();
                 if (sourceInfo != null && sourceInfo.isSourceKnown()) {
@@ -811,10 +815,10 @@ public class FunctionsListViewVisualizer extends JPanel implements
                             : getMessage("FunctionCallNode.prefix.withoutLine"); // NOI18N
 
                     infoSuffix = infoPrefix + "&nbsp;" + fname + (line > 0 ? ":" + line : ""); // NOI18N
-                    result.append(String.format(htmlDisabledColorFormat, infoSuffix));
+                    result.append("<font color='gray'>" + infoSuffix + "</font>"); // NOI18N
                 }
             } else {
-                result.append(String.format(htmlDisabledColorFormat, dispName));
+                result.append("<font color='gray'>" + dispName + "</font>"); // NOI18N
             }
 
             result.append("</html>"); // NOI18N
@@ -862,7 +866,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
                         setEnabled(true);
                     }
 
-                    synchronized (this) {
+                    synchronized (GoToSourceAction.this) {
                         sourceInfo = result;
                     }
 
@@ -903,18 +907,20 @@ public class FunctionsListViewVisualizer extends JPanel implements
 
         private final static String dots = " ... "; // NOI18N
         private final Graphics2D scratchGraphics = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB).createGraphics();
-        private String string;
+        private FunctionCallNode node;
         private int cellwidth;
         private int cellheight;
+        private final ExplorerManager manager;
 
-        public ExtendedTableCellRendererForNode() {
+        public ExtendedTableCellRendererForNode(ExplorerManager manager) {
             super();
+            this.manager = manager;
             setVerticalAlignment(javax.swing.SwingConstants.TOP);
         }
 
         @Override
         public String getToolTipText() {
-            return string;
+            return ensureVisible(node.getHtmlDisplayName(), tooltipBG);
         }
 
         @Override
@@ -923,14 +929,23 @@ public class FunctionsListViewVisualizer extends JPanel implements
             // we need to call super, as it sets bacgrounds and does some other
             // things... 
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            string = value.toString();
+
+            if (table instanceof ETable) {
+                row = ((ETable) table).convertRowIndexToModel(row);
+                Node n = manager.getRootContext().getChildren().getNodeAt(row);
+                if (n instanceof FunctionCallNode) {
+                    node = (FunctionCallNode) n;
+                    setText(ensureVisible(node.getHtmlDisplayName(), getBackground()));
+                }
+            }
+
             return this;
         }
 
         /**
          * see IZ#176678 do not wrap lines in TreeCellRenderer if it's html
          * To make html renderer not to wrap the line - just extend width
-         * to be lagre enough to fit all the text...
+         * to be large enough to fit all the text...
          *
          */
         @Override
@@ -940,7 +955,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
                 cellwidth = width;
                 cellheight = height;
                 // Avoid html wrapping - make sure that string fits
-                strw = (int) HtmlRenderer.renderHTML(string + ' ',
+                strw = (int) HtmlRenderer.renderHTML(node.getHtmlDisplayName() + ' ',
                         scratchGraphics,
                         x, y, width, height, getFont(),
                         Color.black, HtmlRenderer.STYLE_CLIP, false);
@@ -953,17 +968,52 @@ public class FunctionsListViewVisualizer extends JPanel implements
             super.paintComponent(g);
 
             FontMetrics fm = g.getFontMetrics();
-            int strw = (int) HtmlRenderer.renderHTML(string + ' ',
+            int strw = (int) HtmlRenderer.renderHTML(node.getHtmlDisplayName() + ' ',
                     scratchGraphics, 0, 0, cellwidth, 0,
                     getFont(), Color.black, HtmlRenderer.STYLE_CLIP, false);
 
             if (cellwidth < strw) {
                 int dotsw = (int) g.getFontMetrics().getStringBounds(dots, g).getMaxX();
                 ((Graphics2D) g).setBackground(getBackground());
+                g.setColor(getContrastGrayColor(htmlDisabledForeground, getBackground()));
                 g.clearRect(cellwidth - dotsw, 0, dotsw, cellheight);
                 g.drawString(dots, cellwidth - dotsw,
                         fm.getHeight() + fm.getLeading() - fm.getDescent());
             }
+        }
+
+        private Color getContrastGrayColor(Color orig, Color bg) {
+            int rgb = orig.getRGB();
+
+            int orig_gray = (((rgb >> 16) & 0xff) +
+                    ((rgb >> 8) & 0xff) +
+                    (rgb & 0xff)) / 3;
+
+            rgb = bg.getRGB();
+
+            int bg_gray = (((rgb >> 16) & 0xff) +
+                    ((rgb >> 8) & 0xff) +
+                    (rgb & 0xff)) / 3;
+
+            if (Math.abs(orig_gray - bg_gray) > 100) {
+                return new Color(orig_gray, orig_gray, orig_gray);
+            }
+
+
+            int avg = bg_gray > 128 ? bg_gray - 100 : bg_gray + 100;
+
+            return new Color(avg, avg, avg);
+        }
+
+        private String ensureVisible(String html, Color bg) {
+            Color black = getContrastGrayColor(htmlEnabledForeground, bg);
+            Color gray = getContrastGrayColor(htmlDisabledForeground, bg);
+
+            String sblack = String.format("color='#%02x%02x%02x'", black.getRed(), black.getGreen(), black.getBlue()); // NOI18N
+            String sgray = String.format("color='#%02x%02x%02x'", gray.getRed(), gray.getGreen(), gray.getBlue()); // NOI18N
+
+            html = html.replace("color='black'", sblack); // NOI18N
+            return html.replace("color='gray'", sgray); // NOI18N
         }
     }
 
@@ -979,9 +1029,6 @@ public class FunctionsListViewVisualizer extends JPanel implements
     }
 
     private final static class QueryLock {
-    }
-
-    private final static class DetailsQueryLock {
     }
 
     private final static class SourcePrefetchExecutorLock {

@@ -149,6 +149,7 @@ public class SuitePropertiesTest extends TestBase {
         NbModuleProject module2ToAdd = generateStandaloneModule("module2");
         NbModuleProject module3ToAdd = generateStandaloneModule("module3");
         SuiteProvider suiteProvider = module2ToAdd.getLookup().lookup(SuiteProvider.class);
+        assertNotNull(suiteProvider);
         assertNull("module2ToAdd is standalone module - doesn't have valid SuiteProvider", suiteProvider.getSuiteDirectory());
         model.addModule(module2ToAdd);
         model.addModule(module3ToAdd);

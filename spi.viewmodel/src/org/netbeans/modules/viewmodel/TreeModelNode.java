@@ -80,6 +80,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -126,7 +127,6 @@ public class TreeModelNode extends AbstractNode {
         this(
             model,
             model.getColumns (),
-            createChildren (model, model.getColumns (), treeModelRoot, object),
             treeModelRoot,
             object
         );
@@ -764,7 +764,7 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
-    /*
+    @Override
     public Transferable drag() throws IOException {
         Transferable t;
         try {
@@ -779,7 +779,6 @@ public class TreeModelNode extends AbstractNode {
             return t;
         }
     }
-     */
     
     @Override
     public void createPasteTypes(Transferable t, List<PasteType> l) {
@@ -797,7 +796,7 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
-    /*
+    @Override
     public PasteType getDropType(Transferable t, int action, int index) {
         PasteType p;
         try {
@@ -812,7 +811,6 @@ public class TreeModelNode extends AbstractNode {
             return p;
         }
     }
-     */
     
     private final void expandIfSetToExpanded() {
         try {

@@ -207,7 +207,7 @@ public class ClasspathInfoTest extends NbTestCase {
     public void testMemoryFileManager () throws Exception {
         final ClassPath scp = createSourcePath(FileUtil.toFileObject(this.getWorkDir()));
         createJavaFile(scp.getRoots()[0], "org/me/Lib.java", "package org.me;\n class Lib {}\n");
-        final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create( bootPath, classPath,scp, null, true, true,  true);
+        final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create( bootPath, classPath,scp, null, true, true, true, false);
         final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
         Iterable<JavaFileObject> jfos = fm.list(StandardLocation.SOURCE_PATH, "org.me", EnumSet.of(JavaFileObject.Kind.SOURCE), false);
         assertEquals (new String[] {"org.me.Lib"}, jfos, fm);

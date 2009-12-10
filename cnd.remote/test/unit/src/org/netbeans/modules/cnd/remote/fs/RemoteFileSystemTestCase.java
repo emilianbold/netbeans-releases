@@ -52,7 +52,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -195,7 +195,7 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
         public void run() {
             Thread.currentThread().setName(name);
             try {
-                System.err.printf("%s waiting on barriar\n", name);
+                System.err.printf("%s waiting on barrier\n", name);
                 barrier.await();
                 System.err.printf("%s working\n", name);
                 work();
@@ -271,6 +271,6 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
 
     
     public static Test suite() {
-        return new RemoteDevelopmentTest(RemoteFileSystemTestCase.class);
+        return new RemoteDevelopmentFirstTest(RemoteFileSystemTestCase.class);
     }
 }

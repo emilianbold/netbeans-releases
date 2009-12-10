@@ -80,6 +80,8 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -559,7 +561,7 @@ public final class CreatedModifiedFilesFactory {
             };
             Set<String> externalFiles;
             if (content != null) {
-                FileObject xml = LayerUtils.layerForProject(project).getLayerFile();
+                FileObject xml = LayerHandle.forProject(project).getLayerFile();
                 FileObject parent = xml != null ? xml.getParent() : null;
                 // XXX this is not fully accurate since if two ops would both create the same file,
                 // really the second one would automatically generate a uniquified name... but close enough!

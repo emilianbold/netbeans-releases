@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
@@ -147,11 +147,11 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     private void setSysProps() {
         try {
-            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "cnd.remote.logger.level");
-            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "nativeexecution.support.logger.level");
-            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "cnd.remote.force.setup", "true");
-            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "socket.connection.timeout", "10000");
-            if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentTest.DEFAULT_SECTION, "logging.finest")) {
+            addPropertyFromRcFile(RemoteDevelopmentFirstTest.DEFAULT_SECTION, "cnd.remote.logger.level");
+            addPropertyFromRcFile(RemoteDevelopmentFirstTest.DEFAULT_SECTION, "nativeexecution.support.logger.level");
+            addPropertyFromRcFile(RemoteDevelopmentFirstTest.DEFAULT_SECTION, "cnd.remote.force.setup", "true");
+            addPropertyFromRcFile(RemoteDevelopmentFirstTest.DEFAULT_SECTION, "socket.connection.timeout", "10000");
+            if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentFirstTest.DEFAULT_SECTION, "logging.finest")) {
                 Logger.getLogger("cnd.remote.logger").setLevel(Level.ALL);
                 Logger.getLogger("nativeexecution.support.logger.level").setLevel(Level.FINEST);
             }
@@ -164,12 +164,20 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.err.printf("\n###> setUp    %s\n", getClass().getName() + '.' + getName());
         super.setUp();
         final ExecutionEnvironment env = getTestExecutionEnvironment();
         if (env != null) {
             // the password should be stored in the initialization phase
             ConnectionManager.getInstance().connectTo(env);
         }
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        ConnectionManager.getInstance().disconnect(getTestExecutionEnvironment());
+        System.err.printf("\n###< tearDown %s\n", getClass().getName() + '.' + getName());
     }
 
     protected static void setupHost(ExecutionEnvironment execEnv) {

@@ -59,7 +59,9 @@ import com.sun.jdi.request.MethodExitRequest;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
@@ -190,7 +192,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         return null;
     }
 
-    private Value[] returnValuePtr;
+    private final Map<Event, Value> returnValueByEvent = new WeakHashMap<Event, Value>();
 
     public boolean processCondition(Event event) {
         try {
@@ -238,7 +240,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                     boolean success = processCondition(event, breakpoint.getCondition (),
                                 LocatableEventWrapper.thread((MethodExitEvent) event), returnValue);
                     if (success) {
-                        returnValuePtr = new Value[] { returnValue };
+                        returnValueByEvent.put(event, returnValue);
                     }
                     return success;
                 } else {
@@ -284,13 +286,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                 if (LocatableWrapper.location(me) != null) {
                     refType = LocationWrapper.declaringType(LocatableWrapper.location(me));
                 }
-                Value returnValue;
-                if (returnValuePtr != null) {
-                    returnValue = returnValuePtr[0];
-                    returnValuePtr = null;
-                } else {
-                    returnValue = null;
-                }
+                Value returnValue = returnValueByEvent.remove(event);
                 return perform (
                     event,
                     LocatableEventWrapper.thread(me),

@@ -160,7 +160,9 @@ public class JDBCSchema extends SchemaImplementation {
                     LOGGER.log(Level.FINE, "Created table {0}", table);
                 }
             } finally {
-                rs.close();
+                if (rs != null) {
+                    rs.close();
+                }
             }
         } catch (SQLException e) {
             throw new MetadataException(e);
@@ -181,7 +183,9 @@ public class JDBCSchema extends SchemaImplementation {
                     LOGGER.log(Level.FINE, "Created view {0}", view);
                 }
             } finally {
-                rs.close();
+                if (rs != null) {
+                    rs.close();
+                }
             }
         } catch (SQLException e) {
             throw new MetadataException(e);
@@ -202,7 +206,9 @@ public class JDBCSchema extends SchemaImplementation {
                     LOGGER.log(Level.FINE, "Created procedure {0}", procedure);
                 }
             } finally {
-                rs.close();
+                if (rs != null) {
+                    rs.close();
+                }
             }
         } catch (SQLException e) {
             throw new MetadataException(e);

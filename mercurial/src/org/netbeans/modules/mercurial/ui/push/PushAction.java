@@ -46,8 +46,6 @@ import org.netbeans.modules.mercurial.hooks.spi.HgHook;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,6 +69,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
 
 /**
@@ -81,51 +80,44 @@ import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
  */
 public class PushAction extends ContextAction {
 
-    private final VCSContext context;
-
-    public PushAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
-    }
-
-    public void performAction(ActionEvent e) {
-        final File roots[] = HgUtils.getActionRoots(context);
-        final File repository =
-                roots != null && roots.length > 0 ?
-                 Mercurial.getInstance().getRepositoryRoot(roots[0]) :
-                    null;
-        if (repository == null) {
-            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
-            logger.outputInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE")); // NOI18N
-            logger.outputInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE_SEP")); // NOI18N
-            logger.outputInRed(
-                    NbBundle.getMessage(PushAction.class, "MSG_PUSH_NOT_SUPPORTED_INVIEW_INFO")); // NOI18N
-            logger.output(""); // NOI18N
-            JOptionPane.showMessageDialog(null,
-                    NbBundle.getMessage(PushAction.class, "MSG_PUSH_NOT_SUPPORTED_INVIEW"),// NOI18N
-                    NbBundle.getMessage(PushAction.class, "MSG_PUSH_NOT_SUPPORTED_INVIEW_TITLE"),// NOI18N
-                    JOptionPane.INFORMATION_MESSAGE);
-            logger.closeLog();
-            return;
-        }
-        push(context, repository);
-    }
     @Override
-    public boolean isEnabled() {
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
         if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
             return false;
         return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }
 
-    private static void push(final VCSContext ctx, final File repository){
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
-        HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { 
-                getDefaultAndPerformPush(repository, this.getLogger());
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_PushLocal";                                //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        final VCSContext context = HgUtils.getCurrentContext(nodes);
+        final Set<File> repositoryRoots = HgUtils.getRepositoryRoots(context);
+        // run the whole bulk operation in background
+        Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                for (File repositoryRoot : repositoryRoots) {
+                    final File repository = repositoryRoot;
+                    final boolean[] canceled = new boolean[1];
+                    // run every repository fetch in its own support with its own output window
+                    RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+                    HgProgressSupport support = new HgProgressSupport() {
+                        public void perform() {
+                            getDefaultAndPerformPush(repository, this.getLogger());
+                            canceled[0] = isCanceled();
+                        }
+                    };
+                    support.start(rp, repository, org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")).waitFinished(); //NOI18N
+                    if (canceled[0]) {
+                        break;
+                    }
+                }
             }
-        };
-        support.start(rp, repository, org.openide.util.NbBundle.getMessage(PushAction.class, "MSG_PUSH_PROGRESS")); // NOI18N
+        });
     }
 
     public static void notifyUpdatedFiles(File repo, List<String> list){

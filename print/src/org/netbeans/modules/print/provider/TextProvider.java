@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.print.provider;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.text.AttributedCharacterIterator;
 import java.util.ArrayList;
 import java.util.Date;
@@ -57,7 +59,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.util.Lookup;
 
 import org.netbeans.modules.print.util.Config;
-import static org.netbeans.modules.print.ui.UI.*;
+import static org.netbeans.modules.print.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -72,13 +74,13 @@ public final class TextProvider extends ComponentProvider {
 
     @Override
     protected JComponent getComponent() {
-        JTextComponent component = getTextComponent();
+        JTextComponent text = getTextComponent();
 
-        if (component == null) {
+        if (text == null) {
             return null;
         }
         if (Config.getDefault().isAsEditor()) {
-            return component;
+            return getEditorComponent(text);
         }
         Document document = myEditor.getDocument();
 
@@ -89,8 +91,8 @@ public final class TextProvider extends ComponentProvider {
         int end;
 
         if (Config.getDefault().isSelection()) {
-            start = component.getSelectionStart();
-            end = component.getSelectionEnd();
+            start = text.getSelectionStart();
+            end = text.getSelectionEnd();
         }
         else {
             start = 0;
@@ -104,7 +106,7 @@ public final class TextProvider extends ComponentProvider {
             return new ComponentDocument(iterators);
         }
         try {
-            return new ComponentDocument(component.getText(start, end - start));
+            return new ComponentDocument(text.getText(start, end - start));
         }
         catch (BadLocationException e) {
             return null;
@@ -148,15 +150,6 @@ public final class TextProvider extends ComponentProvider {
         return (AttributedCharacterIterator[]) param;
     }
 
-    private JTextComponent getTextComponent() {
-        JEditorPane[] panes = myEditor.getOpenedPanes();
-
-        if (panes != null && panes.length != 0) {
-            return panes[0];
-        }
-        return null;
-    }
-
     private static String getName(EditorCookie editor) {
         Document document = editor.getDocument();
 
@@ -164,6 +157,68 @@ public final class TextProvider extends ComponentProvider {
             return null;
         }
         return ((String) document.getProperty(Document.TitleProperty)).replace('\\', '/'); // NOI18N
+    }
+
+    private JTextComponent getTextComponent() {
+        JEditorPane[] panes = myEditor.getOpenedPanes();
+
+        if (panes == null || panes.length == 0) {
+            return null;
+        }
+        return panes[0];
+    }
+
+    private JComponent getEditorComponent(JComponent text) {
+        if ( !Config.getDefault().isLineNumbers()) {
+            return text;
+        }
+        JComponent lineNumber = getLineNumberComponent(getParent(text));
+
+        if (lineNumber == null) {
+            return text;
+        }
+        List<JComponent> components = new ArrayList<JComponent>();
+
+        components.add(lineNumber);
+        components.add(text);
+
+        return new ComponentPanel(components);
+    }
+
+    private JComponent getLineNumberComponent(Component component) {
+        if (component == null) {
+            return null;
+        }
+//out("  see: " + component.getClass().getName());
+
+        if (component.getClass().getName().equals("org.netbeans.editor.GlyphGutter")) { // NOI18N
+            if (component instanceof JComponent) {
+                return (JComponent) component;
+            }
+        }
+        if ( !(component instanceof Container)) {
+            return null;
+        }
+        Container container = (Container) component;
+        Component[] children = container.getComponents();
+
+        for (Component child : children) {
+            JComponent lineNumberComponent = getLineNumberComponent(child);
+
+            if (lineNumberComponent != null) {
+                return lineNumberComponent;
+            }
+        }
+        return null;
+    }
+
+    private Component getParent(Component component) {
+        Component parent = component.getParent();
+
+        if (parent == null) {
+            return component;
+        }
+        return getParent(parent);
     }
 
     private EditorCookie myEditor;
