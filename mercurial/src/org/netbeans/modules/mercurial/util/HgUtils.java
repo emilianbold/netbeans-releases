@@ -1581,4 +1581,73 @@ itor tabs #66700).
     public static File getHgFolderForRoot (File repositoryRoot) {
         return FileUtil.normalizeFile(new File(repositoryRoot, HG_FOLDER_NAME));
     }
+
+
+
+    /**
+     * Adds the given file into filesUnderRoot:
+     * <ul>
+     * <li>if the file was already in the set, does nothing and returns true</li>
+     * <li>if the file lies under a folder already present in the set, does nothing and returns true</li>
+     * <li>if the file and none of it's ancestors is not in the set yet, this adds the file into the set,
+     * removes all it's children from the set and returns false</li>
+     * @param repository repository root
+     * @param filesUnderRoot set of repository roots
+     * @param file file to add
+     * @return true if the file or any of it's ancestors was originally in the set
+     */
+    public static boolean prepareRootFiles(File repository, Set<File> filesUnderRoot, File file) {
+        boolean alreadyAdded = false;
+        boolean added = false;
+        for (File fileUnderRoot : filesUnderRoot) {
+            // try to find a common parent for planned files
+            File childCandidate = file;
+            File ancestorCandidate = fileUnderRoot;
+            added = true;
+            if (childCandidate.equals(ancestorCandidate) || ancestorCandidate.equals(repository)) {
+                // file has already been inserted or scan is planned for the whole repository root
+                alreadyAdded = true;
+                break;
+            }
+            if (childCandidate.equals(repository)) {
+                // plan the scan for the whole repository root
+                ancestorCandidate = childCandidate;
+            } else {
+                if (file.getAbsolutePath().length() < fileUnderRoot.getAbsolutePath().length()) {
+                    // ancestor's path is too short to be the child's parent
+                    ancestorCandidate = file;
+                    childCandidate = fileUnderRoot;
+                }
+                if (!Utils.isAncestorOrEqual(ancestorCandidate, childCandidate)) {
+                    ancestorCandidate = Utils.getCommonParent(childCandidate, ancestorCandidate);
+                }
+            }
+            if (ancestorCandidate == fileUnderRoot) {
+                // already added
+                alreadyAdded = true;
+                break;
+            } else if (!FileStatusCache.FULL_REPO_SCAN_ENABLED && ancestorCandidate != childCandidate && ancestorCandidate.equals(repository)) {
+                // common ancestor is the repo root and neither one of the candidates was originally the repo root
+                // do not scan the whole clone, it might be a performance killer
+                added = false;
+            } else if (ancestorCandidate != null) {
+                // file is under the repository root
+                if (ancestorCandidate.equals(repository)) {
+                    // adding the repository, there's no need to leave all other files
+                    filesUnderRoot.clear();
+                } else {
+                    filesUnderRoot.remove(fileUnderRoot);
+                }
+                filesUnderRoot.add(ancestorCandidate);
+                break;
+            } else {
+                added = false;
+            }
+        }
+        if (!added) {
+            // not added yet
+            filesUnderRoot.add(file);
+        }
+        return alreadyAdded;
+    }
 }
