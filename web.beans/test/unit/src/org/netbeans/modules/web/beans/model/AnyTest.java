@@ -72,8 +72,11 @@ public class AnyTest extends CommonTestCase {
     }
     
     public void testA(){
+        
     }
+
     
+/*    
     public void testSingleAny() throws IOException, InterruptedException{
         TestUtilities.copyStringToFileObject(srcFO, "foo/Binding1.java",
                 "package foo; " +
@@ -431,5 +434,5 @@ public class AnyTest extends CommonTestCase {
         assertTrue(oneFound);
         assertTrue(twoFound);
     }
-
+*/
 }
