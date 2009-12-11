@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.apache.tools.ant.module.nodes;
+package org.apache.tools.ant.module.run;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -47,19 +47,24 @@ import java.io.IOException;
 import java.text.Collator;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
 import javax.swing.text.EditorKit;
+import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
-import org.apache.tools.ant.module.run.TargetExecutor;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -149,15 +154,7 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         if (initialProperties == null) {
             Properties props = new Properties();
             props.putAll(AntSettings.getProperties());
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try {
-                props.store(baos, null);
-                String text = baos.toString("ISO-8859-1"); // NOI18N
-                // Strip the annoying initial comment:
-                initialProperties = text.replaceFirst("^#.*\n", ""); // NOI18N
-            } catch (IOException e) {
-                assert false : e;
-            }
+            initialProperties = propertiesToString(props);
         }
         propertiesPane.setText(initialProperties);
         Integer verbosity = (Integer) script.getAttribute(ATTR_VERBOSITY);
@@ -165,12 +162,46 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
             verbosity = AntSettings.getVerbosity();
         }
         verbosityComboBox.setModel(new DefaultComboBoxModel(VERBOSITIES));
+        setVerbosity(verbosity);
+    }
+
+    private String propertiesToString(Properties props) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            props.store(baos, null);
+            String text = baos.toString("ISO-8859-1"); // NOI18N
+            // Strip the annoying initial comment:
+            return text.replaceFirst("^#.*\n", ""); // NOI18N
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    public void setTargets(List<String> targetNames) {
+        StringBuilder targets = new StringBuilder();
+        for (String target : targetNames) {
+            if (targets.length() > 0) {
+                targets.append(' ');
+            }
+            targets.append(target);
+        }
+        targetComboBox.setSelectedItem(targets.toString());
+
+    }
+
+    public void setVerbosity(int verbosity) {
         for (int i = 0; i < VERBOSITY_LEVELS.length; i++) {
             if (VERBOSITY_LEVELS[i] == verbosity) {
                 verbosityComboBox.setSelectedItem(VERBOSITIES[i]);
                 break;
             }
         }
+    }
+
+    public void setProperties(Map<String,String> properties) {
+        Properties props = new Properties();
+        props.putAll(properties);
+        propertiesPane.setText(propertiesToString(props));
     }
     
     /** This method is called from within the constructor to
@@ -314,7 +345,7 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
     /**
      * Try to run the selected target(s).
      */
-    public void run() throws IOException {
+    private void run() throws IOException {
         // Read settings from the dialog.
         String selection = (String) targetComboBox.getSelectedItem();
         String[] targets = null; // default target unless otherwise specified
@@ -352,7 +383,7 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
             }
             script.setAttribute(ATTR_TARGETS, targetsSpaceSep.toString());
         }
-        if (props.equals(AntSettings.getProperties())) {
+        if (((Map) props).equals(AntSettings.getProperties())) {
             script.setAttribute(ATTR_PROPERTIES, null);
         } else {
             script.setAttribute(ATTR_PROPERTIES, propertiesPane.getText());
@@ -367,6 +398,28 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
         exec.setProperties(NbCollections.checkedMapByCopy(props, String.class, String.class, true));
         exec.setVerbosity(verbosity);
         exec.execute();
+    }
+
+    /** Displays dialog. */
+    public boolean display() {
+        String title = NbBundle.getMessage(RunTargetsAction.class, "TITLE_run_advanced");
+        DialogDescriptor dd = new DialogDescriptor(this, title);
+        dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+        JButton run = new JButton(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_advanced_run"));
+        run.setDefaultCapable(true);
+        JButton cancel = new JButton(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_advanced_cancel"));
+        dd.setOptions(new Object[] {run, cancel});
+        dd.setModal(true);
+        Object result = DialogDisplayer.getDefault().notify(dd);
+        if (result.equals(run)) {
+            try {
+                run();
+                return true;
+            } catch (IOException x) {
+                AntModule.err.notify(x);
+            }
+        }
+        return false;
     }
     
 }

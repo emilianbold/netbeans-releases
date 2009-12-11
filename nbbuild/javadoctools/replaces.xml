@@ -190,3 +190,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-jellytools-platform@" value="${javadoc.docs.org-netbeans-modules-jellytools-platform}"/>
 <replacefilter token="@org-netbeans-modules-jellytools-ruby@" value="${javadoc.docs.org-netbeans-modules-jellytools-ruby}"/>
 <replacefilter token="@org-netbeans-modules-javacard-spi@" value="${javadoc.docs.org-netbeans-modules-javacard-spi}"/>
+<replacefilter token="@org-netbeans-modules-keyring@" value="${javadoc.docs.org-netbeans-modules-keyring}"/>
