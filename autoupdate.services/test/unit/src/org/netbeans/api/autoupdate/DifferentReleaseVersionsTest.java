@@ -40,11 +40,8 @@ package org.netbeans.api.autoupdate;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -59,6 +56,7 @@ import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.autoupdate.services.UpdateManagerImpl;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.openide.filesystems.FileUtil;
@@ -262,6 +260,7 @@ public class DifferentReleaseVersionsTest extends NbTestCase {
         assertNull("Installing new element require restarting though it should not", r);
     }
 
+    @RandomlyFails // NB-Core-Build #3718, and in manual tests
     public void testDifferentReleaseVersion() throws Exception {
         String parsingApiCNB   = "org.netbeans.modules.parsing.api";
         String scanOnDemandCNB = "org.netbeans.modules.scanondemand";
