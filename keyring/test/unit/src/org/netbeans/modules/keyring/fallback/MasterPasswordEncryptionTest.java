@@ -37,44 +37,42 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.spi;
+package org.netbeans.modules.keyring.fallback;
 
-import java.util.prefs.Preferences;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.openide.util.NbPreferences;
-import static org.junit.Assert.*;
+import org.netbeans.junit.NbTestCase;
 
-/**
- *
- * @author Jan Becicka
- */
-public class UIUtilsTest {
+public class MasterPasswordEncryptionTest extends NbTestCase {
 
-    public UIUtilsTest() {
+    public MasterPasswordEncryptionTest(String n) {
+        super(n);
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
+    public void testEncryption() throws Exception {
+        doTestEncryption("Top Secret!", "my password");
+        doTestEncryption("some extra secret pass phrase", "something pretty long here for whatever reason...");
+        // Only ASCII is apparently supported for master passwords:
+        doTestEncryption("muj heslo", "hezky česky");
+        doTestEncryption("muj heslo", "ॐ");
+    }
+    private void doTestEncryption(String masterPassword, String password) throws Exception {
+        MasterPasswordEncryption p = new MasterPasswordEncryption();
+        assertTrue(p.enabled());
+        p.unlock(masterPassword.toCharArray());
+        assertEquals(password, new String(p.decrypt(p.encrypt(password.toCharArray()))));
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Exception {
+    public void testWrongPassword() throws Exception {
+        MasterPasswordEncryption p = new MasterPasswordEncryption();
+        assertTrue(p.enabled());
+        p.unlock("first password".toCharArray());
+        byte[] ciphertext = p.encrypt("secret".toCharArray());
+        p.unlock("second password".toCharArray());
+        try {
+            p.decrypt(ciphertext);
+            fail("should not be able to decrypt with incorrect password");
+        } catch (Exception x) {
+            // expected: "BadPaddingException: Given final block not properly padded"
+        }
     }
 
-    /**
-     * Test of showLogin method, of class UIUtils.
-     */
-    @Test
-    public void testEncodeDecode() {
-        String testpass = "pswd";
-        String scram = Scrambler.getInstance().scramble(testpass);
-        Preferences preferences=NbPreferences.forModule(UIUtils.class);
-        preferences.put("kenai.test.password", scram);
-        String newp=preferences.get("kenai.test.password", null);
-        String r = Scrambler.getInstance().descramble(newp);
-        assertEquals(testpass, r);
-        // TODO review the generated test code and remove the default call to fail.
-    }
 }
