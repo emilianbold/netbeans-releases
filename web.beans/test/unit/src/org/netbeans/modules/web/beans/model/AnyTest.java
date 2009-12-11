@@ -71,12 +71,6 @@ public class AnyTest extends CommonTestCase {
         super(testName);
     }
     
-    public void testA(){
-        
-    }
-
-    
-/*    
     public void testSingleAny() throws IOException, InterruptedException{
         TestUtilities.copyStringToFileObject(srcFO, "foo/Binding1.java",
                 "package foo; " +
@@ -221,7 +215,7 @@ public class AnyTest extends CommonTestCase {
                 "import javax.inject.*; "+
                 "public class TestClass  {" +
                 " @Inject @Any @foo.CustomBinding One myField1; "+
-                " @Inject Two myField2; "+
+                " @Inject @Any Two myField2; "+
                 "}" );
         
         
@@ -434,5 +428,5 @@ public class AnyTest extends CommonTestCase {
         assertTrue(oneFound);
         assertTrue(twoFound);
     }
-*/
+
 }

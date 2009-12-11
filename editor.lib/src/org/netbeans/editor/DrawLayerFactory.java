@@ -699,7 +699,6 @@ public class DrawLayerFactory {
 
     }
 
-    // XXX: AnnotationLayer needs to be rewritten using the new Highlighting SPI.
     /** 
      * Annotation layer for drawing of annotations. Each mark which is stored in markChain has
      * corresponding Annotation. More than one Annotation can share one mark. In this case

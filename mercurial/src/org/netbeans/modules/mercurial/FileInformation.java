@@ -208,6 +208,8 @@ public class FileInformation implements Serializable {
     private final HashSet<File> modifiedChildren = new HashSet<File>();
     private final HashSet<File> conflictedChildren = new HashSet<File>();
 
+    private boolean seenInUI;
+
     /**
      * For deserialization purposes only.
      */ 
@@ -220,6 +222,7 @@ public class FileInformation implements Serializable {
         this.status = status;
         this.entry = entry;
         this.isDirectory = isDirectory;
+        this.seenInUI = !isDirectory; // files are always marked as seen
     }
 
     FileInformation(int status, boolean isDirectory) {
@@ -382,5 +385,21 @@ public class FileInformation implements Serializable {
             }
             return followOnParent;
         }
+    }
+
+    /**
+     * Returns value of the flag indicating if the file associated with this FI is/was visible in the UI
+     * @return
+     */
+    boolean wasSeenInUi () {
+        return seenInUI;
+    }
+
+    /**
+     * Sets value of the flag indicating if the file associated with this FI is/was visible in the UI
+     * @param seenInUI
+     */
+    void setSeenInUI (boolean seenInUI) {
+        this.seenInUI = seenInUI;
     }
 }

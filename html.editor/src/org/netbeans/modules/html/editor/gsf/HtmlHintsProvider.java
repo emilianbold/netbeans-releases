@@ -38,11 +38,20 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.html.parser.AstNode;
+import org.netbeans.editor.ext.html.parser.SyntaxTree;
+import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
+import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -54,7 +63,9 @@ import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.filesystems.FileObject;
@@ -103,7 +114,7 @@ public class HtmlHintsProvider implements HintsProvider {
         if (isErrorCheckingEnabled(fo)) {
             for (Error e : context.parserResult.getDiagnostics()) {
                     assert e.getDescription() != null;
-                    HintFix fix = new DisableErrorChecksFix(snapshot);
+                    HintFix disableChecksFix = new DisableErrorChecksFix(snapshot);
 
                     //tweak the error position if close to embedding boundary
                     int from = e.getStartPosition();
@@ -118,11 +129,18 @@ public class HtmlHintsProvider implements HintsProvider {
                         to = from;
                     }
 
+                    List<HintFix> fixes = new ArrayList<HintFix>(3);
+                    //add custom hint fixes
+                    fixes.addAll(getCustomHintFixesForError(context, e));
+                    
+                    //add default disable hints fix
+                    fixes.add(disableChecksFix);
+
                     Hint h = new Hint(getRule(e.getSeverity()),
                             e.getDescription(),
                             e.getFile(),
                             new OffsetRange(from, to),
-                            Collections.singletonList(fix),
+                            fixes,
                             20);
 
                     hints.add(h);
@@ -145,6 +163,68 @@ public class HtmlHintsProvider implements HintsProvider {
             ext.computeErrors(manager, context, hints, unhandled);
         }
 
+    }
+
+    private static Collection<HintFix> getCustomHintFixesForError(final RuleContext context, final Error e) {
+        List<HintFix> fixes = new ArrayList<HintFix>();
+        if(e.getKey().equals(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES)) {
+            fixes.add(new HintFix() {
+                
+                public String getDescription() {
+                    return NbBundle.getMessage(HtmlHintsProvider.class, "MSG_HINT_GENERATE_REQUIRED_ATTRIBUTES"); //NOI18N
+                }
+
+                public void implement() throws Exception {
+                    AstNode node = HtmlParserResult.getBoundAstNode(e);
+                    Collection<String> missingAttrs = (Collection<String>)node.getProperty(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES);
+                    assert missingAttrs != null;
+                    int insertOffset = node.startOffset() + 1 + node.name().length();
+
+                    StringBuffer templateText = new StringBuffer();
+                    templateText.append(' ');
+
+                    for(String attr : missingAttrs) {
+                        templateText.append(attr);
+                        templateText.append('=');
+                        templateText.append('"');
+                        templateText.append("${");
+                        templateText.append(attr);
+                        templateText.append(" default=\"\"}");
+                        templateText.append('"');
+                        templateText.append(' ');
+                    }
+                    templateText.append("${cursor}");
+
+                    CodeTemplate ct = CodeTemplateManager.get(context.doc).createTemporary(templateText.toString());
+                    JTextComponent pane = EditorRegistry.focusedComponent();
+                    if(pane != null) {
+                        pane.setCaretPosition(insertOffset);
+                        ct.insert(pane);
+                    }
+
+                    //reformat the line?
+
+                }
+
+                public boolean isSafe() {
+                    return true;
+                }
+
+                public boolean isInteractive() {
+                    return false;
+                }
+                
+            });
+
+        } else {
+            fixes = Collections.emptyList();
+        }
+
+        return fixes;
+    }
+
+    private static List<HintFix> init(List<HintFix> i) {
+        return i != null ? i : new ArrayList<HintFix>();
     }
 
     /**

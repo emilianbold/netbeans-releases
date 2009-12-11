@@ -81,6 +81,7 @@ public class TestWebBeansModelProviderImpl extends WebBeansModelProviderImpl {
     }
     
     protected Result getResult( Result result ,WebBeansModelImplementation model ){
+        filterBeans(result);
         return result;
     }
 

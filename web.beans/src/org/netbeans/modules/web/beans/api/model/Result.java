@@ -77,7 +77,7 @@ public class Result {
      * that is used in injected point identified by {@link #getVariable()}
      */
     public Element getElement(){
-        return myElement;
+        return myInjectable;
     }
     
     /**
@@ -93,11 +93,10 @@ public class Result {
     
     
     protected void setElement( Element element ){
-        myElement = element;
+        myInjectable = element;
     }
 
-    private Element myElement;
     private final VariableElement myVar;
     private final TypeMirror myType;
-    private final Element myInjectable;
+    private Element myInjectable;
 }

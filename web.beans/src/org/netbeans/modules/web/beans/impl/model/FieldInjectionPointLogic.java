@@ -155,6 +155,13 @@ abstract class FieldInjectionPointLogic {
         return result;
     }
     
+    protected void filterBeans( Result result) {
+        if ( result instanceof ResultImpl ){
+            BeansFilter filter = BeansFilter.get();
+            filter.filter(((ResultImpl)result).getTypeElements() );
+        }
+    }
+    
     protected Result doFindVariableInjectable( VariableElement element,
             TypeMirror elementType, WebBeansModelImplementation modelImpl ,
             boolean injectRequired)
@@ -169,12 +176,12 @@ abstract class FieldInjectionPointLogic {
             return new DefinitionErrorResult(element, elementType, e.getMessage());
         }
         /*
-         * Single @Deafult annotation means increasing types that 
+         * Single @Default annotation means increasing types that 
          * is eligible for injection. Each bean without any qualifiers
          * type has @Default qualifier by default. So it should
          * be also considered as injectable.  
          */
-        boolean defaultQualifier = quilifierAnnotations.size() == 0;
+        boolean defaultQualifier = !anyQualifier && quilifierAnnotations.size() == 0;
         /*
          * The @New target is 
          * @Target(value={FIELD,PARAMETER})
@@ -227,6 +234,7 @@ abstract class FieldInjectionPointLogic {
             
             filterBindingsByMembers(quilifierAnnotations, typesWithQualifiers,
                     modelImpl, TypeElement.class );
+            
             /*
              * Now <code>typesWithQualifiers</code> contains appropriate types
              * which has required qualifer with required parameters ( if any ).
@@ -351,6 +359,7 @@ abstract class FieldInjectionPointLogic {
                 return new Result(element, elementType , typeElement );
             }
         }
+        // TODO : don't return null. Should be empty result
         return null;
     }
 
@@ -798,13 +807,6 @@ abstract class FieldInjectionPointLogic {
         MemberBindingFilter<T> filter = MemberBindingFilter.get( clazz );
         filter.init( bindingAnnotations, impl );
         filter.filter( elementsWithBindings );
-    }
-    
-    private void filterBeans( Result result) {
-        if ( result instanceof ResultImpl ){
-            BeansFilter filter = BeansFilter.get();
-            filter.filter(((ResultImpl)result).getTypeElements() );
-        }
     }
     
     private static class InjectionPointDefinitionError extends Exception{

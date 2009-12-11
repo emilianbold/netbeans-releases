@@ -55,6 +55,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedClassMember;
@@ -570,6 +571,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 builder.append("::${cursor}"); //NOI18N
                 scheduleShowingCompletion();
                 return builder.toString();
+            } else if (CompletionContext.NEW_CLASS.equals(request.context)) {
+                scheduleShowingCompletion();
             }
             return superTemplate;
         }
@@ -825,9 +828,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getName() {
-            String in = getElement().getIn();
-            return (in != null) ? in : super.getName();
-        }
+                String in = getElement().getIn();
+                return (in != null) ? in : super.getName();
+            }
 
         @Override
         public ElementKind getKind() {
@@ -1090,6 +1093,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public  ParserResult info;
         public  String prefix;
         public  String currentlyEditedFileURL;
+        public CompletionContext context;
         PHPIndex index;
     }
     private static void scheduleShowingCompletion() {

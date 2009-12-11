@@ -42,7 +42,6 @@ package org.netbeans.modules.web.beans.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,9 +53,13 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
+import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.impl.model.results.DefinitionErrorResult;
+import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
 
 /**
@@ -69,11 +72,7 @@ public class ParametersTest extends CommonTestCase {
         super(testName);
     }
     
-    public void testA(){
-    }
-
-    
-/*    public void testSimpleParameter() throws IOException, InterruptedException{
+    public void testSimpleParameter() throws IOException, InterruptedException{
         TestUtilities.copyStringToFileObject(srcFO, "foo/Binding1.java",
                 "package foo; " +
                 "import static java.lang.annotation.ElementType.METHOD; "+
@@ -82,8 +81,9 @@ public class ParametersTest extends CommonTestCase {
                 "import static java.lang.annotation.ElementType.TYPE; "+
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
                 "import java.lang.annotation.*; "+
-                "@BindingType " +
+                "@Qualifier " +
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
                 "public @interface Binding1  {" +
@@ -99,7 +99,8 @@ public class ParametersTest extends CommonTestCase {
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import javax.enterprise.inject.*; "+
                 "import java.lang.annotation.*; "+
-                "@BindingType " +
+                "import javax.inject.*; "+
+                "@Qualifier " +
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
                 "public @interface Binding2  {} ");
@@ -120,15 +121,16 @@ public class ParametersTest extends CommonTestCase {
         TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
                 "public class TestClass  {" +
-                " @Initializer void method1( @Binding2 SuperClass arg1 , " +
+                " @Inject void method1( @Binding2 SuperClass arg1 , " +
                 "   @Binding1(\"a\") SuperClass arg2 ){} " +
                 " @Produces boolean  method2( @Binding2 Two arg ){ return false;} "+
-                " @Initializer void method3( @Current SuperClass arg ){} "+
-                " @Produces int method4( @Current String arg ){ return 0;} "+
-                " @Initializer void method5( @Binding2 int[] arg )" +
+                " @Inject void method3( @Default SuperClass arg ){} "+
+                " @Produces int method4( @Default String arg ){ return 0;} "+
+                " @Inject void method5( @Binding2 int[] arg ){} " +
                 " void method6( @Binding2 int[] arg ){} "+
-                " @Initializer void method7( SuperClass arg ){} "+
+                " @Inject void method7( SuperClass arg ){} "+
                 "}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
@@ -138,7 +140,11 @@ public class ParametersTest extends CommonTestCase {
         
         inform( "start simple parameters test");
         
-        createBeansModel().runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+        TestWebBeansModelImpl modelImpl = createModelImpl();
+        final TestWebBeansModelProviderImpl provider = modelImpl.getProvider();
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.TestClass" );
@@ -163,29 +169,29 @@ public class ParametersTest extends CommonTestCase {
                     names.add( method.getSimpleName()+ " " +element.getSimpleName());
                     if ( method.getSimpleName().contentEquals("method1")){
                         if ( element.getSimpleName().contentEquals("arg1")){
-                            checkMethod1Arg1( element, model );
+                            checkMethod1Arg1( element, provider );
                         }
                         else if ( element.getSimpleName().contentEquals("arg2")){
-                            checkMethod1Arg2( element, model );
+                            checkMethod1Arg2( element, provider );
                         }
                     }
                     else if (method.getSimpleName().contentEquals("method2") ){
-                        checkMethod2( element, model );
+                        checkMethod2( element, provider );
                     }
                     else if (method.getSimpleName().contentEquals("method3") ){
-                        checkMethod3( element, model );
+                        checkMethod3( element, provider );
                     }
                     else if (method.getSimpleName().contentEquals("method4") ){
-                        checkMethod4( element, model );
+                        checkMethod4( element, provider );
                     }
                     else if (method.getSimpleName().contentEquals("method5") ){
-                        checkMethod5( element, model );
+                        checkMethod5( element, provider );
                     }
                     else if (method.getSimpleName().contentEquals("method6") ){
-                        checkMethod6( element, model );
+                        checkMethod6( element, provider );
                     }
                     else if (method.getSimpleName().contentEquals("method7") ){
-                        checkMethod7( element, model );
+                        checkMethod7( element, provider );
                     }
                 }
                 
@@ -209,8 +215,9 @@ public class ParametersTest extends CommonTestCase {
                 "import static java.lang.annotation.ElementType.TYPE; "+
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
                 "import java.lang.annotation.*; "+
-                "@BindingType " +
+                "@Qualifier " +
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
                 "public @interface Binding1  {" +
@@ -226,7 +233,8 @@ public class ParametersTest extends CommonTestCase {
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import javax.enterprise.inject.*; "+
                 "import java.lang.annotation.*; "+
-                "@BindingType " +
+                "import javax.inject.*; "+
+                "@Qualifier " +
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
                 "public @interface Binding2  {} ");
@@ -264,7 +272,11 @@ public class ParametersTest extends CommonTestCase {
         
         inform( "start disposes parameters test");
         
-        createBeansModel().runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+        TestWebBeansModelImpl modelImpl = createModelImpl();
+        final TestWebBeansModelProviderImpl provider = modelImpl.getProvider();
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.TestClass" );
@@ -289,20 +301,20 @@ public class ParametersTest extends CommonTestCase {
                     names.add( method.getSimpleName()+ " " +element.getSimpleName());
                     if ( method.getSimpleName().contentEquals("clean")){
                         if ( element.getSimpleName().contentEquals("index")){
-                            checkCleanIndex( element, model );
+                            checkCleanIndex( element, provider );
                         }
                         else if ( element.getSimpleName().contentEquals("text")){
-                            checkCleanText( element, model );
+                            checkCleanText( element, provider );
                         }
                     }
                     else if (method.getSimpleName().contentEquals("stopped") ){
-                        checkStopped( element, model );
+                        checkStopped( element, provider );
                     }
                     else if (method.getSimpleName().contentEquals("close") ){
-                        checkClose( element, model );
+                        checkClose( element, provider );
                     }
                     else if (method.getSimpleName().contentEquals("inform") ){
-                        checkInform( element, model );
+                        checkInform( element, provider );
                     }
                 }
                 
@@ -316,262 +328,426 @@ public class ParametersTest extends CommonTestCase {
         });
     }
     
-    public void testObserves (){
+    public void testObservesParameter() throws IOException, InterruptedException{
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Binding1.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@Qualifier " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface Binding1  {" +
+                "    String value(); "+
+                "}");
         
-         * TODO : need to test @Observes:
-         * 1) observed event parameter with some binding.
-         * 2) observed event parameter without any binding ( this is not
-         * implemented yet by model).
-         * 3) other parameters in observer method ( they are injection points ). 
-         
-    }
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Binding2.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "import javax.inject.*; "+
+                "@Qualifier " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface Binding2  {} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/SuperClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "public class SuperClass  { " +
+                " @Produces @Default String getText(){ return null;} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "@foo.Binding1(value=\"a\") @foo.Binding2 " +
+                "public class One extends SuperClass {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/SomeEvent.java",
+                "package foo; " +
+                "public class SomeEvent {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.enterprise.event.*; "+
+                "public class TestClass  {" +
+                " void method1(@Observes @Binding2 SomeEvent , String text){} "+
+                " void method2(@Observes @Binding1(\"a\") SomeEvent,  " +
+                " @foo.Binding1(\"a\") @foo.Binding2 SuperClass clazz){} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
+                "package foo; " +
+                "@foo.Binding2 " +
+                "public class Two extends SuperClass {}" );
+        
+        inform( "start observes parameters test");
+        
+        TestWebBeansModelImpl modelImpl = createModelImpl();
+        final TestWebBeansModelProviderImpl provider = modelImpl.getProvider();
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 
-    protected void checkMethod1Arg1( VariableElement element,
-            WebBeansModel model )
-    {
-        inform( "start test arg1 for method1");
-        boolean exception = false;
-        try {
-            model.getInjectable(element);
-        }
-        catch(AmbiguousDependencyException e ){
-            exception = true;
-            Collection<Element> elements = e.getElements();
-            boolean oneFound = false;
-            boolean twoFound = false;
-            for (Element injectable : elements) {
-                assertTrue( "injectable should be " +
-                		"a class definition, but found :"+injectable.getKind(), 
-                		injectable instanceof TypeElement);
-                String name = ((TypeElement)injectable).getQualifiedName().toString();
-                if ( name.equals("foo.One")){
-                    oneFound = true;
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType( "foo.TestClass" );
+                Element clazz = ((DeclaredType)mirror).asElement();
+                List<? extends Element> children = clazz.getEnclosedElements();
+                List<VariableElement> injectionPoints = 
+                    new ArrayList<VariableElement>( children.size());
+                for (Element element : children) {
+                    if ( element instanceof ExecutableElement ){
+                        List<? extends VariableElement> parameters = 
+                            ((ExecutableElement)element).getParameters();
+                        for (VariableElement variableElement : parameters) {
+                            injectionPoints.add( variableElement );
+                        }
+                    }
                 }
-                else if ( name.equals("foo.Two")){
-                    twoFound = true;
+                Set<String> names = new HashSet<String>(); 
+                for( VariableElement element : injectionPoints ){
+                    Element enclosingElement = element.getEnclosingElement();
+                    assert enclosingElement instanceof ExecutableElement;
+                    ExecutableElement method = (ExecutableElement)enclosingElement;
+                    names.add( method.getSimpleName()+ " " +element.getSimpleName());
+                    if ( method.getSimpleName().contentEquals("method1")){
+                        if ( element.getSimpleName().contentEquals("text")){
+                            checkObservesText( element, provider );
+                            names.add("method1 text");
+                        }
+                    }
+                    else if (method.getSimpleName().contentEquals("method2") ){
+                        if ( element.getSimpleName().contentEquals("clazz")){
+                            checkObservesClazz( element, provider );
+                            names.add("method2 clazz");
+                        }
+                    }
                 }
+                
+                assert names.contains("method1 text");
+                assert names.contains("method2 clazz");
+                return null;
             }
-            
-            assertTrue( "foo.One is eligible for injection , but not found", 
-                    oneFound);
-            assertTrue( "foo.Two is eligible for injection , but not found", 
-                    twoFound);
+        });
+    }
+    
+    protected void checkMethod1Arg1( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("start test arg1 for method1");
+
+        Result result = provider.findParameterInjectable(element, null);
+        assertNotNull(result);
+
+        assertTrue(result instanceof ResultImpl);
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(2, typeElements.size());
+        assertEquals(0, productions.size());
+
+        boolean oneFound = false;
+        boolean twoFound = false;
+        for (TypeElement injectable : typeElements) {
+            String name = injectable.getQualifiedName().toString();
+            if (name.equals("foo.One")) {
+                oneFound = true;
+            }
+            else if (name.equals("foo.Two")) {
+                twoFound = true;
+            }
         }
-        catch (WebBeansModelException e) {
-            assert false;
-            e.printStackTrace();
-        }
-        assertTrue( "There should be two eligible elements for injection", 
-                exception );
+
+        assertTrue("foo.One is eligible for injection , but not found",
+                oneFound);
+        assertTrue("foo.Two is eligible for injection , but not found",
+                twoFound);
     }
     
     protected void checkMethod1Arg2( VariableElement element,
-            WebBeansModel model )
+            TestWebBeansModelProviderImpl provider )
     {
-        inform( "start test arg2 for method1");
-        try {
-            Element injectable = model.getInjectable(element);
-            assertNotNull( injectable );
-            assertTrue ( "injectable should be a class definition," +
-            		" but found :" +injectable.getKind(), 
-            		injectable instanceof TypeElement );
-            
-            assertEquals("foo.One",  
-                    ((TypeElement)injectable).getQualifiedName().toString());
-        }
-        catch (WebBeansModelException e) {
-            assert false;
-            e.printStackTrace();
-        }
+        inform("start test arg2 for method1");
+
+        Result result = provider.findParameterInjectable(element, null);
+        assertNotNull(result);
+
+        assertTrue(result instanceof ResultImpl);
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
+
+        TypeElement injectable = typeElements.iterator().next();
+        assertNotNull(injectable);
+
+        assertEquals("foo.One", injectable.getQualifiedName().toString());
     }
     
     protected void checkMethod2( VariableElement element,
-            WebBeansModel model )
+            TestWebBeansModelProviderImpl provider )
     {
-        inform( "start test arg for method2");
-        try {
-            Element injectable = model.getInjectable(element);
-            assertNotNull( injectable );
-            assertTrue ( "injectable should be a class definition," +
-                    " but found :" +injectable.getKind(), 
-                    injectable instanceof TypeElement );
-            assertEquals("foo.Two",  
-                    ((TypeElement)injectable).getQualifiedName().toString());
-            
-        }
-        catch (WebBeansModelException e) {
-            assert false;
-            e.printStackTrace();
-        }
+        inform("start test arg for method2");
+
+        Result result = provider.findParameterInjectable(element, null);
+        assertNotNull(result);
+
+        assertTrue(result instanceof ResultImpl);   
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
+
+        TypeElement injectable = typeElements.iterator().next();
+        assertNotNull(injectable);
+        assertEquals("foo.Two", injectable.getQualifiedName().toString());
+
     }
     
     protected void checkMethod3( VariableElement element,
-            WebBeansModel model )
+            TestWebBeansModelProviderImpl provider )
     {
-        inform( "start test arg for method3");
-        try {
-            Element injectable = model.getInjectable(element);
-            assertNotNull( injectable );
-            assertTrue ( "injectable should be a class definition," +
-                    " but found :" +injectable.getKind(), 
-                    injectable instanceof TypeElement );
-            assertEquals("foo.SuperClass",  
-                    ((TypeElement)injectable).getQualifiedName().toString());
-            
-        }
-        catch (WebBeansModelException e) {
-            assert false;
-            e.printStackTrace();
-        }
+        inform("start test arg for method3");
+        Result result = provider.findParameterInjectable(element, null);
+        assertNotNull(result);
+
+        assertTrue(result instanceof ResultImpl);
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
+
+        TypeElement injectable = typeElements.iterator().next();
+        assertNotNull(injectable);
+        assertEquals("foo.SuperClass", injectable.getQualifiedName().toString());
+
     }
     
     protected void checkMethod4( VariableElement element,
-            WebBeansModel model )
+            TestWebBeansModelProviderImpl provider )
     {
-        inform( "start test arg for method4");
-        try {
-            Element injectable = model.getInjectable(element);
-            assertNotNull( injectable );
-            assertTrue ( "injectable should be a production field," +
-                    " but found :" +injectable.getKind(), 
-                    injectable instanceof VariableElement );
-            assertEquals("productionField",  injectable.getSimpleName().toString());
-            
-        }
-        catch (WebBeansModelException e) {
-            assert false;
-            e.printStackTrace();
-        }
+        inform("start test arg for method4");
+        Result result = provider.findParameterInjectable(element, null);
+        assertNotNull(result);
+
+        assertTrue(result instanceof ResultImpl);
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(0, typeElements.size());
+        assertEquals(1, productions.size());
+
+        Element injectable = productions.iterator().next();
+        assertNotNull(injectable);
+        assertTrue("injectable should be a production field," + " but found :"
+                + injectable.getKind(), injectable instanceof VariableElement);
+        assertEquals("productionField", injectable.getSimpleName().toString());
+
     }
     
-    protected void checkMethod5( VariableElement element,
-            WebBeansModel model )
+    protected void checkMethod5( VariableElement element, 
+            TestWebBeansModelProviderImpl provider)
     {
-        inform( "start test arg for method5");
-        try {
-            Element injectable = model.getInjectable(element);
-            assertNotNull( injectable );
-            assertTrue ( "injectable should be a production method," +
-                    " but found :" +injectable.getKind(), 
-                    injectable instanceof ExecutableElement );
-            assertEquals("productionMethod",  injectable.getSimpleName().toString());
-            
-        }
-        catch (WebBeansModelException e) {
-            assert false;
-            e.printStackTrace();
-        }
+        inform("start test arg for method5");
+        Result result = provider.findParameterInjectable(element, null);
+        assertNotNull(result);
+
+        assertTrue(result instanceof ResultImpl);
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(0, typeElements.size());
+        assertEquals(1, productions.size());
+
+        Element injectable = productions.iterator().next();
+        assertNotNull(injectable);
+        assertTrue("injectable should be a production method," + " but found :"
+                + injectable.getKind(), injectable instanceof ExecutableElement);
+        assertEquals("productionMethod", injectable.getSimpleName().toString());
+
     }
     
     protected void checkMethod6( VariableElement element,
-            WebBeansModel model )
+            TestWebBeansModelProviderImpl provider )
     {
-        inform( "start test arg for method6");
-        try {
-            Element injectable = model.getInjectable(element);
-            
-             * Method has no any special annotation. It's argument is not
-             * injection point.  
-             
-            assertNull( injectable );
-        }
-        catch (WebBeansModelException e) {
-            assert false;
-            e.printStackTrace();
-        }
+        inform("start test arg for method6");
+        Result result = provider.findParameterInjectable(element, null);
+
+        /*
+         * Method has no any special annotation. It's argument is not injection
+         * point.
+         */
+        assertTrue( result instanceof DefinitionErrorResult );
     }
     
     protected void checkMethod7( VariableElement element,
-            WebBeansModel model )
+            TestWebBeansModelProviderImpl provider )
     {
-        checkMethod3(element, model);
+        checkMethod3(element, provider );
     }
     
     protected void checkCleanIndex( VariableElement element,
-            WebBeansModel model )
+            TestWebBeansModelProviderImpl provider )
     {
-        inform( "start test index arg for clean");
-        try {
-            Element injectable = model.getInjectable(element);
-            assertNotNull( injectable );
-            assertTrue ( "injectable should be a production method," +
-                    " but found :" +injectable.getKind(), 
-                    injectable instanceof ExecutableElement );
-            assertEquals("getIndex",  injectable.getSimpleName().toString());
-            
-        }
-        catch (WebBeansModelException e) {
-            assert false;
-            e.printStackTrace();
-        }
+        inform("start test index arg for clean");
+        Result result = provider.findParameterInjectable(element, null);
+        assertNotNull(result);
+
+        assertTrue(result instanceof ResultImpl);
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(0, typeElements.size());
+        assertEquals(1, productions.size());
+
+        Element injectable = productions.iterator().next();
+        assertNotNull(injectable);
+        assertTrue("injectable should be a production method," + " but found :"
+                + injectable.getKind(), injectable instanceof ExecutableElement);
+        assertEquals("getIndex", injectable.getSimpleName().toString());
+
     }
     
     protected void checkCleanText( VariableElement element,
-            WebBeansModel model )
+            TestWebBeansModelProviderImpl provider )
     {
-        inform( "start test text arg for clean");
-        try {
-            Element injectable = model.getInjectable(element);
-            assertNotNull( injectable );
-            assertTrue ( "injectable should be a production method," +
-                    " but found :" +injectable.getKind(), 
-                    injectable instanceof ExecutableElement );
-            assertEquals("get",  injectable.getSimpleName().toString());
-            
-        }
-        catch (WebBeansModelException e) {
-            assert false;
-            e.printStackTrace();
-        }
+        inform("start test text arg for clean");
+        Result result = provider.findParameterInjectable(element, null);
+        assertNotNull(result);
+
+        assertTrue(result instanceof ResultImpl);
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(0, typeElements.size());
+        assertEquals(1, productions.size());
+
+        Element injectable = productions.iterator().next();
+        assertNotNull(injectable);
+        assertTrue("injectable should be a production method," + " but found :"
+                + injectable.getKind(), injectable instanceof ExecutableElement);
+        assertEquals("get", injectable.getSimpleName().toString());
+
     }
     
     protected void checkStopped( VariableElement element,
-            WebBeansModel model )
+            TestWebBeansModelProviderImpl provider )
     {
-        inform( "start test arg for stopped");
-        try {
-            Element injectable = model.getInjectable(element);
-            assertNotNull( injectable );
-            assertTrue ( "injectable should be a production method," +
-                    " but found :" +injectable.getKind(), 
-                    injectable instanceof ExecutableElement );
-            assertEquals("isNull",  injectable.getSimpleName().toString());
-            
-        }
-        catch (WebBeansModelException e) {
-            assert false;
-            e.printStackTrace();
-        }
+        inform("start test arg for stopped");
+        Result result = provider.findParameterInjectable(element, null);
+        assertNotNull(result);
+
+        assertTrue(result instanceof ResultImpl);
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(0, typeElements.size());
+        assertEquals(1, productions.size());
+
+        Element injectable = productions.iterator().next();
+        assertNotNull(injectable);
+        assertTrue("injectable should be a production method," + " but found :"
+                + injectable.getKind(), injectable instanceof ExecutableElement);
+        assertEquals("isNull", injectable.getSimpleName().toString());
+
     }
     
     protected void checkClose( VariableElement element,
-            WebBeansModel model )
+            TestWebBeansModelProviderImpl provider )
     {
         inform( "start test arg for close");
-        try {
-            Element injectable = model.getInjectable(element);
-            // there is no production method for close method
-            assertNull( injectable );
-        }
-        catch (WebBeansModelException e) {
-            assert false;
-            e.printStackTrace();
-        }
+        Result result = provider.findParameterInjectable(element, null);
+        assertNotNull(result);
+
+        assertTrue(result instanceof ResultImpl);
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(0, typeElements.size());
+        assertEquals(0, productions.size());
     }
     
     protected void checkInform( VariableElement element,
-            WebBeansModel model )
+            TestWebBeansModelProviderImpl provider )
     {
         inform( "start test arg for inform");
-        try {
-            Element injectable = model.getInjectable(element);
-            // production method is contained in other class
-            assertNull( injectable );
-        }
-        catch (WebBeansModelException e) {
-            assert false;
-            e.printStackTrace();
-        }
-    }*/
+        Result result = provider.findParameterInjectable(element, null);
+        assertNotNull(result);
+
+        assertTrue(result instanceof ResultImpl);
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(0, typeElements.size());
+        assertEquals(0, productions.size());
+    }
+    
+
+    private void checkObservesClazz( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("start check 'clazz' parameter in observes method");
+        Result result = provider.findParameterInjectable(element, null);
+        assertNotNull(result);
+
+        assertTrue(result instanceof ResultImpl);
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
+
+        TypeElement injectable = typeElements.iterator().next();
+        assertNotNull(injectable);
+        assertEquals("foo.One", injectable.getQualifiedName().toString());
+    }
+
+    private void checkObservesText( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("start check 'text' parameter in observes method");
+        Result result = provider.findParameterInjectable(element, null);
+        assertNotNull(result);
+
+        assertTrue(result instanceof ResultImpl);
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(0, typeElements.size());
+        assertEquals(1, productions.size());
+
+        Element injectable = productions.iterator().next();
+        assertNotNull(injectable);
+        assertTrue("injectable should be a production method," + " but found :"
+                + injectable.getKind(), injectable instanceof ExecutableElement); 
+        assertEquals("getText", injectable.getSimpleName().toString());
+    }
 
 }

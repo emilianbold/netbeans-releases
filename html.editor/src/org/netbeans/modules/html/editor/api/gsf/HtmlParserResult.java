@@ -260,8 +260,8 @@ public class HtmlParserResult extends ParserResult {
                                     continue;
                                 }
                                 //some error in the node, report
-                                Error error =
-                                        DefaultError.createDefaultError("tag_error", //NOI18N
+                                DefaultError error =
+                                        new DefaultError(desc.getKey(), //NOI18N
                                         desc.getText(),
                                         desc.getText(),
                                         getSnapshot().getSource().getFileObject(),
@@ -269,6 +269,9 @@ public class HtmlParserResult extends ParserResult {
                                         getSnapshot().getOriginalOffset(desc.getTo()),
                                         false /* not line error */,
                                         desc.getType() == Description.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
+
+                                error.setParameters(new Object[]{node});
+
                                 _errors.add(error);
 
                             }
@@ -278,6 +281,16 @@ public class HtmlParserResult extends ParserResult {
 
         return _errors;
 
+    }
+
+    public static AstNode getBoundAstNode(Error e) {
+        if(e instanceof DefaultError) {
+            if(e.getParameters() != null && e.getParameters().length > 0 && e.getParameters()[0] instanceof AstNode) {
+                return (AstNode)e.getParameters()[0];
+            }
+        }
+        
+        return null;
     }
 
     static {
