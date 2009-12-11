@@ -71,12 +71,6 @@ public class AnyTest extends CommonTestCase {
         super(testName);
     }
     
-    public void testA(){
-        
-    }
-
-    
-    
     public void testSingleAny() throws IOException, InterruptedException{
         TestUtilities.copyStringToFileObject(srcFO, "foo/Binding1.java",
                 "package foo; " +
