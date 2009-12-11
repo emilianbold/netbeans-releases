@@ -57,7 +57,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
 
 /**
