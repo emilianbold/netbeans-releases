@@ -33,7 +33,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="changedBlaBlaLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="newValueTextField" min="-1" max="-2" attributes="0"/>
+                          <Component id="newValueTextField" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
@@ -205,7 +205,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="peopleComboBox" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="7" pref="7" max="-2" attributes="0"/>
-                          <Component id="peopleTextField" min="-2" pref="-1" max="-2" attributes="0"/>
+                          <Component id="peopleTextField" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Component id="reporterCheckBox" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -424,12 +424,12 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="tmLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Component id="tmScrollPane" pref="99" max="32767" attributes="1"/>
+                          <Component id="tmScrollPane" max="32767" attributes="1"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="issueTypeLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Component id="issueTypeScrollPane" pref="99" max="32767" attributes="1"/>
+                          <Component id="issueTypeScrollPane" max="32767" attributes="1"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="3" attributes="0">
@@ -443,13 +443,13 @@
                           </Group>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jScrollPane4" pref="99" max="32767" attributes="1"/>
-                              <Component id="jScrollPane7" alignment="0" pref="99" max="32767" attributes="1"/>
-                              <Component id="jScrollPane6" alignment="0" pref="99" max="32767" attributes="1"/>
-                              <Component id="jScrollPane2" alignment="0" pref="99" max="32767" attributes="1"/>
-                              <Component id="jScrollPane3" alignment="0" pref="99" max="32767" attributes="1"/>
-                              <Component id="jScrollPane5" alignment="0" pref="99" max="32767" attributes="1"/>
-                              <Component id="severityScrollPane" alignment="0" pref="99" max="32767" attributes="1"/>
+                              <Component id="jScrollPane4" max="32767" attributes="1"/>
+                              <Component id="jScrollPane7" alignment="0" max="32767" attributes="1"/>
+                              <Component id="jScrollPane6" alignment="0" max="32767" attributes="1"/>
+                              <Component id="jScrollPane2" alignment="0" max="32767" attributes="1"/>
+                              <Component id="jScrollPane3" alignment="0" max="32767" attributes="1"/>
+                              <Component id="jScrollPane5" alignment="0" max="32767" attributes="1"/>
+                              <Component id="severityScrollPane" alignment="0" max="32767" attributes="1"/>
                           </Group>
                       </Group>
                   </Group>
@@ -513,6 +513,7 @@
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[100, 2]"/>
                 </Property>
+                <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -563,6 +564,7 @@
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[100, 2]"/>
                 </Property>
+                <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -613,6 +615,7 @@
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[100, 2]"/>
                 </Property>
+                <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -663,6 +666,7 @@
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[100, 2]"/>
                 </Property>
+                <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -713,6 +717,7 @@
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[100, 2]"/>
                 </Property>
+                <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -746,6 +751,7 @@
                 <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[100, 2]"/>
                 </Property>
+                <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -796,6 +802,7 @@
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[100, 2]"/>
                 </Property>
+                <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
               <AccessibilityProperties>
                 <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -846,6 +853,7 @@
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[100, 2]"/>
                 </Property>
+                <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
@@ -891,6 +899,7 @@
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[100, 2]"/>
                 </Property>
+                <Property name="visibleRowCount" type="int" value="6"/>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
@@ -1204,7 +1213,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="queryNameTextField" min="-1" max="-2" attributes="0"/>
+                          <Component id="queryNameTextField" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
