@@ -5,6 +5,9 @@
 --><!DOCTYPE toc
   PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
          "http://java.sun.com/products/javahelp/toc_2_0.dtd"><toc version="2.0">
+<tocitem target="org.netbeans.modules.javacard.title" text="Development for Java Card 3" expand="true">
+<tocitem target="org.netbeans.modules.javacard.docinfo" text="Copyright" expand="true">
+</tocitem>
  <tocitem target="org.netbeans.modules.javacard.AboutJavaCard3Development" text="About Java Card 3 Development" expand="true">
     <tocitem target="org.netbeans.modules.javacard.WhatYouShouldKnow" text="What You Should Know Before Working With the Java Card 3 Plugin" expand="false"></tocitem>
     <tocitem target="org.netbeans.modules.javacard.WhatIsIn" text="What Is In This Online Help" expand="false"></tocitem>
@@ -124,5 +127,5 @@
     <tocitem target="org.netbeans.modules.javacard.UnableRunSamples" text="Unable to Run a Sample" expand="false">
         <tocitem target="org.netbeans.modules.javacard.GettingUpdatedSamples" text="Getting Updated Samples" expand="false"></tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.UnableOpenProject" text="Unable to Open a Java Card 3 Project" expand="false"></tocitem></tocitem>
- <tocitem target="org.netbeans.modules.javacard.Glossary" text="Glossary" expand="false"></tocitem>
+ <tocitem target="org.netbeans.modules.javacard.Glossary" text="Java Card 3 Glossary" expand="false"></tocitem>
 </toc>
