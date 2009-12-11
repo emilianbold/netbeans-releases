@@ -748,7 +748,6 @@ abstract class FieldInjectionPointLogic {
                 qualifierAnnotations ).get(DEFAULT_QUALIFIER_ANNOTATION) != null ;
         Set<BindingQualifier> defaultQualifiers = new HashSet<BindingQualifier>();
         for (AnnotationMirror annotationMirror : qualifierAnnotations) {
-            System.out.println("!!!!!!!!!! annotation :"+annotationMirror);
             DeclaredType type = annotationMirror.getAnnotationType();
             TypeElement annotationElement = (TypeElement)type.asElement();
             String annotationFQN = annotationElement.getQualifiedName().toString();
