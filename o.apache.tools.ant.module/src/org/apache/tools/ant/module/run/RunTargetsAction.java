@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.apache.tools.ant.module.nodes;
+package org.apache.tools.ant.module.run;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -52,18 +52,13 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
-import org.apache.tools.ant.module.run.TargetExecutor;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Actions;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
@@ -277,23 +272,7 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
         }
 
         public void actionPerformed(ActionEvent e) {
-            String title = NbBundle.getMessage(RunTargetsAction.class, "TITLE_run_advanced");
-            AdvancedActionPanel panel = new AdvancedActionPanel(project, allTargets);
-            DialogDescriptor dd = new DialogDescriptor(panel, title);
-            dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
-            JButton run = new JButton(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_advanced_run"));
-            run.setDefaultCapable(true);
-            JButton cancel = new JButton(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_advanced_cancel"));
-            dd.setOptions(new Object[] {run, cancel});
-            dd.setModal(true);
-            Object result = DialogDisplayer.getDefault().notify(dd);
-            if (result.equals(run)) {
-                try {
-                    panel.run();
-                } catch (IOException x) {
-                    AntModule.err.notify(x);
-                }
-            }
+            new AdvancedActionPanel(project, allTargets).display();
         }
         
     }
