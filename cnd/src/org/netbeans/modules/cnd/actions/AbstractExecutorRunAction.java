@@ -40,6 +40,7 @@ package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -594,9 +595,10 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                         public void run() {
                             String message = getString("Output."+resourceKey+"Terminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                             String statusMessage = getString("Status."+resourceKey+"Terminated"); // NOI18N
-                            tab.getOut().println();
-                            tab.getOut().println(message);
-                            tab.getOut().flush();
+                            tab.getErr().println();
+                            tab.getErr().println(message);
+                            tab.getErr().flush();
+                            closeIO();
                             StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
@@ -613,9 +615,10 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                         public void run() {
                             String message = getString("Output."+resourceKey+"FailedToStart"); // NOI18N
                             String statusMessage = getString("Status."+resourceKey+"FailedToStart"); // NOI18N
-                            tab.getOut().println();
-                            tab.getOut().println(message);
-                            tab.getOut().flush();
+                            tab.getErr().println();
+                            tab.getErr().println(message);
+                            tab.getErr().flush();
+                            closeIO();
                             StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
@@ -639,9 +642,11 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                                 message = getString("Output."+resourceKey+"Successful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                                 statusMessage = getString("Status."+resourceKey+"Successful"); // NOI18N
                             }
-                            tab.getOut().println();
-                            tab.getOut().println(message);
-                            tab.getOut().flush();
+                            PrintWriter wr = process.exitValue() == 0 ? tab.getOut(): tab.getErr();
+                            wr.println();
+                            wr.println(message);
+                            wr.flush();
+                            closeIO();
                             StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
@@ -653,6 +658,16 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         public void run() {
             if (postRunnable != null) {
                 postRunnable.run();
+            }
+        }
+
+        private void closeIO(){
+            tab.getErr().close();
+            tab.getOut().close();
+            try {
+                tab.getIn().close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         }
 
