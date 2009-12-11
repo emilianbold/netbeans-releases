@@ -52,9 +52,12 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
+import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
 
 /**
@@ -67,11 +70,7 @@ public class NewTest extends CommonTestCase {
         super(testName);
     }
     
-    public void testA(){
-    }
-
-
-/*    public void testNew() throws IOException, InterruptedException{
+    public void testNew() throws IOException, InterruptedException{
         TestUtilities.copyStringToFileObject(srcFO, "foo/SuperClass.java",
                 "package foo; " +
                 "public class SuperClass  { " +
@@ -90,7 +89,8 @@ public class NewTest extends CommonTestCase {
                 "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
                 "import javax.enterprise.inject.*; "+
                 "import java.lang.annotation.*; "+
-                "@BindingType " +
+                "import javax.inject.*; "+
+                "@Qualifier " +
                 "@Retention(RUNTIME) "+
                 "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
                 "public @interface Binding1  {}");
@@ -98,9 +98,10 @@ public class NewTest extends CommonTestCase {
         TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
                 "public class TestClass  {" +
-                " @New One myField1; "+
-                " @New(Two.class) SuperClass myField2; "+
+                " @Inject @New One myField1; "+
+                " @Inject @New(Two.class) SuperClass myField2; "+
                 "}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
@@ -109,7 +110,11 @@ public class NewTest extends CommonTestCase {
                 "@Binding1 "+
                 "public class Two extends SuperClass {}" );
         
-        createBeansModel().runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+        TestWebBeansModelImpl modelImpl = createModelImpl();
+        final TestWebBeansModelProviderImpl provider = modelImpl.getProvider();
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
 
             public Void run( WebBeansModel model ) throws Exception {
                 TypeMirror mirror = model.resolveType( "foo.TestClass" );
@@ -126,10 +131,10 @@ public class NewTest extends CommonTestCase {
                 for( VariableElement element : injectionPoints ){
                     names.add( element.getSimpleName().toString() );
                     if ( element.getSimpleName().contentEquals("myField1")){
-                        check1( element , model);
+                        check1( element , provider);
                     }
                     else if ( element.getSimpleName().contentEquals("myField2")){
-                        check2( element , model);
+                        check2( element , provider);
                     }
                 }
                 assert names.contains("myField1");
@@ -140,41 +145,39 @@ public class NewTest extends CommonTestCase {
         
     }
 
-    protected void check1( VariableElement element, WebBeansModel model ) {
+    protected void check1( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
         inform("test myField1");
-        try {
-            Element injactable = model.getInjectable( element );
-            
-            assertNotNull( injactable );
-            assertTrue( "Expect class definition , but found : " +
-                    injactable.getKind()
-                    , injactable instanceof TypeElement );
-            
-            assertEquals( "foo.One",  
-                    ((TypeElement)injactable).getQualifiedName().toString());
-        }
-        catch (WebBeansModelException e) {
-            e.printStackTrace();
-            assert false;
-        }
+
+        Result result = provider.findVariableInjectable(element, null);
+
+        assertNotNull(result);
+        assertTrue(result instanceof Result);
+
+        Element injactable = result.getElement();
+        assertNotNull(injactable);
+        assertTrue( injactable instanceof TypeElement );
+        assertEquals("foo.One", ((TypeElement)injactable).getQualifiedName().
+                toString());
     }
     
-    protected void check2( VariableElement element, WebBeansModel model ) {
+    protected void check2( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
         inform("test myField2");
-        try {
-            Element injactable = model.getInjectable( element );
-            
-            assertNotNull( injactable );
-            assertTrue( "Expect class definition , but found : " +
-                    injactable.getKind()
-                    , injactable instanceof TypeElement );
-            
-            assertEquals( "foo.Two",  
-                    ((TypeElement)injactable).getQualifiedName().toString());
-        }
-        catch (WebBeansModelException e) {
-            e.printStackTrace();
-            assert false;
-        }
-    }*/
+
+        Result result = provider.findVariableInjectable(element, null);
+
+        assertNotNull(result);
+        assertNotNull(result);
+        assertTrue(result instanceof Result);
+
+        Element injactable = result.getElement();
+        assertNotNull(injactable);
+        assertTrue( injactable instanceof TypeElement );
+
+        assertEquals("foo.Two", ((TypeElement)injactable).getQualifiedName().
+                toString());
+    }
 }
