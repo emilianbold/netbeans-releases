@@ -328,11 +328,118 @@ public class ParametersTest extends CommonTestCase {
         });
     }
     
-    public void testObserves (){
+    public void testObservesParameter() throws IOException, InterruptedException{
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Binding1.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@Qualifier " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface Binding1  {" +
+                "    String value(); "+
+                "}");
         
-         /* 
-          * TODO : need to test @Observes
-          */
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Binding2.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "import javax.inject.*; "+
+                "@Qualifier " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface Binding2  {} ");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/SuperClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "public class SuperClass  { " +
+                " @Produces @Default String getText(){ return null;} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "@foo.Binding1(value=\"a\") @foo.Binding2 " +
+                "public class One extends SuperClass {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/SomeEvent.java",
+                "package foo; " +
+                "public class SomeEvent {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.enterprise.event.*; "+
+                "public class TestClass  {" +
+                " void method1(@Observes @Binding2 SomeEvent , String text){} "+
+                " void method2(@Observes @Binding1(\"a\") SomeEvent,  " +
+                " @foo.Binding1(\"a\") @foo.Binding2 SuperClass clazz){} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
+                "package foo; " +
+                "@foo.Binding2 " +
+                "public class Two extends SuperClass {}" );
+        
+        inform( "start observes parameters test");
+        
+        TestWebBeansModelImpl modelImpl = createModelImpl();
+        final TestWebBeansModelProviderImpl provider = modelImpl.getProvider();
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType( "foo.TestClass" );
+                Element clazz = ((DeclaredType)mirror).asElement();
+                List<? extends Element> children = clazz.getEnclosedElements();
+                List<VariableElement> injectionPoints = 
+                    new ArrayList<VariableElement>( children.size());
+                for (Element element : children) {
+                    if ( element instanceof ExecutableElement ){
+                        List<? extends VariableElement> parameters = 
+                            ((ExecutableElement)element).getParameters();
+                        for (VariableElement variableElement : parameters) {
+                            injectionPoints.add( variableElement );
+                        }
+                    }
+                }
+                Set<String> names = new HashSet<String>(); 
+                for( VariableElement element : injectionPoints ){
+                    Element enclosingElement = element.getEnclosingElement();
+                    assert enclosingElement instanceof ExecutableElement;
+                    ExecutableElement method = (ExecutableElement)enclosingElement;
+                    names.add( method.getSimpleName()+ " " +element.getSimpleName());
+                    if ( method.getSimpleName().contentEquals("method1")){
+                        if ( element.getSimpleName().contentEquals("text")){
+                            checkObservesText( element, provider );
+                            names.add("method1 text");
+                        }
+                    }
+                    else if (method.getSimpleName().contentEquals("method2") ){
+                        if ( element.getSimpleName().contentEquals("clazz")){
+                            checkObservesClazz( element, provider );
+                            names.add("method2 clazz");
+                        }
+                    }
+                }
+                
+                assert names.contains("method1 text");
+                assert names.contains("method2 clazz");
+                return null;
+            }
+        });
     }
     
     protected void checkMethod1Arg1( VariableElement element,
@@ -598,6 +705,49 @@ public class ParametersTest extends CommonTestCase {
 
         assertEquals(0, typeElements.size());
         assertEquals(0, productions.size());
+    }
+    
+
+    private void checkObservesClazz( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("start check 'clazz' parameter in observes method");
+        Result result = provider.findParameterInjectable(element, null);
+        assertNotNull(result);
+
+        assertTrue(result instanceof ResultImpl);
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
+
+        TypeElement injectable = typeElements.iterator().next();
+        assertNotNull(injectable);
+        assertEquals("foo.One", injectable.getQualifiedName().toString());
+    }
+
+    private void checkObservesText( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("start check 'text' parameter in observes method");
+        Result result = provider.findParameterInjectable(element, null);
+        assertNotNull(result);
+
+        assertTrue(result instanceof ResultImpl);
+
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(0, typeElements.size());
+        assertEquals(1, productions.size());
+
+        Element injectable = productions.iterator().next();
+        assertNotNull(injectable);
+        assertTrue("injectable should be a production method," + " but found :"
+                + injectable.getKind(), injectable instanceof ExecutableElement); 
+        assertEquals("getText", injectable.getSimpleName().toString());
     }
 
 }

@@ -99,12 +99,14 @@ public class CurrentTest extends CommonTestCase {
                 "public class TestClass  {" +
                 " @Inject @Default SuperClass myField1; "+
                 " @Inject @Default String myField2; "+
-                " @Inject @Default int[] myField3; "+
-                " @Inject @Default One myField4; "+
+                " @Inject int[] myField3; "+
+                " @Inject One myField4; "+
                 "}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
                 "package foo; " +
+                "import javax.inject.*; "+
+                " @Named "+
                 "public class Two extends SuperClass {}" );
         
         TestWebBeansModelImpl modelImpl = createModelImpl();
@@ -201,14 +203,16 @@ public class CurrentTest extends CommonTestCase {
                 "import javax.enterprise.inject.*; "+
                 "import javax.inject.*; "+
                 "public class TestClass  {" +
-                " @Inject @Default One myField1; "+
-                " @Inject @Default  int[] myField2; "+
-                " @Inject @Default  SuperClass myField3; "+
-                " @Inject @Default  @Binding2 SuperClass myField4; "+
+                " @Inject One myField1; "+
+                " @Inject @Default int[] myField2; "+
+                " @Inject @Default SuperClass myField3; "+
+                " @Inject @Default @Binding2 SuperClass myField4; "+
                 "}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
                 "package foo; " +
+                "import javax.inject.*; "+
+                " @Named "+
                 "public class Two extends SuperClass {}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Three.java",
@@ -220,7 +224,8 @@ public class CurrentTest extends CommonTestCase {
         TestUtilities.copyStringToFileObject(srcFO, "foo/Four.java",
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
-                "@Binding2 @Default "+
+                "import javax.inject.*; "+
+                "@Binding2 @Default @Named "+
                 "public class Four extends Two {}" );
         
         TestWebBeansModelImpl modelImpl = createModelImpl();
@@ -309,7 +314,7 @@ public class CurrentTest extends CommonTestCase {
                 "import javax.inject.*; "+
                 "public class TestClass  {" +
                 " @Inject @Default Two myField1; "+
-                " @Inject @Default One1 myField2; "+
+                " @Inject One1 myField2; "+
                 " @Inject @Default Two2 myField3; "+
                 "}" );
         
