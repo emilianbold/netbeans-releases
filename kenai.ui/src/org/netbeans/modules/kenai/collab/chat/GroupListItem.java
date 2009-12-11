@@ -64,7 +64,7 @@ public class GroupListItem implements ContactListItem {
     @Override
     public String toString() {
         return NbBundle.getMessage(GroupListItem.class, "ChatRoomRenderer",
-                group.getKenaiProject().getDisplayName());
+                group.getDisplayName());
     }
 
     @Override

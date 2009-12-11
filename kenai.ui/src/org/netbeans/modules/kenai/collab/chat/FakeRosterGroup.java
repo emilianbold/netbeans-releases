@@ -65,6 +65,10 @@ public class FakeRosterGroup implements Comparable<FakeRosterGroup> {
         return StringUtils.parseName(muc.getRoom());
     }
 
+    public String getDisplayName() {
+        return getKenaiProject().getDisplayName() + " @" + StringUtils.parseServer(muc.getRoom());
+    }
+
     public String getJid() {
         return muc.getRoom();
     }
@@ -104,9 +108,7 @@ public class FakeRosterGroup implements Comparable<FakeRosterGroup> {
     }
 
     public int compareTo(FakeRosterGroup o) {
-        String thisName = KenaiConnection.getKenaiProject(muc).getDisplayName();
-        String otherName = KenaiConnection.getKenaiProject(o.muc).getDisplayName();
-        return thisName.compareToIgnoreCase(otherName);
+        return getDisplayName().compareToIgnoreCase(o.getDisplayName());
     }
 
     @Override

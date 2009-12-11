@@ -725,13 +725,20 @@ public class ChatTopComponent extends TopComponent {
                 hm.put(k, b);
             }
             b.append(StringUtils.parseName(i));
-            if (it.hasNext()) {
-                b.append(","); // NOI18N
-            }
+            b.append(","); // NOI18N
         }
 
-        for (Entry<Kenai, StringBuffer> entry:hm.entrySet()) {
-            prefs.put(entry.getKey().getUrl().getHost()+KENAI_OPEN_CHATS_PREF + entry.getKey().getPasswordAuthentication().getUserName(),entry.getValue().toString()); // NOI18N
+        for (Kenai k : KenaiManager.getDefault().getKenais()) {
+            if (k.getStatus()==Kenai.Status.ONLINE) {
+                String key = k.getUrl().getHost() + KENAI_OPEN_CHATS_PREF + k.getPasswordAuthentication().getUserName();
+                StringBuffer value = hm.get(k);
+                if (value==null) {
+                    value = new StringBuffer();
+                } else {
+                    value = new StringBuffer(value.subSequence(0, value.length()-1));
+                }
+                prefs.put(key, value.toString()); // NOI18N
+            }
         }
     }
 

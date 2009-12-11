@@ -414,7 +414,7 @@ public class ChatPanel extends javax.swing.JPanel {
     }
 
     public boolean isPrivate() {
-        return suc != null;  //NOI18N
+        return muc == null;  //NOI18N
     }
 
     public String getPrivateName() {
@@ -428,7 +428,7 @@ public class ChatPanel extends javax.swing.JPanel {
         online.setHorizontalTextPosition(JLabel.LEFT);
         if (isPrivate()) {
             topPanel.remove(online);
-            online = new KenaiUserUI(getPrivateName()).createUserWidget();
+            online = new KenaiUserUI(getName()).createUserWidget();
             online.setText(null);
             online.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 1, 3, 1));
             topPanel.add(online, java.awt.BorderLayout.EAST);
@@ -540,9 +540,9 @@ public class ChatPanel extends javax.swing.JPanel {
 
     void leave() {
         if (isPrivate()) {
-            kc.leavePrivate(getPrivateName());
+            kc.leavePrivate(getName());
         } else {
-            kc.leaveGroup(getName());
+            kc.leaveGroup(StringUtils.parseName(getName()));
         }
     }
 

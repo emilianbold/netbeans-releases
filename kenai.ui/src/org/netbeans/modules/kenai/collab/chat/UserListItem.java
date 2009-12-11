@@ -55,7 +55,7 @@ public class UserListItem implements ContactListItem {
 
     @Override
     public String toString() {
-        return entry.getUser();
+        return entry.getJid();
     }
 
     @Override

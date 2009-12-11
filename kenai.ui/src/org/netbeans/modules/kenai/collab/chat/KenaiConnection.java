@@ -178,10 +178,12 @@ public class KenaiConnection implements PropertyChangeListener {
     }
 
     synchronized void leaveGroup(String name) {
+        assert !name.contains("@") : "FQN cannot be used";
         groupListeners.remove(name);
     }
 
     synchronized void leavePrivate(String name) {
+        Utilities.assertJid(name);
         privateListeners.remove(name);
     }
 
@@ -240,7 +242,7 @@ public class KenaiConnection implements PropertyChangeListener {
         for (Message m : groupMessageQueue.get(name)) {
             lsn.processPacket(m);
         }
-        assert put == null:"Chat room " + name + " already joined";
+        assert put == null:"Chat room " + muc.getRoom() + " already joined";
     }
 
     /**
@@ -338,7 +340,7 @@ public class KenaiConnection implements PropertyChangeListener {
             }
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    if (/*chatNotifications.isEnabled(ChatTopComponent.createPrivateName(name)) &&*/ !ChatTopComponent.isPrivateInitedAndVisible(ChatTopComponent.createPrivateName(StringUtils.parseName(msg.getFrom())))) {
+                    if (chatNotifications.isEnabled(name) && !ChatTopComponent.isPrivateInitedAndVisible(name)) {
                         chatNotifications.addPrivateMessage(msg);
                     }
                 }

@@ -68,7 +68,7 @@ public class MessagingAccessorImpl extends MessagingAccessor {
         KenaiConnection kc = KenaiConnection.getDefault(k);
         synchronized (kc) {
             try {
-                final KenaiProject prj = k.getProject(project.getId());
+                final KenaiProject prj = project.getKenaiProject();
                 if (prj.isMyProject() && k.getStatus()==Status.ONLINE) {
                     MultiUserChat chat = kc.getChat(project.getId());
                     if (chat == null) {
