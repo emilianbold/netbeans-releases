@@ -166,10 +166,11 @@ public class ChatTopComponent extends TopComponent {
                     if (!initInProgress) {
                         String name = chats.getComponentAt(index).getName();
                         if (name!=null) {
-                            ChatNotifications.getDefault().removeGroup(name);
+                            final ChatNotifications notifications = ChatNotifications.getDefault();
+                            notifications.removeGroup(name);
                             //TODO: WTH is this line?
                             //name = name.substring(name.indexOf('.') + 1);
-                            ChatNotifications.getDefault().removePrivate(name);
+                            notifications.removePrivate(name);
                         }
                     }
                     chats.getComponentAt(index).requestFocus();
@@ -321,7 +322,7 @@ public class ChatTopComponent extends TopComponent {
     public void setActivePrivate(String name) {
         Utilities.assertJid(name);
         ChatNotifications.getDefault().removePrivate(name);
-        int indexOfTab = getTab(createPrivateName(name));
+        int indexOfTab = getTab(name);
         if (indexOfTab < 0) {
             ChatPanel chatPanel = new ChatPanel(name);
             addChat(chatPanel);
@@ -340,10 +341,6 @@ public class ChatTopComponent extends TopComponent {
         }
     }
 
-    public static final String createPrivateName(String name) {
-        return "private." + name; // NOI18N
-    }
-
     public void addChat(ChatPanel chatPanel) { 
         //ChatNotifications.getDefault().removeGroup(chatPanel.getName());
         int idx = chats.getTabCount();
@@ -351,7 +348,7 @@ public class ChatTopComponent extends TopComponent {
         try {
             if (!chatPanel.isPrivate()) {
                 Kenai k = KenaiConnection.getKenai(chatPanel.getName());
-                chats.setTitleAt(idx, k.getProject(StringUtils.parseName(chatPanel.getName())).getDisplayName());
+                chats.setTitleAt(idx, k.getProject(chatPanel.getShortName()).getDisplayName());
             } else {
                 chats.setTitleAt(idx, new KenaiUserUI(chatPanel.getName()).getUserName());
             }

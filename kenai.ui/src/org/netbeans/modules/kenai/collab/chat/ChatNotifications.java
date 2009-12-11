@@ -65,7 +65,7 @@ import org.openide.util.NbPreferences;
 public class ChatNotifications {
     public static final String NOTIFICATIONS_PREF = "chat.notifications."; // NOI18N
     
-    private static ImageIcon NEWMSG = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/newmessage.png")); // NOI18N
+    private static ImageIcon NEWMSG = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true); // NOI18N
     private static ChatNotifications instance;
 
     //key is FQN (e.g. anagram-game@muc.kenai.com)
@@ -115,15 +115,15 @@ public class ChatNotifications {
 
     synchronized void addGroupMessage(final Message msg) {
         assert SwingUtilities.isEventDispatchThread();
-        final MessagingHandleImpl r = getMessagingHandle(KenaiConnection.getKenaiProject(StringUtils.parseBareAddress(msg.getFrom())));
+        KenaiProject prj = KenaiConnection.getKenaiProject(StringUtils.parseBareAddress(msg.getFrom()));
+        final MessagingHandleImpl r = getMessagingHandle(prj);
         r.notifyMessageReceived(msg);
         String title = null;
         int count = r.getMessageCount();
         if (count==1) {
-            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotification", new Object[]{KenaiConnection.getKenaiProject(StringUtils.parseBareAddress(msg.getFrom())).getDisplayName(), count});
+            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotification", new Object[]{prj.getDisplayName(), count});
         } else {
-            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotifications", new Object[]{KenaiConnection.getKenaiProject(StringUtils.parseBareAddress(msg.getFrom())).getDisplayName(), count});
-
+            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotifications", new Object[]{prj.getDisplayName(), count});
         }
             final String description = NbBundle.getMessage(ChatTopComponent.class, "LBL_ReadIt");
 
