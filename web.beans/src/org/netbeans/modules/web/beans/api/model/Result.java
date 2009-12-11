@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,13 +40,63 @@
  */
 package org.netbeans.modules.web.beans.api.model;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+
 
 /**
+ * Represent eligible for injection element search result. 
+ * 
  * @author ads
  *
  */
-public class WebBeansModelException extends Exception {
+public class Result {
+    
+    public Result( VariableElement var , TypeMirror type, Element injectable){
+        myVar = var;
+        myType = type;
+        myInjectable = injectable;
+    }
+    
+    public Result( VariableElement var , TypeMirror type){
+        this( var, type, null);
+    }
+    
+    /**
+     * <code>null</code> is returned if there is no eligible element for injection
+     * ( no element which could be a pretender).
+     * 
+     * it could be a result of unsatisfied or ambiguous dependency.
+     * F.e. unsatisfied dependency : there is a pretender satisfy typesafe 
+     * resolution but something incorrect ( parameterized type is not valid , etc. ). 
+     * Ambiguous dependency : there are a number of appropriate elements.
+     *
+     * 
+     * @return element ( type definition, production field/method) 
+     * that is used in injected point identified by {@link #getVariable()}
+     */
+    public Element getElement(){
+        return myInjectable;
+    }
+    
+    /**
+     * @return element injection point which is used for injectable search
+     */
+    public VariableElement getVariable(){
+        return myVar;
+    }
+    
+    public TypeMirror getVariableType(){
+        return myType;
+    }
+    
+    
+    protected void setElement( Element element ){
+        myInjectable = element;
+    }
 
-    private static final long serialVersionUID = 8859984690145450257L;
-
+    private final VariableElement myVar;
+    private final TypeMirror myType;
+    private Element myInjectable;
 }

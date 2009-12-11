@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -62,16 +63,16 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.Ar
  * @author ads
  *
  */
-class BindingChecker implements Checker {
+class QualifierChecker implements Checker {
     
-    private static final String BINDING_TYPE_ANNOTATION=
-        "javax.enterprise.inject.BindingType";                  // NOI18N
+    private static final String QUALIFIER_TYPE_ANNOTATION=
+        "javax.inject.Qualifier";                               // NOI18N
     
     private static final String VALUE = "value";                // NOI18N
     
-    static BindingChecker get() {
+    static QualifierChecker get() {
         // could be changed to cached ThreadLocal access
-        return new BindingChecker();
+        return new QualifierChecker();
     }
     
     void init( TypeElement element, AnnotationModelHelper helper ) {
@@ -83,22 +84,38 @@ class BindingChecker implements Checker {
      * @see org.netbeans.modules.web.beans.impl.model.Checker#check()
      */
     public boolean check() {
-        if ( BUILT_IN_BINDINGS.contains( getElement().getQualifiedName().toString())){
+        if ( BUILT_IN_QUALIFIERS.contains( getElement().getQualifiedName().toString())){
             return true;
         }
         else {
             List<? extends AnnotationMirror> annotations = 
                 getElement().getAnnotationMirrors();
-            boolean isBindingType = getHelper().hasAnnotation(annotations, 
-                    BINDING_TYPE_ANNOTATION);
+            boolean isQualifierType = getHelper().hasAnnotation(annotations, 
+                    QUALIFIER_TYPE_ANNOTATION);
             boolean hasRequiredRetention = getHelper().hasAnnotation(annotations, 
                     Retention.class.getCanonicalName());
             boolean hasRequiredTarget = getHelper().hasAnnotation(annotations, 
                     Target.class.getCanonicalName());
             
-            if ( !isBindingType || !hasRequiredRetention || !hasRequiredTarget){
+            if ( !isQualifierType ){
+                // this is not qualifier , just return false
                 return false;
             }
+            
+            if ( !hasRequiredRetention ) {
+                FieldInjectionPointLogic.LOGGER.log(Level.WARNING,
+                        "Annotation "+getElement().getQualifiedName()+
+                        "declared as Qualifier but has no Retention");// NOI18N
+                return false;
+            }
+            
+            if (  !hasRequiredTarget){
+                FieldInjectionPointLogic.LOGGER.log(Level.WARNING,
+                        "Annotation "+getElement().getQualifiedName()+
+                        "declared as Qualifier but has no Target");// NOI18N
+                return false;
+            }
+            
             AnnotationParser parser = AnnotationParser.create(getHelper());
             parser.expectEnumConstant(VALUE, 
                     getHelper().resolveType(RetentionPolicy.class.getCanonicalName()) , 
@@ -112,6 +129,11 @@ class BindingChecker implements Checker {
             hasRequiredRetention = retentionPolicy.equals( 
                     RetentionPolicy.RUNTIME.toString());
             if ( !hasRequiredRetention ){
+                FieldInjectionPointLogic.LOGGER.log(Level.WARNING,
+                        "Annotation "+getElement().getQualifiedName()+
+                        " declared as Qualifier but has wrong retention policy." +
+                        " Correct retention policy is "+
+                        RetentionPolicy.RUNTIME.toString());// NOI18N
                 return false;
             }
             hasRequiredTarget = checkTarget( types);
@@ -147,6 +169,12 @@ class BindingChecker implements Checker {
         {
             hasRequiredTarget = true;
         }
+        else {
+            FieldInjectionPointLogic.LOGGER.log(Level.WARNING,
+                    "Annotation "+getElement().getQualifiedName()+
+                    "declared as Qualifier but has wrong target values." +
+                    " Correct target values are {METHOD, FIELD, PARAMETER, TYPE})");// NOI18N
+        }
         return hasRequiredTarget;
     }
     
@@ -160,12 +188,13 @@ class BindingChecker implements Checker {
     
     private AnnotationModelHelper myHelper;
     private TypeElement myElement;
-    private static final Set<String> BUILT_IN_BINDINGS = new HashSet<String>();
+    private static final Set<String> BUILT_IN_QUALIFIERS = new HashSet<String>();
     
     static {
-        BUILT_IN_BINDINGS.add(WebBeansModelProviderImpl.ANY_BINDING_ANNOTATION);
-        BUILT_IN_BINDINGS.add(WebBeansModelProviderImpl.NEW_BINDING_ANNOTATION);
-        BUILT_IN_BINDINGS.add(WebBeansModelProviderImpl.CURRENT_BINDING_ANNOTATION);
+        BUILT_IN_QUALIFIERS.add(WebBeansModelProviderImpl.ANY_QUALIFIER_ANNOTATION);
+        BUILT_IN_QUALIFIERS.add(WebBeansModelProviderImpl.NEW_QUALIFIER_ANNOTATION);
+        BUILT_IN_QUALIFIERS.add(WebBeansModelProviderImpl.DEFAULT_QUALIFIER_ANNOTATION);
+        BUILT_IN_QUALIFIERS.add(WebBeansModelProviderImpl.NAMED_QUALIFIER_ANNOTATION);
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,63 +38,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xdm.model;
+package org.netbeans.modules.web.beans.impl.model.results;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.web.beans.xml.BeansElement;
-import org.netbeans.modules.web.beans.xml.Deploy;
-import org.netbeans.modules.web.beans.xml.Type;
-import org.netbeans.modules.web.beans.xml.WebBeansModel;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+
+import org.netbeans.modules.web.beans.api.model.Result;
 
 
 /**
  * @author ads
  *
  */
-public class SyncUpdateTest extends NbTestCase {
+public class ResultImpl extends Result {
 
-    public SyncUpdateTest( String name ) {
-        super(name);
+    public ResultImpl( VariableElement var, TypeMirror elementType ,
+            Set<TypeElement> declaredTypes, 
+            Map<Element, List<DeclaredType>> productionElements) 
+    {
+        super(var, elementType);
+        myDeclaredTypes = declaredTypes;
+        myProductions = productionElements;
     }
 
-    public void testDeploy() throws Exception{
-        WebBeansModel model = Util.loadRegistryModel("empty-beans.xml");
-        
-        Util.setDocumentContentTo(model, "deploy-beans.xml");
-        
-        List<BeansElement> elements = model.getBeans().getElements();
-        assertEquals( 2 ,  elements.size());
-        
-        List<Type> types = ((Deploy)elements.get(1 )).getTypes();
-        assertEquals( 1,  types.size());
+    public Set<TypeElement> getTypeElements() {
+        return myDeclaredTypes;
     }
     
-    public void testType() throws Exception{
-        WebBeansModel model = Util.loadRegistryModel("empty-beans.xml");
-        
-        Util.setDocumentContentTo(model, "type-beans.xml");
-        
-        List<BeansElement> elements = model.getBeans().getElements();
-        assertEquals( 1 ,  elements.size());
-        
-        List<Type> types = (model.getBeans().getChildren(Deploy.class).get(0)).getTypes();
-        assertEquals( 2,  types.size());
-        
-        boolean type1Found = false;
-        boolean type2Found = false;
-        for (Type type : types) {
-            String text = type.getText();
-            if ( text.equals("type1")){
-                type1Found = true;
-            }
-            else if ( text.equals( "type2")){
-                type2Found = true;
-            }
-        }
-        
-        assertTrue( "Type with 'type1' value is not found",  type1Found );
-        assertTrue( "Type with 'type2' value is not found",  type2Found );
+    public Set<Element> getProductions() {
+        return myProductions.keySet();
     }
+
+    public Map<Element, List<DeclaredType>>  getAllProductions(){
+        return myProductions;
+    }
+
+    private Set<TypeElement> myDeclaredTypes;
+    private Map<Element, List<DeclaredType>> myProductions;
 }

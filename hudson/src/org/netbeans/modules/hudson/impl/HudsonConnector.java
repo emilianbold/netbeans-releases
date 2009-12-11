@@ -117,19 +117,10 @@ public class HudsonConnector {
         
         // Parse views and set them into instance
         Collection<HudsonView> cViews = getViews(docInstance);
-        
-        if (null == cViews)
-            cViews = new ArrayList<HudsonView>();
-        
         instance.setViews(cViews);
         
         // Parse jobs and return them
-        Collection<HudsonJob> cJobs = getJobs(docInstance);
-        
-        if (null == cJobs)
-            cJobs = new ArrayList<HudsonJob>();
-        
-        return cJobs;
+        return getJobs(docInstance);
     }
     
     public synchronized void startJob(final HudsonJob job) {

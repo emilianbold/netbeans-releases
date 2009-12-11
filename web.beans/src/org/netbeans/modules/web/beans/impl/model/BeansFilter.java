@@ -43,7 +43,6 @@ package org.netbeans.modules.web.beans.impl.model;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 
@@ -51,7 +50,7 @@ import javax.lang.model.element.TypeElement;
  * @author ads
  *
  */
-class BeansFilter extends Filter<Element> {
+class BeansFilter extends Filter<TypeElement> {
     
     static BeansFilter get() {
         return new BeansFilter();
@@ -61,15 +60,15 @@ class BeansFilter extends Filter<Element> {
      * @see org.netbeans.modules.web.beans.impl.model.Filter#filter(java.util.Set)
      */
     @Override
-    void filter( Set<Element> set ) {
+    void filter( Set<TypeElement> set ) {
         super.filter(set);
-        for (Iterator<Element> iterator = set.iterator(); iterator.hasNext(); ) {
-            Element element = iterator.next();
-            if ( element instanceof TypeElement ){
-                String name = ((TypeElement)element).getQualifiedName().toString();
-                if ( name.startsWith("java.lang")) { // NOI18N
-                    iterator.remove();
-                }
+        for (Iterator<TypeElement> iterator = set.iterator(); iterator
+                .hasNext();)
+        {
+            TypeElement element = iterator.next();
+            String name = element.getQualifiedName().toString();
+            if (name.startsWith("java.lang")) { // NOI18N
+                iterator.remove();
             }
         }
     }

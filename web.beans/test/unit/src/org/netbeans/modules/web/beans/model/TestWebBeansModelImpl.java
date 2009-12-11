@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,24 +38,38 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.api.model;
+package org.netbeans.modules.web.beans.model;
+
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
+import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation;
+import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 
 
 /**
  * @author ads
  *
  */
-public class InitializedFieldException extends UnsatisfiedDependencyException {
-
-    private static final long serialVersionUID = -4848201391687050514L;
-
-    public InitializedFieldException(String initialValue){
-        myInitialValue = initialValue;
+public class TestWebBeansModelImpl extends WebBeansModelImplementation {
+    
+    TestWebBeansModelImpl(ModelUnit unit){
+        super(unit);
+        myProvider = new TestWebBeansModelProviderImpl( this );
     }
     
-    public String getInitialValue(){
-        return myInitialValue;
+    public MetadataModel<WebBeansModel> createTestModel( ){
+        return MetadataModelFactory.createMetadataModel( this );
+    }
+
+   /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.AbstractModelImplementation#getProvider()
+     */
+    @Override
+    protected TestWebBeansModelProviderImpl getProvider() {
+        return myProvider;
     }
     
-    private String myInitialValue;
+    private TestWebBeansModelProviderImpl myProvider; 
 }

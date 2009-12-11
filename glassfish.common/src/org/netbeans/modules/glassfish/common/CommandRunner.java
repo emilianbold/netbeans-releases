@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -100,6 +101,8 @@ public class CommandRunner extends BasicTask<OperationState> {
     /** Executor that serializes management tasks. 
      */
     private static ExecutorService executor;
+
+    private static Authenticator AUTH = new AdminAuthenticator();
     
     /** Returns shared executor.
      */
@@ -446,6 +449,7 @@ public class CommandRunner extends BasicTask<OperationState> {
 //                                                 "Basic " + auth); // NOI18N
 
                         // Establish the connection with the server
+                        Authenticator.setDefault(AUTH);
                         hconn.connect();
                         // Send data to server if necessary
                         handleSend(hconn);
