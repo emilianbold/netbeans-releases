@@ -81,6 +81,8 @@ public class FileStatusCache {
     public static final FileInformation FILE_INFORMATION_CONFLICT = new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, false);
     public static final FileInformation FILE_INFORMATION_REMOVEDLOCALLY = new FileInformation(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, false);
     private int MAX_COUNT_UPTODATE_FILES = 1024;
+    private static final int CACHE_SIZE_WARNING_THRESHOLD = 50000; // log when cache gets too big and steps over this threshold
+    private boolean hugeCacheWarningLogged;
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.mercurial.fileStatusCacheNewGeneration"); //NOI18N
     private static final Logger LOG_UPTODATE_FILES = Logger.getLogger("mercurial.cache.upToDateFiles"); //NOI18N
@@ -176,6 +178,10 @@ public class FileStatusCache {
     private void setInfo (File file, FileInformation info) {
         synchronized (cachedFiles) {
             cachedFiles.put(file, info);
+            if (!hugeCacheWarningLogged && cachedFiles.size() > CACHE_SIZE_WARNING_THRESHOLD) {
+                LOG.log(Level.WARNING, "Cache contains too many entries: {0}", (Integer) cachedFiles.size()); //NOI18N
+                hugeCacheWarningLogged = true;
+            }
             removeUpToDate(file);
         }
     }
