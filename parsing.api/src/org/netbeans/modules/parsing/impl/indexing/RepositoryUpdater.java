@@ -2692,6 +2692,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                 Controller controller = (Controller)IndexingController.getDefault();
                 synchronized (controller) {
+                    controller.insideScan = true;
                     Map<URL,List<URL>> nextRoots2Deps = new HashMap<URL, List<URL>>();
                     nextRoots2Deps.putAll(depCtx.initialRoots2Deps);
                     nextRoots2Deps.keySet().removeAll(depCtx.oldRoots);
@@ -2703,7 +2704,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     nextBinRoots2Deps.putAll(depCtx.newBinaries2InvDeps);
                     controller.binRoots2Dependencies = Collections.unmodifiableMap(nextBinRoots2Deps);
                 }
-                
+
                 try {
                     depCtx.newRootsToScan.addAll(org.openide.util.Utilities.topologicalSort(depCtx.newRoots2Deps.keySet(), depCtx.newRoots2Deps));
                 } catch (final TopologicalSortException tse) {
@@ -2793,7 +2794,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
 
             boolean finished = scanBinaries(depCtx);
-            if (finished) {                
+            if (finished) {
                 finished = scanSources(depCtx, indexers, scannedRoots2Dependencies);
             }
 
@@ -2817,10 +2818,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             //as it was set to optimistic value (supposed that all is scanned).
             Controller controller = (Controller)IndexingController.getDefault();
             synchronized (controller) {
+                controller.insideScan = false;
                 controller.roots2Dependencies = Collections.unmodifiableMap(scannedRoots2Dependencies);
                 controller.binRoots2Dependencies = Collections.unmodifiableMap(scannedBinaries2InvDependencies);
             }
-           
+
             notifyRootsRemoved (depCtx.oldBinaries, depCtx.oldRoots);
 
             final Level logLevel = Level.FINE;
@@ -3615,6 +3617,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
     private final class Controller extends IndexingController {
 
+        private boolean insideScan;
         private Map<URL, List<URL>>roots2Dependencies = Collections.emptyMap();
         private Map<URL, List<URL>>binRoots2Dependencies = Collections.emptyMap();
 
@@ -3622,7 +3625,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             super();
             RepositoryUpdater.this.start(false);
         }
-        
+
         @Override
         public void enterProtectedMode() {
             getWorker().enterProtectedMode();
@@ -3640,7 +3643,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         @Override
         public synchronized Map<URL, List<URL>> getRootDependencies() {
-            return roots2Dependencies;
+            return verifyValues(roots2Dependencies);  //Issue 177763
         }
 
         @Override
@@ -3651,6 +3654,19 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         @Override
         public int getFileLocksDelay() {
             return FILE_LOCKS_DELAY;
+        }
+
+        private Map<URL, List<URL>> verifyValues (final Map<URL, List<URL>> map) {
+            boolean ae = false;
+            assert ae = true;
+            if (ae) {
+                for (Map.Entry<URL, List<URL>> e : map.entrySet()) {
+                    if (e.getValue() == null) {
+                        throw new AssertionError("Issue: 177763 check. Null dependencies for root: " + e.getKey() + " in scan: " + insideScan);
+                    }
+                }
+            }
+            return map;
         }
 
     } // End of Controller class
