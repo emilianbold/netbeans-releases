@@ -146,10 +146,6 @@ public class AnnotateAction extends ContextAction {
 
         final AnnotationBar ab = AnnotationBarManager.showAnnotationBar(currentPane);
         ab.setAnnotationMessage(NbBundle.getMessage(AnnotateAction.class, "CTL_AnnotationSubstitute")); // NOI18N;
-        if (revision != null) {
-            // showing annotations from past, the referenced file differs from the one being displayed
-            ab.setReferencedFile(file);
-        }
 
         final File repository = Mercurial.getInstance().getRepositoryRoot(file);
         if (repository == null) {
@@ -159,6 +155,10 @@ public class AnnotateAction extends ContextAction {
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
+                if (revision != null) {
+                    // showing annotations from past, the referenced file differs from the one being displayed
+                    ab.setReferencedFile(file);
+                }
                 OutputLogger logger = getLogger();
                 logger.outputInRed(
                         NbBundle.getMessage(AnnotateAction.class,

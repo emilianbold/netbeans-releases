@@ -195,6 +195,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * This can happen e.g. when showing annotations for file in a certain past revision - the displayed file is in fact a temporary file.
     */
     private File referencedFile;
+    /**
+     * This is not null when the displayed annotations do not belong directly to the displayed file but to another.
+     * This can happen e.g. when showing annotations for file in a certain past revision - the displayed file is in fact a temporary file.
+    */
+    private FileObject referencedFileObject;
 
     /**
      * Creates new instance initializing final fields.
@@ -401,6 +406,19 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
         return result;
     }
+
+    FileObject getCurrentFileObject () {
+        FileObject result = referencedFileObject;
+        if (result == null) {
+            Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
+            if (sdp instanceof FileObject) {
+                result = (FileObject)sdp;
+            } else if (sdp instanceof DataObject) {
+                result = ((DataObject)sdp).getPrimaryFile();
+            }
+        }
+        return result;
+    }
     
     /**
      * Registers "close" popup menu, tooltip manager
@@ -529,7 +547,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 JMenuItem chatMenu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_Chat", author));
                 chatMenu.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        ku.startChat(ku.getChatLink(doc, lineNr));
+                        ku.startChat(KenaiUser.getChatLink(getCurrentFileObject(), lineNr));
                     }
                 });
                 popupMenu.add(chatMenu);
@@ -1164,6 +1182,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * @param file
      */
     void setReferencedFile(File file) {
-        this.referencedFile = file;
+        this.referencedFile = FileUtil.normalizeFile(file);
+        this.referencedFileObject = FileUtil.toFileObject(file);
     }
 }

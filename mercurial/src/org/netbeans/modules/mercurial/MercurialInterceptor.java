@@ -49,6 +49,7 @@ import org.openide.util.RequestProcessor;
 import java.util.logging.Level;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -366,24 +367,15 @@ public class MercurialInterceptor extends VCSInterceptor {
         }
     }
 
-    private static final String[] HANDLED_HGFOLDER_FILES;
-    static {
-        HANDLED_HGFOLDER_FILES = new String[4];
-        HANDLED_HGFOLDER_FILES[0] = "branch";                           //NOI18N
-        HANDLED_HGFOLDER_FILES[1] = "dirstate";                         //NOI18N
-        HANDLED_HGFOLDER_FILES[2] = "undo.branch";                      //NOI18N
-        HANDLED_HGFOLDER_FILES[3] = "undo.dirstate";                    //NOI18N
-    }
+    private static final HashSet<String> HANDLED_HGFOLDER_FILES = new HashSet<String>(Arrays.asList(new String[] {
+        "branch",                                                       //NOI18N
+        "dirstate",                                                     //NOI18N
+        "undo.branch",                                                  //NOI18N
+        "undo.dirstate"                                                 //NOI18N
+    }));
 
     private static boolean isHandledHgFolderFile (File file) {
-        boolean handled = false;
-        for (String handledFile : HANDLED_HGFOLDER_FILES) {
-            if (handledFile.equals(file.getName())) {
-                handled = true;
-                break;
-            }
-        }
-        return handled;
+        return HANDLED_HGFOLDER_FILES.contains(file.getName());
     }
 
     private class HgFolderEventsHandler {
