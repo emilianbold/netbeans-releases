@@ -49,6 +49,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
@@ -64,8 +65,10 @@ import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.ImportUtils;
@@ -77,6 +80,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
@@ -260,10 +264,32 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             if (pae.getType() == ProjectActionEvent.Type.BUILD) {
                 converter = new CompilerLineConvertor(pae.getProject(), execEnv, FileUtil.toFileObject(new File(runDirectory)));
             }
+            // TODO: this is actual only for sun studio compiler
             env.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
 
+            RemoteSyncWorker syncWorker = null;
+            switch (pae.getType()) {
+                case BUILD:
+                case CLEAN:
+                    syncWorker = RemoteSyncSupport.createSyncWorker(pae.getProject(), io.getOut(), io.getErr());
+                    if (syncWorker != null) {
+                        if (!syncWorker.startup(env)) {
+                            // TODO: fix me
+                            // return null;
+                            syncWorker = null;
+                        }
+                    }
+                    break;
+            }
+
+            runDirectory = convertToRemoteIfNeeded(execEnv, runDirectory);
+            if (runDirectory == null) {
+                // TODO: fix me
+                // return null;
+            }
+
             ProcessChangeListener processChangeListener = new ProcessChangeListener(this, null/*Writer outputListener*/, converter, io,
-                    pae.getActionName(), null/*RemoteSyncWorker syncWorker*/, rcfile);
+                    pae.getActionName(), syncWorker, rcfile);
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
                     .setWorkingDirectory(runDirectory)
                     .unbufferOutput(unbuffer)
@@ -295,6 +321,35 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             executorTask = es.run();
         } else {
             assert false;
+        }
+    }
+
+    protected static String convertToRemoteIfNeeded(ExecutionEnvironment execEnv, String localDir) {
+        if (!checkConnection(execEnv)) {
+            return null;
+        }
+        if (execEnv.isRemote()) {
+            return HostInfoProvider.getMapper(execEnv).getRemotePath(localDir, false);
+        }
+        return localDir;
+    }
+
+    protected static boolean checkConnection(ExecutionEnvironment execEnv) {
+        if (execEnv.isRemote()) {
+            try {
+                ConnectionManager.getInstance().connectTo(execEnv);
+                ServerRecord record = ServerList.get(execEnv);
+                if (record.isOffline()) {
+                    record.validate(true);
+                }
+                return record.isOnline();
+            } catch (IOException ex) {
+                return false;
+            } catch (CancellationException ex) {
+                return false;
+            }
+        } else {
+            return true;
         }
     }
 
