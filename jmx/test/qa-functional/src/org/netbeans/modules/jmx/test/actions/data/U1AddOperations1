@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 
-public class U1AddOperations1 extends U1AddOperations1Super 
+public class U1AddOperations1 extends U1AddOperations1Super
     implements U1AddOperations1MBean {
     
     /** Creates a new instance of U1AddOperations1 */

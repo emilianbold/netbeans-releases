@@ -44,7 +44,6 @@ package org.netbeans.modules.jmx.test.mbeanwizard;
 import javax.swing.JLabel;
 import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.MBean;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
@@ -71,21 +70,6 @@ public class MBeanNameAndLocationWizard extends MBeanWizardTestCase {
         super(name);
     }
     
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new MBeanNameAndLocationWizard("createMBean1"));
-        suite.addTest(new MBeanNameAndLocationWizard("createMBean2"));
-        suite.addTest(new MBeanNameAndLocationWizard("createMBean3"));
-        suite.addTest(new MBeanNameAndLocationWizard("createMBean4"));
-        return suite;
-    }
-    
     public void setUp() {
         // Select project node
         selectNode(PROJECT_NAME_MBEAN_FUNCTIONAL);
@@ -101,7 +85,7 @@ public class MBeanNameAndLocationWizard extends MBeanWizardTestCase {
     /**
      * StandardMBean
      */
-    public void createMBean1() {
+    public void testCreateMBean1() {
         
         System.out.println("==========  createMBean1  ==========");
         
@@ -113,7 +97,7 @@ public class MBeanNameAndLocationWizard extends MBeanWizardTestCase {
     /**
      * MXBean
      */
-    public void createMBean2() {
+    public void testCreateMBean2() {
         
         System.out.println("==========  createMBean2  ==========");
         
@@ -125,7 +109,7 @@ public class MBeanNameAndLocationWizard extends MBeanWizardTestCase {
     /**
      * MBean from existing java class
      */
-    public void createMBean3() {
+    public void testCreateMBean3() {
         
         System.out.println("==========  createMBean3  ==========");
         
@@ -137,7 +121,7 @@ public class MBeanNameAndLocationWizard extends MBeanWizardTestCase {
     /**
      * StandardMBean with metadata
      */
-    public void createMBean4() {
+    public void testCreateMBean4() {
         
         System.out.println("==========  createMBean4  ==========");
         
