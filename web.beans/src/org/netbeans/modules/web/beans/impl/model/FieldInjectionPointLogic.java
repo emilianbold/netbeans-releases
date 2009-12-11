@@ -358,6 +358,7 @@ abstract class FieldInjectionPointLogic {
                 return new Result(element, elementType , typeElement );
             }
         }
+        // TODO : don't return null. Should be empty result
         return null;
     }
 
