@@ -10,7 +10,7 @@ import javax.management.ObjectName;
 
 /**
  * Interface OneFeatureMBean3MBean
- * 
+ *
  * @author <author>
  */
 public interface OneFeatureMBean3MBean

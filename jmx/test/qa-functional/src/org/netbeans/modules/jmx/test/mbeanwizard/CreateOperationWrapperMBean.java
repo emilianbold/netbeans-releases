@@ -47,7 +47,6 @@ import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.drivers.tables.JTableMouseDriver;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.MBean;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
@@ -84,23 +83,6 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
         super(name);
     }
     
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateOperationWrapperMBean("createWrappedMBean1"));
-        suite.addTest(new CreateOperationWrapperMBean("createWrappedMBean2"));
-        suite.addTest(new CreateOperationWrapperMBean("createWrappedMBean3"));
-        suite.addTest(new CreateOperationWrapperMBean("createWrappedMBean4"));
-        suite.addTest(new CreateOperationWrapperMBean("createWrappedMBean5"));
-        suite.addTest(new CreateOperationWrapperMBean("createWrappedMBean6"));
-        return suite;
-    }
-    
     public void setUp() {
         // Select project node
         selectNode(PROJECT_NAME_MBEAN_FUNCTIONAL);
@@ -120,7 +102,7 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
     /**
      * MBean from existing java class exposing all operations
      */
-    public void createWrappedMBean1() {
+    public void testCreateWrappedMBean1() {
         
         System.out.println("============  createWrappedMBean1  ============");
         
@@ -138,7 +120,7 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
     /**
      * MBean from existing java class exposing no operations
      */
-    public void createWrappedMBean2() {
+    public void testCreateWrappedMBean2() {
         
         System.out.println("============  createWrappedMBean2  ============");
         
@@ -156,7 +138,7 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
     /**
      * MBean from existing java class exposing generic operations
      */
-    public void createWrappedMBean3() {
+    public void testCreateWrappedMBean3() {
         
         System.out.println("============  createWrappedMBean3  ============");
         
@@ -174,7 +156,7 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
     /**
      * MBean from existing java class wrapped as MXBean exposing all operations
      */
-    public void createWrappedMBean4() {
+    public void testCreateWrappedMBean4() {
         
         System.out.println("============  createWrappedMBean4  ============");
         
@@ -194,7 +176,7 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
      * MBean from existing java class wrapped as MXBean
      * exposing no operations
      */
-    public void createWrappedMBean5() {
+    public void testCreateWrappedMBean5() {
         
         System.out.println("============  createWrappedMBean5  ============");
         
@@ -214,7 +196,7 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
      * MBean from existing java class wrapped as MXBean
      * exposing generic operations
      */
-    public void createWrappedMBean6() {
+    public void testCreateWrappedMBean6() {
         
         System.out.println("============  createWrappedMBean6  ============");
         

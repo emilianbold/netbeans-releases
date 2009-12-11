@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.jmx.test.mbeanwizard;
 
-import java.util.ArrayList;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.Attribute;
 import org.netbeans.modules.jmx.test.helpers.MBean;
 import org.netbeans.modules.jmx.test.helpers.Operation;
@@ -70,20 +68,6 @@ public class CreateSeveralFeaturesMBean extends MBeanWizardTestCase {
         super(name);
     }
     
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateSeveralFeaturesMBean("createSeveralFeaturesMBean1"));
-        suite.addTest(new CreateSeveralFeaturesMBean("createSeveralFeaturesMBean2"));
-        suite.addTest(new CreateSeveralFeaturesMBean("createSeveralFeaturesMBean3"));
-        return suite;
-    }
-    
     public void setUp() {
         // Select project node
         selectNode(PROJECT_NAME_MBEAN_FUNCTIONAL);
@@ -100,7 +84,7 @@ public class CreateSeveralFeaturesMBean extends MBeanWizardTestCase {
      * MBean from existing java class
      * with several attributes and operations
      */
-    public void createSeveralFeaturesMBean1() {
+    public void testCreateSeveralFeaturesMBean1() {
         
         System.out.println("==========  createSeveralFeaturesMBean1  ==========");
         
@@ -120,7 +104,7 @@ public class CreateSeveralFeaturesMBean extends MBeanWizardTestCase {
      * MBean from existing java class wrapped as MXBean
      * with several attributes and operations
      */
-    public void createSeveralFeaturesMBean2() {
+    public void testCreateSeveralFeaturesMBean2() {
         
         System.out.println("==========  createSeveralFeaturesMBean2  ==========");
         
@@ -140,7 +124,7 @@ public class CreateSeveralFeaturesMBean extends MBeanWizardTestCase {
      * StandardMBean with metadata
      * with several attributes and operations
      */
-    public void createSeveralFeaturesMBean3() {
+    public void testCreateSeveralFeaturesMBean3() {
         
         System.out.println("==========  createSeveralFeaturesMBean3  ==========");
         
