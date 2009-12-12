@@ -47,7 +47,6 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.Operation;
 import org.netbeans.modules.jmx.test.helpers.Parameter;
 import org.netbeans.modules.jmx.test.helpers.Exception;
@@ -77,19 +76,6 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
         super(name);
     }
     
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new MBeanOperationsWizard("createMBean1"));
-        suite.addTest(new MBeanOperationsWizard("createMBean2"));
-        return suite;
-    }
-    
     public void setUp() {
         // Select project node
         selectNode(PROJECT_NAME_MBEAN_FUNCTIONAL);
@@ -105,7 +91,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
     /**
      * MBean from existing java class
      */
-    public void createMBean1() {
+    public void testCreateMBean1() {
         
         System.out.println("==========  createMBean1  ==========");
         
@@ -113,13 +99,13 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
         tableOperator = WRAPPER_OPERATION_TABLE;
         removeButton = WRAPPER_OPERATION_REMOVE_BUTTON;
         // Test operations wizard
-        testOperationsWizard(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS);
+        operationsWizardTest(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS);
     }
     
     /**
      * StandardMBean with metadata
      */
-    public void createMBean2() {
+    public void testCreateMBean2() {
         
         System.out.println("==========  createMBean2  ==========");
 
@@ -127,7 +113,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
         tableOperator = OPERATION_TABLE_FROM_MENU;
         removeButton = OPERATION_REMOVE_BUTTON;
         // Test operations wizard
-        testOperationsWizard(FILE_TYPE_STANDARD_MBEAN_WITH_METADATA);
+        operationsWizardTest(FILE_TYPE_STANDARD_MBEAN_WITH_METADATA);
     }
     
     //========================= Test Wizard ==================================//
@@ -135,7 +121,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
     /**
      * Test operations wizard
      */
-    private void testOperationsWizard(String fileType) {
+    private void operationsWizardTest(String fileType) {
         
         System.out.println("File type is " + fileType);
         
