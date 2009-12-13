@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.cnd.loaders;
 
+import org.netbeans.modules.cnd.source.CCDataObject;
+import org.netbeans.modules.cnd.source.HDataObject;
+import org.netbeans.modules.cnd.source.CDataObject;
 import java.io.File;
 import java.io.OutputStreamWriter;
 import java.io.Writer;

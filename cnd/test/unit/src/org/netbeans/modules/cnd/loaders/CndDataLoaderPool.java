@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.cnd.loaders;
 
+import org.netbeans.modules.cnd.source.CDataLoader;
+import org.netbeans.modules.cnd.source.HDataLoader;
+import org.netbeans.modules.cnd.source.FortranDataLoader;
+import org.netbeans.modules.cnd.source.CCDataLoader;
 import java.util.Enumeration;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;

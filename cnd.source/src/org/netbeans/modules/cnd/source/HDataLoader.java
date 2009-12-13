@@ -38,27 +38,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.source;
 
-package org.netbeans.modules.cnd.loaders;
+import java.io.IOException;
 
-
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.nodes.Node;
 
-
-/** Represents a C++ object in the Repository */
-public class CCDataObject extends CndDataObject {
+/**
+ *  Recognizes .h header files and create .h data objects for them
+ *
+ *  This data loader recognizes .h header data files, creates a data object for
+ *  each file, and sets up an appropriate action menus for .h file objects.
+ */
+public final class HDataLoader extends CndAbstractDataLoaderExt {
 
     /** Serial version number */
-    static final long serialVersionUID = -5855103267479484214L;
+    static final long serialVersionUID = -2924582006340980748L;
 
-    public CCDataObject(FileObject pf, CndAbstractDataLoader loader)
-			    throws DataObjectExistsException {
-	super(pf, loader);
+    public HDataLoader() {
+        super("org.netbeans.modules.cnd.source.HDataObject"); // NOI18N
     }
 
-    protected Node createNodeDelegate() {
-	return new CCDataNode(this);
+    @Override
+    protected String getMimeType() {
+        return MIMENames.HEADER_MIME_TYPE;
+    }
+
+    protected MultiDataObject createMultiObject(FileObject primaryFile)
+            throws DataObjectExistsException, IOException {
+        return new HDataObject(primaryFile, this);
     }
 }

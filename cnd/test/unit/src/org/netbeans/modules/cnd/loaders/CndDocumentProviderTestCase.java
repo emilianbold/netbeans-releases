@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.cnd.loaders;
 
+import org.netbeans.modules.cnd.source.CCDataObject;
+import org.netbeans.modules.cnd.source.HDataObject;
+import org.netbeans.modules.cnd.source.CDataObject;
 import java.io.File;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;

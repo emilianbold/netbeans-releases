@@ -1,4 +1,3 @@
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -40,25 +39,28 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.source;
 
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.nodes.Node;
+import org.openide.loaders.*;
+import org.openide.nodes.*;
 
 
+/** Represents a Fortran object in the Repository.
+ *
+ */
 
-/** Represents a .h header object in the Repository */
-public class HDataObject extends CndDataObject {
+public class FortranDataObject extends CndDataObject {
 
     /** Serial version number */
-    static final long serialVersionUID = 1858704627782172800L;
+    static final long serialVersionUID = -4941665960293429191L;
 
-    public HDataObject(FileObject pf, HDataLoader loader) throws DataObjectExistsException {
+    public FortranDataObject(FileObject pf, CndAbstractDataLoader loader)
+			    throws DataObjectExistsException {
 	super(pf, loader);
     }
-  
+
     protected Node createNodeDelegate() {
-	return new HDataNode(this);
+	return new FortranDataNode(this);
     }
 }

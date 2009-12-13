@@ -68,6 +68,7 @@ import javax.swing.UIManager;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.loaders.CppEditorSupport;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
@@ -81,8 +82,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.windows.TopComponent;
-
-import org.netbeans.modules.cnd.loaders.FortranDataObject;
 
 /**
  * Loosly based on java/src/org/netbeans/modules/java/ui/NavigationView.java
@@ -411,7 +410,7 @@ public class NavigationView extends ChoiceView {
         if (dataObject == null) {
             return; // Should not happen...
         }
-        if (!(dataObject instanceof FortranDataObject)) {
+        if (!(dataObject.getPrimaryFile().getMIMEType().equals(MIMENames.FORTRAN_MIME_TYPE))) {
             return; // Should not happen...
         }
 
@@ -551,7 +550,7 @@ public class NavigationView extends ChoiceView {
             String scope = ctagsTokenEvent.getScope();
             int scopeKind = ctagsTokenEvent.getScopeKind();
 
-            if (sourceObject instanceof FortranDataObject) {
+            if (sourceObject.getPrimaryFile().getMIMEType().equals(MIMENames.FORTRAN_MIME_TYPE)) {
                 int scopeCluster = findFortranScopeCluster(scope, scopeKind);
                 switch (ctagsTokenEvent.getKind()) {
                     case 'l':   // labels

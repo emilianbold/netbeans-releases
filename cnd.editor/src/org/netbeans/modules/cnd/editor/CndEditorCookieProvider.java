@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,27 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.editor;
 
-import org.openide.nodes.Children;
+import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.MultiDataObject;
+import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
+import org.openide.text.DataEditorSupport;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- *  A node representing this Fortran object. The Fortran file could be F77,
- *  F90, or F95.
+ *
+ * @author Alexey Vladykin
  */
-public class FortranDataNode extends CndDataNode {
+@ServiceProvider(service = CndCookieProvider.class, position = 9999)
+public final class CndEditorCookieProvider extends CndCookieProvider {
 
-    /** The base name of the Fortran source icon */
-    private static final String FortranSrcIcon =
-		"org/netbeans/modules/cnd/loaders/FortranSrcIcon.gif"; // NOI18N
-
-    public FortranDataNode(CndDataObject obj) {
-	super(obj, Children.LEAF, FortranSrcIcon);
-    }
-
-    public FortranDataNode(CndDataObject obj, Children ch) {
-	super(obj, ch, FortranSrcIcon);
+    @Override
+    public void addCookies(DataObject dao, CookieSet cookies) {
+        if (cookies.getCookie(EditorCookie.class) == null) {
+            cookies.add((Node.Cookie) DataEditorSupport.create(dao, ((MultiDataObject) dao).getPrimaryEntry(), cookies));
+        }
     }
 }

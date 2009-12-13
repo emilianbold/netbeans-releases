@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.source;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,8 +48,8 @@ import java.util.Set;
 
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
@@ -60,6 +60,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.nodes.CookieSet;
 import org.openide.util.Lookup;
 import org.openide.util.WeakSet;
 
@@ -70,6 +71,8 @@ public abstract class CndDataObject extends MultiDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = -6788084224129713370L;
+    private final ReadOnlySupportImpl readOnlySupport = new ReadOnlySupportImpl(false);
+    private final MyNativeFileItemSet nativeFileItemSupport = new MyNativeFileItemSet();
 
     public CndDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
@@ -85,7 +88,12 @@ public abstract class CndDataObject extends MultiDataObject {
      *  Initialize cookies for this DataObject. This method may get overridden
      *  by derived classes who need to use a different set of cookies.
      */
-    protected void init() {}
+    protected void init() {
+        CookieSet cookies = getCookieSet();
+        cookies.add(readOnlySupport);
+        cookies.add(nativeFileItemSupport);
+        CndCookieProvider.getDefault().addCookies(this, cookies);
+    }
 
     /**
      *  The DeleteList is the list of suffixes which should be deleted during
@@ -100,14 +108,6 @@ public abstract class CndDataObject extends MultiDataObject {
     public HelpCtx getHelpCtx() {
 	return HelpCtx.DEFAULT_HELP;
     }  
-    
-    void addSaveCookie(SaveCookie save) {
-        getCookieSet().add(save);
-    }
-    
-    void removeSaveCookie(SaveCookie save) {
-        getCookieSet().remove(save);
-    }
 
     @Override
     protected abstract Node createNodeDelegate();

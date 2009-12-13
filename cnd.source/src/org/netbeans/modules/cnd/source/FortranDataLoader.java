@@ -38,22 +38,35 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.source;
 
-package org.netbeans.modules.cnd.loaders;
+import java.io.IOException;
 
-import org.openide.nodes.*;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
 
-/** A node to represent this object */
-public class HDataNode extends CndDataNode {
+/**
+ *
+ * @author Alexander Simon
+ */
+//@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class, position=400)
+public class FortranDataLoader extends CndAbstractDataLoaderExt {
 
-    public HDataNode(HDataObject obj) {
-	this(obj, Children.LEAF);
+    /** Serial version number */
+    static final long serialVersionUID = 6801389470714975686L;
+
+    public FortranDataLoader() {
+        super("org.netbeans.modules.cnd.source.FortranDataObject"); // NOI18N
     }
 
-    public HDataNode(HDataObject obj, Children ch) {
-	super(obj, ch, HDataIcon);
+    @Override
+    protected String getMimeType() {
+        return MIMENames.FORTRAN_MIME_TYPE;
     }
 
-    private static final
-            String HDataIcon = "org/netbeans/modules/cnd/loaders/HDataIcon.gif";  // NOI18N
+    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
+        return new FortranDataObject(primaryFile, this);
+    }
 }

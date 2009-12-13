@@ -42,86 +42,43 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE MIME-Resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN"
 		    "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
-
 <MIME-resolver >
     <file>
-        <ext name="mk"/>
-        <resolver mime="text/x-make"/>
+        <ext name="h"/>
+        <ext name="H"/>
+        <ext name="hpp"/>
+        <ext name="hxx"/>
+        <ext name="SUNWCCh"/>
+        <ext name="tcc"/>
+        <resolver mime="text/x-h"/>
     </file>
     <file>
-        <ext name=""/>
-        <name name="makefile" substring="true"/>
-        <resolver mime="text/x-make"/>
+        <ext name="c"/>
+        <ext name="i"/>
+        <ext name="m"/>
+        <resolver mime="text/x-c"/>
     </file>
     <file>
-        <ext name="exe"/>
-        <resolver mime="application/x-exe"/>
+        <ext name="cpp"/>
+        <ext name="cc"/>
+        <ext name="c++"/>
+        <ext name="cxx"/>
+        <ext name="C"/>
+        <ext name="mm"/>
+        <resolver mime="text/x-c++"/>
     </file>
     <file>
-        <ext name="dll"/>
-        <resolver mime="application/x-exe+dll"/>
-    </file>
-    <file>
-        <ext name="o"/>
-        <resolver mime="application/x-object+elf"/>
-    </file>
-    <file>
-        <ext name="so"/>
-        <resolver mime="application/x-shobj+elf"/>
-    </file>    
-    <file>
-        <ext name="core"/>
-        <resolver mime="application/x-core+elf"/>
-    </file>
-    <file>
-        <ext name="ui"/>
-        <resolver mime="text/qtui+xml"/>
-    </file>
-    <file>
-        <ext name="qrc"/>
-        <resolver mime="text/qtresource+xml"/>
-    </file>
-    <file>
-        <ext name="ts"/>
-        <resolver mime="text/qttranslation+xml"/>
-    </file>
-    <file>
-        <ext name="pro"/>
-        <resolver mime="text/x-qtproject"/>
-    </file>
-    <file>
-	    <ext name="sh"/>
-	    <ext name="bash"/>
-	    <ext name="csh"/>
-	    <ext name="ksh"/>
-	    <ext name="sh"/>
-	    <ext name="zsh"/>  
-	    <resolver mime="text/sh"/>
-    </file>
-    <file>
-	    <!-- Only files without extension. -->
-	    <ext name=""/>
-	    <!-- Pattern #! in first 2 bytes and one of patterns in first 40 bytes.  -->
-	    <pattern value="#!" range="2">
-		    <pattern value="/bin/bash" range="40"/>
-	    </pattern>
-	    <pattern value="#!" range="2">
-		    <pattern value="/bin/sh" range="40"/>
-	    </pattern>
-	    <pattern value="#!" range="2">
-		    <pattern value="/bin/ksh" range="40"/>
-	    </pattern>
-	    <pattern value="#!" range="2">
-		    <pattern value="/bin/csh" range="40"/>
-	    </pattern>
-	    <pattern value="#!" range="2">
-		    <pattern value="/usr/bin/perl" range="40"/>
-	    </pattern>
-	    <resolver mime="text/sh"/>
-    </file>
-    <file>
-	    <ext name="bat"/>
-	    <ext name="cmd"/>
-	    <resolver mime="text/bat"/>
+        <ext name="f"/>
+        <ext name="F"/>
+        <ext name="f90"/>
+        <ext name="F90"/>
+        <ext name="f95"/>
+        <ext name="F95"/>
+        <ext name="f03"/>
+        <ext name="F03"/>
+        <ext name="for"/>
+        <ext name="il"/>
+        <ext name="mod"/>
+        <resolver mime="text/x-fortran"/>
     </file>
 </MIME-resolver>

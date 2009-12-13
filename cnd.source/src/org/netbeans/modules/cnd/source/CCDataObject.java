@@ -39,30 +39,26 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.source;
 
-import java.util.HashSet;
 
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.nodes.Node;
 
 
-/** Represents a Fortran object in the Repository.
- *
- */
-
-public class FortranDataObject extends CndDataObject {
+/** Represents a C++ object in the Repository */
+public class CCDataObject extends CndDataObject {
 
     /** Serial version number */
-    static final long serialVersionUID = -4941665960293429191L;
+    static final long serialVersionUID = -5855103267479484214L;
 
-    public FortranDataObject(FileObject pf, CndAbstractDataLoader loader)
+    public CCDataObject(FileObject pf, CndAbstractDataLoader loader)
 			    throws DataObjectExistsException {
 	super(pf, loader);
     }
 
     protected Node createNodeDelegate() {
-	return new FortranDataNode(this);
+	return new CCDataNode(this);
     }
 }

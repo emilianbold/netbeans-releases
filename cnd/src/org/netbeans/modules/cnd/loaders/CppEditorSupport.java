@@ -65,6 +65,7 @@ import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node.Cookie;
 import org.openide.windows.CloneableOpenSupport;
 
@@ -97,12 +98,15 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
         }
     };
 
+    private final CookieSet cookies;
+
     /**
      *  Create a new Editor support for the given C/C++/Fortran source.
      *  @param entry The (primary) file entry representing the C/C++/f95 source file
      */
-    public CppEditorSupport(DataObject obj) {
+    public CppEditorSupport(DataObject obj, CookieSet cookies) {
         super(obj, new Environment(obj));
+        this.cookies = cookies;
 
         // Add change listener. Note: This should be "addPropertyChange"!
         addPropertyChangeListener(new PropertyChangeListener() {
@@ -148,25 +152,22 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
     
     /** Helper method. Adds save cookie to the data object. */
     private void addSaveCookie() {
-        CndDataObject obj = (CndDataObject) getDataObject();
-
         // Adds save cookie to the data object.
-        if (obj.getCookie(SaveCookie.class) == null) {
-            obj.addSaveCookie(saveCookie);
+        if (cookies.getCookie(SaveCookie.class) == null) {
+            cookies.add(saveCookie);
         }
     }
 
     /** Helper method. Removes save cookie from the data object. */
     private void removeSaveCookie() {
-        CndDataObject obj = (CndDataObject) getDataObject();
-
         // Remove save cookie from the data object.
-        Cookie cookie = obj.getCookie(SaveCookie.class);
+        Cookie cookie = cookies.getCookie(SaveCookie.class);
 
         if (cookie != null && cookie.equals(saveCookie)) {
-            obj.removeSaveCookie(saveCookie);
+            cookies.remove(saveCookie);
         }
     }
+
     /** True, if there's a visible editor component flying around */
     private boolean componentsCreated = false;
 

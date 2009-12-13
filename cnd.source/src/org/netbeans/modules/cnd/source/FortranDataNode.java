@@ -39,22 +39,25 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.source;
 
 import org.openide.nodes.Children;
 
-/** A node to represent the C source object */
-public class CDataNode extends CndDataNode {
+/**
+ *  A node representing this Fortran object. The Fortran file could be F77,
+ *  F90, or F95.
+ */
+public class FortranDataNode extends CndDataNode {
 
-    /** The base name of the C source icon */
-    private static final String CSrcIcon =
-		    "org/netbeans/modules/cnd/loaders/CSrcIcon.gif"; // NOI18N
+    /** The base name of the Fortran source icon */
+    private static final String FortranSrcIcon =
+		"org/netbeans/modules/cnd/source/resources/FortranSrcIcon.gif"; // NOI18N
 
-    public CDataNode(CndDataObject obj) {
-	super(obj, Children.LEAF, CSrcIcon);
+    public FortranDataNode(CndDataObject obj) {
+	super(obj, Children.LEAF, FortranSrcIcon);
     }
 
-    public CDataNode(CndDataObject obj, Children ch) {
-	super(obj, ch, CSrcIcon);
+    public FortranDataNode(CndDataObject obj, Children ch) {
+	super(obj, ch, FortranSrcIcon);
     }
 }

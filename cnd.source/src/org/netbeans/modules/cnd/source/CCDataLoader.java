@@ -38,25 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.source;
 
-package  org.netbeans.modules.cnd.editor.parser;
+import java.io.IOException;
 
-import java.awt.Image;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
 
-public class SourceFileNode extends ViewNode {
+/**
+ *
+ * @author Alexander Simon
+ */
+public class CCDataLoader extends CndAbstractDataLoaderExt {
 
-    private final Node delegate;
+    /** Serial version number */
+    static final long serialVersionUID = 6801389470714975684L;
 
-    public SourceFileNode(DataObject dao, String name, int lineno,
-		char kind, String scope, int scopeCluster, int cluster) {
-        super(name, dao, lineno, kind, scope, scopeCluster, cluster);
-        this.delegate = dao.getNodeDelegate();
+    public CCDataLoader() {
+        super("org.netbeans.modules.cnd.source.CCDataObject"); // NOI18N
     }
 
     @Override
-    public Image getIcon(int type) {
-        return delegate.getIcon(type);
+    protected String getMimeType() {
+        return MIMENames.CPLUSPLUS_MIME_TYPE;
+    }
+
+    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
+        return new CCDataObject(primaryFile, this);
     }
 }

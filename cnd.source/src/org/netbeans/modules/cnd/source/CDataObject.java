@@ -39,22 +39,28 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.source;
 
-import org.openide.nodes.Children;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.*;
+import org.openide.nodes.*;
 
-/** A node to represent the C++ src object */
-public class CCDataNode extends CndDataNode {
 
-    /** The base name of the C++ source icon */
-    private static final String CCSrcIcon =
-		    "org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"; // NOI18N
+/** Represents a C++ object in the Repository.
+ *
+ */
 
-    public CCDataNode(CndDataObject obj) {
-	super(obj, Children.LEAF, CCSrcIcon);
+public class CDataObject extends CndDataObject {
+
+    /** Serial version number */
+    static final long serialVersionUID = 6859476492905347073L;
+
+    public CDataObject(FileObject pf, CndAbstractDataLoader loader)
+			    throws DataObjectExistsException {
+	super(pf, loader);
     }
 
-    public CCDataNode(CndDataObject obj, Children ch) {
-	super(obj, ch, CCSrcIcon);
+    protected Node createNodeDelegate() {
+	return new CDataNode(this);
     }
 }

@@ -39,24 +39,66 @@
  * made subject to such option by the copyright holder.
  */
 
-package  org.netbeans.modules.cnd.editor.parser;
+package org.netbeans.modules.cnd.source;
 
-import java.awt.Image;
+import java.util.ResourceBundle;
+import javax.swing.Action;
+
+import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
+import org.openide.nodes.Children;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+import org.openide.actions.OpenAction;
+import org.openide.filesystems.FileObject;
 
-public class SourceFileNode extends ViewNode {
+/**
+ *  A base class for C/C++/Fortran (C-C-F) nodes. The functionality from
+ *  this base class is the renaming of the PROP_name property to show an extension.
+ */
+public class CndDataNode extends DataNode {
 
-    private final Node delegate;
+    /** The name property */
+    //private static final String PROP_NAME = "name"; // NOI18N
 
-    public SourceFileNode(DataObject dao, String name, int lineno,
-		char kind, String scope, int scopeCluster, int cluster) {
-        super(name, dao, lineno, kind, scope, scopeCluster, cluster);
-        this.delegate = dao.getNodeDelegate();
+    /** Cache the bundle */
+    private static ResourceBundle bundle = NbBundle.getBundle(CndDataNode.class);
+
+    /** Primary File */
+    private FileObject primary;
+
+
+    /** Constructor for this class */
+    public CndDataNode(DataObject obj, Children ch) {
+	super(obj, ch);
+	primary = getDataObject().getPrimaryFile();
+    }
+
+    public CndDataNode(DataObject obj, Children ch, String icon) {
+	super(obj, ch);
+	setIconBaseWithExtension(icon);
+    }
+
+    /**
+     *  Overrides default action from DataNode.
+     *  Instantiate a template, if isTemplate() returns true.
+     *  Opens otherwise.
+     */
+    @Override
+    public Action getPreferredAction() {
+	Action result = super.getPreferredAction();
+	return result == null ? SystemAction.get(OpenAction.class) : result;
+    }
+
+    /** Getter for bundle strings */
+    protected static String getString(String prop) {
+	return bundle.getString(prop);
     }
 
     @Override
-    public Image getIcon(int type) {
-        return delegate.getIcon(type);
+    public HelpCtx getHelpCtx() {
+	return new HelpCtx("Welcome_cpp_home"); // NOI18N
     }
+    
 }

@@ -38,37 +38,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.loaders;
 
-import java.io.IOException;
+package org.netbeans.modules.cnd.source;
 
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.DataObjectExistsException;
+import org.openide.nodes.*;
 
-/**
- *  Recognizes .h header files and create .h data objects for them
- *
- *  This data loader recognizes .h header data files, creates a data object for
- *  each file, and sets up an appropriate action menus for .h file objects.
- */
-public final class HDataLoader extends CndAbstractDataLoaderExt {
+/** A node to represent this object */
+public class HDataNode extends CndDataNode {
 
-    /** Serial version number */
-    static final long serialVersionUID = -2924582006340980748L;
-
-    public HDataLoader() {
-        super("org.netbeans.modules.cnd.loaders.HDataObject"); // NOI18N
+    public HDataNode(HDataObject obj) {
+	this(obj, Children.LEAF);
     }
 
-    @Override
-    protected String getMimeType() {
-        return MIMENames.HEADER_MIME_TYPE;
+    public HDataNode(HDataObject obj, Children ch) {
+	super(obj, ch, HDataIcon);
     }
 
-    protected MultiDataObject createMultiObject(FileObject primaryFile)
-            throws DataObjectExistsException, IOException {
-        return new HDataObject(primaryFile, this);
-    }
+    private static final
+            String HDataIcon = "org/netbeans/modules/cnd/source/resources/HDataIcon.gif";  // NOI18N
 }

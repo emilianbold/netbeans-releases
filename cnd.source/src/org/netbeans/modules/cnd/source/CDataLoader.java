@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.source;
 
 import java.io.IOException;
 
@@ -57,7 +57,7 @@ public class CDataLoader extends CndAbstractDataLoaderExt {
     static final long serialVersionUID = 6801389470714975685L;
 
     public CDataLoader() {
-        super("org.netbeans.modules.cnd.loaders.CDataObject"); // NOI18N
+        super("org.netbeans.modules.cnd.source.CDataObject"); // NOI18N
     }
 
     @Override

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.loaders;
 
+import org.netbeans.modules.cnd.source.HDataObject;
 import java.io.File;
 import javax.swing.JEditorPane;
 import org.netbeans.editor.BaseDocument;
