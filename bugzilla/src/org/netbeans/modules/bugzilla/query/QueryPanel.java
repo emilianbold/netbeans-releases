@@ -300,11 +300,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                                 .add(changedToTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                                         .add(byLastChangePanelLayout.createSequentialGroup()
-                                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                                 .add(changedBlaBlaLabel)
                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(newValueTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                                                .add(newValueTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
                 byLastChangePanelLayout.setVerticalGroup(
@@ -420,10 +420,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         public Object getElementAt(int i) { return strings[i]; }
                 });
                 versionList.setMinimumSize(new java.awt.Dimension(100, 2));
+                versionList.setVisibleRowCount(6);
                 jScrollPane2.setViewportView(versionList);
                 versionList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.versionList.AccessibleContext.accessibleDescription")); // NOI18N
 
-                statusLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
+                statusLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
                 statusLabel.setLabelFor(statusList);
                 org.openide.awt.Mnemonics.setLocalizedText(statusLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.statusLabel.text")); // NOI18N
 
@@ -435,6 +436,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         public Object getElementAt(int i) { return strings[i]; }
                 });
                 statusList.setMinimumSize(new java.awt.Dimension(100, 2));
+                statusList.setVisibleRowCount(6);
                 jScrollPane3.setViewportView(statusList);
                 statusList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.statusList.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -450,6 +452,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         public Object getElementAt(int i) { return strings[i]; }
                 });
                 priorityList.setMinimumSize(new java.awt.Dimension(100, 2));
+                priorityList.setVisibleRowCount(6);
                 jScrollPane4.setViewportView(priorityList);
                 priorityList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.priorityList.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -465,6 +468,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         public Object getElementAt(int i) { return strings[i]; }
                 });
                 resolutionList.setMinimumSize(new java.awt.Dimension(100, 2));
+                resolutionList.setVisibleRowCount(6);
                 jScrollPane5.setViewportView(resolutionList);
                 resolutionList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.resolutionList.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -480,6 +484,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         public Object getElementAt(int i) { return strings[i]; }
                 });
                 componentList.setMinimumSize(new java.awt.Dimension(100, 2));
+                componentList.setVisibleRowCount(6);
                 jScrollPane6.setViewportView(componentList);
                 componentList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.componentList.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -491,6 +496,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         public Object getElementAt(int i) { return strings[i]; }
                 });
                 productList.setMaximumSize(new java.awt.Dimension(100, 2));
+                productList.setVisibleRowCount(6);
                 jScrollPane7.setViewportView(productList);
                 productList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.productList.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -506,10 +512,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         public Object getElementAt(int i) { return strings[i]; }
                 });
                 severityList.setMinimumSize(new java.awt.Dimension(100, 2));
+                severityList.setVisibleRowCount(6);
                 severityScrollPane.setViewportView(severityList);
                 severityList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.severityList.AccessibleContext.accessibleDescription")); // NOI18N
 
-                issueTypeLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+                issueTypeLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
                 issueTypeLabel.setLabelFor(severityList);
                 org.openide.awt.Mnemonics.setLocalizedText(issueTypeLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.issueTypeLabel.text")); // NOI18N
 
@@ -521,6 +528,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         public Object getElementAt(int i) { return strings[i]; }
                 });
                 issueTypeList.setMinimumSize(new java.awt.Dimension(100, 2));
+                issueTypeList.setVisibleRowCount(6);
                 issueTypeScrollPane.setViewportView(issueTypeList);
 
                 tmLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
@@ -535,6 +543,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         public Object getElementAt(int i) { return strings[i]; }
                 });
                 tmList.setMinimumSize(new java.awt.Dimension(100, 2));
+                tmList.setVisibleRowCount(6);
                 tmScrollPane.setViewportView(tmList);
 
                 org.jdesktop.layout.GroupLayout byDetailsPanelLayout = new org.jdesktop.layout.GroupLayout(byDetailsPanel);
@@ -588,11 +597,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                                         .add(byDetailsPanelLayout.createSequentialGroup()
                                                 .add(tmLabel)
                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(tmScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
+                                                .add(tmScrollPane))
                                         .add(byDetailsPanelLayout.createSequentialGroup()
                                                 .add(issueTypeLabel)
                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(issueTypeScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
+                                                .add(issueTypeScrollPane))
                                         .add(byDetailsPanelLayout.createSequentialGroup()
                                                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                                                         .add(productLabel)
@@ -604,13 +613,13 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                                                         .add(severityLabel))
                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                                 .add(byDetailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                                        .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                                                        .add(jScrollPane7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                                                        .add(jScrollPane6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                                                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                                                        .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                                                        .add(jScrollPane5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
-                                                        .add(severityScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))))
+                                                        .add(jScrollPane4)
+                                                        .add(jScrollPane7)
+                                                        .add(jScrollPane6)
+                                                        .add(jScrollPane2)
+                                                        .add(jScrollPane3)
+                                                        .add(jScrollPane5)
+                                                        .add(severityScrollPane))))
                                 .addContainerGap())
                 );
 
@@ -631,6 +640,12 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
                 keywordsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+                summaryTextField.setColumns(30);
+
+                commentTextField.setColumns(30);
+
+                keywordsTextField.setColumns(30);
+
                 org.openide.awt.Mnemonics.setLocalizedText(keywordsButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.keywordsButton.text")); // NOI18N
                 keywordsButton.addActionListener(new java.awt.event.ActionListener() {
                         public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -642,6 +657,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 org.openide.awt.Mnemonics.setLocalizedText(whiteboardLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.whiteboardLabel.text")); // NOI18N
 
                 whiteboardComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+                whiteboardTextField.setColumns(30);
 
                 org.jdesktop.layout.GroupLayout byTextPanelLayout = new org.jdesktop.layout.GroupLayout(byTextPanel);
                 byTextPanel.setLayout(byTextPanelLayout);
@@ -714,14 +731,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 keywordsTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.keywordsTextField.AccessibleContext.accessibleName")); // NOI18N
                 keywordsTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.keywordsTextField.AccessibleContext.accessibleDescription")); // NOI18N
                 keywordsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.keywordsButton.AccessibleContext.accessibleDescription")); // NOI18N
-
-                summaryTextField.setColumns(30);
-
-                commentTextField.setColumns(30);
-
-                keywordsTextField.setColumns(30);
-
-                whiteboardTextField.setColumns(30);
 
                 jLabel3.setLabelFor(queryNameTextField);
                 org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel3.text")); // NOI18N
