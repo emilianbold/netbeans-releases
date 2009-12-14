@@ -150,7 +150,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
                 <attr name="position" intvalue="138"/>
             </file>
-            <file name="cnd-ext-based-mime-resolver.xml" url="mime-resolver-ext-based.xml">
+            <file name="cnd-ext-based-mime-resolver2.xml" url="mime-resolver-ext-based.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"/>
                 <attr name="position" intvalue="215"/>
