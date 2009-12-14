@@ -56,7 +56,7 @@ import org.openide.util.NbPreferences;
 public final class KenaiManager {
 
     private static KenaiManager instance;
-    private TreeMap<String, Kenai> instances = new TreeMap();
+    private TreeMap<String, Kenai> instances = new TreeMap<String, Kenai>();
     PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     public static final String PROP_INSTANCES = "prop_instances"; // NOI18N
     private Preferences prefs = NbPreferences.forModule(Kenai.class);
@@ -101,9 +101,9 @@ public final class KenaiManager {
         Iterator<Kenai> it = instances.values().iterator();
         while (it.hasNext()) {
             Kenai n = it.next();
-            b.append(n.getUrl()+ "," +n.getName());
+            b.append(n.getUrl()).append(',').append(n.getName());
             if (it.hasNext()) {
-                b.append(";"); // NOI18N
+                b.append(';');
             }
         }
         prefs.put(INSTANCES_PREF, b.toString()); // NOI18N
