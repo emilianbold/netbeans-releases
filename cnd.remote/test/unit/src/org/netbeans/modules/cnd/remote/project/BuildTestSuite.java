@@ -77,8 +77,8 @@ public class BuildTestSuite extends CndBaseTestSuite {
 
     public BuildTestSuite() {
         this("Remote Development", // NOI18N
-             RemoteBuildSamplesTestCase.class,
-             RemoteBuildMakefileTestCase.class);
+             RemoteBuildSamplesTest.class,
+             RemoteBuildMakefileTest.class);
     }
 
 
