@@ -176,7 +176,8 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        ConnectionManager.getInstance().disconnect(getTestExecutionEnvironment());
+        //ConnectionManager.getInstance().disconnect(getTestExecutionEnvironment());
+System.err.printf("\n##### 2222222222222222222222\n");
         System.err.printf("\n###< tearDown %s\n", getClass().getName() + '.' + getName());
     }
 
@@ -250,6 +251,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                 assertTrue("Timeout: could not build within " + timeout + " " + unit.toString().toLowerCase(), false);
             }
         }
+        Thread.sleep(500); // give building thread time to finish and to kill rfs_controller
         assertTrue("build failed: RC=" + build_rc.get(), build_rc.get() == 0);
     }
 
