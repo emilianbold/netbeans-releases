@@ -60,15 +60,15 @@ made subject to such option by the copyright holder.
   </p>
   
   <p>
-    Also this module defines the <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html">
+    Also this module defines the <a href="@TOP@/org/openide/util/Lookup.html">
     Lookup</a> which the NetBeans way for dynamic registration 
     and lookup of 
     components in our modularized component system. It allows lookup and discovery 
     of features by description of their interfaces. The classes are devided 
     into two parts. The 
-    <api group="java" name="LookupAPI" type="export" category="official" url="@org-openide-util-lookup@/org/openide/util/lookup/doc-files/lookup-api.html">
+    <api group="java" name="LookupAPI" type="export" category="official" url="@TOP@/org/openide/util/lookup/doc-files/lookup-api.html">
     allows the discovery</api> and the 
-    <api group="java" name="LookupSPI" type="export" category="official" url="@org-openide-util-lookup@/org/openide/util/lookup/doc-files/lookup-spi.html">
+    <api group="java" name="LookupSPI" type="export" category="official" url="@TOP@/org/openide/util/lookup/doc-files/lookup-spi.html">
     simplifies creation and registration of own lookup objects</api>.
   </p>
  </answer>
@@ -93,7 +93,7 @@ made subject to such option by the copyright holder.
  <answer id="arch-usecases">
   
     There is a great introduction to Lookup and its usage in its 
-    <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html">javadoc</a>. Here is just
+    <a href="@TOP@/org/openide/util/Lookup.html">javadoc</a>. Here is just
     a list of frequently asked or interesting questions slowly expanding as
     people ask them:
     
@@ -177,13 +177,13 @@ In general there are three ways to achieve this.
 <span class="java-keywords">import</span> <span class="java-identifier">java</span><span class="java-operators">.</span><span class="java-identifier">util</span><span class="java-operators">.</span><span class="java-identifier">Collections</span><span class="java-operators">;</span>
 <span class="java-keywords">import</span> <span class="java-identifier">org</span><span class="java-operators">.</span><span class="java-identifier">openide</span><span class="java-operators">.</span><span class="java-identifier">util</span><span class="java-operators">.</span><span class="java-identifier">Lookup</span><span class="java-operators">;</span>
 
-<a href="@org-openide-util-lookup@/org/openide/util/Lookup.Result.html"><span class="java-identifier">Lookup</span><span class="java-operators">.</span><span class="java-identifier">Result</span></a> <span class="java-identifier">result</span> <span class="java-operators">=</span> <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html"><span class="java-identifier">Lookup</span></a><span class="java-operators">.</span><span class="java-layer-method">getDefault</span> <span class="java-operators">(</span><span class="java-operators">)</span><span class="java-operators">.</span><span class="java-layer-method">lookup</span> <span class="java-operators">(</span><span class="java-keywords">new</span> <a href="@org-openide-util-lookup@/org/openide/util/Lookup.Template.html"><span class="java-identifier">Lookup</span><span class="java-operators">.</span><span class="java-layer-method">Template</span></a> <span class="java-operators">(</span><span class="java-identifier">TipsOfTheDayProvider</span><span class="java-operators">.</span><span class="java-keywords">class</span><span class="java-operators">)</span><span class="java-operators">)</span><span class="java-operators">;</span>
-<span class="java-identifier">Collection</span> <span class="java-identifier">c</span> <span class="java-operators">=</span> <span class="java-identifier">result</span><span class="java-operators">.</span><a href="@org-openide-util-lookup@/org/openide/util/Lookup.Result.html#allInstances()"><span class="java-layer-method">allInstances</span></a> <span class="java-operators">(</span><span class="java-operators">)</span><span class="java-operators">;</span>
+<a href="@TOP@org/openide/util/Lookup.Result.html"><span class="java-identifier">Lookup</span><span class="java-operators">.</span><span class="java-identifier">Result</span></a> <span class="java-identifier">result</span> <span class="java-operators">=</span> <a href="@TOP@org/openide/util/Lookup.html"><span class="java-identifier">Lookup</span></a><span class="java-operators">.</span><span class="java-layer-method">getDefault</span> <span class="java-operators">(</span><span class="java-operators">)</span><span class="java-operators">.</span><span class="java-layer-method">lookup</span> <span class="java-operators">(</span><span class="java-keywords">new</span> <a href="@TOP@org/openide/util/Lookup.Template.html"><span class="java-identifier">Lookup</span><span class="java-operators">.</span><span class="java-layer-method">Template</span></a> <span class="java-operators">(</span><span class="java-identifier">TipsOfTheDayProvider</span><span class="java-operators">.</span><span class="java-keywords">class</span><span class="java-operators">)</span><span class="java-operators">)</span><span class="java-operators">;</span>
+<span class="java-identifier">Collection</span> <span class="java-identifier">c</span> <span class="java-operators">=</span> <span class="java-identifier">result</span><span class="java-operators">.</span><a href="@TOP@org/openide/util/Lookup.Result.html#allInstances()"><span class="java-layer-method">allInstances</span></a> <span class="java-operators">(</span><span class="java-operators">)</span><span class="java-operators">;</span>
 <span class="java-identifier">Collections</span><span class="java-operators">.</span><span class="java-layer-method">shuffle</span> <span class="java-operators">(</span><span class="java-identifier">c</span><span class="java-operators">)</span><span class="java-operators">;</span>
 <span class="java-identifier">TipsOfTheDayProvider</span> <span class="java-identifier">selected</span> <span class="java-operators">=</span> <span class="java-operators">(</span><span class="java-identifier">TipsOfTheDayProvider</span><span class="java-operators">)</span><span class="java-identifier">c</span><span class="java-operators">.</span><span class="java-layer-method">iterator</span> <span class="java-operators">(</span><span class="java-operators">)</span><span class="java-operators">.</span><span class="java-layer-method">next</span> <span class="java-operators">(</span><span class="java-operators">)</span><span class="java-operators">;</span>
 </pre><p>    
     and then display the tip. Simple, trivial, just by the usage of 
-    <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html">Lookup</a> interface once
+    <a href="@TOP@org/openide/util/Lookup.html">Lookup</a> interface once 
     creates a registry that other modules can enhance. But such enhancing 
     of course requires work on the other side. Each module that would like
     to register its <code>TipsOfTheDayProvider</code> needs to depend on the 
@@ -301,7 +301,7 @@ org.my.netbeans.extramodule.ExtraTip
    indirectly communicates with <a href="@org-openide-awt@/overview-summary.html">UI Utilities</a>
    module using <api name="AWTBridge" category="private" group="java" type="export" 
    url="http://www.netbeans.org/source/browse/openide/util/src/org/netbeans/modules/openide/util/AWTBridge.java">
-   a class that is looked up in <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
+   a class that is looked up in <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
    and if registered can provide better UI elements for <a href="@JDK@/javax/swing/Action.html">Action</a>s.
    </api>
    
@@ -490,28 +490,28 @@ org.my.netbeans.extramodule.ExtraTip
     <li>
     <api type="export" group="property" name="org.openide.util.Lookup" category="devel">
         checked by the initialization of the 
-        <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
+        <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
         and can
         contain name of a class that extends <code>org.openide.util.Lookup</code> and
         has public constructor, that should be instantiated and returned from 
-        <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
+        <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
         the class will be loaded by 
         <a href="@JDK@/java/lang/Thread.html#getContextClassLoader()">
         Thread.currentThread().getContextClassLoader()</a>
         classloader the first time <code>Lookup.getDefault</code> is invoked.
         <p/>
         The property can also contain value <code>"-"</code> which means to completely
-        disable the lookup instantiation and return <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#EMPTY">Lookup.EMPTY</a>
-        from <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>.
+        disable the lookup instantiation and return <a href="@TOP@/org/openide/util/Lookup.html#EMPTY">Lookup.EMPTY</a>
+        from <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>.
         <p/>
         If the property is unspecified, the default <code>MetaInfServicesLookup</code>
         is constructed for <code>Thread.currentThread().getContextclassLoader()</code>
         that implements the <a href="architecture-summary.html#answer-compat-standards">JDK's standard</a>. If, by 
         a chance an instance of 
-        <a href="@org-openide-util-lookup@/org/openide/util/Lookup.Provider.html">Lookup.Provider</a>
+        <a href="@TOP@/org/openide/util/Lookup.Provider.html">Lookup.Provider</a>
         is found
         in there, its lookup is returned as result. Otherwise the <code>MetaInfServicesLookup</code>
-        is the result of <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>.
+        is the result of <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>.
     </api>
     </li>
 
@@ -521,11 +521,11 @@ org.my.netbeans.extramodule.ExtraTip
         some system file system folder. This can be done with
         <code>org.openide.util.Lookup.paths=Folder1:Folder2:Folder3</code>.
         If this property is set prior to first call to
-        <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>,
+        <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>,
         it is split into pieces (separator is <code>':'</code>) and individual
         parts are then used to construct <code>Lookups.forPath("Folder1")</code>,
         etc. All these lookups then become part of the
-        <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
+        <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
         one. This property works since version 7.24
     </api>
     </li>
@@ -553,7 +553,7 @@ org.my.netbeans.extramodule.ExtraTip
    <api category="devel" group="java" name="WeakListener.setAccessible" type="export" url="@TOP@/org/openide/util/WeakListeners.html">
    used to call the remove method using reflection
    </api>. 
-   <api category="devel" group="java" name="Lookups.metaInfServices" type="export" url="@org-openide-util-lookup@/org/openide/util/lookup/Lookups.html#metaInfServices(java.lang.ClassLoader)">
+   <api category="devel" group="java" name="Lookups.metaInfServices" type="export" url="@TOP@/org/openide/util/lookup/Lookups.html#metaInfServices(java.lang.ClassLoader)">
    calls constructor of registered classes using reflection
    </api>. 
    <api category="private" group="lookup" name="ActionManagerInvocation" type="export" >
@@ -633,8 +633,8 @@ org.my.netbeans.extramodule.ExtraTip
     <ul>
     <li><api name="LookupInitializationLookup" category="devel" group="lookup" type="export" url="#property-org.openide.util.Lookup">
     during 
-    initialization of the <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
-    the <a href="@org-openide-util-lookup@/org/openide/util/Lookup.Provider.html">Lookup.Provider</a>
+    initialization of the <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
+    the <a href="@TOP@/org/openide/util/Lookup.Provider.html">Lookup.Provider</a>
     is being searched</api>.
     </li>
     
@@ -646,7 +646,7 @@ org.my.netbeans.extramodule.ExtraTip
     <li><api name="LookupContextGlobalProvider" category="stable" group="lookup" type="export">
     <a href="@TOP@/org/openide/util/Utilities.html#actionsGlobalContext()">actionsGlobalContext</a>
     searches for <a href="@TOP@/org/openide/util/ContextGlobalProvider.html">ContextGlobalProvider</a> in 
-    <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>.
+    <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>.
     The provider is usually provided by <a href="@org-openide-windows@/overview-summary.html">window 
     system implementation</a>.
     </api>.</li>
@@ -666,7 +666,7 @@ org.my.netbeans.extramodule.ExtraTip
     <li><api name="LookupClassLoader" category="devel" group="lookup" type="export">
     Nearly all resource looking functions and reflective code
     uses <a href="@JDK@/java/lang/ClassLoader.html">ClassLoader</a>
-    obtained from <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
+    obtained from <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>
     for loading system wide resources.
     </api>.</li>
     
@@ -762,7 +762,9 @@ org.my.netbeans.extramodule.ExtraTip
 -->
  <answer id="perf-mem">
   <p>
-   There are no big data structures.
+   There are no big data structures. The amount of memory occupied by
+   instances of <a href="@TOP@/org/openide/util/lookup/AbstractLookup.html">AbstractLookup</a> 
+   is measured by unit tests.
   </p>
  </answer>
 
