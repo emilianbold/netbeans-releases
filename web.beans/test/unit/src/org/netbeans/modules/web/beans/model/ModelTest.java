@@ -145,8 +145,7 @@ public class ModelTest extends CommonTestCase {
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
                 "@foo.CustomBinding(\"b\") "+
-                "public class Generic1<T extends foo.MyThread>  extends " +
-                "Generic<T>{}");
+                "public class Generic1  extends Generic<MyThread>{}");
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/MyThread.java",
                 "package foo; " +

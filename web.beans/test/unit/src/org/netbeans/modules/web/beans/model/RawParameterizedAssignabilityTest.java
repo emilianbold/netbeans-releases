@@ -40,6 +40,25 @@
  */
 package org.netbeans.modules.web.beans.model;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
+import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
+
 
 /**
  * @author ads
@@ -51,7 +70,328 @@ public class RawParameterizedAssignabilityTest extends CommonTestCase {
         super(testName);
     }
 
-    public void testGeneric(){
+    public void testGenerics() throws IOException, InterruptedException {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CustomBinding.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@Qualifier " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface CustomBinding  {" +
+                " String value(); "+
+                "}");
         
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CustomClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "public class CustomClass<E extends One>  {" +
+                " @Inject @CustomBinding(\"a\") Generic myField1; "+
+                " @Inject @CustomBinding(\"b\") Generic myField2; "+
+                " @Inject @CustomBinding(\"b\") Generic<One> myField3; "+
+                " @Inject @CustomBinding(\"c\") Generic<? extends One> myField4; "+
+                " @Inject @CustomBinding(\"b\") Generic<? super Three> myField5; "+
+                " @Inject @CustomBinding(\"d\") Generic4<? extends One> myField6; "+
+                " @Inject @CustomBinding(\"e\") Generic5<? super Two> myField7; "+
+                " @Inject @CustomBinding(\"d\") Generic4<Two> myField8; "+
+                " @Inject @CustomBinding(\"d\") Generic4<E> myField9; "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Generic.java",
+                "package foo; " +
+                " @CustomBinding(\"a\") "+ 
+                "public class Generic<T>  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Generic1.java",
+                "package foo; " +
+                " @CustomBinding(\"b\") "+ 
+                "public class Generic1 extends Generic<Object>  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "public class One {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
+                "package foo; " +
+                "public class Two extends One {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Three.java",
+                "package foo; " +
+                "public class Three extends One {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Generic2.java",
+                "package foo; " +
+                " @CustomBinding(\"b\") "+ 
+                "public class Generic2 extends Generic<Two>  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Generic3.java",
+                "package foo; " +
+                " @CustomBinding(\"c\") "+ 
+                "public class Generic3 extends Generic<Three>  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Generic4.java",
+                "package foo; " +
+                " @CustomBinding(\"d\") "+ 
+                "public class Generic4<T extends Two>  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Generic5.java",
+                "package foo; " +
+                " @CustomBinding(\"e\") "+ 
+                "public class Generic5<T super One>  {}");
+        
+        inform("start generic types tests");
+        
+        
+        TestWebBeansModelImpl modelImpl = createModelImpl();
+        final TestWebBeansModelProviderImpl provider = modelImpl.getProvider();
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType( "foo.CustomClass" );
+                Element clazz = ((DeclaredType)mirror).asElement();
+                List<? extends Element> children = clazz.getEnclosedElements();
+                List<VariableElement> injectionPoints =
+                    new ArrayList<VariableElement>( children.size());
+                for (Element element : children) {
+                    if (element instanceof VariableElement) {
+                        injectionPoints.add( (VariableElement)element );
+                    }
+                }
+                Set<String> names = new HashSet<String>();
+                for( VariableElement element : injectionPoints ){
+                    names.add( element.getSimpleName().toString() );
+                    if ( element.getSimpleName().contentEquals("myField1")){
+                        check1( element , provider);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField2")){
+                        check2( element , provider);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField3")){
+                        check3( element , provider);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField4")){
+                        check4( element , provider);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField5")){
+                        check5( element , provider);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField6")){
+                        check6( element , provider);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField7")){
+                        check7( element , provider);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField8")){
+                        check8( element , provider);
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField9")){
+                        check9( element , provider);
+                    }
+                }
+
+                assert names.contains("myField1");
+                assert names.contains("myField2");
+                assert names.contains("myField3");
+                assert names.contains("myField4");
+                assert names.contains("myField5");
+                assert names.contains("myField6");
+                assert names.contains("myField7");
+                assert names.contains("myField8");
+                assert names.contains("myField9");
+                
+                return null;
+            }
+            });
+        }
+    
+    private void check1( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("test field myField1");
+        Result result = provider.findVariableInjectable(element, null);
+
+        assertNotNull(result);
+        assertTrue( result instanceof ResultImpl );
+        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
+        Set<Element> productions = ((ResultImpl)result).getProductions();
+
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
+
+        TypeElement injactable = typeElements.iterator().next();
+        assertNotNull( injactable );
+
+        assertEquals("foo.Generic", injactable.getQualifiedName().toString());
     }
+    
+    private void check2( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("test field myField2");
+        Result result = provider.findVariableInjectable(element, null);
+
+        assertNotNull(result);
+        assertTrue( result instanceof ResultImpl );
+        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
+        Set<Element> productions = ((ResultImpl)result).getProductions();
+
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
+
+        TypeElement injactable = typeElements.iterator().next();
+        assertNotNull( injactable );
+
+        assertEquals("foo.Generic1", injactable.getQualifiedName().toString());
+    }
+    
+    private void check3( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("test field myField3");
+        Result result = provider.findVariableInjectable(element, null);
+
+        assertNotNull(result);
+        assertTrue( result instanceof ResultImpl );
+        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
+        Set<Element> productions = ((ResultImpl)result).getProductions();
+
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
+
+        TypeElement injactable = typeElements.iterator().next();
+        assertNotNull( injactable );
+
+        assertEquals("foo.Generic2", injactable.getQualifiedName().toString());
+    }
+    
+    private void check4( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("test field myField4");
+        Result result = provider.findVariableInjectable(element, null);
+
+        assertNotNull(result);
+        assertTrue( result instanceof ResultImpl );
+        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
+        Set<Element> productions = ((ResultImpl)result).getProductions();
+
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
+
+        TypeElement injactable = typeElements.iterator().next();
+        assertNotNull( injactable );
+
+        assertEquals("foo.Generic3", injactable.getQualifiedName().toString());
+    }
+    
+    private void check5( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("test field myField5");
+        Result result = provider.findVariableInjectable(element, null);
+
+        assertNotNull(result);
+        assertTrue( result instanceof ResultImpl );
+        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
+        Set<Element> productions = ((ResultImpl)result).getProductions();
+
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
+
+        TypeElement injactable = typeElements.iterator().next();
+        assertNotNull( injactable );
+
+        assertEquals("foo.Generic1", injactable.getQualifiedName().toString());
+    }
+    
+    private void check6( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("test field myField6");
+        Result result = provider.findVariableInjectable(element, null);
+
+        assertNotNull(result);
+        assertTrue( result instanceof ResultImpl );
+        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
+        Set<Element> productions = ((ResultImpl)result).getProductions();
+
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
+
+        TypeElement injactable = typeElements.iterator().next();
+        assertNotNull( injactable );
+
+        assertEquals("foo.Generic4", injactable.getQualifiedName().toString());
+    }
+    
+    private void check7( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("test field myField7");
+        Result result = provider.findVariableInjectable(element, null);
+
+        assertNotNull(result);
+        assertTrue( result instanceof ResultImpl );
+        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
+        Set<Element> productions = ((ResultImpl)result).getProductions();
+
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
+
+        TypeElement injactable = typeElements.iterator().next();
+        assertNotNull( injactable );
+
+        assertEquals("foo.Generic5", injactable.getQualifiedName().toString());
+    }
+
+    private void check8( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("test field myField8");
+        Result result = provider.findVariableInjectable(element, null);
+
+        assertNotNull(result);
+        assertTrue( result instanceof ResultImpl );
+        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
+        Set<Element> productions = ((ResultImpl)result).getProductions();
+
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
+
+        TypeElement injactable = typeElements.iterator().next();
+        assertNotNull( injactable );
+
+        assertEquals("foo.Generic4", injactable.getQualifiedName().toString());
+    }
+    
+    private void check9( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("test field myField9");
+        Result result = provider.findVariableInjectable(element, null);
+
+        assertNotNull(result);
+        assertTrue( result instanceof ResultImpl );
+        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
+        Set<Element> productions = ((ResultImpl)result).getProductions();
+
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
+
+        TypeElement injactable = typeElements.iterator().next();
+        assertNotNull( injactable );
+
+        assertEquals("foo.Generic4", injactable.getQualifiedName().toString());
+    }
+
 }
+

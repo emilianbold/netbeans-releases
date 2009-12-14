@@ -43,6 +43,7 @@ package org.netbeans.modules.web.beans.impl.model;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -99,7 +100,13 @@ class TypeBindingFilter extends Filter<TypeElement> {
     }
     
     boolean isAssignable( TypeMirror type ){
-        if ( getImplementation().getHelper().getCompilationController().
+        Element typeElement = getImplementation().getHelper().
+            getCompilationController().getTypes().asElement(getElement().asType());
+    
+        boolean isGeneric = (typeElement instanceof TypeElement) &&
+            ((TypeElement)typeElement).getTypeParameters().size() != 0;
+    
+        if ( !isGeneric && getImplementation().getHelper().getCompilationController().
                 getTypes().isAssignable( type, getType()))
         {
             WebBeansModelProviderImpl.LOGGER.fine("Found type  " +type+
@@ -119,12 +126,19 @@ class TypeBindingFilter extends Filter<TypeElement> {
 
     private void filterDeclaredTypes( Set<TypeElement> set )
     {
+        Element typeElement = getImplementation().getHelper().
+            getCompilationController().getTypes().asElement(getElement().asType());
+        
+        boolean isGeneric = (typeElement instanceof TypeElement) &&
+            ((TypeElement)typeElement).getTypeParameters().size() != 0;
+        
         for ( Iterator<TypeElement> iterator = set.iterator(); 
             iterator.hasNext(); )
         {
             TypeElement type = iterator.next();
-            if ( getImplementation().getHelper().getCompilationController().
-                    getTypes().isAssignable( type.asType(), getType()))
+            if ( !isGeneric && getImplementation().getHelper().
+                    getCompilationController().getTypes().isAssignable( 
+                            type.asType(), getType()))
             {
                 WebBeansModelProviderImpl.LOGGER.fine("Found type element " +
                         type.getQualifiedName() +
