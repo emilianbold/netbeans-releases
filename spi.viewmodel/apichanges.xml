@@ -366,6 +366,21 @@ made subject to such option by the copyright holder.
         <class package="org.netbeans.spi.viewmodel" name="DnDNodeModelFilter" />
         <issue number="177506"/>
     </change>
+    <change>
+        <api name="ViewModelAPI"/>
+        <summary>Drag and Drop support.</summary>
+        <version major="1" minor="25"/>
+        <date day="15" month="12" year="2009"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deletion="no" addition="yes" modification="no"/>
+        <description>
+            This API introduce ReorderableTreeModel and ReorderableTreeModelFilter
+            that can be used to alter the order of children nodes.
+        </description>
+        <class package="org.netbeans.spi.viewmodel" name="ReorderableTreeModel" />
+        <class package="org.netbeans.spi.viewmodel" name="ReorderableTreeModelFilter" />
+        <issue number="178301"/>
+    </change>
 
 
 </changes>

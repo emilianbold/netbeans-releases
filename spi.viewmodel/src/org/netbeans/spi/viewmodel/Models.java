@@ -450,11 +450,11 @@ public final class Models {
      *
      * @returns compund tree model
      */
-    private static TreeModel createCompoundTreeModel (
-        TreeModel originalTreeModel,
+    private static ReorderableTreeModel createCompoundTreeModel (
+        ReorderableTreeModel originalTreeModel,
         List treeModelFilters
     ) {
-        TreeModel tm = originalTreeModel;
+        ReorderableTreeModel tm = originalTreeModel;
         int i, k = treeModelFilters.size ();
         for (i = 0; i < k; i++)
             tm = new CompoundTreeModel (
@@ -686,10 +686,10 @@ public final class Models {
      * 
      * @author   Jan Jancura
      */
-    private final static class CompoundTreeModel implements TreeModel, ModelListener {
+    private final static class CompoundTreeModel implements ReorderableTreeModel, ModelListener {
 
 
-        private TreeModel model;
+        private ReorderableTreeModel model;
         private TreeModelFilter filter;
         
         private final Collection<ModelListener> modelListeners = new HashSet<ModelListener>();
@@ -699,7 +699,7 @@ public final class Models {
          * Creates {@link org.netbeans.spi.viewmodel.TreeModel} for given TreeModel and
          * {@link org.netbeans.spi.viewmodel.TreeModelFilter}.
          */
-        CompoundTreeModel (TreeModel model, TreeModelFilter filter) {
+        CompoundTreeModel (ReorderableTreeModel model, TreeModelFilter filter) {
             this.model = model;
             this.filter = filter;
         }
@@ -754,6 +754,22 @@ public final class Models {
          */
         public boolean isLeaf (Object node) throws UnknownTypeException {
             return filter.isLeaf (model, node);
+        }
+
+        public boolean canReorder(Object parent) throws UnknownTypeException {
+            if (filter instanceof ReorderableTreeModelFilter) {
+                return ((ReorderableTreeModelFilter) filter).canReorder(model, parent);
+            } else {
+                return model.canReorder(parent);
+            }
+        }
+
+        public void reorder(Object parent, int[] perm) throws UnknownTypeException {
+            if (filter instanceof ReorderableTreeModelFilter) {
+                ((ReorderableTreeModelFilter) filter).reorder(model, parent, perm);
+            } else {
+                model.reorder(parent, perm);
+            }
         }
 
         /** 
@@ -821,7 +837,7 @@ public final class Models {
         }
 
     }
-    
+
     private static ModelEvent translateEvent(ModelEvent event, Object newSource) {
         ModelEvent newEvent;
         if (event instanceof ModelEvent.NodeChanged) {
@@ -1278,7 +1294,7 @@ public final class Models {
      *
      * @author   Jan Jancura
      */
-    private final static class DelegatingTreeModel implements TreeModel {
+    private final static class DelegatingTreeModel implements ReorderableTreeModel {
 
         private TreeModel[] models;
         private HashMap<String, TreeModel> classNameToModel = new HashMap<String, TreeModel>();
@@ -1305,7 +1321,7 @@ public final class Models {
          *
          * @param models a array of TreeModel
          */
-        DelegatingTreeModel (TreeModel[] models) {
+        private DelegatingTreeModel (TreeModel[] models) {
             this.models = models;        
         }
         
@@ -1410,7 +1426,70 @@ public final class Models {
                 }
             }
             throw new UnknownTypeException (node);
-        }    
+        }
+
+        public boolean canReorder(Object parent) throws UnknownTypeException {
+            UnknownTypeException uex = null;
+            TreeModel model = classNameToModel.get (
+                parent.getClass ().getName ()
+            );
+            if (model != null) {
+                if (model instanceof ReorderableTreeModel) {
+                    try {
+                        return ((ReorderableTreeModel) model).canReorder (parent);
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                }
+            }
+            int i, k = models.length;
+            boolean isIndexed = false;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof ReorderableTreeModel) {
+                    try {
+                        boolean cr = ((ReorderableTreeModel) models [i]).canReorder (parent);
+                        //classNameToModel.put (parent.getClass ().getName (), models [i]);
+                        return cr;
+                    } catch (UnknownTypeException e) {
+                        uex = e;
+                    }
+                    isIndexed = true;
+                }
+            }
+            if (!isIndexed) {
+                return false;
+            }
+            if (uex != null) {
+                throw uex;
+            } else {
+                throw new UnknownTypeException (parent);
+            }
+        }
+
+        public void reorder(Object parent, int[] perm) throws UnknownTypeException {
+            TreeModel model = (TreeModel) classNameToModel.get (
+                parent.getClass ().getName ()
+            );
+            if (model instanceof ReorderableTreeModel) {
+                try {
+                    ((ReorderableTreeModel) model).reorder(parent, perm);
+                    return ;
+                } catch (UnknownTypeException e) {
+                }
+            }
+            int i, k = models.length;
+            for (i = 0; i < k; i++) {
+                if (models[i] instanceof ReorderableTreeModel) {
+                    try {
+                        ((ReorderableTreeModel) models[i]).reorder(parent, perm);
+                        //classNameToModel.put (parent.getClass ().getName (), models [i]);
+                        return ;
+                    } catch (UnknownTypeException e) {
+                    }
+                }
+            }
+            throw new UnknownTypeException (parent);
+        }
 
         /** 
          * Registers given listener.
@@ -3236,10 +3315,10 @@ public final class Models {
      * @see Models#createCompoundModel
      * @author   Jan Jancura
      */
-    public static final class CompoundModel implements TreeModel, 
+    public static final class CompoundModel implements ReorderableTreeModel,
     ExtendedNodeModel, CheckNodeModel, DnDNodeModel, NodeActionsProvider, TableModel, TreeExpansionModel {
 
-        private TreeModel       treeModel;
+        private ReorderableTreeModel treeModel;
         private ExtendedNodeModel nodeModel;
         private CheckNodeModel cnodeModel;
         private DnDNodeModel    dndNodeModel;
@@ -3270,7 +3349,7 @@ public final class Models {
          * @param nodeActionsProvider a columns modeol to delegate on
          */
         private CompoundModel (
-            TreeModel treeModel, 
+            ReorderableTreeModel treeModel,
             TreeExpansionModel treeExpansionModel,
             ExtendedNodeModel nodeModel, 
             NodeActionsProvider nodeActionsProvider,
@@ -3394,6 +3473,15 @@ public final class Models {
             return treeModel.isLeaf (node);
         }
 
+        // ReorderableTreeModel ...............................................................
+
+        public boolean canReorder(Object parent) throws UnknownTypeException {
+            return treeModel.canReorder(parent);
+        }
+
+        public void reorder(Object parent, int[] perm) throws UnknownTypeException {
+            treeModel.reorder(parent, perm);
+        }
 
         // NodeModel ...............................................................
 
