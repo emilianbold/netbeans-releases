@@ -139,6 +139,7 @@
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
+                <friend>org.netbeans.modules.php.zend</friend>
                 <package>org.netbeans.modules.php.api.editor</package>
                 <package>org.netbeans.modules.php.api.phpmodule</package>
                 <package>org.netbeans.modules.php.api.util</package>
