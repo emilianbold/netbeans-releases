@@ -40,12 +40,8 @@
  */
 package org.netbeans.modules.mercurial.ui.repository;
 
-import java.net.MalformedURLException;
 import org.netbeans.modules.mercurial.config.Scrambler;
 import java.net.URISyntaxException;
-import org.netbeans.modules.mercurial.util.HgUtils;
-import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -58,10 +54,6 @@ public class RepositoryConnection {
     private HgURL url;
     private String externalCommand;
     private boolean savePassword;
-    
-    public RepositoryConnection(RepositoryConnection rc) {
-        this(rc.url, rc.externalCommand, rc.savePassword);
-    }
     
     public RepositoryConnection(String url) throws URISyntaxException {
         this(new HgURL(url), null, false);
@@ -128,58 +120,6 @@ public class RepositoryConnection {
         return url.toString();
     }
 
-    private void parseUrlString(String urlString) throws MalformedURLException {
-        int hostIdx = urlString.indexOf("://");                         // NOI18N
-    //    int firstSlashIdx = urlString.indexOf("/", hostIdx + 3);        // NOI18N
-    //    if(idx < 0 || firstSlashIdx < 0 || idx < firstSlashIdx) {
-    //        svnRevision = SVNRevision.HEAD;
-    //    } else /*if (acceptRevision)*/ {
-    //        if( idx + 1 < urlString.length()) {
-    //            String revisionString = "";                             // NOI18N
-    //            try {
-    //                revisionString = urlString.substring(idx + 1);
-    //                svnRevision = SvnUtils.getSVNRevision(revisionString);
-    //            } catch (NumberFormatException ex) {
-    //                throw new MalformedURLException(NbBundle.getMessage(Repository.class, "MSG_Repository_WrongRevision", revisionString));     // NOI18N
-    //            }
-    //        } else {
-    //            svnRevision = SVNRevision.HEAD;
-    //        }
-    //        urlString = urlString.substring(0, idx);
-    //    }    
-        //urlO = removeEmptyPathSegments(new URL(urlString));
-        //hgUrl = new HgURL(urlString);
-    }
-    
-    //private URL removeEmptyPathSegments(URL url) throws MalformedURLException {
-    //    String[] pathSegments = url.getPathSegments();
-    //    StringBuffer urlString = new StringBuffer();
-    //    urlString.append(url.getProtocol());
-    //    urlString.append("://");                                                // NOI18N
-    //    urlString.append(HgUtils.ripUserFromHost(url.getHost()));
-    //    if(url.getPort() > 0) {
-    //        urlString.append(":");                                              // NOI18N
-    //        urlString.append(url.getPort());
-    //    }
-    //    boolean gotSegments = false;
-    //    for (int i = 0; i < pathSegments.length; i++) {
-    //        if(!pathSegments[i].trim().equals("")) {                            // NOI18N
-    //            gotSegments = true;
-    //            urlString.append("/");                                          // NOI18N
-    //            urlString.append(pathSegments[i]);                
-    //        }
-    //    }
-    //    try {
-    //        if(gotSegments) {
-    //            return new URL(urlString.toString());
-    //        } else {
-    //            return url;
-    //        }
-    //    } catch (MalformedURLException ex) {
-    //        throw ex;
-    //    }
-    //}
-    
     public static String getString(RepositoryConnection rc) {
         String url = rc.url.toUrlStringWithoutUserInfo();
         String username = rc.getUsername();
