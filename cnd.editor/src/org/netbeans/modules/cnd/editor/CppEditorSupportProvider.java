@@ -36,9 +36,11 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.loaders;
 
-import org.netbeans.modules.cnd.execution.BinaryExecSupport;
+package org.netbeans.modules.cnd.editor;
+
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
@@ -47,34 +49,40 @@ import org.openide.nodes.Node.Cookie;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
+ *
  * @author Alexey Vladykin
  */
-@ServiceProvider(service = CndCookieProvider.class, position = 1000)
-public final class CndCookieProviderImpl extends CndCookieProvider {
+@ServiceProvider(service = CndCookieProvider.class, position = 9999)
+public final class CppEditorSupportProvider extends CndCookieProvider {
 
+    @Override
     public void addCookies(DataObject dao, CookieSet cookies) {
         MultiDataObject mdao = (MultiDataObject) dao;
-        cookies.add(BinaryExecSupport.class, new BinaryExecSupportFactory(mdao));
+        cookies.add(CppEditorSupport.class, new CppEditorSupportFactory(mdao, cookies));
     }
 
-    private static final class BinaryExecSupportFactory implements CookieSet.Factory {
+    private static final class CppEditorSupportFactory implements CookieSet.Factory {
 
         private final MultiDataObject mdao;
-        private BinaryExecSupport binaryExecSupport;
+        private final CookieSet cookies;
+        private Reference<CppEditorSupport> cppEditorSupport;
 
-        public BinaryExecSupportFactory(MultiDataObject mdao) {
+        public CppEditorSupportFactory(MultiDataObject mdao, CookieSet cookies) {
             this.mdao = mdao;
+            this.cookies = cookies;
         }
 
         public <T extends Cookie> T createCookie(Class<T> klass) {
-            return klass.cast(createBinaryExecSupport());
+            return klass.cast(createCppEditorSupport());
         }
 
-        private synchronized BinaryExecSupport createBinaryExecSupport() {
-            if (binaryExecSupport == null) {
-                binaryExecSupport = new BinaryExecSupport(mdao.getPrimaryEntry());
+        private synchronized CppEditorSupport createCppEditorSupport() {
+            CppEditorSupport support = (cppEditorSupport == null) ? null : cppEditorSupport.get();
+            if (support == null) {
+                support = new CppEditorSupport(mdao, cookies);
+                cppEditorSupport = new SoftReference<CppEditorSupport>(support);
             }
-            return binaryExecSupport;
+            return support;
         }
     }
 }

@@ -36,29 +36,53 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.editor.parser;
 
-package org.netbeans.modules.cnd.editor;
-
-import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.MultiDataObject;
-import org.openide.nodes.CookieSet;
-import org.openide.nodes.Node;
-import org.openide.text.DataEditorSupport;
-import org.openide.util.lookup.ServiceProvider;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.editor.highlighting.HighlightsLayer;
+import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 
 /**
+ * This fake factory is needed to add property change listener to {@link EditorRegistry}.
+ * There is no better way to do it so far. See bug 173002.
  *
  * @author Alexey Vladykin
  */
-@ServiceProvider(service = CndCookieProvider.class, position = 9999)
-public final class CndEditorCookieProvider extends CndCookieProvider {
+public final class FakeHightlightsFactory implements HighlightsLayerFactory {
+
+    private static final HighlightsLayer[] EMPTY = {};
+    private static PropertyChangeListener pcl = null;
 
     @Override
-    public void addCookies(DataObject dao, CookieSet cookies) {
-        if (cookies.getCookie(EditorCookie.class) == null) {
-            cookies.add((Node.Cookie) DataEditorSupport.create(dao, ((MultiDataObject) dao).getPrimaryEntry(), cookies));
+    public HighlightsLayer[] createLayers(Context context) {
+        synchronized (this) {
+            if (pcl == null) {
+                pcl = new EditorRegistryListener();
+                EditorRegistry.addPropertyChangeListener(pcl);
+            }
+        }
+        return EMPTY;
+    }
+
+    private static final class EditorRegistryListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            Document docToReparse = null;
+            if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
+                docToReparse = ((JTextComponent) evt.getNewValue()).getDocument();
+            } else if (EditorRegistry.FOCUSED_DOCUMENT_PROPERTY.equals(evt.getPropertyName())) {
+                docToReparse = (Document) evt.getNewValue();
+            }
+            if (docToReparse != null && MIMENames.isHeaderOrCppOrC(DocumentUtilities.getMimeType(docToReparse))) {
+                CppMetaModel.getDefault().scheduleParsing(docToReparse);
+            }
         }
     }
 }

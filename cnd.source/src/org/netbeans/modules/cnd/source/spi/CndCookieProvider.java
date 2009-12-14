@@ -49,6 +49,7 @@ import org.openide.util.Lookup;
 public abstract class CndCookieProvider {
 
     public abstract void addCookies(DataObject dao, CookieSet cookies);
+
     private static CndCookieProvider DEFAULT;
 
     public static synchronized CndCookieProvider getDefault() {

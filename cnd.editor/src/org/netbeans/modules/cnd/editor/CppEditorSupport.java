@@ -38,26 +38,20 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.editor;
 
 // This file was initially based on org.netbeans.modules.java.JavaEditor
 // (Rev 61)
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
-import java.lang.ref.WeakReference;
-import java.util.*;
 import javax.swing.text.*;
 
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.openide.ErrorManager;
 import org.openide.text.*;
 import org.openide.loaders.DataObject;
-import org.openide.util.Utilities;
 
-import org.netbeans.modules.cnd.editor.parser.CppMetaModel;
-import org.netbeans.modules.cnd.editor.parser.ParsingEvent;
-import org.netbeans.modules.cnd.editor.parser.ParsingListener;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -65,6 +59,7 @@ import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node.Cookie;
 import org.openide.windows.CloneableOpenSupport;
@@ -77,16 +72,9 @@ import org.openide.windows.CloneableOpenSupport;
 public class CppEditorSupport extends DataEditorSupport implements EditorCookie, EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
 
     private long lastModified = 0;
-    private ParsingListener wParsingL;
-    private boolean parsingAttached;
     private static final ErrorManager log =
             ErrorManager.getDefault().getInstance("CppFoldTracer"); // NOI18N
-    private final ParsingListener listener = new ParsingListener() {
 
-        public void objectParsed(final ParsingEvent evt) {
-            log.log("CES$ParserListener.objectParsed: " + evt); // NOI18N
-        }
-    };
     /** SaveCookie for this support instance. The cookie is adding/removing 
      * data object's cookie set depending on if modification flag was set/unset. */
     private final SaveCookie saveCookie = new SaveCookie() {
@@ -197,7 +185,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
             if (readOnly != null && readOnly.isReadOnly()) {
                 throw new IOException(); // for read only state method must throw IOException
             } else {
-                return ((CndDataObject) getDataObject()).getPrimaryEntry().takeLock();
+                return ((MultiDataObject) getDataObject()).getPrimaryEntry().takeLock();
             }
         }
 
@@ -266,15 +254,13 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
             if (doc != null) {
                 log.log("CES.componentActivated: Activating " + getShortName(doc) + // NOI18N
                         " [" + Thread.currentThread().getName() + "]"); // NOI18N
-                if (activationPerformers != null) {
-                    int n = activationPerformers.size();
-                    for (int i = 0; i < n; i++) {
-                        CppEditorActivationPerformer a = activationPerformers.get(i);
-                        a.performActivation(this);
-                    }
-                }
-                CppMetaModel.getDefault().scheduleParsing(doc);
-                support.attachParsingListener();
+//                if (activationPerformers != null) {
+//                    int n = activationPerformers.size();
+//                    for (int i = 0; i < n; i++) {
+//                        CppEditorActivationPerformer a = activationPerformers.get(i);
+//                        a.performActivation(this);
+//                    }
+//                }
             } else {
                 log.log("CES.componentActivated: Activating without document!!!" + // NOI18N
                         " [" + Thread.currentThread().getName() + "]"); // NOI18N
@@ -308,7 +294,6 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
         @Override
         protected void componentDeactivated() {
             super.componentDeactivated();
-            support.removeParsingListener();
         }
 
         /**
@@ -336,19 +321,20 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
             initialize();
         }
     } // end of CppEditorComponent inner class
-    static Vector<CppEditorActivationPerformer> activationPerformers = null;
 
-    /**
-     *  Add an activation performer. This actionperformer will be called whenever
-     *  this component is activated.
-     */
-    public static void addActivationPerformer(
-            CppEditorActivationPerformer a) {
-        if (activationPerformers == null) {
-            activationPerformers = new Vector<CppEditorActivationPerformer>(2);
-        }
-        activationPerformers.add(a);
-    }
+//    static Vector<CppEditorActivationPerformer> activationPerformers = null;
+//
+//    /**
+//     *  Add an activation performer. This actionperformer will be called whenever
+//     *  this component is activated.
+//     */
+//    public static void addActivationPerformer(
+//            CppEditorActivationPerformer a) {
+//        if (activationPerformers == null) {
+//            activationPerformers = new Vector<CppEditorActivationPerformer>(2);
+//        }
+//        activationPerformers.add(a);
+//    }
 
     /**
      * Returns last modification timestamp or since file was opened, or 0
@@ -358,46 +344,4 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
         return lastModified;
     }
 
-    private synchronized void attachParsingListener() {
-        if (!parsingAttached) {
-            if (wParsingL == null) {
-                wParsingL = new WParsingListener(listener);
-            }
-            CppMetaModel.getDefault().addParsingListener(wParsingL);
-            parsingAttached = true;
-        }
-    }
-
-    private synchronized void removeParsingListener() {
-        if (parsingAttached) {
-            CppMetaModel.getDefault().removeParsingListener(wParsingL);
-            parsingAttached = false;
-        }
-    }
-
-    static class WParsingListener extends WeakReference<ParsingListener> implements ParsingListener, Runnable {
-
-        WParsingListener(ParsingListener orig) {
-            super(orig, Utilities.activeReferenceQueue());
-        }
-
-        public void run() {
-            CppMetaModel.getDefault().removeParsingListener(this);
-        }
-
-        ParsingListener getListener() {
-            Object o = get();
-            if (o == null) {
-                CppMetaModel.getDefault().removeParsingListener(this);
-            }
-            return (ParsingListener) o;
-        }
-
-        public void objectParsed(ParsingEvent evt) {
-            ParsingListener l = getListener();
-            if (l != null) {
-                l.objectParsed(evt);
-            }
-        }
-    }
 }

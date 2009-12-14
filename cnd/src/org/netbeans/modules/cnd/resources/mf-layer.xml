@@ -62,7 +62,9 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-h">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                
+
+                <file name="org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance" />
+
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="2500"/>
@@ -82,6 +84,8 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="x-c++">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
+
+                <file name="org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance" />
 
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
@@ -104,6 +108,8 @@ made subject to such option by the copyright holder.
             <folder name="x-c">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 
+                <file name="org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance" />
+
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="2500"/>

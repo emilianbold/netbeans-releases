@@ -66,11 +66,12 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.UIManager;
 
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.settings.CppSettings;
-import org.netbeans.modules.cnd.loaders.CppEditorSupport;
 import org.netbeans.modules.cnd.utils.MIMENames;
 
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.explorer.view.NodeListModel;
 import org.openide.explorer.view.ChoiceView;
@@ -96,7 +97,7 @@ public class NavigationView extends ChoiceView {
      * current source file object and editor support
      */
     private DataObject sourceObject = null;
-    private CppEditorSupport cppEditorSupport = null;
+    private EditorCookie cppEditorSupport = null;
     /**
      * Index/linenumber table - used to quickly determine context of current cursor position
      */
@@ -105,6 +106,7 @@ public class NavigationView extends ChoiceView {
      * Auto parse timers
      */
     private Timer checkModifiedTimer = null;
+    private long lastVersion = -1;
     private long lastModified = 0;
     private Timer checkCursorTimer = null;
     private int lastCursorPos = -1;
@@ -274,20 +276,22 @@ public class NavigationView extends ChoiceView {
         restartTimers();
     }
 
-    private void updateNodesIfModified(CppEditorSupport cppEditorSupport, DataObject sourceObject, JEditorPane jEditorPane) {
+    private void updateNodesIfModified(EditorCookie cppEditorSupport, DataObject sourceObject, JEditorPane jEditorPane) {
         File tmpFile = null;
 
-        if (cppEditorSupport.getLastModified() <= lastModified) {
+        long version = DocumentUtilities.getDocumentVersion(cppEditorSupport.getDocument());
+        if (version <= lastVersion) {
             // No need to update
             return;
         }
 
-        long timeSinceLastModification = System.currentTimeMillis() - cppEditorSupport.getLastModified();
+        long timeSinceLastModification = System.currentTimeMillis() - lastModified;
         if (timeSinceLastModification < CppSettings.getDefault().getParsingDelay()) {
             return;
         }
 
-        lastModified = cppEditorSupport.getLastModified();
+        lastVersion = version;
+        lastModified = System.currentTimeMillis();
         lastCursorPos = -1;
         lastCursorPosWhenChecked = 0;
 
@@ -698,9 +702,9 @@ public class NavigationView extends ChoiceView {
         }
     }
 
-    private CppEditorSupport getCppEditorSupport() {
+    private EditorCookie getCppEditorSupport() {
         if (cppEditorSupport == null) {
-            cppEditorSupport = sourceObject.getCookie(CppEditorSupport.class);
+            cppEditorSupport = sourceObject.getCookie(EditorCookie.class);
         }
         return cppEditorSupport;
     }

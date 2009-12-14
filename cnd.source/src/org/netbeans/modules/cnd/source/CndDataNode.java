@@ -63,7 +63,7 @@ public class CndDataNode extends DataNode {
     //private static final String PROP_NAME = "name"; // NOI18N
 
     /** Cache the bundle */
-    private static ResourceBundle bundle = NbBundle.getBundle(CndDataNode.class);
+    //private static ResourceBundle bundle = NbBundle.getBundle(CndDataNode.class);
 
     /** Primary File */
     private FileObject primary;
@@ -92,9 +92,9 @@ public class CndDataNode extends DataNode {
     }
 
     /** Getter for bundle strings */
-    protected static String getString(String prop) {
-	return bundle.getString(prop);
-    }
+//    protected static String getString(String prop) {
+//	return bundle.getString(prop);
+//    }
 
     @Override
     public HelpCtx getHelpCtx() {
