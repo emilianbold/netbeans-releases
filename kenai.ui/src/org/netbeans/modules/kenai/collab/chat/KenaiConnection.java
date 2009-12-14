@@ -203,6 +203,8 @@ public class KenaiConnection implements PropertyChangeListener {
 
     private void join(MultiUserChat chat) {
         try {
+            assert connection.isConnected();
+            assert connection.isAuthenticated();
             chat.addParticipantListener(new PresenceIndicator.PresenceListener());
             chat.addParticipantListener(new PresenceListener());
             chat.join(getUserName());

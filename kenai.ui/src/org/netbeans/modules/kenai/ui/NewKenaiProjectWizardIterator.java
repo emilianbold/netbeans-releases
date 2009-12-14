@@ -60,6 +60,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
@@ -106,7 +107,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     public static final String NO_REPO = "none"; // NOI18N
     public static final String NO_ISSUES = "none"; // NOI18N
     //TODO: add instance
-    private Kenai kenai = Kenai.getDefault();
+    private Kenai kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
 
     private Logger logger = Logger.getLogger("org.netbeans.modules.kenai"); // NOI18N
 

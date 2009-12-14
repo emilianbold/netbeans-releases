@@ -90,6 +90,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
@@ -133,7 +134,7 @@ public class KenaiSearchPanel extends JPanel {
     private KenaiProjectsListModel listModel;
 
     //TODO: init;
-    private Kenai kenai = Kenai.getDefault();
+    private Kenai kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
 
     /** Creates new form KenaiProjectsListPanel */
     public KenaiSearchPanel(PanelType type, boolean multiSel) {

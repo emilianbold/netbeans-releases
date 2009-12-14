@@ -59,6 +59,7 @@ import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.collab.chat.PresenceIndicator;
@@ -137,7 +138,7 @@ public final class UIUtils {
     }
 
     public static boolean showLogin() {
-        return showLogin(Kenai.getDefault());
+        return showLogin(KenaiManager.getDefault().getKenai("https://kenai.com"));
     }
     /**
      * Invokes login dialog

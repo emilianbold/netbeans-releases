@@ -70,6 +70,7 @@ import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.LoginAction;
 import org.netbeans.modules.kenai.ui.LoginHandleImpl;
@@ -136,7 +137,7 @@ public final class DashboardImpl extends Dashboard {
     private final Object LOCK = new Object();
 
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
-    private Kenai kenai = Kenai.getDefault();
+    private Kenai kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
 
     private PropertyChangeListener kenaiListener;
 

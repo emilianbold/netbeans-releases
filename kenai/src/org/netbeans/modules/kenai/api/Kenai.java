@@ -122,9 +122,6 @@ public final class Kenai implements Comparable<Kenai> {
     private KenaiImpl impl;
     private XMPPConnection xmppConnection;
     private PacketListener packetListener;
-//    private static Preferences prefs = NbPreferences.forModule(Kenai.class);
-//    private static final String DEFAULT_INSTANCE_PREF="kenai.default.instance";
-//    private static final String INSTANCES_PREF="kenai.instances";
 
     /**
      * users cache <name, instance>
@@ -148,23 +145,8 @@ public final class Kenai implements Comparable<Kenai> {
      */
     @Deprecated
      public static synchronized Kenai getDefault() {
-         return KenaiManager.getDefault().getKenai("https://kenai.com");
-//        if (instance == null) {
-//            try {
-//                String urlString = prefs.get(DEFAULT_INSTANCE_PREF, "https://kenai.com/");
-//                urlString = System.getProperty("kenai.com.url", urlString);
-//                assert urlString.startsWith("https://"):"the only supported protocol is https";
-//                if (urlString.endsWith("/")) {
-//                    urlString = urlString.substring(0, urlString.length()-1);
-//                }
-//                URL url = new URL(urlString);
-//                KenaiImpl impl = new KenaiREST(url);
-//                instance = new Kenai(impl);
-//            } catch (MalformedURLException ex) {
-//                throw new RuntimeException(ex);
-//            }
-//        }
-//        return instance;
+        new Throwable("Kenai.getDefault() is deprecated. See http://wiki.netbeans.org/ParallelKenais").printStackTrace();
+        return KenaiManager.getDefault().getKenai("https://kenai.com");
     }
 
      static synchronized Kenai createInstance(String name, String urlString) throws MalformedURLException {
@@ -230,18 +212,6 @@ public final class Kenai implements Comparable<Kenai> {
         if (name!=null) {
             return name;
         }
-//        String s = prefs.get(INSTANCES_PREF, "");//NOI18N
-//        if (s.length() > 1) {
-//            for (String inst : s.split(";")) { // NOI18N
-//                if (inst.length()>0) {
-//                    String[] pair = inst.split(","); // NOI18N
-//                    if (inst.split(",")[0].equals(getUrl().toString())) {// NOI18N
-//                        return pair[1];
-//                    }
-//                }
-//            }
-//        }
-//
         return getUrl().toString().substring("https://".length());// NOI18N
     }
 
@@ -764,6 +734,4 @@ public final class Kenai implements Comparable<Kenai> {
     public String toString() {
         return getName() + " (" + getUrl().toString() + ")";
     }
-
-
 }

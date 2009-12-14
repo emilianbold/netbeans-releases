@@ -61,6 +61,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.openide.util.Exceptions;
@@ -126,9 +127,9 @@ public class PresenceIndicator {
     public synchronized void init() {
         if (inited)
             return;
-        Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+        KenaiManager.getDefault().getKenai("https://kenai.com").addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                setStatus(Kenai.getDefault().getStatus());
+                setStatus(KenaiManager.getDefault().getKenai("https://kenai.com").getStatus());
             }
         });
         inited = true;
@@ -150,7 +151,7 @@ public class PresenceIndicator {
             }
         @Override
         public void mouseClicked(MouseEvent event) {
-              Kenai.Status s = Kenai.getDefault().getStatus();
+              Kenai.Status s = KenaiManager.getDefault().getKenai("https://kenai.com").getStatus();
             if (event.getClickCount() == 2) {
                 if (s == Kenai.Status.ONLINE) {
                     ChatTopComponent.openAction(ChatTopComponent.findInstance(), "", "", false).actionPerformed(new ActionEvent(event, event.getID(), "")); // NOI18N
@@ -163,10 +164,10 @@ public class PresenceIndicator {
                     contactListMenu.setEnabled(s==Kenai.Status.ONLINE);
                     final JCheckBoxMenuItem onlineCheckBox = new JCheckBoxMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_OnlineCheckboxMenuItem"),s==Kenai.Status.ONLINE); // NOI18N
                     menu.add(onlineCheckBox);
-                    onlineCheckBox.setEnabled(Utilities.isChatSupported(Kenai.getDefault()));
+                    onlineCheckBox.setEnabled(Utilities.isChatSupported(KenaiManager.getDefault().getKenai("https://kenai.com")));
                     final JMenuItem logoutItem = new JMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_LogoutMenuItem")); // NOI18N
                     menu.add(logoutItem);
-                    final Kenai kenai = Kenai.getDefault();
+                    final Kenai kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
                     onlineCheckBox.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent e) {
@@ -204,7 +205,7 @@ public class PresenceIndicator {
         public void processPacket(Packet packet) {
             PresenceIndicator.getDefault().label.setText(KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1+"":""); // NOI18N
             PresenceIndicator.getDefault().label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip", KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1:""));
-            for (MultiUserChat muc : KenaiConnection.getDefault(Kenai.getDefault()).getChats()) {
+            for (MultiUserChat muc : KenaiConnection.getDefault(KenaiManager.getDefault().getKenai("https://kenai.com")).getChats()) {
                 String chatName = StringUtils.parseName(muc.getRoom());
                 assert chatName != null : "muc.getRoom() = " + muc.getRoom(); // NOI18N
                 //TODO: fixme

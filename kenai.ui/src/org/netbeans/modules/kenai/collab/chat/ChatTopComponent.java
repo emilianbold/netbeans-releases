@@ -579,7 +579,7 @@ public class ChatTopComponent extends TopComponent {
 }//GEN-LAST:event_loginLinkMouseEntered
 
     private void loginLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseClicked
-        final Kenai kenai = Kenai.getDefault();
+        final Kenai kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
         if (kenai.getStatus() == Kenai.Status.OFFLINE) {
             UIUtils.showLogin();
         } else {
@@ -782,7 +782,7 @@ public class ChatTopComponent extends TopComponent {
 //        public OpenChatAction(KenaiFeature f) {
 //            super();
 //            try {
-//                String name = Kenai.getDefault().getProject(f.getName()).getDisplayName();
+//                String name = KenaiManager.getDefault().getKenai("https://kenai.com").getProject(f.getName()).getDisplayName();
 //                putValue(Action.NAME, name);
 //            } catch (KenaiException ex) {
 //                Exceptions.printStackTrace(ex);

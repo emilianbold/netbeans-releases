@@ -161,7 +161,7 @@ final class KenaiTopComponent extends TopComponent {
     public void componentActivated() {
         super.componentActivated();
 //TODO: musi se domyslet
-//        if (Kenai.getDefault().getPasswordAuthentication() != null
+//        if (KenaiManager.getDefault().getKenai("https://kenai.com").getPasswordAuthentication() != null
 //                || DashboardImpl.getInstance().getOpenProjects().length > 0) {
 //            UIUtils.logKenaiUsage("DASHBOARD"); // NOI18N
 //        }
