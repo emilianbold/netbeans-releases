@@ -351,7 +351,7 @@ public class KenaiTest extends NbTestCase {
         }
 
         public Lookup getLookup() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return Lookup.EMPTY;
         }
 
     }

@@ -303,7 +303,7 @@ public class IssueAccessorTest extends NbTestCase {
             return new Repository[] {kolibaRepository, goldenProjectRepository};
         }
         public Lookup getLookup() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return Lookup.EMPTY;
         }
     }  
 
