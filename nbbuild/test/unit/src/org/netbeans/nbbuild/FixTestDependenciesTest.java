@@ -63,6 +63,47 @@ public class FixTestDependenciesTest extends NbTestCase {
         super(testName);
     }
 
+    public void testOpenideUtilTestDepNeedsToBeRecursive() throws IOException, Exception {
+        File prjFile = copyFile("FixTestDependencies-openide.filesystems.xml");
+        File propertiesFile = new File(getWorkDir(), "empty.properties");
+        propertiesFile.createNewFile();
+        FixTestDependencies ftd = newFixTestDependencies();
+        ftd.setPropertiesFile(propertiesFile);
+        ftd.setProjectXml(prjFile);
+        ftd.cachedEntries = getEntries();
+        ftd.execute();
+
+        String result = PublicPackagesInProjectizedXMLTest.readFile(prjFile);
+        int first = result.indexOf("test-dependencies");
+        if (first == -1) {
+            fail("No test deps found in " + result);
+        }
+        result = result.substring(first);
+
+        if (result.indexOf("org.openide.util") == -1) {
+            fail("org.openide.util should be there: " + result);
+        }
+        if (result.indexOf("org.openide.util.lookup") == -1) {
+            fail("org.openide.util.lookup should be there: " + result);
+        }
+    }
+    public void testNoChangeForProjectsWithoutTests() throws IOException, Exception {
+        File prjFile = copyFile("FixTestDependencies-o.apache.xml.resolver.xml");
+        String before = PublicPackagesInProjectizedXMLTest.readFile(prjFile);
+        File propertiesFile = new File(getWorkDir(), "some.properties");
+        Properties np = new Properties();
+        np.put("is.autoload", "true");
+        np.store(new FileOutputStream(propertiesFile), "");
+        FixTestDependencies ftd = newFixTestDependencies();
+        ftd.setPropertiesFile(propertiesFile);
+        ftd.setProjectXml(prjFile);
+        ftd.cachedEntries = getEntries();
+        ftd.execute();
+
+        String result = PublicPackagesInProjectizedXMLTest.readFile(prjFile);
+        assertEquals("No change expected", before, result);
+    }
+
     public void testSimple() throws IOException, Exception {
           File prjFile = copyFile("FixTestDependenciesProject.xml");
           File propertiesFile = copyFile("FixTestDependencies.properties");

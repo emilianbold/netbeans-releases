@@ -41,20 +41,6 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.StringTokenizer;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-import junit.framework.*;
 
 import org.netbeans.junit.*;
 
@@ -67,6 +53,134 @@ import org.netbeans.junit.*;
 public class FixDependenciesTest extends NbTestCase {
     public FixDependenciesTest (String name) {
         super (name);
+    }
+    public void testCanFixXmlWsdlModel() throws Exception {
+        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractResource("FixDependencies-xml.wsdl.model.xml");
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "<fix>" +
+            "  <replace codenamebase=\"org.openide.util\">" +
+            "    <module codenamebase=\"org.openide.util\" spec=\"8.0\" />" +
+            "    <module codenamebase=\"org.openide.util.lookup\" spec=\"8.0\" />" +
+            "  </replace>" +
+            "  <fileset dir=\"" + xml.getParent () + "\">" +
+            "    <include name=\"" + xml.getName () + "\" /> " +
+            "  </fileset>" +
+            "</fix>" +
+            "</target>" +
+            "</project>"
+
+        );
+
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        String result = PublicPackagesInProjectizedXMLTest.readFile (xml);
+
+        if (result.indexOf ("org.openide.util") == -1) {
+            fail ("org.openide.util should be there: " + result);
+        }
+        if (result.indexOf ("org.openide.util.lookup") == -1) {
+            fail ("org.openide.util.lookup should be there: " + result);
+        }
+    }
+    public void testCanParseCoreKit () throws Exception {
+        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractResource("FixDependencies-core.kit.xml");
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "<fix>" +
+            "  <replace codenamebase=\"org.openide.util\">" +
+            "    <module codenamebase=\"org.openide.util\" spec=\"8.0\" />" +
+            "    <module codenamebase=\"org.openide.util.lookup\" spec=\"8.0\" />" +
+            "  </replace>" +
+            "  <fileset dir=\"" + xml.getParent () + "\">" +
+            "    <include name=\"" + xml.getName () + "\" /> " +
+            "  </fileset>" +
+            "</fix>" +
+            "</target>" +
+            "</project>"
+
+        );
+
+        String before = PublicPackagesInProjectizedXMLTest.readFile(xml);
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        String after = PublicPackagesInProjectizedXMLTest.readFile(xml);
+
+        assertEquals("No change", before, after);
+    }
+    public void testCanParseOpenideUtil () throws Exception {
+        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractResource("FixDependencies-openide.util.xml");
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "<fix>" +
+            "  <replace codenamebase=\"org.openide.util\">" +
+            "    <module codenamebase=\"org.openide.util\" spec=\"8.0\" />" +
+            "    <module codenamebase=\"org.openide.util.lookup\" spec=\"8.0\" />" +
+            "  </replace>" +
+            "  <fileset dir=\"" + xml.getParent () + "\">" +
+            "    <include name=\"" + xml.getName () + "\" /> " +
+            "  </fileset>" +
+            "</fix>" +
+            "</target>" +
+            "</project>"
+
+        );
+
+        String before = PublicPackagesInProjectizedXMLTest.readFile(xml);
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        String after = PublicPackagesInProjectizedXMLTest.readFile(xml);
+
+        assertEquals("No change", before, after);
+    }
+    public void testNoModuleDependenciesDoesNotCrash() throws Exception {
+        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString(
+                "<?xml version='1.0' encoding='UTF-8'?>" +
+                "<project xmlns='http://www.netbeans.org/ns/project/1'>" +
+                "<type>org.netbeans.modules.apisupport.project</type>" +
+                "<configuration>" +
+                "<data xmlns='http://www.netbeans.org/ns/nb-module-project/3'>" +
+                "<code-name-base>org.netbeans.api.annotations.common</code-name-base>" +
+                "<module-dependencies/>" +
+                "<public-packages/>" +
+                "</data>" +
+                "</configuration>" +
+                "</project>"
+        );
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "<fix>" +
+            "  <replace codenamebase=\"org.openide.util\">" +
+            "    <module codenamebase=\"org.openide.util\" spec=\"8.0\" />" +
+            "    <module codenamebase=\"org.openide.util.lookup\" spec=\"8.0\" />" +
+            "  </replace>" +
+            "  <fileset dir=\"" + xml.getParent () + "\">" +
+            "    <include name=\"" + xml.getName () + "\" /> " +
+            "  </fileset>" +
+            "</fix>" +
+            "</target>" +
+            "</project>"
+
+        );
+
+        String before = PublicPackagesInProjectizedXMLTest.readFile(xml);
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        String after = PublicPackagesInProjectizedXMLTest.readFile(xml);
+
+        assertEquals("No change", before, after);
     }
     public void testReplaceOpenideDepWithSmallerOnes () throws Exception {
         java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString (
@@ -116,6 +230,118 @@ public class FixDependenciesTest extends NbTestCase {
         
         if (result.indexOf ("<specification-version>6.2</specification-version>") == -1) {
             fail ("Spec version must be updated to 6.2: " + result);
+        }
+    }
+
+    public void testReplaceOpenideUtilWithUtilAndLookup () throws Exception {
+        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project>" +
+            "  <module-dependencies>" +
+            "    <dependency>" +
+            "        <code-name-base>org.openide.util</code-name-base>" +
+            "        <build-prerequisite/> " +
+            "        <compile-dependency/> " +
+            "        <run-dependency>" +
+            "            <specification-version>7.28</specification-version> " +
+            "        </run-dependency>" +
+            "    </dependency>" +
+            "  </module-dependencies>" +
+            "</project>"
+        );
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "<fix>" +
+            "  <replace codenamebase=\"org.openide.util\">" +
+            "    <module codenamebase=\"org.openide.util\" spec=\"8.0\" />" +
+            "    <module codenamebase=\"org.openide.util.lookup\" spec=\"8.0\" />" +
+            "  </replace>" +
+            "  <fileset dir=\"" + xml.getParent () + "\">" +
+            "    <include name=\"" + xml.getName () + "\" /> " +
+            "  </fileset>" +
+            "</fix>" +
+            "</target>" +
+            "</project>"
+
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+
+        String result = PublicPackagesInProjectizedXMLTest.readFile (xml);
+
+        if (result.indexOf ("org.openide.util") == -1) {
+            fail ("org.openide.util should be there: " + result);
+        }
+        if (result.indexOf ("org.openide.util.lookup") == -1) {
+            fail ("org.openide.util.lookup should be there: " + result);
+        }
+
+        int where;
+        if ((where = result.indexOf ("<specification-version>8.0</specification-version>")) == -1) {
+            fail ("Spec version must be updated to 8.0: " + result);
+        }
+        if (result.indexOf("<specification-version>8.0</specification-version>", where + 1) == -1) {
+            fail ("Snd Spec version must be updated to 8.0: " + result);
+        }
+    }
+    public void testDontReplaceNewerVersionOfItself() throws Exception {
+        doDontReplaceNewerVersionOfItself("8.1");
+    }
+    public void testDontReplaceNewerVersionOfItself9() throws Exception {
+        doDontReplaceNewerVersionOfItself("9.0");
+    }
+
+    private void doDontReplaceNewerVersionOfItself(String version) throws Exception {
+        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project>" +
+            "  <module-dependencies>" +
+            "    <dependency>" +
+            "        <code-name-base>org.openide.util</code-name-base>" +
+            "        <build-prerequisite/> " +
+            "        <compile-dependency/> " +
+            "        <run-dependency>" +
+            "            <specification-version>" + version + "</specification-version> " +
+            "        </run-dependency>" +
+            "    </dependency>" +
+            "  </module-dependencies>" +
+            "</project>"
+        );
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "<fix>" +
+            "  <replace codenamebase=\"org.openide.util\">" +
+            "    <module codenamebase=\"org.openide.util\" spec=\"8.0\" />" +
+            "    <module codenamebase=\"org.openide.util.lookup\" spec=\"8.0\" />" +
+            "  </replace>" +
+            "  <fileset dir=\"" + xml.getParent () + "\">" +
+            "    <include name=\"" + xml.getName () + "\" /> " +
+            "  </fileset>" +
+            "</fix>" +
+            "</target>" +
+            "</project>"
+
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+
+        String result = PublicPackagesInProjectizedXMLTest.readFile (xml);
+
+        if (result.indexOf ("org.openide.util") == -1) {
+            fail ("org.openide.util should be there: " + result);
+        }
+        if (result.indexOf ("org.openide.util.lookup") >= 0) {
+            fail ("org.openide.util.lookup should not be there: " + result);
+        }
+
+        if (result.indexOf ("<specification-version>" + version + "</specification-version>") == -1) {
+            fail ("Spec version stays at updated to kept: " + result);
         }
     }
     
