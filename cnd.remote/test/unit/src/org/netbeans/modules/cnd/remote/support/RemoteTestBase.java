@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
@@ -147,11 +147,11 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     private void setSysProps() {
         try {
-            addPropertyFromRcFile(RemoteDevelopmentFirstTest.DEFAULT_SECTION, "cnd.remote.logger.level");
-            addPropertyFromRcFile(RemoteDevelopmentFirstTest.DEFAULT_SECTION, "nativeexecution.support.logger.level");
-            addPropertyFromRcFile(RemoteDevelopmentFirstTest.DEFAULT_SECTION, "cnd.remote.force.setup", "true");
-            addPropertyFromRcFile(RemoteDevelopmentFirstTest.DEFAULT_SECTION, "socket.connection.timeout", "10000");
-            if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentFirstTest.DEFAULT_SECTION, "logging.finest")) {
+            addPropertyFromRcFile(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "cnd.remote.logger.level");
+            addPropertyFromRcFile(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "nativeexecution.support.logger.level");
+            addPropertyFromRcFile(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "cnd.remote.force.setup", "true");
+            addPropertyFromRcFile(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "socket.connection.timeout", "10000");
+            if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "logging.finest")) {
                 Logger.getLogger("cnd.remote.logger").setLevel(Level.ALL);
                 Logger.getLogger("nativeexecution.support.logger.level").setLevel(Level.FINEST);
             }
@@ -250,6 +250,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                 assertTrue("Timeout: could not build within " + timeout + " " + unit.toString().toLowerCase(), false);
             }
         }
+        Thread.sleep(500); // give building thread time to finish and to kill rfs_controller
         assertTrue("build failed: RC=" + build_rc.get(), build_rc.get() == 0);
     }
 

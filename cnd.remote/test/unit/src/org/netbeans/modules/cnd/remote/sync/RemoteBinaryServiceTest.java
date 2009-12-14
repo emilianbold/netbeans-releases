@@ -43,16 +43,16 @@ import org.netbeans.modules.cnd.remote.support.*;
 import java.io.File;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.RemoteBinaryService;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
  * @author Vladimir Kvashin
  */
-public class RemoteBinaryServiceTestCase extends RemoteTestBase {
+public class RemoteBinaryServiceTest extends RemoteTestBase {
 
-    public RemoteBinaryServiceTestCase(String testName, ExecutionEnvironment execEnv) {
+    public RemoteBinaryServiceTest(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
@@ -103,6 +103,6 @@ public class RemoteBinaryServiceTestCase extends RemoteTestBase {
     }
     
     public static Test suite() {
-        return new RemoteDevelopmentFirstTest(RemoteBinaryServiceTestCase.class);
+        return new RemoteDevelopmentTestSuite(RemoteBinaryServiceTest.class);
     }
 }

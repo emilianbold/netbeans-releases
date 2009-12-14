@@ -52,7 +52,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -65,13 +65,13 @@ import org.openide.filesystems.FileObject;
  *
  * @author Sergey Grinev
  */
-public class RemoteFileSystemTestCase extends RemoteTestBase {
+public class RemoteFileSystemTest extends RemoteTestBase {
 
     private final RemoteFileSystem fs;
     private final FileObject rootFO;
     private final ExecutionEnvironment execEnv;
     
-    public RemoteFileSystemTestCase(String testName, ExecutionEnvironment execEnv) throws IOException, FormatException {
+    public RemoteFileSystemTest(String testName, ExecutionEnvironment execEnv) throws IOException, FormatException {
         super(testName, execEnv);
         this.execEnv = execEnv;
         fs = RemoteFileSystemManager.getInstance().get(execEnv);
@@ -271,6 +271,6 @@ public class RemoteFileSystemTestCase extends RemoteTestBase {
 
     
     public static Test suite() {
-        return new RemoteDevelopmentFirstTest(RemoteFileSystemTestCase.class);
+        return new RemoteDevelopmentTestSuite(RemoteFileSystemTest.class);
     }
 }

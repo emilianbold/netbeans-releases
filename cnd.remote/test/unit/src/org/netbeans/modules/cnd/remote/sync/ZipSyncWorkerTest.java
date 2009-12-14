@@ -42,16 +42,16 @@ package org.netbeans.modules.cnd.remote.sync;
 import java.io.File;
 import java.io.PrintWriter;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * Test for ScpSyncWorker
  * @author Vladimir Kvashin
  */
-public class ZipSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
+public class ZipSyncWorkerTest extends AbstractSyncWorkerTestCase {
 
-    public ZipSyncWorkerTestCase(String testName, ExecutionEnvironment execEnv) {
+    public ZipSyncWorkerTest(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
@@ -63,6 +63,6 @@ public class ZipSyncWorkerTestCase extends AbstractSyncWorkerTestCase {
 
 
     public static Test suite() {
-        return new RemoteDevelopmentFirstTest(ZipSyncWorkerTestCase.class);
+        return new RemoteDevelopmentTestSuite(ZipSyncWorkerTest.class);
     }
 }

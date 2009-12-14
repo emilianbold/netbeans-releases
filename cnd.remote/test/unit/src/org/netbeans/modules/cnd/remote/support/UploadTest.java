@@ -48,7 +48,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -57,9 +57,9 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 /**
  * @author Sergey Grinev
  */
-public class UploadTestCase extends RemoteTestBase {
+public class UploadTest extends RemoteTestBase {
 
-    public UploadTestCase(String testName, ExecutionEnvironment execEnv) {
+    public UploadTest(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
@@ -94,7 +94,7 @@ public class UploadTestCase extends RemoteTestBase {
     }
     
     public static Test suite() {
-        return new RemoteDevelopmentFirstTest(UploadTestCase.class);
+        return new RemoteDevelopmentTestSuite(UploadTest.class);
     }
 
     @ForAllEnvironments

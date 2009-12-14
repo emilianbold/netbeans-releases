@@ -37,40 +37,33 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.sync;
+package org.netbeans.modules.cnd.remote.fs;
 
-import java.util.concurrent.TimeUnit;
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
+
 /**
  *
- * @author Vladimir Kvashin
+ * @author Vladimir Voskresensky
  */
-public class RfsSunStudioRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase {
+public class RemoteFileSupportTest extends CndBaseTestCase {
 
-    public RfsSunStudioRemoteBuildTestCase(String testName) {
+    public RemoteFileSupportTest(String testName) {
         super(testName);
     }
 
-    public RfsSunStudioRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);       
-    }
+    public void testCCSmallReplacement() throws Exception {
+        String[][] data = new String[][] {{ "dir1/cc/dir2", "dir1/cc.cnd.rfs.small/dir2"},
+                                                            { "cc", "cc.cnd.rfs.small"},
+                                                            { "include/cc", "include/cc.cnd.rfs.small" },
+                                                            { "cc/dir", "cc.cnd.rfs.small/dir" },
 
-    @ForAllEnvironments
-    public void testBuildRfsSampleArgsSunStudio() throws Exception {
-        setDefaultCompilerSet("SunStudio");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
-        removeRemoteHome();
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
-    }
-
-    public static Test suite() {
-        return new RemoteDevelopmentFirstTest(RfsSunStudioRemoteBuildTestCase.class);
+                                                            {"include/ccd", "include/ccd"},
+                                                            { "dcc/dir", "dcc/dir" },
+                                                            { "ccdir", "ccdir"}
+                                                          };
+        for (String[] pair : data) {
+            assertEquals(pair[1], RemoteFileSupport.fixCaseSensitivePathIfNeeded(pair[0]));
+            assertEquals(pair[0], RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(pair[1]));
+        }
     }
 }
