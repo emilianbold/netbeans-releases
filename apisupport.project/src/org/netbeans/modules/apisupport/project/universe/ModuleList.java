@@ -65,6 +65,8 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
@@ -83,6 +85,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbCollections;
+import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -448,6 +451,45 @@ public final class ModuleList {
             logCacheIgnored(MSG_FAILURE, root, null);
             LOG.log(Level.FINE, "Caught exception: ", x);
             return null;
+        }
+    }
+
+    private static void scanJars(
+        File dir, ClusterInfo ci, File nbDestDir, File cluster,
+        Map<String, ModuleEntry> entries, boolean registerEntry,
+        File... jars
+    ) throws IOException {
+        for (File m : jars) {
+            if (!m.getName().endsWith(".jar")) {
+                continue;
+            }
+            jarsOpened++;
+            ManifestManager mm = ManifestManager.getInstanceFromJAR(m);
+            String codenamebase = mm.getCodeNameBase();
+            if (codenamebase == null) {
+                continue;
+            }
+            String cp = mm.getClassPath();
+            File[] exts;
+            if (cp == null) {
+                exts = new File[0];
+            } else {
+                String[] pieces = cp.trim().split(" +");
+                exts = new File[pieces.length];
+                for (int l = 0; l < pieces.length; l++) {
+                    exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
+                }
+            }
+            ModuleEntry entry = (ci == null || ci.isPlatformCluster()) ? new BinaryEntry(codenamebase, m, exts, nbDestDir, cluster, mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(), mm.getPublicPackages(), mm.getFriends(), mm.isDeprecated(), mm.getModuleDependencies()) : new BinaryClusterEntry(codenamebase, m, exts, cluster, mm.getReleaseVersion(), mm.getSpecificationVersion(), mm.getProvidedTokens(), mm.getPublicPackages(), mm.getFriends(), mm.isDeprecated(), mm.getModuleDependencies(), ci.getSourceRoots(), ci.getJavadocRoots());
+            ModuleEntry prev = entries.get(codenamebase);
+            if (prev != null) {
+                LOG.log(Level.WARNING, "Warning: two modules found with the same code name base (" + codenamebase + "): " + entries.get(codenamebase) + " and " + entry);
+            } else {
+                entries.put(codenamebase, entry);
+            }
+            if (registerEntry) {
+                registerEntry(entry, findBinaryNBMFiles(cluster, codenamebase, m));
+            }
         }
     }
 
@@ -933,47 +975,34 @@ public final class ModuleList {
             if (jars == null) {
                 throw new IOException("Cannot examine dir " + dir); // NOI18N
             }
-            for (File m : jars) {
-                if (!m.getName().endsWith(".jar")) {
-                    // NOI18N
+            scanJars(dir, ci, nbDestDir, cluster, entries, registerEntry, jars);
+        }
+        File configs = new File(new File(cluster, "config"), "Modules");
+        File[] xmls = configs.listFiles();
+        if (xmls != null) {
+            XPathExpression xpe = null;
+            for (File xml : xmls) {
+                String n = xml.getName();
+                n = n.substring(0, n.length() - 4).replace('-', '.');
+                if (entries.get(n) != null) {
                     continue;
                 }
-                jarsOpened++;
-                ManifestManager mm = ManifestManager.getInstanceFromJAR(m);
-                String codenamebase = mm.getCodeNameBase();
-                if (codenamebase == null) {
-                    continue;
-                }
-                String cp = mm.getClassPath();
-                File[] exts;
-                if (cp == null) {
-                    exts = new File[0];
-                } else {
-                    String[] pieces = cp.trim().split(" +"); // NOI18N
-                    exts = new File[pieces.length];
-                    for (int l = 0; l < pieces.length; l++) {
-                        exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
+
+                String res;
+                Document doc;
+                try {
+                    doc = XMLUtil.parse(new InputSource(xml.toURI().toString()), false, false, null, EntityCatalog.getDefault());
+                    if (xpe == null) {
+                        xpe = XPathFactory.newInstance().newXPath().compile("module/param[@name='jar']/text()");
                     }
+                    res = xpe.evaluate(doc);
+                    File jar = new File(cluster, res);
+                    if (jar.exists()) {
+                        scanJars(cluster, ci, nbDestDir, cluster, entries, registerEntry, jar);
+                    }
+                } catch (Exception ex) {
+                    throw new IOException(ex);
                 }
-                ModuleEntry entry = (ci == null || ci.isPlatformCluster())
-                        ? new BinaryEntry(codenamebase, m, exts, nbDestDir, cluster,
-                        mm.getReleaseVersion(), mm.getSpecificationVersion(),
-                        mm.getProvidedTokens(), mm.getPublicPackages(),
-                        mm.getFriends(), mm.isDeprecated(),
-                        mm.getModuleDependencies())
-                    : new BinaryClusterEntry(codenamebase, m, exts, cluster,
-                    mm.getReleaseVersion(), mm.getSpecificationVersion(),
-                    mm.getProvidedTokens(), mm.getPublicPackages(),
-                    mm.getFriends(), mm.isDeprecated(),
-                    mm.getModuleDependencies(),
-                    ci.getSourceRoots(), ci.getJavadocRoots());
-                if (entries.containsKey(codenamebase)) {
-                    LOG.log(Level.WARNING, "Warning: two modules found with the same code name base (" + codenamebase + "): " + entries.get(codenamebase) + " and " + entry);
-                } else {
-                    entries.put(codenamebase, entry);
-                }
-                if (registerEntry)
-                    registerEntry(entry, findBinaryNBMFiles(cluster, codenamebase, m));
             }
         }
         LOG.log(Level.FINER, "scanCluster: " + cluster + " succeeded.");    // see ModuleListTest#testConcurrentScanning
