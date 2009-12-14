@@ -40,7 +40,7 @@ package org.netbeans.modules.cnd.remote.support;
 
 import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -51,9 +51,9 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  *
  * @author Sergey Grinev
  */
-public class RemoteUtilTestCase extends RemoteTestBase {
+public class RemoteUtilTest extends RemoteTestBase {
 
-    public RemoteUtilTestCase(String testName, ExecutionEnvironment execEnv) {
+    public RemoteUtilTest(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
@@ -108,7 +108,7 @@ public class RemoteUtilTestCase extends RemoteTestBase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentFirstTest(RemoteUtilTestCase.class);
+        return new RemoteDevelopmentTestSuite(RemoteUtilTest.class);
     }
 
 }

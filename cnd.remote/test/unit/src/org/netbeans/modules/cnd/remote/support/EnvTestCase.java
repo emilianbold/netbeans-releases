@@ -41,7 +41,7 @@ package org.netbeans.modules.cnd.remote.support;
 import java.util.Map;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
@@ -73,6 +73,6 @@ public class EnvTestCase extends RemoteTestBase {
     }
     
     public static Test suite() {
-        return new RemoteDevelopmentFirstTest(EnvTestCase.class);
+        return new RemoteDevelopmentTestSuite(EnvTestCase.class);
     }
 }

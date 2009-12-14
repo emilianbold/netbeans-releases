@@ -38,39 +38,49 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
-import java.io.File;
-import java.util.concurrent.Future;
+import java.util.Map;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
- * @author Vladimir Kvashin
+ * There hardly is a way to unit test remote operations.
+ * This is just an entry point for manual validation.
+ *
+ * @author Sergey Grinev
  */
-public class DownloadTestCase extends RemoteTestBase {
+public class TransportTest extends RemoteTestBase {
 
-    public DownloadTestCase(String testName, ExecutionEnvironment execEnv) {
+    public TransportTest(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
     @ForAllEnvironments
-    public void testCopyFrom() throws Exception {
-        File localFile = File.createTempFile("cnd", ".cnd");
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        String remoteFile = "/usr/include/stdio.h";
-        Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, execEnv, localFile.getAbsolutePath(), null);
-        int rc = task.get().intValue();
-        assertEquals("Copying finished with rc != 0: ", 0, rc);
-        String content = readFile(localFile);
-        String text2search = "printf";
-        assertTrue("The copied file (" + localFile + ") does not contain \"" + text2search + "\"",
-                content.indexOf(text2search) >= 0);
-        localFile.delete();
+    public void testRun() throws Exception {
+        final String randomString = "i am just a random string, it does not matter that I mean";
+        RemoteCommandSupport rcs = new RemoteCommandSupport(getTestExecutionEnvironment(), "echo " + randomString);
+        rcs.run();
+        assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getTestExecutionEnvironment() + "' returned " + rcs.getExitStatus();
+        assert randomString.equals( rcs.getOutput().trim()) : "echo command on remote server '" + getTestExecutionEnvironment() + "' produced unexpected output: " + rcs.getOutput();
     }
-    
+
+    @ForAllEnvironments
+    public void testFileExistst() throws Exception {
+        assert HostInfoProvider.fileExists(getTestExecutionEnvironment(), "/etc/passwd");
+        assert !HostInfoProvider.fileExists(getTestExecutionEnvironment(), "/etc/passwd/noway");
+    }
+
+    @ForAllEnvironments
+    public void testGetEnv() throws Exception {
+        Map<String, String> env = HostInfoProvider.getEnv(getTestExecutionEnvironment());
+        System.err.println("Environment: " + env);
+        assert env != null && env.size() > 0;
+        assert env.containsKey("PATH") || env.containsKey("Path") || env.containsKey("path");
+    }
+
     public static Test suite() {
-        return new RemoteDevelopmentFirstTest(DownloadTestCase.class);
+        return new RemoteDevelopmentTestSuite(TransportTest.class);
     }
 }

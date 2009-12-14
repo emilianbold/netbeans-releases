@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,39 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.remote.support;
 
-package org.netbeans.modules.cnd.remote.fs;
-
-import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import java.io.File;
+import java.util.concurrent.Future;
+import junit.framework.Test;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
- *
- * @author Vladimir Voskresensky
+ * @author Vladimir Kvashin
  */
-public class RemoteFileSupportTestCase extends CndBaseTestCase {
+public class DownloadTest extends RemoteTestBase {
 
-    public RemoteFileSupportTestCase(String testName) {
-        super(testName);
+    public DownloadTest(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
     }
 
-    public void testCCSmallReplacement() throws Exception {
-        String[][] data = new String[][] {{ "dir1/cc/dir2", "dir1/cc.cnd.rfs.small/dir2"},
-                                                            { "cc", "cc.cnd.rfs.small"},
-                                                            { "include/cc", "include/cc.cnd.rfs.small" },
-                                                            { "cc/dir", "cc.cnd.rfs.small/dir" },
-
-                                                            {"include/ccd", "include/ccd"},
-                                                            { "dcc/dir", "dcc/dir" },
-                                                            { "ccdir", "ccdir"}
-                                                          };
-        for (String[] pair : data) {
-            assertEquals(pair[1], RemoteFileSupport.fixCaseSensitivePathIfNeeded(pair[0]));
-            assertEquals(pair[0], RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(pair[1]));
-        }
+    @ForAllEnvironments
+    public void testCopyFrom() throws Exception {
+        File localFile = File.createTempFile("cnd", ".cnd");
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        String remoteFile = "/usr/include/stdio.h";
+        Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, execEnv, localFile.getAbsolutePath(), null);
+        int rc = task.get().intValue();
+        assertEquals("Copying finished with rc != 0: ", 0, rc);
+        String content = readFile(localFile);
+        String text2search = "printf";
+        assertTrue("The copied file (" + localFile + ") does not contain \"" + text2search + "\"",
+                content.indexOf(text2search) >= 0);
+        localFile.delete();
+    }
+    
+    public static Test suite() {
+        return new RemoteDevelopmentTestSuite(DownloadTest.class);
     }
 }

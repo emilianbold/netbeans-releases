@@ -41,24 +41,23 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.nativeexecution.test.If;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RfsGnuRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase {
+public class RfsGnuRemoteBuildTest extends RfsBaseRemoteBuildTestCase {
 
-    public RfsGnuRemoteBuildTestCase(String testName) {
+    public RfsGnuRemoteBuildTest(String testName) {
         super(testName);
     }
 
-    public RfsGnuRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
+    public RfsGnuRemoteBuildTest(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
     }
 
@@ -86,6 +85,6 @@ public class RfsGnuRemoteBuildTestCase extends RfsBaseRemoteBuildTestCase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentFirstTest(RfsGnuRemoteBuildTestCase.class);
+        return new RemoteDevelopmentTestSuite(RfsGnuRemoteBuildTest.class);
     }
 }

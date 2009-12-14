@@ -41,41 +41,24 @@ package org.netbeans.modules.cnd.remote;
 
 import java.util.Collection;
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.api.remote.RemoteFileTestCase;
-import org.netbeans.modules.cnd.remote.fs.RemoteFileSupportTestCase;
-import org.netbeans.modules.cnd.remote.fs.RemoteFileSystemTestCase;
-import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
-import org.netbeans.modules.cnd.remote.project.RemoteBuildMakefileTestCase;
-import org.netbeans.modules.cnd.remote.project.RemoteBuildSamplesTestCase;
-import org.netbeans.modules.cnd.remote.support.DownloadTestCase;
-import org.netbeans.modules.cnd.remote.sync.RemoteBinaryServiceTestCase;
-import org.netbeans.modules.cnd.remote.support.RemoteUtilTestCase;
-import org.netbeans.modules.cnd.remote.support.ServerListTestCase;
-import org.netbeans.modules.cnd.remote.support.TransportTestCase;
-import org.netbeans.modules.cnd.remote.support.UploadTestCase;
-import org.netbeans.modules.cnd.remote.sync.RfsGnuRemoteBuildTestCase;
-import org.netbeans.modules.cnd.remote.sync.RfsSunStudioRemoteBuildTestCase;
-import org.netbeans.modules.cnd.remote.sync.ZipSyncWorkerTestCase;
-import org.netbeans.modules.cnd.remote.ui.wizard.HostSetupTestCase;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class RemoteDevelopmentThirdTest extends CndBaseTestSuite {
+public class RemoteDevelopmentTestSuite extends CndBaseTestSuite {
 
     public static final String PLATFORMS_SECTION = "remote.platforms";
     public static final String DEFAULT_SECTION = "remote";
 
-    public RemoteDevelopmentThirdTest(Class testClass) {
+    public RemoteDevelopmentTestSuite(Class testClass) {
         this(testClass.getName(), testClass);
     }
 
     // Why are tests just Test, not NativeExecutionBaseTestCase?
     // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RemoteDevelopmentThirdTest(String name, Test... tests) {
+    public RemoteDevelopmentTestSuite(String name, Test... tests) {
         setName(name);
         for (Test test : tests) {
             addTest(test);
@@ -84,24 +67,14 @@ public class RemoteDevelopmentThirdTest extends CndBaseTestSuite {
 
     // Why are tests just Test, not NativeExecutionBaseTestCase?
     // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RemoteDevelopmentThirdTest(String name, Collection<Test> tests) {
+    public RemoteDevelopmentTestSuite(String name, Collection<Test> tests) {
         setName(name);
         for (Test test : tests) {
             addTest(test);
         }
     }
 
-    public RemoteDevelopmentThirdTest() {
-        this("Remote Development", RemoteBuildSamplesTestCase.class);
-    }
-
-
-    private RemoteDevelopmentThirdTest(String name, Class... testClasses) {
+    private RemoteDevelopmentTestSuite(String name, Class... testClasses) {
         super(name, PLATFORMS_SECTION, testClasses);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new RemoteDevelopmentThirdTest();
-        return suite;
     }
 }

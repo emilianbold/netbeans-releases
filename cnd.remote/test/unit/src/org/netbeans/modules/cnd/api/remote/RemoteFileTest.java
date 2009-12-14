@@ -46,24 +46,23 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentFirstTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class RemoteFileTestCase extends RemoteTestBase {
+public class RemoteFileTest extends RemoteTestBase {
 
-    public RemoteFileTestCase(String name, ExecutionEnvironment testExecutionEnvironment) {
+    public RemoteFileTest(String name, ExecutionEnvironment testExecutionEnvironment) {
         super(name, testExecutionEnvironment);
-        if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentFirstTest.DEFAULT_SECTION, "logging.finest")) {
+        if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "logging.finest")) {
             Logger.getLogger("cnd.remote.logger").setLevel(Level.ALL);
         }
     }
@@ -135,6 +134,6 @@ public class RemoteFileTestCase extends RemoteTestBase {
     }
 
     public static Test suite() {
-        return new NativeExecutionBaseTestSuite(RemoteFileTestCase.class);
+        return new NativeExecutionBaseTestSuite(RemoteFileTest.class);
     }
 }
