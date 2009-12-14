@@ -71,10 +71,6 @@ public class SpecializesTest extends CommonTestCase {
         super(testName);
     }
     
-    public void testA(){
-    }
-
-
     public void testSimpleTypeSpecializes() throws IOException, InterruptedException{
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/CustomBinding.java",
@@ -316,7 +312,7 @@ public class SpecializesTest extends CommonTestCase {
                 "import javax.inject.*; "+
                 "public class CustomClass  {" +
                 " @Inject @Default Two myField1; "+
-                " @Inject @Default Three myField2; "+
+                " @Inject Three myField2; "+
                 " @Inject @Default @Binding2 @Binding1 One1 myField3; "+
                 "}");
         
