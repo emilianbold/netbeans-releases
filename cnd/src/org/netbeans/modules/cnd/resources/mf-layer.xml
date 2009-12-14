@@ -404,7 +404,6 @@ made subject to such option by the copyright holder.
 
             <file name="cppunittest.cc" url="templates/cpp/cppunittest-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
                 <attr name="position" intvalue="600"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cppunittest.html"/>
@@ -420,7 +419,6 @@ made subject to such option by the copyright holder.
 
             <file name="cppunitrunner.cc" url="templates/cpp/cppunitrunner-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
                 <attr name="position" intvalue="650"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cppunitrunner.html"/>

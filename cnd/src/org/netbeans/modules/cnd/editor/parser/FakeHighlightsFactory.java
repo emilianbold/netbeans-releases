@@ -52,9 +52,11 @@ import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
  * This fake factory is needed to add property change listener to {@link EditorRegistry}.
  * There is no better way to do it so far. See bug 173002.
  *
+ * Hmm, is it needed at all?
+ *
  * @author Alexey Vladykin
  */
-public final class FakeHightlightsFactory implements HighlightsLayerFactory {
+public final class FakeHighlightsFactory implements HighlightsLayerFactory {
 
     private static final HighlightsLayer[] EMPTY = {};
     private static PropertyChangeListener pcl = null;
