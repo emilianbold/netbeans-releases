@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,48 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xml.impl;
-
-import org.netbeans.modules.web.beans.xml.Type;
-import org.netbeans.modules.web.beans.xml.WebBeansComponent;
-import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
-import org.w3c.dom.Element;
+package org.netbeans.modules.web.beans.xml;
 
 
 /**
  * @author ads
  *
  */
-class TypeImpl extends WebBeansComponentImpl implements Type {
+public interface BeanClass extends AlternativeElement {
 
-    TypeImpl( WebBeansModelImpl model, Element e ) {
-        super(model, e);
-    }
+    String CLASS = BeansElement.CLASS;
     
-    TypeImpl( WebBeansModelImpl model) {
-        super(model, createNewElement( TYPE, model));
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent#getText()
-     */
-    @Override
-    public String getText() {
-        return super.getText();
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#accept(org.netbeans.modules.web.beans.xml.WebBeansVisitor)
-     */
-    public void accept( WebBeansVisitor visitor ) {
-        visitor.visit( this );
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#getComponentType()
-     */
-    public Class<? extends WebBeansComponent> getComponentType() {
-        return Type.class;
-    }
-
+    String getBeanClass();
+    void setBeanClass( String value );
 }

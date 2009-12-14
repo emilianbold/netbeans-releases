@@ -40,9 +40,12 @@
  */
 package org.netbeans.modules.web.beans.xml.impl;
 
+import org.netbeans.modules.web.beans.xml.Alternatives;
+import org.netbeans.modules.web.beans.xml.BeanClass;
 import org.netbeans.modules.web.beans.xml.Beans;
-import org.netbeans.modules.web.beans.xml.Deploy;
-import org.netbeans.modules.web.beans.xml.Type;
+import org.netbeans.modules.web.beans.xml.Decorators;
+import org.netbeans.modules.web.beans.xml.Interceptors;
+import org.netbeans.modules.web.beans.xml.Stereotype;
 import org.netbeans.modules.web.beans.xml.WebBeansComponent;
 import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
@@ -59,34 +62,6 @@ class SyncUpdateVisitor implements ComponentUpdater<WebBeansComponent>, WebBeans
      */
     public void visit( Beans beans ) {
         assert false : "Should never add or remove beans root"; // NOI18N
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Deploy)
-     */
-    public void visit( Deploy deploy ) {
-        assert getParent() instanceof Beans;
-        Beans beans = (Beans)getParent();
-        if ( isAdd() ){
-            beans.addElement( getIndex(), deploy );
-        }
-        else if ( isRemove() ){
-            beans.removeElement( deploy );
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Type)
-     */
-    public void visit( Type type ) {
-        assert getParent() instanceof Deploy;
-        Deploy deploy = (Deploy)getParent();
-        if ( isAdd() ){
-            deploy.addType( getIndex(), type);
-        }
-        else if ( isRemove() ){
-            deploy.removeType(type);
-        }
     }
 
     /* (non-Javadoc)
@@ -114,6 +89,46 @@ class SyncUpdateVisitor implements ComponentUpdater<WebBeansComponent>, WebBeans
         myOperation = operation;
         child.accept(this);
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Interceptors)
+     */
+    public void visit( Interceptors interceptors ) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Decorators)
+     */
+    public void visit( Decorators decorators ) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Alternatives)
+     */
+    public void visit( Alternatives alternatives ) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.BeanClass)
+     */
+    public void visit( BeanClass clazz ) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Stereotype)
+     */
+    public void visit( Stereotype stereotype ) {
+        // TODO Auto-generated method stub
+        
+    }
 
     private boolean isAdd() {
         return getOperation() == Operation.ADD;
@@ -140,4 +155,5 @@ class SyncUpdateVisitor implements ComponentUpdater<WebBeansComponent>, WebBeans
     private int myIndex;
 
     private Operation myOperation;
+
 }

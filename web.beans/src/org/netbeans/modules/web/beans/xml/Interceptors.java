@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,61 +38,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xml.impl;
+package org.netbeans.modules.web.beans.xml;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.xml.namespace.QName;
-
-import org.netbeans.modules.web.beans.xml.Alternatives;
-import org.netbeans.modules.web.beans.xml.BeanClass;
-import org.netbeans.modules.web.beans.xml.Decorators;
-import org.netbeans.modules.web.beans.xml.Interceptors;
-import org.netbeans.modules.web.beans.xml.Stereotype;
-import org.netbeans.modules.web.beans.xml.WebBeansComponent;
+import java.util.List;
 
 
 /**
  * @author ads
  *
  */
-public enum WebBeansElements {
-    
-    BEANS("beans"),
-    DECORATORS(Decorators.DECORATORS),
-    INTERCEPTORS( Interceptors.INTERCEPTORS),
-    ALTERNATIVES( Alternatives.ALTERNATIVES),
-    CLASS( BeanClass.CLASS),
-    STEREOTYPE( Stereotype.STEREOTYPE);
-    
-    WebBeansElements( String name ){
-        myName = name;
-    }
-    
-    public String getName() {
-        return myName;
-    }
+public interface Interceptors extends BeansElement {
 
-    public QName getQName() {
-        return new QName( WebBeansComponent.WEB_BEANS_NAMESPACE, getName() );
-    }
-
+    String INTERCEPTORS = "interceptors";   // NOI18N
     
-    public static Set<QName> allQNames() {
-        if ( myQNames.get() == null ) {
-            Set<QName> set = new HashSet<QName>( values().length );
-            for (WebBeansElements element : values() ) {
-                set.add( element.getQName() );
-            }
-            myQNames.compareAndSet( null, set );
-        }
-        return myQNames.get();
-    }
+    List<String> getClasses();
+    void addClass( String clazz);
+    void addClass( int index , String clazz );
+    void removeClass( int index );
     
-    private String myName;
-
-    private static AtomicReference<Set<QName>> myQNames =
-        new AtomicReference<Set<QName>>();
 }

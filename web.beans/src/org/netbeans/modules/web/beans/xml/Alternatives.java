@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,71 +38,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xml.impl;
+package org.netbeans.modules.web.beans.xml;
 
 import java.util.List;
-
-import org.netbeans.modules.web.beans.xml.Deploy;
-import org.netbeans.modules.web.beans.xml.Type;
-import org.netbeans.modules.web.beans.xml.WebBeansComponent;
-import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
-import org.w3c.dom.Element;
 
 
 /**
  * @author ads
  *
  */
-class DeployImpl extends WebBeansComponentImpl implements Deploy {
+public interface Alternatives extends BeansElement {
 
-    DeployImpl( WebBeansModelImpl model, Element e ) {
-        super(model, e);
-    }
+    String ALTERNATIVES  = "alternatives";      // NOI18N
     
-    DeployImpl( WebBeansModelImpl model) {
-        super(model, createNewElement( DEPLOY, model));
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.Deploy#addType(org.netbeans.modules.web.beans.xml.Type)
-     */
-    public void addType( Type type ) {
-        appendChild( TYPE,  type );
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.Deploy#addType(int, org.netbeans.modules.web.beans.xml.Type)
-     */
-    public void addType( int index, Type type ) {
-        insertAtIndex( TYPE, type, index);
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.Deploy#getTypes()
-     */
-    public List<Type> getTypes() {
-        return getChildren( Type.class );
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.Deploy#removeType(org.netbeans.modules.web.beans.xml.Type)
-     */
-    public void removeType( Type type ) {
-        removeChild( TYPE , type );
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#accept(org.netbeans.modules.web.beans.xml.WebBeansVisitor)
-     */
-    public void accept( WebBeansVisitor visitor ) {
-        visitor.visit( this );
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#getComponentType()
-     */
-    public Class<? extends WebBeansComponent> getComponentType() {
-        return Deploy.class;
-    }
-
+    List<String> getClasses();
+    void addClass( String clazz);
+    
+    List<String> getSterrotypes();
+    void addStereotype( String stereotype );
+    
+    List<AlternativeElement> getElements();
+    void addElement( AlternativeElement element );
+    void addElement( int index , AlternativeElement element );
+    void remove( AlternativeElement element );
 }
