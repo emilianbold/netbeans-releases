@@ -42,11 +42,8 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -63,9 +60,6 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.cnd.execution.BinaryExecSupport;
-import org.openide.nodes.CookieSet;
-import org.openide.nodes.Node.Cookie;
 import org.openide.util.Lookup;
 import org.openide.util.WeakSet;
 
@@ -76,10 +70,6 @@ public abstract class CndDataObject extends MultiDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = -6788084224129713370L;
-    private Reference<CppEditorSupport> cppEditorSupport;
-    private final ReadOnlySupportImpl readOnlySupport = new ReadOnlySupportImpl(false);
-    private BinaryExecSupport binaryExecSupport;
-    private final MyNativeFileItemSet nativeFileItemSupport = new MyNativeFileItemSet();
 
     public CndDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
@@ -95,44 +85,13 @@ public abstract class CndDataObject extends MultiDataObject {
      *  Initialize cookies for this DataObject. This method may get overridden
      *  by derived classes who need to use a different set of cookies.
      */
-    protected void init() {
-        CookieSet cookies = getCookieSet();
-        cookies.add(readOnlySupport);
-        cookies.add(nativeFileItemSupport);
-        cookies.add(CppEditorSupport.class, new CookieSet.Factory() {
-            public <T extends Cookie> T createCookie(Class<T> klass) {
-                return klass.cast(createCppEditorSupport());
-            }
-        });
-	//cookies.add(new BinaryExecSupport(primary));
-            cookies.add(BinaryExecSupport.class, new CookieSet.Factory() {
-            public <T extends Cookie> T createCookie(Class<T> klass) {
-                return klass.cast(createBinaryExecSupport());
-            }
-        });
-    }
-
-    private synchronized CppEditorSupport createCppEditorSupport() {
-        CppEditorSupport support = (cppEditorSupport == null) ? null : cppEditorSupport.get();
-        if (support == null) {
-            support = new CppEditorSupport(getPrimaryEntry().getDataObject());
-            cppEditorSupport = new SoftReference<CppEditorSupport>(support);
-        }
-        return support;
-    }
-
-    private synchronized BinaryExecSupport createBinaryExecSupport() {
-        if (binaryExecSupport == null) {
-            binaryExecSupport = new BinaryExecSupport(getPrimaryEntry());
-        }
-        return binaryExecSupport;
-    }
+    protected void init() {}
 
     /**
      *  The DeleteList is the list of suffixes which should be deleted during
      *  a clean action.
      */
-    public final Set getDeleteList() {
+    public final Set<Entry> getDeleteList() {
 	return secondaryEntries();
     }
 

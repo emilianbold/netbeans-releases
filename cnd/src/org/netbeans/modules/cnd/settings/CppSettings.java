@@ -43,15 +43,22 @@ package org.netbeans.modules.cnd.settings;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.ErrorManager;
+import org.openide.loaders.CreateFromTemplateAttributesProvider;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Settings for the C/C++/Fortran. The compile/build options stored
@@ -565,5 +572,27 @@ public class CppSettings extends SharedClassObject {
             bundle = NbBundle.getBundle(CppSettings.class);
         }
         return bundle.getString(s);
+    }
+
+    /**
+     * CndAbstractDataLoader used to call {@link #getReplaceableStringProps()}
+     * directly. Here is a better solution.
+     */
+    @ServiceProvider(service = CreateFromTemplateAttributesProvider.class)
+    public static final class AttributesProvider implements CreateFromTemplateAttributesProvider {
+        public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
+            if (MIMENames.CND_TEXT_MIME_TYPES.contains(template.getPrimaryFile().getMIMEType())) {
+                Map<String, Object> map = new HashMap<String, Object>();
+                // convert Properties (Map<?, ?>) into Map<String, ?>
+                for (Map.Entry<?, ?> entry : CppSettings.getDefault().getReplaceableStringsProps().entrySet()) {
+                    if (entry.getKey() instanceof String) {
+                        map.put((String) entry.getKey(), entry.getValue());
+                    }
+                }
+                return map;
+            } else {
+                return null;
+            }
+        }
     }
 }
