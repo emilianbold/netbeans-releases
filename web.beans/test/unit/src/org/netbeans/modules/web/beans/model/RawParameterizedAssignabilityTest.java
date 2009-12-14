@@ -42,6 +42,7 @@ package org.netbeans.modules.web.beans.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -212,6 +213,94 @@ public class RawParameterizedAssignabilityTest extends CommonTestCase {
             }
             });
         }
+    
+    public void testProductions() throws IOException, InterruptedException {
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CustomBinding.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@Qualifier " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface CustomBinding  {" +
+                " String value(); "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/CustomClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "public class CustomClass<E extends One>  {" +
+                " @Inject @CustomBinding(\"a\") Class<One> myField1; "+
+                " @Inject @CustomBinding(\"b\") List<One> myField2; "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Generic.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "public class Generic<T>  {" +
+                " @Produces @CustomBinding(\"a\")  Class<T> getClass(){ " +
+                "   return null; " +
+                "}"+
+                " @Produces @CustomBinding(\"b\") List<T> myList; "+
+                "}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "public class One {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
+                "package foo; " +
+                "public class Two extends One {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Generic1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "public class Generic1 extends Generic<Two>  {" +
+                "}");
+        
+    
+        TestWebBeansModelImpl modelImpl = createModelImpl();
+        final TestWebBeansModelProviderImpl provider = modelImpl.getProvider();
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType( "foo.CustomClass" );
+                Element clazz = ((DeclaredType)mirror).asElement();
+                List<? extends Element> children = clazz.getEnclosedElements();
+                List<VariableElement> injectionPoints =
+                    new ArrayList<VariableElement>( children.size());
+                for (Element element : children) {
+                    if (element instanceof VariableElement) {
+                        injectionPoints.add( (VariableElement)element );
+                    }
+                }
+                Set<String> names = new HashSet<String>();
+                for( VariableElement element : injectionPoints ){
+                    names.add( element.getSimpleName().toString() );
+                    if ( element.getSimpleName().contentEquals("myField1")){
+                        checkProd1( element , provider);
+                    }
+                    if ( element.getSimpleName().contentEquals("myField2")){
+                        checkProd2( element , provider);
+                    }
+                }
+
+                assert names.contains("myField1");
+                assert names.contains("myField2");
+                
+                return null;
+            }
+            });
+    }
     
     private void check1( VariableElement element,
             TestWebBeansModelProviderImpl provider )
@@ -392,6 +481,73 @@ public class RawParameterizedAssignabilityTest extends CommonTestCase {
 
         assertEquals("foo.Generic4", injactable.getQualifiedName().toString());
     }
+    
+    private void checkProd1( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("test production element for field myField1");
+        Result result = provider.findVariableInjectable(element, null);
 
+        assertNotNull(result);
+        assertTrue( result instanceof ResultImpl );
+        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
+        
+        assertEquals(0, typeElements.size());
+        
+        Collection<List<DeclaredType>> values = 
+            ((ResultImpl)result).getAllProductions().values();
+        List<DeclaredType> list = values.iterator().next();
+        boolean generic = false;
+        boolean generic1 = false;
+        for (DeclaredType declaredType : list) {
+            String name = ((TypeElement)declaredType.asElement()).
+                getQualifiedName().toString();
+            if ( name.equals("foo.Generic")) {
+                generic = true;
+            }
+            else if ( name.equals("foo.Generic1")) {
+                generic1 = true;
+            }
+        }
+        
+        assertEquals("Generic Element contains eligible for injction " +
+        		"production method but is not found", true, generic );
+        assertEquals("Generic1 Element contains eligible for injction " +
+                "production method but is not found", true, generic1);
+    }
+
+    private void checkProd2( VariableElement element,
+            TestWebBeansModelProviderImpl provider )
+    {
+        inform("test production element for field myField2");
+        Result result = provider.findVariableInjectable(element, null);
+
+        assertNotNull(result);
+        assertTrue( result instanceof ResultImpl );
+        Set<TypeElement> typeElements = ((ResultImpl)result).getTypeElements();
+        
+        assertEquals(0, typeElements.size());
+        
+        Collection<List<DeclaredType>> values = 
+            ((ResultImpl)result).getAllProductions().values();
+        List<DeclaredType> list = values.iterator().next();
+        boolean generic = false;
+        boolean generic1 = false;
+        for (DeclaredType declaredType : list) {
+            String name = ((TypeElement)declaredType.asElement()).
+                getQualifiedName().toString();
+            if ( name.equals("foo.Generic")) {
+                generic = true;
+            }
+            else if ( name.equals("foo.Generic1")) {
+                generic1 = true;
+            }
+        }
+        
+        assertEquals("Generic Element contains eligible for injction " +
+                "production field but is not found", true, generic );
+        assertEquals("Generic1 Element contains eligible for injction " +
+                "production field but is not found", true, generic1);
+    }
 }
 
