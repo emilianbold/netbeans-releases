@@ -43,11 +43,13 @@ import org.openide.util.Lookup;
 
 /**
  * Represents a bugtracking connector.
- * 
+ *
  * @author Tomas Stupka
  */
 public abstract class BugtrackingConnector implements Lookup.Provider {
-    
+
+    // XXX id and icon?
+
     /**
      * Returns the display name for this connector
      *
@@ -57,7 +59,7 @@ public abstract class BugtrackingConnector implements Lookup.Provider {
 
     /**
      * Returns tooltip for this connector
-     * 
+     *
      * @return tooltip for this connector
      */
     public abstract String getTooltip();
