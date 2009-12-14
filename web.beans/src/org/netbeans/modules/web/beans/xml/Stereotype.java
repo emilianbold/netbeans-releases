@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -45,9 +45,10 @@ package org.netbeans.modules.web.beans.xml;
  * @author ads
  *
  */
-public interface Type extends WebBeansComponent {
-    
-    String TYPE = "type";           // NOI18N
+public interface Stereotype extends AlternativeElement {
 
-    String getText();
+    String STEREOTYPE = "stereotype";       // NOI18N
+    
+    String getStereotype();
+    void setStereotype( String value );
 }

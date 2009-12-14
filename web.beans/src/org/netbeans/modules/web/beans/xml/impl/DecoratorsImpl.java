@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,59 +40,38 @@
  */
 package org.netbeans.modules.web.beans.xml.impl;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.xml.namespace.QName;
-
-import org.netbeans.modules.web.beans.xml.Alternatives;
-import org.netbeans.modules.web.beans.xml.BeanClass;
 import org.netbeans.modules.web.beans.xml.Decorators;
-import org.netbeans.modules.web.beans.xml.Interceptors;
-import org.netbeans.modules.web.beans.xml.Stereotype;
 import org.netbeans.modules.web.beans.xml.WebBeansComponent;
+import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
+import org.w3c.dom.Element;
 
 
 /**
  * @author ads
  *
  */
-public enum WebBeansElements {
-    
-    BEANS("beans"),
-    DECORATORS(Decorators.DECORATORS),
-    INTERCEPTORS( Interceptors.INTERCEPTORS),
-    ALTERNATIVES( Alternatives.ALTERNATIVES),
-    CLASS( BeanClass.CLASS),
-    STEREOTYPE( Stereotype.STEREOTYPE);
-    
-    WebBeansElements( String name ){
-        myName = name;
+class DecoratorsImpl extends ClassContainerImpl implements Decorators {
+
+    DecoratorsImpl( WebBeansModelImpl model, Element e ) {
+        super(model, e);
     }
     
-    public String getName() {
-        return myName;
+    DecoratorsImpl( WebBeansModelImpl model ) {
+        this(model, createNewElement( DECORATORS , model ));
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#accept(org.netbeans.modules.web.beans.xml.WebBeansVisitor)
+     */
+    public void accept( WebBeansVisitor visitor ) {
+        visitor.visit( this );
     }
 
-    public QName getQName() {
-        return new QName( WebBeansComponent.WEB_BEANS_NAMESPACE, getName() );
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#getComponentType()
+     */
+    public Class<? extends WebBeansComponent> getComponentType() {
+        return Decorators.class;
     }
 
-    
-    public static Set<QName> allQNames() {
-        if ( myQNames.get() == null ) {
-            Set<QName> set = new HashSet<QName>( values().length );
-            for (WebBeansElements element : values() ) {
-                set.add( element.getQName() );
-            }
-            myQNames.compareAndSet( null, set );
-        }
-        return myQNames.get();
-    }
-    
-    private String myName;
-
-    private static AtomicReference<Set<QName>> myQNames =
-        new AtomicReference<Set<QName>>();
 }

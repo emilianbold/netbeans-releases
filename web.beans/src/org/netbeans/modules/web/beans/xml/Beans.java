@@ -44,6 +44,11 @@ import java.util.List;
 
 
 /**
+ * 
+ * This model represents beans.xml OM.
+ * It is based on schema file last changed at 2009-12-02
+ * http://fisheye.jboss.org/browse/~raw,r=5197/weld/api/trunk/cdi/src/main/resources/beans.xsd.   
+ * 
  * @author ads
  *
  */

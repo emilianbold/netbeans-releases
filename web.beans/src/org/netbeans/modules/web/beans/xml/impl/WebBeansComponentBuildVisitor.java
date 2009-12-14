@@ -42,9 +42,12 @@ package org.netbeans.modules.web.beans.xml.impl;
 
 import javax.xml.namespace.QName;
 
+import org.netbeans.modules.web.beans.xml.Alternatives;
+import org.netbeans.modules.web.beans.xml.BeanClass;
 import org.netbeans.modules.web.beans.xml.Beans;
-import org.netbeans.modules.web.beans.xml.Deploy;
-import org.netbeans.modules.web.beans.xml.Type;
+import org.netbeans.modules.web.beans.xml.Decorators;
+import org.netbeans.modules.web.beans.xml.Interceptors;
+import org.netbeans.modules.web.beans.xml.Stereotype;
 import org.netbeans.modules.web.beans.xml.WebBeansComponent;
 import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -70,25 +73,47 @@ class WebBeansComponentBuildVisitor implements WebBeansVisitor {
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Beans)
      */
     public void visit( Beans beans ) {
-        if ( isAcceptable( WebBeansElements.DEPLOY)){
-            setResult( new DeployImpl( getModel() , getElement()));
-        }
+        // TODO
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Interceptors)
+     */
+    public void visit( Interceptors interceptors ) {
+        // TODO Auto-generated method stub
+        
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Deploy)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Decorators)
      */
-    public void visit( Deploy deploy ) {
-        if ( isAcceptable( WebBeansElements.TYPE)){
-            setResult( new TypeImpl( getModel() , getElement()));
-        }
+    public void visit( Decorators decorators ) {
+        // TODO Auto-generated method stub
+        
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Type)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Alternatives)
      */
-    public void visit( Type type ) {
-        // type doesn't have children
+    public void visit( Alternatives alternatives ) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.BeanClass)
+     */
+    public void visit( BeanClass clazz ) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Stereotype)
+     */
+    public void visit( Stereotype stereotype ) {
+        // TODO Auto-generated method stub
+        
     }
 
     WebBeansComponent create( WebBeansComponent context, Element element )
