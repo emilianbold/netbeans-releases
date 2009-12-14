@@ -331,31 +331,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         String namespace = getUriForPrefix(nsPrefix, declaredNS);
         FaceletsLibrary flib = libs.get(namespace);
         if(flib == null) {
-            //#171735 - strange, how can the flib be null???
-            StringBuffer msg = new StringBuffer();
-
-            msg.append("Cannot find facelets library when completing tag " + queriedNode.toString() +
-                    ", namespace prefix=" + nsPrefix +
-                    ", namespace = " + namespace +
-                    ", declared libraries: "); //NOI18N
-
-            for(String uri : declaredNS.keySet()) {
-                msg.append(uri);
-                msg.append(" => "); //NOI18N
-                msg.append(declaredNS.get(uri));
-                msg.append(", "); //NOI18N
-            }
-
-            msg.append(", facelets libraries: "); //NOI18N
-
-            for(String uri : libs.keySet()) {
-                msg.append(uri);
-                msg.append(" => "); //NOI18N
-                msg.append(declaredNS.get(uri));
-                msg.append(", "); //NOI18N
-            }
-            throw new IllegalStateException(msg.toString());
-            //<<< end of issue debug
+	    //The facelets library not found. This happens if one declares
+	    //a namespace which is not matched to any existing library
+            return Collections.emptyList();
         }
         
         TldLibrary.Tag tag = flib.getTag(tagName);
