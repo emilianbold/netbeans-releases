@@ -45,7 +45,7 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.utils.MIMENames;
-//import org.netbeans.modules.options.editor.spi.PreviewProvider;
+import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class EditorOptionsPanelController extends OptionsPanelController /*implements PreviewProvider*/ {
+public class EditorOptionsPanelController extends OptionsPanelController implements PreviewProvider {
 
     private JEditorPane previewPane;
     private final EditorPropertySheet panel;

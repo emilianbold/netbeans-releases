@@ -53,7 +53,7 @@ import org.openide.loaders.DataObjectExistsException;
  *  This data loader recognizes .h header data files, creates a data object for
  *  each file, and sets up an appropriate action menus for .h file objects.
  */
-public final class HDataLoader extends CndAbstractDataLoaderExt {
+public final class HDataLoader extends CndAbstractDataLoader {
 
     /** Serial version number */
     static final long serialVersionUID = -2924582006340980748L;

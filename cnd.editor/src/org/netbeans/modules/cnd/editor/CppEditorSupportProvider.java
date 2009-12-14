@@ -49,10 +49,9 @@ import org.openide.nodes.Node.Cookie;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
  * @author Alexey Vladykin
  */
-@ServiceProvider(service = CndCookieProvider.class, position = 9999)
+@ServiceProvider(service = CndCookieProvider.class)
 public final class CppEditorSupportProvider extends CndCookieProvider {
 
     @Override

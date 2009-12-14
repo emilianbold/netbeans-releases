@@ -38,46 +38,27 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.source;
 
-import java.util.ResourceBundle;
 import javax.swing.Action;
 
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.actions.OpenAction;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
- *  A base class for C/C++/Fortran (C-C-F) nodes. The functionality from
- *  this base class is the renaming of the PROP_name property to show an extension.
+ *  A base class for C/C++/Fortran (C-C-F) nodes.
  */
 public class CndDataNode extends DataNode {
 
-    /** The name property */
-    //private static final String PROP_NAME = "name"; // NOI18N
-
-    /** Cache the bundle */
-    //private static ResourceBundle bundle = NbBundle.getBundle(CndDataNode.class);
-
-    /** Primary File */
-    private FileObject primary;
-
-
     /** Constructor for this class */
-    public CndDataNode(DataObject obj, Children ch) {
-	super(obj, ch);
-	primary = getDataObject().getPrimaryFile();
-    }
-
-    public CndDataNode(DataObject obj, Children ch, String icon) {
-	super(obj, ch);
-	setIconBaseWithExtension(icon);
+    public CndDataNode(DataObject obj, Lookup lookup, String icon) {
+        super(obj, Children.LEAF, lookup);
+        setIconBaseWithExtension(icon);
     }
 
     /**
@@ -87,18 +68,12 @@ public class CndDataNode extends DataNode {
      */
     @Override
     public Action getPreferredAction() {
-	Action result = super.getPreferredAction();
-	return result == null ? SystemAction.get(OpenAction.class) : result;
+        Action result = super.getPreferredAction();
+        return result == null ? SystemAction.get(OpenAction.class) : result;
     }
-
-    /** Getter for bundle strings */
-//    protected static String getString(String prop) {
-//	return bundle.getString(prop);
-//    }
 
     @Override
     public HelpCtx getHelpCtx() {
-	return new HelpCtx("Welcome_cpp_home"); // NOI18N
+        return new HelpCtx("Welcome_cpp_home"); // NOI18N
     }
-    
 }

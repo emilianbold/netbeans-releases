@@ -39,10 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.source;
 
 import java.io.File;
-import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -51,20 +51,10 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Vladimir Voskresensky
  */
-public class CndFileObjectTestCase extends CndBaseTestCase {
+public class CndFileObjectTestCase extends NbTestCase {
     
     public CndFileObjectTestCase(String testName) {
         super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
     }
 
     public void testCFileObject() throws Exception {

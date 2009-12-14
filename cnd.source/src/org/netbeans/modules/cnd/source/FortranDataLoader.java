@@ -51,8 +51,7 @@ import org.openide.loaders.MultiDataObject;
  *
  * @author Alexander Simon
  */
-//@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class, position=400)
-public class FortranDataLoader extends CndAbstractDataLoaderExt {
+public class FortranDataLoader extends CndAbstractDataLoader {
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975686L;

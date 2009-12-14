@@ -70,8 +70,8 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.indent.api.Reformat;
-//import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
-//import org.netbeans.modules.options.editor.spi.PreviewProvider;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -158,7 +158,7 @@ public class FmtOptions {
     
     // Support section ---------------------------------------------------------
       
-    public static class CategorySupport implements ActionListener, DocumentListener /*, PreviewProvider, PreferencesCustomizer*/ {
+    public static class CategorySupport implements ActionListener, DocumentListener, PreviewProvider, PreferencesCustomizer {
 
         public static final String OPTION_ID = "org.netbeans.modules.editor.cnd.fortran.options.FormatingOptions.ID"; //NOI18N
                 
@@ -298,7 +298,7 @@ public class FmtOptions {
         }
         
         // PreferencesCustomizer.Factory implementation ------------------------
-/*
+
         public static final class Factory implements PreferencesCustomizer.Factory {
 
             private final String id;
@@ -321,7 +321,6 @@ public class FmtOptions {
                 }
             }
         } // End of CategorySupport.Factory class
-*/
 
         // Private methods -----------------------------------------------------
 

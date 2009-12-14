@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,53 +31,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.api.project.support;
 
-import org.netbeans.modules.cnd.source.HDataObject;
-import java.io.File;
-import javax.swing.JEditorPane;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.cnd.test.CndBaseTestCase;
-import org.netbeans.modules.cnd.test.CndCoreTestUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.CookieSet;
+import org.openide.util.WeakSet;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
- * @author Vladimir Voskresensky
+ * @author Alexey Vladykin
  */
-public class CndEditorProviderTestCase extends CndBaseTestCase {
+@ServiceProvider(service = CndCookieProvider.class)
+public final class NativeFileItemSetProvider extends CndCookieProvider {
 
-    private static final boolean TRACE = false;
-
-    /**
-     * Creates a new instance of CndEditorProviderTestCase
-     */
-    public CndEditorProviderTestCase(String testName) {
-        super(testName);
+    @Override
+    public void addCookies(DataObject dao, CookieSet cookies) {
+        cookies.add(new NativeFileItemSetImpl());
     }
 
-    public void testEditorSupport() throws Exception {
-        File newFile = new File(super.getWorkDir(), "file.h"); // NOI18N
-        newFile.createNewFile();
-        assertTrue("Not created file " + newFile, newFile.exists());
-        FileObject fo = FileUtil.toFileObject(newFile);
-        DataObject dob = DataObject.find(fo);
-        assertTrue(dob instanceof HDataObject);
-        JEditorPane pane = CndCoreTestUtils.getEditorPane(dob);
-        assertNotNull(pane);
-        BaseDocument doc = Utilities.getDocument(pane);
-        assertNotNull(doc);
-        if (TRACE) {
-            System.err.println("text len: " + doc.getLength());
+    private static final class NativeFileItemSetImpl implements NativeFileItemSet {
+
+        private Set<NativeFileItem> items = new WeakSet<NativeFileItem>(1);
+
+        public synchronized Collection<NativeFileItem> getItems() {
+            return new ArrayList<NativeFileItem>(items);
         }
-        if (doc.getLength() > 0) {
-            if (TRACE) {
-                System.err.println("text: " + doc.getText(0, doc.getLength() - 1));
+
+        public synchronized void add(NativeFileItem item) {
+            if (item == null) {
+                return;
             }
+            items.add(item);
+        }
+
+        public synchronized void remove(NativeFileItem item) {
+            if (item == null) {
+                return;
+            }
+            items.remove(item);
+        }
+
+        public boolean isEmpty() {
+            return items.isEmpty();
         }
     }
 }

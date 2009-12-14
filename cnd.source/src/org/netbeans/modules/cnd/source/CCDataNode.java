@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.cnd.source;
 
-import org.openide.nodes.Children;
-
 /** A node to represent the C++ src object */
 public class CCDataNode extends CndDataNode {
 
@@ -51,10 +49,6 @@ public class CCDataNode extends CndDataNode {
 		    "org/netbeans/modules/cnd/source/resources/CCSrcIcon.gif"; // NOI18N
 
     public CCDataNode(CndDataObject obj) {
-	super(obj, Children.LEAF, CCSrcIcon);
-    }
-
-    public CCDataNode(CndDataObject obj, Children ch) {
-	super(obj, ch, CCSrcIcon);
+	super(obj, obj.getLookup(), CCSrcIcon);
     }
 }

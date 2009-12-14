@@ -38,30 +38,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.source;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import org.netbeans.junit.NbTestSuite;
 
 /**
- *
- * @author Vladimir Voskresensky
+ * @author Alexey Vladykin
  */
-public class CndLoadersTest extends CndBaseTestSuite {
-    
+public class CndLoadersTest extends NbTestSuite {
+
     public CndLoadersTest() {
-        super("C/C++ Loaders"); // NOI18N   
-        
+        super("C/C++ Loaders");
         this.addTestSuite(CndFileObjectTestCase.class);
         this.addTestSuite(CndDataObjectTestCase.class);
-        this.addTestSuite(CndDocumentProviderTestCase.class);
     }
 
     public static Test suite() {
-        TestSuite suite = new CndLoadersTest();
-        return suite;
+        return new CndLoadersTest();
     }
-    
 }

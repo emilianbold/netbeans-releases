@@ -38,23 +38,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.source;
-
-import org.openide.nodes.Children;
 
 /** A node to represent the C source object */
 public class CDataNode extends CndDataNode {
 
     /** The base name of the C source icon */
     private static final String CSrcIcon =
-		    "org/netbeans/modules/cnd/source/resources/CSrcIcon.gif"; // NOI18N
+            "org/netbeans/modules/cnd/source/resources/CSrcIcon.gif"; // NOI18N
 
     public CDataNode(CndDataObject obj) {
-	super(obj, Children.LEAF, CSrcIcon);
-    }
-
-    public CDataNode(CndDataObject obj, Children ch) {
-	super(obj, ch, CSrcIcon);
+        super(obj, obj.getLookup(), CSrcIcon);
     }
 }

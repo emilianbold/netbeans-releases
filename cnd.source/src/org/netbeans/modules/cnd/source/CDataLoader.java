@@ -51,7 +51,7 @@ import org.openide.loaders.MultiDataObject;
  *
  * @author Alexander Simon
  */
-public class CDataLoader extends CndAbstractDataLoaderExt {
+public class CDataLoader extends CndAbstractDataLoader {
 
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975685L;

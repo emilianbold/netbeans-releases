@@ -44,6 +44,12 @@ import org.openide.nodes.CookieSet;
 import org.openide.util.Lookup;
 
 /**
+ * Some CND components, like <code>cnd.editor</code> or
+ * <code>cnd.api.project</code> system bridge, want specific cookies in the
+ * C/C++ data objects. Such components should implement their own
+ * {@link CndCookieProvider}. <code>cnd.source</code> should not depend
+ * on other CND modules.
+ *
  * @author Alexey Vladykin
  */
 public abstract class CndCookieProvider {

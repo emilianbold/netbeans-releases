@@ -38,31 +38,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.source;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
 
-import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiDataObject.Entry;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.nodes.CookieSet;
 import org.openide.util.Lookup;
-import org.openide.util.WeakSet;
 
 /**
  *  Abstract superclass of a C/C++/Fortran DataObject.
@@ -72,54 +63,22 @@ public abstract class CndDataObject extends MultiDataObject {
     /** Serial version number */
     static final long serialVersionUID = -6788084224129713370L;
     private final ReadOnlySupportImpl readOnlySupport = new ReadOnlySupportImpl(false);
-    private final MyNativeFileItemSet nativeFileItemSupport = new MyNativeFileItemSet();
 
     public CndDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
-        init();
+
+        CookieSet cookies = getCookieSet();
+        cookies.add(readOnlySupport);
+        CndCookieProvider.getDefault().addCookies(this, cookies);
     }
 
     @Override
     public Lookup getLookup() {
         return getCookieSet().getLookup();
     }
-    
-    /**
-     *  Initialize cookies for this DataObject. This method may get overridden
-     *  by derived classes who need to use a different set of cookies.
-     */
-    protected void init() {
-        CookieSet cookies = getCookieSet();
-        cookies.add(readOnlySupport);
-        cookies.add(nativeFileItemSupport);
-        CndCookieProvider.getDefault().addCookies(this, cookies);
-    }
-
-    /**
-     *  The DeleteList is the list of suffixes which should be deleted during
-     *  a clean action.
-     */
-    public final Set<Entry> getDeleteList() {
-	return secondaryEntries();
-    }
-
-
-    @Override
-    public HelpCtx getHelpCtx() {
-	return HelpCtx.DEFAULT_HELP;
-    }  
 
     @Override
     protected abstract Node createNodeDelegate();
-
-    /**
-     *  Remove a secondary entry from the list. Access method
-     *
-     *  @param fe the entry to remove
-     */
-    public final void removeSecondaryEntryAccess(Entry fe) {
-        removeSecondaryEntry(fe);
-    }
 
     /**
      *  Creates new object from template. Check to make sure the user
@@ -130,16 +89,15 @@ public abstract class CndDataObject extends MultiDataObject {
      *  @exception IOException
      */
     @Override
-    protected DataObject handleCreateFromTemplate (DataFolder df, String name)
-	throws IOException {
+    protected DataObject handleCreateFromTemplate(DataFolder df, String name)
+            throws IOException {
 
         if ((name != null) && (!isValidName(name))) {
             throw new IOException(NbBundle.getMessage(CndDataObject.class,
-			"FMT_Not_Valid_FileName", name)); // NOI18N
-	}
+                    "FMT_Not_Valid_FileName", name)); // NOI18N
+        }
         return super.handleCreateFromTemplate(df, name);
     }
-
 
     /**
      * Is the given name a valid template name for our module?
@@ -156,21 +114,22 @@ public abstract class CndDataObject extends MultiDataObject {
      * @param name Name to check
      */
     static boolean isValidName(String name) {
-	int len = name.length();
-        
-	if (len == 0) {
-	    return false;
-	}
-	for (int i = 0; i < len; i++) {
-	    char c = name.charAt(i);
-	    if (Character.isISOControl(c)) {
-		return false;
-	    }
-	}
-	return true;
+        int len = name.length();
+
+        if (len == 0) {
+            return false;
+        }
+        for (int i = 0; i < len; i++) {
+            char c = name.charAt(i);
+            if (Character.isISOControl(c)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static final class ReadOnlySupportImpl implements ReadOnlySupport, Node.Cookie {
+
         private boolean isReadOnly;
 
         public ReadOnlySupportImpl(boolean isReadOnly) {
@@ -183,29 +142,6 @@ public abstract class CndDataObject extends MultiDataObject {
 
         public void setReadOnly(boolean readOnly) {
             this.isReadOnly = readOnly;
-        }
-    }
-
-    private static class MyNativeFileItemSet implements NativeFileItemSet {
-        private Set<NativeFileItem> items = new WeakSet<NativeFileItem>(1);
-
-        public synchronized Collection<NativeFileItem> getItems() {
-            return new ArrayList<NativeFileItem>(items);
-        }
-        public synchronized void add(NativeFileItem item){
-            if (item == null) {
-                return;
-            }
-            items.add(item);
-        }
-        public synchronized void remove(NativeFileItem item){
-            if (item == null) {
-                return;
-            }
-            items.remove(item);
-        }
-        public boolean isEmpty() {
-            return items.isEmpty();
         }
     }
 }

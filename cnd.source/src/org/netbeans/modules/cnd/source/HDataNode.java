@@ -38,22 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.source;
 
-import org.openide.nodes.*;
-
-/** A node to represent this object */
+/** A node to represent a header file */
 public class HDataNode extends CndDataNode {
 
+    private static final String HDataIcon = "org/netbeans/modules/cnd/source/resources/HDataIcon.gif";  // NOI18N
+
     public HDataNode(HDataObject obj) {
-	this(obj, Children.LEAF);
+        super(obj, obj.getLookup(), HDataIcon);
     }
-
-    public HDataNode(HDataObject obj, Children ch) {
-	super(obj, ch, HDataIcon);
-    }
-
-    private static final
-            String HDataIcon = "org/netbeans/modules/cnd/source/resources/HDataIcon.gif";  // NOI18N
 }

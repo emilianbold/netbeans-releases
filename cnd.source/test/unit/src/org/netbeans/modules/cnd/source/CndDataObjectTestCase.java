@@ -39,15 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.source;
 
-import org.netbeans.modules.cnd.source.CCDataObject;
-import org.netbeans.modules.cnd.source.HDataObject;
-import org.netbeans.modules.cnd.source.CDataObject;
 import java.io.File;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -57,20 +54,10 @@ import org.openide.loaders.DataObject;
  *
  * @author Vladimir Voskresensky
  */
-public class CndDataObjectTestCase extends CndBaseTestCase {
+public class CndDataObjectTestCase extends NbTestCase {
     
     public CndDataObjectTestCase(String testName) {
         super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
     }
 
     public void testCDataObject() throws Exception {
