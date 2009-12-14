@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,14 +40,12 @@
  */
 package org.netbeans.modules.web.beans.xml.impl;
 
+import java.util.List;
+
+import org.netbeans.modules.web.beans.xml.AlternativeElement;
 import org.netbeans.modules.web.beans.xml.Alternatives;
-import org.netbeans.modules.web.beans.xml.BeanClass;
-import org.netbeans.modules.web.beans.xml.Beans;
-import org.netbeans.modules.web.beans.xml.Decorators;
-import org.netbeans.modules.web.beans.xml.Interceptors;
-import org.netbeans.modules.web.beans.xml.Stereotype;
 import org.netbeans.modules.web.beans.xml.WebBeansComponent;
-import org.netbeans.modules.web.beans.xml.WebBeansComponentFactory;
+import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
 import org.w3c.dom.Element;
 
 
@@ -55,86 +53,78 @@ import org.w3c.dom.Element;
  * @author ads
  *
  */
-class WebBeansComponentFactoryImpl implements WebBeansComponentFactory {
+class AlternativesImpl extends BaseClassContainerImpl implements
+        Alternatives
+{
+
+    AlternativesImpl( WebBeansModelImpl model, Element e ) {
+        super(model, e);
+    }
     
-    WebBeansComponentFactoryImpl( WebBeansModelImpl model ){
-        myModel = model;
-        myBuilder = new ThreadLocal<WebBeansComponentBuildVisitor>();
+    AlternativesImpl( WebBeansModelImpl model) {
+        this(model, createNewElement( ALTERNATIVES , model ));
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createBeans()
+     * @see org.netbeans.modules.web.beans.xml.Alternatives#addElement(org.netbeans.modules.web.beans.xml.AlternativeElement)
      */
-    public Beans createBeans() {
-        return new BeansImpl( getModel());
+    public void addElement( AlternativeElement element ) {
+        // TODO Auto-generated method stub
+
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createComponent(org.w3c.dom.Element, org.netbeans.modules.web.beans.xml.WebBeansComponent)
+     * @see org.netbeans.modules.web.beans.xml.Alternatives#addElement(int, org.netbeans.modules.web.beans.xml.AlternativeElement)
      */
-    public WebBeansComponent createComponent( Element element,
-            WebBeansComponent context )
-    {
-        WebBeansComponentBuildVisitor visitor = getBuilder();
-        return visitor.create( context , element );
+    public void addElement( int index, AlternativeElement element ) {
+        // TODO Auto-generated method stub
+
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createAlternatives()
+     * @see org.netbeans.modules.web.beans.xml.Alternatives#addStereotype(java.lang.String)
      */
-    public Alternatives createAlternatives() {
+    public void addStereotype( String stereotype ) {
+        // TODO Auto-generated method stub
+
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.Alternatives#getElements()
+     */
+    public List<AlternativeElement> getElements() {
         // TODO Auto-generated method stub
         return null;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createBeanClass()
+     * @see org.netbeans.modules.web.beans.xml.Alternatives#getSterrotypes()
      */
-    public BeanClass createBeanClass() {
+    public List<String> getSterrotypes() {
         // TODO Auto-generated method stub
         return null;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createDecorators()
+     * @see org.netbeans.modules.web.beans.xml.Alternatives#remove(org.netbeans.modules.web.beans.xml.AlternativeElement)
      */
-    public Decorators createDecorators() {
+    public void remove( AlternativeElement element ) {
         // TODO Auto-generated method stub
-        return null;
+
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createInterceptors()
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#accept(org.netbeans.modules.web.beans.xml.WebBeansVisitor)
      */
-    public Interceptors createInterceptors() {
-        // TODO Auto-generated method stub
-        return null;
+    public void accept( WebBeansVisitor visitor ) {
+        visitor.visit(this );
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createStereotype()
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#getComponentType()
      */
-    public Stereotype createStereotype() {
-        // TODO Auto-generated method stub
-        return null;
+    public Class<? extends WebBeansComponent> getComponentType() {
+        return Alternatives.class;
     }
-    
-    private WebBeansModelImpl getModel(){
-        return myModel;
-    }
-    
-    private WebBeansComponentBuildVisitor getBuilder(){
-        WebBeansComponentBuildVisitor visitor = myBuilder.get();
-        if ( visitor == null ){
-            visitor = new WebBeansComponentBuildVisitor( getModel() );
-            myBuilder.set( visitor );
-        }
-        visitor.init();
-        return visitor;
-    }
-    
-    private WebBeansModelImpl myModel;
-    
-    private ThreadLocal<WebBeansComponentBuildVisitor> myBuilder;
 
 }

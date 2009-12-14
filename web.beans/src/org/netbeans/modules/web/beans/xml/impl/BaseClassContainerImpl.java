@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,24 +38,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xml;
+package org.netbeans.modules.web.beans.xml.impl;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import org.netbeans.modules.web.beans.xml.BeansElement;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 
 /**
  * @author ads
  *
  */
-public interface Deploy extends BeansElement {
+abstract class BaseClassContainerImpl extends WebBeansComponentImpl {
+
+    BaseClassContainerImpl( WebBeansModelImpl model, Element e ) {
+        super(model, e);
+    }
+
+    public List<String> getClasses(){
+        NodeList nl = getPeer().getElementsByTagName(BeansElement.CLASS);
+        List<String> result = new ArrayList<String>( nl.getLength());
+        if (nl != null) {
+            for (int i=0; i<nl.getLength(); i++) {
+                if (WebBeansElements.CLASS.getQName().equals(
+                        getQName(nl.item(i)))) 
+                {
+                    result.add(getText((Element) nl.item(i)));
+                }
+            }
+        }
+        return result;
+    }
     
-    String TYPE = "type";               // NOI18N
-    
-    String DEPLOY = "deploy";           // NOI18N
-    
-    List<Type> getTypes();
-    void addType( Type type );
-    void addType( int index , Type type );
-    void removeType( Type type );
-    
+    public void addClass(String clazz){
+        
+    }
+
 }
