@@ -726,5 +726,9 @@ public class JiraRepository extends Repository {
             assert issueData != null;
             return NbJiraIssue.getID(issueData);
         }
+        public Map<String, String> getAttributes(Issue issue) {
+            assert issue != null;
+            return ((NbJiraIssue)issue).getAttributes();
+        }
     }
 }
