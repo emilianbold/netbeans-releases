@@ -800,7 +800,7 @@ to simulate
             <copy todir="${{dist.dir}}/{$name}Client" flatten="true">
                 <fileset dir="${{wa.copy.client.jar.from}}/{$name}" includes="**/*.*ar"/>
             </copy>
-            <copy todir="${{dist.dir}}/{$name}Client" flatten="false">
+            <copy todir="${{dist.dir}}/{$name}Client" flatten="false" failonerror="false">
                 <fileset dir="${{dist.dir}}/gfdeploy/{$name}" includes="**/*.jar"/>
             </copy>
         </target>
