@@ -132,6 +132,7 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
         {
             result = doFindVariableInjectable(element, elementType, 
                     model , false );
+            isInjectionPoint = true;
         }
         if ( disposes ){
             if( result instanceof ResultImpl ){
@@ -162,8 +163,9 @@ abstract class ParameterInjectionPointLogic extends FieldInjectionPointLogic {
             return getResult(result, model );
         }
         else {
-            // TODO : change to DefinitionErrorResult instance. null is bad return value
-            return null;
+            return new DefinitionErrorResult(element, elementType, 
+                    NbBundle.getMessage( WebBeansModelProviderImpl.class, 
+                            "ERR_NoInjectPoint" , element.getSimpleName()));
         }
     }
 }

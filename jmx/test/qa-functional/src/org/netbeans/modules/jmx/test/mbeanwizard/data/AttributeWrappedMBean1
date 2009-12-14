@@ -11,7 +11,7 @@ import java.util.Arrays;
 
 /**
  * Class AttributeWrappedMBean1
- * 
+ *
  * @author <author>
  */
 public class AttributeWrappedMBean1 extends StandardMBean implements AttributeWrappedMBean1MBean {
@@ -67,7 +67,6 @@ public class AttributeWrappedMBean1 extends StandardMBean implements AttributeWr
         } else if (info.getName().equals("Attribute6")) {
             description = "Attribute exposed for management";
         }
-
         return description;
     }
 
@@ -96,7 +95,6 @@ public class AttributeWrappedMBean1 extends StandardMBean implements AttributeWr
     @Override
     protected String getDescription(MBeanOperationInfo info) {
         String description = null;
-
         return description;
     }
 

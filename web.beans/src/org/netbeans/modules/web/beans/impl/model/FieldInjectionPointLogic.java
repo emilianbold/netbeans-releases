@@ -176,7 +176,7 @@ abstract class FieldInjectionPointLogic {
             return new DefinitionErrorResult(element, elementType, e.getMessage());
         }
         /*
-         * Single @Deafult annotation means increasing types that 
+         * Single @Default annotation means increasing types that 
          * is eligible for injection. Each bean without any qualifiers
          * type has @Default qualifier by default. So it should
          * be also considered as injectable.  
@@ -234,6 +234,7 @@ abstract class FieldInjectionPointLogic {
             
             filterBindingsByMembers(quilifierAnnotations, typesWithQualifiers,
                     modelImpl, TypeElement.class );
+            
             /*
              * Now <code>typesWithQualifiers</code> contains appropriate types
              * which has required qualifer with required parameters ( if any ).

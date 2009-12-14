@@ -11,7 +11,7 @@ import java.util.Arrays;
 
 /**
  * Class SeveralFeaturesMBean2
- * 
+ *
  * @author <author>
  */
 public class SeveralFeaturesMBean2 extends StandardMBean implements SeveralFeaturesMBean2MBean {
@@ -67,7 +67,6 @@ public class SeveralFeaturesMBean2 extends StandardMBean implements SeveralFeatu
         } else if (info.getName().equals("SecondAttribute")) {
             description = "Second Attribute description";
         }
-
         return description;
     }
 
@@ -113,7 +112,6 @@ public class SeveralFeaturesMBean2 extends StandardMBean implements SeveralFeatu
                     return null;
             }
         }
-
         return null;
     }
 
@@ -159,7 +157,6 @@ public class SeveralFeaturesMBean2 extends StandardMBean implements SeveralFeatu
                     return null;
             }
         }
-
         return null;
     }
 
@@ -176,23 +173,18 @@ public class SeveralFeaturesMBean2 extends StandardMBean implements SeveralFeatu
             signature[i] = params[i].getType();
         }
         String[] methodSignature;
-
         methodSignature = new String[]{};
         if (info.getName().equals("FirstOperation") && Arrays.equals(signature, methodSignature)) {
             description = "First Operation Description";
         }
-
         methodSignature = new String[]{};
         if (info.getName().equals("SecondOperation") && Arrays.equals(signature, methodSignature)) {
             description = "Second Operation Description";
         }
-
         methodSignature = new String[]{java.lang.String.class.getName(), java.lang.Boolean.TYPE.getName(), java.lang.Byte.TYPE.getName(), java.lang.Character.TYPE.getName(), java.util.Date.class.getName(), java.lang.Integer.TYPE.getName(), java.lang.Long.TYPE.getName(), javax.management.ObjectName.class.getName(), java.lang.Float.TYPE.getName(), java.lang.Double.TYPE.getName()};
         if (info.getName().equals("ThirdOperation") && Arrays.equals(signature, methodSignature)) {
             description = "Third Operation Description";
         }
-
-
         return description;
     }
 

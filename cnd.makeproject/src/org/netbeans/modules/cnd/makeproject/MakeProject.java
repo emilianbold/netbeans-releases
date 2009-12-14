@@ -888,8 +888,9 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
             projectDescriptorProvider.getConfigurationDescriptor().saveAndClose();
         }
-
-        GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+        if (isOpenHookDone) {
+            GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+        }
     }
 
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {

@@ -42,10 +42,11 @@ else
     HEADS=`hg heads --template "{node} XX{branches}XX\n" | grep XXXX | cut -f 1 -d ' ' | wc -l`
     hg incoming http://hg.netbeans.org/"$push_repo"
     STATUS=$?
-    if [ $HEAD = 1 ] && [ $STATUS = 0 ]; then
+    # status is 1 when there are no incoming changesets
+    if [ $HEAD = 1 ] && [ $STATUS = 1 ]; then
         hg push -f -r $TIP https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo" || exit 9
     else
-        echo Heads $HEAD or incomming changesets $STATUS
+        echo Too many heads $HEAD in default branch or there are some incoming changesets $STATUS
         exit 9
     fi
 fi

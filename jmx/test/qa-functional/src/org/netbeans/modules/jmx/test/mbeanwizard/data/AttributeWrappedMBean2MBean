@@ -10,7 +10,7 @@ import java.util.Date;
 
 /**
  * Interface AttributeWrappedMBean2MBean
- * 
+ *
  * @author <author>
  */
 public interface AttributeWrappedMBean2MBean
