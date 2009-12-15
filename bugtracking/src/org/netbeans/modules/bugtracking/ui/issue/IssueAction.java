@@ -77,7 +77,7 @@ public class IssueAction extends SystemAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
-        openIssue();
+        createIssue();
     }
 
     public static void openIssue(final Issue issue, final boolean refresh) {
@@ -104,15 +104,15 @@ public class IssueAction extends SystemAction {
         });
     }
 
-    public static void openIssue() {
-        openIssue(null, WindowManager.getDefault().getRegistry().getActivatedNodes());
+    private static void createIssue() {
+        createIssue(null, WindowManager.getDefault().getRegistry().getActivatedNodes());
     }
 
-    public static void openIssue(final Repository repository) {
-        openIssue(repository, WindowManager.getDefault().getRegistry().getActivatedNodes());
+    public static void createIssue(final Repository repository) {
+        createIssue(repository, WindowManager.getDefault().getRegistry().getActivatedNodes());
     }
 
-    private static void openIssue(final Repository repository, final Node[] context) {
+    private static void createIssue(final Repository repository, final Node[] context) {
         final boolean repositoryGiven = repository != null;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
