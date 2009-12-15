@@ -50,7 +50,6 @@ import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
-import org.openide.util.Lookup;
 
 
 /**
