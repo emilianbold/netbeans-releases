@@ -50,12 +50,18 @@ import org.netbeans.modules.web.beans.api.model.Result;
  * @author ads
  *
  */
-public class DefinitionErrorResult extends Result {
+public class DefinitionErrorResult extends BaseResult implements Result.Error {
 
     public DefinitionErrorResult( VariableElement var, TypeMirror type,
             String error ) 
     {
         super(var, type);
+        myMessage  =error;
     }
 
+    public String getMessage(){
+        return myMessage;
+    }
+    
+    private final String myMessage;
 }

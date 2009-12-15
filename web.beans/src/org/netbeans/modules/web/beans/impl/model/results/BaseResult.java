@@ -38,68 +38,42 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.api.model;
+package org.netbeans.modules.web.beans.impl.model.results;
 
-import java.util.List;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
+import org.netbeans.modules.web.beans.api.model.Result;
+
+
 
 /**
- * Represent eligible for injection element search result. 
- * 
  * @author ads
  *
  */
-public interface Result {
+abstract class BaseResult implements Result {
     
-    /**
-     * @return element injection point which is used for injectable search
+    BaseResult( VariableElement element , TypeMirror type ){
+        myElement = element;
+        myType = type;
+    }
+
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.Result#getVariable()
      */
-    VariableElement getVariable();
-    
-    TypeMirror getVariableType();
-    
-    interface Error extends Result {
-        
-        String getMessage();
+    public VariableElement getVariable() {
+        return myElement;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.Result#getVariableType()
+     */
+    public TypeMirror getVariableType() {
+        return myType;
     }
     
-    interface InjectableResult extends Result {
-        
-        /**
-         * <code>null</code> is returned if there is no eligible element for injection
-         * ( no element which could be a pretender).
-         * 
-         * it could be a result of unsatisfied or ambiguous dependency.
-         * F.e. unsatisfied dependency : there is a pretender satisfy typesafe 
-         * resolution but something incorrect ( parameterized type is not valid , etc. ). 
-         * Ambiguous dependency : there are a number of appropriate elements.
-         *
-         * 
-         * @return element ( type definition, production field/method) 
-         * that is used in injected point identified by {@link #getVariable()}
-         */
-        Element getElement();
-        
-        /**
-         * Check whether <code>element</code> is alternative.
-         * <code>element</code> could be eligible for injection element
-         * ( which is found as result here ) or stereotype. 
-         * @param element checked element 
-         * @return true if <code>element</code> is alternative
-         */
-        boolean isAlternative( Element element );
-        
-        /**
-         * Return list of all element's stereotypes ( including recursively
-         * inherited ).    
-         * @param element element with stereotypes  
-         * @return list of element's stereotypes  
-         */
-        List<AnnotationMirror> getStereotypes( Element element );
-    }
+    private final VariableElement myElement;
+    private final TypeMirror myType;
+
 }
