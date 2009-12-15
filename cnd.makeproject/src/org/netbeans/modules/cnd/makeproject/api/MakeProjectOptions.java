@@ -47,11 +47,15 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.settings.CppSettings;
 
-public class MakeProjectOptions {
+public final class MakeProjectOptions {
+
+    private MakeProjectOptions() {
+    }
 
     /**
      * @deprecated
      */
+    @Deprecated
     public static void setDefaultMakeCommand(String defaultMakeCommand) {
         //CppSettings.getDefault().setMakeName(defaultMakeCommand);
     }
@@ -59,6 +63,7 @@ public class MakeProjectOptions {
     /**
      * @deprecated
      */
+    @Deprecated
     public static String getDefaultMakeCommand() {
         return null; //CppSettings.getDefault().getMakeName();
     }
@@ -66,6 +71,7 @@ public class MakeProjectOptions {
     /**
      * @deprecated
      */
+    @Deprecated
     public static void setDefaultCompilerSet(String name) {
         // Set the default name in global setting
         CppSettings.getDefault().setCompilerSetName(name);
@@ -80,6 +86,7 @@ public class MakeProjectOptions {
     /**
      * @deprecated
      */
+    @Deprecated
     public static void setDefaultMakeOptions(String defaultMakeOptions) {
         MakeOptions.setDefaultMakeOptions(defaultMakeOptions);
     }
@@ -87,6 +94,7 @@ public class MakeProjectOptions {
     /**
      * @deprecated
      */
+    @Deprecated
     public static String getDefaultMakeOptions() {
         return MakeOptions.getDefaultMakeOptions();
     }
@@ -94,6 +102,7 @@ public class MakeProjectOptions {
     /**
      * @deprecated
      */
+    @Deprecated
     public static void setFortranSupport(boolean fortran) {
         //CppSettings.getDefault().setFortranEnabled(fortran);
     }
@@ -101,6 +110,7 @@ public class MakeProjectOptions {
     /**
      * @deprecated
      */
+    @Deprecated
     public static boolean getFortranSupport() {
         return true;
         //return CppSettings.getDefault().isFortranEnabled();
@@ -121,4 +131,5 @@ public class MakeProjectOptions {
     public static void setShowIndicatorsOnRun(boolean val) {
         MakeOptions.getInstance().setShowProfiling(val);
     }
+
 }
