@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,62 +38,36 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.spi.testvcs;
+package org.netbeans.modules.versioning.spi;
 
-import org.netbeans.modules.versioning.spi.VersioningSystem;
-import org.netbeans.modules.versioning.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.spi.VCSAnnotator;
 
 import java.io.File;
-import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
+import org.netbeans.modules.versioning.VcsVisibilityQueryImplementation;
+import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 
 /**
- * Test versioning system.
+ * Provides the visibility servis according to {@link VisibilityQueryImplementation2}
+ * for a particular VersioningSystem
  * 
- * @author Maros Sandor
+ * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
-public class TestVCS extends VersioningSystem {
+public abstract class VCSVisibilityQuery {
 
-    private static TestVCS instance;
-    private VCSInterceptor interceptor;
-    private VCSAnnotator annotator;
-    private VCSVisibilityQuery vq;
+    /**
+     * Check whether a file is recommended to be visible.
+     * @param file a file to considered
+     * @return true if it is recommended to display this file
+     */
+    public abstract boolean isVisible(File file);
 
-    public static final String VERSIONED_FOLDER_SUFFIX = "-test-versioned";
-
-    public static TestVCS getInstance() {
-        return instance;
-    }
-    
-    public TestVCS() {
-        instance = this;
-        interceptor = new TestVCSInterceptor();
-        annotator = new TestVCSAnnotator();
-        vq = new TestVCSVisibilityQuery();
-    }
-
-    public File getTopmostManagedAncestor(File file) {
-        File topmost = null;
-        for (; file != null; file = file.getParentFile()) {
-            if (file.getName().endsWith(VERSIONED_FOLDER_SUFFIX)) {
-                topmost = file;
-            }
+    /**
+     * Notify a visibility change
+     */
+    protected final void fireVisibilityChanged() {
+        VcsVisibilityQueryImplementation vq = VcsVisibilityQueryImplementation.getInstance();
+        if(vq != null) {
+            // was touched from outside - lets fire the change
+            vq.fireVisibilityChanged();
         }
-        return topmost;
     }
-
-    public VCSInterceptor getVCSInterceptor() {
-        return interceptor;
-    }
-
-    public VCSAnnotator getVCSAnnotator() {
-        return annotator;
-    }
-
-    @Override
-    public VCSVisibilityQuery getVisibilityQuery() {
-        return vq;
-}
-
 }

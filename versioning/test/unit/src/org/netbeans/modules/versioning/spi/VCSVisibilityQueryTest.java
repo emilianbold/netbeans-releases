@@ -38,62 +38,50 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.spi.testvcs;
+package org.netbeans.modules.versioning.spi;
 
-import org.netbeans.modules.versioning.spi.VersioningSystem;
-import org.netbeans.modules.versioning.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import java.io.IOException;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileObject;
 
 import java.io.File;
-import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
+import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
+import org.netbeans.modules.versioning.spi.testvcs.TestVCSVisibilityQuery;
 
 /**
- * Test versioning system.
+ * Versioning SPI unit tests of VCSVisibilityQuery.
  * 
- * @author Maros Sandor
+ * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
-public class TestVCS extends VersioningSystem {
-
-    private static TestVCS instance;
-    private VCSInterceptor interceptor;
-    private VCSAnnotator annotator;
-    private VCSVisibilityQuery vq;
-
-    public static final String VERSIONED_FOLDER_SUFFIX = "-test-versioned";
-
-    public static TestVCS getInstance() {
-        return instance;
-    }
+public class VCSVisibilityQueryTest extends NbTestCase {
     
-    public TestVCS() {
-        instance = this;
-        interceptor = new TestVCSInterceptor();
-        annotator = new TestVCSAnnotator();
-        vq = new TestVCSVisibilityQuery();
+
+    public VCSVisibilityQueryTest(String testName) {
+        super(testName);
     }
 
-    public File getTopmostManagedAncestor(File file) {
-        File topmost = null;
-        for (; file != null; file = file.getParentFile()) {
-            if (file.getName().endsWith(VERSIONED_FOLDER_SUFFIX)) {
-                topmost = file;
-            }
-        }
-        return topmost;
+    protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", System.getProperty("data.root.dir") + "/userdir");
+        super.setUp();
     }
 
-    public VCSInterceptor getVCSInterceptor() {
-        return interceptor;
+    public void testVQ() throws FileStateInvalidException, IOException {
+        File folder = new File(getWorkDir(), TestVCS.VERSIONED_FOLDER_SUFFIX);
+        folder.mkdirs();
+        
+        File visible = new File(folder, "this-file-is-visible");
+        visible.createNewFile();
+        FileObject visibleFO = FileUtil.toFileObject(visible);
+        assertTrue(VisibilityQuery.getDefault().isVisible(visible));
+        assertTrue(VisibilityQuery.getDefault().isVisible(visibleFO));
+
+        File invisible = new File(folder, "this-file-is-" + TestVCSVisibilityQuery.INVISIBLE_FILE_SUFFIX);
+        invisible.createNewFile();
+        FileObject invisibleFO = FileUtil.toFileObject(invisible);
+        assertFalse(VisibilityQuery.getDefault().isVisible(invisible));
+        assertFalse(VisibilityQuery.getDefault().isVisible(invisibleFO));
     }
-
-    public VCSAnnotator getVCSAnnotator() {
-        return annotator;
-    }
-
-    @Override
-    public VCSVisibilityQuery getVisibilityQuery() {
-        return vq;
-}
-
 }

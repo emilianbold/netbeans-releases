@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,62 +38,77 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.versioning.spi.testvcs;
+package org.netbeans.modules.versioning;
 
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
-import org.netbeans.modules.versioning.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.spi.VCSAnnotator;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
+import org.netbeans.spi.queries.VisibilityQueryImplementation2;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Test versioning system.
+ * Delegates the work to the owner of files in query.
  * 
- * @author Maros Sandor
+ * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
-public class TestVCS extends VersioningSystem {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.VisibilityQueryImplementation.class)
+public class VcsVisibilityQueryImplementation implements VisibilityQueryImplementation2 {
 
-    private static TestVCS instance;
-    private VCSInterceptor interceptor;
-    private VCSAnnotator annotator;
-    private VCSVisibilityQuery vq;
+    private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private static VcsVisibilityQueryImplementation instance;
 
-    public static final String VERSIONED_FOLDER_SUFFIX = "-test-versioned";
+    public VcsVisibilityQueryImplementation() {
+        instance = this;
+    }
 
-    public static TestVCS getInstance() {
+    public static VcsVisibilityQueryImplementation getInstance() {
         return instance;
     }
-    
-    public TestVCS() {
-        instance = this;
-        interceptor = new TestVCSInterceptor();
-        annotator = new TestVCSAnnotator();
-        vq = new TestVCSVisibilityQuery();
-    }
 
-    public File getTopmostManagedAncestor(File file) {
-        File topmost = null;
-        for (; file != null; file = file.getParentFile()) {
-            if (file.getName().endsWith(VERSIONED_FOLDER_SUFFIX)) {
-                topmost = file;
-            }
+    public boolean isVisible(File file) {
+        VersioningSystem system = VersioningManager.getInstance().getOwner(file);
+        if(system == null) {
+            return true;
         }
-        return topmost;
+        VCSVisibilityQuery vqi = system.getVisibilityQuery();
+        return vqi == null ? true : vqi.isVisible(file);
     }
 
-    public VCSInterceptor getVCSInterceptor() {
-        return interceptor;
+    public boolean isVisible(FileObject fileObject) {
+        File file = FileUtil.toFile(fileObject);
+        if(file == null) {
+            return true;
+        }
+        return isVisible(file);
     }
 
-    public VCSAnnotator getVCSAnnotator() {
-        return annotator;
+    public synchronized void addChangeListener(ChangeListener l) {
+        ArrayList<ChangeListener> newList = new ArrayList<ChangeListener>(listeners);
+        newList.add(l);
+        listeners = newList;
     }
 
-    @Override
-    public VCSVisibilityQuery getVisibilityQuery() {
-        return vq;
-}
+    public synchronized void removeChangeListener(ChangeListener l) {
+        ArrayList<ChangeListener> newList = new ArrayList<ChangeListener>(listeners);
+        newList.remove(l);
+        listeners = newList;
+    }
+
+    public void fireVisibilityChanged() {
+        ChangeListener[] ls;
+        synchronized(this) {
+            ls = listeners.toArray(new ChangeListener[listeners.size()]);
+        }
+        ChangeEvent event = new ChangeEvent(this);
+        for (ChangeListener l : ls) {
+            l.stateChanged(event);
+        }
+    }
 
 }
