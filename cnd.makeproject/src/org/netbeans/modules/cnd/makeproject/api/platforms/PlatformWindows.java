@@ -49,13 +49,13 @@ public class PlatformWindows extends Platform {
     public static final String NAME = "Windows"; // NOI18N
 
     public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
-        new LibraryItem.StdLibItem("Mathematics",
+        new LibraryItem.StdLibItem("Mathematics", // NOI18N
                                    "Mathematics",
                                    new String[] {"m"}), // NOI18N
-        new LibraryItem.StdLibItem("DataCompression",
+        new LibraryItem.StdLibItem("DataCompression", // NOI18N
                                    "Data Compression",
                                    new String[] {"z"}), // NOI18N
-        new LibraryItem.StdLibItem("PosixThreads",
+        new LibraryItem.StdLibItem("PosixThreads", // NOI18N
                                    "Posix Threads",
                                    new String[] {"pthread"}), // NOI18N
     };

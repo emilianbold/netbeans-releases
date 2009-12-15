@@ -50,7 +50,7 @@ public class PlatformSolaris  extends Platform {
 	new LibraryItem.StdLibItem("Motif", // NOI18N
                                    "Motif",
                                    new String[] {"Xm", "Xt", "Xext", "X11"}), // NOI18N
-	new LibraryItem.StdLibItem("Mathematics",
+	new LibraryItem.StdLibItem("Mathematics", // NOI18N
                                    "Mathematics",
                                    new String[] {"m"}), // NOI18N
 	new LibraryItem.StdLibItem("Yacc", // NOI18N
@@ -59,7 +59,7 @@ public class PlatformSolaris  extends Platform {
 	new LibraryItem.StdLibItem("Lex", // NOI18N
                                    "Lex",
                                    new String[] {"l"}), // NOI18N
-	new LibraryItem.StdLibItem("SocketsNetworkServices",
+	new LibraryItem.StdLibItem("SocketsNetworkServices", // NOI18N
                                    "Sockets and Network Services Library",
                                    new String[] {"socket", "nsl"}), // NOI18N
 	new LibraryItem.StdLibItem("SolarisThreads", // NOI18N
