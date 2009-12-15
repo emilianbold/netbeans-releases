@@ -246,7 +246,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         EditorCookie[] editorCookies = fileTable.getEditorCookies();
         DiffUtils.cleanThoseUnmodified(editorCookies);
         DiffUtils.cleanThoseWithEditorPaneOpen(editorCookies);
-        SaveCookie[] saveCookies = getSaveCookies(getSetups().toArray(new Setup[0]), editorCookies);
+        SaveCookie[] saveCookies = getSaveCookies(setups, editorCookies);
 
         return (saveCookies.length == 0)
                || SaveBeforeClosingDiffConfirmation.allSaved(saveCookies);
