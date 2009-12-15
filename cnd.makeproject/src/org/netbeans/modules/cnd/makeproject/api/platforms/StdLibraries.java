@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,48 +31,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import java.util.HashMap;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.openide.util.NbBundle;
 
-public class PlatformNone extends Platform {
-    public static final String NAME = "None"; // NOI18N
+/**
+ *
+ * @author Alexander Simon
+ */
+/*package-local*/ class StdLibraries {
+    private static final HashMap<String, LibraryItem.StdLibItem> libraries = new HashMap<String, LibraryItem.StdLibItem>();
 
-    public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
-        // empty
-    };
-
-    public PlatformNone() {
-        super(NAME, NbBundle.getBundle(PlatformNone.class).getString("NoPlatform"), Platform.PLATFORM_NONE);
+    static {
+        addLibrary("Motif", new String[] {"Xm", "Xt", "Xext", "X11"}); // NOI18N
+        addLibrary("Mathematics", new String[] {"m"}); // NOI18N
+        addLibrary("Yacc", new String[] {"y"}); // NOI18N
+        addLibrary("Lex", new String[] {"l"}); // NOI18N
+        addLibrary("SocketsNetworkServices", new String[] {"socket", "nsl"}); // NOI18N
+        addLibrary("SolarisThreads", new String[] {"thread"}); // NOI18N
+        addLibrary("DataCompression", new String[] {"z"}); // NOI18N
+        addLibrary("PosixThreads", new String[] {"pthread"}); // NOI18N
+        addLibrary("Posix4", new String[] {"posix4"}); // NOI18N
+        addLibrary("Internationalization", new String[] {"intl"}); // NOI18N
+        addLibrary("PatternMatching", new String[] {"gen"}); // NOI18N
+        addLibrary("Curses", new String[] {"curses"}); // NOI18N
+        addLibrary("DynamicLinking", new String[] {"dl"}); // NOI18N
     }
 
-    public LibraryItem.StdLibItem[] getStandardLibraries() {
-        return standardLibrariesLinux;
+    public static LibraryItem.StdLibItem getStandardLibary(String id) {
+        return libraries.get(id);
     }
-    
-    public String getLibraryName(String baseName) {
-        // Use Linux style
-        return "lib" + baseName + ".so"; // NOI18N
+
+    private static void addLibrary(String id, String[] libs) {
+        LibraryItem.StdLibItem item = new LibraryItem.StdLibItem(id, NbBundle.getBundle(StdLibraries.class).getString("StdLib."+id), libs); // NOI18N
+        libraries.put(item.getName(), item);
     }
-    
-    public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
-        if (libName.endsWith(".so")) { // NOI18N
-            int i = libName.indexOf(".so"); // NOI18N
-            if (i > 0) {
-                libName = libName.substring(0, i);
-            }
-            if (libName.startsWith("lib")) { // NOI18N
-                libName = libName.substring(3);
-            }
-            return compilerSet.getLibrarySearchOption() +  IpeUtils.escapeOddCharacters(libDir)
-                    + " " + compilerSet.getLibraryOption() + IpeUtils.escapeOddCharacters(libName); // NOI18N
-        } else {
-            return IpeUtils.escapeOddCharacters(libPath);
-        }
+
+    private StdLibraries() {
     }
 }
