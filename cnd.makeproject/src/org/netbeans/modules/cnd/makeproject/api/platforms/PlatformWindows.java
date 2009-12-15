@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
@@ -55,7 +56,7 @@ public class PlatformWindows extends Platform {
     };
     
     public PlatformWindows() {
-        super(NAME, "Windows", Platform.PLATFORM_WINDOWS); // NOI18N
+        super(NAME, "Windows", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
     }
     
     public LibraryItem.StdLibItem[] getStandardLibraries() {

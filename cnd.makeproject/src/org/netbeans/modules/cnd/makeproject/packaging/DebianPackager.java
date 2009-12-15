@@ -45,10 +45,10 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,9 +73,9 @@ public class DebianPackager implements PackagerDescriptor {
 
     public List<PackagerInfoElement> getDefaultInfoList(MakeConfiguration makeConfiguration, PackagingConfiguration packagingConfiguration) {
         String defArch;
-        if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_SOLARIS_INTEL) {
+        if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_SOLARIS_INTEL) {
             defArch = "i386"; // NOI18N
-        } else if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_SOLARIS_SPARC) {
+        } else if (makeConfiguration.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_SOLARIS_SPARC) {
             defArch = "sparc"; // NOI18N
         } else {
             // Anything else ?

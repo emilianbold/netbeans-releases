@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.actions.MakeAction;
 import org.netbeans.modules.cnd.actions.QMakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.builds.ImportUtils;
@@ -65,7 +66,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -403,10 +403,10 @@ public class ReconfigureProject {
             buf.append(" -DCMAKE_CXX_FLAGS_DEBUG="+cppCompilerFlags); // NOI18N
             buf.append(" -DCMAKE_EXE_LINKER_FLAGS_DEBUG="+ldFlags); // NOI18N
         } else if (configure.endsWith(".pro")){ // NOI18N
-            if (isSunCompiler && (platform == Platform.PLATFORM_SOLARIS_INTEL || platform == Platform.PLATFORM_SOLARIS_SPARC)) {
+            if (isSunCompiler && (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC)) {
                 buf.append(" -spec solaris-cc"); // NOI18N
             }
-            if (platform == Platform.PLATFORM_MACOSX) {
+            if (platform == PlatformTypes.PLATFORM_MACOSX) {
                 buf.append(" -spec macx-g++"); // NOI18N
             }
             buf.append(" QMAKE_CC="+getCCompilerName()); // NOI18N

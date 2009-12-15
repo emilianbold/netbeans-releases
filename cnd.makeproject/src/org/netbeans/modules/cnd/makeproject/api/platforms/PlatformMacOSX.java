@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
@@ -59,7 +60,7 @@ public class PlatformMacOSX extends Platform {
     };
     
     public PlatformMacOSX() {
-        super(NAME, "Mac OS X", Platform.PLATFORM_MACOSX); // NOI18N
+        super(NAME, "Mac OS X", PlatformTypes.PLATFORM_MACOSX); // NOI18N
     }
     
     public LibraryItem.StdLibItem[] getStandardLibraries() {

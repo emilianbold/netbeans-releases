@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.openide.util.NbBundle;
@@ -54,7 +55,7 @@ public class PlatformGeneric extends Platform {
     };
 
     public PlatformGeneric() {
-        super(NAME, NbBundle.getBundle(PlatformGeneric.class).getString("GenericName"), Platform.PLATFORM_GENERIC); // NOI18N
+        super(NAME, NbBundle.getBundle(PlatformGeneric.class).getString("GenericName"), PlatformTypes.PLATFORM_GENERIC); // NOI18N
     }
 
     public LibraryItem.StdLibItem[] getStandardLibraries() {

@@ -44,9 +44,9 @@ import org.netbeans.modules.cnd.actions.AbstractExecutorRunAction;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -172,10 +172,10 @@ public final class ConfigureUtils {
             appendIfNeed("-DCMAKE_CXX_FLAGS_DEBUG=", flags, buf, cppCompilerFlags); // NOI18N
         } else if (configure.endsWith(".pro")){ // NOI18N
             int platform = getPlatform();
-            if (isSunStodio() && (platform == Platform.PLATFORM_SOLARIS_INTEL || platform == Platform.PLATFORM_SOLARIS_SPARC)) { // NOI18N
+            if (isSunStodio() && (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC)) { // NOI18N
                 appendIfNeed("-spec ", flags, buf, "solaris-cc"); // NOI18N
             }
-            if (platform == Platform.PLATFORM_MACOSX) {
+            if (platform == PlatformTypes.PLATFORM_MACOSX) {
                 buf.append("-spec macx-g++"); // NOI18N
             }
             appendIfNeed("QMAKE_CC=", flags, buf, cCompiler); // NOI18N

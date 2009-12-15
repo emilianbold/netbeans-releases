@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
@@ -401,7 +402,7 @@ public class ConfigurationMakefileWriter {
 
         if (conf.isQmakeConfiguration()) {
             String qmakeSpec = conf.getQmakeConfiguration().getQmakeSpec().getValue();
-            if (qmakeSpec.length() == 0 && conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_MACOSX) {
+            if (qmakeSpec.length() == 0 && conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                 // on Mac we force spec to macx-g++, otherwise qmake generates xcode project
                 qmakeSpec = compilerSet.getQmakeSpec(conf.getDevelopmentHost().getBuildPlatform());
             }
@@ -413,7 +414,7 @@ public class ConfigurationMakefileWriter {
             // Otherwise qmake will complain that sources are not found.
             bw.write("\t${QMAKE} VPATH=. " + qmakeSpec + "-o qttmp-${CND_CONF}.mk nbproject/qt-${CND_CONF}.pro\n"); // NOI18N
             bw.write("\tmv -f qttmp-${CND_CONF}.mk nbproject/qt-${CND_CONF}.mk\n"); // NOI18N
-            if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
+            if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                 // qmake uses backslashes on Windows, this code corrects them to forward slashes
                 bw.write("\t@sed -e 's:\\\\\\(.\\):/\\1:g' nbproject/qt-${CND_CONF}.mk >nbproject/qt-${CND_CONF}.tmp\n"); // NOI18N
                 bw.write("\t@mv -f nbproject/qt-${CND_CONF}.tmp nbproject/qt-${CND_CONF}.mk\n"); // NOI18N
@@ -744,7 +745,7 @@ public class ConfigurationMakefileWriter {
     private static String getOutput(MakeConfiguration conf) {
         String output = conf.getOutputValue();
         switch (conf.getDevelopmentHost().getBuildPlatform()) {
-            case Platform.PLATFORM_WINDOWS:
+            case PlatformTypes.PLATFORM_WINDOWS:
                 switch (conf.getConfigurationType().getValue()) {
                     case MakeConfiguration.TYPE_APPLICATION:
                     case MakeConfiguration.TYPE_QT_APPLICATION:
