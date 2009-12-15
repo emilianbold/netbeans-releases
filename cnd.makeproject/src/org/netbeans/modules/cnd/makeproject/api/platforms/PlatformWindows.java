@@ -48,16 +48,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 public class PlatformWindows extends Platform {
     public static final String NAME = "Windows"; // NOI18N
 
-    public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
-        new LibraryItem.StdLibItem("Mathematics", // NOI18N
-                                   "Mathematics",
-                                   new String[] {"m"}), // NOI18N
-        new LibraryItem.StdLibItem("DataCompression", // NOI18N
-                                   "Data Compression",
-                                   new String[] {"z"}), // NOI18N
-        new LibraryItem.StdLibItem("PosixThreads", // NOI18N
-                                   "Posix Threads",
-                                   new String[] {"pthread"}), // NOI18N
+    private static final LibraryItem.StdLibItem[] standardLibrariesWindows = {
+        StdLibraries.getStandardLibary("Mathematics"), // NOI18N
+        StdLibraries.getStandardLibary("DataCompression"), // NOI18N
+        StdLibraries.getStandardLibary("PosixThreads"), // NOI18N
     };
     
     public PlatformWindows() {
@@ -65,7 +59,7 @@ public class PlatformWindows extends Platform {
     }
     
     public LibraryItem.StdLibItem[] getStandardLibraries() {
-        return standardLibrariesLinux;
+        return standardLibrariesWindows;
     }
     
     public String getLibraryName(String baseName) {

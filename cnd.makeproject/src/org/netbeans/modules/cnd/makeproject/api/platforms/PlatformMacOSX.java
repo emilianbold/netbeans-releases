@@ -50,24 +50,12 @@ public class PlatformMacOSX extends Platform {
     public static final String LIBRARY_SUFFIX = "dylib"; // NOI18N
 
     public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
-//        new LibraryItem.StdLibItem("Motif", // NOI18N
-//                                   "Motif",
-//                                   new String[] {"Xm", "Xt", "Xext", "X11"}), // NOI18N
-        new LibraryItem.StdLibItem("Mathematics", // NOI18N
-                                   "Mathematics",
-                                   new String[] {"m"}), // NOI18N
-        new LibraryItem.StdLibItem("DataCompression", // NOI18N
-                                   "Data Compression",
-                                   new String[] {"z"}), // NOI18N
-        new LibraryItem.StdLibItem("PosixThreads", // NOI18N
-                                   "Posix Threads",
-                                   new String[] {"pthread"}), // NOI18N
-        new LibraryItem.StdLibItem("Curses", // NOI18N
-                                   "Curses: CRT Screen Handling",
-                                   new String[] {"curses"}), // NOI18N
-        new LibraryItem.StdLibItem("Dynamic Linking", // NOI18N
-                                   "Dynamic Linking",
-                                   new String[] {"dl"}), // NOI18N
+//        StdLibraries.getStandardLibary("Motif"), // NOI18N
+        StdLibraries.getStandardLibary("Mathematics"), // NOI18N
+        StdLibraries.getStandardLibary("DataCompression"), // NOI18N
+        StdLibraries.getStandardLibary("PosixThreads"), // NOI18N
+        StdLibraries.getStandardLibary("Curses"), // NOI18N
+        StdLibraries.getStandardLibary("DynamicLinking"), // NOI18N
     };
     
     public PlatformMacOSX() {
