@@ -446,7 +446,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                 return false;
             }
         };
-        private final HashMap<FileObject, Set<ItemKey<T, KEY>>> index = new HashMap<FileObject, Set<ItemKey <T, KEY>>>(CACHE_SIZE);
+        private final WeakHashMap<FileObject, Set<ItemKey<T, KEY>>> index = new WeakHashMap<FileObject, Set<ItemKey <T, KEY>>>(CACHE_SIZE);
         private final LinkedHashSet<ItemKey<T, KEY>> filesToAnnotate;
         private final RequestProcessor.Task annotationRefreshTask;
         private final String type;
@@ -508,13 +508,18 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                     }
                 }
                 cachedValues.put(key, new Item(value));
+                // reference to the key must be added to index for every file in the set and every parent
+                // so the key can be quickly found when refresh annotations event comes
                 for (FileObject fo : files) {
-                    Set<ItemKey<T, KEY>> sets = index.get(fo);
-                    if (sets == null) {
-                        sets = new HashSet<ItemKey<T, KEY>>();
-                        index.put(fo, sets);
-                    }
-                    sets.add(key);
+                    boolean added = false;
+                    do {
+                        Set<ItemKey<T, KEY>> sets = index.get(fo);
+                        if (sets == null) {
+                            sets = new HashSet<ItemKey<T, KEY>>();
+                            index.put(fo, sets);
+                        }
+                        added = sets.add(key);
+                    } while (added && (fo = fo.getParent()) != null);
                 }
                 removeOldValues();
             }
@@ -637,9 +642,20 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
 
         private void removeFromIndex (ItemKey<T, KEY> key) {
             Set<? extends FileObject> files = key.getFiles();
+            Set<FileObject> removedFor = new HashSet<FileObject>();
+            // remove all references for every file and it's parents from the index
             for (FileObject fo : files) {
-                Set<ItemKey<T, KEY>> sets = index.get(fo);
-                sets.remove(key);
+                do {
+                    removedFor.add(fo);
+                    Set<ItemKey<T, KEY>> sets = index.get(fo);
+                    if (sets != null) {
+                        sets.remove(key);
+                        if (sets.size() == 0) {
+                            // remove the whole entry
+                            index.remove(fo);
+                        }
+                    }
+                } while ((fo = fo.getParent()) != null && !removedFor.contains(fo));
             }
         }
 
@@ -708,6 +724,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             private final T initialValue;
             private final KEY keyPart;
             private final Set<? extends FileObject> files;
+            private Integer hashCode;
 
             public ItemKey(Set<? extends FileObject> files, KEY keyPart, T initialValue) {
                 assert keyPart != null;
@@ -735,10 +752,17 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
 
             @Override
             public int hashCode() {
-                int hash = 5;
-                hash = 29 * hash + (this.keyPart != null ? this.keyPart.hashCode() : 0);
-                hash = 29 * hash + (this.files != null ? this.files.hashCode() : 0);
-                return hash;
+                // hashCode should allways return the same value during the lifetime of the instance
+                if (hashCode == null) {
+                    int hash = 5;
+                    hash = 29 * hash + (this.keyPart != null ? this.keyPart.hashCode() : 0);
+                    hash = 29 * hash + (this.files != null ? this.files.hashCode() : 0);
+                    if (hashCode == null) {
+                        hashCode = hash;
+                    }
+                    hashCode = hash;
+                }
+                return hashCode;
             }
 
             @Override

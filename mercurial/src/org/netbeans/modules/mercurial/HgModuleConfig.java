@@ -469,19 +469,6 @@ public class HgModuleConfig {
         Utils.insert(prefs, RECENT_URL, RepositoryConnection.getString(rc), -1);                
     }    
 
-    public void setRecentUrls(List<RepositoryConnection> recentUrls) {
-        List<String> urls = new ArrayList<String>(recentUrls.size());
-       
-        int idx = 0;
-        for (Iterator<RepositoryConnection> it = recentUrls.iterator(); it.hasNext();) {
-            idx++;
-            RepositoryConnection rc = it.next();
-            urls.add(RepositoryConnection.getString(rc));            
-        }
-        Preferences prefs = getPreferences();
-        Utils.put(prefs, RECENT_URL, urls);            
-    }
-    
     public List<RepositoryConnection> getRecentUrls() {
         Preferences prefs = getPreferences();
         List<String> urls = Utils.getStringList(prefs, RECENT_URL);
