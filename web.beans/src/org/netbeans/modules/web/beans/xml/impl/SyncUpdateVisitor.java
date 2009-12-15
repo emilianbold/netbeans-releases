@@ -40,9 +40,12 @@
  */
 package org.netbeans.modules.web.beans.xml.impl;
 
+import org.netbeans.modules.web.beans.xml.AlternativeElement;
 import org.netbeans.modules.web.beans.xml.Alternatives;
 import org.netbeans.modules.web.beans.xml.BeanClass;
+import org.netbeans.modules.web.beans.xml.BeanClassContainer;
 import org.netbeans.modules.web.beans.xml.Beans;
+import org.netbeans.modules.web.beans.xml.BeansElement;
 import org.netbeans.modules.web.beans.xml.Decorators;
 import org.netbeans.modules.web.beans.xml.Interceptors;
 import org.netbeans.modules.web.beans.xml.Stereotype;
@@ -94,40 +97,71 @@ class SyncUpdateVisitor implements ComponentUpdater<WebBeansComponent>, WebBeans
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Interceptors)
      */
     public void visit( Interceptors interceptors ) {
-        // TODO Auto-generated method stub
-        
+        visitBeanElement(interceptors);
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Decorators)
      */
     public void visit( Decorators decorators ) {
-        // TODO Auto-generated method stub
-        
+        visitBeanElement(decorators);
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Alternatives)
      */
     public void visit( Alternatives alternatives ) {
-        // TODO Auto-generated method stub
-        
+        visitBeanElement(alternatives);        
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.BeanClass)
      */
     public void visit( BeanClass clazz ) {
-        // TODO Auto-generated method stub
-        
+        if ( getParent() instanceof Alternatives ){
+            visitAlternativesChild(clazz);
+        }
+        else if ( getParent() instanceof BeanClassContainer ){
+            BeanClassContainer parent = (BeanClassContainer)getParent();
+            if ( isAdd() ){
+                parent.addBeanClass( getIndex() , clazz );
+            }
+            else if ( isRemove() ){
+                parent.removeBeanClass( clazz );
+            }
+        }
+        else {
+            assert false;
+        }
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Stereotype)
      */
     public void visit( Stereotype stereotype ) {
-        // TODO Auto-generated method stub
-        
+        visitAlternativesChild(stereotype);
+    }
+
+    private void visitAlternativesChild( AlternativeElement element ) {
+        assert getParent() instanceof Alternatives;
+        Alternatives alternatives = (Alternatives)getParent();
+        if ( isAdd() ){
+            alternatives.addElement( getIndex() , element );
+        }
+        else if ( isRemove() ){
+            alternatives.removeElement( element );
+        }
+    }
+    
+    private void visitBeanElement( BeansElement element ) {
+        assert getParent() instanceof Beans;
+        Beans beans = (Beans)getParent();
+        if ( isAdd() ){
+            beans.addElement( getIndex() , element );
+        }
+        else if ( isRemove() ){
+            beans.removeElement( element );
+        }
     }
 
     private boolean isAdd() {

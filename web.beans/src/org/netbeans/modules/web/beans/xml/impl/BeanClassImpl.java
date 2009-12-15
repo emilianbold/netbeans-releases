@@ -38,16 +38,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xml;
+package org.netbeans.modules.web.beans.xml.impl;
 
+import org.netbeans.modules.web.beans.xml.BeanClass;
+import org.netbeans.modules.web.beans.xml.WebBeansComponent;
+import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
+import org.w3c.dom.Element;
 
 
 /**
  * @author ads
  *
  */
-public interface Decorators extends BeansElement, BeanClassContainer {
+class BeanClassImpl extends WebBeansComponentImpl implements BeanClass {
 
-    String DECORATORS = "decorators";       // NOI18N
+    BeanClassImpl( WebBeansModelImpl model, Element e ) {
+        super(model, e);
+    }
     
+    BeanClassImpl( WebBeansModelImpl model) {
+        super(model, createNewElement( CLASS, model));
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.BeanClass#getBeanClass()
+     */
+    public String getBeanClass() {
+        return getText();
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.BeanClass#setBeanClass(java.lang.String)
+     */
+    public void setBeanClass( String value ) {
+        setText(CLASS, value);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#accept(org.netbeans.modules.web.beans.xml.WebBeansVisitor)
+     */
+    public void accept( WebBeansVisitor visitor ) {
+        visitor.visit(this );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#getComponentType()
+     */
+    public Class<? extends WebBeansComponent> getComponentType() {
+        return BeanClass.class;
+    }
+
 }

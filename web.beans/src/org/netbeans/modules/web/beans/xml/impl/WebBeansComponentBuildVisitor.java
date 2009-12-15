@@ -73,47 +73,51 @@ class WebBeansComponentBuildVisitor implements WebBeansVisitor {
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Beans)
      */
     public void visit( Beans beans ) {
-        // TODO
+        if ( isAcceptable( WebBeansElements.INTERCEPTORS)){
+            setResult( new InterceptorsImpl(getModel() , getElement()));
+        }
+        else if (isAcceptable( WebBeansElements.DECORATORS )){
+            setResult( new DecoratorsImpl(getModel(), getElement()));
+        }
+        else if (isAcceptable( WebBeansElements.ALTERNATIVES)){
+            setResult( new AlternativesImpl(getModel(), getElement()));
+        }
     }
     
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Interceptors)
      */
     public void visit( Interceptors interceptors ) {
-        // TODO Auto-generated method stub
-        
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Decorators)
      */
     public void visit( Decorators decorators ) {
-        // TODO Auto-generated method stub
-        
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Alternatives)
      */
     public void visit( Alternatives alternatives ) {
-        // TODO Auto-generated method stub
-        
+        if ( isAcceptable( WebBeansElements.CLASS)){
+            setResult( new BeanClassImpl(getModel(), getElement()));
+        }
+        else if ( isAcceptable( WebBeansElements.STEREOTYPE )){
+            setResult( new StereotypeImpl( getModel(), getElement()));
+        }
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.BeanClass)
      */
     public void visit( BeanClass clazz ) {
-        // TODO Auto-generated method stub
-        
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Stereotype)
      */
     public void visit( Stereotype stereotype ) {
-        // TODO Auto-generated method stub
-        
     }
 
     WebBeansComponent create( WebBeansComponent context, Element element )

@@ -38,16 +38,56 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.xml;
+package org.netbeans.modules.web.beans.xml.impl;
 
+import org.netbeans.modules.web.beans.xml.Stereotype;
+import org.netbeans.modules.web.beans.xml.WebBeansComponent;
+import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
+import org.w3c.dom.Element;
 
 
 /**
  * @author ads
  *
  */
-public interface Decorators extends BeansElement, BeanClassContainer {
+class StereotypeImpl extends WebBeansComponentImpl implements Stereotype
+{
 
-    String DECORATORS = "decorators";       // NOI18N
+    StereotypeImpl( WebBeansModelImpl model, Element e ) {
+        super(model, e);
+    }
     
+    StereotypeImpl( WebBeansModelImpl model) {
+        this(model, createNewElement(STEREOTYPE, model));
+    }
+
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.Stereotype#getStereotype()
+     */
+    public String getStereotype() {
+        return getText();
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.Stereotype#setStereotype(java.lang.String)
+     */
+    public void setStereotype( String value ) {
+        setText(STEREOTYPE, value);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#accept(org.netbeans.modules.web.beans.xml.WebBeansVisitor)
+     */
+    public void accept( WebBeansVisitor visitor ) {
+        visitor.visit( this );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponent#getComponentType()
+     */
+    public Class<? extends WebBeansComponent> getComponentType() {
+        return Stereotype.class;
+    }
+
 }
