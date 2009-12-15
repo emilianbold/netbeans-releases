@@ -44,10 +44,11 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.session;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.DeleteEJBDialog;
-import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -188,13 +189,17 @@ public final class SessionNode extends AbstractNode implements OpenCookie, Prope
     }
     
     public void open() {
-        DataObject dataObject = ejbViewController.getBeanDo();
+        FileObject fo = ejbViewController.getBeanFo();
+        ElementHandle<TypeElement> beh = ejbViewController.getBeanClass();
+        ElementOpen.open(fo, beh);
+/*
         if (dataObject != null) {
             OpenCookie cookie = dataObject.getCookie(OpenCookie.class);
             if(cookie != null){
                 cookie.open();
             }
         }
+ */
     }
     
     public Action getPreferredAction() {
