@@ -345,6 +345,25 @@ made subject to such option by the copyright holder.
         <issue number="158907"/>
     </change>
 
+     <change id="WatchesReordering">
+        <api name="DebuggerCoreAPI"/>
+        <summary>Support for changing the order of watches.</summary>
+        <version major="1" minor="22"/>
+        <date day="15" month="12" year="2009"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes"/>
+        <description>
+             <p>
+             createWatch(int index, String expr) and reorderWatches(int[] permutation)
+             methods added to DebuggerManager class.<br/>
+             These methods are going to be called from WatchesTreeModel when
+             watches are reordered.
+             </p>
+        </description>
+        <class package="org.netbeans.api.debugger" name="DebuggerManager" />
+        <issue number="178301"/>
+    </change>
+
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->

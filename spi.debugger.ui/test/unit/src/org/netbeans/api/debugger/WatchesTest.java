@@ -43,6 +43,7 @@ package org.netbeans.api.debugger;
 
 import org.netbeans.api.debugger.test.TestDebuggerManagerListener;
 import java.beans.PropertyChangeEvent;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -124,6 +125,59 @@ public class WatchesTest extends DebuggerApiTestBase {
         Watch [] watches = dm.getWatches();
         assertEquals("Wrong number of installed watches", watchesSize + 1, watches.length);
         return newWatch;
+    }
+
+    public void testWatchesReorder() throws Exception {
+        DebuggerManager dm = DebuggerManager.getDebuggerManager();
+        dm.createWatch("w1");
+        dm.createWatch(0, "w0");
+
+        Watch[] watches = dm.getWatches();
+        assertEquals("w0", watches[0].getExpression());
+
+        boolean exThrown = false;
+        try {
+            dm.createWatch(100, "w100");
+        } catch (ArrayIndexOutOfBoundsException aioobex) {
+            exThrown = true;
+        }
+        assertTrue(exThrown);
+        dm.removeAllWatches();
+
+        for (int i = 0; i < 5; i++) {
+            dm.createWatch(i, "w"+(i+1));
+        }
+        dm.reorderWatches(new int[] { 2, 0, 1, 4, 3 });
+        String[] reorderedWatches = new String[] { "w2", "w3", "w1", "w5", "w4" };
+        watches = dm.getWatches();
+        String watchesStr = Arrays.toString(watches);
+        for (int i = 0; i < 5; i++) {
+            assertEquals(watchesStr, reorderedWatches[i], watches[i].getExpression());
+        }
+
+        exThrown = false;
+        try {
+            dm.reorderWatches(new int[] { 2, 0, 1, 4, 3, 5 });
+        } catch (IllegalArgumentException iaex) {
+            exThrown = true;
+        }
+        assertTrue(exThrown);
+
+        exThrown = false;
+        try {
+            dm.reorderWatches(new int[] { 2, 0, 1 });
+        } catch (IllegalArgumentException iaex) {
+            exThrown = true;
+        }
+        assertTrue(exThrown);
+
+        exThrown = false;
+        try {
+            dm.reorderWatches(new int[] { 2, 0, 1, 0, 3 });
+        } catch (IllegalArgumentException iaex) {
+            exThrown = true;
+        }
+        assertTrue(exThrown);
     }
 
 }
