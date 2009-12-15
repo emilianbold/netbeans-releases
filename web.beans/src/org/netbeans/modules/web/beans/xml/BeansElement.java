@@ -49,4 +49,5 @@ package org.netbeans.modules.web.beans.xml;
 public interface BeansElement extends WebBeansComponent {
 
     String CLASS = "class";     //NOI18N 
+    
 }

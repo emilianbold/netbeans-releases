@@ -40,6 +40,10 @@
  */
 package org.netbeans.modules.web.beans.xml.impl;
 
+import java.util.List;
+
+import org.netbeans.modules.web.beans.xml.BeanClass;
+import org.netbeans.modules.web.beans.xml.BeanClassContainer;
 import org.w3c.dom.Element;
 
 
@@ -47,18 +51,29 @@ import org.w3c.dom.Element;
  * @author ads
  *
  */
-abstract class ClassContainerImpl extends BaseClassContainerImpl {
-
+abstract class ClassContainerImpl extends BaseClassContainerImpl 
+    implements BeanClassContainer 
+{
+    
     ClassContainerImpl( WebBeansModelImpl model, Element e ) {
         super(model, e);
     }
-    
-    public void addClass(int index , String clazz){
-        
+
+
+    public void addBeanClass( BeanClass clazz ) {
+        appendChild(BeanClass.CLASS, clazz);
     }
-    
-    public void removeClass( int index ){
-        
+
+    public void addBeanClass( int index, BeanClass clazz ) {
+        insertAtIndex(BeanClass.CLASS, clazz, index);
+    }
+
+    public List<BeanClass> getBeansClasses() {
+        return getChildren( BeanClass.class );
+    }
+
+    public void removeBeanClass( BeanClass clazz ) {
+        removeChild( BeanClass.CLASS, clazz);
     }
 
 }

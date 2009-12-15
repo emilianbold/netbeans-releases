@@ -72,9 +72,5 @@ abstract class BaseClassContainerImpl extends WebBeansComponentImpl {
         }
         return result;
     }
-    
-    public void addClass(String clazz){
-        
-    }
 
 }
