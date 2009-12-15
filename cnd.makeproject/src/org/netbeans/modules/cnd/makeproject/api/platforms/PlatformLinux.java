@@ -49,12 +49,24 @@ public class PlatformLinux extends Platform {
     public static final String NAME = "Linux-x86"; // NOI18N
 
     public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
-        new LibraryItem.StdLibItem("Motif", "Motif", new String[] {"Xm", "Xt", "Xext", "X11"}), // NOI18N
-        new LibraryItem.StdLibItem("Mathematics", "Mathematics", new String[] {"m"}), // NOI18N
-        new LibraryItem.StdLibItem("DataCompression", "Data Compression", new String[] {"z"}), // NOI18N
-        new LibraryItem.StdLibItem("PosixThreads", "Posix Threads", new String[] {"pthread"}), // NOI18N
-        new LibraryItem.StdLibItem("Curses", "Curses: CRT Screen Handling", new String[] {"curses"}), // NOI18N
-        new LibraryItem.StdLibItem("Dynamic Linking", "Dynamic Linking", new String[] {"dl"}), // NOI18N
+        new LibraryItem.StdLibItem("Motif", // NOI18N
+                                   "Motif",
+                                   new String[] {"Xm", "Xt", "Xext", "X11"}), // NOI18N
+        new LibraryItem.StdLibItem("Mathematics", // NOI18N
+                                   "Mathematics",
+                                   new String[] {"m"}), // NOI18N
+        new LibraryItem.StdLibItem("DataCompression", // NOI18N
+                                   "Data Compression",
+                                   new String[] {"z"}), // NOI18N
+        new LibraryItem.StdLibItem("PosixThreads", // NOI18N
+                                   "Posix Threads",
+                                   new String[] {"pthread"}), // NOI18N
+        new LibraryItem.StdLibItem("Curses", // NOI18N
+                                   "Curses: CRT Screen Handling",
+                                   new String[] {"curses"}), // NOI18N
+        new LibraryItem.StdLibItem("Dynamic Linking", // NOI18N
+                                   "Dynamic Linking",
+                                   new String[] {"dl"}), // NOI18N
     };
     
     public PlatformLinux() {
@@ -72,10 +84,12 @@ public class PlatformLinux extends Platform {
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
         if (libName.endsWith(".so")) { // NOI18N
             int i = libName.indexOf(".so"); // NOI18N
-            if (i > 0)
+            if (i > 0) {
                 libName = libName.substring(0, i);
-            if (libName.startsWith("lib")) // NOI18N
+            }
+            if (libName.startsWith("lib")) { // NOI18N
                 libName = libName.substring(3);
+            }
             return compilerSet.getDynamicLibrarySearchOption() + IpeUtils.escapeOddCharacters(libDir)
                     + " " + compilerSet.getLibrarySearchOption() + IpeUtils.escapeOddCharacters(libDir) // NOI18N
                     + " " + compilerSet.getLibraryOption() + IpeUtils.escapeOddCharacters(libName); // NOI18N
