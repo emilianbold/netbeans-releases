@@ -278,7 +278,7 @@ abstract class FieldInjectionPointLogic {
         Map<Element, List<DeclaredType>> productions = filterProductionByType( 
                 element, elementType, productionElements, modelImpl );
         
-        return createResult( element, elementType, types , productions );
+        return createResult( element, elementType, types , productions , modelImpl);
     }
 
     protected boolean isQualifier( TypeElement element, 
@@ -316,9 +316,11 @@ abstract class FieldInjectionPointLogic {
     }
     
     private Result createResult( VariableElement element, TypeMirror elementType, 
-            Set<TypeElement> types,Map<Element, List<DeclaredType>> productions )
+            Set<TypeElement> types,Map<Element, List<DeclaredType>> productions ,
+            WebBeansModelImplementation model )
     {
-        return new ResultImpl(element, elementType, types, productions);
+        return new ResultImpl(element, elementType, types, productions, 
+                model.getHelper() );
     }
     
     private Result handleNewQualifier( VariableElement element,
@@ -356,7 +358,8 @@ abstract class FieldInjectionPointLogic {
             if( modelImpl.getHelper().getCompilationController().getTypes().
                     isAssignable(typeMirror, elementType))
             {
-                return new Result(element, elementType , typeElement );
+                return new ResultImpl(element, elementType , (TypeElement)typeElement , 
+                        modelImpl.getHelper());
             }
         }
         // TODO : don't return null. Should be empty result
