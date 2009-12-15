@@ -330,7 +330,7 @@ public class QueryAccessorImpl extends QueryAccessor implements PropertyChangeLi
                 }
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() { // XXX add post method to BM
                     public void run() {
-                        IssueAction.openIssue(repo);
+                        IssueAction.createIssue(repo);
                     }
                 });
             }

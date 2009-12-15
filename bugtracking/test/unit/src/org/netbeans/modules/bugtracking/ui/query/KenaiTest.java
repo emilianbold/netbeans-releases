@@ -351,6 +351,16 @@ public class KenaiTest extends NbTestCase {
         }
 
         public Lookup getLookup() {
+            return Lookup.EMPTY;
+        }
+
+        @Override
+        public String getID() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Image getIcon() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
