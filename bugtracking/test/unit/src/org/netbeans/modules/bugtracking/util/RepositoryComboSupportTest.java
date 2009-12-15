@@ -55,6 +55,7 @@ import org.netbeans.modules.bugtracking.dummies.DummyBugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.dummies.DummyKenaiRepositories;
 import org.netbeans.modules.bugtracking.dummies.DummyNode;
 import org.netbeans.modules.bugtracking.dummies.DummyTopComponentRegistry;
+import org.netbeans.modules.bugtracking.dummies.DummyWindowManager;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport.Progress;
 import org.openide.nodes.Node;
@@ -102,7 +103,7 @@ public class RepositoryComboSupportTest {
     }
 
     private static DummyTopComponentRegistry getTopComponentRegistry() {
-        return Lookup.getDefault().lookup(DummyTopComponentRegistry.class);
+        return Lookup.getDefault().lookup(DummyWindowManager.class).registry;
     }
 
     private static DummyBugtrackingOwnerSupport getBugtrackingOwnerSupport() {
@@ -830,7 +831,7 @@ public class RepositoryComboSupportTest {
             super(ic);
             ic.add(new DummyKenaiRepositories());
             ic.add(new DummyBugtrackingConnector());
-            ic.add(new DummyTopComponentRegistry());
+            ic.add(new DummyWindowManager());
             ic.add(new DummyBugtrackingOwnerSupport());
         }
     }
