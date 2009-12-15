@@ -83,40 +83,35 @@ class WebBeansComponentFactoryImpl implements WebBeansComponentFactory {
      * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createAlternatives()
      */
     public Alternatives createAlternatives() {
-        // TODO Auto-generated method stub
-        return null;
+        return new AlternativesImpl(getModel());
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createBeanClass()
      */
     public BeanClass createBeanClass() {
-        // TODO Auto-generated method stub
-        return null;
+        return new BeanClassImpl( getModel());
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createDecorators()
      */
     public Decorators createDecorators() {
-        // TODO Auto-generated method stub
-        return null;
+        return new DecoratorsImpl( getModel());
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createInterceptors()
      */
     public Interceptors createInterceptors() {
-        // TODO Auto-generated method stub
-        return null;
+        return new InterceptorsImpl(getModel());
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createStereotype()
      */
     public Stereotype createStereotype() {
-        // TODO Auto-generated method stub
-        return null;
+        return new StereotypeImpl(getModel());
     }
     
     private WebBeansModelImpl getModel(){

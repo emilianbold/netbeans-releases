@@ -52,13 +52,11 @@ public interface Alternatives extends BeansElement {
     String ALTERNATIVES  = "alternatives";      // NOI18N
     
     List<String> getClasses();
-    void addClass( String clazz);
     
     List<String> getSterrotypes();
-    void addStereotype( String stereotype );
     
     List<AlternativeElement> getElements();
     void addElement( AlternativeElement element );
     void addElement( int index , AlternativeElement element );
-    void remove( AlternativeElement element );
+    void removeElement( AlternativeElement element );
 }

@@ -40,20 +40,14 @@
  */
 package org.netbeans.modules.web.beans.xml;
 
-import java.util.List;
 
 
 /**
  * @author ads
  *
  */
-public interface Interceptors extends BeansElement {
+public interface Interceptors extends BeansElement, BeanClassContainer {
 
     String INTERCEPTORS = "interceptors";   // NOI18N
-    
-    List<String> getClasses();
-    void addClass( String clazz);
-    void addClass( int index , String clazz );
-    void removeClass( int index );
     
 }

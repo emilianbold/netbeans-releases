@@ -681,37 +681,28 @@ public class Installer extends ModuleInstall implements Runnable {
             }
             closeLogStream();
 
-            InputStream is = null;
             File f1 = logFile(1);
             if (logsSize < UIHandler.MAX_LOGS && f1 != null && f1.exists()) {
-                try {
-                    is = new FileInputStream(f1);
-                    LogRecords.scan(is, handler);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally {
-                    try {
-                        if (is != null) {
-                            is.close();
-                        }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
+                scan(f1, handler);
             }
+            scan(f, handler);
+        }
+    }
+
+    private static void scan(File f, Handler handler){
+        InputStream is = null;
+        try {
+            is = new FileInputStream(f);
+            LogRecords.scan(is, handler);
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "Broken uilogs file, not all UI actions will submitted", ex);
+        } finally {
             try {
-                is = new FileInputStream(f);
-                LogRecords.scan(is, handler);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                try {
-                    if (is != null) {
-                        is.close();
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                if (is != null) {
+                    is.close();
                 }
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "Broken uilogs file, not all UI actions will submitted", ex);
             }
         }
     }
@@ -1485,7 +1476,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     }
 
                     LOG.log(Level.FINE, "doShow, reading from = {0}", url);
-                    sb.append("doShow reading from: " + url + "\n");
+                    sb.append("doShow reading from: ").append(url).append("\n");
                     URLConnection conn = url.openConnection();
                     conn.setRequestProperty("User-Agent", "NetBeans");
                     conn.setConnectTimeout(5000);
@@ -1500,8 +1491,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     InputStream is = new FileInputStream(tmp);
                     byte [] arr = new byte [is.available()];
                     is.read(arr);
-                    String s = new String(arr);
-                    sb.append("Content:\n" + s);
+                    sb.append("Content:\n").append(new String(arr)).append("\nEnd of Content");
                     is.close();
                     //End
                     is = new FileInputStream(tmp);

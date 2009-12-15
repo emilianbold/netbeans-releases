@@ -47,4 +47,5 @@ package org.netbeans.modules.web.beans.xml;
  */
 public interface AlternativeElement extends WebBeansComponent {
 
+    String ALTERNATIVE_ELEMENT = "alternative-element";     //NOI18N
 }
