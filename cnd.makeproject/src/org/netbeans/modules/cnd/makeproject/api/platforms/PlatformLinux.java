@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
@@ -58,7 +59,7 @@ public class PlatformLinux extends Platform {
     };
     
     public PlatformLinux() {
-        super(NAME, "Linux x86", Platform.PLATFORM_LINUX); // NOI18N
+        super(NAME, "Linux x86", PlatformTypes.PLATFORM_LINUX); // NOI18N
     }
     
     public LibraryItem.StdLibItem[] getStandardLibraries() {

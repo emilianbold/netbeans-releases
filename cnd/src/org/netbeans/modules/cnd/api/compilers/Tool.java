@@ -233,18 +233,6 @@ public class Tool {
         throw new UnsupportedOperationException();
     }
 
-    @Deprecated
-    public void setIncludeFilePathPrefix(String includeFilePrefix) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Deprecated
-    public boolean exists() {
-        if (getPath() == null || getPath().length() == 0) {
-            return false;
-        }
-        return new File(getPath()).exists() || Path.findCommand(getPath()) != null;
-    }
     private static ResourceBundle bundle = null;
 
     protected static String getString(String s) {

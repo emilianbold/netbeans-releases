@@ -50,21 +50,21 @@ import org.netbeans.modules.cnd.settings.CppSettings;
 public class MakeProjectOptions {
 
     /**
-     * @Deprecated
+     * @deprecated
      */
     public static void setDefaultMakeCommand(String defaultMakeCommand) {
         //CppSettings.getDefault().setMakeName(defaultMakeCommand);
     }
 
     /**
-     * @Deprecated
+     * @deprecated
      */
     public static String getDefaultMakeCommand() {
         return null; //CppSettings.getDefault().getMakeName();
     }
     
     /**
-     * @Deprecated
+     * @deprecated
      */
     public static void setDefaultCompilerSet(String name) {
         // Set the default name in global setting
@@ -75,53 +75,31 @@ public class MakeProjectOptions {
         if (compilerSet != null) {
             compilerSetManager.setDefault(compilerSet);
         }
-//        CompilerSet cs = CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSet(name);
-//        if (cs != null) {
-//            CppSettings.getDefault().setCompilerSetName(cs.getName());
-////            CppSettings.getDefault().setCompilerSetDirectories(cs.getDirectory());
-//        } else {
-//            cs = CompilerSetManager.getDefault(CompilerSetManager.LOCALHOST).getCompilerSet(0); // use 0th as default
-//        }
     }
 
     /**
-     * @Deprecated
+     * @deprecated
      */
     public static void setDefaultMakeOptions(String defaultMakeOptions) {
         MakeOptions.setDefaultMakeOptions(defaultMakeOptions);
     }
 
     /**
-     * @Deprecated
+     * @deprecated
      */
     public static String getDefaultMakeOptions() {
         return MakeOptions.getDefaultMakeOptions();
     }
 
-
     /**
-     * @Deprecated
-     */
-//    public static void setDefaultPlatform(int platform) {
-//        MakeOptions.getInstance().setPlatform(platform);
-//    }
-
-    /**
-     * @Deprecated
-     */
-//    public static int getDefaultPlatform() {
-//        return MakeOptions.getInstance().getPlatform();
-//    }
-
-    /**
-     * @Deprecated
+     * @deprecated
      */
     public static void setFortranSupport(boolean fortran) {
         //CppSettings.getDefault().setFortranEnabled(fortran);
     }
 
     /**
-     * @Deprecated
+     * @deprecated
      */
     public static boolean getFortranSupport() {
         return true;

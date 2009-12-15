@@ -286,7 +286,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     /**
-     * @deprecated. Use org.netbeans.modules.cnd.api.project.NativeProject interface instead.
+     * @deprecated Use org.netbeans.modules.cnd.api.project.NativeProject interface instead.
      */
     public void addProjectItemsChangeListener(ChangeListener cl) {
         synchronized (projectItemsChangeListeners) {
@@ -295,7 +295,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     /**
-     * @deprecated. Use org.netbeans.modules.cnd.api.project.NativeProject interface instead.
+     * @deprecated Use org.netbeans.modules.cnd.api.project.NativeProject interface instead.
      */
     public void removeProjectItemsChangeListener(ChangeListener cl) {
         synchronized (projectItemsChangeListeners) {

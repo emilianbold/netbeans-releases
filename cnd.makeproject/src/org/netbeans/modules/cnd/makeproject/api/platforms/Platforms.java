@@ -41,6 +41,7 @@
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
 import java.util.ArrayList;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 
 public class Platforms {
     private static final ArrayList<Platform> platforms = new ArrayList<Platform>();
@@ -84,7 +85,7 @@ public class Platforms {
     public static String[] getPlatformDisplayNames() {
         ArrayList<String> ret = new ArrayList<String>();
         for (Platform pl : getPlatforms()) {
-            if (pl.getId() == Platform.PLATFORM_GENERIC || pl.getId() == Platform.PLATFORM_NONE) {
+            if (pl.getId() == PlatformTypes.PLATFORM_GENERIC || pl.getId() == PlatformTypes.PLATFORM_NONE) {
                 continue;
             }
             ret.add(pl.getDisplayName());
