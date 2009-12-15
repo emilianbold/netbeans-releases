@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.keyring.Utils;
 import org.netbeans.modules.keyring.spi.EncryptionProvider;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -64,6 +65,10 @@ public class Win32Protect implements EncryptionProvider {
     private static final Logger LOG = Logger.getLogger(Win32Protect.class.getName());
     
     public boolean enabled() {
+        if (!Utilities.isWindows()) {
+            LOG.fine("not running on Windows");
+            return false;
+        }
         if (Boolean.getBoolean("netbeans.keyring.no.native")) {
             LOG.fine("native keyring integration disabled");
             return false;

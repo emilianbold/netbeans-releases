@@ -132,6 +132,8 @@ class MasterPasswordPanel extends JPanel {
         newField1 = new javax.swing.JPasswordField();
         newLabel2 = new javax.swing.JLabel();
         newField2 = new javax.swing.JPasswordField();
+        explanationScroll = new javax.swing.JScrollPane();
+        explanation = new javax.swing.JTextArea();
 
         masterPasswordLabel.setLabelFor(masterPasswordField);
         org.openide.awt.Mnemonics.setLocalizedText(masterPasswordLabel, org.openide.util.NbBundle.getMessage(MasterPasswordPanel.class, "MasterPasswordPanel.masterPasswordLabel.text")); // NOI18N
@@ -150,14 +152,24 @@ class MasterPasswordPanel extends JPanel {
 
         newField2.setEnabled(false);
 
+        explanationScroll.setBorder(null);
+
+        explanation.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
+        explanation.setEditable(false);
+        explanation.setLineWrap(true);
+        explanation.setText(NbBundle.getMessage(MasterPasswordPanel.class, "MasterPasswordPanel.explanation.text")); // NOI18N
+        explanation.setWrapStyleWord(true);
+        explanationScroll.setViewportView(explanation);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, explanationScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(newLabel1)
                             .add(newLabel2)
@@ -167,13 +179,13 @@ class MasterPasswordPanel extends JPanel {
                             .add(masterPasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE)
                             .add(newField2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE)
                             .add(newField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE)))
-                    .add(setNewBox))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, setNewBox))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(masterPasswordLabel)
                     .add(masterPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -187,11 +199,14 @@ class MasterPasswordPanel extends JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(newLabel2)
                     .add(newField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(18, 18, 18)
+                .add(explanationScroll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 98, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea explanation;
+    private javax.swing.JScrollPane explanationScroll;
     private javax.swing.JPasswordField masterPasswordField;
     private javax.swing.JLabel masterPasswordLabel;
     private javax.swing.JPasswordField newField1;

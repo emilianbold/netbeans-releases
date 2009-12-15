@@ -58,6 +58,8 @@ public class Keyring {
 
     private Keyring() {}
 
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.keyring");
+
     private static KeyringProvider PROVIDER;
     private static KeyringProvider provider() {
         if (PROVIDER == null) {
@@ -70,7 +72,7 @@ public class Keyring {
             if (PROVIDER == null) {
                 PROVIDER = new DummyKeyringProvider();
             }
-            Logger.getLogger("org.netbeans.modules.keyring").log(Level.FINE, "Using provider: {0}", PROVIDER);
+            LOG.log(Level.FINE, "Using provider: {0}", PROVIDER);
         }
         return PROVIDER;
     }
@@ -82,6 +84,7 @@ public class Keyring {
      */
     public static synchronized char[] read(String key) {
         Parameters.notNull("key", key);
+        LOG.log(Level.FINEST, "reading: {0}", key);
         return provider().read(key);
     }
 
@@ -97,6 +100,7 @@ public class Keyring {
     public static synchronized void save(String key, char[] password, String description) {
         Parameters.notNull("key", key);
         Parameters.notNull("password", password);
+        LOG.log(Level.FINEST, "saving: {0}", key);
         provider().save(key, password, description);
         Arrays.fill(password, (char) 0);
     }
@@ -108,6 +112,7 @@ public class Keyring {
      */
     public static synchronized void delete(String key) {
         Parameters.notNull("key", key);
+        LOG.log(Level.FINEST, "deleting: {0}", key);
         provider().delete(key);
     }
 
