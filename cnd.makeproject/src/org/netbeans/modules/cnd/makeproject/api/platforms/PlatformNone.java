@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.openide.util.NbBundle;
@@ -54,7 +55,7 @@ public class PlatformNone extends Platform {
     };
 
     public PlatformNone() {
-        super(NAME, NbBundle.getBundle(PlatformNone.class).getString("NoPlatform"), Platform.PLATFORM_NONE);
+        super(NAME, NbBundle.getBundle(PlatformNone.class).getString("NoPlatform"), PlatformTypes.PLATFORM_NONE);
     }
 
     public LibraryItem.StdLibItem[] getStandardLibraries() {
