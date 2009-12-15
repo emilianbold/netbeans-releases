@@ -41,6 +41,9 @@
 
 package org.netbeans.api.editor.mimelookup;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.mimelookup.EditorTestLookup;
 import org.netbeans.modules.editor.mimelookup.TestUtilities;
@@ -95,28 +98,7 @@ public class MimeLookupMemoryTest extends NbTestCase {
         int idB = System.identityHashCode(MimeLookup.getLookup(MimePath.get("text/x-java")));
         assertEquals("Lookup instance was lost", idA, idB);
     }
-    
-    public void testLookupsRelease() {
-        int idA = System.identityHashCode(MimeLookup.getLookup(MimePath.get("text/x-java")));
-        
-        TestUtilities.consumeAllMemory();
-        TestUtilities.gc();
-        
-        int idB = System.identityHashCode(MimeLookup.getLookup(MimePath.get("text/x-java")));
-        assertEquals("Lookup instance was lost", idA, idB);
-        
-        // Force the MimePath instance to be dropped from the list of recently used
-        for (int i = 0; i < MimePath.MAX_LRU_SIZE; i++) {
-            MimePath.get("text/x-nonsense-" + i);
-        }
-        
-        TestUtilities.consumeAllMemory();
-        TestUtilities.gc();
-        
-        int idC = System.identityHashCode(MimeLookup.getLookup(MimePath.get("text/x-java")));
-        assertTrue("Lookup instance was not released", idA != idC);
-    }
-
+  
     public void testLookupResultHoldsTheLookup() {
         MimePath path = MimePath.get("text/x-java");
         Lookup lookup = MimeLookup.getLookup(path);

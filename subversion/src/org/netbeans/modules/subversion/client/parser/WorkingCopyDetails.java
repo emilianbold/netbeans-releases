@@ -566,7 +566,8 @@ public class WorkingCopyDetails {
         if(baseLine.length() <= offset) {
             return -1;
         }
-        for (int idx = 0; idx < baseLine.length(); idx++) {
+        int maxPos = baseLine.length() - offset;
+        for (int idx = 0; idx < maxPos; idx++) {
             char c = baseLine.charAt(offset + idx);
             if(c == ' ') {
                 continue;

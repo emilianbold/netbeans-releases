@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 7.21.1
+#Signature file v4.1
+#Version 7.32.0
 
 CLSS public java.io.IOException
 cons public IOException()
@@ -266,10 +266,12 @@ CLSS public org.openide.filesystems.FileChooserBuilder
 cons public FileChooserBuilder(java.lang.Class)
 cons public FileChooserBuilder(java.lang.String)
 innr public abstract interface static BadgeProvider
+innr public abstract interface static SelectionApprover
 meth public java.io.File showOpenDialog()
 meth public java.io.File showSaveDialog()
 meth public java.io.File[] showMultiOpenDialog()
 meth public javax.swing.JFileChooser createFileChooser()
+meth public org.openide.filesystems.FileChooserBuilder addFileFilter(javax.swing.filechooser.FileFilter)
 meth public org.openide.filesystems.FileChooserBuilder forceUseOfDefaultWorkingDirectory(boolean)
 meth public org.openide.filesystems.FileChooserBuilder setAccessibleDescription(java.lang.String)
 meth public org.openide.filesystems.FileChooserBuilder setApproveText(java.lang.String)
@@ -280,15 +282,19 @@ meth public org.openide.filesystems.FileChooserBuilder setDirectoriesOnly(boolea
 meth public org.openide.filesystems.FileChooserBuilder setFileFilter(javax.swing.filechooser.FileFilter)
 meth public org.openide.filesystems.FileChooserBuilder setFileHiding(boolean)
 meth public org.openide.filesystems.FileChooserBuilder setFilesOnly(boolean)
+meth public org.openide.filesystems.FileChooserBuilder setSelectionApprover(org.openide.filesystems.FileChooserBuilder$SelectionApprover)
 meth public org.openide.filesystems.FileChooserBuilder setTitle(java.lang.String)
 supr java.lang.Object
-hfds DONT_STORE_DIRECTORIES,PREVENT_SYMLINK_TRAVERSAL,aDescription,approveText,badger,controlButtonsShown,dirKey,dirsOnly,failoverDir,fileHiding,filesOnly,filter,force,title
+hfds DONT_STORE_DIRECTORIES,PREVENT_SYMLINK_TRAVERSAL,aDescription,approveText,approver,badger,controlButtonsShown,dirKey,dirsOnly,failoverDir,fileHiding,filesOnly,filter,filters,force,title
 hcls BadgeIconProvider,CustomFileView,IconProvider,MergedIcon,SavedDirFileChooser
 
 CLSS public abstract interface static org.openide.filesystems.FileChooserBuilder$BadgeProvider
 meth public abstract int getXOffset()
 meth public abstract int getYOffset()
 meth public abstract javax.swing.Icon getBadge(java.io.File)
+
+CLSS public abstract interface static org.openide.filesystems.FileChooserBuilder$SelectionApprover
+meth public abstract boolean approve(java.io.File[])
 
 CLSS public org.openide.filesystems.FileEvent
 cons public FileEvent(org.openide.filesystems.FileObject)
@@ -298,9 +304,10 @@ meth public boolean firedFrom(org.openide.filesystems.FileSystem$AtomicAction)
 meth public final boolean isExpected()
 meth public final long getTime()
 meth public final org.openide.filesystems.FileObject getFile()
+meth public final void runWhenDeliveryOver(java.lang.Runnable)
 meth public java.lang.String toString()
 supr java.util.EventObject
-hfds atomActionID,expected,file,serialVersionUID,time
+hfds atomActionID,expected,file,postNotify,serialVersionUID,time
 
 CLSS public org.openide.filesystems.FileLock
 cons public FileLock()
@@ -378,8 +385,10 @@ meth public org.openide.filesystems.FileObject copy(org.openide.filesystems.File
 meth public org.openide.filesystems.FileObject createData(java.lang.String) throws java.io.IOException
 meth public org.openide.filesystems.FileObject getFileObject(java.lang.String)
 meth public org.openide.filesystems.FileObject move(org.openide.filesystems.FileLock,org.openide.filesystems.FileObject,java.lang.String,java.lang.String) throws java.io.IOException
+meth public void addRecursiveListener(org.openide.filesystems.FileChangeListener)
 meth public void refresh()
 meth public void refresh(boolean)
+meth public void removeRecursiveListener(org.openide.filesystems.FileChangeListener)
 supr java.lang.Object
 hfds serialVersionUID
 hcls ED,OnlyFolders,PriorityFileChangeListener
@@ -474,7 +483,7 @@ meth public void prepareEnvironment(org.openide.filesystems.FileSystem$Environme
 meth public void refresh(boolean)
 meth public void removeNotify()
 supr java.lang.Object
-hfds PROP_CAPABILITIES,STATUS_NONE,assigned,capability,capabilityListener,changeSupport,fclSupport,fileStatusList,hidden,internLock,repository,serialVersionUID,systemName,thrLocal,valid,vetoableChangeList
+hfds LOG,PROP_CAPABILITIES,SFS_STATUS,STATUS_NONE,assigned,capability,capabilityListener,changeSupport,fclSupport,fileStatusList,hidden,internLock,repository,serialVersionUID,systemName,thrLocal,valid,vetoableChangeList
 hcls EventDispatcher,FileStatusDispatcher
 
 CLSS public abstract interface static org.openide.filesystems.FileSystem$AtomicAction
@@ -573,6 +582,7 @@ meth public static java.net.URL getArchiveFile(java.net.URL)
 meth public static java.net.URL getArchiveRoot(java.net.URL)
 meth public static java.net.URL urlForArchiveOrDir(java.io.File)
 meth public static java.net.URLStreamHandler nbfsURLStreamHandler()
+ anno 0 java.lang.Deprecated()
 meth public static java.util.List<java.lang.String> getMIMETypeExtensions(java.lang.String)
 meth public static java.util.List<org.openide.filesystems.FileObject> getOrder(java.util.Collection<org.openide.filesystems.FileObject>,boolean)
 meth public static org.openide.filesystems.FileChangeListener weakFileChangeListener(org.openide.filesystems.FileChangeListener,java.lang.Object)
@@ -595,6 +605,7 @@ meth public static org.openide.filesystems.FileStatusListener weakFileStatusList
 meth public static org.openide.filesystems.FileSystem createMemoryFileSystem()
 meth public static void addFileChangeListener(org.openide.filesystems.FileChangeListener)
 meth public static void addFileChangeListener(org.openide.filesystems.FileChangeListener,java.io.File)
+meth public static void addRecursiveListener(org.openide.filesystems.FileChangeListener,java.io.File)
 meth public static void copy(java.io.InputStream,java.io.OutputStream) throws java.io.IOException
 meth public static void copyAttributes(org.openide.filesystems.FileObject,org.openide.filesystems.FileObject) throws java.io.IOException
 meth public static void extractJar(org.openide.filesystems.FileObject,java.io.InputStream) throws java.io.IOException
@@ -603,10 +614,11 @@ meth public static void preventFileChooserSymlinkTraversal(javax.swing.JFileChoo
 meth public static void refreshAll()
 meth public static void removeFileChangeListener(org.openide.filesystems.FileChangeListener)
 meth public static void removeFileChangeListener(org.openide.filesystems.FileChangeListener,java.io.File)
+meth public static void removeRecursiveListener(org.openide.filesystems.FileChangeListener,java.io.File)
 meth public static void setMIMEType(java.lang.String,java.lang.String)
 meth public static void setOrder(java.util.List<org.openide.filesystems.FileObject>) throws java.io.IOException
 supr java.lang.Object
-hfds LOG,ZIP_HEADER_1,ZIP_HEADER_2,archiveFileCache,diskFileSystem,holders,transientAttributes
+hfds LOG,REFRESH_RP,ZIP_HEADER_1,ZIP_HEADER_2,archiveFileCache,diskFileSystem,holders,refreshTask,transientAttributes
 hcls Holder,NonCanonicalizingFile,NonCanonicalizingFileSystemView
 
 CLSS public org.openide.filesystems.JarFileSystem
@@ -645,7 +657,7 @@ meth public void prepareEnvironment(org.openide.filesystems.FileSystem$Environme
 meth public void removeNotify()
 meth public void setJarFile(java.io.File) throws java.beans.PropertyVetoException,java.io.IOException
 supr org.openide.filesystems.AbstractFileSystem
-hfds LOGGER,MEM_STREAM_SIZE,REFRESH_TIME,aliveCount,checkTime,closeSync,closeTask,fcl,foRoot,jar,lastModification,manifest,req,root,serialVersionUID,softCache,strongCache,watcherTask
+hfds CLOSE_DELAY_MAX,CLOSE_DELAY_MIN,LOGGER,MEM_STREAM_SIZE,REFRESH_TIME,aliveCount,checkTime,closeDelay,closeSync,closeTask,fcl,foRoot,jar,lastModification,manifest,openRequestTime,req,root,serialVersionUID,softCache,strongCache,watcherTask
 hcls Cache,Ref
 
 CLSS public static org.openide.filesystems.JarFileSystem$Impl
@@ -813,8 +825,8 @@ meth public final void writeExternal(java.io.ObjectOutput) throws java.io.IOExce
  anno 0 java.lang.Deprecated()
 meth public static org.openide.filesystems.Repository getDefault()
 supr java.lang.Object
-hfds fclSupport,fileSystems,fileSystemsClone,listeners,names,propListener,serialVersionUID,system,vetoListener
-hcls Replacer
+hfds ADD_FS,LOG,fclSupport,fileSystems,fileSystemsClone,listeners,names,propListener,repository,serialVersionUID,system,vetoListener
+hcls MainFS,Replacer
 
 CLSS public org.openide.filesystems.RepositoryAdapter
 cons public RepositoryAdapter()
@@ -913,6 +925,8 @@ hfds fs,serialVersionUID
 CLSS public final org.openide.filesystems.annotations.LayerBuilder
 innr public final File
 meth public org.openide.filesystems.annotations.LayerBuilder$File file(java.lang.String)
+meth public org.openide.filesystems.annotations.LayerBuilder$File folder(java.lang.String)
+meth public org.openide.filesystems.annotations.LayerBuilder$File instanceFile(java.lang.String,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
 meth public org.openide.filesystems.annotations.LayerBuilder$File instanceFile(java.lang.String,java.lang.String,java.lang.Class) throws org.openide.filesystems.annotations.LayerGenerationException
 meth public org.openide.filesystems.annotations.LayerBuilder$File shadowFile(java.lang.String,java.lang.String,java.lang.String)
 supr java.lang.Object
@@ -942,7 +956,7 @@ meth public org.openide.filesystems.annotations.LayerBuilder$File url(java.lang.
 meth public org.openide.filesystems.annotations.LayerBuilder$File urlvalue(java.lang.String,java.lang.String) throws org.openide.filesystems.annotations.LayerGenerationException
 meth public org.openide.filesystems.annotations.LayerBuilder$File urlvalue(java.lang.String,java.net.URI) throws org.openide.filesystems.annotations.LayerGenerationException
 supr java.lang.Object
-hfds attrs,contents,path,url
+hfds attrs,contents,folder,path,url
 
 CLSS public abstract org.openide.filesystems.annotations.LayerGeneratingProcessor
 cons protected LayerGeneratingProcessor()

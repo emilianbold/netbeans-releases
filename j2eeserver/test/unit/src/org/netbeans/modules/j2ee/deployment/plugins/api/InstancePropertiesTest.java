@@ -39,11 +39,18 @@
 
 package org.netbeans.modules.j2ee.deployment.plugins.api;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistryTestBase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem.AtomicAction;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -132,9 +139,67 @@ public class InstancePropertiesTest extends ServerRegistryTestBase {
         }
     }
 
+    public void testCreatePropertiesWithoutFSEvents() throws InstanceCreationException, IOException {
+        final String url = "unknown:CreateInstanceWithoutUI";
+        final Map<String, String> expected = new HashMap<String, String>();
+        expected.put(InstanceProperties.URL_ATTR, url);
+        expected.put(InstanceProperties.USERNAME_ATTR, TEST_USERNAME);
+        expected.put(InstanceProperties.PASSWORD_ATTR, TEST_PASSWORD);
+        expected.put(InstanceProperties.DISPLAY_NAME_ATTR, "unknown");
+
+        try {
+            InstanceProperties.createInstanceProperties(
+                    url, TEST_USERNAME, TEST_PASSWORD, TEST_DISPLAY_NAME);
+            fail("the unknow serverplugin should be unknown at this point"); // NOI18N
+        } catch (InstanceCreationException ex) {
+            // expected
+        }
+
+        FileUtil.runAtomicAction(new AtomicAction() {
+
+          public void run() throws IOException {
+                    FileObject folder = FileUtil.createFolder(
+                            FileUtil.getConfigFile(ServerRegistry.DIR_JSR88_PLUGINS), "Unknown");
+                    FileObject fo = folder.createData("Descriptor");
+                    InputStream is = new ByteArrayInputStream(
+                            ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                            + "<netbeans-deployment></netbeans-deployment>").getBytes("UTF-8"));
+                    try {
+                        OutputStream os = fo.getOutputStream();
+                        try {
+                            FileUtil.copy(is, os);
+                        } finally {
+                            os.close();
+                        }
+                    } finally {
+                        is.close();
+                    }
+
+                    fo = folder.createData("Factory", "instance");
+                    fo.setAttribute("instanceClass",
+                            "org.netbeans.modules.j2ee.deployment.plugins.api.InstancepropertiesTest.MockDF");
+                    fo.setAttribute("instanceOf",
+                            "import javax.enterprise.deploy.spi.factories.DeploymentFactory");
+                    fo.setAttribute("instanceCreate",
+                            new MockDF());
+
+                    InstanceProperties props = InstanceProperties.createInstancePropertiesWithoutUI(
+                            url, TEST_USERNAME, TEST_PASSWORD, TEST_DISPLAY_NAME, expected);
+            }
+        });
+    }
+
     private static void assertPropertiesEquals(Map<String, String> expected, InstanceProperties props) {
         for (Map.Entry<String, String> entry : expected.entrySet()) {
             assertEquals(entry.getValue(), props.getProperty(entry.getKey()));
+        }
+    }
+
+    private static class MockDF extends org.netbeans.tests.j2eeserver.plugin.jsr88.TestDeploymentFactory {
+
+        @Override
+        public boolean handlesURI(String arg0) {
+            return arg0.startsWith("unknown:");
         }
     }
 

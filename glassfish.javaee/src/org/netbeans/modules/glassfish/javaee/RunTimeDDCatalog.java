@@ -139,6 +139,9 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     };
     
     private static final String JavaEE6TypeToURLMap[] = {
+        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Java EE Application 6.0//EN"   , "sun-application_6_0-0.dtd",
+        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 EJB 3.1//EN"                   , "sun-ejb-jar_3_1-0.dtd",
+        "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Application Client 6.0//EN"    , "sun-application-client_6_0-0.dtd" ,
         "-//Sun Microsystems, Inc.//DTD GlassFish Application Server 3.0 Servlet 3.0//EN"                         , "sun-web-app_3_0-0.dtd" ,
     };
 

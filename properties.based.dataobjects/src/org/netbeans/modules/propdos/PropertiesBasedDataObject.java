@@ -137,7 +137,6 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
     @Override
     protected final void handleDelete() throws IOException {
         final FileObject parent = getPrimaryFile().getParent();
-        super.handleDelete();
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
 
@@ -155,6 +154,7 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
                 throw ioe;
             }
         }
+        super.handleDelete();
     }
 
     /**
@@ -286,6 +286,12 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
 
         @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
+            return propsAdapter.asProperties().getProperty(getName());
+        }
+
+        @Override
+        public String getShortDescription() {
+            //Often will not fit in visible area
             return propsAdapter.asProperties().getProperty(getName());
         }
 

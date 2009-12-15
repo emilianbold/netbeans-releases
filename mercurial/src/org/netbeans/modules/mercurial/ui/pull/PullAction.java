@@ -43,7 +43,6 @@ package org.netbeans.modules.mercurial.ui.pull;
 import java.net.URISyntaxException;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -66,14 +65,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.DialogDescriptor;
+import org.openide.nodes.Node;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
 
 /**
@@ -92,34 +86,41 @@ public class PullAction extends ContextAction {
     {
     }
 
-    private final VCSContext context;
-
-    public PullAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        return HgUtils.isFromHgRepository(context);
     }
 
-    public void performAction(ActionEvent e) {
-        final File roots[] = HgUtils.getActionRoots(context);
-        final File repository =
-                roots != null && roots.length > 0 ?
-                 Mercurial.getInstance().getRepositoryRoot(roots[0]) :
-                    null;
-        if (repository == null) {
-            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
-            logger.outputInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE")); // NOI18N
-            logger.outputInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE_SEP")); // NOI18N
-            logger.outputInRed(
-                    NbBundle.getMessage(PullAction.class, "MSG_PULL_NOT_SUPPORTED_INVIEW_INFO")); // NOI18N
-            logger.output(""); // NOI18N
-            JOptionPane.showMessageDialog(null,
-                    NbBundle.getMessage(PullAction.class, "MSG_PULL_NOT_SUPPORTED_INVIEW"),// NOI18N
-                    NbBundle.getMessage(PullAction.class, "MSG_PULL_NOT_SUPPORTED_INVIEW_TITLE"),// NOI18N
-                    JOptionPane.INFORMATION_MESSAGE);
-            logger.closeLog();
-            return;
-        }
-        pull(context, repository);
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_PullLocal";                                //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        final VCSContext context = HgUtils.getCurrentContext(nodes);
+        final Set<File> repositoryRoots = HgUtils.getRepositoryRoots(context);
+        // run the whole bulk operation in background
+        Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                for (File repositoryRoot : repositoryRoots) {
+                    final File repository = repositoryRoot;
+                    final boolean[] canceled = new boolean[1];
+                    // run every repository fetch in its own support with its own output window
+                    RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
+                    HgProgressSupport support = new HgProgressSupport() {
+                        public void perform() {
+                            getDefaultAndPerformPull(context, repository, this.getLogger());
+                            canceled[0] = isCanceled();
+                        }
+                    };
+                    support.start(rp, repository, org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")).waitFinished(); //NOI18N
+                    if (canceled[0]) {
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     public static boolean confirmWithLocalChanges(File rootFile, Class bundleLocation, String title, String query, 
@@ -170,36 +171,16 @@ public class PullAction extends ContextAction {
     }
 
 
-    static void annotateChangeSets(List<String> list, Class bundleLocation, String title) {
-        InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
-        io.select();
-        OutputWriter out = io.getOut();
-        OutputWriter outRed = io.getErr();
-        outRed.println(NbBundle.getMessage(bundleLocation, title));
+    static void annotateChangeSets(List<String> list, Class bundleLocation, String title, OutputLogger logger) {
+        logger.outputInRed(NbBundle.getMessage(bundleLocation, title));
         for (String s : list) {
             if (s.indexOf(Mercurial.CHANGESET_STR) == 0) {
-                outRed.println(s);
+                logger.outputInRed(s);
             } else if (!s.equals("")) {
-                out.println(s);
+                logger.output(s);
             }
         }
-        out.println("");
-        out.close();
-        outRed.close();
-    }
-
-    public static void pull(final VCSContext ctx, final File repository) {
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
-        HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { 
-                getDefaultAndPerformPull(ctx, repository, this.getLogger());
-            }
-        };
-        support.start(rp, repository, org.openide.util.NbBundle.getMessage(PullAction.class, "MSG_PULL_PROGRESS")); // NOI18N
-    }
-
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
+        logger.output("");
     }
 
     static void getDefaultAndPerformPull(VCSContext ctx, File root, OutputLogger logger) {
@@ -232,8 +213,7 @@ public class PullAction extends ContextAction {
             fromPrjName = null;
             pullType = PullType.OTHER;
         }
-        Project proj = HgUtils.getProject(ctx);
-        final String toPrjName = HgProjectUtils.getProjectName(proj);
+        final String toPrjName = HgProjectUtils.getProjectName(root);
         performPull(pullType, ctx, root, pullSource, fromPrjName, toPrjName, logger);
     }
 
@@ -324,7 +304,7 @@ public class PullAction extends ContextAction {
             if (list != null && !list.isEmpty()) {
 
                 if (!bNoChanges) {
-                    annotateChangeSets(HgUtils.replaceHttpPassword(listIncoming), PullAction.class, "MSG_CHANGESETS_TO_PULL"); // NOI18N
+                    annotateChangeSets(HgUtils.replaceHttpPassword(listIncoming), PullAction.class, "MSG_CHANGESETS_TO_PULL", logger); // NOI18N
                 }
 
                 logger.output(HgUtils.replaceHttpPassword(list));
@@ -370,7 +350,7 @@ public class PullAction extends ContextAction {
 
             if (!bNoChanges) {
                 PushAction.notifyUpdatedFiles(root, list);
-                HgUtils.forceStatusRefreshProject(ctx);
+                HgUtils.forceStatusRefresh(root);
             }
             
         } catch (HgException ex) {

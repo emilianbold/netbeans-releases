@@ -43,10 +43,10 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider;
-import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider.Function;
-import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider.Parameter;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider;
+import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.Function;
+import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.Parameter;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
@@ -419,6 +419,13 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                             case CATCH:
                             case SWITCH:
                                 indent = getTokenIndent(lbss) + getShiftWidth();
+                                break;
+                            case NAMESPACE:
+                                if (indentNamespace()) {
+                                    indent = getTokenIndent(lbss) + getRightIndentDeclaration();
+                                } else {
+                                    indent = getTokenIndent(lbss);
+                                }
                                 break;
                             default:
                                 indent = getTokenIndent(lbss) + getRightIndentDeclaration();

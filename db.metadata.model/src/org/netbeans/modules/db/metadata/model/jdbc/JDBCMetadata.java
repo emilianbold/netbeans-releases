@@ -157,7 +157,9 @@ public class JDBCMetadata extends MetadataImplementation {
                         }
                     }
                 } finally {
-                    rs.close();
+                    if (rs != null) {
+                        rs.close();
+                    }
                 }
             }
         } catch (SQLException e) {

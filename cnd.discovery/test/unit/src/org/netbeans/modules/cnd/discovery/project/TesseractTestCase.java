@@ -45,7 +45,7 @@ import org.junit.Test;
  *
  * @author Alexander Simon
  */
-public class TesseractTestCase extends MakeProjectBase {
+public class TesseractTestCase extends MakeProjectTestBase {
 
     public TesseractTestCase() {
         super("Tesseract");

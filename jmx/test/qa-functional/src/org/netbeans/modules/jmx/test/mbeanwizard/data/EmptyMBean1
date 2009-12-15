@@ -9,11 +9,11 @@ import javax.management.*;
 
 /**
  * Class EmptyMBean1
- * 
+ *
  * @author <author>
  */
 public class EmptyMBean1 implements EmptyMBean1MBean {
-    
+
     public EmptyMBean1(){
     }
 }

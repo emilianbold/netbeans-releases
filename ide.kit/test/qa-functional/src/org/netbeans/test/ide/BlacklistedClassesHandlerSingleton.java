@@ -88,7 +88,7 @@ import java.util.logging.Logger;
 public class BlacklistedClassesHandlerSingleton extends Handler implements BlacklistedClassesHandler {
 
     private static BlacklistedClassesHandler instance = null;
-    private boolean violation = false;
+    private int violation;
     // TODO: Is it necessary to use synchronizedMap? Should the list be synchronized?
     final private Map blacklist = Collections.synchronizedMap(new HashMap());
     final private Map whitelistViolators = Collections.synchronizedMap(new TreeMap());
@@ -359,7 +359,7 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                                 // TODO: Probably we should synchronize by list
                                 ((List) blacklist.get(className)).add(exc);
                             }
-                            violation = true;
+                            violation++;
                         }
                     } else if (whitelistEnabled && !whitelist.contains(className)) {
                         Exception exc = new BlacklistedClassesViolationException(record.getParameters()[0].toString());
@@ -373,9 +373,9 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                                 List exceptions = new ArrayList();
                                 exceptions.add(exc);
                                 whitelistViolators.put(className, exceptions);
+                                violation++;
                             }
                         }
-                        violation = true;
                     } else if (generatingWhitelist) {
                         whitelist.add(className);
                     }
@@ -416,21 +416,25 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
     }
 
     public boolean noViolations() {
-        return !violation;
+        return violation == 0;
+    }
+    
+    public int getNumberOfViolations() {
+        return violation;
     }
 
     public boolean noViolations(boolean listViolations) {
-        if (violation && listViolations) {
+        if (violation > 0 && listViolations) {
             logViolations();
         }
-        return !violation;
+        return violation == 0;
     }
 
     public boolean noViolations(PrintStream out) {
-        if (violation) {
+        if (violation > 0) {
             listViolations(out, true);
         }
-        return !violation;
+        return violation == 0;
     }
 
     public void logViolations() {
@@ -617,7 +621,7 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                 String violator = (String) iter.next();
                 ((List) blacklist.get(violator)).clear();
             }
-            violation = false;
+            violation = 0;
         }
     }
 

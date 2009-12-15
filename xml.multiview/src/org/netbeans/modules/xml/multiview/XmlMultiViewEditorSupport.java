@@ -442,6 +442,11 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     public void open() {
         openView(lastOpenView);
     }
+
+    @Override
+    protected boolean asynchronousOpen() {
+         return true;
+    }
     
     void goToXmlPerspective() {
         Utils.runInAwtDispatchThread(new Runnable() {

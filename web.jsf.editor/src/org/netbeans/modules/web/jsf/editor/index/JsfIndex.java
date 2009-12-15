@@ -57,7 +57,7 @@ import org.openide.util.Exceptions;
  */
 public class JsfIndex {
 
-    public static JsfIndex get(WebModule wm) throws IOException {
+    public static JsfIndex create(WebModule wm) throws IOException {
         FileObject[] sourceRoots = (ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.SOURCE).getRoots());
         FileObject[] binaryRoots = (ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.EXECUTE).getRoots());
         QuerySupport embeddingQS = QuerySupport.forRoots(JsfIndexer.Factory.NAME, JsfIndexer.Factory.VERSION, sourceRoots);

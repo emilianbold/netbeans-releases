@@ -71,7 +71,6 @@ public class CustomizeDeploymentPanel extends javax.swing.JPanel implements Chan
     private String classname;
     private Node node;
 
-    /** Creates new form CustomizeDeploymentPanel2 */
     public CustomizeDeploymentPanel(Node n) {
         this.node = n;
         initComponents();
@@ -95,6 +94,8 @@ public class CustomizeDeploymentPanel extends javax.swing.JPanel implements Chan
         }
         aidPnl.addChangeListener(this);
         HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.ClassicAppletAddInstanceApplet"); //NOI18N
+        instructionsPane.getViewport().setOpaque(false);
+        instructionsTextArea.getCaret().setVisible(false);
     }
 
     public void saveChanges() {
@@ -196,6 +197,7 @@ public class CustomizeDeploymentPanel extends javax.swing.JPanel implements Chan
         instructionsPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         instructionsPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         instructionsPane.setViewportBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        instructionsPane.setOpaque(false);
 
         instructionsTextArea.setBackground(javax.swing.UIManager.getDefaults().getColor("control"));
         instructionsTextArea.setColumns(20);
@@ -205,6 +207,7 @@ public class CustomizeDeploymentPanel extends javax.swing.JPanel implements Chan
         instructionsTextArea.setRows(5);
         instructionsTextArea.setText(org.openide.util.NbBundle.getMessage(CustomizeDeploymentPanel.class, "CustomizeDeploymentPanel.instructionsTextArea.text", new Object[] {})); // NOI18N
         instructionsTextArea.setWrapStyleWord(true);
+        instructionsTextArea.setOpaque(false);
         instructionsPane.setViewportView(instructionsTextArea);
 
         instancesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -246,12 +249,12 @@ public class CustomizeDeploymentPanel extends javax.swing.JPanel implements Chan
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(instructionsPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE)
+                    .add(instructionsPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 615, Short.MAX_VALUE)
                     .add(titleLabel)
                     .add(appletInstanceLabel)
                     .add(deploymentParamsLabel)
-                    .add(deploymentParamsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE)
-                    .add(aidPnl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE)
+                    .add(deploymentParamsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 615, Short.MAX_VALUE)
+                    .add(aidPnl, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 615, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(instancesPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 502, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)

@@ -48,13 +48,13 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 public class PlatformLinux extends Platform {
     public static final String NAME = "Linux-x86"; // NOI18N
 
-    public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
-        new LibraryItem.StdLibItem("Motif", "Motif", new String[] {"Xm", "Xt", "Xext", "X11"}), // NOI18N
-        new LibraryItem.StdLibItem("Mathematics", "Mathematics", new String[] {"m"}), // NOI18N
-        new LibraryItem.StdLibItem("DataCompression", "Data Compression", new String[] {"z"}), // NOI18N
-        new LibraryItem.StdLibItem("PosixThreads", "Posix Threads", new String[] {"pthread"}), // NOI18N
-        new LibraryItem.StdLibItem("Curses", "Curses: CRT Screen Handling", new String[] {"curses"}), // NOI18N
-        new LibraryItem.StdLibItem("Dynamic Linking", "Dynamic Linking", new String[] {"dl"}), // NOI18N
+    private static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
+        StdLibraries.getStandardLibary("Motif"), // NOI18N
+        StdLibraries.getStandardLibary("Mathematics"), // NOI18N
+        StdLibraries.getStandardLibary("DataCompression"), // NOI18N
+        StdLibraries.getStandardLibary("PosixThreads"), // NOI18N
+        StdLibraries.getStandardLibary("Curses"), // NOI18N
+        StdLibraries.getStandardLibary("DynamicLinking"), // NOI18N
     };
     
     public PlatformLinux() {
@@ -72,10 +72,12 @@ public class PlatformLinux extends Platform {
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
         if (libName.endsWith(".so")) { // NOI18N
             int i = libName.indexOf(".so"); // NOI18N
-            if (i > 0)
+            if (i > 0) {
                 libName = libName.substring(0, i);
-            if (libName.startsWith("lib")) // NOI18N
+            }
+            if (libName.startsWith("lib")) { // NOI18N
                 libName = libName.substring(3);
+            }
             return compilerSet.getDynamicLibrarySearchOption() + IpeUtils.escapeOddCharacters(libDir)
                     + " " + compilerSet.getLibrarySearchOption() + IpeUtils.escapeOddCharacters(libDir) // NOI18N
                     + " " + compilerSet.getLibraryOption() + IpeUtils.escapeOddCharacters(libName); // NOI18N

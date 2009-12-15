@@ -46,12 +46,12 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -171,8 +171,12 @@ public final class ConfigureUtils {
             appendIfNeed("-DCMAKE_C_FLAGS_DEBUG=", flags, buf, cCompilerFlags); // NOI18N
             appendIfNeed("-DCMAKE_CXX_FLAGS_DEBUG=", flags, buf, cppCompilerFlags); // NOI18N
         } else if (configure.endsWith(".pro")){ // NOI18N
-            if (isSunStodio() && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) { // NOI18N
+            int platform = getPlatform();
+            if (isSunStodio() && (platform == Platform.PLATFORM_SOLARIS_INTEL || platform == Platform.PLATFORM_SOLARIS_SPARC)) { // NOI18N
                 appendIfNeed("-spec ", flags, buf, "solaris-cc"); // NOI18N
+            }
+            if (platform == Platform.PLATFORM_MACOSX) {
+                buf.append("-spec macx-g++"); // NOI18N
             }
             appendIfNeed("QMAKE_CC=", flags, buf, cCompiler); // NOI18N
             appendIfNeed("QMAKE_CXX=", flags, buf, cppCompiler); // NOI18N
@@ -194,6 +198,10 @@ public final class ConfigureUtils {
             }
             buf.append(key + flag);
         }
+    }
+
+    private static int getPlatform(){
+        return CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment()).getPlatform();
     }
 
     private static boolean isSunStodio(){

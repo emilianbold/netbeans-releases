@@ -42,8 +42,6 @@ package org.netbeans.modules.mercurial.ui.rollback;
 
 import org.netbeans.modules.versioning.spi.VCSContext;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
 import org.netbeans.modules.mercurial.HgException;
@@ -59,6 +57,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 
 /**
  * Pull action for mercurial: 
@@ -68,17 +67,22 @@ import org.openide.NotifyDescriptor;
  */
 public class BackoutAction extends ContextAction {
     
-    private final VCSContext context;
     private static final String HG_BACKOUT_REVISION_REPLACE = "\\{revision}";
     public static final String HG_BACKOUT_REVISION = " {revision}";
     private static String HG_TIP = "tip"; // NOI18N
             
-    public BackoutAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
-    
-    public void performAction(ActionEvent e) {
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Backout";                                  //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         backout(context);
     }
     
@@ -196,9 +200,5 @@ public class BackoutAction extends ContextAction {
             }
         };
         support.start(rp, root, org.openide.util.NbBundle.getMessage(BackoutAction.class, "MSG_BACKOUT_PROGRESS")); // NOI18N
-    }
-    
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
     }
 }

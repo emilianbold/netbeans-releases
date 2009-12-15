@@ -103,6 +103,7 @@ static int open_socket() {
         return -1;
     }
     if (connect(sd, (struct sockaddr *) & pin, sizeof (pin)) == -1) {
+        trace("error connecting remote controller: %s\n", strerror(errno)); // it reports pid, etc
         perror("connect");
         return -1;
     }

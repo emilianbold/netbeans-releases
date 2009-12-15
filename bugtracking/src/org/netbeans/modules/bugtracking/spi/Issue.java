@@ -38,11 +38,9 @@
  */
 package org.netbeans.modules.bugtracking.spi;
 
-import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.util.Map;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -68,7 +66,7 @@ public abstract class Issue {
      * issue data were changed
      */
     public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed"; // NOI18N
-    
+
     private Repository repository;
 
     private static final RequestProcessor rp = new RequestProcessor("Bugtracking Issue"); // NOI18N
@@ -88,7 +86,7 @@ public abstract class Issue {
 
     /**
      * Returns this issues repository
-     * 
+     *
      * @return
      */
     public Repository getRepository() {
@@ -110,7 +108,7 @@ public abstract class Issue {
      * necessary. If it was necessary to trim the name (i.e. if the full name
      * was longer then {@value #SHORT_DISP_NAME_LENGTH}), then an ellipsis
      * is appended to the end of the trimmed display name.
-     * 
+     *
      * @return  short variant of the display name
      * @see #getDisplayName
      */
@@ -143,7 +141,19 @@ public abstract class Issue {
     public abstract String getTooltip();
 
     /**
-     * Returns true if the issue isn't stored in a arepository yet. Otherwise false.
+     * Returns this issues unique ID
+     * @return
+     */
+    public abstract String getID();
+
+    /**
+     * Returns this issues summary
+     * @return
+     */
+    public abstract String getSummary();
+
+    /**
+     * Returns true if the issue isn't stored in a repository yet. Otherwise false.
      * @return
      */
     public abstract boolean isNew();
@@ -172,7 +182,7 @@ public abstract class Issue {
      * Opens the issue with the given issueId in the IDE
      *
      * @param repository
-     * @param issueId 
+     * @param issueId
      */
     public static void open(final Repository repository, final String issueId) {
         assert issueId != null;
@@ -241,7 +251,7 @@ public abstract class Issue {
     /**
      * Opens this issue in the IDE
      * @param refresh also refreshes the issue after opening
-     * 
+     *
      */
     public final void open(final boolean refresh) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -267,30 +277,6 @@ public abstract class Issue {
         });
     }
 
-    /**
-     * Returns a Node representing this issue
-     * @return
-     */
-    public abstract IssueNode getNode();
-
-    /**
-     * Returns this issues unique ID
-     * @return
-     */
-    public abstract String getID();
-
-    /**
-     * Returns this issues summary
-     * @return
-     */
-    public abstract String getSummary();
-
-    /**
-     * Returns this issues attributes. 
-     * @return
-     */
-    public abstract Map<String, String> getAttributes();
-
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
@@ -308,7 +294,7 @@ public abstract class Issue {
 
     void setSelection(Node[] nodes) {
         this.selection = nodes;
-}
+    }
 
     protected Node[] getSelection() {
         return selection;

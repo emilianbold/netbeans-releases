@@ -53,7 +53,8 @@ import org.openide.util.NbBundle;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=200)
 public class SharedSyncFactory extends BaseSyncFactory {
 
-    /*package*/ static final String ID = "shared"; //NOI18N
+    /** this factory ID -  public for test purposes */
+    public static final String ID = "shared"; //NOI18N
 
     @Override
     public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,

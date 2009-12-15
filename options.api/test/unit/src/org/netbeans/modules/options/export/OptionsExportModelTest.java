@@ -299,6 +299,34 @@ public class OptionsExportModelTest extends NbTestCase {
         expectedKeys = new ArrayList<String>();
         expectedKeys.add("key1");
         assertProperties(expectedKeys, "dir0/subdir0/file0.properties", targetUserdir);
+
+        // import from source userdir to current userdir
+        // value for key1 should be replaced from source userdir, key2 should be added, key3 should be kept
+        createModel(new String[][]{
+                    {"Category0", "Item00", "dir0/subdir0/file0[.]properties#key[12]", null}
+                });
+        targetUserdir = new File(getWorkDir(), "userdir2");
+        targetUserdir.mkdir();
+        // create dir0/subdir0/file0.properties in target userdir
+        File targetPropertiesfile = new File(targetUserdir, "dir0/subdir0/file0.properties");
+        targetPropertiesfile.getParentFile().mkdirs();
+        targetPropertiesfile.createNewFile();
+        Properties properties = new Properties();
+        properties.setProperty("key1", "old_value1");  // to be replaced by import
+        properties.setProperty("key3", "value3");  // should be kept after import
+        OutputStream out = new FileOutputStream(targetPropertiesfile);
+        properties.store(out, null);
+        out.close();
+        model.doImport(targetUserdir);
+        expected = new ArrayList<String>();
+        expected.add("dir0/subdir0/file0.properties");
+        assertFiles(expected, OptionsExportModel.getRelativePaths(targetUserdir));
+        Properties expectedProperties = new Properties();
+        expectedProperties.load(new FileInputStream(targetPropertiesfile));
+        assertEquals("Wrong number of properties.", 3, expectedProperties.size());
+        assertEquals("Wrong value of property key1.", "value1", expectedProperties.getProperty("key1"));
+        assertEquals("Wrong value of property key2.", "value2", expectedProperties.getProperty("key2"));
+        assertEquals("Wrong value of property key3.", "value3", expectedProperties.getProperty("key3"));
     }
 
     /** Tests that categories and items properly change enabled/disabled state. */
@@ -452,7 +480,7 @@ public class OptionsExportModelTest extends NbTestCase {
             actual.remove(actual.size() - 1);
         }
         assertEquals("Wrong number of files filtered.", expected.size(), actual.size());
-        Iterator<String> iter = actual.iterator();
+        Iterator<String> iter = new TreeSet<String>(actual).iterator();
         for (String file : expected) {
             assertEquals("Wrong file.", file, iter.next());
         }

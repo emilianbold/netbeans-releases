@@ -78,7 +78,7 @@ public class ModuleTestDependencies extends Task {
         try {
             @SuppressWarnings("unchecked")
             Hashtable<String,String> props = getProject().getProperties();
-            ModuleListParser mlp = new ModuleListParser(props, ParseProjectXml.TYPE_NB_ORG, getProject());
+            ModuleListParser mlp = new ModuleListParser(props, ModuleType.NB_ORG, getProject());
             SortedMap<String,SortedSet<String>> deps = new TreeMap<String,SortedSet<String>>();
             File nball = new File(props.get("nb_all"));
             for (ModuleListParser.Entry entry : mlp.findAll()) {
@@ -120,7 +120,7 @@ public class ModuleTestDependencies extends Task {
                     }
                 }
             }
-            log("Generating test dependencies to " + output);
+            log(output + ": generating test dependencies");
             PrintWriter pw = new PrintWriter(output);
             for (Map.Entry<String,SortedSet<String>> entry : deps.entrySet()) {
                 pw.printf("MODULE %s\n", entry.getKey());

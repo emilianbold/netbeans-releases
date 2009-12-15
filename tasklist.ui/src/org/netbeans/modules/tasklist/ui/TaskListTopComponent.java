@@ -57,7 +57,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -347,16 +346,16 @@ final class TaskListTopComponent extends TopComponent {
                 }
             });
         }
-        ScanningScopeList.getDefault().addPropertyChangeListener( getScopeListListener() );
-        ScannerList.getFileScannerList().addPropertyChangeListener( getScannerListListener() );
-        ScannerList.getPushScannerList().addPropertyChangeListener( getScannerListListener() );
-        
-        final TaskScanningScope scopeToObserve = activeScope;
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
-                taskManager.observe( scopeToObserve, filters.getActive() );
+                ScanningScopeList.getDefault().addPropertyChangeListener( getScopeListListener() );
+                ScannerList.getFileScannerList().addPropertyChangeListener( getScannerListListener() );
+                ScannerList.getPushScannerList().addPropertyChangeListener( getScannerListListener() );
             }
         });
+        
+        final TaskScanningScope scopeToObserve = activeScope;
+        taskManager.observe( scopeToObserve, filters.getActive() );
     }
 
     private Component createNoTasksMessage() {
@@ -432,7 +431,11 @@ final class TaskListTopComponent extends TopComponent {
                     if( newScopes.isEmpty() ) {
                         getLogger().log( Level.INFO, "No task scanning scope found" ); //NOI18N
                     }
-                    rebuildToolbar();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            rebuildToolbar();
+                        }
+                    });
                 }
             };
         }
@@ -443,15 +446,11 @@ final class TaskListTopComponent extends TopComponent {
         if( null == scannerListListener ) {
             scannerListListener = new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent e) {
+                    final TaskScanningScope scopeToObserve = taskManager.getScope();
+                    taskManager.observe( null, null );
                     SwingUtilities.invokeLater( new Runnable() {
                         public void run() {
-                            final TaskScanningScope scopeToObserve = taskManager.getScope();
-                            taskManager.observe( null, null );
-                            SwingUtilities.invokeLater( new Runnable() {
-                                public void run() {
-                                    taskManager.observe( scopeToObserve, filters.getActive() );
-                                }
-                            });
+                            taskManager.observe( scopeToObserve, filters.getActive() );
                         }
                     });
                 }

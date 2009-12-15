@@ -80,6 +80,13 @@ public class JaxwsWsdlModelProvider implements WsdlModelProvider {
             else
                 this.packageName = "defaultPackage";
         }
+
+        // To minimize changes, I am wrapping the creation exception in a
+        // RuntimeException.
+        if (modeler.getCreationException() != null) {
+            throw new RuntimeException(modeler.getCreationException());
+        }
+
         return model;
     }
 

@@ -196,10 +196,10 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
     }
 
     @Override
-    protected List<Class> getServises() {
-        List<Class> list = new ArrayList<Class>();
+    protected List<Class<?>> getServices() {
+        List<Class<?>> list = new ArrayList<Class<?>>();
         list.add(MakeProjectType.class);
-        list.addAll(super.getServises());
+        list.addAll(super.getServices());
         return list;
     }
 

@@ -45,11 +45,13 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
+import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
+import org.netbeans.modules.web.beans.api.model.Result;
 
 
 /**
@@ -58,21 +60,21 @@ import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
  */
 public interface WebBeansModelProvider {
 
-    Element getInjectable( VariableElement element , 
-            AbstractModelImplementation modelImpl ) throws WebBeansModelException;
+    Result getInjectable( VariableElement element , DeclaredType parentType,
+            AbstractModelImplementation modelImpl );
     
-    List<Element> getInjectables( VariableElement element , 
+    Result lookupInjectables( VariableElement element , DeclaredType parentType,
             AbstractModelImplementation modelImpl  );
     
     boolean isDynamicInjectionPoint( VariableElement element ,
-            AbstractModelImplementation impl ) throws WebBeansModelException;
+            AbstractModelImplementation impl );
     
     boolean isInjectionPoint( VariableElement element , 
-            AbstractModelImplementation impl ) throws WebBeansModelException;
+            AbstractModelImplementation impl ) throws InjectionPointDefinitionError;
     
     TypeMirror resolveType(String fqn, AnnotationModelHelper helper ) ;
 
-    List<AnnotationMirror> getBindings( Element element , 
+    List<AnnotationMirror> getQualifiers( Element element , 
             AbstractModelImplementation impl );
 
 }

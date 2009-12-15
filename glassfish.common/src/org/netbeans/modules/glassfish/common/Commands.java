@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.spi.AppDesc;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.util.NbBundle;
 
 /**
@@ -443,7 +444,7 @@ public class Commands {
             cmd.append(path.getAbsolutePath());
             if(name != null && name.length() > 0) {
                 cmd.append(PARAM_SEPARATOR + "name="); // NOI18N
-                cmd.append(name);
+                cmd.append(Utils.sanitizeName(name));
             }
             if(contextRoot != null && contextRoot.length() > 0) {
                 cmd.append(PARAM_SEPARATOR + "contextroot="); // NOI18N
@@ -514,7 +515,7 @@ public class Commands {
 
             StringBuilder cmd = new StringBuilder(128);
             cmd.append("name="); // NOI18N
-            cmd.append(name);
+            cmd.append(Utils.sanitizeName(name));
             if(contextRoot != null && contextRoot.length() > 0) {
                 cmd.append(PARAM_SEPARATOR + "contextroot="); // NOI18N
                 cmd.append(contextRoot);
@@ -538,7 +539,7 @@ public class Commands {
 
         public UndeployCommand(final String name) {
             super("undeploy"); // NOI18N
-            query = "name=" + name; // NOI18N
+            query = "name=" + Utils.sanitizeName(name); // NOI18N
         }
     }
 

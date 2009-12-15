@@ -784,7 +784,7 @@ final class NbInstaller extends ModuleInstaller {
         }
         AutomaticDependencies.Report rep = autoDepsHandler.refineDependenciesAndReport(m.getCodeNameBase(), dependencies);
         if (rep.isModified()) {
-            Util.err.warning("had to upgrade dependencies for module " + m.getCodeNameBase() + ": added = " + rep.getAdded() + " removed = " + rep.getRemoved() + "; details: " + rep.getMessages());
+            Util.err.warning(rep.toString());
         }
     }
     

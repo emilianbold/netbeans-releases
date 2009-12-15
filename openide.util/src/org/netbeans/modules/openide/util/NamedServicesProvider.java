@@ -61,7 +61,7 @@ public abstract class NamedServicesProvider {
             return lkp;
         }
         NamedServicesProvider prov = Lookup.getDefault().lookup(NamedServicesProvider.class);
-        if (prov != null) {
+        if (prov != null && /* avoid stack overflow during initialization */ !path.startsWith(URLStreamHandlerRegistrationProcessor.REGISTRATION_PREFIX)) {
             lkp = prov.create(path);
         } else {
             ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);

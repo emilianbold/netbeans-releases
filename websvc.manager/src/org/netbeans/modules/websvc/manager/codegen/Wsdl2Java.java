@@ -93,7 +93,7 @@ public class Wsdl2Java {
     
     // TODO generate this dynamically instead of using a hardcoded value
     private static final String JAXB_ENDORSED_REF = "modules/ext/jaxb/api/jaxb-api.jar";
-    private static final String JAXWS_ENDORSED_REF = "modules/ext/jaxws21/api/jaxws-api.jar";
+    private static final String JAXWS_ENDORSED_REF = "modules/ext/jaxws22/api/jaxws-api.jar";
     
     private final String userDir = System.getProperty("netbeans.user");
     

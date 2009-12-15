@@ -44,6 +44,7 @@ import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -124,6 +125,13 @@ public class JsfCompletionItem {
             sb.append(component.getName());
             sb.append("</h1>"); //NOI18N
 
+            if(Boolean.getBoolean("show-facelets-libraries-locations")) {
+                sb.append("<div style=\"font-size: smaller; color: gray;\">");
+                sb.append("Source: ");
+                sb.append(FileUtil.getFileDisplayName(component.getLibrary().getLibraryDescriptor().getDefinitionFile()));
+                sb.append("</div>");
+            }
+
             TldLibrary.Tag tag = component.getTag();
             if (tag != null) {
                 //there is TLD available
@@ -197,10 +205,12 @@ public class JsfCompletionItem {
     private static String getLibraryHelpHeader(FaceletsLibrary library) {
         StringBuffer sb = new StringBuffer();
         sb.append("<div><b>Library:</b> "); //NOI18N
-        sb.append(library.getDisplayName());
-        sb.append(" ("); //NOI18N
         sb.append(library.getNamespace());
-        sb.append(")</div>"); //NOI18N
+        if(library.getDisplayName() != null) {
+            sb.append(" ("); //NOI18N
+            sb.append(library.getDisplayName());
+            sb.append(")</div>"); //NOI18N
+        }
         return sb.toString();
 
     }

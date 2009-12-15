@@ -220,7 +220,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             return false;
         }
                 
-        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         return true;
     }
     

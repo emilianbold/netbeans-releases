@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.19.1
+#Signature file v4.1
+#Version 1.23
 
 CLSS public abstract interface java.io.Serializable
 
@@ -127,6 +127,11 @@ CLSS public abstract interface org.netbeans.api.java.classpath.GlobalPathRegistr
 intf java.util.EventListener
 meth public abstract void pathsAdded(org.netbeans.api.java.classpath.GlobalPathRegistryEvent)
 meth public abstract void pathsRemoved(org.netbeans.api.java.classpath.GlobalPathRegistryEvent)
+
+CLSS public org.netbeans.api.java.classpath.JavaClassPathConstants
+cons public JavaClassPathConstants()
+fld public final static java.lang.String PROCESSOR_PATH = "classpath/processor"
+supr java.lang.Object
 
 CLSS public org.netbeans.api.java.queries.AccessibilityQuery
 meth public static java.lang.Boolean isPubliclyAccessible(org.openide.filesystems.FileObject)

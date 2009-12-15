@@ -301,8 +301,12 @@ final class MatchingObject implements PropertyChangeListener {
     /**
      */
     boolean isSubnodeSelected(int index) {
+        // #177812
         assert (matchesSelection == null)
-               || ((index >= 0) && (index < matchesSelection.length));
+               || ((index >= 0) && (index < matchesSelection.length)) :
+               "Illegal index=" + index + "in the case matchesSelection" +
+               ((matchesSelection == null) ? "=null" :
+                   ".length=" + matchesSelection.length); // NOI18N
         return (matchesSelection == null) ? selected
                                          : matchesSelection[index];
     }

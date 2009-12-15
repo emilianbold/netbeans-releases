@@ -75,6 +75,8 @@ const char *PlatformLauncher::OPT_HEAP_DUMP = "-XX:+HeapDumpOnOutOfMemoryError";
 const char *PlatformLauncher::OPT_HEAP_DUMP_PATH = "-XX:HeapDumpPath=";
 const char *PlatformLauncher::OPT_KEEP_WORKING_SET_ON_MINIMIZE = "-Dsun.awt.keepWorkingSetOnMinimize=true";
 const char *PlatformLauncher::OPT_CLASS_PATH = "-Djava.class.path=";
+const char *PlatformLauncher::OPT_SPLASH = "-splash:";
+const char *PlatformLauncher::OPT_SPLASH_PATH = "\\var\\cache\\splash.png";
 
 const char *PlatformLauncher::REG_PROXY_KEY = "Software\\Microsoft\\Windows\\CurrentVersion\\Internet settings";
 const char *PlatformLauncher::REG_PROXY_ENABLED_NAME = "ProxyEnable";
@@ -91,6 +93,7 @@ PlatformLauncher::PlatformLauncher()
     : separateProcess(false)
     , suppressConsole(false)
     , heapDumpPathOptFound(false)
+    , nosplash(false)
     , exiting(false) {
 }
 
@@ -289,6 +292,8 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
                 if (!appendHelp.empty()) {
                     printToConsole(appendHelp.c_str());
                 }
+            } else if (strcmp(ARG_NAME_NOSPLASH, argv[i]) == 0) {
+                 nosplash = true;
             }
             progArgs.push_back(argv[i]);
         }
@@ -469,6 +474,14 @@ void PlatformLauncher::prepareOptions() {
     option += jdkhome;
     javaOptions.push_back(option);
 
+    if (!nosplash) {
+        string splashPath = userDir;
+        splashPath += OPT_SPLASH_PATH;
+        if (fileExists(splashPath.c_str())) {
+            javaOptions.push_back(OPT_SPLASH + splashPath);
+        }
+    }
+
     option = OPT_NB_PLATFORM_HOME;
     option += platformDir;
     javaOptions.push_back(option);
@@ -595,7 +608,9 @@ string & PlatformLauncher::constructClassPath(bool runUpdater) {
     addToClassPath((jdkhome + "\\lib\\dt.jar").c_str(), true);
     addToClassPath((jdkhome + "\\lib\\tools.jar").c_str(), true);
 
-    classPath += cpAfter;
+    if (!cpAfter.empty()) {
+        addToClassPath(cpAfter.c_str(), false);
+    }
     logMsg("ClassPath: %s", classPath.c_str());
     return classPath;
 }
@@ -679,11 +694,11 @@ void PlatformLauncher::onExit() {
         logMsg("Old command line: %s", cmdLine.c_str());
         string::size_type bslashPos = cmdLine.find_last_of('\\');
         string::size_type pos = cmdLine.find(ARG_NAME_LA_START_APP);
-        if (bslashPos < pos && pos != string::npos) {
+        if ((bslashPos == string::npos || bslashPos < pos) && pos != string::npos) {
             cmdLine.erase(pos, strlen(ARG_NAME_LA_START_APP));
         }
         pos = cmdLine.find(ARG_NAME_LA_START_AU);
-        if (bslashPos < pos && pos != string::npos) {
+        if ((bslashPos == string::npos || bslashPos < pos) && pos != string::npos) {
             cmdLine.erase(pos, strlen(ARG_NAME_LA_START_AU));
         }
 

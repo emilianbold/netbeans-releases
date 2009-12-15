@@ -54,6 +54,7 @@ public class CollectXMLAction extends CollectSystemAction {
     /** Serial Version UID */
     private static final long serialVersionUID = 8562401343966139988L;
 
+/***********************
     public static synchronized CollectXMLAction getInstance() {
         CollectXMLAction actionInstance = null;
         String thisClassName = CollectXMLAction.class.getName();
@@ -65,6 +66,7 @@ public class CollectXMLAction extends CollectSystemAction {
         }
         return actionInstance;
     }
+*****************/
 
     /**
      * Getter for class

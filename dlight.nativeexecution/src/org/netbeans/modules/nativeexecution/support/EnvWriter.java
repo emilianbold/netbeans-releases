@@ -41,8 +41,10 @@ package org.netbeans.modules.nativeexecution.support;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -54,6 +56,23 @@ public final class EnvWriter {
 
     public EnvWriter(OutputStream os) {
         this.os = os;
+    }
+
+    private final static String remoteCharSet = System.getProperty("cnd.remote.charset"); // NOI18N
+    /*package*/static String getCharSet() {
+        return remoteCharSet == null ? "UTF-8" : remoteCharSet; // NOI18N
+    }
+    
+    public static byte[] getBytesWithRemoteCharset(String str) {
+        final String charSet = getCharSet();
+        if (java.nio.charset.Charset.isSupported(charSet)) {
+            try {
+                return str.getBytes(charSet);
+            } catch (UnsupportedEncodingException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return str.getBytes();
     }
 
     public void write(final MacroMap env) throws IOException {
@@ -73,7 +92,7 @@ public final class EnvWriter {
                 value = entry.getValue();
 
                 if (value != null) {
-                    os.write((name + "=\"" + value + "\" && export " + name + "\n").getBytes()); // NOI18N
+                    os.write(getBytesWithRemoteCharset(name + "=\"" + value + "\" && export " + name + "\n")); // NOI18N
                     os.flush();
                 }
             }

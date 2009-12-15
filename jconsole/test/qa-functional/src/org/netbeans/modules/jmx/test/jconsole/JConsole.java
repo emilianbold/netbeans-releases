@@ -41,8 +41,9 @@
 
 package org.netbeans.modules.jmx.test.jconsole;
 
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.actions.OutputWindowViewAction;
 
 /**
  * Start a JConsole process and check it appears in the Runtime processes.
@@ -54,21 +55,15 @@ public class JConsole extends JConsoleTestCase {
         super(name);
     }
 
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        new OutputWindowViewAction().perform();
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new JConsole("startJConsole"));
-        return suite;
-    }
+    public void testStartJConsole() {
+        OutputTabOperator oto;
 
-
-    public void startJConsole() {
-        
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
         // push "Open" toolbar button in "System" toolbar
         System.out.println("Starting JConsole...");
@@ -76,7 +71,7 @@ public class JConsole extends JConsoleTestCase {
                 "Start JConsole Management Console").push();
         sleep(2000);
         
-        checkOutputTabOperator("JConsole", "JConsole started");
-        terminateProcess("Processes|JConsole");
+        oto = checkOutputTabOperator("JConsole", "JConsole started");
+        if (oto != null) terminateProcess(oto);
     }
 }

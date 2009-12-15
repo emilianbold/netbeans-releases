@@ -402,7 +402,6 @@ public final class GrailsCommandChooser extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        debugCheckbox = new javax.swing.JCheckBox();
         rakeTaskLabel = new javax.swing.JLabel();
         taskParamLabel = new javax.swing.JLabel();
         matchingTaskLabel = new javax.swing.JLabel();
@@ -412,8 +411,7 @@ public final class GrailsCommandChooser extends JPanel {
         rakeTaskField = new javax.swing.JTextField();
         rakeTaskHint = new javax.swing.JLabel();
         taskParametersComboBox = new javax.swing.JComboBox();
-
-        org.openide.awt.Mnemonics.setLocalizedText(debugCheckbox, org.openide.util.NbBundle.getMessage(GrailsCommandChooser.class, "GrailsCommandChooser.debugCheckbox.text")); // NOI18N
+        debugCheckbox = new javax.swing.JCheckBox();
 
         rakeTaskLabel.setLabelFor(rakeTaskField);
         org.openide.awt.Mnemonics.setLocalizedText(rakeTaskLabel, org.openide.util.NbBundle.getMessage(GrailsCommandChooser.class, "GrailsCommandChooser.rakeTaskLabel.text")); // NOI18N
@@ -423,7 +421,7 @@ public final class GrailsCommandChooser extends JPanel {
         matchingTaskLabel.setLabelFor(matchingTaskList);
         org.openide.awt.Mnemonics.setLocalizedText(matchingTaskLabel, org.openide.util.NbBundle.getMessage(GrailsCommandChooser.class, "GrailsCommandChooser.matchingTaskLabel.text")); // NOI18N
 
-        matchingTaskList.setFont(new java.awt.Font("Monospaced", 0, 12));
+        matchingTaskList.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
         matchingTaskList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         matchingTaskList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -448,6 +446,8 @@ public final class GrailsCommandChooser extends JPanel {
         taskParametersComboBox.setEditable(true);
         taskParametersComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+        org.openide.awt.Mnemonics.setLocalizedText(debugCheckbox, org.openide.util.NbBundle.getMessage(GrailsCommandChooser.class, "GrailsCommandChooser.debugCheckbox.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -456,6 +456,7 @@ public final class GrailsCommandChooser extends JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, debugCheckbox)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(rakeTaskLabel)
@@ -481,7 +482,9 @@ public final class GrailsCommandChooser extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(matchingTaskLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
+                .add(matchingTaskSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(debugCheckbox)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents

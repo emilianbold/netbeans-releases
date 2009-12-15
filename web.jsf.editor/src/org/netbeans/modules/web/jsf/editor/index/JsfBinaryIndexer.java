@@ -198,21 +198,14 @@ public class JsfBinaryIndexer extends BinaryIndexer {
 
     }
 
-    private Collection<FileObject> findLibraryDescriptors(FileObject classpathRoot, String suffix) {
+    public static Collection<FileObject> findLibraryDescriptors(FileObject classpathRoot, String suffix) {
         Collection<FileObject> files = new ArrayList<FileObject>();
-//        Enumeration<? extends FileObject> fos = classpathRoot.getFolders(false);
-        Enumeration<? extends FileObject> fos = classpathRoot.getFolders(true);
+        Enumeration<? extends FileObject> fos = classpathRoot.getChildren(true); //scan all files in the jar
         while (fos.hasMoreElements()) {
-            FileObject fo = fos.nextElement();
-//            if ("META-INF".equals(fo.getName())) { //NOI18N
-                Enumeration<? extends FileObject> children = fo.getChildren(true); //get children recursively
-                while(children.hasMoreElements()) {
-                    FileObject file = children.nextElement();
-                    if (file.getNameExt().toLowerCase(Locale.US).endsWith(suffix)) { //NOI18N
-                        //found library, create a new instance and cache it
-                        files.add(file);
-                    }
-//                }
+            FileObject file = fos.nextElement();
+            if (file.getNameExt().toLowerCase(Locale.US).endsWith(suffix)) { //NOI18N
+                //found library, create a new instance and cache it
+                files.add(file);
             }
         }
         return files;

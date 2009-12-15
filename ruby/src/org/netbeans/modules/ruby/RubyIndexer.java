@@ -128,7 +128,7 @@ public class RubyIndexer extends EmbeddingIndexer {
     static final String FIELD_EXTEND_WITH = "extendWith"; //NOI18N
 
     // Rails 2.0 shorthand migrations; see http://dev.rubyonrails.org/changeset/6667?new_path=trunk
-    final private static String[] FIXED_COLUMN_TYPES = new String[] {  
+    final static String[] FIXED_COLUMN_TYPES = new String[] {  
         // MUST BE SORTED - this array is binary searched!
         "binary", "boolean", "date", "datetime",  "decimal", "float", "integer", // NOI18N
         "string", "text", "time", "timestamp" }; // NOI18N
@@ -355,7 +355,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
     }
 
-    private static class TreeAnalyzer {
+    static final class TreeAnalyzer {
 
         private final FileObject file;
         private final IndexingSupport support;
@@ -367,6 +367,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         private String url;
         private final boolean platform;
         private final ContextKnowledge knowledge;
+        private final MigrationIndexer migrationIndexer;
 
         private TreeAnalyzer(RubyParseResult result,
                 IndexingSupport support,
@@ -380,6 +381,19 @@ public class RubyIndexer extends EmbeddingIndexer {
             this.documents = new ArrayList<IndexDocument>();
             this.platform = RubyUtils.isPlatformFile(file);
             this.knowledge = knowledge;
+            this.migrationIndexer = new MigrationIndexer(knowledge, this);
+        }
+
+        FileObject getFile() {
+            return file;
+        }
+
+        IndexingSupport getSupport() {
+            return support;
+        }
+
+        Indexable getIndexable() {
+            return indexable;
         }
 
         private String getRequireString(Set<String> requireSet) {
@@ -427,12 +441,12 @@ public class RubyIndexer extends EmbeddingIndexer {
             if (Character.isDigit(fileName.charAt(0)) &&
                     (fileName.matches("^\\d\\d\\d_.*") || fileName.matches("^\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d_.*"))) { // NOI18N
                 if (file != null && file.getParent() != null && file.getParent().getName().equals("migrate")) { // NOI18N
-                    handleMigration();
+                    migrationIndexer.handleMigration();
                     // Don't exit here - proceed to also index the class as Ruby code
                 }
             } else if ("schema.rb".equals(fileName)) { //NOI18N
                 if (file != null && file.getParent() != null && file.getParent().getName().equals("db")) { // NOI18N
-                    handleMigration();
+                    migrationIndexer.handleMigration();
                     // Don't exit here - proceed to also index the class as Ruby code
                 }
             }
@@ -466,7 +480,7 @@ public class RubyIndexer extends EmbeddingIndexer {
                     handleRailsBase("ActiveRecord"); // NOI18N
 //                    handleRailsClass("ActiveRecord", "ActiveRecord" + "::Migration", "Migration", "migration");
                     // HACK
-                    handleMigrations();
+                    migrationIndexer.handleMigrations();
                     if (!fallThrough) {
                         return;
                     }
@@ -628,7 +642,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
 
         /** Add an entry for a class which provides the given includes */
-        private void addClassIncludes(String className, String fqn, String in, int flags, String includes) {
+        void addClassIncludes(String className, String fqn, String in, int flags, String includes) {
             IndexDocument document = support.createDocument(indexable);
             documents.add(document);
 
@@ -646,285 +660,6 @@ public class RubyIndexer extends EmbeddingIndexer {
             }
         }
         
-        /** Add an include of ActiveRecord::ConnectionAdapters::SchemaStatements from ActiveRecord::Migration.
-         * This is a hack. I'm not sure how the SchemaStatements methods end up in a Migration. I've sent
-         * some querying e-mails to find out; if you, the reader, know - please let me know so I can track
-         * down why the source modeller isn't finding this relationship. */
-        private void handleMigrations() {
-            int flags = 0;
-            addClassIncludes("Migration", "ActiveRecord::Migration", "ActiveRecord", flags, 
-                    "ActiveRecord::ConnectionAdapters::SchemaStatements");
-        }
-
-        /** Handle a migration file */
-        private void handleMigration() {
-            Node root = knowledge.getRoot();
-
-            // Look for self.up methods and register all column deltas
-            // create_table: create new table
-            //  t.column: add column to the given table
-            // add_column, remove_column: add column to the given table
-            // rename_table, rename_column: renaming
-            // rename_column, change_column - ditto for columns
-            
-            // It's going to be hard to deal with something like mephisto's 044_store_single_filter.rb
-            // where it's doing conditional logic on the models... schema.rb is more useful here.
-            // In the next release, try to use schema.rb if it's known to exist and be up to date
-            
-            // Find self.up
-            String fileName = file.getName();
-            Node top = null;
-            String version;
-            if ("schema".equals(fileName)) { // NOI18N
-                top = root;
-                // Use a special version greater than all allowed migrations such
-                // that I can find this when querying
-                version = SCHEMA_INDEX_VERSION; // NOI18N
-            } else {
-                String migrationClass;
-                if (fileName.charAt(3) == '_') {
-                    version = fileName.substring(0,3);
-                    migrationClass = RubyUtils.underlinedNameToCamel(fileName.substring(4)); // Strip off version prefix
-                } else {
-                    // Rails 2.1 stores it in UTC format
-                    version = fileName.substring(0,14);
-                    migrationClass = RubyUtils.underlinedNameToCamel(fileName.substring(15)); // Strip off version prefix
-                }
-                String sig = migrationClass + "#up"; // NOI18N
-                Node def = AstUtilities.findBySignature(root, sig);
-
-                if (def == null) {
-                    return;
-                }
-                
-                top = def;
-            }
-            
-            // Iterate through the file and find tables and such
-            // Map from table name to column names
-            Map<String,List<String>> items = new HashMap<String,List<String>>();
-            scanMigration(top, items, null);
-            
-            if (items.size() > 0) {
-                for (Map.Entry<String,List<String>> entry : items.entrySet()) {
-                    IndexDocument document = support.createDocument(indexable);
-                    documents.add(document);
-                    
-                    String tableName = entry.getKey();
-                    document.addPair(FIELD_DB_TABLE, tableName, true, true);
-                    document.addPair(FIELD_DB_VERSION, version, false, true);
-                    
-                    List<String> columns = entry.getValue();
-                    for (String column : columns) {
-                        document.addPair(FIELD_DB_COLUMN, column, false, true);
-                    }
-                }
-            }
-        }
-        
-        private void scanMigration(Node node, Map<String,List<String>> items, String currentTable) {
-            if (node.getNodeType() == NodeType.FCALLNODE) {
-                // create_table etc.
-                String name = AstUtilities.getCallName(node);
-                if ("create_table".equals(name)) { // NOI18N
-                    // Compute the call name, and any column names
-                    List childNodes = node.childNodes();
-                    if (childNodes.size() > 0) {
-                        Node child = (Node)childNodes.get(0);
-                        if (child.getNodeType() == NodeType.ARRAYNODE) {
-                            List grandChildren = child.childNodes();
-                            if (grandChildren.size() > 0) {
-                                Node grandChild = (Node)grandChildren.get(0);
-                                if (grandChild.getNodeType() == NodeType.SYMBOLNODE || 
-                                        grandChild.getNodeType() == NodeType.STRNODE) {
-                                    String tableName = getString(grandChild);
-                                    items.put(tableName, new ArrayList<String>());
-                                    if (childNodes.size() > 1) {
-                                        Node n = (Node) childNodes.get(1);
-                                        if (n.getNodeType() == NodeType.ITERNODE) {
-                                            scanMigration(n, items, tableName);
-                                        }
-                                    }
-                                    
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                } else if ("add_column".equals(name) || "remove_column".equals(name)) { // NOI18N
-                    List<Node> symbols = new ArrayList<Node>();
-                    // Ugh - this won't work right for complicated migrations which
-                    // are for example iterating over table like Mephisto's store_single_filter
-                    // migration
-                    AstUtilities.addNodesByType(node, new NodeType[] { NodeType.SYMBOLNODE, NodeType.STRNODE }, symbols);
-                    if (symbols.size() >= 2) {
-                        String tableName = getString(symbols.get(0));
-                        String columnName = getString(symbols.get(1));
-                        String columnType = null;
-                        boolean isAdd = "add_column".equals(name); // NOI18N
-                        if (isAdd && symbols.size() >= 3) {
-                            columnType = getString(symbols.get(2));
-                        }
-
-                        List<String> list = items.get(tableName);
-                        if (list == null) {
-                            list = new ArrayList<String>();
-                            items.put(tableName, list);
-                        }
-                        StringBuilder sb = new StringBuilder();
-                        sb.append(columnName);
-                        sb.append(';');
-                        if (isAdd) {
-                            if (columnType != null) {
-                                sb.append(columnType);
-                            }
-                        } else {
-                            sb.append("-");
-                        }
-                        list.add(sb.toString());
-                    }
-                    
-                    return;
-                } else if ("rename_column".equals(name)) { // NOI18N
-                    // Simulate as a delete old, add new
-                    List<Node> symbols = new ArrayList<Node>();
-                    // Ugh - this won't work right for complicated migrations which
-                    // are for example iterating over table like Mephisto's store_single_filter
-                    // migration
-                    AstUtilities.addNodesByType(node, new NodeType[] { NodeType.SYMBOLNODE, NodeType.STRNODE }, symbols);
-                    if (symbols.size() >= 3) {
-                        String tableName = getString(symbols.get(0));
-                        String oldCol = getString(symbols.get(1));
-                        String newCol = getString(symbols.get(2));
-
-                        List<String> list = items.get(tableName);
-                        if (list == null) {
-                            list = new ArrayList<String>();
-                            items.put(tableName, list);
-                        }
-                        list.add(oldCol + ";-"); // NOI18N
-                        list.add(newCol);
-                    }
-                    
-                    return;
-                }
-            } else if (node.getNodeType() == NodeType.CALLNODE && currentTable != null) {
-                // t.column, applying to an outer table
-                String name = AstUtilities.getCallName(node);
-                if ("column".equals(name)) {  // NOI18N
-                    List childNodes = node.childNodes();
-                    if (childNodes.size() >= 2) {
-                        Node child = (Node)childNodes.get(0);
-                        if (child.getNodeType() != NodeType.DVARNODE) {
-                            // Not a call on the block var corresponding to the table 
-                            // Later, validate more closely that we're making a call
-                            // on the actual block variable passed in from the create_table call!
-                            return;
-                        }
-
-                        child = (Node)childNodes.get(1);
-                        List<Node> symbols = new ArrayList<Node>();
-                        AstUtilities.addNodesByType(child, new NodeType[] { NodeType.SYMBOLNODE, NodeType.STRNODE }, symbols);
-                        if (symbols.size() >= 2) {
-                            String columnName = getString(symbols.get(0));
-                            String columnType = getString(symbols.get(1));
-                        
-                            List<String> list = items.get(currentTable);
-                            if (list == null) {
-                                list = new ArrayList<String>();
-                                items.put(currentTable, list);
-                            }
-                            StringBuilder sb = new StringBuilder();
-                            sb.append(columnName);
-                            sb.append(';');
-                            sb.append(columnType);
-                            list.add(sb.toString());
-                        }
-
-                    }
-
-                    return;
-                } else if ("timestamps".equals(name)) { // NOI18N
-                    List childNodes = node.childNodes();
-                    if (childNodes.size() >= 1) {
-                        Node child = (Node)childNodes.get(0);
-                        if (child.getNodeType() != NodeType.DVARNODE) {
-                            // Not a call on the block var corresponding to the table 
-                            // Later, validate more closely that we're making a call
-                            // on the actual block variable passed in from the create_table call!
-                            return;
-                        }
-                        
-                        // Insert timestamp codes
-                        //    column(:created_at, :datetime)
-                        //    column(:updated_at, :datetime)
-                        List<String> list = items.get(currentTable);
-                        if (list == null) {
-                            list = new ArrayList<String>();
-                            items.put(currentTable, list);
-                        }
-                        list.add("created_at;datetime"); // NOI18N
-                        list.add("updated_at;datetime"); // NOI18N
-                    }
-                 } else {
-                    // Rails 2.0 shorthand migrations; see http://dev.rubyonrails.org/changeset/6667?new_path=trunk
-                    int columnTypeIndex = Arrays.binarySearch(FIXED_COLUMN_TYPES, name);
-                    if (columnTypeIndex >= 0 && columnTypeIndex < FIXED_COLUMN_TYPES.length) {
-                        String columnType = FIXED_COLUMN_TYPES[columnTypeIndex];
-                        List childNodes = node.childNodes();
-                        if (childNodes.size() >= 2) {
-                            Node child = (Node)childNodes.get(0);
-                            if (child.getNodeType() != NodeType.DVARNODE) {
-                                // Not a call on the block var corresponding to the table 
-                                // Later, validate more closely that we're making a call
-                                // on the actual block variable passed in from the create_table call!
-                                return;
-                            }
-
-                            child = (Node)childNodes.get(1);
-                            List<Node> args = child.childNodes();
-                            for (Node n : args) {
-                                if (n.getNodeType() == NodeType.SYMBOLNODE || n.getNodeType() == NodeType.STRNODE) {
-                                    String columnName = getString(n);
-                                    
-                                    List<String> list = items.get(currentTable);
-                                    if (list == null) {
-                                        list = new ArrayList<String>();
-                                        items.put(currentTable, list);
-                                    }
-                                    StringBuilder sb = new StringBuilder();
-                                    sb.append(columnName);
-                                    sb.append(';');
-                                    sb.append(columnType);
-                                    list.add(sb.toString());
-                                }
-                            }
-                        }
-
-                        return;
-                    
-                    }
-                }
-            }
-
-            List<Node> list = node.childNodes();
-
-            for (Node child : list) {
-                if (child.isInvisible()) {
-                    continue;
-                }
-                scanMigration(child, items, currentTable);
-            }            
-        }
-
-        private String getString(Node node) {
-            if (node.getNodeType() == NodeType.STRNODE) {
-                return ((StrNode)node).getValue().toString();
-            } else {
-                return ((INameNode)node).getName();
-            }
-        }
-
         /** 
          * Action view has some special loading behavior of helpers - see actionview's
          * "load_helpers" method.

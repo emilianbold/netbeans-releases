@@ -70,6 +70,7 @@ public class ProxyFileManager implements JavaFileManager {
     private final JavaFileManager bootPath;
     private final JavaFileManager classPath;
     private final JavaFileManager sourcePath;
+    private final JavaFileManager aptSources;
     private final MemoryFileManager memoryFileManager;
     private final JavaFileManager outputhPath;       
     
@@ -78,13 +79,13 @@ public class ProxyFileManager implements JavaFileManager {
     
     private static final Logger LOG = Logger.getLogger(ProxyFileManager.class.getName());
     
-    /** Creates a new instance of ProxyFileManager */
-    public ProxyFileManager(JavaFileManager bootPath, JavaFileManager classPath, JavaFileManager sourcePath, JavaFileManager outputhPath) {
-        this (bootPath, classPath, sourcePath, outputhPath, null);
-    }
     
     /** Creates a new instance of ProxyFileManager */
-    public ProxyFileManager(JavaFileManager bootPath, JavaFileManager classPath, JavaFileManager sourcePath, JavaFileManager outputhPath,
+    public ProxyFileManager(final JavaFileManager bootPath,
+            final JavaFileManager classPath,
+            final JavaFileManager sourcePath,
+            final JavaFileManager aptSources,
+            final JavaFileManager outputhPath,
             final MemoryFileManager memoryFileManager) {
         assert bootPath != null;
         assert classPath != null;
@@ -92,6 +93,7 @@ public class ProxyFileManager implements JavaFileManager {
         this.bootPath = bootPath;
         this.classPath = classPath;
         this.sourcePath = sourcePath;
+        this.aptSources = aptSources;
         this.memoryFileManager = memoryFileManager;
         this.outputhPath = outputhPath;
     }
@@ -107,60 +109,53 @@ public class ProxyFileManager implements JavaFileManager {
         }
         else if (location == StandardLocation.SOURCE_PATH && this.sourcePath != null) {
             if (this.memoryFileManager != null) {
-                return new JavaFileManager[] {
-                    this.sourcePath,
-                    this.memoryFileManager
-                };
+                if (this.aptSources != null) {
+                    return new JavaFileManager[] {
+                        this.sourcePath,
+                        this.aptSources,
+                        this.memoryFileManager
+                    };
+                }
+                else {
+                    return new JavaFileManager[] {
+                        this.sourcePath,
+                        this.memoryFileManager
+                    };
+                }
             }
             else {
-                return new JavaFileManager[] {this.sourcePath};
+                if (this.aptSources != null) {
+                    return new JavaFileManager[] {this.sourcePath, this.aptSources};
+                } else {
+                    return new JavaFileManager[] {this.sourcePath};
+                }
             }                        
         }
         else if (location == StandardLocation.CLASS_OUTPUT && this.outputhPath != null) {
             return new JavaFileManager[] {this.outputhPath};
         }
+        else if (location == StandardLocation.SOURCE_OUTPUT && this.aptSources != null) {
+            return new JavaFileManager[] {this.aptSources};
+        }
         else if (location == ALL) {
-            if (this.memoryFileManager != null) {
-                return this.outputhPath == null ?
-                    new JavaFileManager[] {
-                        this.sourcePath,
-                        this.memoryFileManager,
-                        this.bootPath,
-                        this.classPath
-                    }:
-                    new JavaFileManager[] {
-                        this.sourcePath,
-                        this.memoryFileManager,
-                        this.bootPath,
-                        this.classPath,
-                        this.outputhPath
-                    };
-            }
-            else {
-                return this.outputhPath == null ?
-                    new JavaFileManager[] {
-                        this.sourcePath,
-                        this.bootPath,
-                        this.classPath
-                    }:
-                    new JavaFileManager[] {
-                        this.sourcePath,
-                        this.bootPath,
-                        this.classPath,
-                        this.outputhPath
-                    };
-            }
+            return getAllFileManagers();
         }
         return new JavaFileManager[0];        
     }   
     
     private JavaFileManager[] getAllFileManagers () {
-        List<JavaFileManager> result = new ArrayList<JavaFileManager> (4);
-        result.add(this.bootPath);
-        result.add (this.classPath);
+        List<JavaFileManager> result = new ArrayList<JavaFileManager> (4);        
         if (this.sourcePath!=null) {
             result.add (this.sourcePath);
         }
+        if (this.aptSources != null) {
+            result.add (this.aptSources);
+        }
+        if (this.memoryFileManager != null) {
+            result.add(this.memoryFileManager);
+        }
+        result.add(this.bootPath);
+        result.add (this.classPath);
         if (this.outputhPath!=null) {
             result.add (this.outputhPath);
         }

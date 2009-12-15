@@ -79,9 +79,11 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
     public static synchronized DeploymentFactory createPrelude() {
         if (preludeInstance == null) {
             // TODO - find way to get uri fragment from GlassfishInstanceProvider
+            ServerUtilities tmp = ServerUtilities.getPreludeUtilities();
             preludeInstance = new Hk2DeploymentFactory(new String[] { "deployer:gfv3:" }, "0.1",  // NOI18N
                     NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_PreludeDisplayName")); // NOI18N
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(preludeInstance);
+            preludeInstance.setServerUtilities(tmp);
         }
         return preludeInstance;
     }
@@ -93,9 +95,11 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
     public static synchronized DeploymentFactory createEe6() {
         // FIXME -- these strings should come from some constant place
         if (ee6Instance == null) {
+            ServerUtilities tmp = ServerUtilities.getEe6Utilities();
             ee6Instance = new Hk2DeploymentFactory(new String[]{"deployer:gfv3ee6:"}, "0.2", // NOI18N
                     NbBundle.getMessage(Hk2DeploymentFactory.class, "TXT_DisplayName"));  // NOI18N
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(ee6Instance);
+            ee6Instance.setServerUtilities(tmp);
         }
         return ee6Instance;
     }
@@ -133,7 +137,6 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         if (!handlesURI(uri)) {
             throw new DeploymentManagerCreationException("Invalid URI:" + uri); // NOI18N
         }
-        finishInit();
         // prevent registry mismatches
         if (!su.isRegisteredUri(uri)) {
             throw new DeploymentManagerCreationException("Registry mismatch for "+uri);
@@ -151,7 +154,6 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         if (!handlesURI(uri)) {
             throw new DeploymentManagerCreationException("Invalid URI:" + uri); // NOI18N
         }
-        finishInit();
         // prevent registry mismatches
         if (!su.isRegisteredUri(uri)) {
             throw new DeploymentManagerCreationException("Registry mismatch for "+uri);
@@ -175,14 +177,4 @@ public class Hk2DeploymentFactory implements DeploymentFactory {
         return displayName;
     }
 
-    /**
-     * Creating the server utility instance in the constructor triggered an
-     * exception, since some infrastucture wasn't initialized completely.
-     */
-    private void finishInit() {
-        if (null != preludeInstance)
-            preludeInstance.setServerUtilities(ServerUtilities.getPreludeUtilities());
-        if (null != ee6Instance)
-            ee6Instance.setServerUtilities(ServerUtilities.getEe6Utilities());
-    }
 }

@@ -42,6 +42,7 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 
 public class Logger {
+
     private static boolean assertionsEnabled = false;
 
     static {
@@ -50,7 +51,6 @@ public class Logger {
 
     private Logger() {
     }
-
     private static java.util.logging.Logger instance =
             java.util.logging.Logger.getLogger(
             "nativeexecution.support.logger"); // NOI18N
@@ -89,10 +89,13 @@ public class Logger {
         }
     }
 
-    public static final void assertNonUiThread() {
+    public static final void assertNonUiThread(String message) {
         if (assertionsEnabled && SwingUtilities.isEventDispatchThread()) {
-            String message = "Should not be called from UI thread"; //NOI18N
             instance.log(Level.SEVERE, message, new Exception(message));
         }
+    }
+
+    public static final void assertNonUiThread() {
+        assertNonUiThread("Should not be called from UI thread"); //NOI18N
     }
 }

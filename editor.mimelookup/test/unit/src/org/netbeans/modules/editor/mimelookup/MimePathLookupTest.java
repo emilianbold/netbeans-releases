@@ -62,7 +62,9 @@ public class MimePathLookupTest extends NbTestCase {
         super(name);
     }
 
+    @Override
     protected void setUp() throws java.lang.Exception {
+        clearWorkDir();
         // Set up the default lookup, repository, etc.
         EditorTestLookup.setLookup(new String[0], getWorkDir(), new Object[] {},
             getClass().getClassLoader()

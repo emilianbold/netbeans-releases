@@ -42,7 +42,6 @@ package org.netbeans.modules.mercurial.ui.diff;
 
 import org.netbeans.modules.versioning.spi.VCSContext;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
@@ -65,7 +64,7 @@ import java.awt.Dialog;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
-import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 
 /**
  * ImportDiff action for mercurial: 
@@ -75,20 +74,20 @@ import org.openide.filesystems.FileUtil;
  */
 public class ImportDiffAction extends ContextAction {
     
-    private final VCSContext context;
-
-    public ImportDiffAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
-    
-    public void performAction(ActionEvent e) {
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_ImportDiff"; // NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         importDiff(context);
     }
-    
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
-    } 
 
     private static void importDiff(VCSContext ctx) {
         final File roots[] = HgUtils.getActionRoots(ctx);
