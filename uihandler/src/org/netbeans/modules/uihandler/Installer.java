@@ -1491,7 +1491,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     InputStream is = new FileInputStream(tmp);
                     byte [] arr = new byte [is.available()];
                     is.read(arr);
-                    sb.append("Content:\n").append(new String(arr));
+                    sb.append("Content:\n").append(new String(arr)).append("\nEnd of Content");
                     is.close();
                     //End
                     is = new FileInputStream(tmp);
