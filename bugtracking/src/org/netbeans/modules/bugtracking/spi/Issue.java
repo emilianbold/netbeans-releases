@@ -41,14 +41,8 @@ package org.netbeans.modules.bugtracking.spi;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
-import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
+import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import static java.lang.Character.isSpaceChar;
 
 /**
@@ -68,8 +62,6 @@ public abstract class Issue {
     public static final String EVENT_ISSUE_DATA_CHANGED = "issue.data_changed"; // NOI18N
 
     private Repository repository;
-
-    private static final RequestProcessor rp = new RequestProcessor("Bugtracking Issue"); // NOI18N
 
     static {
         IssueAccessorImpl.create();
@@ -185,60 +177,7 @@ public abstract class Issue {
      * @param issueId
      */
     public static void open(final Repository repository, final String issueId) {
-        assert issueId != null;
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                final IssueTopComponent tc = IssueTopComponent.find(issueId);
-                final boolean tcOpened = tc.isOpened();
-                final Issue[] issue = new Issue[1];
-                issue[0] = tc.getIssue();
-                if (issue[0] == null) {
-                    tc.initNoIssue(issueId);
-                }
-                if(!tcOpened) {
-                    tc.open();
-                }
-                tc.requestActive();
-                rp.post(new Runnable() {
-                    public void run() {
-                        ProgressHandle handle = null;
-                        try {
-                            if (issue[0] != null) {
-                                handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[]{issueId}));
-                                handle.start();
-                                issue[0].refresh();
-                            } else {
-                                handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[]{issueId}));
-                                handle.start();
-                                issue[0] = repository.getIssue(issueId);
-                                if(issue[0] == null) {
-                                    // lets hope the repository was able to handle this
-                                    // because whatever happend, there is nothing else
-                                    // we can do at this point
-                                    SwingUtilities.invokeLater(new Runnable() {
-                                        public void run() {
-                                            if(!tcOpened) {
-                                                tc.close();
-                                            }
-                                        }
-                                    });
-                                    return;
-                                }
-                                SwingUtilities.invokeLater(new Runnable() {
-
-                                    public void run() {
-                                        tc.setIssue(issue[0]);
-                                    }
-                                });
-                                IssueCacheUtils.setSeen(issue[0], true);
-                            }
-                        } finally {
-                            if(handle != null) handle.finish();
-                        }
-                    }
-                });
-            }
-        });
+        IssueAction.openIssue(repository, issueId);
     }
 
     /**
@@ -254,27 +193,7 @@ public abstract class Issue {
      *
      */
     public final void open(final boolean refresh) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                IssueTopComponent tc = IssueTopComponent.find(Issue.this);
-                tc.open();
-                tc.requestActive();
-                rp.post(new Runnable() {
-                    public void run() {
-                        ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(Issue.class, "LBL_REFRESING_ISSUE", new Object[]{getID()}));
-                        try {
-                            handle.start();
-                            if (refresh && !Issue.this.refresh()) {
-                                return;
-                            }
-                            IssueCacheUtils.setSeen(Issue.this, true);
-                        } finally {
-                            if(handle != null) handle.finish();
-                        }
-                    }
-                });
-            }
-        });
+        IssueAction.openIssue(this, refresh);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
