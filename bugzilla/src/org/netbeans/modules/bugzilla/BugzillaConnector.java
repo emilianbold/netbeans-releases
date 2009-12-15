@@ -39,13 +39,12 @@
 
 package org.netbeans.modules.bugzilla;
 
+import java.awt.Image;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueFinder;
-import org.netbeans.modules.bugzilla.kenai.KenaiSupportImpl;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -58,6 +57,16 @@ import org.openide.util.lookup.Lookups;
 public class BugzillaConnector extends BugtrackingConnector {
 
     private BugzillaIssueFinder issueFinder;
+
+    @Override
+    public String getID() {
+        return "org.netbeans.modules.bugzilla";                                 //  NOI18N
+    }
+
+    @Override
+    public Image getIcon() {
+        return null;
+    }
 
     public String getDisplayName() {
         return getConnectorName();

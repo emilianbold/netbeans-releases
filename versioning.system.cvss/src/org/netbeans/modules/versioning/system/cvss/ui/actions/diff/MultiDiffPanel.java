@@ -411,7 +411,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             if (editorCookie instanceof EditorCookie.Observable) {
                 observableEditorCookie = (EditorCookie.Observable) editorCookie;
             }
-            lookup.setData(fileObj, observableEditorCookie);
             
             diffView = null;
             boolean focus = false;
@@ -438,10 +437,12 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             } else {
                 diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoContent"));
             }            
+            lookup.setData(fileObj, observableEditorCookie, diffView.getActionMap());
         } else {
             currentModelIndex = -1;
             lookup.setData();
             diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoFileSelected"));
+            lookup.setData(diffView.getActionMap());
             setBottomComponent();
         }
 
