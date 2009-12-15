@@ -40,13 +40,16 @@
  */
 package org.netbeans.modules.web.beans.xml.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.netbeans.modules.web.beans.xml.AlternativeElement;
 import org.netbeans.modules.web.beans.xml.Alternatives;
+import org.netbeans.modules.web.beans.xml.Stereotype;
 import org.netbeans.modules.web.beans.xml.WebBeansComponent;
 import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 
 /**
@@ -69,48 +72,47 @@ class AlternativesImpl extends BaseClassContainerImpl implements
      * @see org.netbeans.modules.web.beans.xml.Alternatives#addElement(org.netbeans.modules.web.beans.xml.AlternativeElement)
      */
     public void addElement( AlternativeElement element ) {
-        // TODO Auto-generated method stub
-
+        appendChild(AlternativeElement.ALTERNATIVE_ELEMENT, element);
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.Alternatives#addElement(int, org.netbeans.modules.web.beans.xml.AlternativeElement)
      */
     public void addElement( int index, AlternativeElement element ) {
-        // TODO Auto-generated method stub
-
+        insertAtIndex(AlternativeElement.ALTERNATIVE_ELEMENT, element, index);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.Alternatives#addStereotype(java.lang.String)
-     */
-    public void addStereotype( String stereotype ) {
-        // TODO Auto-generated method stub
-
-    }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.Alternatives#getElements()
      */
     public List<AlternativeElement> getElements() {
-        // TODO Auto-generated method stub
-        return null;
+        return getChildren( AlternativeElement.class);
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.Alternatives#getSterrotypes()
      */
     public List<String> getSterrotypes() {
-        // TODO Auto-generated method stub
-        return null;
+        NodeList nl = getPeer().getElementsByTagName(Stereotype.STEREOTYPE);
+        List<String> result = new ArrayList<String>( nl.getLength());
+        if (nl != null) {
+            for (int i=0; i<nl.getLength(); i++) {
+                if (WebBeansElements.STEREOTYPE.getQName().equals(
+                        getQName(nl.item(i)))) 
+                {
+                    result.add(getText((Element) nl.item(i)));
+                }
+            }
+        }
+        return result;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.Alternatives#remove(org.netbeans.modules.web.beans.xml.AlternativeElement)
+     * @see org.netbeans.modules.web.beans.xml.Alternatives#removeElement(org.netbeans.modules.web.beans.xml.AlternativeElement)
      */
-    public void remove( AlternativeElement element ) {
-        // TODO Auto-generated method stub
-
+    public void removeElement( AlternativeElement element ) {
+        removeChild(AlternativeElement.ALTERNATIVE_ELEMENT, element);
     }
 
     /* (non-Javadoc)

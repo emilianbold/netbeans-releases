@@ -40,14 +40,19 @@
  */
 package org.netbeans.modules.web.beans.xml;
 
+import java.util.List;
 
 
 /**
  * @author ads
  *
  */
-public interface Decorators extends BeansElement, BeanClassContainer {
+public interface BeanClassContainer extends WebBeansComponent {
 
-    String DECORATORS = "decorators";       // NOI18N
+    List<String> getClasses();
     
+    List<BeanClass> getBeansClasses();
+    void addBeanClass( BeanClass clazz );
+    void addBeanClass( int index , BeanClass clazz );
+    void removeBeanClass( BeanClass clazz  );
 }
