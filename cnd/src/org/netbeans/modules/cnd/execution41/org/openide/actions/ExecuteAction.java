@@ -67,25 +67,6 @@ public class ExecuteAction extends CookieAction {
     /** should we run compilation before execution */
     private static boolean runCompilation;
 
-    /** Set whether files should be compiled before execution.
-     * @param run <code>true</code> if they should
-     * @deprecated Only works if the <code>org.openide.compiler</code> module is enabled.
-     */
-    @Deprecated
-    public static void setRunCompilation(boolean run) {
-        runCompilation = run;
-    }
-
-    /** Test whether files will be compiled before execution.
-     * By default they will.
-     * @return <code>true</code> if they will be
-     * @deprecated Only works if the <code>org.openide.compiler</code> module is enabled.
-     */
-    @Deprecated
-    public static boolean getRunCompilation() {
-        return runCompilation;
-    }
-
     // init ..........................................................................................
     protected Class[] cookieClasses() {
         return new Class[]{ExecCookie.class};

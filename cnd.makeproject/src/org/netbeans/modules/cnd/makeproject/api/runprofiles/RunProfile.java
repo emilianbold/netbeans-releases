@@ -127,12 +127,6 @@ public class RunProfile implements ConfigurationAuxObject {
     };
     private IntConfiguration removeInstrumentation;
 
-    // constructor for SS compatibility, only for localhost usage
-    @Deprecated
-    public RunProfile(String baseDir) {
-        this(baseDir, PlatformTypes.getDefaultPlatform());
-    }
-
     public RunProfile(String baseDir, int platform) {
         this.platform = platform;
         this.baseDir = baseDir;

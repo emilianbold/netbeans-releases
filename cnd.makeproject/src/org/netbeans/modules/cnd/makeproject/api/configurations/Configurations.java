@@ -344,7 +344,7 @@ public final class Configurations {
     }
 
     /**
-     * @deprecated. Use getActive()
+     * @deprecated Use getActive()
      */
     public Configuration getDefault() {
         return getActive();
