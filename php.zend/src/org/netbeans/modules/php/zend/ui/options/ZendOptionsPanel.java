@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
  */
 public class ZendOptionsPanel extends JPanel {
     private static final long serialVersionUID = -13564875423210L;
-    private static final String SYMFONY_LAST_FOLDER_SUFFIX = ".zend";
+    private static final String ZEND_LAST_FOLDER_SUFFIX = ".zend";
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -321,7 +321,7 @@ public class ZendOptionsPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        File zendScript = new FileChooserBuilder(ZendOptionsPanel.class.getName() + SYMFONY_LAST_FOLDER_SUFFIX)
+        File zendScript = new FileChooserBuilder(ZendOptionsPanel.class.getName() + ZEND_LAST_FOLDER_SUFFIX)
                 .setTitle(NbBundle.getMessage(ZendOptionsPanel.class, "LBL_SelectZend"))
                 .setFilesOnly(true)
                 .showOpenDialog();

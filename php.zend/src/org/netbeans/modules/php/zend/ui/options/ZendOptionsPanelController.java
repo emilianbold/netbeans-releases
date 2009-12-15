@@ -58,7 +58,7 @@ import org.openide.util.Lookup;
     id=ZendScript.OPTIONS_SUB_PATH,
     displayName="#LBL_OptionsName",
 //    toolTip="#LBL_OptionsTooltip"
-    position=200
+    position=300
 )
 public class ZendOptionsPanelController extends OptionsPanelController implements ChangeListener {
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);

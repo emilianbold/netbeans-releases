@@ -48,6 +48,7 @@ import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.php.zend.commands.ZendCommandSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -78,7 +79,7 @@ public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleExtender createPhpModuleExtender(PhpModule phpModule) {
-        return null;
+        return new ZendPhpModuleExtender();
     }
 
     @Override
@@ -107,8 +108,8 @@ public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     @Override
-    public FrameworkCommandSupport getFrameworkCommandSupport(PhpModule phpModule) {
-        return null;
+    public ZendCommandSupport getFrameworkCommandSupport(PhpModule phpModule) {
+        return new ZendCommandSupport(phpModule);
     }
 
     @Override

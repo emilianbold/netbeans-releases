@@ -55,7 +55,7 @@ public final class ZendOptions {
 
     private static final ZendOptions INSTANCE = new ZendOptions();
 
-    // symfony script
+    // zend script
     private static final String ZEND = "zend"; // NOI18N
     // default params
     private static final String PARAMS_FOR_PROJECT = "default.params.project"; // NOI18N
@@ -82,8 +82,8 @@ public final class ZendOptions {
         return zend;
     }
 
-    public void setZend(String symfony) {
-        getPreferences().put(ZEND, symfony);
+    public void setZend(String zend) {
+        getPreferences().put(ZEND, zend);
     }
 
     public String getDefaultParamsForProject() {

@@ -40,9 +40,14 @@
 package org.netbeans.modules.php.zend;
 
 import java.io.File;
+import java.util.concurrent.ExecutionException;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.zend.commands.ZendCommandSupport;
 import org.netbeans.modules.php.zend.ui.options.ZendOptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -54,6 +59,10 @@ public class ZendScript extends PhpProgram {
     public static final String SCRIPT_NAME;
 
     public static final String OPTIONS_SUB_PATH = "Zend"; // NOI18N
+
+    public static final String CMD_INIT_PROJECT = "create"; // NOI18N
+    public static final String[] CMD_INIT_PROJECT_ARGS = new String[] {"project", "."}; // NOI18N
+    public static final String[] CMD_INIT_PROJECT_ARGS_TITLE = new String[] {"project"}; // NOI18N
 
     static {
         String scriptName = null;
@@ -75,12 +84,12 @@ public class ZendScript extends PhpProgram {
      * @throws InvalidPhpProgramException if Zend script is not valid.
      */
     public static ZendScript getDefault() throws InvalidPhpProgramException {
-        String symfony = ZendOptions.getInstance().getZend();
-        String error = validate(symfony);
+        String zend = ZendOptions.getInstance().getZend();
+        String error = validate(zend);
         if (error != null) {
             throw new InvalidPhpProgramException(error);
         }
-        return new ZendScript(symfony);
+        return new ZendScript(zend);
     }
 
     /**
@@ -118,5 +127,28 @@ public class ZendScript extends PhpProgram {
 
     public static String validate(String command) {
         return new ZendScript(command).validate();
+    }
+
+    public boolean initProject(PhpModule phpModule) {
+        ZendCommandSupport commandSupport = ZendPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
+        ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand(CMD_INIT_PROJECT, CMD_INIT_PROJECT_ARGS);
+        if (processBuilder == null) {
+            return false;
+        }
+        ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
+        runService(processBuilder, executionDescriptor, commandSupport.getOutputTitle(CMD_INIT_PROJECT, CMD_INIT_PROJECT_ARGS_TITLE), false);
+        return ZendPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
+    }
+
+    private static void runService(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title, boolean warnUser) {
+        try {
+            executeAndWait(processBuilder, executionDescriptor, title);
+        } catch (ExecutionException ex) {
+            if (warnUser) {
+                UiUtils.processExecutionException(ex, getOptionsSubPath());
+            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
