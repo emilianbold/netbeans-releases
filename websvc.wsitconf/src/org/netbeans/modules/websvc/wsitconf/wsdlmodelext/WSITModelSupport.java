@@ -48,6 +48,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -645,7 +646,6 @@ public class WSITModelSupport {
             return;
         }
         traversedModels.add(modelFO);
-        
         Collection<Binding> importedBindings = model.getDefinitions().getBindings();
         bindings.addAll(importedBindings);
         
@@ -665,26 +665,36 @@ public class WSITModelSupport {
         WSDLModel model = c.getModel();
         save(model);
     }
-    
+
     public synchronized static void save(WSDLModel model) {
+        Set<FileObject> traversedModels = new HashSet();
+        save(model, traversedModels);
+    }
+    
+    private static void save(WSDLModel model, Set<FileObject> traversedModels) {
         if (model == null) {
             logger.log(Level.INFO, "Model cannot be null.");
             return;
         }
+        FileObject modelFO = Util.getFOForModel(model);
+        if (modelFO == null) {
+            logger.log(Level.INFO, "Cannot find fileobject in lookup for: " + model.getModelSource());
+        }
+        // avoid neverending recursion for recursive imports
+        if (traversedModels.contains(modelFO)) {
+            return;
+        }
+        traversedModels.add(modelFO);
         try {
             Definitions defs = model.getDefinitions();
             if (defs != null) {
                 Collection<Import> imports = defs.getImports();
                 for (Import i : imports) {
                     WSDLModel importedModel = i.getImportedWSDLModel();
-                    save(importedModel);
+                    save(importedModel, traversedModels);
                 }
 
-                FileObject wsdlFO = Utilities.getFileObject(model.getModelSource());
-                if (wsdlFO == null) {
-                    logger.log(Level.INFO, "Cannot find fileobject in lookup for: " + model.getModelSource());
-                }
-                DataObject wsdlDO = DataObject.find(wsdlFO);
+                DataObject wsdlDO = DataObject.find(modelFO);
                 if ((wsdlDO != null) && (wsdlDO.isModified())) {
                     SaveCookie wsdlSaveCookie = wsdlDO.getCookie(SaveCookie.class);
                     if(wsdlSaveCookie != null){
