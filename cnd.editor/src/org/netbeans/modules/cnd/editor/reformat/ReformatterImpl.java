@@ -47,6 +47,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import static org.netbeans.cnd.api.lexer.CppTokenId.*;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
+import org.netbeans.modules.cnd.editor.api.CodeStyle.VisibilityIndent;
 import org.netbeans.modules.cnd.editor.reformat.BracesStack.StatementKind;
 import org.netbeans.modules.cnd.editor.reformat.ContextDetector.OperatorKind;
 import org.netbeans.modules.cnd.editor.reformat.DiffLinkedList.DiffResult;
@@ -277,7 +278,7 @@ public class ReformatterImpl {
                                     switch (entry.getImportantKind()) {
                                         case CLASS: //("class", "keyword"), //C++
                                         case STRUCT: //("struct", "keyword"),
-                                            newLineBefore(true);
+                                            newLineBefore(IndentKind.PARENT);
                                     }
                                 }
                             }
@@ -342,12 +343,20 @@ public class ReformatterImpl {
                                 case STRUCT: //("struct", "keyword"),
                                     Token<CppTokenId> next = ts.lookNextImportant();
                                     if (next != null && next.id() == COLON) {
-                                        newLineBefore(true);
+                                        if (codeStyle.indentVisibility() == VisibilityIndent.NO_INDENT) {
+                                            newLineBefore(IndentKind.PARENT);
+                                        } else {
+                                            newLineBefore(IndentKind.HALF);
+                                        }
                                     } else if (next != null && next.id() == IDENTIFIER &&
                                                qtExtension.isQtObject() && qtExtension.isSlots(next)) {
                                         next = ts.lookNextImportant(2);
                                         if (next != null && next.id() == COLON) {
-                                            newLineBefore(true);
+                                            if (codeStyle.indentVisibility() == VisibilityIndent.NO_INDENT) {
+                                                newLineBefore(IndentKind.PARENT);
+                                            } else {
+                                                newLineBefore(IndentKind.HALF);
+                                            }
                                         }
                                     }
                                     break;
@@ -1672,13 +1681,13 @@ public class ReformatterImpl {
     private void newLine(Token<CppTokenId> previous, Token<CppTokenId> current,
             CodeStyle.BracePlacement where, boolean spaceBefore, int newLineAfter){
         if (where == CodeStyle.BracePlacement.NEW_LINE) {
-            newLineBefore(true);
+            newLineBefore(IndentKind.PARENT);
         } else if (where == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED) {
-            newLineBefore(true);
+            newLineBefore(IndentKind.PARENT);
         } else if (where == CodeStyle.BracePlacement.SAME_LINE) {
             if (ts.isFirstLineToken()){
                 if (!removeLineBefore(spaceBefore)){
-                    newLineBefore(true);
+                    newLineBefore(IndentKind.PARENT);
                 }
             } else {
                 spaceBefore(previous, spaceBefore);
@@ -1778,12 +1787,25 @@ public class ReformatterImpl {
         }
     }
     
-    private void newLineBefore(boolean indentParent) {
+    private static enum IndentKind {
+        PARENT,
+        HALF,
+        INDENT
+    }
+
+    private void newLineBefore(IndentKind indentKind) {
         int spaces;
-        if (indentParent) {
-            spaces = getParentIndent();
-        } else {
-            spaces = getIndent();
+        switch (indentKind) {
+            case PARENT:
+                spaces = getParentIndent();
+                break;
+            case HALF:
+                spaces = (getParentIndent()+getIndent())/2;
+                break;
+            case INDENT:
+            default:
+                spaces = getIndent();
+                break;
         }
         newLineBefore(spaces);
     }
