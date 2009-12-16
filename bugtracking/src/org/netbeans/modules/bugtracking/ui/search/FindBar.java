@@ -40,6 +40,7 @@ package org.netbeans.modules.bugtracking.ui.search;
 
 import java.awt.Component;
 import java.awt.event.MouseEvent;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -50,12 +51,16 @@ import javax.swing.text.JTextComponent;
  * @author Jan Stola
  */
 class FindBar extends javax.swing.JPanel {
+    private static final int MAX_SEARCH_MODEL_SIZE = 5;
     private FindSupport support;
     private boolean initialized;
+    private DefaultComboBoxModel lastSearchModel;
 
     public FindBar(FindSupport support) {
         this.support = support;
         initComponents();
+        lastSearchModel = new DefaultComboBoxModel();
+        findCombo.setModel(lastSearchModel);
         findCombo.setSelectedItem(""); // NOI18N
         initialized = true;
         addComboEditorListener();
@@ -275,6 +280,7 @@ class FindBar extends javax.swing.JPanel {
 
     private void findComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findComboActionPerformed
         if (initialized) {
+            updateComboModel();
             support.findNext();
         }
     }//GEN-LAST:event_findComboActionPerformed
@@ -297,10 +303,12 @@ class FindBar extends javax.swing.JPanel {
     }//GEN-LAST:event_highlightResultsChoiceActionPerformed
 
     private void findNextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findNextButtonActionPerformed
+        updateComboModel();
         support.findNext();
     }//GEN-LAST:event_findNextButtonActionPerformed
 
     private void findPreviousButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findPreviousButtonActionPerformed
+        updateComboModel();
         support.findPrevious();
     }//GEN-LAST:event_findPreviousButtonActionPerformed
 
@@ -326,6 +334,26 @@ class FindBar extends javax.swing.JPanel {
             JButton button = (JButton)src;
             button.setContentAreaFilled(over);
             button.setBorderPainted(over);
+        }
+    }
+
+    private void updateComboModel() {
+        String pattern = getPattern();
+        int idx = -1;
+        for (int i=0; i<lastSearchModel.getSize(); i++) {
+            if (pattern.equals(lastSearchModel.getElementAt(i))) {
+                idx = i;
+            }
+        }
+        if (idx != 0) {
+            if (idx != -1) {
+                lastSearchModel.removeElementAt(idx);
+            }
+            lastSearchModel.insertElementAt(pattern, 0);
+            if (lastSearchModel.getSize() > MAX_SEARCH_MODEL_SIZE) {
+                lastSearchModel.removeElementAt(MAX_SEARCH_MODEL_SIZE);
+            }
+            findCombo.setSelectedItem(pattern);
         }
     }
 

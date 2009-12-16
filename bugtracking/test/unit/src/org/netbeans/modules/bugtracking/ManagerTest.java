@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugtracking;
 
+import java.awt.Image;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -108,6 +109,16 @@ public class ManagerTest extends NbTestCase {
         }
 
         public Lookup getLookup() {
+            return Lookup.EMPTY;
+        }
+
+        @Override
+        public String getID() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Image getIcon() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
