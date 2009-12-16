@@ -91,7 +91,7 @@ public class ChatNotifications {
      */
     public synchronized void removeGroup(final String name) {
         Utilities.assertJid(name);
-        MessagingHandleImpl r = groupMessages.get(name);
+        MessagingHandleImpl r = groupMessages.get(StringUtils.parseName(name));
         if (r != null) {
             r.disposeNotification();
             r.notifyMessagesRead();

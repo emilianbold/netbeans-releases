@@ -255,7 +255,6 @@ public class KenaiConnection implements PropertyChangeListener {
             propertyChangeSupport.firePropertyChange(PROP_XMPP_STARTED, null, null);
             connect();
             initChats();
-            PresenceIndicator.getDefault().setStatus(Kenai.Status.ONLINE);
             isConnectionFailed = false;
         } catch (XMPPException ex) {
             isConnectionFailed = true;
@@ -491,7 +490,6 @@ public class KenaiConnection implements PropertyChangeListener {
                         privateMessageQueue.clear();
                         privateChats.clear();
                     }
-                    PresenceIndicator.getDefault().setStatus(Kenai.Status.LOGGED_IN);
                     ChatNotifications.getDefault().clearAll();
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
