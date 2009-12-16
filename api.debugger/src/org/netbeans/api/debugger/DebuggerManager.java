@@ -625,6 +625,27 @@ public final class DebuggerManager implements ContextProvider {
     }
 
     /**
+     * Creates a watch with its expression set to an initial value
+     * and add it at the specific position
+     *
+     * @param index the position at which the specified watch is to be inserted
+     * @param expr expression to watch for (the format is the responsibility
+     *    of the debugger plug-in implementation, but it is typically
+     *    a variable name).
+     * @return the new watch
+     * @throws ArrayIndexOutOfBoundsException if the index is out of range
+     *         <code>(index < 0 || index > getWatches().length)</code>
+     * @since 1.22
+     */
+    public Watch createWatch (int index, String expr) {
+        initWatches ();
+        Watch w = new Watch (expr);
+        watches.add (index, w);
+        fireWatchCreated (w);
+        return w;
+    }
+
+    /**
     * Gets all shared watches in the system.
     *
     * @return all watches
@@ -656,6 +677,42 @@ public final class DebuggerManager implements ContextProvider {
         fireWatchRemoved (w);
     }
 
+    /**
+     * Reorders watches with given permutation.
+     * @param permutation The permutation with the length of current watches list
+     * @throws IllegalArgumentException if the permutation is not valid permutation
+     * @since 1.22
+     */
+    public void reorderWatches(final int[] permutation) throws IllegalArgumentException {
+        synchronized (watches) {
+            if (permutation.length != watches.size()) {
+                throw new IllegalArgumentException("Permutation of length "+permutation.length+", but have "+watches.size()+" watches.");
+            }
+            checkPermutation(permutation);
+            Vector v = (Vector) watches.clone ();
+            for (int i = 0; i < v.size(); i++) {
+                watches.set(permutation[i], v.get(i));
+            }
+        }
+    }
+
+    private static void checkPermutation(int[] permutation) throws IllegalArgumentException {
+        int max = permutation.length;
+        int[] check = new int[max];
+        for (int i = 0; i < max; i++) {
+            int p = permutation[i];
+            if (p >= max) {
+                throw new IllegalArgumentException("Permutation "+Arrays.toString(permutation)+" is not a valid permutation, it contains element "+p+", which is bigger than the length of the permutation.");
+            }
+            if (p < 0) {
+                throw new IllegalArgumentException("Permutation "+Arrays.toString(permutation)+" is not a valid permutation, it contains element "+p+", which is negative.");
+            }
+            if (check[p] != 0) {
+                throw new IllegalArgumentException("Permutation "+Arrays.toString(permutation)+" is not a valid permutation, it contains element "+p+" twice or more times.");
+            }
+            check[p] = 1;
+        }
+    }
     
     // listenersMap ...............................................................
 
