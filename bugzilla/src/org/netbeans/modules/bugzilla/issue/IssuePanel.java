@@ -80,6 +80,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicTextFieldUI;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -135,10 +136,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     public IssuePanel() {
         initComponents();
-        reportedField.setBackground(getBackground());
-        modifiedField.setBackground(getBackground());
-        resolutionField.setBackground(getBackground());
-        productField.setBackground(getBackground());
+        updateReadOnlyField(reportedField);
+        updateReadOnlyField(modifiedField);
+        updateReadOnlyField(resolutionField);
+        updateReadOnlyField(productField);
         messagePanel.setBackground(getBackground());
         Font font = headerLabel.getFont();
         headerLabel.setFont(font.deriveFont((float)(font.getSize()*1.7)));
@@ -167,6 +168,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         attachmentsLabel.setLabelFor(attachmentsPanel);
 
         BugtrackingUtil.issue163946Hack(scrollPane1);
+    }
+
+    private void updateReadOnlyField(JTextField field) {
+        if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
+            field.setUI(new BasicTextFieldUI());
+        }
+        field.setBackground(getBackground());
     }
 
     void reloadFormInAWT(final boolean force) {
