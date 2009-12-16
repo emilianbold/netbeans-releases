@@ -295,6 +295,7 @@ public abstract class FrameworkCommandSupport {
         FrameworkCommandChooser.open(this);
     }
 
+    // XXX remove command, use only arguments
     private ExternalProcessBuilder createCommandInternal(final String command, final String[] arguments, boolean warnUser) {
         ExternalProcessBuilder processBuilder = getProcessBuilder(warnUser);
         if (processBuilder == null) {
