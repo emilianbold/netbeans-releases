@@ -67,7 +67,6 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -182,13 +181,11 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
         }
         final CommandsLineProcessor lineProcessor = new CommandsLineProcessor();
         ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL)
-                .outProcessorFactory(new ProxyInputProcessorFactory(PhpProgram.ANSI_STRIPPING_FACTORY, new ExecutionDescriptor.InputProcessorFactory() {
-
+                .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                // we are sure this will be invoked at most once
-                return InputProcessors.bridge(lineProcessor);
+                return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
             }
-        }));
+        });
 
         freshCommands = Collections.emptyList();
         ExecutionService service = ExecutionService.newService(processBuilder, descriptor, "help"); // NOI18N

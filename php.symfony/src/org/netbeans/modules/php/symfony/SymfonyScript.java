@@ -56,7 +56,6 @@ import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport.ProxyInputProcessorFactory;
 import org.netbeans.modules.php.symfony.commands.SymfonyCommandSupport;
 import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
 import org.openide.DialogDisplayer;
@@ -194,11 +193,11 @@ public class SymfonyScript extends PhpProgram {
         final HelpLineProcessor lineProcessor = new HelpLineProcessor();
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .inputOutput(InputOutput.NULL)
-                .outProcessorFactory(new ProxyInputProcessorFactory(ANSI_STRIPPING_FACTORY, new ExecutionDescriptor.InputProcessorFactory() {
+                .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                return InputProcessors.bridge(lineProcessor);
+                return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
             }
-        }));
+        });
         runService(processBuilder, executionDescriptor, "getting help for: " + command.getPreview(), true); // NOI18N
         return lineProcessor.getHelp();
     }
