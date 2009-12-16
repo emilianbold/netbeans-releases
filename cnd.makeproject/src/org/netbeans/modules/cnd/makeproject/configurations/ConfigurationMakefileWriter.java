@@ -53,7 +53,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -76,18 +75,10 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -100,18 +91,37 @@ public class ConfigurationMakefileWriter {
     }
 
     public void write() {
-        Collection<MakeConfiguration> protectedConfs = getProtectedConfigurations();
-        cleanup(protectedConfs);
+        Collection<MakeConfiguration> okConfs = getOKConfigurations();
+        cleanup(okConfs);
         writeMakefileImpl();
-        Configuration[] confs = projectDescriptor.getConfs().getConfs();
-        for (int i = 0; i < confs.length; i++) {
-            MakeConfiguration conf = (MakeConfiguration) confs[i];
-            if (!protectedConfs.contains(conf)) {
+        for (MakeConfiguration conf : okConfs) {
+            writeMakefileConf(conf);
+            writePackagingScript(conf);
+        }
+        writeMakefileVariables(projectDescriptor);
+    }
+
+    public void writeMissingMakefiles() {
+        Collection<MakeConfiguration> okConfs = getOKConfigurations();
+        long xmlFileTimeStamp = new File(projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "configurations.xml").lastModified();
+        for (MakeConfiguration conf : okConfs) {
+            File file = new File(getMakefilePath(conf));
+            if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {
                 writeMakefileConf(conf);
+            }
+            file = new File(getPackageScriptPath(conf));
+            if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {
                 writePackagingScript(conf);
             }
         }
-        writeMakefileVariables(projectDescriptor);
+    }
+
+    private String getMakefilePath(MakeConfiguration conf) {
+        return projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Makefile-" + conf.getName() + ".mk"; // NOI18N
+    }
+
+    private String getPackageScriptPath(MakeConfiguration conf) {
+        return projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Package-" + conf.getName() + ".bash"; // NOI18N
     }
 
     /**
@@ -119,8 +129,9 @@ public class ConfigurationMakefileWriter {
      * and Package script should not be changed. Reason for protecting
      * a configuration is missing tool collection. See IZ #168540.
      */
-    private Collection<MakeConfiguration> getProtectedConfigurations() {
-        List<MakeConfiguration> result = new ArrayList<MakeConfiguration>();
+    private Collection<MakeConfiguration> getOKConfigurations() {
+        List<MakeConfiguration> ok = new ArrayList<MakeConfiguration>();
+        List<MakeConfiguration> noCompilerSet = new ArrayList<MakeConfiguration>();
         List<MakeConfiguration> wrongPlatform = new ArrayList<MakeConfiguration>();
         Configuration[] confs = projectDescriptor.getConfs().getConfs();
         for (int i = 0; i < confs.length; i++) {
@@ -129,30 +140,32 @@ public class ConfigurationMakefileWriter {
                     CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform() != conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue()) {
                 // add configurations if local host and target platform are different (don't have the right compiler set on this platform)
                 wrongPlatform.add(conf);
-                result.add(conf);
             }
             else if (conf.getCompilerSet().getCompilerSet() == null) {
                 // add configurations with unknown compiler sets
-                result.add(conf);
+                noCompilerSet.add(conf);
+            }
+            else {
+                ok.add(conf);
             }
         }
-        if (!wrongPlatform.isEmpty()) {
-            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(HostInfoUtils.LOCALHOST);
-            int platformID = CompilerSetManager.getDefault(execEnv).getPlatform();
-            Platform platform = Platforms.getPlatform(platformID);
-            StringBuffer list = new StringBuffer();
-            for (MakeConfiguration c : wrongPlatform) {
-                list.append(getString("CONF", c.getName(), c.getDevelopmentHost().getBuildPlatformConfiguration().getName()) + "\n"); // NOI18N
-            }
-            final String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    NotifyDescriptor.Message nd = new DialogDescriptor.Message(msg);
-                    DialogDisplayer.getDefault().notify(nd);
-                }
-            });
-        }
-        return result;
+//        if (warningDialog && !wrongPlatform.isEmpty()) {
+//            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(HostInfoUtils.LOCALHOST);
+//            int platformID = CompilerSetManager.getDefault(execEnv).getPlatform();
+//            Platform platform = Platforms.getPlatform(platformID);
+//            StringBuffer list = new StringBuffer();
+//            for (MakeConfiguration c : wrongPlatform) {
+//                list.append(getString("CONF", c.getName(), c.getDevelopmentHost().getBuildPlatformConfiguration().getName()) + "\n"); // NOI18N
+//            }
+//            final String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
+//            SwingUtilities.invokeLater(new Runnable() {
+//                public void run() {
+//                    NotifyDescriptor.Message nd = new DialogDescriptor.Message(msg);
+//                    DialogDisplayer.getDefault().notify(nd);
+//                }
+//            });
+//        }
+        return ok;
     }
 
     /**
@@ -161,7 +174,16 @@ public class ConfigurationMakefileWriter {
      *
      * @param protectedConfs
      */
-    private void cleanup(Collection<MakeConfiguration> protectedConfs) {
+    private void cleanup(Collection<MakeConfiguration> okConfs) {
+        List<MakeConfiguration> protectedConfs = new ArrayList<MakeConfiguration>();
+        Configuration[] confs = projectDescriptor.getConfs().getConfs();
+        for (Configuration c : projectDescriptor.getConfs().getConfs()) {
+            MakeConfiguration conf = (MakeConfiguration)c;
+            if (!okConfs.contains(conf)) {
+               protectedConfs.add(conf);
+            }
+        }
+
         File folder = new File(projectDescriptor.getBaseDir() + '/' + "nbproject"); // UNIX path // NOI18N
         File[] children = folder.listFiles();
         for (int i = 0; i < children.length; i++) {
@@ -169,12 +191,12 @@ public class ConfigurationMakefileWriter {
             if (filename.startsWith("Makefile-") || filename.startsWith("Package-")) { // NOI18N
                 boolean protect = false;
                 for (MakeConfiguration conf : protectedConfs) {
-                    if (filename.equals("Makefile-" + conf.getName() + ".mk") // NOI18N
-                            || filename.equals("Package-" + conf.getName() + ".bash")) { // NOI18N
-                        protect = true;
-                        break;
+                        if (filename.equals("Makefile-" + conf.getName() + ".mk") // NOI18N
+                                || filename.equals("Package-" + conf.getName() + ".bash")) { // NOI18N
+                            protect = true;
+                            break;
+                        }
                     }
-                }
                 if (!protect) {
                     children[i].delete();
                 }
