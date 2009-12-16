@@ -65,27 +65,27 @@ public class HelpLineProcessorTest extends NbTestCase {
         assertEquals(10, commands.size());
 
         FrameworkCommand command = commands.get(0);
-        assertEquals("help", command.getCommand());
+        assertEquals("help", command.getCommands()[0]);
         assertEquals("help", command.getDisplayName());
         assertEquals("Displays help for a task (h)", command.getDescription());
 
         command = commands.get(1);
-        assertEquals("list", command.getCommand());
+        assertEquals("list", command.getCommands()[0]);
         assertEquals("list", command.getDisplayName());
         assertEquals("Lists tasks", command.getDescription());
 
         command = commands.get(2);
-        assertEquals("app:routes", command.getCommand());
+        assertEquals("app:routes", command.getCommands()[0]);
         assertEquals("app:routes", command.getDisplayName());
         assertEquals("Displays current routes for an application", command.getDescription());
 
         command = commands.get(5);
-        assertEquals("configure:database", command.getCommand());
+        assertEquals("configure:database", command.getCommands()[0]);
         assertEquals("configure:database", command.getDisplayName());
         assertEquals("Configure database DSN", command.getDescription());
 
         command = commands.get(9);
-        assertEquals("test:unit", command.getCommand());
+        assertEquals("test:unit", command.getCommands()[0]);
         assertEquals("test:unit", command.getDisplayName());
         assertEquals("Launches unit tests (test-unit)", command.getDescription());
     }
