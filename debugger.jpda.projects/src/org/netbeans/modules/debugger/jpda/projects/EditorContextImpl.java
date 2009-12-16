@@ -1543,7 +1543,7 @@ public class EditorContextImpl extends EditorContext {
             CompilationController ci = getPreferredCompilationController(fo, js);
             //t2 = System.nanoTime();
             final ParseExpressionTask task = new ParseExpressionTask(expression, line, context);
-            if (SourceUtils.isScanInProgress()) {
+            if (fo != null && SourceUtils.isScanInProgress()) {
                 final StyledDocument doc = findDocument(fo);
                 if (doc == null) {
                     return null;
