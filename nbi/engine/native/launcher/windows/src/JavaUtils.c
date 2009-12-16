@@ -353,7 +353,7 @@ char * getJavaVersionFormatted(const JavaProperties * javaProps) {
                 result = appendString(result, updateStr);
                 FREE(updateStr);
             }
-            if(strncmp(version->build, "", 127)!=0) {
+            if(getLengthA(version->build) > 0) {
                 result = appendString(result, "-");
                 result = appendString(result, version->build);
             }
@@ -391,7 +391,7 @@ void searchCurrentJavaRegistry(LauncherProperties * props, BOOL access64key) {
     DWORD i=0;
     WCHAR ** keys = JAVA_REGISTRY_KEYS;
     DWORD k=0;
-    WCHAR buffer [MAX_LEN_VALUE_NAME];
+    WCHAR * buffer = newpWCHAR(MAX_LEN_VALUE_NAME);
     HKEY rootKeys [2] = {HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER};
     DWORD rootKeysNumber = sizeof(rootKeys)/sizeof(HKEY);
     DWORD keysNumber = sizeof(JAVA_REGISTRY_KEYS)/sizeof(WCHAR*);
@@ -427,6 +427,7 @@ void searchCurrentJavaRegistry(LauncherProperties * props, BOOL access64key) {
                     trySetCompatibleJava(javaHome, props);
                     FREE(javaHome);
                     if(props->java!=NULL) {
+                        FREE(buffer);
                         return;
                     }
                 }
@@ -484,6 +485,7 @@ void searchCurrentJavaRegistry(LauncherProperties * props, BOOL access64key) {
             }
         }
     }
+    FREE(buffer);
     return;
 }
 
