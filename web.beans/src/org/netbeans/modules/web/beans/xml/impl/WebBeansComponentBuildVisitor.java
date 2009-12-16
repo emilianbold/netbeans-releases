@@ -44,6 +44,7 @@ import javax.xml.namespace.QName;
 
 import org.netbeans.modules.web.beans.xml.Alternatives;
 import org.netbeans.modules.web.beans.xml.BeanClass;
+import org.netbeans.modules.web.beans.xml.BeanClassContainer;
 import org.netbeans.modules.web.beans.xml.Beans;
 import org.netbeans.modules.web.beans.xml.Decorators;
 import org.netbeans.modules.web.beans.xml.Interceptors;
@@ -88,12 +89,14 @@ class WebBeansComponentBuildVisitor implements WebBeansVisitor {
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Interceptors)
      */
     public void visit( Interceptors interceptors ) {
+        visitClassContainer( interceptors );
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Decorators)
      */
     public void visit( Decorators decorators ) {
+        visitClassContainer( decorators );
     }
 
     /* (non-Javadoc)
@@ -136,6 +139,13 @@ class WebBeansComponentBuildVisitor implements WebBeansVisitor {
             context.accept( this );
         }
         return myResult;
+    }
+    
+    
+    private void visitClassContainer( BeanClassContainer container ) {
+        if ( isAcceptable( WebBeansElements.CLASS)){
+            setResult( new BeanClassImpl(getModel(), getElement()));
+        }        
     }
     
     private WebBeansModelImpl getModel(){
