@@ -656,6 +656,8 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
         updateExtensionList();
         if (!getModified()) {
+            // Always check for missing or out-of-date makefiles. They may not have been generated or have been removed.
+            new ConfigurationMakefileWriter(this).writeMissingMakefiles();
             return true;
         }
 
