@@ -103,7 +103,7 @@ public class ConfigurationMakefileWriter {
 
     public void writeMissingMakefiles() {
         Collection<MakeConfiguration> okConfs = getOKConfigurations();
-        long xmlFileTimeStamp = new File(projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "configurations.xml").lastModified();
+        long xmlFileTimeStamp = new File(projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "configurations.xml").lastModified(); // NOI18N
         for (MakeConfiguration conf : okConfs) {
             File file = new File(getMakefilePath(conf));
             if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {
