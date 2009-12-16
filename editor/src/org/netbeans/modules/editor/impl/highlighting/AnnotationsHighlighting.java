@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.editor.impl.highlighting;
 
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -149,14 +152,14 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
 
         document.render(new Runnable() {
             public void run() {
-                bag.setHighlights(b);
+                bag.setHighlights(new FilteringHighlightsSequence(b.getHighlights(0, document.getLength())));
             }
         });
     }
 
     private void refreshLine(int line, OffsetsBag b, int lineStartOffset, int lineEndOffset) {
         LOG.log(Level.FINE, "Refreshing line {0}", line); //NOI18N
-        
+
         AnnotationDesc [] allPassive = annotations.getPasiveAnnotations(line);
         if (allPassive != null) {
             for(AnnotationDesc passive : allPassive) {
@@ -209,4 +212,43 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
         }
     }
 
+    private static final class FilteringHighlightsSequence implements HighlightsSequence {
+        private final HighlightsSequence delegate;
+
+        public FilteringHighlightsSequence(HighlightsSequence delegate) {
+            this.delegate = delegate;
+        }
+
+        public boolean moveNext() {
+            return delegate.moveNext();
+        }
+
+        public int getStartOffset() {
+            return delegate.getStartOffset();
+        }
+
+        public int getEndOffset() {
+            return delegate.getEndOffset();
+        }
+
+        public AttributeSet getAttributes() {
+            AttributeSet attrs = delegate.getAttributes();
+            List<Object> attrsList = new ArrayList<Object>();
+
+            for (Enumeration<?> en = attrs.getAttributeNames(); en.hasMoreElements(); ) {
+                Object key = en.nextElement();
+                Object v = attrs.getAttribute(key);
+
+                if (v != null) {
+                    attrsList.add(key);
+                    attrsList.add(v);
+                }
+            }
+
+            AttributeSet filtered = AttributesUtilities.createImmutable(attrsList.toArray(new Object[attrsList.size()]));
+
+            return filtered;
+        }
+
+    }
 }
