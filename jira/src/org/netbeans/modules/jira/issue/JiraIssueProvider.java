@@ -73,6 +73,7 @@ import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
@@ -232,9 +233,10 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
             // kenai issues need instantiated repository so they can be shown in tasklist
             // but some (e.g. private kenai projects) cannot be instantiated without being logged in. So kenai issues need to be notified
             // when user loggs in so the repository can be created.
+            final Kenai kenai = (Kenai)evt.getSource();
             rp.post(new Runnable() { // do not block here
                 public void run() {
-                    notifyKenaiLogin();
+                    notifyKenaiLogin(kenai);
                 }
             });
         }
@@ -459,8 +461,8 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
             }
         }
         if (kenaiIssueAdded) {
-            Kenai.getDefault().removePropertyChangeListener(this);
-            Kenai.getDefault().addPropertyChangeListener(this);
+            KenaiManager.getDefault().removePropertyChangeListener(this);
+            KenaiManager.getDefault().addPropertyChangeListener(this);
         }
     }
 
@@ -543,11 +545,15 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
      * Notifies all kenai issues that user has logged on. Private kenai projects cannot be instantiated without being logged in
      * and issue tracking repository cannot be created.
      */
-    private void notifyKenaiLogin () {
+    private void notifyKenaiLogin (Kenai notifiedKenai) {
         synchronized (LOCK) {
             for (JiraLazyIssue issue : watchedIssues.values()) {
                 if (issue instanceof KenaiJiraLazyIssue) {
-                    ((KenaiJiraLazyIssue) issue).notifyKenaiLogin();
+                    Kenai issueKenai = KenaiUtil.getKenai(issue.getUrl().toString());
+                    assert issueKenai != null;
+                    if(notifiedKenai.equals(issueKenai)) {
+                        ((KenaiJiraLazyIssue) issue).notifyKenaiLogin();
+                    }
                 }
             }
         }
@@ -786,7 +792,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
             if (loginStatusChanged) {
                 try {
                     LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for: " + projectName);
-                    repo = KenaiUtil.getKenaiBugtrackingRepository(projectName);
+                    repo = KenaiUtil.getKenaiBugtrackingRepository(getUrl().toString(), projectName);
                 } catch (KenaiException ex) {
                     LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for " + projectName, ex);
                 }

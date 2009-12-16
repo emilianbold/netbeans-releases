@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.versioning.util;
 
-import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -50,18 +49,12 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JLabel;
-import javax.swing.KeyStroke;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.text.NbDocument;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -92,7 +85,7 @@ public abstract class VCSKenaiSupport {
      *
      * @return
      */
-    public abstract PasswordAuthentication getPasswordAuthentication();
+    public abstract PasswordAuthentication getPasswordAuthentication(String url);
 
     /**
      * Returns an instance of PasswordAuthentication holding the actuall
@@ -101,7 +94,7 @@ public abstract class VCSKenaiSupport {
      * @param forceLogin opens a login dialog is user not logged in
      * @return
      */
-    public abstract PasswordAuthentication getPasswordAuthentication(boolean forceLogin);
+    public abstract PasswordAuthentication getPasswordAuthentication(String url, boolean forceLogin);
 
     /**
      * Returns true if the given url belongs to a Kenai project, otherwise false.
@@ -130,7 +123,7 @@ public abstract class VCSKenaiSupport {
      * Determines if the user is logged into kenai
      * @return true if user is logged into kenai otherwise false
      */
-    public abstract boolean isLogged ();
+    public abstract boolean isLogged (String url);
 
     /**
      * Returns a {@link KenaiUser} with the given name
