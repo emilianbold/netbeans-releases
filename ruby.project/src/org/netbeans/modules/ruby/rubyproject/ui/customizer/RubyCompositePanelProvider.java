@@ -44,6 +44,7 @@ package org.netbeans.modules.ruby.rubyproject.ui.customizer;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -56,6 +57,7 @@ public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCa
     private static final String SOURCES = "Sources"; // NOI18N
     
     private static final String BUILD = "Build"; // NOI18N
+    private static final String GEMS = "Gems"; // NOI18N
     public static final String RUN = "Run"; // NOI18N
     
     private final String name;
@@ -86,6 +88,12 @@ public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCa
                     bundle.getString( "LBL_Config_Run" ), // NOI18N
                     null,
                     (ProjectCustomizer.Category[])null);
+        } else if (GEMS.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    GEMS,
+                    bundle.getString( "LBL_Config_Gems" ), // NOI18N
+                    null,
+                    (ProjectCustomizer.Category[])null);
         }
         assert toReturn != null : "No category for name:" + name;
         return toReturn;
@@ -98,6 +106,9 @@ public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCa
             return new CustomizerSources(uiProps);
         } else if (RUN.equals(nm)) {
             return new CustomizerRun(uiProps);
+        } else if (GEMS.equals(nm)) {
+            RubyBaseProject project = context.lookup(RubyBaseProject.class);
+            return new GemsPanel(uiProps, project);
         }
         return new JPanel();
 
@@ -113,5 +124,9 @@ public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCa
 
     public static RubyCompositePanelProvider createRun() {
         return new RubyCompositePanelProvider(RUN);
+    }
+
+    public static RubyCompositePanelProvider createGems() {
+        return new RubyCompositePanelProvider(GEMS);
     }
 }
