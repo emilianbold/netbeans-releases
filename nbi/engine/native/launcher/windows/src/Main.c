@@ -60,7 +60,8 @@ HWND hwndProgressTitle = NULL;
 HINSTANCE globalInstance = NULL;
 double totalProgressSize = 0;
 double currentProgressSize = 0;
-double steps = 1000;
+long steps = 1000;
+long lastCheckedStep = 0;
 int iCmdShowGlobal = 0;
 
 HANDLE initializationSuccess = NULL;
@@ -361,10 +362,13 @@ DWORD isTerminated(LauncherProperties * props) {
 void addProgressPosition(LauncherProperties * props, DWORD add) {
     if(isSilent(props)) return;
     if ( add > 0 ) {
-        double pos = 0;
+        double pos = 0;        
         currentProgressSize += (double) add;
         pos = currentProgressSize / totalProgressSize;
-        SendMessage(hwndPB, PBM_SETPOS, (long) pos, 0);
+        while((double) ((double)lastCheckedStep + 1.0) < pos) {
+            lastCheckedStep ++;
+        }
+        SendMessage(hwndPB, PBM_SETPOS, lastCheckedStep, 0);
     }
 }
 
@@ -372,6 +376,7 @@ void setProgressRange(LauncherProperties * props, int64t * range) {
     if(isSilent(props)) return;
     totalProgressSize = int64ttoDouble(range) / steps;
     currentProgressSize = 0;
+    lastCheckedStep = 0;
     SendMessage(hwndPB, PBM_SETRANGE, 0, MAKELPARAM(0, steps));
     SendMessage(hwndPB, PBM_SETSTEP, 1, 0);
 }
@@ -471,7 +476,7 @@ void showMessageW(LauncherProperties * props, const WCHAR* message, const DWORD 
     }
 }
 
-
+/*
 void showMessageA(LauncherProperties * props, const char* message, const DWORD varArgsNumber, ...) {
     DWORD totalLength = getLengthA(message);
     va_list ap;
@@ -499,7 +504,7 @@ void showMessageA(LauncherProperties * props, const char* message, const DWORD v
     }
     
 }
-
+*/
 /*
  * WCHAR* GetStringFromStringTable( UINT uStringID ) {
  * WCHAR   *pwchMem, *pwchCur;
