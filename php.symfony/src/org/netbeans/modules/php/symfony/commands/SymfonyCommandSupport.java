@@ -96,7 +96,7 @@ public final class SymfonyCommandSupport extends FrameworkCommandSupport {
 
     @Override
     public void runCommand(CommandDescriptor commandDescriptor) {
-        Callable<Process> callable = createCommand(commandDescriptor.getFrameworkCommand().getCommand(), commandDescriptor.getCommandParams());
+        Callable<Process> callable = createCommand(commandDescriptor.getFrameworkCommand().getCommands(), commandDescriptor.getCommandParams());
         ExecutionDescriptor descriptor = getDescriptor();
         String displayName = getOutputTitle(commandDescriptor);
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
