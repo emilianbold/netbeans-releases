@@ -86,7 +86,9 @@ import org.openide.util.Utilities;
     }
 
     @Override
+    @Deprecated
     public int getPlatform() {
+        assert false : "Unsupported method, use HostInfoUtils or PlatformInfo";
         return CompilerSetUtils.computeLocalPlatform();
     }
 
