@@ -43,14 +43,20 @@ import java.io.File;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.zend.commands.ZendCommand;
 import org.netbeans.modules.php.zend.commands.ZendCommandSupport;
 import org.netbeans.modules.php.zend.ui.options.ZendOptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.windows.InputOutput;
 
 /**
  * @author Tomas Mysik
@@ -106,6 +112,26 @@ public class ZendScript extends PhpProgram {
         return OPTIONS_SUB_PATH;
     }
 
+    public static String getHelp(PhpModule phpModule, ZendCommand zendCommand) {
+        assert phpModule != null;
+        assert zendCommand != null;
+
+        FrameworkCommandSupport commandSupport = ZendPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
+        ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand(zendCommand.getCommands(), "?"); // NOI18N
+        assert processBuilder != null;
+
+        final HelpLineProcessor lineProcessor = new HelpLineProcessor();
+        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL)
+                .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
+            }
+        });
+        runService(processBuilder, executionDescriptor, "getting help for: " + zendCommand.getPreview(), true); // NOI18N
+        return lineProcessor.getHelp();
+    }
+
     @Override
     public String validate() {
         if (!StringUtils.hasText(getProgram())) {
@@ -149,6 +175,25 @@ public class ZendScript extends PhpProgram {
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
+        }
+    }
+
+    static class HelpLineProcessor implements LineProcessor {
+        private final StringBuilder buffer = new StringBuilder();
+
+        public void processLine(String line) {
+            buffer.append(line);
+            buffer.append("\n"); // NOI18N
+        }
+
+        public void reset() {
+        }
+
+        public void close() {
+        }
+
+        public String getHelp() {
+            return buffer.toString().trim() + "\n"; // NOI18N
         }
     }
 }

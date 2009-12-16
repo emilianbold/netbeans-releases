@@ -40,25 +40,39 @@
 package org.netbeans.modules.php.zend.commands;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.zend.ZendScript;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * @author Tomas Mysik
  */
 public class ZendCommandSupport extends FrameworkCommandSupport {
+    static final Logger LOGGER = Logger.getLogger(ZendCommandSupport.class.getName());
+
+    private static final String SEPARATOR = ":NB:"; // NOI18N
 
     public ZendCommandSupport(PhpModule phpModule) {
         super(phpModule);
@@ -71,7 +85,7 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
 
     @Override
     public void runCommand(CommandDescriptor commandDescriptor) {
-        Callable<Process> callable = createCommand(commandDescriptor.getFrameworkCommand().getCommand(), commandDescriptor.getCommandParams());
+        Callable<Process> callable = createCommand(commandDescriptor.getFrameworkCommand().getCommands(), commandDescriptor.getCommandParams());
         ExecutionDescriptor descriptor = getDescriptor();
         String displayName = getOutputTitle(commandDescriptor);
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
@@ -113,6 +127,67 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
 
     @Override
     protected List<FrameworkCommand> getFrameworkCommandsInternal() {
-        return Collections.emptyList();
+        ExternalProcessBuilder processBuilder = createCommand("show", "nb-commands", SEPARATOR); // NOI18N
+        if (processBuilder == null) {
+            return null;
+        }
+        final CommandsLineProcessor lineProcessor = new CommandsLineProcessor();
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL)
+                .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
+            }
+        });
+
+        List<FrameworkCommand> freshCommands = Collections.emptyList();
+        ExecutionService service = ExecutionService.newService(processBuilder, descriptor, "help"); // NOI18N
+        Future<Integer> task = service.run();
+        try {
+            if (task.get().intValue() == 0) {
+                freshCommands = lineProcessor.getCommands();
+            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return freshCommands;
+    }
+
+    class CommandsLineProcessor implements LineProcessor {
+
+        // @GuardedBy(commands)
+        private final List<FrameworkCommand> commands = new LinkedList<FrameworkCommand>();
+
+        public void processLine(String line) {
+            if (!StringUtils.hasText(line)) {
+                return;
+            }
+            String trimmed = line.trim();
+            List<String> exploded = StringUtils.explode(trimmed, SEPARATOR);
+            assert exploded.size() >= 1 : exploded;
+            String command = exploded.get(0);
+            String description = ""; // NOI18N
+            if (exploded.size() > 1) {
+                description = exploded.get(1);
+            }
+            synchronized (commands) {
+                commands.add(new ZendCommand(phpModule, StringUtils.explode(command, " ").toArray(new String[0]), description, command)); // NOI18N
+            }
+        }
+
+        public List<FrameworkCommand> getCommands() {
+            List<FrameworkCommand> copy = null;
+            synchronized (commands) {
+                copy = new ArrayList<FrameworkCommand>(commands);
+            }
+            return copy;
+        }
+
+        public void close() {
+        }
+
+        public void reset() {
+        }
     }
 }
