@@ -213,10 +213,10 @@
                         <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
                         <recursive/>
                     </test-dependency>
-                    <!--test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.csl.api</code-name-base>
                         <recursive/>
-                    </test-dependency-->
+                    </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.projectui</code-name-base>
                     </test-dependency>
