@@ -72,4 +72,10 @@ public abstract class Dashboard {
      */
     public abstract void removePropertyChangeListener(PropertyChangeListener listener);
 
+    /**
+     * currently visible kenai
+     * @return
+     */
+    public abstract Kenai getKenai();
+
 }

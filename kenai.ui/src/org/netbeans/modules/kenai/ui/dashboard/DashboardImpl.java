@@ -202,6 +202,14 @@ public final class DashboardImpl extends Dashboard {
         setKenai(kenai);
     }
 
+    /**
+     * currently visible kenai instance
+     * @return
+     */
+    public Kenai getKenai() {
+        return kenai;
+    }
+
     public static DashboardImpl getInstance() {
         return Holder.theInstance;
     }
