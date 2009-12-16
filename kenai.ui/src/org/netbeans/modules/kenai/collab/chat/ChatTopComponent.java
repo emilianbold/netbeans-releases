@@ -395,34 +395,37 @@ public class ChatTopComponent extends TopComponent {
 
     private boolean initInProgress = false;
     private void putChats() {
-        initInProgress =true;
-        for (KenaiConnection kec: KenaiConnection.getAllInstances()) {
-            final Collection<MultiUserChat> chs = kec.getChats();
-            if (chs.size() == 1) {
-                final MultiUserChat next = chs.iterator().next();
-                ChatPanel chatPanel = new ChatPanel(next);
-                addChat(chatPanel);
-            } else if (chs.size() != 0) {
-                String s = prefs.get(kec.getKenai().getUrl().getHost() + KENAI_OPEN_CHATS_PREF + kec.getKenai().getPasswordAuthentication().getUserName(), ""); // NOI18N
-                if (s.length() > 1) {
-                    ChatPanel chatPanel = null;
-                    for (String chat : s.split(",")) { // NOI18N
-                        MultiUserChat muc = kec.getChat(chat);
-                        if (muc != null) {
-                            chatPanel = new ChatPanel(muc);
-                            addChat(chatPanel);
-                        } else {
-                            Logger.getLogger(ChatTopComponent.class.getName()).warning("Cannot find chat " + chat);
+        initInProgress = true;
+        try {
+            for (KenaiConnection kec : KenaiConnection.getAllInstances()) {
+                final Collection<MultiUserChat> chs = kec.getChats();
+                if (chs.size() == 1) {
+                    final MultiUserChat next = chs.iterator().next();
+                    ChatPanel chatPanel = new ChatPanel(next);
+                    addChat(chatPanel);
+                } else if (chs.size() != 0) {
+                    String s = prefs.get(kec.getKenai().getUrl().getHost() + KENAI_OPEN_CHATS_PREF + kec.getKenai().getPasswordAuthentication().getUserName(), ""); // NOI18N
+                    if (s.length() > 1) {
+                        ChatPanel chatPanel = null;
+                        for (String chat : s.split(",")) { // NOI18N
+                            MultiUserChat muc = kec.getChat(chat);
+                            if (muc != null) {
+                                chatPanel = new ChatPanel(muc);
+                                addChat(chatPanel);
+                            } else {
+                                Logger.getLogger(ChatTopComponent.class.getName()).warning("Cannot find chat " + chat);
+                            }
                         }
-                    }
-                    if (chatPanel != null) {
-                        ChatNotifications.getDefault().removeGroup(chatPanel.getName());
+                        if (chatPanel != null) {
+                            ChatNotifications.getDefault().removeGroup(chatPanel.getName());
+                        }
                     }
                 }
             }
+            validate();
+        } finally {
+            initInProgress = false;
         }
-        validate();
-        initInProgress =false;
     }
 
     /** This method is called from within the constructor to
