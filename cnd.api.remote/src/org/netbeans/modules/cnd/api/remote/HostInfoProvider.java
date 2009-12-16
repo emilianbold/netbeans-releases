@@ -66,6 +66,7 @@ public abstract class HostInfoProvider {
      */
     @Deprecated
     public static int getPlatform(ExecutionEnvironment execEnv) {
+        assert false : "Unsupported method, use HostInfoUtils or PlatformInfo";
         return getDefault(execEnv).getPlatform();
     }
 
