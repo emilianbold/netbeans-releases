@@ -51,6 +51,7 @@ import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.codecoverage.RubyCoverageProvider;
 import org.netbeans.modules.ruby.railsprojects.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.ruby.railsprojects.classpath.RequiredGems;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.railsprojects.ui.RailsLogicalViewProvider;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.CustomizerProviderImpl;
@@ -114,7 +115,8 @@ public class RailsProject extends RubyBaseProject {
             spp,
             new RailsActionProvider( this, this.updateHelper ),
             new RailsLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
-            new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
+            new RequiredGems(this),
+            new ClassPathProviderImpl(this, this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             projectOpenedHook,
             sources,
