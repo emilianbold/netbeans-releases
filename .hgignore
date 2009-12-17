@@ -86,10 +86,6 @@ derby\.log
 ^java.editor/test/unit/src/org/netbeans/modules/editor/java/data/.*\.jar$
 ^java.helpset/javahelp/org/netbeans/modules/java/helpset/docs/gui/gui_template\.html$
 ^java.navigation/test/run\.sh$
-^jellytools/jelly2-nb\.jar$
-^jellytools/jelly2-nb-src\.zip$
-^jellytools/test/runSingle\.sh$
-^jellytools/test/run\.sh$
 ^jellytools/test/qa-functional/data/SampleProject/build\.xml$
 ^jellytools/test/qa-functional/data/SampleProject/nbproject/build-impl\.xml$
 ^jellytools/test/qa-functional/data/SampleProject/nbproject/genfiles\.properties$
