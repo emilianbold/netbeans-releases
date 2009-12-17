@@ -91,7 +91,7 @@ final class ProcessList {
                 }
                 File file = new File(CompilerSetUtils.getCygwinBase() + "/bin", "ps.exe"); // NOI18N
                 if (!file.exists()) {
-                    file = new File(CompilerSetUtils.getMSysBase() + "/bin", "ps.exe"); // NOI18N
+                    file = new File(CompilerSetUtils.getCommandFolder(null), "ps.exe"); // NOI18N
                 }
                 if (file.exists()) {
                     exec = file.getAbsolutePath();
