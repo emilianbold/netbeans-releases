@@ -4,7 +4,7 @@
 <!-- GenHTML revision 23224-->    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
   <title>Glossary - Java Card 3 Development
-  </script></head><body class="body"><a name="Glossary"></a><h2>Glossary</h2>
+   </head><body class="body"><a name="Glossary"></a><h2>Java Card 3 Glossary</h2>
 <dl><a name="z400006b6767"></a><dt> <b>3GPP</dt> </b><dd><p class="p">Third Generation Partnership Project (3GPP) formed by telecommunications associations to develop 3rd Generation
 Mobile System specifications for systems deployed across the GSM market. These specifications are available
 on the 3GPP web site.</p></dd>A<a name="z400006b1007008"></a><dt> <b>AID (application identifier)</dt> </b><dd><p class="p">defined by ISO 7816, a string used to uniquely identify card applet applications
@@ -14,8 +14,8 @@ PIX (proprietary identifier extension). The RID is a resource identifier assigne
 by ISO. The PIX identifiers are assigned by companies.</p><p class="p">A unique AID is associated with each applet class in an applet application
 module. In addition, a unique AID is assigned to each applet instance during
 installation. This applet instance AID is used by an off-card client to select
-the applet instance for APDU communication sessions.</p><p class="p">Applet instance URIs are constructed from their applet instance AID using the "aid"
-registry-based namespace authority as follows:</p><p class="p"><tt>//aid/&#60;RID&#62;/&#60;PIX&#62;</tt></p><p class="p">where <tt>&#60;RID&#62;</tt> (resource identifier) and <tt>&#60;PIX&#62;</tt> (proprietary identifier extension) are components of the
+the applet instance for APDU communication sessions.</p><p class="p">Applet instance URIs are constructed from their applet instance AID using the &quot;aid&quot;
+registry-based namespace authority as follows:</p><p class="p"><tt>//aid/&lt;RID&gt;/&lt;PIX&gt;</tt></p><p class="p">where <tt>&lt;RID&gt;</tt> (resource identifier) and <tt>&lt;PIX&gt;</tt> (proprietary identifier extension) are components of the
 AID.</p></dd><a name="z400006b1007040"></a><dt> <b>Ant</dt> </b><dd><p class="p">a platform-independent software tool written in the Java programming language that is used
 for automating build processes.</p></dd><a name="z400006b1007071"></a><dt> <b>APDU</dt> </b><dd><p class="p">an acronym for Application Protocol Data Unit as defined by ISO 7816-4 specifications.
 ISO 7816-4 defines the application protocol data unit (APDU) protocol as an application-level
@@ -32,7 +32,7 @@ set of application classes and resources, and supporting libraries and files for
 application. The application developer is typically an application domain expert. The developer is required
 to be aware of the application environment and its consequences when programming, including
 concurrency considerations, and create the application accordingly.</p></dd><a name="z400006b1007685"></a><dt> <b>application group</dt> </b><dd><p class="p">a set of one or more applications executing in a common group context.</p></dd><a name="z400006b1007710"></a><dt> <b>application URI</dt> </b><dd><p class="p">a URI uniquely identifying an application instance on the platform.</p></dd><a name="z400006b1007742"></a><dt> <b>atomicity</dt> </b><dd><p class="p">a property of transactions that requires all operations of a transaction be performed
-successfully for the transaction to be considered complete. If all of a transaction&#8217;s
+successfully for the transaction to be considered complete. If all of a transaction&#39;s
 operations cannot be performed, none of them can be performed.</p></dd>C<a name="z400006b1007780"></a><dt> <b>classic applet</dt> </b><dd><p class="p">applets with the same capabilities as those in previous versions of the Java
 Card platform and in the Classic Edition.</p></dd><a name="z400006b1008350"></a><dt> <b>Classic Edition</dt> </b><dd><p class="p">one of the two editions in the Java Card 3 Platform. The Classic
 Edition is based on an evolution of the Java Card Platform, Version 2.2.2
@@ -85,7 +85,7 @@ in addition to deployment as application groups.</p></dd><a name="z400006b101007
 MultiMediaCard Association.</p></dd>N<a name="z400006b1010308"></a><dt> <b>namespace</dt> </b><dd><p class="p">a set of names in which all names are unique.</p></dd><a name="z400006b1010877"></a><dt> <b>non-volatile memory</dt> </b><dd><p class="p">memory that is expected to retain its contents between card tear and power
 up events or across a reset event on the smart card device.</p></dd><a name="z400006b1010901"></a><dt> <b>normalization (classic applet)</dt> </b><dd><p class="p">the process of transforming and repackaging a Java application packaged for the Java
 Card Platform, Version 2.2.2, for deployment on both the Java Card 3 Platform,
-Connected Edition and the Java Card 3 Platform, Classic Edition.</p></dd><a name="z400006b1010925"></a><dt> <b>normalization (URI)</dt> </b><dd><p class="p">the process of removing unnecessary "."  and ".." segments from the path
+Connected Edition and the Java Card 3 Platform, Classic Edition.</p></dd><a name="z400006b1010925"></a><dt> <b>normalization (URI)</dt> </b><dd><p class="p">the process of removing unnecessary &quot;.&quot;  and &quot;..&quot; segments from the path
 component of a hierarchical URI.</p></dd><a name="z400006b1010949"></a><dt> <b>Normalizer</dt> </b><dd><p class="p">in the Connected Edition, a backwards compatibility tool that allows Java applications programmed
 for the Java Card Platform, Version 2.2.2, to be deployed on both the
 Java Card 3 Platform, Connected Edition and on the Java Card 3 Platform,
@@ -96,7 +96,7 @@ modules for Java Card 3 platform classic applets they are creating or from
 classic applets created for previous versions of the Java Card platform. These application modules
 contain CAP files and are downloadable on both the Java Card 3 platform
 Classic Edition and Connected Edition smart cards</p></dd>O<a name="z400006b1011140"></a><dt> <b>off-card client</dt> </b><dd><p class="p">see <a href="#bbgdeffi">off-card client application</a>.</p></dd><a name="bbgdeffi"></a><dt> <b>off-card client application</dt> </b><dd><p class="p">an application that is not resident on the card, but runs at the
-request of a user&#8217;s actions.</p></dd><a name="z400006b1010982"></a><dt> <b>off-card installer</dt> </b><dd><p class="p">the off-card application that transmits the application and library executables to the card
+request of a user&#39;s actions.</p></dd><a name="z400006b1010982"></a><dt> <b>off-card installer</dt> </b><dd><p class="p">the off-card application that transmits the application and library executables to the card
 manager application running on the card.</p></dd>P<a name="z400006b1011205"></a><dt> <b>package</dt> </b><dd><p class="p">a namespace within the Java programming language that can have classes and interfaces.</p></dd><a name="z400006b1011506"></a><dt> <b>platform protection domain</dt> </b><dd><p class="p">a set of permissions granted to an application or group of applications by
 the platform security policy. A platform protection domain is defined by two sets
 of permissions: a set of included permissions that are granted and a set
@@ -118,7 +118,7 @@ of well-defined functionalities to its clients.</p></dd><a name="z400006b1012106
 on behalf of the server application that registered that service - for a
 client application that looked up the service.</p></dd><a name="z400006b1012162"></a><dt> <b>service registry</dt> </b><dd><p class="p">the core component of the service facility. The service facility is used for
 registering and looking up services.</p></dd><a name="z400006b1012186"></a><dt> <b>service URI</dt> </b><dd><p class="p">a URI that uniquely identifies a service provided by a server application.</p></dd><a name="z400006b1012306"></a><dt> <b>servlet</dt> </b><dd><p class="p">a web application component, managed by a container, that generates dynamic web content
-and that runs in the web application environment.</p></dd><a name="z400006b1012330"></a><dt> <b>servlet container</dt> </b><dd><p class="p">see <a href="#bbggdgii">web application container</a>.</p></dd><a name="z400006b1012354"></a><dt> <b>servlet context</dt> </b><dd><p class="p">a container-managed object that defines a servlet&#8217;s view of the web application within
+and that runs in the web application environment.</p></dd><a name="z400006b1012330"></a><dt> <b>servlet container</dt> </b><dd><p class="p">see <a href="#bbggdgii">web application container</a>.</p></dd><a name="z400006b1012354"></a><dt> <b>servlet context</dt> </b><dd><p class="p">a container-managed object that defines a servlet&#39;s view of the web application within
 which the servlet is running. A servlet context is rooted at a known
 path within a web server: a context path.</p></dd><a name="z400006b1012378"></a><dt> <b>servlet mapping</dt> </b><dd><p class="p">a servlet definition that is associated by a servlet container with a URL
 path pattern. All requests to that path pattern are handled by the servlet
@@ -133,7 +133,7 @@ key and a private key) to encrypt and decrypt data.</p></dd>T<a name="z400006b10
 with a smart card to exchange and process data.</p></dd><a name="z400006b1012833"></a><dt> <b>thread</dt> </b><dd><p class="p">the basic unit of program execution. A process can have several threads running
 concurrently each performing a different job, such as waiting for events or performing
 a time consuming job that the program doesn't need to complete before going
-on. When a thread has finished its job, it is suspended or destroyed.</p></dd><a name="z400006b1012869"></a><dt> <b>thread&#8217;s active context</dt> </b><dd><p class="p">when an object instance method is invoked, the owning context of the object
+on. When a thread has finished its job, it is suspended or destroyed.</p></dd><a name="z400006b1012869"></a><dt> <b>thread&#39;s active context</dt> </b><dd><p class="p">when an object instance method is invoked, the owning context of the object
 becomes the currently active context for that particular thread of execution. Synonymous with
 <b>currently active context</b>.</p></dd><a name="z400006b1012897"></a><dt> <b>transaction</dt> </b><dd><p class="p">an atomic operation in which the developer defines the extent of the operation
 by indicating in the program code the beginning and end of the transaction.</p></dd><a name="z400006b1012927"></a><dt> <b>transaction facility</dt> </b><dd><p class="p">a Java Card RE facility that enables an application to complete a single
@@ -143,7 +143,7 @@ to the values of transient objects are not atomic and are not affected
 by transactions.</p></dd><a name="z400006b1012983"></a><dt> <b>transferable classes</dt> </b><dd><p class="p">classes whose instances can have their ownership transferred to a context different from
 their currently owning context. Transferable classes are of two types:</p><p class="p"><b>Implicitly transferable classes</b> - Classes whose instances are not bound to any context (group contexts or
 Java Card RE context) and can, therefore, be passed and shared between contexts
-without any firewall restrictions. Examples are Boolean and literal String objects.</p><p class="p"><b>Explicitly transferable classes</b> - Classes whose instances must have their ownership explicitly transferred to another application&#8217;s
+without any firewall restrictions. Examples are Boolean and literal String objects.</p><p class="p"><b>Explicitly transferable classes</b> - Classes whose instances must have their ownership explicitly transferred to another application&#39;s
 group context in order to be accessible to that other application. Examples are
 arrays and newly created String objects.</p></dd><a name="z400006b1013011"></a><dt> <b>transfer of ownership</dt> </b><dd><p class="p">a Java Card RE facility that allows for an application to transfer the
 ownership of objects it owns to an other application. Only instances of transferable
