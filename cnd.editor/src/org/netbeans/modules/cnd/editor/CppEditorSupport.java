@@ -69,7 +69,7 @@ import org.openide.windows.CloneableOpenSupport;
  *  If we plan to use guarded sections, we'd need to implement that
  *  here. For now, this is used to get toggle-breakpoint behavior.
  */
-public class CppEditorSupport extends DataEditorSupport implements EditorCookie, EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
+public class CppEditorSupport extends DataEditorSupport implements EditorCookie, EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie, ReadOnlySupport {
 
     private long lastModified = 0;
     private static final ErrorManager log =
@@ -87,6 +87,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
     };
 
     private final CookieSet cookies;
+    private boolean readonly;
 
     /**
      *  Create a new Editor support for the given C/C++/Fortran source.
@@ -162,6 +163,14 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
     /** Notify about the editor closing */
     protected void notifyClose() {
         componentsCreated = false;
+    }
+
+    public boolean isReadOnly() {
+        return readonly;
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        this.readonly = readOnly;
     }
 
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
