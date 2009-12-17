@@ -282,6 +282,10 @@ made subject to such option by the copyright holder.
             <!--file name="MSVC.xml" url="toolchain/MSVC.xml">
                <attr name="position" intvalue="3610"/>
             </file-->
+            <file name="WinAVR.xml" url="toolchain/WinAVR.xml">
+                <attr name="position" intvalue="3710"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
             <file name="GNU_solaris.xml" url="toolchain/GNU_solaris.xml">
                 <attr name="position" intvalue="4010"/>
                 <attr name="extends" stringvalue="GNU"/>

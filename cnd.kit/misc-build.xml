@@ -130,6 +130,39 @@ made subject to such option by the copyright holder.
              compress="true"/>
     </target>
 
+    <macrodef name="coverage-report">
+        <attribute name="module"/>
+        <sequential>
+            <subant target="coverage-report" buildpath="${nbroot}/@{module}" failonerror="false">
+                <property name="coverage.report.format" value="xml"/>
+            </subant>
+        </sequential>
+    </macrodef>
+
+    <target name="coverage-report" description="Run all tests and create coverage report">
+        <coverage-report module="cnd"/>
+        <coverage-report module="cnd.editor"/>
+        <coverage-report module="cnd.lexer"/>
+        <coverage-report module="cnd.folding"/>
+        <coverage-report module="cnd.modelimpl"/>
+        <coverage-report module="cnd.modelui"/>
+        <coverage-report module="cnd.completion"/>
+        <coverage-report module="cnd.refactoring"/>
+        <coverage-report module="cnd.classview"/>
+        <coverage-report module="cnd.repository"/>
+        <coverage-report module="cnd.navigation"/>
+        <coverage-report module="cnd.highlight"/>
+        <coverage-report module="cnd.discovery"/>
+        <coverage-report module="cnd.dwarfdiscovery"/>
+        <coverage-report module="cnd.modeldiscovery"/>
+        <coverage-report module="cnd.makeproject"/>
+        <coverage-report module="cnd.remote"/>
+        <coverage-report module="cnd.gotodeclaration"/>
+        <coverage-report module="cnd.debugger.gdb"/>
+        <coverage-report module="cnd.gizmo"/>
+        <coverage-report module="cnd.source"/>
+    </target>
+
     <target name="test" description="Run all tests">
         <subant target="test" buildpath="../cnd" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.editor" inheritrefs="false" inheritall="false" failonerror="false"/>
