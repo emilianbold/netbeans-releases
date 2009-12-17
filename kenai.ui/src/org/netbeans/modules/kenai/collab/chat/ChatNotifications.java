@@ -183,7 +183,7 @@ public class ChatNotifications {
         MessagingHandleImpl handle=groupMessages.get(prj.getName() + "@muc." + prj.getKenai().getUrl().getHost());
         if (handle==null) {
             handle =new MessagingHandleImpl(prj);
-            groupMessages.put(prj.getName() + "@muc" + prj.getKenai().getUrl().getHost(), handle);
+            groupMessages.put(prj.getName() + "@muc." + prj.getKenai().getUrl().getHost(), handle);
         }
         return handle;
     }
