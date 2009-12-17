@@ -48,10 +48,9 @@ import java.util.List;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
@@ -63,6 +62,7 @@ import org.openide.util.Exceptions;
  * @author tomas
  */
 public class QueryAccessorTest extends NbTestCase {
+    private Kenai kenai;
 
     public QueryAccessorTest(String arg0) {
         super(arg0);
@@ -79,7 +79,7 @@ public class QueryAccessorTest extends NbTestCase {
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         try {
             System.setProperty("kenai.com.url","https://testkenai.com");
-            Kenai kenai = Kenai.getDefault();
+            kenai = KenaiManager.getDefault().createKenai("testkenai", "https://testkenai.com");
             BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
             String username = br.readLine();
             String password = br.readLine();
@@ -93,7 +93,7 @@ public class QueryAccessorTest extends NbTestCase {
 
     public void testGetAllUnseenResult() throws MalformedURLException, CoreException, IOException {
         QueryAccessorImpl qa = new QueryAccessorImpl();
-        KenaiProject project = Kenai.getDefault().getProject("koliba");
+        KenaiProject project = kenai.getProject("koliba");
 
         QueryHandle h = qa.getAllIssuesQuery(new ProjectHandleImpl(project));
         assertNotNull(h);
@@ -113,7 +113,7 @@ public class QueryAccessorTest extends NbTestCase {
 
 //    public void testGetQueryResults() throws MalformedURLException, CoreException, IOException {
 //        QueryAccessorImpl qa = new QueryAccessorImpl();
-//        KenaiProject project = Kenai.getDefault().getProject("koliba");
+//        KenaiProject project = kenai.getProject("koliba");
 //
 //        List<QueryHandle> queries = qa.getQueries(new ProjectHandleImpl(project));
 //        assertNotNull(queries);
