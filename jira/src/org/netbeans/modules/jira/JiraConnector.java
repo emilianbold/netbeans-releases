@@ -40,12 +40,10 @@
 package org.netbeans.modules.jira;
 
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.jira.issue.JiraIssueFinder;
-import org.netbeans.modules.jira.kenai.KenaiSupportImpl;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;

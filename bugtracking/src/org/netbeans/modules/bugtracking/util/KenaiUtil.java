@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.net.PasswordAuthentication;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -52,11 +53,13 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiProjectMember;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -69,8 +72,26 @@ public class KenaiUtil {
      *
      * @return
      */
-    public static boolean isLoggedIn() {
-        return Kenai.getDefault().getPasswordAuthentication() != null;
+    public static boolean isLoggedIn(URL url) {
+        return isKenai(url.toString());
+    }
+
+    /**
+     * Returns true if logged into kenai, otherwise false.
+     *
+     * @return
+     */
+    public static boolean isLoggedIn(String url) {
+        return getKenai(url).getPasswordAuthentication() != null;
+    }
+
+    /**
+     * Returns true if logged into kenai, otherwise false.
+     *
+     * @return
+     */
+    public static boolean isLoggedIn(Kenai kenai) {
+        return kenai.getPasswordAuthentication() != null;
     }
 
     /**
@@ -92,20 +113,35 @@ public class KenaiUtil {
     public static boolean isKenai(Repository repo) {
         return repo.getLookup().lookup(KenaiProject.class) != null;
     }
-    
+
     /**
      * Returns an instance of PasswordAuthentication holding the actuall
      * Kenai credentials.
      *
-     * @param forceLogin - forces a login if user not logged in
+     * @param url a {@link Kenai} instance url
+     * @param forceLogin  forces a login if user not logged in
      * @return PasswordAuthentication
      */
-    public static PasswordAuthentication getPasswordAuthentication(boolean forceLogin) {
-        PasswordAuthentication a = Kenai.getDefault().getPasswordAuthentication();
+    public static PasswordAuthentication getPasswordAuthentication(String url, boolean forceLogin) {
+        Kenai kenai = getKenai(url);
+        assert kenai != null : "no kenai for url : [" + url + "]";
+        return getPasswordAuthentication(kenai, forceLogin);
+    }
+
+    /**
+     * Returns an instance of PasswordAuthentication holding the actuall
+     * Kenai credentials.
+     *
+     * @param url a {@link Kenai} instance url
+     * @param forceLogin  forces a login if user not logged in
+     * @return PasswordAuthentication
+     */
+    public static PasswordAuthentication getPasswordAuthentication(Kenai kenai, boolean forceLogin) {
+        PasswordAuthentication a = kenai.getPasswordAuthentication();
         if(a != null) {
             return a;
-        } 
-        
+        }
+
         if(!forceLogin) {
             return null;
         }
@@ -113,8 +149,8 @@ public class KenaiUtil {
         if(!showLogin()) {
             return null;
         }
-        
-        return Kenai.getDefault().getPasswordAuthentication();
+
+        return kenai.getPasswordAuthentication();
     }
 
     /**
@@ -140,8 +176,10 @@ public class KenaiUtil {
      * @throws KenaiException
      * @return null if no repository exists for the given project's name
      */
-    public static Repository getKenaiBugtrackingRepository (String projectName) throws KenaiException {
-        KenaiProject p = Kenai.getDefault().getProject(projectName);
+    public static Repository getKenaiBugtrackingRepository (String url, String projectName) throws KenaiException {
+        Kenai kenai = getKenai(url);
+        assert kenai != null : "no kenai for url : [" + url + "]";
+        KenaiProject p = kenai.getProject(projectName);
         return p != null ? getKenaiBugtrackingRepository(p) : null;
     }
 
@@ -166,10 +204,9 @@ public class KenaiUtil {
         return kp == null ? null : kp.getWebLocation().toString();
     }
 
-    public static Collection<RepositoryUser> getProjectMembers(String projectName) {
+    public static Collection<RepositoryUser> getProjectMembers(KenaiProject kp) {
         List<RepositoryUser> members = null;
         try {
-            KenaiProject kp = Kenai.getDefault().getProject(projectName);
             KenaiProjectMember[] kenaiMembers = kp.getMembers();
             members = new ArrayList<RepositoryUser>(kenaiMembers.length);
             for (KenaiProjectMember member : kenaiMembers) {
@@ -185,18 +222,8 @@ public class KenaiUtil {
         return members;
     }
 
-    public static KenaiProject getKenaiProject(ProjectHandle ph) {
-        // XXX cache ???
-        try {
-            return Kenai.getDefault().getProject(ph.getId());
-        } catch (KenaiException ex) {
-            BugtrackingManager.LOG.log(
-                    Level.WARNING,
-                    "Could not get KenaiProject object for project Id \"{0}\".",//NOI18N
-                    ph.getId());
-            BugtrackingManager.LOG.log(Level.INFO, null, ex);
-        }
-        return null;
+    public static KenaiProject getKenaiProject(ProjectHandle ph) {        
+        return ph.getKenaiProject();
     }
 
     public static String getChatLink(Issue issue) {
@@ -212,4 +239,18 @@ public class KenaiUtil {
         }
         return kp;
     }
+
+    public static Kenai getKenai(String ulr) {
+        try {
+            KenaiProject kp = KenaiProject.forRepository(ulr);
+            if (kp == null) {
+                return null;
+            }
+            return kp.getKenai();
+        } catch (KenaiException ex) {
+            BugtrackingManager.LOG.log(Level.FINE, ulr, ex);
+            return null;
+        }
+    }
+
 }

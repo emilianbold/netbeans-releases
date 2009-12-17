@@ -425,7 +425,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 if (isKenaiRepository && (reportedStatusLabel.getIcon() == null)) {
                     int index = reporter.indexOf('@');
                     String userName = (index == -1) ? reporter : reporter.substring(0,index);
-                    KenaiUserUI ku = new KenaiUserUI(userName);
+                    String host = ((KenaiRepository) issue.getRepository()).getHost();
+                    KenaiUserUI ku = new KenaiUserUI(userName + "@" + host);
                     ku.setMessage(KenaiUtil.getChatLink(issue));
                     JLabel label = ku.createUserWidget();
                     label.setText(null);
@@ -445,7 +446,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
                 int index = assignee.indexOf('@');
                 String userName = (index == -1) ? assignee : assignee.substring(0,index);
-                KenaiUserUI ku = new KenaiUserUI(userName);
+                String host = ((KenaiRepository) issue.getRepository()).getHost();
+                KenaiUserUI ku = new KenaiUserUI(userName + "@" + host);
                 ku.setMessage(KenaiUtil.getChatLink(issue));
                 JLabel label = ku.createUserWidget();
                 label.setText(null);

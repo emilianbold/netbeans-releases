@@ -176,5 +176,10 @@ public class QueryAccessorTest extends NbTestCase {
             }
         }
 
+        @Override
+        public KenaiProject getKenaiProject() {
+            return kp;
+        }
+
     }
 }
