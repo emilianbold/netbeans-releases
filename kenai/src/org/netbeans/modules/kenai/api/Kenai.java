@@ -171,16 +171,17 @@ public final class Kenai implements Comparable<Kenai> {
 
     private Icon icon;
     public Icon getIcon() {
-        if (icon==null) {
-            //assert !SwingUtilities.isEventDispatchThread();
-            try {
-                URL url = new URL("http://" + getUrl().getHost() + "/favicon.ico");
-                icon = new ImageIcon(url);
-            } catch (IOException ex) {
-                icon = new ImageIcon();
-            }
-        }
-        return icon;
+        return null;
+//        if (icon==null) {
+//            //assert !SwingUtilities.isEventDispatchThread();
+//            try {
+//                URL url = new URL("http://" + getUrl().getHost() + "/favicon.ico");
+//                icon = new ImageIcon(url);
+//            } catch (IOException ex) {
+//                icon = new ImageIcon();
+//            }
+//        }
+//        return icon;
 
     }
 
