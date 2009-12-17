@@ -67,26 +67,33 @@ public class KeymapModel {
     private static final Logger LOG = Logger.getLogger(KeymapModel.class.getName ());
     private static final Logger UI_LOG = Logger.getLogger("org.netbeans.ui.options"); // NOI18N
                                     
-    private static ArrayList<KeymapManager> al = new ArrayList<KeymapManager>();
+    private static ArrayList<KeymapManager> managers = null;
     
     /**
      * @return All the registered implementations.
      */
     public static Collection<? extends KeymapManager> getKeymapManagerInstances() {
-        if (!al.isEmpty()) {
-            return al;
+        if (managers != null) {
+            return managers;
         }
-        al.addAll(Lookup.getDefault().lookupAll(KeymapManager.class));
-
+        ArrayList<KeymapManager> al = new ArrayList<KeymapManager>(
+            Lookup.getDefault().lookupAll(KeymapManager.class)
+        );
+        al.trimToSize();
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("Dumping registered KeymapManagers: ");
-            for(KeymapManager m : al) {
+            for (KeymapManager m : al) {
                 LOG.fine("    KeymapManager: " + s2s(m));
             }
             LOG.fine("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         }
-
-        return al;
+        synchronized (KeymapModel.class) {
+            if (managers == null) {
+                managers = al;
+            }
+        }
+        assert managers != null;
+        return managers;
     }
     
     // actions .................................................................

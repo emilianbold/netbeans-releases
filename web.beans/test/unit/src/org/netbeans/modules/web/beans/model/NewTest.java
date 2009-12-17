@@ -57,6 +57,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.impl.model.results.ResultImpl;
 
 
 /**
@@ -152,13 +153,18 @@ public class NewTest extends CommonTestCase {
         Result result = provider.findVariableInjectable(element, null);
 
         assertNotNull(result);
-        assertTrue(result instanceof Result);
+        assertTrue(result instanceof ResultImpl);
 
-        Element injactable = result.getElement();
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
+
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
+
+        TypeElement injactable = typeElements.iterator().next();
+
         assertNotNull(injactable);
-        assertTrue( injactable instanceof TypeElement );
-        assertEquals("foo.One", ((TypeElement)injactable).getQualifiedName().
-                toString());
+        assertEquals("foo.One", injactable.getQualifiedName().toString());
     }
     
     protected void check2( VariableElement element,
@@ -167,16 +173,16 @@ public class NewTest extends CommonTestCase {
         inform("test myField2");
 
         Result result = provider.findVariableInjectable(element, null);
+        assertTrue(result instanceof ResultImpl);
 
-        assertNotNull(result);
-        assertNotNull(result);
-        assertTrue(result instanceof Result);
+        Set<TypeElement> typeElements = ((ResultImpl) result).getTypeElements();
+        Set<Element> productions = ((ResultImpl) result).getProductions();
 
-        Element injactable = result.getElement();
-        assertNotNull(injactable);
-        assertTrue( injactable instanceof TypeElement );
+        assertEquals(1, typeElements.size());
+        assertEquals(0, productions.size());
 
-        assertEquals("foo.Two", ((TypeElement)injactable).getQualifiedName().
-                toString());
+        TypeElement injactable = typeElements.iterator().next();
+
+        assertEquals("foo.Two", injactable.getQualifiedName().toString());
     }
 }

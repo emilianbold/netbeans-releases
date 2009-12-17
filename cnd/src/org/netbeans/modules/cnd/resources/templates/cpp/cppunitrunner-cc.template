@@ -5,6 +5,8 @@
  * Created on %<%DATE%>%, %<%TIME%>%
  */
 
+// CppUnit site http://sourceforge.net/projects/cppunit/files
+
 #include <cppunit/BriefTestProgressListener.h>
 #include <cppunit/CompilerOutputter.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>

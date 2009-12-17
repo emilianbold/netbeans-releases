@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.versioning.system.cvss;
 
+import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
@@ -61,6 +62,8 @@ import java.util.prefs.PreferenceChangeListener;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
 public class CVS extends VersioningSystem implements VersioningListener, PreferenceChangeListener {
+
+    private VCSVisibilityQuery visibilityQuery;
 
     public CVS() {
         putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(CVS.class, "CTL_CVS_DisplayName"));
@@ -95,6 +98,14 @@ public class CVS extends VersioningSystem implements VersioningListener, Prefere
     @Override
     public CollocationQueryImplementation getCollocationQueryImplementation() {
         return collocationQueryImplementation;
+    }
+
+    @Override
+    public VCSVisibilityQuery getVisibilityQuery() {
+        if(visibilityQuery == null) {
+            visibilityQuery = new CvsVisibilityQuery();
+        }
+        return visibilityQuery;
     }
 
     private final CollocationQueryImplementation collocationQueryImplementation = new CollocationQueryImplementation() {

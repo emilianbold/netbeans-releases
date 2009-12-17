@@ -45,6 +45,7 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 
 import java.io.File;
+import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
 
 /**
  * Test versioning system.
@@ -57,6 +58,9 @@ public class TestVCS extends VersioningSystem {
     private static TestVCS instance;
     private VCSInterceptor interceptor;
     private VCSAnnotator annotator;
+    private VCSVisibilityQuery vq;
+
+    public static final String VERSIONED_FOLDER_SUFFIX = "-test-versioned";
 
     public static TestVCS getInstance() {
         return instance;
@@ -66,12 +70,13 @@ public class TestVCS extends VersioningSystem {
         instance = this;
         interceptor = new TestVCSInterceptor();
         annotator = new TestVCSAnnotator();
+        vq = new TestVCSVisibilityQuery();
     }
 
     public File getTopmostManagedAncestor(File file) {
         File topmost = null;
         for (; file != null; file = file.getParentFile()) {
-            if (file.getName().endsWith("-test-versioned")) {
+            if (file.getName().endsWith(VERSIONED_FOLDER_SUFFIX)) {
                 topmost = file;
             }
         }
@@ -85,4 +90,10 @@ public class TestVCS extends VersioningSystem {
     public VCSAnnotator getVCSAnnotator() {
         return annotator;
     }
+
+    @Override
+    public VCSVisibilityQuery getVisibilityQuery() {
+        return vq;
+}
+
 }

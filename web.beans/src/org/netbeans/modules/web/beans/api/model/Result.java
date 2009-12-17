@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.web.beans.api.model;
 
+import java.util.List;
+
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -51,52 +54,52 @@ import javax.lang.model.type.TypeMirror;
  * @author ads
  *
  */
-public class Result {
-    
-    public Result( VariableElement var , TypeMirror type, Element injectable){
-        myVar = var;
-        myType = type;
-        myInjectable = injectable;
-    }
-    
-    public Result( VariableElement var , TypeMirror type){
-        this( var, type, null);
-    }
-    
-    /**
-     * <code>null</code> is returned if there is no eligible element for injection
-     * ( no element which could be a pretender).
-     * 
-     * it could be a result of unsatisfied or ambiguous dependency.
-     * F.e. unsatisfied dependency : there is a pretender satisfy typesafe 
-     * resolution but something incorrect ( parameterized type is not valid , etc. ). 
-     * Ambiguous dependency : there are a number of appropriate elements.
-     *
-     * 
-     * @return element ( type definition, production field/method) 
-     * that is used in injected point identified by {@link #getVariable()}
-     */
-    public Element getElement(){
-        return myInjectable;
-    }
+public interface Result {
     
     /**
      * @return element injection point which is used for injectable search
      */
-    public VariableElement getVariable(){
-        return myVar;
+    VariableElement getVariable();
+    
+    TypeMirror getVariableType();
+    
+    interface Error extends Result {
+        
+        String getMessage();
     }
     
-    public TypeMirror getVariableType(){
-        return myType;
+    interface InjectableResult extends Result {
+        
+        /**
+         * <code>null</code> is returned if there is no eligible element for injection
+         * ( no element which could be a pretender).
+         * 
+         * it could be a result of unsatisfied or ambiguous dependency.
+         * F.e. unsatisfied dependency : there is a pretender satisfy typesafe 
+         * resolution but something incorrect ( parameterized type is not valid , etc. ). 
+         * Ambiguous dependency : there are a number of appropriate elements.
+         *
+         * 
+         * @return element ( type definition, production field/method) 
+         * that is used in injected point identified by {@link #getVariable()}
+         */
+        Element getElement();
+        
+        /**
+         * Check whether <code>element</code> is alternative.
+         * <code>element</code> could be eligible for injection element
+         * ( which is found as result here ) or stereotype. 
+         * @param element checked element 
+         * @return true if <code>element</code> is alternative
+         */
+        boolean isAlternative( Element element );
+        
+        /**
+         * Return list of all element's stereotypes ( including recursively
+         * inherited ).    
+         * @param element element with stereotypes  
+         * @return list of element's stereotypes  
+         */
+        List<AnnotationMirror> getStereotypes( Element element );
     }
-    
-    
-    protected void setElement( Element element ){
-        myInjectable = element;
-    }
-
-    private final VariableElement myVar;
-    private final TypeMirror myType;
-    private Element myInjectable;
 }

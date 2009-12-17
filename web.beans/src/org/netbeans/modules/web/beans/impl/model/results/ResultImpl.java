@@ -40,16 +40,22 @@
  */
 package org.netbeans.modules.web.beans.impl.model.results;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.api.model.Result;
 
 
@@ -57,15 +63,29 @@ import org.netbeans.modules.web.beans.api.model.Result;
  * @author ads
  *
  */
-public class ResultImpl extends Result {
+public class ResultImpl extends BaseResult implements Result.InjectableResult {
+    
+    private static final String ALTERNATIVE = 
+        "javax.enterprise.inject.Alternative";   // NOI18N
 
     public ResultImpl( VariableElement var, TypeMirror elementType ,
             Set<TypeElement> declaredTypes, 
-            Map<Element, List<DeclaredType>> productionElements) 
+            Map<Element, List<DeclaredType>> productionElements,
+            AnnotationModelHelper helper ) 
     {
-        super(var, elementType);
+        super( var, elementType );
         myDeclaredTypes = declaredTypes;
         myProductions = productionElements;
+        myHelper = helper;
+    }
+    
+    public ResultImpl( VariableElement var, TypeMirror elementType ,
+            TypeElement declaredType, AnnotationModelHelper helper ) 
+    {
+        super( var, elementType );
+        myDeclaredTypes =Collections.singleton( declaredType );
+        myProductions = Collections.emptyMap();
+        myHelper = helper;
     }
 
     public Set<TypeElement> getTypeElements() {
@@ -79,7 +99,82 @@ public class ResultImpl extends Result {
     public Map<Element, List<DeclaredType>>  getAllProductions(){
         return myProductions;
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.Result#getElement()
+     */
+    public Element getElement() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.Result.InjectableResult#getStereotypes(javax.lang.model.element.Element)
+     */
+    public List<AnnotationMirror> getStereotypes( Element element ) {
+        List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
+        Set<Element> foundStereotypesElement = new HashSet<Element>(); 
+        StereotypeChecker checker = new StereotypeChecker( getHelper());
+        doGetStereotypes(getElement(), result, foundStereotypesElement, checker);
+        return result;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.Result.InjectableResult#isAlternative(javax.lang.model.element.Element)
+     */
+    public boolean isAlternative( Element element ) {
+        for (AnnotationMirror annotationMirror : getStereotypes(element)) {
+            DeclaredType annotationType = annotationMirror.getAnnotationType();
+            if ( hasAlternative( annotationType.asElement()) ){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private boolean hasAlternative( Element element ){
+        List<? extends AnnotationMirror> annotations = getController().
+            getElements().getAllAnnotationMirrors(element);
+        return getHelper().hasAnnotation(annotations, ALTERNATIVE);
+    }
+    
+    private AnnotationModelHelper  getHelper(){
+        return myHelper;
+    }
+    
+    private CompilationController getController(){
+        return getHelper().getCompilationController();
+    }
+    
+    private void doGetStereotypes( Element element , List<AnnotationMirror> result ,
+            Set<Element>  foundStereotypesElement , StereotypeChecker checker ) 
+    {
+        if ( foundStereotypesElement.contains( element)){
+            return;
+        }
+        List<? extends AnnotationMirror> annotationMirrors = 
+            getController().getElements().getAllAnnotationMirrors( element );
+        for (AnnotationMirror annotationMirror : annotationMirrors) {
+            TypeElement annotationElement = (TypeElement)annotationMirror.
+                getAnnotationType().asElement();
+            if ( isStereotype( annotationElement, checker ) ){
+                foundStereotypesElement.add( annotationElement );
+                doGetStereotypes(annotationElement, result, 
+                        foundStereotypesElement, checker );
+            }
+        }
+    }
+    
+    private boolean isStereotype( TypeElement annotationElement,
+            StereotypeChecker checker ) 
+    {
+        checker.init(annotationElement);
+        boolean result = checker.check();
+        checker.clean();
+        return result;
+    }
+    
     private Set<TypeElement> myDeclaredTypes;
     private Map<Element, List<DeclaredType>> myProductions;
+    private final AnnotationModelHelper myHelper; 
 }

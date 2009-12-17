@@ -64,6 +64,8 @@ import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter.CALL;
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -76,6 +78,7 @@ import org.openide.awt.Actions;
 import org.openide.explorer.view.CheckableNode;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -160,13 +163,34 @@ public class TreeModelNode extends AbstractNode {
         final TreeModelRoot treeModelRoot,
         final Object object
     ) {
+        this(
+            model,
+            columns,
+            children,
+            treeModelRoot,
+            object,
+            new Index[] { null });
+    }
+
+    private TreeModelNode (
+        final Models.CompoundModel model,
+        final ColumnModel[] columns,
+        final Children children,
+        final TreeModelRoot treeModelRoot,
+        final Object object,
+        final Index[] indexPtr  // Hack, because we can not declare variables before call to super() :-(
+    ) {
         super (
             children,
-            Lookups.fixed(object, new CheckNodeCookieImpl(model, object))
+            createLookup(object, model, children, indexPtr)
         );
         this.model = model;
         this.treeModelRoot = treeModelRoot;
         this.object = object;
+        if (indexPtr[0] != null) {
+            ((IndexImpl) indexPtr[0]).setNode(this);
+            setIndexWatcher(indexPtr[0]);
+        }
         
         // <RAVE>
         // Use the modified CompoundModel class's field to set the 
@@ -180,6 +204,38 @@ public class TreeModelNode extends AbstractNode {
         treeModelRoot.registerNode (object, this); 
         refreshNode ();
         initProperties (columns);
+    }
+
+    private static Lookup createLookup(Object object, Models.CompoundModel model,
+                                       Children ch, Index[] indexPtr) {
+        CheckNodeCookieImpl cnc = new CheckNodeCookieImpl(model, object);
+        boolean canReorder;
+        try {
+            canReorder = model.canReorder(object);
+        } catch (UnknownTypeException ex) {
+            if (!(object instanceof String)) {
+                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
+            }
+            canReorder = false;
+        }
+        if (canReorder) {
+            Index i = new IndexImpl(model, object);
+            indexPtr[0] = i;
+            return Lookups.fixed(object, cnc, i);
+        } else {
+            return Lookups.fixed(object, cnc);
+        }
+    }
+
+    private void setIndexWatcher(Index childrenIndex) {
+        childrenIndex.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                Children ch = getChildren();
+                if (ch instanceof TreeModelChildren) {
+                    ((TreeModelChildren) ch).refreshChildren(new TreeModelChildren.RefreshingInfo(false));
+                }
+            }
+        });
     }
 
     private static Executor asynchronous(Models.CompoundModel model, CALL asynchCall, Object object) {
@@ -222,7 +278,7 @@ public class TreeModelNode extends AbstractNode {
             throw new NullPointerException ();
         try {
             return model.isLeaf (object) ? 
-                Children.LEAF : 
+                Children.LEAF :
                 new TreeModelChildren (model, columns, treeModelRoot, object);
         } catch (UnknownTypeException e) {
             if (!(object instanceof String)) {
@@ -231,7 +287,7 @@ public class TreeModelNode extends AbstractNode {
             return Children.LEAF;
         }
     }
-    
+
     @Override
     public String getShortDescription () {
         synchronized (shortDescriptionLock) {
@@ -1211,8 +1267,51 @@ public class TreeModelNode extends AbstractNode {
                 return refreshSubNodes;
             }
         }
-    } // ItemChildren
-    
+    } // TreeModelChildren
+
+    private static final class IndexImpl extends Index.Support {
+
+        private Models.CompoundModel model;
+        private Object object;
+        private Node node;
+
+        IndexImpl(Models.CompoundModel model, Object object) {
+            this.model = model;
+            this.object = object;
+        }
+
+        void setNode(Node node) {
+            this.node = node;
+        }
+
+        @Override
+        public Node[] getNodes() {
+            return node.getChildren().getNodes();
+        }
+
+        @Override
+        public int getNodesCount() {
+            return node.getChildren().getNodesCount();
+        }
+
+        @Override
+        public void reorder(int[] perm) {
+            try {
+                model.reorder(object, perm);
+                fireChangeEvent(new ChangeEvent(this));
+            } catch (UnknownTypeException ex) {
+                if (!(object instanceof String)) {
+                    Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
+                }
+            }
+        }
+
+        void fireChange() {
+            fireChangeEvent(new ChangeEvent(this));
+        }
+
+    }
+
     private class MyProperty extends PropertySupport implements Runnable { //LazyEvaluator.Evaluable {
         
         private String      id;

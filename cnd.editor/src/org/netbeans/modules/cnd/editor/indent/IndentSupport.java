@@ -1066,6 +1066,10 @@ public class IndentSupport {
         return getCodeStyle().getFormatNewlineBeforeBraceDeclaration() == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED;
     }
 
+    protected boolean isHalfIndentVisibility() {
+        return getCodeStyle().indentVisibility() == CodeStyle.VisibilityIndent.HALF_INDENT;
+    }
+
     protected boolean getFormatLeadingStarInComment() {
         return getCodeStyle().getFormatLeadingStarInComment();
     }

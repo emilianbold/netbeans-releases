@@ -123,7 +123,9 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
         }
 
         @Override
+        @Deprecated
         public int getPlatform() {
+            assert false : "Unsupported method, use HostInfoUtils or PlatformInfo";
             if (platform == null) {
                 RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "uname -sm"); //NOI18N
                 int result;

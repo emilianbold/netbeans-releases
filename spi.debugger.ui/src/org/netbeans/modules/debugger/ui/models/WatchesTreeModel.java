@@ -49,6 +49,7 @@ import java.util.Vector;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.spi.viewmodel.ReorderableTreeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -58,7 +59,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 /**
  * @author   Jan Jancura
  */
-public class WatchesTreeModel implements TreeModel {
+public class WatchesTreeModel implements ReorderableTreeModel {
     
     private Listener listener;
     private Vector listeners = new Vector ();
@@ -118,6 +119,41 @@ public class WatchesTreeModel implements TreeModel {
         throw new UnknownTypeException (node);
     }
 
+    public boolean canReorder(Object parent) throws UnknownTypeException {
+        return parent == ROOT;
+    }
+
+    public void reorder(Object parent, int[] perm) throws UnknownTypeException {
+        if (parent == ROOT) {
+            int numWatches = DebuggerManager.getDebuggerManager ().getWatches ().length;
+            // Resize - filters can add or remove children
+            perm = resizePermutation(perm, numWatches);
+            DebuggerManager.getDebuggerManager ().reorderWatches(perm);
+        } else {
+            throw new UnknownTypeException(parent);
+        }
+    }
+
+    private static int[] resizePermutation(int[] perm, int size) {
+        if (size == perm.length) return perm;
+        int[] nperm = new int[size];
+        if (size < perm.length) {
+            int j = 0;
+            for (int i = 0; i < perm.length; i++) {
+                int p = perm[i];
+                if (p < size) {
+                    nperm[j++] = p;
+                }
+            }
+        } else {
+            System.arraycopy(perm, 0, nperm, 0, perm.length);
+            for (int i = perm.length; i < size; i++) {
+                nperm[i] = i;
+            }
+        }
+        return nperm;
+    }
+
     public void addModelListener (ModelListener l) {
         listeners.add (l);
     }
@@ -144,7 +180,7 @@ public class WatchesTreeModel implements TreeModel {
                 new ModelEvent.NodeChanged(this, b)
             );
     }
-    
+
     
     // innerclasses ............................................................
     

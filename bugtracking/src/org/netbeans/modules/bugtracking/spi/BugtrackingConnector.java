@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
+import java.awt.Image;
 import org.openide.util.Lookup;
 
 /**
@@ -48,7 +49,19 @@ import org.openide.util.Lookup;
  */
 public abstract class BugtrackingConnector implements Lookup.Provider {
 
-    // XXX id and icon?
+    /**
+     * Returns a unique ID for this connector
+     *
+     * @return
+     */
+    public abstract String getID();
+
+    /**
+     * Returns the icon for this connector or null if not available
+     *
+     * @return
+     */
+    public abstract Image getIcon();
 
     /**
      * Returns the display name for this connector
@@ -65,13 +78,15 @@ public abstract class BugtrackingConnector implements Lookup.Provider {
     public abstract String getTooltip();
 
     /**
-     * Creates a repository
+     * Creates a new repository instance.
+     * 
      * @return the created repository
      */
     public abstract Repository createRepository();
 
     /**
-     * Returns all known repositories for this connector
+     * Returns all available valid repositories for this connector.
+     *
      * @return known repositories
      */
     public abstract Repository[] getRepositories();

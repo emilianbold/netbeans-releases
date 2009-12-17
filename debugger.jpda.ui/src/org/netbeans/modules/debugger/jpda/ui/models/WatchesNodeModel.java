@@ -208,7 +208,7 @@ public class WatchesNodeModel extends VariablesNodeModel implements DnDNodeModel
     }
 
     public PasteType getDropType(final Object node, final Transferable t, int action,
-                                 int index) throws UnknownTypeException {
+                                 final int index) throws UnknownTypeException {
         //System.err.println("\n\ngetDropType("+node+", "+t+", "+action+", "+index+")");
         DataFlavor[] flavors = t.getTransferDataFlavors();
         final DataFlavor textFlavor = DataFlavor.selectBestTextFlavor(flavors);
@@ -227,7 +227,7 @@ public class WatchesNodeModel extends VariablesNodeModel implements DnDNodeModel
                             fireModelChange(new ModelEvent.NodeChanged(WatchesNodeModel.this, node));
                         } else {
                             // Root => add a new watch
-                            DebuggerManager.getDebuggerManager().createWatch(cb.toString());
+                            DebuggerManager.getDebuggerManager().createWatch(index, cb.toString());
                         }
                     } catch (Exception ex) {}
                     return t;

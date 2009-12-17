@@ -42,24 +42,25 @@
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
 public class PlatformWindows extends Platform {
     public static final String NAME = "Windows"; // NOI18N
 
-    public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
-        new LibraryItem.StdLibItem("Mathematics", "Mathematics", new String[] {"m"}), // NOI18N
-        new LibraryItem.StdLibItem("DataCompression", "Data Compression", new String[] {"z"}), // NOI18N
-        new LibraryItem.StdLibItem("PosixThreads", "Posix Threads", new String[] {"pthread"}), // NOI18N
+    private static final LibraryItem.StdLibItem[] standardLibrariesWindows = {
+        StdLibraries.getStandardLibary("Mathematics"), // NOI18N
+        StdLibraries.getStandardLibary("DataCompression"), // NOI18N
+        StdLibraries.getStandardLibary("PosixThreads"), // NOI18N
     };
     
     public PlatformWindows() {
-        super(NAME, "Windows", Platform.PLATFORM_WINDOWS); // NOI18N
+        super(NAME, "Windows", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
     }
     
     public LibraryItem.StdLibItem[] getStandardLibraries() {
-        return standardLibrariesLinux;
+        return standardLibrariesWindows;
     }
     
     public String getLibraryName(String baseName) {
@@ -76,10 +77,12 @@ public class PlatformWindows extends Platform {
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
         if (libName.endsWith(".dll")) { // NOI18N
             int i = libName.indexOf(".dll"); // NOI18N
-            if (i > 0)
+            if (i > 0) {
                 libName = libName.substring(0, i);
-            if (libName.startsWith("lib") || libName.startsWith("cyg")) // NOI18N
+            }
+            if (libName.startsWith("lib") || libName.startsWith("cyg")) { // NOI18N
                 libName = libName.substring(3);
+            }
             return compilerSet.getLibrarySearchOption() + IpeUtils.escapeOddCharacters(libDir)
                     + " " + compilerSet.getLibraryOption() + IpeUtils.escapeOddCharacters(libName); // NOI18N
         } else {
