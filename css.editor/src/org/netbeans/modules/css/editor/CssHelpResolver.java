@@ -297,7 +297,7 @@ public class CssHelpResolver {
     }
 
     public static synchronized String getHelpZIPURLasString() {
-        return getHelpZIPURL().toString();
+        return getHelpZIPURL() == null ? null : getHelpZIPURL().toString();
     }
 
     public static synchronized URL getHelpZIPURL() {
@@ -310,7 +310,9 @@ public class CssHelpResolver {
                 } catch (java.net.MalformedURLException e) {
                     ErrorManager.getDefault().notify(e);
                 }
-            }
+            } else {
+		Logger.getLogger(CssHelpResolver.class.getSimpleName()).info("Cannot locate the css documentation file " + HELP_LOCATION ); //NOI18N
+	    }
         }
 
         return HELP_ZIP_URL;

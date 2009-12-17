@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,38 +31,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.index;
+package org.netbeans.test.web;
 
-import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
+import junit.framework.Test;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
- * @author marekfukala
+ * @author Jindrich Sedek
  */
-public abstract class JsfPageModel {
+public class MavenWebProjectValidationEE6 extends MavenWebProjectValidation {
 
-//    private long timestamp;
-
-    public JsfPageModel() {
-//        this.timestamp = System.currentTimeMillis();
+    static {
+        PROJECT_NAME = "WebMavenProject";
+        PROJECT_LOCATION = new MavenWebProjectValidation().getWorkDirPath();
     }
 
-    /**
-     *
-     * @param document
-     * @return a namespace of affected facelets libary
-     */
-    public abstract String storeToIndex(IndexDocument document);
+    public MavenWebProjectValidationEE6(String name) {
+        super(name);
+    }
 
-//    /** returns the time of the model creation */
-//    public long timestamp()  {
-//        return timestamp;
-//    }
+    public MavenWebProjectValidationEE6() {
+        this("MavenWebProjectValidation");
+    }
 
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(MavenWebProjectValidationEE6.class);
+        conf = addServerTests(J2eeTestCase.Server.GLASSFISH_V3, conf,
+              "testPreconditions", "testNewMavenWebProject", "testRegisterTomcat",
+              "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
+              "testCleanAndBuildProject", "testRunProject", "testRunJSP", //"testViewServlet",
+              "testRunServlet","testCreateTLD", "testCreateTagHandler",
+              "testRunTag","testNewHTML", "testRunHTML",
+              "testNewSegment", "testNewDocument",
+//              "testJSPNavigator", "testHTMLNavigator",
+              "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
+               );
+        conf = conf.enableModules(".*").clusters(".*");
+        return NbModuleSuite.create(conf);
+    }
+
+    @Override
+    protected String getEEVersion() {
+        return JAVA_EE_6;
+    }
 }
