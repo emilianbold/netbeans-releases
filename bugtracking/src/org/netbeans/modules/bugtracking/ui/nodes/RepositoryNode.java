@@ -100,7 +100,7 @@ public class RepositoryNode extends AbstractNode {
                         NotifyDescriptor.OK_CANCEL_OPTION);
 
                     if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
-                        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                        RequestProcessor.getDefault().post(new Runnable() {
                             public void run() {
                                 repository.remove();
                                 RepositoriesSupport.getInstance().fireRepositoriesChanged();

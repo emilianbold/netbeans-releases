@@ -150,7 +150,7 @@ public class BugtrackingRootNode extends AbstractNode {
         private void refreshKeys() {
             AbstractNode waitNode = new WaitNode(org.openide.util.NbBundle.getMessage(BugtrackingRootNode.class, "LBL_Wait")); // NOI18N
             setKeys(Collections.singleton(waitNode));
-            BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+            RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     List<Repository> l = new ArrayList<Repository>();
                     l.addAll(Arrays.asList(BugtrackingManager.getInstance().getRepositories()));
