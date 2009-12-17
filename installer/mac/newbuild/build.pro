@@ -71,7 +71,7 @@
     <property name="glassfish.v3.sun.display.version" value="v3 b${glassfish.v3.sun.build.number}"/>
     <property name="glassfish.v3.sun.version"      value="b${glassfish.v3.sun.build.number}"/>
     <property name="glassfish.v3.sun.id"           value="b${glassfish.v3.sun.build.number}"/>
-    <property name="glassfish.v3.sun.install.dir"  value="${install.dir}/sges-v3-b${glassfish.v3.sun.build.number}"/>
+    <property name="glassfish.v3.sun.install.dir"  value="${install.dir}/sges-v3"/>
     <!--<property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/sges-v3-${glassfish.v3.sun.version}.zip"/>-->
     <!--<property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/sges-v3-${glassfish.v3.sun.version}-ml.zip"/>-->
     <property name="glassfish_v3_sun_location"    value="${binary_cache_host}/glassfish/sges-v3-${glassfish.v3.sun.version}.zip"/>
@@ -99,7 +99,7 @@
     <property name="glassfish.v3.display.version" value="v3 b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.id"           value="b${glassfish.v3.build.number}"/>
-    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-v3-b${glassfish.v3.build.number}"/>
+    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-v3"/>
     <!--
     <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-v3-${glassfish.v3.version}.zip"/>
     <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-v3-${glassfish.v3.version}-ml.zip"/>
