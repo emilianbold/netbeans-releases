@@ -295,7 +295,8 @@ public class KenaiHandler implements PropertyChangeListener {
                 }
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() { // XXX add post method to BM
                     public void run() {
-                        IssueAction.openIssue(repo);
+                        // TODO: fixme
+                        // IssueAction.openIssue(repo);
                     }
                 });
             }
