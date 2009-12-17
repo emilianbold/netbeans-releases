@@ -312,13 +312,9 @@ public class MakeActionProvider implements ActionProvider {
     }
 
     private static void runActionWorker(ExecutionEnvironment exeEnv, CancellableTask actionWorker) {
-        if (exeEnv.isLocal()) {
-            actionWorker.run();
-        } else {
-            ServerRecord record = ServerList.get(exeEnv);
-            assert record != null;
-            invokeRemoteHostAction(record, actionWorker);
-        }
+        ServerRecord record = ServerList.get(exeEnv);
+        assert record != null;
+        invokeRemoteHostAction(record, actionWorker);
     }
 
     public void invokeCustomAction(final String projectName, final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
