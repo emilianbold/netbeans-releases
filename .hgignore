@@ -35,9 +35,7 @@ derby\.log
 ^db.sample/test/unit/.*\.properties$
 ^db.metadata.model/test/unit/data/mysql-connector-java-5.1.5-bin.jar$
 ^db.sql.visualeditor/src/org/netbeans/modules/db/sql/visualeditor/parser/.*\.java$
-^debugger.jpda/test/\.swp$
 ^editor.lib2/test/\.ant-targets-build\.xml$
-^editor.settings.storage/src/org/netbeans/modules/editor/settings/storage/api/\.EditorSettingsImpl\.txt\.swp$
 ^editor/test/unit/src/org/netbeans/modules/editor/java/data/.*\.jar$
 ^bpel.samples/src/org/netbeans/modules/bpel/samples/resources/zip$
 ^o.n.soa.libs.wsdl4j/external/wsdl4j-1\.5\.2$
@@ -84,9 +82,7 @@ derby\.log
 ^j2ee.dd/test/unit/data/web\.xml$
 ^j2ee.dd/test/unit/data/web\.diff$
 ^j2ee.dd/test/unit/data/invalid/web\.xml$
-^j2ee.earproject/src/org/netbeans/modules/j2ee/earproject/ui/wizards/dd/\.ApplicationXmlVisualPanel1\.java\.swp$
 ^j2ee.toplinklib/external/toplink$
-^j2eeserver/\.swp$
 ^java.editor/test/unit/src/org/netbeans/modules/editor/java/data/.*\.jar$
 ^java.helpset/javahelp/org/netbeans/modules/java/helpset/docs/gui/gui_template\.html$
 ^java.navigation/test/run\.sh$
@@ -121,7 +117,6 @@ derby\.log
 ^nbbuild/NetBeans-.*\.log$
 ^nbbuild/l10ndist$
 ^nbbuild/nbantext\.jar$
-^nbbuild/\.cluster\.properties\.swp$
 ^nbbuild/nbms$
 ^nbbuild/user\.build\.properties$
 ^nbbuild/moduledefs-tmp\.properties$
@@ -172,15 +167,12 @@ derby\.log
 ^testtools/testtools-bundle\.zip$
 ^testtools/javahelp/org/netbeans/modules/usersguide$
 ^tomcat5/\.swo$
-^tomcat5/\.swp$
 ^uml/Thumbs\.db$
-^uml/lib/languagedefs/\.Java16\.etd\.swp$
 ^uml.kit/test/qa-lib/.*\.jar$
 ^uml.kit/test/qa-lib/classes$
 ^performance/uml/test/.*\.sh$
 ^performance/uml/test/qa-functional/src/gui/TempTest\.java$
 ^python.editor/external/pythonstubs-.*\.egg$
-^uml.propertysupport/src/org/netbeans/modules/uml/propertysupport/options/panels/\.JavaPlatformOptionsPanel\.java\.swp$
 ^versioning/clearcase/JavaApplication21/\.hgignore$
 ^versioning/clearcase/JavaApplication21/\.hg$
 ^versioning/test/qa-functional/data/tck\.properties$
@@ -197,8 +189,6 @@ derby\.log
 ^visualweb.kit/test/data/DefaultDeploymentTargets\.properties$
 ^visualweb.rowset/lib$
 ^visualweb.rowset/library/lib$
-^visualweb.rowset/library/nbproject/\.project\.properties\.swp$
-^performance/visualweb/test/\.ui_once\.sh\.swp$
 ^performance/visualweb/test/.*\.sh$
 ^performance/visualweb/test/qa-functional/src/gui/.*Temp.*$
 ^visualweb.webui.designtime/gen$
@@ -213,8 +203,6 @@ derby\.log
 ^web.jsf.navigation/\.externalToolBuilders$
 ^web.jsf.navigation/\.project$
 ^web.debug/test/run\.sh$
-^web.kit/test/\.build-qa-functional\.xml\.swp$
-^web.kit/test/\.swp$
 ^websvc.jaxrpc/src/org/netbeans/modules/websvc/jaxrpc/dev/dd/gen$
 ^websvc.jaxrpc/src/org/netbeans/modules/websvc/wsdl/config/impl$
 ^websvc.restkit/nbms$
@@ -223,12 +211,10 @@ derby\.log
 ^websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl$
 ^websvc.wsitmodelext/coverage$
 ^xml/xml-nbms\.zip$
-^xml.axi/test/\.cfg-unit\.xml\.swp$
 ^xml.tax/lib/test/qa-functional/src/org/netbeans/tax/data/Delme\.xml$
 ^xml/test/qa-functional/src$
 ^xml/test/qa-lib/xml-test-lib\.jar$
 ^xml.tools/test/qa-functional/src/org/netbeans/modules/xsl/action/data/out/document\.html$
-^xml.xdm/test/\.build\.xml\.swp$
 ^nbjunit/nbjunit-.*$
 ^hibernate/test/unit/data/db-derby-10\.2\.2\.0-bin$
 \.orig\..*$
