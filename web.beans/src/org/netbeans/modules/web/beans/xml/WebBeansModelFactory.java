@@ -38,39 +38,38 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model;
+package org.netbeans.modules.web.beans.xml;
 
-import java.util.Iterator;
-import java.util.Set;
-
-import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.web.beans.xml.impl.WebBeansModelImpl;
+import org.netbeans.modules.xml.xam.AbstractModelFactory;
+import org.netbeans.modules.xml.xam.ModelSource;
 
 
 /**
  * @author ads
  *
  */
-class BeansFilter extends Filter<TypeElement> {
+public class WebBeansModelFactory extends AbstractModelFactory<WebBeansModel> {
     
-    static BeansFilter get() {
-        return new BeansFilter();
+    private WebBeansModelFactory(){
+    }
+    
+    public static WebBeansModelFactory getInstance(){
+        return INSTANCE;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.impl.model.Filter#filter(java.util.Set)
+     * @see org.netbeans.modules.xml.xam.AbstractModelFactory#createModel(org.netbeans.modules.xml.xam.ModelSource)
      */
     @Override
-    void filter( Set<TypeElement> set ) {
-        super.filter(set);
-        for (Iterator<TypeElement> iterator = set.iterator(); iterator
-                .hasNext();)
-        {
-            TypeElement element = iterator.next();
-            String name = element.getQualifiedName().toString();
-            if (name.startsWith("java.") ||name.startsWith("javax.")) { // NOI18N
-                iterator.remove();
-            }
-        }
+    public WebBeansModel createModel( ModelSource modelSource ) {
+        return new WebBeansModelImpl( modelSource );
     }
+    
+    public WebBeansModel getModel(ModelSource source) {
+        return (WebBeansModel) super.getModel(source);
+    }
+    
+    private static final WebBeansModelFactory INSTANCE = new WebBeansModelFactory();
 
 }

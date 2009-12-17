@@ -98,16 +98,28 @@ class StereotypeChecker extends RuntimeAnnotationChecker {
         parser.parse( types.get(Target.class.getCanonicalName() ));
         if ( elementTypes.contains( ElementType.METHOD.toString()) &&
                 elementTypes.contains(ElementType.FIELD.toString()) &&
-                        elementTypes.contains(ElementType.PARAMETER.toString())&&
-                        elementTypes.contains( ElementType.TYPE.toString()))
+                        elementTypes.contains( ElementType.TYPE.toString())
+                        && elementTypes.size() == 3)
         {
             hasRequiredTarget = true;
+        }
+        else if ( elementTypes.size() == 2 && 
+                elementTypes.contains( ElementType.METHOD.toString()) &&
+                elementTypes.contains(ElementType.FIELD.toString()))
+        {
+            hasRequiredTarget = true;
+        }
+        else if ( elementTypes.size() == 1 ){
+            hasRequiredTarget = elementTypes.contains( ElementType.METHOD.toString()) ||
+                    elementTypes.contains( ElementType.FIELD.toString()) ||
+                            elementTypes.contains( ElementType.TYPE.toString());
         }
         else {
             getLogger().log(Level.WARNING,
                     "Annotation "+getElement().getQualifiedName()+
                     "declared as Qualifier but has wrong target values." +
-                    " Correct target values are {METHOD, FIELD, PARAMETER, TYPE})");// NOI18N
+                    " Correct target values are {METHOD, FIELD, TYPE} or" +
+                    "{METHOD, FIELD} or TYPE or METHOD or FIELD");// NOI18N
         }
         return hasRequiredTarget;
     }

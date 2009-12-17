@@ -152,6 +152,8 @@ abstract class FieldInjectionPointLogic {
          */
         filterBeans( result );
         
+        result = filterAlternatives(result);
+        
         return result;
     }
     
@@ -160,6 +162,10 @@ abstract class FieldInjectionPointLogic {
             BeansFilter filter = BeansFilter.get();
             filter.filter(((ResultImpl)result).getTypeElements() );
         }
+    }
+    
+    protected Result filterAlternatives( Result result ){
+        return result;
     }
     
     protected Result doFindVariableInjectable( VariableElement element,

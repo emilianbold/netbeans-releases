@@ -40,70 +40,49 @@
  */
 package org.netbeans.modules.web.beans.api.model;
 
-import java.util.List;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 
 
 /**
- * Represent eligible for injection element search result. 
- * 
  * @author ads
  *
  */
-public interface Result {
-    
-    /**
-     * @return element injection point which is used for injectable search
-     */
-    VariableElement getVariable();
-    
-    TypeMirror getVariableType();
-    
-    interface Error extends Result {
-        
-        String getMessage();
+public class BeansModelUnit {
+
+    private BeansModelUnit( ClassPath boot, ClassPath compile,ClassPath src, 
+            WebModule module)
+    {
+        myBootPath = boot;
+        myCompilePath = compile;
+        mySourcePath = src;
+        myModule = module;
     }
     
-    interface InjectableResult extends Result {
-        
-        /**
-         * <code>null</code> is returned if there is no eligible element for injection
-         * ( no element which could be a pretender).
-         * 
-         * it could be a result of unsatisfied or ambiguous dependency.
-         * F.e. unsatisfied dependency : there is a pretender satisfy typesafe 
-         * resolution but something incorrect ( parameterized type is not valid , etc. ). 
-         * Ambiguous dependency : there are a number of appropriate elements.
-         *
-         * 
-         * @return element ( type definition, production field/method) 
-         * that is used in injected point identified by {@link #getVariable()}
-         */
-        Element getElement();
-        
-        /**
-         * Check whether <code>element</code> is alternative.
-         * <code>element</code> could be eligible for injection element
-         * ( which is found as result here ) or stereotype. 
-         * @param element checked element 
-         * @return true if <code>element</code> is alternative
-         */
-        boolean isAlternative( Element element );
-        
-        /**
-         * Return list of all element's stereotypes ( including recursively
-         * inherited ).    
-         * @param element element with stereotypes  
-         * @return list of element's stereotypes  
-         */
-        List<AnnotationMirror> getAllStereotypes( Element element );
-        
-        List<AnnotationMirror> getStereotypes( Element element );
-        
-        boolean hasAlternative( Element element );
+    public static BeansModelUnit create( ClassPath boot, ClassPath compile,
+            ClassPath src, WebModule module )
+    {
+        return new BeansModelUnit(boot, compile, src, module);
     }
+    
+    public ClassPath getBootPath() {
+        return myBootPath;
+    }
+
+    public ClassPath getCompilePath() {
+        return myCompilePath;
+    }
+
+    public ClassPath getSourcePath() {
+        return mySourcePath;
+    }
+    
+    public WebModule getModule(){
+        return myModule;
+    }
+
+    private final ClassPath myBootPath;
+    private final ClassPath myCompilePath;
+    private final ClassPath mySourcePath;
+    private final WebModule myModule;
 }
