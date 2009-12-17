@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.FileScanner;
 import org.apache.tools.ant.Project;
@@ -220,12 +222,12 @@ public class FixDependencies extends Task {
 
             int idx = stream.indexOf ("<code-name-base>" + r.codeNameBase + "</code-name-base>", md);
             if (idx == -1 || idx > ed) continue;
-            
+
             int from = stream.lastIndexOf ("<dependency>", idx);
             if (from == -1) throw new BuildException ("No <dependency> tag before index " + idx);
             int after = stream.indexOf ("</dependency>", idx);
             if (after == -1) throw new BuildException ("No </dependency> tag after index " + idx);
-            after = findNonSpace (stream, after + "</dependency>".length ());
+            after = after + "</dependency>".length ();
             
             String remove = stream.substring (from, after);
             if (r.addCompileTime && remove.indexOf ("compile-dependency") == -1) {
@@ -237,6 +239,7 @@ public class FixDependencies extends Task {
             
             StringBuffer sb = new StringBuffer ();
             sb.append (stream.substring (0, from));
+            boolean prefix = false;
             
             for (Module m : r.modules) {
                 if (m.codeNameBase.equals(r.codeNameBase)) {
@@ -259,6 +262,13 @@ public class FixDependencies extends Task {
                     }
                 }
 
+                if (prefix) {
+                    sb.append('\n');
+                    for (int i = from - 1; stream.charAt(i) == ' '; i--) {
+                        sb.append(' ');
+                    }
+                }
+
                 int beg = remove.indexOf (r.codeNameBase);
                 int aft = beg + r.codeNameBase.length ();
                 sb.append (remove.substring (0, beg));
@@ -278,6 +288,7 @@ public class FixDependencies extends Task {
                 }
                 
                 sb.append (a);
+                prefix = true;
             }
             
             sb.append (stream.substring (after));

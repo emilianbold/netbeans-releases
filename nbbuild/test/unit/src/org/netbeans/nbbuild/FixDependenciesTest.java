@@ -42,6 +42,8 @@
 package org.netbeans.nbbuild;
 
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.junit.*;
 
 
@@ -53,6 +55,57 @@ import org.netbeans.junit.*;
 public class FixDependenciesTest extends NbTestCase {
     public FixDependenciesTest (String name) {
         super (name);
+    }
+    public void testWrongIndentation() throws Exception {
+        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractResource("FixDependencies-cnd-dwarfdiscovery.xml");
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "<fix>" +
+            "  <replace codenamebase=\"org.openide.util\">" +
+            "    <module codenamebase=\"org.openide.util\" spec=\"8.0\" />" +
+            "    <module codenamebase=\"org.openide.util.lookup\" spec=\"8.0\" />" +
+            "  </replace>" +
+            "  <fileset dir=\"" + xml.getParent () + "\">" +
+            "    <include name=\"" + xml.getName () + "\" /> " +
+            "  </fileset>" +
+            "</fix>" +
+            "</target>" +
+            "</project>"
+
+        );
+
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        String result = PublicPackagesInProjectizedXMLTest.readFile (xml);
+
+        if (result.indexOf ("org.openide.util") == -1) {
+            fail ("org.openide.util should be there: " + result);
+        }
+        if (result.indexOf ("org.openide.util.lookup") == -1) {
+            fail ("org.openide.util.lookup should be there: " + result);
+        }
+
+        Pattern p = Pattern.compile("^(.*)<dependency>$", Pattern.MULTILINE);
+        Matcher m = p.matcher(result);
+        assertTrue("Text found", m.find());
+        String spaces = m.group(1);
+
+        int cnt = 1;
+        while (m.find()) {
+            String otherSpaces = m.group(1);
+            assertEquals("sames spaces at " + cnt + "\n" + result, spaces, otherSpaces);
+            cnt++;
+        }
+
+        assertEquals("There are three dependencies\n" + result, 3, cnt);
+        for (String line : result.split("\n")) {
+            if (line.trim().length() == 0) {
+                fail("No empty lines:\n" + result);
+            }
+        }
     }
     public void testCanFixXmlWsdlModel() throws Exception {
         java.io.File xml = PublicPackagesInProjectizedXMLTest.extractResource("FixDependencies-xml.wsdl.model.xml");
@@ -704,17 +757,17 @@ public class FixDependenciesTest extends NbTestCase {
     
   public void testRuntimeDepOnOpenideIsSpecial () throws Exception {
         java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString (
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-            "<project>" +
-            "  <module-dependencies>" +
-            "    <dependency>" +
-            "        <code-name-base>org.openide</code-name-base>" +
-            "        <run-dependency>" + 
-            "            <specification-version>5.1</specification-version> " +
-            "        </run-dependency>" + 
-            "    </dependency>" +
-            "  </module-dependencies>" +
-            "</project>"
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<project>\n" +
+            "  <module-dependencies>\n" +
+            "    <dependency>\n" +
+            "        <code-name-base>org.openide</code-name-base>\n" +
+            "        <run-dependency>\n" +
+            "            <specification-version>5.1</specification-version>\n" +
+            "        </run-dependency>\n" +
+            "    </dependency>\n" +
+            "  </module-dependencies>\n" +
+            "</project>\n"
         );
         
         java.io.File out = PublicPackagesInProjectizedXMLTest.extractString ("");
