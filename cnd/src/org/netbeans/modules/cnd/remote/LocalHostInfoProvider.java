@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.remote;
 
 import java.io.File;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
@@ -87,7 +86,9 @@ import org.openide.util.Utilities;
     }
 
     @Override
+    @Deprecated
     public int getPlatform() {
+        assert false : "Unsupported method, use HostInfoUtils or PlatformInfo";
         return CompilerSetUtils.computeLocalPlatform();
     }
 

@@ -194,7 +194,7 @@ public class ComputeImportsTest extends NbTestCase {
     }
     
     private void prepareTest(String capitalizedName) throws Exception {
-        FileObject workFO = IsOverriddenAnnotationCreatorTest.makeScratchDir(this);
+        FileObject workFO = SourceUtilsTestUtil.makeScratchDir(this);
         
         assertNotNull(workFO);
         

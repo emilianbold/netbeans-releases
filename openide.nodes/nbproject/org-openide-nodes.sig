@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 7.9.1
+#Signature file v4.1
+#Version 7.12.0
 
 CLSS public abstract java.awt.Component
 cons protected Component()
@@ -272,8 +272,8 @@ meth public void transferFocusUpCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.lang.Object
-hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
-hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,SingleBufferStrategy
+hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
+hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,ProxyCapabilities,SingleBufferStrategy
 
 CLSS public java.awt.Container
 cons public Container()
@@ -358,7 +358,7 @@ meth public void transferFocusDownCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.awt.Component
-hfds INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,modalAppContext,modalComp,ncomponents,printing,printingThreads,serialPersistentFields,serialVersionUID
+hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
 hcls DropTargetEventTargetFilter,EventTargetFilter,MouseEventTargetFilter,WakingRunnable
 
 CLSS public java.awt.Dialog
@@ -400,7 +400,7 @@ meth public void show()
  anno 0 java.lang.Deprecated()
 meth public void toBack()
 supr java.awt.Window
-hfds DEFAULT_MODAL_EXCLUSION_TYPE,base,blockedWindows,isInDispose,isInHide,keepBlocking,modal,modalDialogs,modalFilter,modalityType,nameCounter,resizable,serialVersionUID,showAppContext,title,undecorated
+hfds base,blockedWindows,isInDispose,isInHide,keepBlocking,modal,modalDialogs,modalFilter,modalityType,nameCounter,resizable,serialVersionUID,showAppContext,title,undecorated
 hcls WakingRunnable
 
 CLSS public abstract interface java.awt.MenuContainer
@@ -493,7 +493,7 @@ meth public void show()
 meth public void toBack()
 meth public void toFront()
 supr java.awt.Container
-hfds OPENED,allWindows,alwaysOnTop,anchor,base,beforeFirstShow,beforeFirstWindowShown,focusMgr,focusableWindowState,icons,inputContext,inputContextLock,isInShow,isTrayIconWindow,locationByPlatform,locationByPlatformProp,log,modalBlocker,modalExclusionType,nameCounter,ownedWindowList,serialVersionUID,showWithParent,state,syncLWRequests,systemSyncLWRequests,temporaryLostComponent,warningString,weakThis,windowFocusListener,windowListener,windowSerializedDataVersion,windowStateListener
+hfds OPENED,TRANSPARENT_BACKGROUND_COLOR,allWindows,alwaysOnTop,anchor,base,beforeFirstShow,beforeFirstWindowShown,focusMgr,focusableWindowState,icons,inputContext,inputContextLock,isInShow,isTrayIconWindow,locationByPlatform,locationByPlatformProp,log,modalBlocker,modalExclusionType,nameCounter,opacity,opaque,ownedWindowList,securityWarningAlignmentX,securityWarningAlignmentY,securityWarningHeight,securityWarningPointX,securityWarningPointY,securityWarningWidth,serialVersionUID,shape,showWithParent,state,syncLWRequests,systemSyncLWRequests,temporaryLostComponent,warningString,weakThis,windowFocusListener,windowListener,windowSerializedDataVersion,windowStateListener
 hcls WindowDisposerRecord
 
 CLSS public abstract interface java.awt.event.ActionListener
@@ -735,9 +735,24 @@ fld public final static int DO_NOTHING_ON_CLOSE = 0
 fld public final static int EXIT_ON_CLOSE = 3
 fld public final static int HIDE_ON_CLOSE = 1
 
-CLSS public abstract interface org.openide.cookies.CloseCookie
-intf org.openide.nodes.Node$Cookie
+CLSS public abstract interface org.netbeans.api.actions.Closable
 meth public abstract boolean close()
+
+CLSS public abstract interface org.netbeans.api.actions.Editable
+meth public abstract void edit()
+
+CLSS public abstract interface org.netbeans.api.actions.Openable
+meth public abstract void open()
+
+CLSS public abstract interface org.netbeans.api.actions.Printable
+meth public abstract void print()
+
+CLSS public abstract interface org.netbeans.api.actions.Viewable
+meth public abstract void view()
+
+CLSS public abstract interface org.openide.cookies.CloseCookie
+intf org.netbeans.api.actions.Closable
+intf org.openide.nodes.Node$Cookie
 
 CLSS public abstract interface org.openide.cookies.ConnectionCookie
  anno 0 java.lang.Deprecated()
@@ -768,8 +783,8 @@ meth public abstract boolean overlaps(org.openide.cookies.ConnectionCookie$Type)
 meth public abstract java.lang.Class<?> getEventClass()
 
 CLSS public abstract interface org.openide.cookies.EditCookie
+intf org.netbeans.api.actions.Editable
 intf org.openide.nodes.Node$Cookie
-meth public abstract void edit()
 
 CLSS public abstract interface org.openide.cookies.FilterCookie
  anno 0 java.lang.Deprecated()
@@ -790,20 +805,20 @@ intf org.openide.cookies.InstanceCookie
 meth public abstract boolean instanceOf(java.lang.Class<?>)
 
 CLSS public abstract interface org.openide.cookies.OpenCookie
+intf org.netbeans.api.actions.Openable
 intf org.openide.nodes.Node$Cookie
-meth public abstract void open()
 
 CLSS public abstract interface org.openide.cookies.PrintCookie
+intf org.netbeans.api.actions.Printable
 intf org.openide.nodes.Node$Cookie
-meth public abstract void print()
 
 CLSS public abstract interface org.openide.cookies.SaveCookie
 intf org.openide.nodes.Node$Cookie
 meth public abstract void save() throws java.io.IOException
 
 CLSS public abstract interface org.openide.cookies.ViewCookie
+intf org.netbeans.api.actions.Viewable
 intf org.openide.nodes.Node$Cookie
-meth public abstract void view()
 
 CLSS public org.openide.nodes.AbstractNode
 cons public AbstractNode(org.openide.nodes.Children)
@@ -1032,7 +1047,7 @@ meth public void remove(org.openide.nodes.Node$Cookie)
 meth public void removeChangeListener(javax.swing.event.ChangeListener)
 supr java.lang.Object
 hfds QUERY_MODE,cs,ic,lookup,map
-hcls C,CookieEntry,CookieEntryPair,FactAndClass,PairWrap,R
+hcls C,CookieEntry,CookieEntryPair,PairWrap,R
 
 CLSS public abstract interface static org.openide.nodes.CookieSet$Before
 meth public abstract void beforeLookup(java.lang.Class<?>)
@@ -1453,7 +1468,7 @@ meth public static org.openide.util.actions.SystemAction[] getDefaultActions()
 meth public static void setDefaultActions(org.openide.util.actions.SystemAction[])
  anno 0 java.lang.Deprecated()
 supr java.lang.Object
-hfds defaultActions
+hfds LOG,defaultActions
 
 CLSS public abstract org.openide.nodes.NodeOperation
 cons protected NodeOperation()

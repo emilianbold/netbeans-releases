@@ -47,6 +47,7 @@ import org.openide.ErrorManager;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Storage of file attributes with shortcut to retrieve all stored values.
@@ -66,6 +67,8 @@ class DiskMapTurboProvider implements TurboProvider {
     
     private static final int STATUS_VALUABLE = FileInformation.STATUS_MANAGED & 
             ~FileInformation.STATUS_VERSIONED_UPTODATE & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+    private static final int CACHE_SIZE_WARNING_THRESHOLD = 100000; // log when cache gets too big and steps over this threshold
+    private boolean hugeCacheNotified;
 
     DiskMapTurboProvider() {
         initCacheStore();
@@ -105,6 +108,10 @@ class DiskMapTurboProvider implements TurboProvider {
             }
             cachedStoreSerial = storeSerial;
             cachedValues = Collections.unmodifiableMap(cachedValues);
+            if (!hugeCacheNotified && cachedValues.size() > CACHE_SIZE_WARNING_THRESHOLD) {
+                CvsVersioningSystem.LOG.log(Level.WARNING, "Cache contains too many entries: {0}", (Integer) cachedValues.size()); //NOI18N
+                hugeCacheNotified = true;
+            }
         }
         return cachedValues;
     }

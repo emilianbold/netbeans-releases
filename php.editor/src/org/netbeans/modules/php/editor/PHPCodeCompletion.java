@@ -67,6 +67,7 @@ import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -76,7 +77,6 @@ import org.netbeans.modules.php.api.editor.PhpElement;
 import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.editor.PredefinedSymbols.MagicIndexedFunction;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
-import org.netbeans.modules.php.editor.PredefinedSymbols.VariableKind;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedClassMember;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
@@ -84,6 +84,7 @@ import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
 import org.netbeans.modules.php.editor.index.IndexedNamespace;
+import org.netbeans.modules.php.editor.index.IndexedType;
 import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -92,6 +93,7 @@ import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
 import org.netbeans.modules.php.editor.model.PhpKind;
 import org.netbeans.modules.php.editor.model.QualifiedName;
@@ -245,7 +247,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
 
             PHPCompletionItem.CompletionRequest request = new PHPCompletionItem.CompletionRequest();
-            
+            request.context = context;
             request.anchor = caretOffset
                     // can't just use 'prefix.getLength()' here cos it might have been calculated with
                     // the 'upToOffset' flag set to false
@@ -280,14 +282,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     break;
                 case NEW_CLASS:
                     autoCompleteNamespaces(proposals, request);
-                    NamespaceIndexFilter<IndexedFunction> completionSupport = new NamespaceIndexFilter<IndexedFunction>(prefix);
-                    Collection<IndexedFunction> functions = request.index.getConstructors(result, completionSupport.getName());
-                    for (IndexedFunction fnc : completionSupport.filter(functions)) {
-                        int[] optionalArgs = fnc.getOptionalArgs();
-                        for (int i = 0; i <= optionalArgs.length; i++) {
-                            proposals.add(new PHPCompletionItem.NewClassItem(fnc, request, i));
-                        }
-                    }
+                    autoCompleteNewClass(proposals, request);
                     break;
                 case CLASS_NAME:
                     autoCompleteNamespaces(proposals, request);
@@ -378,6 +373,98 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         // end of hotfix for #151890
 
         return new PHPCompletionResult(completionContext, filteredProposals);
+    }
+
+    private static class ConstructorMember extends IndexedClassMember<IndexedFunction> {
+
+        private static ConstructorMember createDefaultConstructor(IndexedClass clz) {
+            return new ConstructorMember(clz, Collections.<Parameter>emptyList());
+        }
+        private static ConstructorMember createInstance(IndexedClass clz, IndexedFunction constructor) {
+            return new ConstructorMember(clz, constructor.getParameters());
+        }
+
+        private static ConstructorMember createClassFake(IndexedClass clz) {
+            return new ConstructorMember(clz, null);
+        }
+        
+        private ConstructorMember(final IndexedClass clz, List<Parameter> params ) {
+            super(clz, params == null ? null : new IndexedFunction(clz.getName(),
+                    clz.getName(),
+                    clz.getIndex(), clz.getFilenameUrl(), 
+                    params,
+                    clz.getOffset(), Modifier.PUBLIC, ElementKind.METHOD) {//NOI18N
+
+                @Override
+                public String getFullyQualifiedName() {
+                    return clz.getFullyQualifiedName();
+                }
+            });
+        }
+    }
+
+    /*
+     * returns instance of IndexedClassMember whereas getMember() may return null
+     */
+    private Collection<IndexedClassMember<IndexedFunction>> getAllConstructorsForCC(PHPIndex index, PHPParseResult result, QualifiedName qualifiedName, QuerySupport.Kind kind) {
+        NamespaceIndexFilter<IndexedFunction> constrName = new NamespaceIndexFilter<IndexedFunction>(qualifiedName);
+        NamespaceIndexFilter<IndexedClass> clzName = new NamespaceIndexFilter<IndexedClass>(qualifiedName);
+        Collection<IndexedClassMember<IndexedFunction>> retval = new HashSet<IndexedClassMember<IndexedFunction>>();
+        final Collection<IndexedClass> allClasses = clzName.filter(index.getClasses(result, clzName.getName(), kind));
+        final Map<String, IndexedFunction> name2constructs = new HashMap<String, IndexedFunction>();
+        for (IndexedFunction constr : constrName.filter(index.getConstructors(result, constrName.getName()))) {
+            name2constructs.put(constr.getName(), constr);
+        }
+        for (final IndexedClass clz : allClasses) {
+            IndexedFunction constr = name2constructs.get(clz.getName());
+            if (constr == null) {
+                boolean addDefaultConstructor = true;
+                if (clz.getSuperClass() != null) {
+                    if (ModelUtils.nameKindMatch(clz.getName(), QuerySupport.Kind.EXACT, clzName.getName())) {
+                        Collection<IndexedType> classAncestors = index.getClassAncestors(result, clzName.getName());
+                        for (IndexedType indexedType : classAncestors) {
+                            if (indexedType instanceof IndexedClass) {
+                                Collection<IndexedClassMember<IndexedFunction>> tmpConsts = index.getConstructors(result, indexedType);
+                                if (!tmpConsts.isEmpty()) {
+                                    addDefaultConstructor = false;
+                                    for (IndexedClassMember<IndexedFunction> indexedClassMember : tmpConsts) {
+                                        retval.add(ConstructorMember.createInstance(clz, indexedClassMember.getMember()));
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        addDefaultConstructor = false;
+                        retval.add(ConstructorMember.createClassFake(clz));
+                    }
+                }
+                if (addDefaultConstructor) {
+                    retval.add(ConstructorMember.createDefaultConstructor(clz));//NOI18N
+                }
+            } else {
+                if (ModelUtils.nameKindMatch(constr.getName(), kind, constrName.getName())) {
+                    retval.add(ConstructorMember.createInstance(clz,constr));
+                }
+            }
+        }
+        return retval;
+    }
+
+    private void autoCompleteNewClass(List<CompletionProposal> proposals, PHPCompletionItem.CompletionRequest request) {
+        Collection<IndexedClassMember<IndexedFunction>> members = getAllConstructorsForCC(request.index, request.result, QualifiedName.create(request.prefix), nameKind);
+        for (IndexedClassMember<IndexedFunction> element : members) {
+            if (element.getMember() != null) {
+                IndexedFunction fnc = element.getMember();
+                int[] optionalArgs = fnc.getOptionalArgs();
+                for (int i = 0; i <= optionalArgs.length; i++) {
+                    proposals.add(new PHPCompletionItem.NewClassItem(fnc, request, i));
+                }
+            } else if (element.getType() instanceof IndexedClass) {
+                IndexedClass indexedClass = (IndexedClass) element.getType();
+                proposals.add(new PHPCompletionItem.ClassItem(indexedClass, request, false, null));
+            }
+        }
     }
 
     private void autoCompleteClassNames(List<CompletionProposal> proposals,

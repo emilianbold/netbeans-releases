@@ -100,6 +100,7 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -200,7 +201,11 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         leftList.setModel(model);
         addListeners();
         if (TRACE_ERROR_STATISTIC) {
-             printStatistic();
+             RequestProcessor.getDefault().post(new Runnable(){
+                  public void run() {
+                      printStatistic();
+                  }
+             });
         }
     }
 

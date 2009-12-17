@@ -89,6 +89,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.basic.BasicTextFieldUI;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
@@ -152,14 +153,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     public IssuePanel() {
         initComponents();
-        createdField.setBackground(getBackground());
-        updatedField.setBackground(getBackground());
-        originalEstimateField.setBackground(getBackground());
-        remainingEstimateField.setBackground(getBackground());
-        timeSpentField.setBackground(getBackground());
-        resolutionField.setBackground(getBackground());
-        projectField.setBackground(getBackground());
-        statusField.setBackground(getBackground());
+        updateReadOnlyField(createdField);
+        updateReadOnlyField(updatedField);
+        updateReadOnlyField(originalEstimateField);
+        updateReadOnlyField(remainingEstimateField);
+        updateReadOnlyField(timeSpentField);
+        updateReadOnlyField(resolutionField);
+        updateReadOnlyField(projectField);
+        updateReadOnlyField(statusField);
         customFieldPanelLeft.setBackground(getBackground());
         customFieldPanelRight.setBackground(getBackground());
         parentHeaderPanel.setBackground(getBackground());
@@ -177,20 +178,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         attachHideStatusListener();
     }
 
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        if (issue != null) {
-            issue.opened();
+    private void updateReadOnlyField(JTextField field) {
+        if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
+            field.setUI(new BasicTextFieldUI());
         }
+        field.setBackground(getBackground());
     }
 
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        if(issue != null) {
-            issue.closed();
-        }
+    NbJiraIssue getIssue() {
+        return issue;
     }
 
     void setIssue(NbJiraIssue issue) {
@@ -423,7 +419,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         });
     }
 
-    private void reloadForm(boolean force) {
+    void reloadForm(boolean force) {
         if (skipReload) {
             return;
         }
@@ -1395,12 +1391,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         environmentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.environmentLabel.text")); // NOI18N
 
+        environmentArea.setLineWrap(true);
         environmentArea.setRows(5);
         environmentScrollPane.setViewportView(environmentArea);
 
         addCommentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentLabel.text")); // NOI18N
 
         addCommentScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+        addCommentArea.setLineWrap(true);
         addCommentScrollPane.setViewportView(addCommentArea);
 
         submitButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text")); // NOI18N
@@ -1569,7 +1568,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             .add(separator)
             .add(dummyCommentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(475, Short.MAX_VALUE)
+                .addContainerGap(467, Short.MAX_VALUE)
                 .add(logWorkButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
@@ -1616,7 +1615,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             .add(dummyAttachmentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(dummySubtaskPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(originalEstimateFieldNew, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(originalEstimateHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(originalEstimateHint)
                             .add(customFieldPanelRight, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(dummyIssueLinksPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
@@ -1674,15 +1673,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addContainerGap())
         );
 
-        layout.linkSize(new java.awt.Component[] {issueTypeCombo, priorityCombo, projectCombo, resolutionCombo, statusCombo}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.linkSize(new java.awt.Component[] {affectsVersionScrollPane, componentScrollPane, fixVersionScrollPane}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        layout.linkSize(new java.awt.Component[] {cancelButton, submitButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.linkSize(new java.awt.Component[] {originalEstimateField, remainingEstimateField, timeSpentField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.linkSize(new java.awt.Component[] {assigneeField, dueField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        layout.linkSize(new java.awt.Component[] {issueTypeCombo, priorityCombo, projectCombo, resolutionCombo, statusCombo}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        layout.linkSize(new java.awt.Component[] {cancelButton, submitButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1787,7 +1786,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .add(originalEstimateFieldNew, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(originalEstimateLabelNew))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(originalEstimateHint)
+                .add(originalEstimateHint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(submitButton)
@@ -1798,11 +1797,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .add(dummyCommentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {originalEstimateField, originalEstimatePanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {remainingEstimateField, remainingEstimatePanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         layout.linkSize(new java.awt.Component[] {timeSpentField, timeSpentPanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
-        layout.linkSize(new java.awt.Component[] {remainingEstimateField, remainingEstimatePanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {originalEstimateField, originalEstimatePanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
     }// </editor-fold>//GEN-END:initComponents
 

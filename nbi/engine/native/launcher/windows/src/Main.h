@@ -44,7 +44,7 @@
 #ifdef	__cplusplus
 extern "C" {
 #endif
-    
+
 void addProgressPosition(LauncherProperties *props,DWORD add);
 void setProgressRange(LauncherProperties *props, int64t * size);
 void setErrorDetailString(LauncherProperties *props,const WCHAR * message);
@@ -65,7 +65,7 @@ DWORD isTerminated(LauncherProperties * props);
 void showErrorW(LauncherProperties *props, const char * error, const DWORD varArgsNumber, ...);
 
 void showMessageW(LauncherProperties *props,const WCHAR* message, const DWORD number, ...);
-void showMessageA(LauncherProperties *props,const char * message, const DWORD varArgsNumber, ...);
+//void showMessageA(LauncherProperties *props,const char * message, const DWORD varArgsNumber, ...);
 
 #ifdef	__cplusplus
 }

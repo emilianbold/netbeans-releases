@@ -60,7 +60,6 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
 
         private final ExecutionEnvironment executionEnvironment;
         private String home = null;
-        private PathMap mapper;
         private Map<String, String> envCache = null;
         private Boolean isCshShell;
         private Integer platform;
@@ -90,10 +89,7 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
 
         @Override
         public synchronized PathMap getMapper() {
-            if (mapper == null) {
-                mapper = RemotePathMap.getPathMap(executionEnvironment);
-            }
-            return mapper;
+            return RemotePathMap.getPathMap(executionEnvironment);
         }
 
         @Override
@@ -127,7 +123,9 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
         }
 
         @Override
+        @Deprecated
         public int getPlatform() {
+            assert false : "Unsupported method, use HostInfoUtils or PlatformInfo";
             if (platform == null) {
                 RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "uname -sm"); //NOI18N
                 int result;

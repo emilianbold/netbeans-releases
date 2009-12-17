@@ -97,7 +97,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
             if (commonSupport != null) {
                 try {
                     java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                    CommandRunner mgr = new CommandRunner(commonSupport.getCommandFactory(), ip);
+                    CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
                     Decorator decorator = DecoratorManager.findDecorator(childtype, null);
                     List<ResourceDesc> reslourcesList = mgr.getResources(childtype);
                     for (ResourceDesc resource : reslourcesList) {
@@ -157,7 +157,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
                     if (commonSupport != null) {
                         try {
                             java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                            CommandRunner mgr = new CommandRunner(commonSupport.getCommandFactory(), ip);
+                            CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
                             Decorator decorator = DecoratorManager.findDecorator(type, null);
                             if (decorator == null) {
                                 if (type.equals(GlassfishModule.JDBC_RESOURCE)) {

@@ -262,6 +262,7 @@ final class DiffResultsViewForLine extends DiffResultsView {
         if (showLineInLocal) {
             currentDiff.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.LineNumber, lineNumber);
         } else {
+            currentDiff.getJComponent().putClientProperty("diff.smartScrollDisabled", Boolean.TRUE);
             currentDiff.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, lineNumber);
         }
     }

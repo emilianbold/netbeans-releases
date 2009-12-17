@@ -65,7 +65,6 @@ import org.netbeans.modules.jmx.common.FinishableDelegatedWizardPanel;
 import org.netbeans.modules.jmx.common.GenericWizardPanel;
 import org.netbeans.modules.jmx.common.WizardConstants;
 import org.netbeans.modules.jmx.common.WizardHelpers;
-import org.netbeans.modules.jmx.common.WizardPanelWithoutReadSettings;
 import org.netbeans.modules.jmx.configwizard.generator.ConfigGenerator;
 
 
@@ -211,7 +210,7 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
                     Templates.createSimpleTargetChooser(project,
                                                         propSrcGroups,
                                                         configPanel);
-            targetPanel = new WizardPanelWithoutReadSettings(
+            targetPanel = new FinishableDelegatedWizardPanel(
                     targetChooserPanel,configPanel);
             targetPanel.getComponent().setName(nameTarget);
             ((ConfigPanel.ConfigWizardPanel) configPanel).

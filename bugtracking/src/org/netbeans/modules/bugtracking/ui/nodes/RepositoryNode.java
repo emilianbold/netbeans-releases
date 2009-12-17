@@ -84,7 +84,7 @@ public class RepositoryNode extends AbstractNode {
             },
             new AbstractAction(SystemAction.get(IssueAction.class).getName()) {
                 public void actionPerformed(ActionEvent e) {
-                    IssueAction.openIssue(repository);
+                    IssueAction.createIssue(repository);
                 }
             },
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_EditRepository")) { // NOI18N

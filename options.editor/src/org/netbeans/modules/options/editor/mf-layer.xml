@@ -170,7 +170,7 @@ made subject to such option by the copyright holder.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#Editor.Options.Export.CodeTemplates.displayName"/>
             </file>
             <file name="Other">
-                <attr name="include" stringvalue="config/Editors/(?!.*(Macros|CodeTemplates|FontsColors)).+"/>
+                <attr name="include" stringvalue="config/Editors/(?!.*(Macros|CodeTemplates|FontsColors)).+|config/.nbattrs"/>
                 <attr name="exclude" stringvalue="config/Editors/.*/(macros.xml|Popup.*|Settings\.settings|.*\.instance)"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#Editor.Options.Export.Other.displayName"/>
             </file>
@@ -181,6 +181,10 @@ made subject to such option by the copyright holder.
             <file name="FontsAndColors">
                 <attr name="include" stringvalue="config/Editors.*/FontsColors/([^/]*)/.*|config/.nbattrs"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.options.colors.Bundle#FontsAndColors.Options.Export.displayName"/>
+            </file>
+            <file name="AnnotationsColors">
+                <attr name="include" stringvalue="config/Editors/AnnotationTypes/.*"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.options.colors.Bundle#AnnotationsColors.Options.Export.displayName"/>
             </file>
         </folder>
     </folder>

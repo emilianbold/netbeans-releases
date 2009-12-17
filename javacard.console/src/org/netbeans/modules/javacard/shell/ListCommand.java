@@ -46,7 +46,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.CardState;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 import org.openide.util.NbBundle;
@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 final class ListCommand implements Command {
 
     public String execute(ShellPanel shellPanel, String[] args) throws ShellException {
-        ApduSupport apdu = shellPanel.getCard().getCapability(ApduSupport.class);
+        UrlCapability apdu = shellPanel.getCard().getCapability(UrlCapability.class);
         StringBuilder sb = new StringBuilder();
         String listPath = "/list"; //NOI18N
         try {

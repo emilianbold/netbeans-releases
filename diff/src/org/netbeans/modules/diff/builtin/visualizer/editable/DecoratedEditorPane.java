@@ -65,8 +65,9 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
     private DiffContentPanel    master;
     
     private final RequestProcessor.Task repaintTask;
+    private static final RequestProcessor FONT_RP = new RequestProcessor("DiffFontLoadingRP", 1); //NOI18N
 
-    private int                 fontHeight;
+    private int                 fontHeight = -1;
     private int                 charWidth;
 
     public DecoratedEditorPane(DiffContentPanel master) {
@@ -89,18 +90,27 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
         repaint();
     }
 
+    @Override
     public void setFont(Font font) {
         super.setFont(font);
         setFontHeightWidth(getFont());
     }
     
-    private void setFontHeightWidth(Font font) {
-        FontMetrics metrics = getFontMetrics(font);
-        fontHeight = metrics.getHeight();
-        charWidth = metrics.charWidth('m');
+    private void setFontHeightWidth(final Font font) {
+        FONT_RP.post(new Runnable() {
+            public void run() {
+                FontMetrics metrics = getFontMetrics(font);
+                charWidth = metrics.charWidth('m');
+                fontHeight = metrics.getHeight();
+            }
+        });
     }
     
+    @Override
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        if (fontHeight == -1) {
+            return super.getScrollableUnitIncrement(visibleRect, orientation, direction);
+        }
         switch (orientation) {
         case SwingConstants.VERTICAL:
             return fontHeight;

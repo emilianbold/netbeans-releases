@@ -148,29 +148,31 @@ public final class ExtraProjectSourceForBinaryQueryImpl extends ProjectOpenedHoo
     private Map<URL, URL> getExtraSources() {
         Map<URL, URL> result = new HashMap<URL, URL>();
         Map<String, String> props = evaluator.getProperties();
-        for (Map.Entry<String, String> entry : props.entrySet()) {
-            if (entry.getKey().startsWith(REF_START)) {
-                String val = entry.getKey().substring(REF_START.length());
-                String sourceKey = SOURCE_START + val;
-                String source[] = ExtraProjectJavadocForBinaryQueryImpl.stripJARPath(props.get(sourceKey));
-                File bin = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), entry.getValue());
-                URL binURL = FileUtil.urlForArchiveOrDir(bin);
-                if (source[0] != null && binURL != null) {
-                    File src = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), source[0]);
-                    // #138349 - ignore non existing paths or entries with undefined IDE variables
-                    if (src.exists()) {
-                        try {
-                            URL url = src.toURI().toURL();
-                            if (FileUtil.isArchiveFile(url)) {
-                                url = FileUtil.getArchiveRoot(url);
+        if (props != null) {
+            for (Map.Entry<String, String> entry : props.entrySet()) {
+                if (entry.getKey().startsWith(REF_START)) {
+                    String val = entry.getKey().substring(REF_START.length());
+                    String sourceKey = SOURCE_START + val;
+                    String source[] = ExtraProjectJavadocForBinaryQueryImpl.stripJARPath(props.get(sourceKey));
+                    File bin = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), entry.getValue());
+                    URL binURL = FileUtil.urlForArchiveOrDir(bin);
+                    if (source[0] != null && binURL != null) {
+                        File src = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), source[0]);
+                        // #138349 - ignore non existing paths or entries with undefined IDE variables
+                        if (src.exists()) {
+                            try {
+                                URL url = src.toURI().toURL();
+                                if (FileUtil.isArchiveFile(url)) {
+                                    url = FileUtil.getArchiveRoot(url);
+                                }
+                                if (source[1] != null) {
+                                    assert url.toExternalForm().endsWith("!/") : url.toExternalForm();
+                                    url = new URL(url.toExternalForm()+source[1]);
+                                }
+                                result.put(binURL, url);
+                            } catch (MalformedURLException ex) {
+                                ex.printStackTrace();
                             }
-                            if (source[1] != null) {
-                                assert url.toExternalForm().endsWith("!/") : url.toExternalForm();
-                                url = new URL(url.toExternalForm()+source[1]);
-                            }
-                            result.put(binURL, url);
-                        } catch (MalformedURLException ex) {
-                            ex.printStackTrace();
                         }
                     }
                 }

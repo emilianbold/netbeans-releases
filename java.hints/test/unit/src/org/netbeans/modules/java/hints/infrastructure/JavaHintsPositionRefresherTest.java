@@ -41,10 +41,13 @@ package org.netbeans.modules.java.hints.infrastructure;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
@@ -190,23 +193,29 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     }
 
     public void testEmpty() throws Exception {
-        performTest("test/Test.java", "package test; public class Test {\n public void foo() {while(true)|;}}", "1:20-1:32:verifier:Empty statement after 'while'");
+        performTest("test/Test.java", "package test; public class Test {\n public void foo() {while(true)|;}}", new String[] {"1:20-1:32:verifier:Empty statement after 'while'"});
     }
 
     public void testErrorHint0() throws Exception {
-        performTest("test/Test.java", "package test; public class Test {public void foo() {\n| new Foo();}}", "1:5-1:8:error:cannot find symbol\n  symbol  : class Foo\n  location: class test.Test");
+        performTest("test/Test.java", "package test; public class Test {public void foo() {\n| new Foo();}}", new String[] {"1:5-1:8:error:cannot find symbol\n  symbol  : class Foo\n  location: class test.Test"});
     }
 
     public void testWrongpackage() throws Exception {
-        performTest("test/Test.java", "|\npublic class Test {\n }", "0:0-1:0:error:Incorrect Package");
+        performTest("test/Test.java", "|\npublic class Test {\n }", new String[] {"0:0-1:0:error:Incorrect Package"});
     }
 
     public void testHintCount173282() throws Exception {
         performTest("test/Test.java", "class Test { static int statField; int field; public void method() { \n|String field = \"\"; \nSystem.out.println(field); Integer.parseInt(\"1\"); if(\"\"== \"\") { System.out.println(\"ok\"); } this.statField = 23; } }",
-                "1:7-1:12:verifier:Local variable hides a field");
+                new String[] {"2:53-2:60:verifier:Comparing Strings using == or !=", "1:7-1:12:verifier:Local variable hides a field", "2:92-2:96:verifier:Accessing static field statField"});
     }
 
-    private void performTest(String fileName , String code, String expected) throws Exception {
+    public void testEmptyStatement() throws Exception {
+        performTest("test/Test.java", "class Test { public void method() {\n |; \n} }",
+                new String[] {"1:1-1:2:verifier:Empty statement"});
+    }
+
+
+    private void performTest(String fileName , String code, String[] expected) throws Exception {
         int[] caretPosition = new int[1];
         code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, caretPosition);
         prepareTest(fileName, code);
@@ -215,19 +224,18 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
 
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-                Map<String, List<ErrorDescription>> eds = new JavaHintsPositionRefresher().getErrorDescriptionsAt(ctx, doc);
-                errorDescriptionsAt.putAll(eds);
+                Map<String, List<ErrorDescription>> edsAt = new JavaHintsPositionRefresher().getErrorDescriptionsAt(ctx, doc);
+                errorDescriptionsAt.putAll(edsAt);
             }
         });
 
-        StringBuffer buf = new StringBuffer();
+        Set<String> eds = new HashSet<String>();
         for (Entry<String, List<ErrorDescription>> e : errorDescriptionsAt.entrySet()) {
             for (ErrorDescription ed : e.getValue()) {
-                buf.append(ed.toString());
+                eds.add(ed.toString().replace(":  ", "  :"));
             }
-
         }
-        assertEquals("Provided error messages differ. ", expected, buf.toString().replace(":  ", "  :"));
+        assertTrue("Provided error messages differ. ", eds.containsAll(Arrays.asList(expected)));
     }
    
 

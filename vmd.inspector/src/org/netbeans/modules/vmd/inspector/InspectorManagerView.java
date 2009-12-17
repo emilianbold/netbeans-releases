@@ -47,6 +47,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.DesignEvent;
 import java.util.Collection;
+import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -66,16 +67,16 @@ import org.openide.util.NbBundle;
  */
 public final class InspectorManagerView implements DesignDocumentAwareness, ActiveDocumentSupport.Listener, DesignListener {
 
-    private static WeakHashMap<DataObjectContext, InspectorManagerView> INSTANCES = new WeakHashMap<DataObjectContext, InspectorManagerView>();
+    private static final Map<DataObjectContext, InspectorManagerView> INSTANCES = new WeakHashMap<DataObjectContext, InspectorManagerView>();
     private static final JLabel emptyPanel = new JLabel(NbBundle.getMessage(InspectorManagerView.class, "LBL_emptyPanel"), JLabel.CENTER); //NOI18N
     private DesignDocument document;
     private InspectorWrapperTree folderWrapperTree;
     private InspectorUI ui;
     private DataObjectContext context;
 
-    public static void register(DataObjectContext context) {
+    static void register(DataObjectContext context) {
         assert context != null;
-        synchronized (InspectorManagerView.class) {
+        synchronized (INSTANCES) {
             if (INSTANCES.get(context) == null) {
                 INSTANCES.put(context, new InspectorManagerView(context));
             }
@@ -132,6 +133,8 @@ public final class InspectorManagerView implements DesignDocumentAwareness, Acti
             }
         });
     }
+
+
 
     private void notifyUISelectionChanged() {
         final Runnable runnable = new Runnable() {

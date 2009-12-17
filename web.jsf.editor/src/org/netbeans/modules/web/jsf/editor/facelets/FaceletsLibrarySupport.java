@@ -40,21 +40,9 @@ package org.netbeans.modules.web.jsf.editor.facelets;
 
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.FaceletsTaglibConfigProcessor;
 import com.sun.faces.config.DocumentInfo;
-import com.sun.faces.facelets.tag.AbstractTagLibrary;
-import com.sun.faces.facelets.tag.TagLibrary;
-import com.sun.faces.facelets.tag.composite.CompositeLibrary;
-import com.sun.faces.facelets.tag.jsf.core.CoreLibrary;
-import com.sun.faces.facelets.tag.jsf.html.HtmlLibrary;
-import com.sun.faces.facelets.tag.jstl.core.JstlCoreLibrary;
-import com.sun.faces.facelets.tag.jstl.fn.JstlFunction;
-import com.sun.faces.facelets.tag.ui.UILibrary;
-import com.sun.faces.facelets.util.FunctionLibrary;
 import com.sun.faces.spi.ConfigurationResourceProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -68,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -167,10 +156,9 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
                 //an error when scanning libraries, return no libraries, but give it a next try
                 return Collections.emptyMap();
             }
-//            debugLibraries();
+            updateCompositeLibraries(faceletsLibraries);
         }
 
-        updateCompositeLibraries(faceletsLibraries);
 
         return faceletsLibraries;
     }
@@ -243,16 +231,20 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
     }
 
     private Map<String, FaceletsLibrary> parseLibraries() {
-        ServletContext sc = null;
-
         // initialize the resource providers for facelet-taglib documents
         List<ConfigurationResourceProvider> faceletTaglibProviders =
                 new ArrayList<ConfigurationResourceProvider>();
-        //searches in classpath jars for .taglib.xml files
 
+        //1. first add provider which looks for libraries defined in web-inf.xml
+        //WEB-INF/web.xml <param-name>javax.faces.FACELETS_LIBRARIES</param-name> context param provider
+        faceletTaglibProviders.add(new WebFaceletTaglibResourceProvider(getJsfSupport().getWebModule()));
+
+        //searches in classpath jars for .taglib.xml files
+//        faceletTaglibProviders.add(new MetaInfFaceletTaglibraryConfigProvider());
+
+        //2. second add provider which looks for libs in the jars on the project classpath
         //we already identified the library descriptors during indexing, no need
         //to scan again, just use the files from index
-//        faceletTaglibProviders.add(new MetaInfFaceletTaglibraryConfigProvider());
         final Collection<URL> urls = new ArrayList<URL>();
         for (FileObject file : getJsfSupport().getIndex().getAllFaceletsLibraryDescriptors()) {
             urls.add(URLMapper.findURL(file, URLMapper.EXTERNAL));
@@ -264,41 +256,46 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
             }
         });
 
-        //WEB-INF/web.xml <param-name>javax.faces.FACELETS_LIBRARIES</param-name> context param provider
-        faceletTaglibProviders.add(new WebFaceletTaglibResourceProvider(getJsfSupport().getWebModule()));
-
-        //collect all libraries from all providers
-        Collection<URL> libraryUrls = new ArrayList<URL>();
-        for (ConfigurationResourceProvider provider : faceletTaglibProviders) {
-            libraryUrls.addAll(provider.getResources(sc));
+        //3. last add a provider for default jsf libs
+        //
+        //Add a facelet taglib provider which provides the libraries from
+        //netbeans jsf2.0 library
+        //
+        //This is needed for the standart JSF 2.0 libraries since it may
+        //happen that there is no jsf-impl.jar with the .taglib.xml files
+        //on the compile classpath and we still want the features like code
+        //completion work. This happens for example in Maven web projects.
+        //
+        //The provider is last in the list so the provided libraries will
+        //be overridden if the descriptors are found in any of the jars
+        //on compile classpath.
+        Collection<FileObject> libraryDescriptorFiles = DefaultFaceletLibraries.getInstance().getLibrariesDescriptorsFiles();
+        final Collection<URL> libraryURLs = new ArrayList<URL>();
+        for(FileObject fo : libraryDescriptorFiles) {
+            try {
+                libraryURLs.add(fo.getURL());
+            } catch (FileStateInvalidException ex) {
+                Logger.global.log(Level.INFO, null, ex);
+            }
         }
+        faceletTaglibProviders.add(new ConfigurationResourceProvider() {
+            public Collection<URL> getResources(ServletContext sc) {
+                return libraryURLs;
+            }
+        });
 
         //parse the libraries
-
-        //#176771 fix - we need our own ConfigManager anyway :-(
-        //com.sun.faces.config.ConfigManager cm = com.sun.faces.config.ConfigManager.getInstance();
-        org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager cm = org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager.getInstance();
-        DocumentInfo[] documents = (DocumentInfo[]) callMethod("getConfigDocuments", org.netbeans.modules.web.jsf.editor.facelets.mojarra.ConfigManager.class, cm, null, faceletTaglibProviders, null, true); //NOI18N
-
+        DocumentInfo[] documents = ConfigManager.getConfigDocuments(null, faceletTaglibProviders, null, true);
         if (documents == null) {
             return null; //error????
         }
 
-        FaceletsTaglibConfigProcessor processor = new FaceletsTaglibConfigProcessor(this);
-
         //process the found documents
-        processor.process(documents);
-
-        Collection<FaceletsLibrary> allLibs = new HashSet<FaceletsLibrary>();
-
-        //get the parsed libraries from the compiler instance
-        allLibs.addAll(processor.compiler.libraries);
-
-        //add default jsf 2.0 libraries
-        allLibs.addAll(getConvertedDefaultLibraries());
+        FaceletsTaglibConfigProcessor processor = new FaceletsTaglibConfigProcessor(this);
+        processor.process(null, documents);
 
         Map<String, FaceletsLibrary> libsMap = new HashMap<String, FaceletsLibrary>();
-        for (FaceletsLibrary lib : allLibs) {
+        for (FaceletsLibrary lib : processor.compiler.libraries) {
             libsMap.put(lib.getNamespace(), lib);
         }
 
@@ -306,109 +303,6 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
     }
 
-    private Collection<FaceletsLibrary> getConvertedDefaultLibraries() {
-        Collection<FaceletsLibrary> converted = new ArrayList<FaceletsLibrary>();
-        for (TagLibrary library : getDefaultLibraries()) {
-            if (library instanceof AbstractTagLibrary) {
-                String namespace = (String) getField("namespace", AbstractTagLibrary.class, library); //NOI18N
-                if (namespace == null) {
-                    continue; //error, take next
-                }
-                ClassBasedFaceletsLibrary flib = new ClassBasedFaceletsLibrary(this, namespace);
-                Map tagComponents = (Map) getField("factories", AbstractTagLibrary.class, library); //NOI18N
-                Collection<FaceletsLibrary.NamedComponent> components = new ArrayList<FaceletsLibrary.NamedComponent>();
-                if (tagComponents != null) {
-                    for (Object key : tagComponents.keySet()) {
-                        String componentName = (String) key;
-                        //XXX resolve the component type accoring to the factory instance, ufff
-                        //fortunately it looks like we do not need that
-                        components.add(flib.createNamedComponent(componentName));
-                    }
-                }
-                flib.setComponents(components);
-                converted.add(flib);
-
-            } else if (library instanceof FunctionLibrary) {
-                String namespace = (String) getField("namespace", FunctionLibrary.class, library); //NOI18N
-                if (namespace == null) {
-                    continue; //error, take next
-                }
-                ClassBasedFaceletsLibrary flib = new ClassBasedFaceletsLibrary(this, namespace);
-                Collection<FaceletsLibrary.NamedComponent> components = new ArrayList<FaceletsLibrary.NamedComponent>();
-                Map functionComponents = (Map) getField("functions", FunctionLibrary.class, library); //NOI18N
-                if (functionComponents != null) {
-                    for (Object key : functionComponents.keySet()) {
-                        String componentName = (String) key;
-                        //XXX resolve the component type accoring to the factory instance, ufff
-                        //fortunately it looks like we do not need that
-                        components.add(flib.createFunction(componentName, null));
-                    }
-                }
-                flib.setComponents(components);
-                converted.add(flib);
-            }
-        }
-
-
-        return converted;
-    }
-
-    private Collection<TagLibrary> getDefaultLibraries() {
-        Collection<TagLibrary> libs = new ArrayList<TagLibrary>();
-        libs.add(new CompositeLibrary());
-        libs.add(new CoreLibrary());
-        libs.add(new HtmlLibrary());
-        libs.add(new UILibrary());
-        libs.add(new JstlCoreLibrary());
-        libs.add(new FunctionLibrary(JstlFunction.class, "http://java.sun.com/jsp/jstl/functions")); //NOI18N
-
-        return libs;
-
-    }
-
-    private static Object getField(String fieldName, Class clazz, Object object) {
-        try {
-            Field f = clazz.getDeclaredField(fieldName);
-            f.setAccessible(true);
-            try {
-                return f.get(object);
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalAccessException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
-        } catch (NoSuchFieldException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
-    }
-
-    /** does search only by method name not params!!! */
-    private static Object callMethod(String methodName, Class clazz, Object object, Object... params) {
-        try {
-            Method m = null;
-            for (Method method : clazz.getDeclaredMethods()) {
-                if (method != null && method.getName().equals(methodName)) {
-                    m = method;
-                }
-            }
-            m.setAccessible(true);
-            return m.invoke(object, params);
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
-    }
 
     private void debugLibraries() {
         System.out.println("Facelets Libraries:");
@@ -425,8 +319,12 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
 
     public static class Compiler {
 
-        private List<FaceletsLibrary> libraries = new ArrayList<FaceletsLibrary>();
+        private Collection<FaceletsLibrary> libraries = new HashSet<FaceletsLibrary>();
 
+        //FaceletsTaglibConfigProcessor puts the libraries here and since the
+        //equals on the libraries is defined by comparing the namespaces,
+        //the first library with a namespace will be preserved, the other
+        //will be ignored
         public void addTagLibrary(FaceletsLibrary lib) {
             libraries.add(lib);
         }

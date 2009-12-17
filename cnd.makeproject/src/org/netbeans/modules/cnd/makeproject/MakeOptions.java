@@ -73,7 +73,8 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     private static final String REUSE = "reuse";  // NOI18N
     //
     private static final String SHOW_PROFILING = "showProfiling"; // NOI18N
-
+    //
+    private static final String SHOW_CONFIGURATION_WARNING = "showConfigurationWarning"; // NOI18N
     // packaging Defaults
     private static final String DEF_EXE_PERM = "defexeperm"; // NOI18N
     private static final String DEF_FILE_PERM = "deffileperm"; // NOI18N
@@ -193,10 +194,23 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     }
 
     public void setShowProfiling(boolean reuse) {
-        boolean oldValue = getReuse();
+        boolean oldValue = getShowProfiling();
         getPreferences().putBoolean(SHOW_PROFILING, reuse);
         if (oldValue != reuse) {
             firePropertyChange(SHOW_PROFILING, Boolean.valueOf(oldValue), Boolean.valueOf(reuse));
+        }
+    }
+
+    // Show Configuration warning
+    public boolean getShowConfigurationWarning() {
+        return getPreferences().getBoolean(SHOW_CONFIGURATION_WARNING, true);
+    }
+
+    public void setShowConfigurationWarning(boolean val) {
+        boolean oldValue = getShowConfigurationWarning();
+        getPreferences().putBoolean(SHOW_CONFIGURATION_WARNING, val);
+        if (oldValue != val) {
+            firePropertyChange(SHOW_CONFIGURATION_WARNING, Boolean.valueOf(oldValue), Boolean.valueOf(val));
         }
     }
 

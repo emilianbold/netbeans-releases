@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.discovery.project;
 import org.netbeans.junit.NbTestCase;
 
 /**
- *
+ * Not in suite
  * @author Alexander Simon
  */
 public class OpenSolarisTestCase extends NbTestCase {

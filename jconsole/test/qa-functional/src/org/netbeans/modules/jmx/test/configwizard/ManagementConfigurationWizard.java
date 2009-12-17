@@ -49,7 +49,6 @@ import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.drivers.tables.JTableMouseDriver;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.JMXTestCase;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
@@ -67,54 +66,37 @@ public class ManagementConfigurationWizard extends JMXTestCase {
     private static final String PASSWORD_EXT = "password";
     private static final String ACL_EXT = "acl";
     private static final String FOLDER_TAG = "<defined folder>";
+    private static boolean hasProject;
 
     /** Need to be defined because of JUnit */
     public ManagementConfigurationWizard(String name) {
         super(name);
     }
 
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
+     public void setUp() throws Exception {
+        super.setUp();
+        System.out.println("########  " + getName() + "  #######");
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ManagementConfigurationWizard("init"));
-        suite.addTest(new ManagementConfigurationWizard("test1"));
-        suite.addTest(new ManagementConfigurationWizard("test2"));
-        suite.addTest(new ManagementConfigurationWizard("test3"));
-        suite.addTest(new ManagementConfigurationWizard("test4"));
-        suite.addTest(new ManagementConfigurationWizard("test5"));
-        suite.addTest(new ManagementConfigurationWizard("test6"));
-        suite.addTest(new ManagementConfigurationWizard("test7"));
-        suite.addTest(new ManagementConfigurationWizard("test8"));
-        suite.addTest(new ManagementConfigurationWizard("test9"));
+        if (!hasProject) {
+            System.out.println("====================  init  ====================");
 
-        return suite;
-    }
-
-    //========================= Init ==================================//
-    public void init() {
-
-        System.out.println("====================  init  ====================");
-
-        System.out.println("Create project for Management Configuration file tests");
-        newProject(
-                PROJECT_CATEGORY_JAVA,
-                PROJECT_TYPE_JAVA_APPLICATION,
-                PROJECT_NAME_CONFIGURATION_FUNCTIONAL);
-        waitNoEvent(5000);
-        System.out.println("Create package folder " + PACKAGE_COM_FOO_BAR);
-        NewFileWizardOperator nfwo = newFileWizardFromMenu(
-                PROJECT_NAME_CONFIGURATION_FUNCTIONAL,
-                FILE_CATEGORY_JAVA,
-                FILE_TYPE_JAVA_PACKAGE);
-        nfwo.next();
-        NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
-                PACKAGE_COM_FOO_BAR, null);
-        nfnlso.finish();
+            System.out.println("Create project for Management Configuration file tests");
+            newProject(
+                    PROJECT_CATEGORY_JAVA,
+                    PROJECT_TYPE_JAVA_APPLICATION,
+                    PROJECT_NAME_CONFIGURATION_FUNCTIONAL);
+            waitNoEvent(5000);
+            System.out.println("Create package folder " + PACKAGE_COM_FOO_BAR);
+            NewFileWizardOperator nfwo = newFileWizardFromMenu(
+                    PROJECT_NAME_CONFIGURATION_FUNCTIONAL,
+                    FILE_CATEGORY_JAVA,
+                    FILE_TYPE_JAVA_PACKAGE);
+            nfwo.next();
+            NewJavaFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+                    PACKAGE_COM_FOO_BAR, null);
+            nfnlso.finish();
+            hasProject = true;
+        }
     }
 
     //========================= Test Wizard ==================================//
@@ -141,7 +123,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         nfnlso = createManagementConfigurationFileFromMenu(objectName);
         // Check name and location wizard components
         System.out.println("Check Name And Location wizard components");
-        checkNameAndLocationWizardComponents(nfnlso, objectName);
+        checkNameAndLocationWizardComponents(nfnlso, objectName + "." + PROPERTIES_EXT);
         // Check name and location wizard default values
         System.out.println("Check Name And Location wizard values");
         checkNameAndLocationWizardValues(nfnlso, objectName, false);

@@ -945,7 +945,101 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         // fail I will deal with later
         insertChar("x = %q((^))", 'a', "x = %q((a^))");
     }
-    
+
+    public void testInsertBrace01() throws Exception {
+        String testString = "if (true)" +
+                "\n" +
+                "    ^";
+        String result  = "if (true)" +
+                "\n" +
+                "{^";
+        insertChar(testString, '{', result);
+    }
+
+    public void testInsertBrace02() throws Exception {
+        String testString = "    class Name\n" +
+                "          ^";
+        String result  = "    class Name\n" +
+                "    {^";
+        insertChar(testString, '{', result);
+    }
+
+    public void testInsertBrace03() throws Exception {
+        String testString =
+                "    if ($a == 10\n" +
+                "            || $b == 11\n" +
+                "            || $a == $b)\n" +
+                "          ^";
+        String result  =
+                "    if ($a == 10\n" +
+                "            || $b == 11\n" +
+                "            || $a == $b)\n" +
+                "    {^";
+        insertChar(testString, '{', result);
+    }
+
+    public void testInsertBrace04() throws Exception {
+        String testString =
+                "    if ($a == 10\n" +
+                "            || $b == 11\n" +
+                "            || $a == $b)\n" +
+                "^";
+        String result  =
+                "    if ($a == 10\n" +
+                "            || $b == 11\n" +
+                "            || $a == $b)\n" +
+                "    {^";
+        insertChar(testString, '{', result);
+    }
+
+    public void testInsertBrace05() throws Exception {
+        String testString =
+                "    $a = 10;\n" +
+                "    while ($a == 10\n" +
+                "            || $b == 11\n" +
+                "            || $a == $b)\n" +
+                "          ^";
+        String result  =
+                "    $a = 10;\n" +
+                "    while ($a == 10\n" +
+                "            || $b == 11\n" +
+                "            || $a == $b)\n" +
+                "    {^";
+        insertChar(testString, '{', result);
+    }
+
+    public void testInsertBrace06() throws Exception {
+        String testString =
+                "    $a = 10;\n" +
+                "    do\n" +
+                "          ^";
+        String result  =
+                "    $a = 10;\n" +
+                "    do\n" +
+                "    {^";
+        insertChar(testString, '{', result);
+    }
+
+    public void testInsertBrace07() throws Exception {
+        String testString =
+                "    foreach($zzz as $zzzz)\n" +
+                "          ^";
+        String result  =
+                "    foreach($zzz as $zzzz)\n" +
+                "    {^";
+        insertChar(testString, '{', result);
+    }
+
+    public void testInsertBrace08() throws Exception {
+        String testString =
+                "    for($i = 0; $i < 10; $i++)\n" +
+                "          ^";
+        String result  =
+                "    for($i = 0; $i < 10; $i++)\n" +
+                "    {^";
+        insertChar(testString, '{', result);
+    }
+
 //    public void testLogicalRange1() throws Exception {
 //        String code = "if (true)\n  fo^o\nend";
 //        String next = "if (true)\n  %<%fo^o%>%\nend";

@@ -60,6 +60,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -248,7 +249,21 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         contentPane.repaint();
                              
         // handle the default buttons - Enter
-        getRootPane().setDefaultButton(currentUi.getDefaultEnterButton());
+        
+        if(currentUi == null) {
+            LogManager.log("currentUI is null");
+        }
+        if(getRootPane() == null) {
+            LogManager.log("getRootPane() is null");
+            LogManager.log("currentUI is " + currentUi);
+            if(currentUi!=null) {
+                LogManager.log("currentUI.title=" + currentUi.getTitle());
+                LogManager.log("currentUI.name=" + currentUi.getName());
+            }
+        }
+        NbiButton enterButton = currentUi.getDefaultEnterButton();
+        
+        getRootPane().setDefaultButton(enterButton);
         
         // handle the default buttons - Escape
         getRootPane().getInputMap(JRootPane.WHEN_IN_FOCUSED_WINDOW).put(

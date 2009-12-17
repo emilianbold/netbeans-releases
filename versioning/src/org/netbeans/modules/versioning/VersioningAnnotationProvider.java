@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.versioning;
 
+import java.util.Map.Entry;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
@@ -58,8 +59,11 @@ import java.util.*;
 import java.util.logging.Level;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.logging.Logger;
+import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -71,6 +75,11 @@ import org.openide.util.RequestProcessor;
 public class VersioningAnnotationProvider extends AnnotationProvider {
     
     static VersioningAnnotationProvider instance;
+    private static final Logger LOG = Logger.getLogger(VersioningAnnotationProvider.class.getName());
+    private static final int CACHE_SIZE = getMaxCacheSize();
+    private static final long CACHE_ITEM_MAX_AGE = getMaxAge();
+    private static final boolean ANNOTATOR_ASYNC = !"false".equals(System.getProperty("versioning.asyncAnnotator", "true")); //NOI18N
+    private static final Image EMPTY_ICON = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
 
     public VersioningAnnotationProvider() {
         instance = this;
@@ -79,62 +88,26 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
     private VersioningSystem getOwner(File file) {
         return file == null ? null : VersioningManager.getInstance().getOwner(file);
     }
-    
+
     public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-        long ft = System.currentTimeMillis();
-        VersioningManager.LOG.log(Level.FINE, "annotateIcon");
-        VCSAnnotator an = null;
-        long at = 0;
-        try {
-            if (files.isEmpty()) return icon;
-            FileObject fo = (FileObject) files.iterator().next();
-            VersioningSystem vs = getOwner(FileUtil.toFile(fo));
-
-            if (vs == null) return null;
-            an = vs.getVCSAnnotator();
-            if (an == null) return null;
-
-            VCSContext context = Utils.contextForFileObjects(files);
-            at = System.currentTimeMillis();
-            return an.annotateIcon(icon, context);
-        } finally {
-            if(VersioningManager.LOG.isLoggable(Level.FINE)) {
-                long t = System.currentTimeMillis();
-                if(an != null) {
-                    VersioningManager.LOG.log(Level.FINE, " " + an.getClass().getName() + " returns in " + (t - at) + " millis");
-                }
-                VersioningManager.LOG.fine("annotateIcon returns in " + (t - ft) + " millis");
-            }
+        Image annotatedIcon;
+        if (ANNOTATOR_ASYNC) {
+            // at first annotate the empty icon and cache this merge icon.
+            // otherwise the cached value would be the final merged icon and there might be problems when acquiring the cached value
+            // in another annotate round - if the caller decides to annotate a different icon than the one earlier
+            annotatedIcon = iconCache.getValue(iconCache.new ItemKey<Image, String>(files, "", EMPTY_ICON)); //NOI18N
+            // and finally merge the cached value with the original icon
+            annotatedIcon = annotatedIcon == null ? icon : ImageUtilities.mergeImages(icon, annotatedIcon, 0, 0);
+        } else {
+            // fallback to the old implementation
+            annotatedIcon = iconCache.getValue(iconCache.new ItemKey<Image, String>(files, "", icon)); //NOI18N
         }
+        return annotatedIcon;
     }
 
     public String annotateNameHtml(String name, Set<? extends FileObject> files) {
-        long ft = System.currentTimeMillis();
-        VersioningManager.LOG.log(Level.FINE, "annotateNameHtml");
-        VCSAnnotator an = null;
-        long at = 0;
-
-        try {
-            if (files.isEmpty()) return name;
-            FileObject fo = (FileObject) files.iterator().next();
-            VersioningSystem vs = getOwner(FileUtil.toFile(fo));
-
-            if (vs == null) return null;
-            an = vs.getVCSAnnotator();
-            if (an == null) return null;
-
-            at = System.currentTimeMillis();
-            VCSContext context = Utils.contextForFileObjects(files);
-            return an.annotateName(name, context);
-        } finally {
-            if(VersioningManager.LOG.isLoggable(Level.FINE)) {
-                long t = System.currentTimeMillis();
-                if(an != null) {
-                    VersioningManager.LOG.log(Level.FINE, " " + an.getClass().getName() + " returns in " + (t - at) + " millis");
-                }
-                VersioningManager.LOG.fine("annotateNameHtml returns in " + (t - ft) + " millis");
-            }
-        }
+        String annotatedName = labelCache.getValue(labelCache.new ItemKey<String, String>(files, name, name));
+        return annotatedName == null ? htmlEncode(name) : annotatedName;
     }
 
     public Action[] actions(Set files) {
@@ -283,10 +256,14 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                    
     /**
      * Refreshes annotations for all given files and all parent folders of those files.
-     * 
+     *
      * @param filesToRefresh files to refresh
      */
     void refreshAnnotations(Set<File> files) {
+        refreshAnnotations(files, true);
+    }
+
+    void refreshAnnotations(Set<File> files, boolean removeFromCache) {
         if (files == null) {            
             refreshAllAnnotationsTask.schedule(2000);
             return;
@@ -300,14 +277,14 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                 fo = getExistingParent(file);
             } else {
                 // file exists, plan it to refresh
-                addToMap(filesToRefresh, fo);
+                addToMap(filesToRefresh, fo, removeFromCache);
                 fo = fo.getParent();
             }
 
             // fo is the closest existing parent
             for (FileObject parent = fo; parent != null; parent = parent.getParent()) {
                 // plan parent to refresh
-                addToMap(parentsToRefresh, parent);
+                addToMap(parentsToRefresh, parent, removeFromCache);
             }
         }
         
@@ -332,7 +309,9 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
     private RequestProcessor.Task refreshAllAnnotationsTask = rp.create(new Runnable() {        
         public void run() {            
             clearMap(filesToRefresh);
-            clearMap(parentsToRefresh);            
+            clearMap(parentsToRefresh);
+            labelCache.removeAll();
+            iconCache.removeAll();
             
             FileSystem fileSystem = Utils.getRootFilesystem();
             fireFileStatusChanged(new FileStatusEvent(fileSystem, true, true));
@@ -407,7 +386,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         }                    
     }
     
-    private void addToMap(Map<FileSystem, Set<FileObject>> map, FileObject fo) {
+    private void addToMap(Map<FileSystem, Set<FileObject>> map, FileObject fo, boolean removeFromCache) {
         if(fo == null) {
             return;
         }
@@ -425,6 +404,10 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                 map.put(fs, set);
             }
             set.add(fo);
+            if (removeFromCache) {
+                labelCache.removeAllFor(fo);
+                iconCache.removeAllFor(fo);
+            }
         }
     }
 
@@ -442,5 +425,392 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         }
         return fo;
     }
-    
+
+    private final Cache<Image, String> iconCache = new Cache<Image, String>(Cache.ANNOTATION_TYPE_ICON);
+    private final Cache<String, String> labelCache = new Cache<String, String>(Cache.ANNOTATION_TYPE_LABEL);
+
+    /**
+     * Keeps cached annotations
+     */
+    private class Cache<T, KEY> {
+        private static final String ANNOTATION_TYPE_ICON = "IconCache"; //NOI18N
+        private static final String ANNOTATION_TYPE_LABEL = "LabelCache"; //NOI18N
+
+        private final LinkedHashMap<ItemKey<T, KEY>, Item<T>> cachedValues = new LinkedHashMap<ItemKey<T, KEY>, Item<T>>(CACHE_SIZE) {
+            @Override
+            protected boolean removeEldestEntry(Entry<ItemKey<T, KEY>, Item<T>> eldest) {
+                if (size() >= CACHE_SIZE) {
+                    removeFromIndex(eldest.getKey());
+                    return true;
+                }
+                return false;
+            }
+        };
+        private final WeakHashMap<FileObject, Set<ItemKey<T, KEY>>> index = new WeakHashMap<FileObject, Set<ItemKey <T, KEY>>>(CACHE_SIZE);
+        private final LinkedHashSet<ItemKey<T, KEY>> filesToAnnotate;
+        private final RequestProcessor.Task annotationRefreshTask;
+        private final String type;
+        private final HashSet<FileObject> refreshedFiles = new HashSet<FileObject>();
+        private boolean allCleared;
+
+        Cache(String type) {
+            this.annotationRefreshTask = new RequestProcessor("VersioningAnnotator.annotationRefresh", 1, false).create(new AnnotationRefreshTask()); //NOI18N
+            this.filesToAnnotate = new LinkedHashSet<ItemKey<T, KEY>>();
+            assert ANNOTATION_TYPE_ICON.equals(type) || ANNOTATION_TYPE_LABEL.equals(type);
+            this.type = type;
+        }
+
+        /**
+         * Immediately returns cached value, which can be null, and starts a background call to the annotator which owns the set of files
+         * @param files set of files to annotate
+         * @param initialValue initial value to annotate
+         * @return cached value for files or null
+         */
+        T getValue (ItemKey<T, KEY> key) {
+            if (!ANNOTATOR_ASYNC) {
+                return annotate(key.getInitialValue(), key.getFiles());
+            }
+            T cachedValue;
+            boolean itemCached = false;
+            synchronized (cachedValues) {
+                Item<T> cachedItem = cachedValues.get(key);
+                cachedValue = cachedItem == null ? null : cachedItem.getValue();
+                if (cachedValue != null || cachedValues.containsKey(key)) {
+                    itemCached = true;
+                }
+            }
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.log(Level.FINER, "{0}.getValue() cached: {1} for {2}", //NOI18N
+                        new Object[] {type, cachedValue, key.getFiles()});
+            }
+            if (!itemCached) {
+                // not cached yet, plan the annotation
+                addFilesToAnnotate(key);
+            }
+            return cachedValue;
+        }
+
+        /**
+         * Stores the new value in the cache. Also checks if an event shall be fired to refresh files' annotations.
+         * @param files files for which the value will be kept
+         * @param value cached value
+         * @return true if the event should be fired - it means the old cached value differs from the new one
+         */
+        private boolean setValue (ItemKey<T, KEY> key, T value) {
+            synchronized (cachedValues) {
+                if (allCleared) {
+                    return false;
+                }
+                Set<? extends FileObject> files = key.getFiles();
+                for (FileObject fo : files) {
+                    if (refreshedFiles.contains(fo)) {
+                        return false;
+                    }
+                }
+                cachedValues.put(key, new Item(value));
+                // reference to the key must be added to index for every file in the set and every parent
+                // so the key can be quickly found when refresh annotations event comes
+                for (FileObject fo : files) {
+                    boolean added = false;
+                    do {
+                        Set<ItemKey<T, KEY>> sets = index.get(fo);
+                        if (sets == null) {
+                            sets = new HashSet<ItemKey<T, KEY>>();
+                            index.put(fo, sets);
+                        }
+                        added = sets.add(key);
+                    } while (added && (fo = fo.getParent()) != null);
+                }
+                removeOldValues();
+            }
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.log(Level.FINER, "{0}.setValue(): {1} for {2}", new Object[] {type, value, key}); //NOI18N
+            }
+            return true;
+        }
+
+        private void removeOldValues () {
+            for (Iterator<Map.Entry<ItemKey<T, KEY>, Item<T>>> it = cachedValues.entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry<ItemKey<T, KEY>, Item<T>> e = it.next();
+                if (!e.getValue().isValid()) {
+                    removeFromIndex(e.getKey());
+                    it.remove();
+                } else {
+                    // do not search on, next entries are newer
+                    break;
+                }
+            }
+        }
+
+        /**
+         * Plan annotation scan for these files.
+         * @param files
+         * @param initialValue
+         */
+        private void addFilesToAnnotate (ItemKey<T, KEY> key) {
+            boolean start;
+            synchronized (filesToAnnotate) {
+                start = filesToAnnotate.add(key);
+            }
+            if (start) {
+                annotationRefreshTask.schedule(0);
+            }
+        }
+
+        private ItemKey<T, KEY> getNextFilesToAnnotate () {
+            ItemKey<T, KEY> retval = null;
+            synchronized (filesToAnnotate) {
+                Iterator<ItemKey<T, KEY>> it = filesToAnnotate.iterator();
+                if (it.hasNext()) {
+                    retval = it.next();
+                    it.remove();
+                }
+            }
+            return retval;
+        }
+
+        private T annotate(VCSAnnotator annotator, T initialValue, VCSContext context) {
+            if (ANNOTATION_TYPE_LABEL.equals(type)) {
+                return (T) annotator.annotateName((String) initialValue, context);
+            } else if (ANNOTATION_TYPE_ICON.equals(type)) {
+                return (T) annotator.annotateIcon((Image) initialValue, context);
+            } else {
+                LOG.log(Level.WARNING, "{0}.annotate unsupported", type); //NOI18N
+                assert false;
+                return null;
+            }
+        }
+        
+        private T annotate (T initialValue, Set<? extends FileObject> files) {
+            long ft = System.currentTimeMillis();
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "{0}.annotate for {1}", new Object[] {type, files}); //NOI18N
+            }
+            VCSAnnotator an = null;
+
+            try {
+                if (files.isEmpty()) {
+                    return initialValue;
+                }
+                FileObject fo = (FileObject) files.iterator().next();
+                VersioningSystem vs = getOwner(FileUtil.toFile(fo));
+
+                if (vs == null) {
+                    return null;
+                }
+                an = vs.getVCSAnnotator();
+                if (an == null) {
+                    return null;
+                }
+
+                VCSContext context = Utils.contextForFileObjects(files);
+                return annotate(an, initialValue, context);
+            } finally {
+                if (LOG.isLoggable(Level.FINE)) {
+                    long t = System.currentTimeMillis();
+                    if (LOG.isLoggable(Level.FINE)) {
+                        if (an != null) {
+                            LOG.log(Level.FINE, "{0}.annotate in {1} returns in " + (t - ft) + " millis", //NOI18N
+                                    new Object[] {type, an.getClass().getName()});
+                        } else {
+                            LOG.log(Level.FINE, "{0}.annotate returns in " + (t - ft) + " millis", //NOI18N
+                                    new Object[] {type});
+                        }
+                    }
+                }
+            }
+        }
+
+        private void removeAllFor (FileObject fo) {
+            synchronized (cachedValues) {
+                refreshedFiles.add(fo);
+                LOG.log(Level.FINER, "{0}.removeAllFor(): {1}", new Object[] {type, fo.getPath()}); //NOI18N
+                Set<ItemKey<T, KEY>> keys = index.get(fo);
+                if (keys != null) {
+                    for (ItemKey<T, KEY> key : keys) {
+                        assert cachedValues.containsKey(key);
+                        cachedValues.remove(key);
+                        addFilesToAnnotate(key);
+                    }
+                    ItemKey<T, KEY>[] keysArray = keys.toArray(new ItemKey[keys.size()]);
+                    for (ItemKey<T, KEY> key : keysArray) {
+                        removeFromIndex(key);
+                    }
+                }
+            }
+        }
+
+        private void removeFromIndex (ItemKey<T, KEY> key) {
+            Set<? extends FileObject> files = key.getFiles();
+            Set<FileObject> removedFor = new HashSet<FileObject>();
+            // remove all references for every file and it's parents from the index
+            for (FileObject fo : files) {
+                do {
+                    removedFor.add(fo);
+                    Set<ItemKey<T, KEY>> sets = index.get(fo);
+                    if (sets != null) {
+                        sets.remove(key);
+                        if (sets.size() == 0) {
+                            // remove the whole entry
+                            index.remove(fo);
+                        }
+                    }
+                } while ((fo = fo.getParent()) != null && !removedFor.contains(fo));
+            }
+        }
+
+        private void removeAll() {
+            synchronized (cachedValues) {
+                allCleared = true;
+                cachedValues.clear();
+                index.clear();
+            }
+        }
+
+        private class AnnotationRefreshTask implements Runnable {
+            public void run() {
+                ItemKey<T, KEY> refreshCandidate;
+                while ((refreshCandidate = getNextFilesToAnnotate()) != null) {
+                    T initialValue = refreshCandidate.getInitialValue();
+                    Set<? extends FileObject> files = refreshCandidate.getFiles();
+                    assert files != null;
+                    clearEvents();
+                    T newValue = annotate(initialValue, files);
+                    boolean fireEvent = setValue(refreshCandidate, newValue);
+                    if (fireEvent) {
+                        Set<File> filesToRefresh = new HashSet<File>(files.size());
+                        for (FileObject fo : files) {
+                            File file = FileUtil.toFile(fo);
+                            if (file != null) {
+                                filesToRefresh.add(file);
+                            }
+                        }
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "{0}.AnnotationRefreshTask.run(): firing refresh event for {1}", //NOI18N
+                                    new Object[] {type, filesToRefresh});
+                        }
+                        refreshAnnotations(filesToRefresh, false);
+                    }
+                }
+            }
+        }
+
+        private void clearEvents() {
+            synchronized (cachedValues) {
+                refreshedFiles.clear();
+                allCleared = false;
+            }
+        }
+
+        private class Item<T> {
+            private final T value;
+            private final long timeStamp;
+
+            public Item(T value) {
+                this.value = value;
+                this.timeStamp = System.currentTimeMillis();
+            }
+
+            public T getValue () {
+                return value;
+            }
+
+            public boolean isValid () {
+                return CACHE_ITEM_MAX_AGE == -1 || System.currentTimeMillis() - timeStamp < CACHE_ITEM_MAX_AGE;
+            }
+        }
+
+        private class ItemKey<T, KEY> {
+            private final T initialValue;
+            private final KEY keyPart;
+            private final Set<? extends FileObject> files;
+            private Integer hashCode;
+
+            public ItemKey(Set<? extends FileObject> files, KEY keyPart, T initialValue) {
+                assert keyPart != null;
+                this.initialValue = initialValue;
+                this.keyPart = keyPart;
+                this.files = files;
+            }
+
+            public T getInitialValue () {
+                return initialValue;
+            }
+
+            public Set<? extends FileObject> getFiles () {
+                return files;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj instanceof ItemKey) {
+                    ItemKey other = (ItemKey) obj;
+                    return files.equals(other.files) && (keyPart.equals(other.keyPart));
+                }
+                return super.equals(obj);
+            }
+
+            @Override
+            public int hashCode() {
+                // hashCode should allways return the same value during the lifetime of the instance
+                if (hashCode == null) {
+                    int hash = 5;
+                    hash = 29 * hash + (this.keyPart != null ? this.keyPart.hashCode() : 0);
+                    hash = 29 * hash + (this.files != null ? this.files.hashCode() : 0);
+                    if (hashCode == null) {
+                        hashCode = hash;
+                    }
+                    hashCode = hash;
+                }
+                return hashCode;
+            }
+
+            @Override
+            public String toString() {
+                return files.toString() + ": " + keyPart.toString() + "(" + (initialValue == null ? "null" : initialValue.toString()) + ")"; //NOI18N
+            }
+        }
+    }
+
+    private static int getMaxCacheSize () {
+        String cacheSizeProp = System.getProperty("versioning.annotator.cacheSize", "0"); //NOI18N
+        int cacheSize = 0;
+        try {
+            if (cacheSizeProp != null) {
+                cacheSize = Integer.parseInt(cacheSizeProp);
+            }
+        } catch (NumberFormatException ex) {
+            LOG.log(Level.INFO, "Max cache size: " + cacheSizeProp, ex); //NOI18N
+            cacheSize = 0;
+        }
+        if (cacheSize < 250) {
+            cacheSize = 500;
+        }
+        LOG.log(Level.FINE, "getMaxCacheSize(): " + cacheSize);         //NOI18N
+        return cacheSize;
+    }
+
+    private static long getMaxAge () {
+        String cacheItemAgeProp = System.getProperty("versioning.annotator.cacheItem.maxAge", "60000"); //NOI18N
+        long cacheItemAge = 0;
+        try {
+            if (cacheItemAgeProp != null) {
+                cacheItemAge = Long.parseLong(cacheItemAgeProp);
+            }
+        } catch (NumberFormatException ex) {
+            LOG.log(Level.INFO, "Max cache item age: " + cacheItemAgeProp, ex); //NOI18N
+            cacheItemAge = 0;
+        }
+        if (cacheItemAge != -1 && cacheItemAge < 60000) {
+            cacheItemAge = 10 * 60 * 1000;
+        }
+        LOG.log(Level.FINE, "getMaxAge(): " + cacheItemAge);            //NOI18N
+        return cacheItemAge;
+    }
+
+    private static final java.util.regex.Pattern lessThan = java.util.regex.Pattern.compile("<"); //NOI18N
+    private String htmlEncode (String name) {
+        if (name.indexOf('<') == -1) return name;
+        return lessThan.matcher(name).replaceAll("&lt;");               //NOI18N
+    }
 }

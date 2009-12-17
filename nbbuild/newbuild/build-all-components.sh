@@ -248,7 +248,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #Build all FU the NBMs
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dmoduleconfig=all -Dbase.nbm.target.dir=${DIST}/uc -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dcluster.config=full -Dbase.nbm.target.dir=${DIST}/uc -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines
 ERROR_CODE=$?
 
 create_test_result "build.NBMs" "Build NBMs" $ERROR_CODE
@@ -279,7 +279,7 @@ fi
 
 cd nbbuild
 #Build catalog for FU NBMs
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml -Dcatalog.base.url="."
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml
 ERROR_CODE=$?
 
 create_test_result "build.FU.catalog" "Build catalog FU modules" $ERROR_CODE
@@ -290,7 +290,7 @@ fi
 cd ..
 
 #Build all NBMs for stable UC
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dmoduleconfig=stableuc -Dbase.nbm.target.dir=${DIST}/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml build-nbms -Dcluster.config=stableuc -Dbase.nbm.target.dir=${DIST}/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=source,lines
 ERROR_CODE=$?
 
 create_test_result "build.NBMs.stableUC" "Build all NBMs for stable UC" $ERROR_CODE
@@ -311,7 +311,7 @@ fi
 
 cd nbbuild
 #Build catalog for stable UC NBMs
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc2 -Dcatalog.file=${DIST}/uc2/catalog.xml -Dcatalog.base.url="."
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc2 -Dcatalog.file=${DIST}/uc2/catalog.xml
 ERROR_CODE=$?
 
 create_test_result "build.stableuc.catalog" "Build catalog stableUC modules" $ERROR_CODE
@@ -375,7 +375,7 @@ if [ $ML_BUILD == 1 ]; then
 
     cd $NB_ALL/nbbuild
     #Build catalog for ML FU NBMs
-    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/ml/uc -Dcatalog.file=${DIST}/ml/uc/catalog.xml -Dcatalog.base.url="."
+    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/ml/uc -Dcatalog.file=${DIST}/ml/uc/catalog.xml
     ERROR_CODE=$?
 
     create_test_result "build.ML.FU.catalog" "Build ML FU catalog" $ERROR_CODE
@@ -386,7 +386,7 @@ if [ $ML_BUILD == 1 ]; then
 
     #Build catalog for ML stable UC NBMs
     create_test_result "build.ML.stableuc.catalog" "Build ML Stable UC catalog" $ERROR_CODE
-    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uml/uc2 -Dcatalog.file=${DIST}/ml/uc2/catalog.xml -Dcatalog.base.url="."
+    ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uml/uc2 -Dcatalog.file=${DIST}/ml/uc2/catalog.xml
     ERROR_CODE=$?
 
     if [ $ERROR_CODE != 0 ]; then
@@ -413,7 +413,7 @@ if [ ! -z $UC_NBMS_DIR ]; then
 fi
 
 #Build catalog for FU NBMs
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml -Dcatalog.base.url="."
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml
 ERROR_CODE=$?
 
 create_test_result "build.FU.catalog" "Build catalog FU modules" $ERROR_CODE

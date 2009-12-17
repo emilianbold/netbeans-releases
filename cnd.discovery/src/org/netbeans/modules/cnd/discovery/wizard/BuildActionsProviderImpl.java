@@ -142,6 +142,8 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
         }
 
         private String saveLog(JEditorPane pane){
+            // TODO: this method does not work for sun studio compilers. Action should listen output writer.
+            // Provide parameter outputListener for DefaultProjectActionHandler.ProcessChangeListener
             BufferedWriter bw = null;
             String name = null;
             try {

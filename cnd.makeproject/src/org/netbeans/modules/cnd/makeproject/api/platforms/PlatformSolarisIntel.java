@@ -40,11 +40,12 @@
  */
 
 package org.netbeans.modules.cnd.makeproject.api.platforms;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 
 public class PlatformSolarisIntel extends PlatformSolaris {
     public static final String NAME = "Solaris-x86"; // NOI18N
 
     public PlatformSolarisIntel() {
-        super(NAME, "Solaris x86", Platform.PLATFORM_SOLARIS_INTEL); // NOI18N
+        super(NAME, "Solaris x86", PlatformTypes.PLATFORM_SOLARIS_INTEL); // NOI18N
     }
 }

@@ -90,7 +90,7 @@ public class ModuleListParserTest extends TestCase {
         properties.put("nb.cluster.bar.dir", "bardir");
         properties.put("basedir", new File(nball, "nbbuild").getAbsolutePath());
         long start = System.currentTimeMillis();
-        ModuleListParser p = new ModuleListParser(properties, ParseProjectXml.TYPE_NB_ORG, null);
+        ModuleListParser p = new ModuleListParser(properties, ModuleType.NB_ORG, null);
         System.err.println("Scanned " + nball + " sources in " + (System.currentTimeMillis() - start) + "msec");
         ModuleListParser.Entry e = p.findByCodeNameBase("org.netbeans.modules.beans");
         assertNotNull(e);
@@ -149,7 +149,7 @@ public class ModuleListParserTest extends TestCase {
         properties.put("basedir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite1/action-project"));
         properties.put("suite.dir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite1"));
         long start = System.currentTimeMillis();
-        ModuleListParser p = new ModuleListParser(properties, ParseProjectXml.TYPE_SUITE, fakeproj);
+        ModuleListParser p = new ModuleListParser(properties, ModuleType.SUITE, fakeproj);
         System.err.println("Scanned " + nball + " binaries in " + (System.currentTimeMillis() - start) + "msec");
         ModuleListParser.Entry e = p.findByCodeNameBase("org.netbeans.examples.modules.action");
         assertNotNull("found myself", e);
@@ -196,7 +196,7 @@ public class ModuleListParserTest extends TestCase {
                 File.pathSeparator + filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite3/nbplatform/random"));
         properties.put("basedir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite3/dummy-project"));
         properties.put("project", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite3/dummy-project"));
-        ModuleListParser p = new ModuleListParser(properties, ParseProjectXml.TYPE_STANDALONE, null);
+        ModuleListParser p = new ModuleListParser(properties, ModuleType.STANDALONE, null);
         ModuleListParser.Entry e = p.findByCodeNameBase("org.netbeans.examples.modules.dummy");
         assertNotNull("found myself", e);
         assertEquals("org.netbeans.examples.modules.dummy", e.getCnb());

@@ -109,13 +109,14 @@ public class HtmlCompletionProvider implements CompletionProvider {
                 HtmlCompletionQuery.CompletionResult result = new HtmlCompletionQuery(doc, caretOffset).query();
                 if(result != null) {
                     items = result.getItems();
-                }
-
-                resultSet.addAllItems(items);
-                if(result != null) {
                     anchor = result.getAnchor();
-                    resultSet.setAnchorOffset(anchor);
+                } else {
+                    items = Collections.emptyList();
+                    anchor = 0;
                 }
+                resultSet.addAllItems(items);
+                resultSet.setAnchorOffset(anchor);
+
             } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);
             }

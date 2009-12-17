@@ -70,19 +70,9 @@
             <name>Repository hosting the jee6 artifacts</name>
             <url>http://download.java.net/maven/2</url>
         </repository>
-        <repository>
-            <id>jboss</id>
-            <url>http://repository.jboss.org/maven2</url>
-        </repository>
     </repositories>
 
     <dependencies>
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>bean-validator</artifactId>
-            <version>3.0-JBoss-4.0.0.Beta3</version>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>

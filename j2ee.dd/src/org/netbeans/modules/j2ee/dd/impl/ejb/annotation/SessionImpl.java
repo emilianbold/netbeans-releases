@@ -47,7 +47,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -115,8 +114,6 @@ public class SessionImpl extends PersistentObject implements Session {
     private MessageDestinationRef[] messageDestinationRefs = null;
 
     private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
-    private static final String PROPERTY_BUSINESS_LOCAL = "BusinessLocal";       //NOI18N
-    private static final String PROPERTY_BUSINESS_REMOTE = "BusinessRemote";       //NOI18N
     
     public SessionImpl(Kind kind, AnnotationModelHelper helper, TypeElement typeElement) {
         super(helper, typeElement);
@@ -150,7 +147,11 @@ public class SessionImpl extends PersistentObject implements Session {
         AnnotationParser parser = AnnotationParser.create(getHelper());
         parser.expectString("name", parser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
         ParseResult parseResult = parser.parse(annotationMirror);
+        String oldEjbName = ejbName;
         ejbName = parseResult.get("name", String.class); // NOI18N
+        if (ejbName != null && !ejbName.equals(oldEjbName)){
+            fireChange(new PropertyChangeEvent(this, EJB_NAME, oldEjbName, ejbName));
+        }
         ejbClass = typeElement.getQualifiedName().toString();
 
         initBusinessInterfaces();
@@ -268,10 +269,10 @@ public class SessionImpl extends PersistentObject implements Session {
         }
 
         if (!businessLocalOld.equals(businessLocal)){
-            fireChange(new PropertyChangeEvent(this, PROPERTY_BUSINESS_LOCAL, businessLocalOld, businessLocal));
+            fireChange(new PropertyChangeEvent(this, BUSINESS_LOCAL, businessLocalOld, businessLocal));
         }
         if (!businessRemoteOld.equals(businessRemote)){
-            fireChange(new PropertyChangeEvent(this, PROPERTY_BUSINESS_REMOTE, businessRemoteOld, businessRemote));
+            fireChange(new PropertyChangeEvent(this, BUSINESS_REMOTE, businessRemoteOld, businessRemote));
         }
     }
     

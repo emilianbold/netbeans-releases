@@ -76,7 +76,7 @@ public final class SelectObjectFilesPanel extends JPanel {
                     case BinaryFile:
                     case Folder:
                     case BinaryFiles:
-                        ProviderControl pc = new ProviderControl(property, wizardDescriptor, providerPanel, wizard);
+                        ProviderControl pc = new ProviderControl(key, property, wizardDescriptor, providerPanel, wizard);
                         controls.add(pc);
                         if (first) {
                             instructionsTextArea.setText(property.getDescription());

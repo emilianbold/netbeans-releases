@@ -175,7 +175,7 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
 
     <xsd:complexType name="context-arity">
         <xsd:choice>
-            <xsd:element name="one-file-only"/>
+            <xsd:element name="one-file-only"><xsd:complexType/></xsd:element>
             <xsd:element name="separated-files" type="xsd:string"/>
         </xsd:choice>
     </xsd:complexType>
@@ -238,7 +238,7 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
-                <xsd:element name="separator"/>
+                <xsd:element name="separator"><xsd:complexType/></xsd:element>
             </xsd:choice>
         </xsd:sequence>
     </xsd:complexType>

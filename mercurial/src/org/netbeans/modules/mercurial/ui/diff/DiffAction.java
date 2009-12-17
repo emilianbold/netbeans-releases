@@ -44,7 +44,6 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.Set;
 
@@ -63,14 +62,22 @@ import org.openide.util.NbBundle;
  */
 public class DiffAction extends ContextAction {
     
-    private final VCSContext context;
-
-    public DiffAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
+            return false;
+        return true;
     }
-    
-    public void performAction(ActionEvent e) {
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Diff"; // NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         String contextName = Utils.getContextDisplayName(context);
                 
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
@@ -93,14 +100,6 @@ public class DiffAction extends ContextAction {
 
         diff(context, Setup.DIFFTYPE_LOCAL, contextName);
     }
-    
-    @Override
-    public boolean isEnabled() {
-        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
-            return false;
-        return true;
-    } 
 
     public static void diff(VCSContext ctx, int type, String contextName) {
 

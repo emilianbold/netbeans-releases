@@ -1,4 +1,4 @@
-NETBEANS IDE 6.8 Beta ("Product")
+NETBEANS IDE 6.8 ("Product")
 
 Please review the complete list of open-source licenses
 governing software  included in the Product. They can be
@@ -12,16 +12,15 @@ choice of which version of the LGPL/GPL is applied is
 unspecified.
 
 Please review the list of libraries and licenses provided
-for use. This license file contains five distinct licenses.
+for use. This license file contains six distinct licenses.
 
-Unless specified below, the use of NetBeans IDE and Sun
-GlassFish v3 community version are governed by the  terms of
-either the GNU General Public License Version 2  with
-Classpath Exception ("GPLv2 with Classpath Exception") or
-the Common Development and Distribution License ("CDDL").
-The Product also contains components which are governed
-exclusively by the terms of the GPLv2 with Classpath
-Exception (e.g., components from OpenJDK) .
+Unless specified below, the use of NetBeans IDE is governed 
+by the terms of either the GNU General Public License
+Version 2 with Classpath Exception ("GPLv2 with Classpath
+Exception") or the Common Development and Distribution
+License ("CDDL"). The Product also contains components which
+are governed exclusively by the terms of the GPLv2 with
+Classpath Exception (e.g., components from OpenJDK) .
 
 LICENSE #1: GPLv2 with Classpath Exception. 
 
@@ -34,8 +33,12 @@ License Agreement and Entitlement.
 LICENSE #4: The use of the Java ME SDK 3.0 is subject to
 this Software License Agreement and Entitlement.
 
-LICENSE #5: The use of the JavaFX SDK 1.2.1 is subject to this
-Software License Agreement and Entitlement.
+LICENSE #5: The use of the JavaFX SDK 1.2.1 is subject to
+this Software License Agreement and Entitlement.
+
+LICENSE #6: The use of the Sun GlassFish Enterprise Server
+V3 is subject to this Software License Agreement and
+Entitlement.
 
 ************************************************************
 
@@ -449,7 +452,6 @@ of  the library, but you are not obligated to do so. If you
 do not wish to do  so, delete this exception statement from
 your version.
 
-
 ************************************************************
 
 LICENSE #2: 
@@ -458,13 +460,14 @@ COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL)
  Version 1.0
 
 1. Definitions.
+
 1.1. "Contributor" means each individual or entity that
 creates or contributes to the creation of Modifications.
 
 1.2. "Contributor Version" means the combination of the
-Original Software, prior Modifications used by a
-Contributor (if any), and the Modifications made by that
-particular Contributor.
+Original Software, prior Modifications used by a Contributor
+(if any), and the Modifications made by that particular
+Contributor.
 
 1.3. "Covered Software" means (a) the Original Software, or
 (b) Modifications, or (c) the combination of files
@@ -474,9 +477,8 @@ Modifications, in each case including portions thereof.
 1.4. "Executable" means the Covered Software in any form
 other than Source Code. 
 
-1.5. "Initial Developer" means the individual or entity
-that first makes Original Software available under this
-License. 
+1.5. "Initial Developer" means the individual or entity that
+first makes Original Software available under this License. 
 
 1.6. "Larger Work" means a work which combines Covered
 Software or portions thereof with code not governed by the
@@ -492,25 +494,24 @@ conveyed herein.
 1.9. "Modifications" means the Source Code and Executable
 form of any of the following:
  
-A. Any file that results from an addition to,
-deletion from or modification of the contents of a
-file containing Original Software or previous
-Modifications; 
+A. Any file that results from an addition to, deletion from
+or modification of the contents of a file containing
+Original Software or previous Modifications; 
 
-B. Any new file that contains any part of the
-Original Software or previous Modification; or 
+B. Any new file that contains any part of the Original
+Software or previous Modification; or 
 
 C. Any new file that is contributed or otherwise made
 available under the terms of this License.
 
 1.10. "Original Software" means the Source Code and
-Executable form of computer software code that is
-originally released under this License. 
+Executable form of computer software code that is originally
+released under this License. 
 
 1.11. "Patent Claims" means any patent claim(s), now owned
-or hereafter acquired, including without limitation,
-method, process, and apparatus claims, in any patent
-Licensable by grantor. 
+or hereafter acquired, including without limitation, method,
+process, and apparatus claims, in any patent Licensable by
+grantor. 
 
 1.12. "Source Code" means (a) the common form of computer
 software code in which modifications are made and (b)
@@ -830,7 +831,6 @@ under this License and You agree to work with Initial
 Developer and Contributors to distribute such responsibility
 on an equitable basis. Nothing herein is intended or shall
 be deemed to constitute any admission of liability.
-
 
 ************************************************************
 
@@ -1841,6 +1841,433 @@ intent of the parties, in which case this Agreement will
 immediately terminate.
 
 15. 	Integration. 
+
+This Agreement, including any terms contained in your
+Entitlement, is the entire agreement between you and Sun
+relating to its subject matter. It supersedes all prior or
+contemporaneous oral or written communications, proposals,
+representations and warranties and prevails over any
+conflicting or additional terms of any quote, order,
+acknowledgment, or other communication between the parties
+relating to its subject matter during the term of this
+Agreement. No modification of this Agreement will be
+binding, unless in writing and signed by an authorized
+representative of each party.
+
+Please contact Sun Microsystems, Inc. 4150 Network Circle,
+Santa Clara, California 95054 if you have questions.
+
+************************************************************
+
+LICENSE #6: SUN GLASSFISH ENTERPRISE SERVER V3
+
+Sun Microsystems, Inc. ("Sun") SOFTWARE LICENSE AGREEMENT
+("SLA") and ENTITLEMENT for SOFTWARE
+
+A. ENTITLEMENT for SOFTWARE. Capitalized terms not defined
+in this Entitlement have the meanings ascribed to them in
+the SLA (attached below as Section B). These terms will
+supersede any inconsistent or conflicting terms in the SLA.
+
+Licensee ("You"): The entity receiving the Software from
+Sun.
+
+Effective Date: Date You receive the Software.
+
+Software: Sun Software Portfolio, which may include the
+following: Solaris 10, Sun OpenSSO Enterprise, Sun Java
+System Directory Server Enterprise Edition, Directory Server
+Enterprise Edition, Sun Java System Identity Manager, Sun
+Identity Manager, Sun Identity Manager Resource Adapters
+(formerly Sun Java System Identity Manager Resource
+Adapters): (a) Windows Gateway Script Resource Adapter, (b)
+SQL Script Resource Adapter, (c) Unix Script Resource
+Adapter, (d) Database Table Resource Adapter, (e) Host
+Mainframe Resource Adapter, (f) JMS Resource Adapter, (g)
+Simulated Resource Adapter, and (h) Resource Extension
+Facility (REF) kit, Sun Java Identity Auditor, Sun Java
+System Application Server Enterprise Edition, Sun Java
+System Application Server, Sun GlassFish Enterprise Server,
+Sun Java System Message Queue, Sun GlassFish Message Queue,
+Sun Java System Web Server, Sun Java System Web Proxy
+Server, Sun Java System Portal Server, Sun Portal Server,
+Service Registry, Sun Java System Connector for Microsoft
+Outlook, Sun Java System Communications Sync, Solaris
+Cluster, Solaris Cluster Agents, Solaris Cluster Geographic
+Edition, Sun N1 Service Provisioning System, Sun N1 Advanced
+Architecture for SAP Solutions, Sun Studio, Java DB, Sun
+Management Center, Sun Management Center Add-On Packages,
+Sun Java System Calendar Server, Sun Java System Instant
+Messaging Server, Sun Java System Messaging Server and
+Netbeans IDE.
+
+Software includes only the versions of the above products
+that are made initially available to You.
+
+License Term: Perpetual (subject to termination under the
+SLA).
+
+Licensed Unit: Software Copy.
+
+Licensed Unit Count: Unlimited.
+
+Permitted Uses: You may reproduce and use the Software
+internally for Your own Individual, Commercial, Service
+Provider, or Research and Instructional Use, subject to and
+conditioned on Your compliance with the Additional Terms
+below.
+
+Additional Terms:
+
+1. The scope of Your license does not include any right,
+express or implied, (i) to access, copy, distribute, display
+or use the Software to provide diagnostic, maintenance,
+repair or technical support services for Sun software or Sun
+hardware on behalf of any third party for Your direct or
+indirect commercial gain or advantage, without Sun's prior
+written authorization, or (ii) for any third party to
+access, copy, distribute, display or use the Software to
+provide diagnostic, maintenance, repair or technical support
+services for Sun software or Sun hardware on Your behalf for
+such party's direct or indirect commercial gain or
+advantage, without Sun's prior written authorization. The
+limitations set forth in this paragraph apply to any and all
+error corrections, patches, updates, and upgrades to the
+Software You may receive, access, download or otherwise
+obtain from Sun.
+
+2. Notwithstanding anything to the contrary in any Master
+Terms between the parties or in the SLA, Master Terms do not
+apply to Software under this Agreement. For Solaris 10, Sun
+Management Center, Sun Studio, and Netbeans IDE only, any
+Master Terms purporting to cover those products shall apply,
+as supplemented and superseded by Sections 1-6 of the SLA.
+
+3. If You would like to purchase Service for the Software,
+You must first purchase a separate Entitlement to the
+Software. Sun will not provide Service to You for Software
+provided under this Entitlement. You may, however, purchase
+support under this Entitlement for Solaris 10, Sun
+Management Center, Sun Studio, and Netbeans IDE.
+
+4. Sun reserves the right to End of Life (EOL), End of
+Service Life (EOSL), add to, take away, re-brand and
+otherwise change the components in any subsequent version or
+update of the Software.
+
+5. Your Service Provider Use is limited to a ratio of two
+hundred non-Employees for each Employee (200:1) accessing
+the Software.
+
+6. You are authorized to develop software programs utilizing
+Solaris 10. If You desire to develop software programs which
+incorporate portions of Solaris 10 ("Developed Programs"),
+the following provisions apply: (i) You may not modify or
+add to application programming interfaces associated with
+Solaris 10; (ii) You are not licensed to use fonts within
+Solaris 10 to develop printing applications unless You have
+secured valid licenses from the appropriate font suppliers;
+(iii) incorporation of portions of Motif in Developed
+Programs may require reporting of copies of Developed
+Programs to Sun; and (iv) You will indemnify and defend Sun
+and its licensors from any claims, including attorneys'
+fees, which arise from or relate to distribution or use of
+Developed Programs to the extent these claims arise from or
+relate to the development performed by You.
+
+7. Sun Management Center includes third party database
+software which is provided to support Solaris' operating
+system services only. The third party database software may
+not be used to provide any other type of data storage nor
+may the interfaces from the third party database software be
+accessed or used by any third party applications.
+
+8. You may use Java Compilers contained in Software provided
+that for a particular version of the Java platform, any
+executable output generated by a Java compiler contained in
+the Software (i) is compiled from source code that conforms
+to the corresponding version of the OEM Java Language
+Specification; (ii) is in the class file format defined by
+the corresponding version of the OEM Java Virtual Machine
+Specification; and (iii) executes properly on a reference
+runtime, as specified by Sun, associated with such version
+of the Java platform.
+
+9. During the term of the SLA and Entitlement, and for a
+period of three (3) years thereafter, You agree to keep
+proper records and documentation of Your compliance with the
+SLA and Entitlement. Upon Sun's reasonable request, You will
+provide copies of such records and documentation to Sun for
+the purpose of confirming Your compliance with the terms and
+conditions of the SLA and Entitlement. This section will
+survive any termination of the SLA and Entitlement. You may
+terminate this SLA and Entitlement at any time by destroying
+all copies of the Software in which case the obligations set
+forth in Section 7 of the SLA shall apply.
+
+B. SOFTWARE LICENSE AGREEMENT
+
+READ THE TERMS OF THIS AGREEMENT ("AGREEMENT") CAREFULLY
+BEFORE OPENING SOFTWARE MEDIA PACKAGE. BY OPENING SOFTWARE
+MEDIA PACKAGE, YOU AGREE TO THE TERMS OF THIS AGREEMENT. IF
+YOU ARE ACCESSING SOFTWARE ELECTRONICALLY, INDICATE YOUR
+ACCEPTANCE OF THESE TERMS BY SELECTING THE "ACCEPT" (OR
+EQUIVALENT) BUTTON AT THE END OF THIS AGREEMENT. IF YOU DO
+NOT AGREE TO ALL OF THE TERMS, PROMPTLY RETURN THE UNUSED
+SOFTWARE TO YOUR PLACE OF PURCHASE FOR A REFUND OR, IF
+SOFTWARE IS ACCESSED ELECTRONICALLY, SELECT THE "DECLINE"
+(OR EQUIVALENT) BUTTON AT THE END OF THIS AGREEMENT. IF YOU
+HAVE SEPARATELY AGREED TO LICENSE TERMS ("MASTER TERMS") FOR
+YOUR LICENSE TO THIS SOFTWARE, THEN SECTIONS 1-6 OF THIS
+AGREEMENT ("SUPPLEMENTAL LICENSE TERMS") SHALL SUPPLEMENT
+AND SUPERSEDE THE MASTER TERMS IN RELATION TO THIS SOFTWARE.
+
+1. Definitions.
+
+(a) "Entitlement" means the collective set of applicable
+documents authorized by Sun evidencing your obligation to
+pay associated fees (if any) for the license, associated
+Services, and the authorized scope of use of Software under
+this Agreement.
+
+(b) "Licensed Unit" means the unit of measure by which your
+use of Software and/or Service is licensed, as described in
+your Entitlement.
+
+(c) "Permitted Use" means the licensed Software use(s)
+authorized in this Agreement as specified in your
+Entitlement. The Permitted Use for any bundled Sun software
+not specified in your Entitlement will be evaluation use as
+provided in Section 3.
+
+(d) "Service" means the service(s) that Sun or its delegate
+will provide, if any, as selected in your Entitlement and as
+further described in the applicable service listings at
+www.sun.com/service/servicelist.
+
+(e) "Software" means the Sun software described in your
+Entitlement. Also, certain software may be included for
+evaluation use under Section 3.
+
+(f) "You" and "Your" means the individual or legal entity
+specified in the Entitlement, or for evaluation purposes,
+the entity performing the evaluation.
+
+2. License Grant and Entitlement.
+
+Subject to the terms of your Entitlement, Sun grants you a
+nonexclusive, nontransferable limited license to use
+Software for its Permitted Use for the license term. Your
+Entitlement will specify (a) Software licensed, (b) the
+Permitted Use, (c) the license term, and (d) the Licensed
+Units.
+
+Additionally, if your Entitlement includes Services, then it
+will also specify the (e) Service and (f) service term.
+
+If your rights to Software or Services are limited in
+duration and the date such rights begin is other than the
+purchase date, your Entitlement will provide that beginning
+date(s).
+
+The Entitlement may be delivered to you in various ways
+depending on the manner in which you obtain Software and
+Services, for example, the Entitlement may be provided in
+your receipt, invoice or your contract with Sun or
+authorized Sun reseller. It may also be in electronic format
+if you download Software.
+
+3. Permitted Use.
+
+As selected in your Entitlement, one or more of the
+following Permitted Uses will apply to your use of Software.
+Unless you have an Entitlement that expressly permits it,
+you may not use Software for any of the other Permitted
+Uses. If you don't have an Entitlement, or if your
+Entitlement doesn't cover additional software delivered to
+you, then such software is for your Evaluation Use.
+
+(a) Evaluation Use. You may evaluate Software internally for
+a period of 90 days from your first use.
+
+(b) Research and Instructional Use. You may use Software
+internally to design, develop and test, and also to provide
+instruction on such uses.
+
+(c) Individual Use. You may use Software internally for
+personal, individual use.
+
+(d) Commercial Use. You may use Software internally for your
+own commercial purposes.
+
+(e) Service Provider Use. You may make Software
+functionality accessible (but not by providing Software
+itself or through outsourcing services) to your end users in
+an extranet deployment, but not to your affiliated companies
+or to government agencies.
+
+4. Licensed Units.
+
+Your Permitted Use is limited to the number of Licensed
+Units stated in your Entitlement. If you require additional
+Licensed Units, you will need additional Entitlement(s).
+
+5. Restrictions.
+
+(a) The copies of Software provided to you under this
+Agreement is licensed, not sold, to you by Sun. Sun reserves
+all rights not expressly granted. (b) You may make a single
+archival copy of Software, but otherwise may not copy,
+modify, or distribute Software. However if the Sun
+documentation accompanying Software lists specific portions
+of Software, such as header files, class libraries,
+reference source code, and/or redistributable files, that
+may be handled differently, you may do so only as provided
+in the Sun documentation. (c) You may not rent, lease, lend
+or encumber Software. (d) Unless enforcement is prohibited
+by applicable law, you may not decompile, or reverse
+engineer Software. (e) The terms and conditions of this
+Agreement will apply to any Software updates, provided to
+you at Sun's discretion, that replace and/or supplement the
+original Software, unless such update contains a separate
+license. (f) You may not publish or provide the results of
+any benchmark or comparison tests run on Software to any
+third party without the prior written consent of Sun. (g)
+Software is confidential and copyrighted. (h) Unless
+otherwise specified, if Software is delivered with embedded
+or bundled software that enables functionality of Software,
+you may not use such software on a stand-alone basis or use
+any portion of such software to interoperate with any
+program(s) other than Software. (i) Software may contain
+programs that perform automated collection of system data
+and/or automated software updating services. System data
+collected through such programs may be used by Sun, its
+subcontractors, and its service delivery partners for the
+purpose of providing you with remote system services and/or
+improving Sun's software and systems. (j) Software is not
+designed, licensed or intended for use in the design,
+construction, operation or maintenance of any nuclear
+facility and Sun and its licensors disclaim any express or
+implied warranty of fitness for such uses. (k) No right,
+title or interest in or to any trademark, service mark, logo
+or trade name of Sun or its licensors is granted under this
+Agreement.
+
+6. Java Compatibility and Open Source.
+
+Software may contain Java technology. You may not create
+additional classes to, or modifications of, the Java
+technology, except under compatibility requirements
+available under a separate agreement available at
+www.java.net.
+
+Sun supports and benefits from the global community of open
+source developers, and thanks the community for its
+important contributions and open standards-based technology,
+which Sun has adopted into many of its products.
+
+Please note that portions of Software may be provided with
+notices and open source licenses from such communities and
+third parties that govern the use of those portions, and any
+licenses granted hereunder do not alter any rights and
+obligations you may have under such open source licenses,
+however, the disclaimer of warranty and limitation of
+liability provisions in this Agreement will apply to all
+Software in this distribution.
+
+7. Term and Termination.
+
+The license and service term are set forth in your
+Entitlement(s). Your rights under this Agreement will
+terminate immediately without notice from Sun if you
+materially breach it or take any action in derogation of
+Sun's and/or its licensors' rights to Software. Sun may
+terminate this Agreement should any Software become, or in
+Sun's reasonable opinion likely to become, the subject of a
+claim of intellectual property infringement or trade secret
+misappropriation. Upon termination, you will cease use of,
+and destroy, Software and confirm compliance in writing to
+Sun. Sections 1, 5, 6, 7, and 9-15 will survive termination
+of the Agreement.
+
+8. Limited Warranty.
+
+Sun warrants to you that for a period of 90 days from the
+date of purchase, as evidenced by a copy of the receipt, the
+media on which Software is furnished (if any) will be free
+of defects in materials and workmanship under normal use.
+Except for the foregoing, Software is provided "AS IS". Your
+exclusive remedy and Sun's entire liability under this
+limited warranty will be at Sun's option to replace Software
+media or refund the fee paid for Software. Some states do
+not allow limitations on certain implied warranties, so the
+above may not apply to you. This limited warranty gives you
+specific legal rights. You may have others, which vary from
+state to state.
+
+9. Disclaimer of Warranty.
+
+UNLESS SPECIFIED IN THIS AGREEMENT, ALL EXPRESS OR IMPLIED
+CONDITIONS, REPRESENTATIONS AND WARRANTIES, INCLUDING ANY
+IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE OR NON-INFRINGEMENT ARE DISCLAIMED,
+EXCEPT TO THE EXTENT THAT THESE DISCLAIMERS ARE HELD TO BE
+LEGALLY INVALID.
+
+10. Limitation of Liability.
+
+TO THE EXTENT NOT PROHIBITED BY LAW, IN NO EVENT WILL SUN OR
+ITS LICENSORS BE LIABLE FOR ANY LOST REVENUE, PROFIT OR
+DATA, OR FOR SPECIAL, INDIRECT, CONSEQUENTIAL, INCIDENTAL OR
+PUNITIVE DAMAGES, HOWEVER CAUSED REGARDLESS OF THE THEORY OF
+LIABILITY, ARISING OUT OF OR RELATED TO THE USE OF OR
+INABILITY TO USE SOFTWARE, EVEN IF SUN HAS BEEN ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGES. In no event will Sun's
+liability to you, whether in contract, tort (including
+negligence), or otherwise, exceed the amount paid by you for
+Software under this Agreement. The foregoing limitations
+will apply even if the above stated warranty fails of its
+essential purpose. Some states do not allow the exclusion of
+incidental or consequential damages, so some of the terms
+above may not be applicable to you.
+
+11. Export Regulations.
+
+All Software, documents, technical data, and any other
+materials delivered under this Agreement are subject to U.S.
+export control laws and may be subject to export or import
+regulations in other countries. You agree to comply strictly
+with these laws and regulations and acknowledge that you
+have the responsibility to obtain any licenses to export,
+re-export, or import as may be required after delivery to
+you.
+
+12. U.S. Government Restricted Rights.
+
+If Software is being acquired by or on behalf of the U.S.
+Government or by a U.S. Government prime contractor or
+subcontractor (at any tier), then the Government's rights in
+Software and accompanying documentation will be only as set
+forth in this Agreement; this is in accordance with 48 CFR
+227.7201 through 227.7202-4 (for Department of Defense (DOD)
+acquisitions) and with 48 CFR 2.101 and 12.212 (for non-DOD
+acquisitions).
+
+13. Governing Law.
+
+Any action related to this Agreement will be governed by
+California law and controlling U.S. federal law. No choice
+of law rules of any jurisdiction will apply.
+
+14. Severability.
+
+If any provision of this Agreement is held to be
+unenforceable, this Agreement will remain in effect with the
+provision omitted, unless omission would frustrate the
+intent of the parties, in which case this Agreement will
+immediately terminate.
+
+15. Integration.
 
 This Agreement, including any terms contained in your
 Entitlement, is the entire agreement between you and Sun

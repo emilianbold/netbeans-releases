@@ -546,7 +546,7 @@ public class MakeActionProvider implements ActionProvider {
             } else if (conf.isApplicationConfiguration()) {
                 RunProfile runProfile = null;
                 int platform = conf.getDevelopmentHost().getBuildPlatform();
-                if (platform == Platform.PLATFORM_WINDOWS) {
+                if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     // On Windows we need to add paths to dynamic libraries from subprojects to PATH
                     runProfile = conf.getProfile().clone(conf);
                     Set<String> subProjectOutputLocations = conf.getSubProjectOutputLocations();
@@ -573,7 +573,7 @@ public class MakeActionProvider implements ActionProvider {
                     }
                     path = path + ";" + userPath; // NOI18N
                     runProfile.getEnvironment().putenv(pi.getPathName(), path);
-                } else if (platform == Platform.PLATFORM_MACOSX) {
+                } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
                     // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
                     StringBuilder path = new StringBuilder();
                     Set<String> subProjectOutputLocations = conf.getSubProjectOutputLocations();
@@ -610,9 +610,9 @@ public class MakeActionProvider implements ActionProvider {
                             }
                         runProfile.getEnvironment().putenv("DYLD_LIBRARY_PATH", path.toString()); // NOI18N
                         }
-                } else if (platform == Platform.PLATFORM_SOLARIS_INTEL ||
-                        platform == Platform.PLATFORM_SOLARIS_SPARC ||
-                        platform == Platform.PLATFORM_LINUX) {
+                } else if (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL ||
+                        platform == PlatformTypes.PLATFORM_SOLARIS_SPARC ||
+                        platform == PlatformTypes.PLATFORM_LINUX) {
                     // Add paths from -L option
                     StringBuilder path = new StringBuilder();
                     List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
@@ -640,10 +640,10 @@ public class MakeActionProvider implements ActionProvider {
                         }
                 }
 
-                if (platform == Platform.PLATFORM_MACOSX ||
-                        platform == Platform.PLATFORM_SOLARIS_INTEL ||
-                        platform == Platform.PLATFORM_SOLARIS_SPARC ||
-                        platform == Platform.PLATFORM_LINUX) {
+                if (platform == PlatformTypes.PLATFORM_MACOSX ||
+                        platform == PlatformTypes.PLATFORM_SOLARIS_INTEL ||
+                        platform == PlatformTypes.PLATFORM_SOLARIS_SPARC ||
+                        platform == PlatformTypes.PLATFORM_LINUX) {
                     // Make sure DISPLAY variable has been set
                     if (cancelled.get()) {
                         return false; // getEnv() might be costly for remote host
@@ -742,7 +742,7 @@ public class MakeActionProvider implements ActionProvider {
             }
             String buildCommand;
             String args;
-            if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
+            if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                 buildCommand = "cmd.exe"; // NOI18N
                 args = "/c sh "; // NOI18N
                 } else {
@@ -848,7 +848,7 @@ public class MakeActionProvider implements ActionProvider {
                     // Clean command
                     String commandLine;
                     String args;
-                    if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
+                    if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                         commandLine = "cmd.exe"; // NOI18N
                         args = "/c rm -rf " + outputFile; // NOI18N
                         } else {
@@ -1411,14 +1411,6 @@ public class MakeActionProvider implements ActionProvider {
 //        }
 //        return "";
 //    }
-
-    private static boolean isAbsolutePath(MakeConfiguration conf, String path) {
-        if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-            return path.length() > 3 && path.charAt(1) == ':' && path.charAt(2) == '/';
-        } else {
-            return path.length() > 0 && path.charAt(0) == '/';
-        }
-    }
 
     // Private methods -----------------------------------------------------
     /** Look up i18n strings here */

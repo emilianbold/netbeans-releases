@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.tools.ant.module.api.AntTargetExecutor;
+import org.apache.tools.ant.module.bridge.AntBridge;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -82,6 +83,7 @@ public class AntLoggerTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        AntBridge.NO_MODULE_SYSTEM = true;
         MockServices.setServices(IFL.class, TestLogger.class);
         LOGGER = Lookup.getDefault().lookup(TestLogger.class);
         LOGGER.reset();

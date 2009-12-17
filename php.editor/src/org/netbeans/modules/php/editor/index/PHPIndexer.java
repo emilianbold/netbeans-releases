@@ -202,10 +202,6 @@ public final class PHPIndexer extends EmbeddingIndexer {
                         classDocument.addPair(FIELD_CONSTRUCTOR,methodScope.getConstructorIndexSignature(), false, true);
                     }
                 }
-                Collection<? extends MethodScope> declaredConstructors = classScope.getDeclaredConstructors();
-                if (declaredConstructors.isEmpty()) {
-                    classDocument.addPair(FIELD_CONSTRUCTOR,classScope.getDefaultConstructorIndexSignature(), false, true);
-                }
                 for (FieldElement fieldElement : classScope.getDeclaredFields()) {
                     classDocument.addPair(FIELD_FIELD, fieldElement.getIndexSignature(), true, true);
                 }
@@ -296,7 +292,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
      public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "php"; // NOI18N
-        public static final int VERSION = 10;
+        public static final int VERSION = 12;
 
         @Override
         public EmbeddingIndexer createIndexer(final Indexable indexable, final Snapshot snapshot) {

@@ -450,7 +450,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 String commonCPEntries = "${module.run.classpath}:${cp.extra}:${cluster}/${module.jar}:${test." + testType + ".cp.extra}:";    // NOI18N
                 buildDefaults.put("test." + testType + ".cp", commonCPEntries + tcp.getCompileClasspath()); // NOI18N
                 buildDefaults.put("test." + testType + ".run.cp.extra", ""); // NOI18N
-                buildDefaults.put("test." + testType + ".run.cp", commonCPEntries + "${build.test." + testType + ".classes.dir}:${test." + testType + ".run.cp.extra}:" + tcp.getRuntimeClasspath()); // NOI18N
+                buildDefaults.put("test." + testType + ".run.cp", "${build.test." + testType + ".classes.dir}:" +
+                        commonCPEntries + "${test." + testType + ".run.cp.extra}:" + tcp.getRuntimeClasspath()); // NOI18N
             }
 
             providers.add(PropertyUtils.fixedPropertyProvider(buildDefaults));

@@ -361,7 +361,6 @@
         <xsd:annotation>
             <xsd:documentation>
 
-                RELEASE_PENDING (edburns,rogerk) review docs
                 This element contains a sequence of "id" elements, each of which
                 refers to an application configuration resource by the "id"
                 declared on its faces-config element.  This element can also contain
@@ -481,20 +480,6 @@
                             default ActionListener (provided by the JSF 
                             implementation) is used.
                             
-                    </xsd:documentation>
-                </xsd:annotation>
-            </xsd:element>
-            <xsd:element name="partial-traversal"
-                         type="javaee:fully-qualified-classType">
-                <xsd:annotation>
-                    <xsd:documentation>
-
-                            The "partial-traversal" element contains the fully
-                            qualified class name of the concrete
-                            PartialTraversal implementation class that will be
-                            called during the "execute" and "render" phases of the
-                            request processing lifecycle.
-
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:element>
@@ -1826,7 +1811,7 @@
                 <xsd:annotation>
                     <xsd:documentation>
 
-                        RELEASE_PENDING (edburns,rogerk) docs
+                       Please see section JSF.7.4.2 for the specification of this element.
 
                     </xsd:documentation>
                 </xsd:annotation>

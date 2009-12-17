@@ -145,4 +145,22 @@ public class LayerBuilderTest extends NbTestCase {
                 "</folder></filesystem>", dump());
     }
 
+    public void testRedundantNames() throws Exception {
+        b.folder("f1/f2").write();
+        b.folder("f2").write();
+        assertEquals("<filesystem><folder name='f1'>" +
+                "<folder name='f2'/>" +
+                "</folder><folder name='f2'/></filesystem>", dump());
+    }
+
+    public void testFolderAttributes() throws Exception {
+        b.folder("f").intvalue("a", 7).write();
+        b.file("f/x").write();
+        b.folder("f").stringvalue("a", "v").write();
+        assertEquals("<filesystem><folder name='f'>" +
+                "<file name='x'/>" +
+                "<attr name='a' stringvalue='v'/>" +
+                "</folder></filesystem>", dump());
+    }
+
 }

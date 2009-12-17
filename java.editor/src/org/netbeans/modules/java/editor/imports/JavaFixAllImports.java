@@ -201,25 +201,25 @@ public class JavaFixAllImports {
         }
     }
 
-    //XXX: copied from SourceUtils.addImports. Ideally, should be on one place only:
-    public static CompilationUnitTree addImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make)
-        throws IOException {
-        // do not modify the list given by the caller (may be reused or immutable).
-        toImport = new ArrayList<String>(toImport); 
+    //XXX: copied from SourceUtils.addImports and extended by fommil@netbeans.org. Ideally, should be on one place only:
+    public static CompilationUnitTree addImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make, boolean doStatic) {
+        toImport = new ArrayList<String>(toImport);
         Collections.sort(toImport);
 
         List<ImportTree> imports = new ArrayList<ImportTree>(cut.getImports());
         int currentToImport = toImport.size() - 1;
         int currentExisting = imports.size() - 1;
-        
+
         while (currentToImport >= 0 && currentExisting >= 0) {
             String currentToImportText = toImport.get(currentToImport);
-            
-            while (currentExisting >= 0 && (imports.get(currentExisting).isStatic() || imports.get(currentExisting).getQualifiedIdentifier().toString().compareTo(currentToImportText) > 0))
+
+            boolean ignore = (doStatic ^ imports.get(currentExisting).isStatic());
+            while (currentExisting >= 0 && (ignore || imports.get(currentExisting).getQualifiedIdentifier().toString().compareTo(currentToImportText) > 0)) {
                 currentExisting--;
-            
+            }
+
             if (currentExisting >= 0) {
-                imports.add(currentExisting+1, make.Import(make.Identifier(currentToImportText), false));
+                imports.add(currentExisting + 1, make.Import(make.Identifier(currentToImportText), doStatic));
                 currentToImport--;
             }
         }
@@ -227,13 +227,13 @@ public class JavaFixAllImports {
         // to add, put them to the very beginning
         while (currentToImport >= 0) {
             String importText = toImport.get(currentToImport);
-            imports.add(0, make.Import(make.Identifier(importText), false));
+            imports.add(0, make.Import(make.Identifier(importText), doStatic));
             currentToImport--;
         }
         // return a copy of the unit with changed imports section
         return make.CompilationUnit(cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
     }
-
+    
     private static void performFixImports(WorkingCopy wc, ImportData data, String[] selections, boolean removeUnusedImports) throws IOException {
         //do imports:
         List<String> toImport = new ArrayList<String>();
@@ -267,7 +267,7 @@ public class JavaFixAllImports {
             }
         }
 
-        cut = addImports(cut, toImport, wc.getTreeMaker());
+        cut = addImports(cut, toImport, wc.getTreeMaker(), false);
 
         wc.rewrite(wc.getCompilationUnit(), cut);
 

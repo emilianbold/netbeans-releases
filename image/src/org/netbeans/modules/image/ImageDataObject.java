@@ -205,6 +205,8 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
                 ss = Sheet.createPropertiesSet();
                 s.put(ss);
             }
+            ss.put(new ImageWidthProperty());
+            ss.put(new ImageHeightProperty());
             ss.put(new ThumbnailProperty(getDataObject()));
             return s;
         }
@@ -303,6 +305,50 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
                 }
             } // End of class ThumbnailPropertyEditor.
         } // End of class ThumbnailProperty.
+
+       /** Property representing for image width property in the sheet. */
+       private final class ImageWidthProperty extends PropertySupport.ReadOnly {
+          /** Constructs property. */
+          public ImageWidthProperty() {
+             super("width", Integer.class, // NOI18N
+                   NbBundle.getMessage(ImageDataObject.class, "PROP_Image_Width"), // NOI18N
+                   NbBundle.getMessage(ImageDataObject.class, "HINT_Image_Width")); // NOI18N
+          }
+
+          /** Gets value of property. Overrides superclass method. */
+          public Object getValue() throws InvocationTargetException {
+             try {
+                final Icon icon = new ImageIcon(getDataObject().getPrimaryFile().
+                      getURL());
+                return Integer.valueOf(icon.getIconWidth());
+             } catch (FileStateInvalidException fsie) {
+                throw new InvocationTargetException(fsie);
+             }
+          }
+       } // End of class ImageWidthProperty.
+
+       /** Property representing for image height property in the sheet. */
+       private final class ImageHeightProperty extends PropertySupport.ReadOnly {
+          /** Constructs property. */
+          public ImageHeightProperty() {
+             super("height", Integer.class, // NOI18N
+                   NbBundle.getMessage(ImageDataObject.class,
+                   "PROP_Image_Height"), // NOI18N
+                   NbBundle.getMessage(ImageDataObject.class,
+                   "HINT_Image_Height")); // NOI18N
+          }
+
+          /** Gets value of property. Overrides superclass method. */
+          public Object getValue() throws InvocationTargetException {
+             try {
+                final Icon icon = new ImageIcon(getDataObject().getPrimaryFile().
+                      getURL());
+                return Integer.valueOf(icon.getIconHeight());
+             } catch (FileStateInvalidException fsie) {
+                throw new InvocationTargetException(fsie);
+             }
+          }
+       } // End of class ImageHeightProperty.
     } // End of class ImageNode.
 
 }

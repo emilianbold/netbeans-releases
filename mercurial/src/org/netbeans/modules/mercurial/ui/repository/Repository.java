@@ -76,7 +76,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * @author Tomas Stupka
@@ -90,12 +89,8 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
     public final static int FLAG_SHOW_PROXY             = 64;    
     
     private final static String LOCAL_URL_HELP          = "file:/repository_path";              // NOI18N
-    private final static String HTTP_URL_HELP           = Utilities.isWindows()? 
-        "http://[DOMAIN%5C]hostname/repository_path":      // NOI18N
-        "http://hostname/repository_path";      // NOI18N
-    private final static String HTTPS_URL_HELP          = Utilities.isWindows()? 
-        "https://[DOMAIN%5C]hostname/repository_path":     // NOI18N
-        "https://hostname/repository_path";     // NOI18N
+    private final static String HTTP_URL_HELP           = "http://hostname/repository_path";      // NOI18N
+    private final static String HTTPS_URL_HELP          = "https://hostname/repository_path";     // NOI18N
     private final static String STATIC_HTTP_URL_HELP    = "static-http://hostname/repository_path";       // NOI18N
     private final static String SSH_URL_HELP            = "ssh://hostname/repository_path";   // NOI18N   
                
@@ -408,13 +403,14 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         boolean authFields = false;
         boolean proxyFields = false;
         boolean sshFields = false;
+        repositoryPanel.chooseFolderButton.setVisible(false);
         if(selectedUrlString.startsWith("http:")) {                             // NOI18N
             repositoryPanel.tipLabel.setText(HTTP_URL_HELP);
             authFields = true;
             proxyFields = true;
         } else if(selectedUrlString.startsWith("https:")) {                     // NOI18N
             repositoryPanel.tipLabel.setText(HTTPS_URL_HELP);
-            //authFields = true;
+            authFields = true;
             proxyFields = true;
         } else if(selectedUrlString.startsWith("static-http:")) {                       // NOI18N
             repositoryPanel.tipLabel.setText(STATIC_HTTP_URL_HELP);
@@ -425,6 +421,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
             sshFields = true;
         } else if(selectedUrlString.startsWith("file:")) {                      // NOI18N
             repositoryPanel.tipLabel.setText(LOCAL_URL_HELP);
+            repositoryPanel.chooseFolderButton.setVisible(true);
         } else {
             repositoryPanel.tipLabel.setText(NbBundle.getMessage(Repository.class, "MSG_Repository_Url_Help", new Object [] { // NOI18N
                 LOCAL_URL_HELP, HTTP_URL_HELP, HTTPS_URL_HELP, STATIC_HTTP_URL_HELP, SSH_URL_HELP
