@@ -1577,7 +1577,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
      <property name= "test.fail.on.error" value="true"/>
       <mkdir dir="build"/>
       <subant-junit buildpath="${test.modules.sorted}" target="test-build" failonerror="${test.fail.on.error}" report="build/build-all-tests.xml"/>
-      <subant-junit buildpath="${nb_all}${file.separator}performance" target="fix-test-dependencies" failonerror="${test.fail.on.error}" report="build/build-performance-tests.xml"/>
       <!-- adding performance tests to BTD -->
       <!-- #178009: disabling; has various non-platform dependencies which break BTD in some cluster configs; anyway should be made a normal module!
       <subant-junit buildpath="${nb_all}${file.separator}performance" target="test-build" failonerror="${test.fail.on.error}" report="build/build-performance-tests.xml"/>
