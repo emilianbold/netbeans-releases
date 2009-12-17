@@ -99,6 +99,16 @@ public class CustomJavac extends Javac {
             createCompilerArg().setPath(processorPath);
         }
         createCompilerArg().setValue("-implicit:class");
+        File generatedClassesDir = new File(getDestdir().getParentFile(), getDestdir().getName() + "-generated");
+        if (generatedClassesDir.isDirectory() || generatedClassesDir.mkdirs()) {
+            createCompilerArg().setValue("-s");
+            createCompilerArg().setFile(generatedClassesDir);
+            if (generatedClassesDir.isDirectory()) {
+                createSrc().setLocation(generatedClassesDir);
+            }
+        } else {
+            log("Warning: could not create " + generatedClassesDir, Project.MSG_WARN);
+        }
         String specifiedCompiler = getProject().getProperty("build.compiler");
         if (specifiedCompiler != null) {
             if (specifiedCompiler.equals("extJavac")) {
