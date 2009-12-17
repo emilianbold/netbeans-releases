@@ -358,7 +358,8 @@ public class SourcePath {
                         "\nThe reason is likely no opened project for the source file.");
                 return ;
             }
-            lineNumber = 1;
+            lineNumber = csf.getLineNumber (stratumn);
+            if (lineNumber < 1) lineNumber = 1;
         }
         final int ln = lineNumber;
         final String u = url;
