@@ -21,8 +21,6 @@ derby\.log
 ^hs_err_pid[0-9]*\.log
 ^[^/]+/external/[^/]+\.(zip|jar|gz|bz2|gem|dll|xpi)$
 ^o.apache.tools.ant.module/external/lib$
-^apisupport.project/src/org/netbeans/modules/apisupport/project/resources/sample-build-impl\.xml$
-^apisupport.project/src/org/netbeans/modules/apisupport/project/resources/sample-build\.xml$
 ^classfile/\.nbintdb$
 ^classfile/classfile\.jar$
 ^cnd.apt/src/org/netbeans/modules/cnd/apt/impl/support/generated$
@@ -133,10 +131,6 @@ derby\.log
 ^nbi/infra/build/jvm/cache$
 ^nbi/infra/build/jvm/build-private\.sh$
 ^nbi/infra/sandbox/src$
-^openide/test/perf/lib$
-^openide/test/perf/report$
-^openide/test/perf/baseline$
-^openide.util/test/unit/src/org/openide/util/data/.*\.jar$
 ^performance/lib$
 ^performance/jtrace/win32/jtrace\.dll$
 ^performance/jtrace/win32/jtrace\.exp$
@@ -159,13 +153,8 @@ derby\.log
 ^o.mozilla.rhino.patched/patched_source$
 ^j2ee.sun.appsrv81/\.keystore$
 ^gsf.api/anttask/gsfanttask\.jar$
-^testtools/.*\.nbm$
-^testtools/testtools-bundle\.zip$
-^testtools/javahelp/org/netbeans/modules/usersguide$
 ^tomcat5/\.swo$
 ^uml/Thumbs\.db$
-^uml.kit/test/qa-lib/.*\.jar$
-^uml.kit/test/qa-lib/classes$
 ^performance/uml/test/.*\.sh$
 ^performance/uml/test/qa-functional/src/gui/TempTest\.java$
 ^python.editor/external/pythonstubs-.*\.egg$
@@ -206,12 +195,10 @@ derby\.log
 ^websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/jaxb$
 ^websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl$
 ^websvc.wsitmodelext/coverage$
-^xml/xml-nbms\.zip$
 ^xml.tax/lib/test/qa-functional/src/org/netbeans/tax/data/Delme\.xml$
 ^xml/test/qa-functional/src$
 ^xml/test/qa-lib/xml-test-lib\.jar$
 ^xml.tools/test/qa-functional/src/org/netbeans/modules/xsl/action/data/out/document\.html$
-^nbjunit/nbjunit-.*$
 ^hibernate/test/unit/data/db-derby-10\.2\.2\.0-bin$
 \.orig\..*$
 \.chg\..*$
