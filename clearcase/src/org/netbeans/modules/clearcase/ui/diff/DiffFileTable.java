@@ -240,20 +240,20 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         tableModel.setProperties(properties);
     }
 
-    void setTableModel(Setup[] setups) {
-        if (editorCookies != null) {
-            for (EditorCookie editorCookie : editorCookies) {
+    void setTableModel(Setup[] setups, EditorCookie[] editorCookies) {
+        if (this.editorCookies != null) {
+            for (EditorCookie editorCookie : this.editorCookies) {
                 if (editorCookie instanceof EditorCookie.Observable) {
                     ((EditorCookie.Observable) editorCookie).removePropertyChangeListener(this);
                 }
             }
-            editorCookies = null;
+            this.editorCookies = null;
         }
 
         tableModel.setNodes(nodes = setupsToNodes(setups));
-        editorCookies = DiffUtils.setupsToEditorCookies(setups);
+        this.editorCookies = editorCookies;
 
-        for (EditorCookie editorCookie : editorCookies) {
+        for (EditorCookie editorCookie : this.editorCookies) {
             if (editorCookie instanceof EditorCookie.Observable) {
                 ((EditorCookie.Observable) editorCookie).addPropertyChangeListener(this);
             }
@@ -295,10 +295,6 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
             nodes[i] = setups[i].getNode();
         }
         return nodes;
-    }
-
-    EditorCookie[] getEditorCookies() {
-        return CollectionUtils.copyArray(editorCookies);
     }
 
     void focus() {
@@ -408,19 +404,6 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         master.tableRowSelected(table.getSelectedRow());
     }
     
-    /**
-     * Returns {@code EditorCookie} that belongs to the file that is at the
-     * given position (index) of <em>unsorted</em> table.
-     *
-     * @param  index  index to the unsorted table model
-     * @return  {@code EditorCookie} belonging to the file,
-     *          or {@code null} if there was no {@code EditorCookie} found
-     *          for the file
-     */
-    EditorCookie getEditorCookie(int index) {
-        return editorCookies[index];
-    }
-
     private class DiffTableCellRenderer extends DefaultTableCellRenderer {
         
         private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
