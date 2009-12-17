@@ -999,8 +999,16 @@ public class WebProjectValidation extends J2eeTestCase {
 
     private void verifyServerIsStopped() throws IOException {
         URL url = server.getServerURL();
-        URLConnection connection = url.openConnection();
         try {
+            URLConnection connection = url.openConnection();
+            connection.connect();
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            //try for second time after a timeout
+            connection = url.openConnection();
             connection.connect();
             fail("Connection to: "+url+" established, but the server" +
                     " should not be running.");
