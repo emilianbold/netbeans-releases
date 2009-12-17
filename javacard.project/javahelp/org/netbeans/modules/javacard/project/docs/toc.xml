@@ -5,9 +5,10 @@
 --><!DOCTYPE toc
   PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
          "http://java.sun.com/products/javahelp/toc_2_0.dtd"><toc version="2.0">
-<tocitem target="org.netbeans.modules.javacard.title" text="Development for Java Card 3" expand="true">
+		 
+	<tocitem target="org.netbeans.modules.javacard.title" text="Java Card 3 Guide" expand="true">
 <tocitem target="org.netbeans.modules.javacard.docinfo" text="Copyright" expand="true">
-</tocitem>
+</tocitem>	 
  <tocitem target="org.netbeans.modules.javacard.AboutJavaCard3Development" text="About Java Card 3 Development" expand="true">
     <tocitem target="org.netbeans.modules.javacard.WhatYouShouldKnow" text="What You Should Know Before Working With the Java Card 3 Plugin" expand="false"></tocitem>
     <tocitem target="org.netbeans.modules.javacard.WhatIsIn" text="What Is In This Online Help" expand="false"></tocitem>
@@ -71,8 +72,8 @@
     <tocitem target="org.netbeans.modules.javacard.RunningExtendedAppletProject" text="Running an Extended Applet Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.RunningExtendedAppletSamples" text="Run HelloWorld Extended Applet Sample" expand="false"></tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.GetAdditionalExtendedAppletSamples" text="Getting Additional Extended Applet Samples" expand="false"></tocitem>
-    <tocitem target="org.netbeans.modules.javacard.CreatingClassicalLibProject" text="Creating a Classic Library Project" expand="false">
-        <tocitem target="org.netbeans.modules.javacard.CreateClassicaLibProjectFromTemplate" text="Create a Classic Library Project From Template" expand="false"></tocitem>
+    <tocitem target="org.netbeans.modules.javacard.CreatingClassicLibProject" text="Creating a Classic Library Project" expand="false">
+        <tocitem target="org.netbeans.modules.javacard.CreateClassicLibProjectFromTemplate" text="Create a Classic Library Project From Template" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.CreateClassicLibProjectFromExistingCode" text="Create a Classic Library Project From Existing Code" expand="false"></tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.CustomizingClassicLibProject" text="Customizing a Classic Library Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.SetClassicLibProjectProperties" text="Set Classic Library Project Properties" expand="false"></tocitem>
