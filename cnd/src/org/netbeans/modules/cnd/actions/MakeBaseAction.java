@@ -49,12 +49,10 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.execution.CompilerLineConvertor;
@@ -138,7 +136,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         if (inputOutput == null) {
             // Tab Name
             String tabName = getString("MAKE_LABEL", node.getName()); // NOI18N
-            if (target != null && target.length() > 0) {
+            if (target.length() > 0) {
                 tabName += " " + target; // NOI18N
             }
             InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.

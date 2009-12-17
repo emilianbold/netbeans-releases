@@ -211,7 +211,7 @@ public final class QueryTopComponent extends TopComponent
             height = layoutStyle.getContainerGap(above, SOUTH, null);
         } else {
             height = layoutStyle.getPreferredGap(above, below,
-                                                 RELATED, NORTH, null);
+                                                 RELATED, SOUTH, null);
         }
         return Box.createVerticalStrut(height);
     }

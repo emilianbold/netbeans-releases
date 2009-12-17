@@ -78,8 +78,8 @@ public class RfsBuildTestSuite extends CndBaseTestSuite {
     public RfsBuildTestSuite() {
         this("Remote Development", // NOI18N
              //HostSetupTestCase.class,
-             RfsGnuRemoteBuildTestCase.class,
-             RfsSunStudioRemoteBuildTestCase.class);
+             RfsGnuRemoteBuildTest.class,
+             RfsSunStudioRemoteBuildTest.class);
     }
 
 

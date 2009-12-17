@@ -48,11 +48,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -66,13 +69,51 @@ import org.openide.util.Lookup;
 public final class PlatformInfo {
 
     private ArrayList<String> list = new ArrayList<String>();
-    private String pathName = null;
+    private String pathName;
     private final ExecutionEnvironment executionEnvironment;
     private final int platform;
+    private HostInfo hostinfo;
 
-    private PlatformInfo(ExecutionEnvironment execEnv, int platform) {
+    private PlatformInfo(ExecutionEnvironment execEnv) {
         this.executionEnvironment = execEnv;
-        this.platform = platform;
+        try {
+            hostinfo = HostInfoUtils.getHostInfo(execEnv);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (hostinfo != null) {
+            switch (hostinfo.getOSFamily()){
+                case SUNOS:
+                    switch (hostinfo.getCpuFamily()){
+                        case SPARC:
+                            platform = PlatformTypes.PLATFORM_SOLARIS_SPARC;
+                            break;
+                        case X86:
+                            platform = PlatformTypes.PLATFORM_SOLARIS_INTEL;
+                            break;
+                        default:
+                            platform = PlatformTypes.PLATFORM_GENERIC;
+                            break;
+                    }
+                    break;
+                case LINUX:
+                    platform = PlatformTypes.PLATFORM_LINUX;
+                    break;
+                case WINDOWS:
+                    platform = PlatformTypes.PLATFORM_WINDOWS;
+                    break;
+                case MACOSX:
+                    platform = PlatformTypes.PLATFORM_MACOSX;
+                    break;
+                default:
+                    platform = PlatformTypes.PLATFORM_GENERIC;
+                    break;
+            }
+        } else {
+            platform = PlatformTypes.PLATFORM_NONE;
+        }
 
         String path = getEnv().get(getPathName());
         if (Boolean.getBoolean("cnd.debug.use_altpath")) { // NOI18N
@@ -347,8 +388,7 @@ public final class PlatformInfo {
     public static synchronized PlatformInfo getDefault(ExecutionEnvironment execEnv) {
         PlatformInfo pi = map.get(execEnv);
         if (pi == null) {
-            int thePlatform = HostInfoProvider.getPlatform(execEnv);
-            pi = new PlatformInfo(execEnv, thePlatform);
+            pi = new PlatformInfo(execEnv);
             map.put(execEnv, pi);
         }
         return pi;

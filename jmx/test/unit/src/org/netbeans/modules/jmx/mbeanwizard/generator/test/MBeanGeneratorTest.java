@@ -49,9 +49,7 @@ import java.io.FileInputStream;
 import java.io.File;
 
 import org.netbeans.modules.jmx.MBeanDO;
-//import org.netbeans.modules.jmx.mbeanwizard.generator.MBeanGenInfo;
 import org.netbeans.modules.jmx.mbeanwizard.generator.Translator;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
         

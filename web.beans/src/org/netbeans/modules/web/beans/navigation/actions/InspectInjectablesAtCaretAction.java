@@ -77,10 +77,8 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.beans.api.model.AmbiguousDependencyException;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
 import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
 import org.netbeans.modules.web.beans.navigation.AmbiguousInjectablesModel;
 import org.netbeans.modules.web.beans.navigation.AmbiguousInjectablesPanel;
@@ -235,69 +233,70 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
             final MetadataModel<WebBeansModel> metaModel, 
             final Object[] variablePath )
     {
-        VariableElement var = findVariable(model, variablePath);
-        if ( var == null ){
-            return;
-        }
-        try {
-            if (model.isInjectionPoint(var)) {
-                try {
-                    Element injectable = model.getInjectable(var);
-                    if ( injectable == null ){
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
-                                InspectInjectablesAtCaretAction.class, 
-                                "LBL_InjectableNotFound"), 
-                                StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
-                    }
-                    final CompilationController controller = model.getCompilationController();
-                    final List<AnnotationMirror> bindings = model.getBindings(var );
-                    Collection<Element> elements ;
-                    final VariableElement varElement = var;
-                    if ( injectable == null){
-                        elements = Collections.emptyList();
-                    }
-                    else {
-                        elements = Collections.singletonList( injectable );
-                    }
-                    if ( SwingUtilities.isEventDispatchThread()){
-                        showDialog( elements, varElement, bindings, controller, 
-                                metaModel);
-                    }
-                    else {
-                        final Collection<Element> els = elements; 
-                        SwingUtilities.invokeLater( new Runnable() {
-                            public void run() {
-                                showDialog( els, varElement, bindings, controller,
-                                        metaModel);
-                            }
-                        });
-                    }
-                }
-                catch (final AmbiguousDependencyException adExcpeption) {
-                    final List<AnnotationMirror> bindings = model.getBindings(var );
-                    final VariableElement varElement = var;
-                    final CompilationController controller = model.getCompilationController();
-                    if ( SwingUtilities.isEventDispatchThread()){
-                        showDialog( adExcpeption , varElement, bindings, 
-                                controller , metaModel );
-                    }
-                    else {
-                        SwingUtilities.invokeLater( new Runnable() {
-                            public void run() {
-                                showDialog(adExcpeption, varElement, bindings, 
-                                        controller, metaModel);
-                            }
-                        });
-                    }
-                }
-            }
-        }
-        catch (WebBeansModelException e) {
-            /*
-             * TODO : one need somehow notice user that injection point has
-             * inconsistency
-             */
-        }
+        // TODO:
+//        VariableElement var = findVariable(model, variablePath);
+//        if ( var == null ){
+//            return;
+//        }
+//        try {
+//            if (model.isInjectionPoint(var)) {
+//                try {
+//                    Element injectable = model.getInjectable(var);
+//                    if ( injectable == null ){
+//                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
+//                                InspectInjectablesAtCaretAction.class, 
+//                                "LBL_InjectableNotFound"), 
+//                                StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+//                    }
+//                    final CompilationController controller = model.getCompilationController();
+//                    final List<AnnotationMirror> bindings = model.getBindings(var );
+//                    Collection<Element> elements ;
+//                    final VariableElement varElement = var;
+//                    if ( injectable == null){
+//                        elements = Collections.emptyList();
+//                    }
+//                    else {
+//                        elements = Collections.singletonList( injectable );
+//                    }
+//                    if ( SwingUtilities.isEventDispatchThread()){
+//                        showDialog( elements, varElement, bindings, controller, 
+//                                metaModel);
+//                    }
+//                    else {
+//                        final Collection<Element> els = elements; 
+//                        SwingUtilities.invokeLater( new Runnable() {
+//                            public void run() {
+//                                showDialog( els, varElement, bindings, controller,
+//                                        metaModel);
+//                            }
+//                        });
+//                    }
+//                }
+//                catch (final AmbiguousDependencyException adExcpeption) {
+//                    final List<AnnotationMirror> bindings = model.getBindings(var );
+//                    final VariableElement varElement = var;
+//                    final CompilationController controller = model.getCompilationController();
+//                    if ( SwingUtilities.isEventDispatchThread()){
+//                        showDialog( adExcpeption , varElement, bindings, 
+//                                controller , metaModel );
+//                    }
+//                    else {
+//                        SwingUtilities.invokeLater( new Runnable() {
+//                            public void run() {
+//                                showDialog(adExcpeption, varElement, bindings, 
+//                                        controller, metaModel);
+//                            }
+//                        });
+//                    }
+//                }
+//            }
+//        }
+//        catch (WebBeansModelException e) {
+//            /*
+//             * TODO : one need somehow notice user that injection point has
+//             * inconsistency
+//             */
+//        }
     }
 
     private VariableElement findVariable( final WebBeansModel model,
@@ -404,12 +403,12 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
         return variable[1] !=null ;
     }
     
-    private void showDialog( AmbiguousDependencyException adExcpeption , 
+    /*private void showDialog( AmbiguousDependencyException adExcpeption , 
             VariableElement var , List<AnnotationMirror> bindings , 
             CompilationController controller, MetadataModel<WebBeansModel> model ) 
     {
         showDialog( adExcpeption.getElements(), var, bindings, controller, model);
-    }
+    }*/
     
     private void showDialog( Collection<Element> elements , 
             VariableElement var , List<AnnotationMirror> bindings , 

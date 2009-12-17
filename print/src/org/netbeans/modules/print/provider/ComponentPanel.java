@@ -51,7 +51,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.netbeans.api.print.PrintManager;
-import static org.netbeans.modules.print.ui.UI.*;
+import static org.netbeans.modules.print.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -85,8 +85,8 @@ final class ComponentPanel extends JPanel {
     public void print(Graphics g) {
         for (JComponent component : myComponents) {
             component.print(g);
-//    g.setColor(java.awt.Color.green);
-//    g.drawRect(0, 0, getWidth(component), getHeight(component));
+//          g.setColor(java.awt.Color.green);
+//          g.drawRect(0, 0, getWidth(component), getHeight(component));
             g.translate(getWidth(component), 0);
         }
     }

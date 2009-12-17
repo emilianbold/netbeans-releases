@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 7.8.1
+#Signature file v4.1
+#Version 7.19.0
 
 CLSS public java.awt.Canvas
 cons public Canvas()
@@ -287,8 +287,8 @@ meth public void transferFocusUpCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.lang.Object
-hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
-hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,SingleBufferStrategy
+hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
+hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,ProxyCapabilities,SingleBufferStrategy
 
 CLSS public java.awt.Container
 cons public Container()
@@ -373,7 +373,7 @@ meth public void transferFocusDownCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.awt.Component
-hfds INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,modalAppContext,modalComp,ncomponents,printing,printingThreads,serialPersistentFields,serialVersionUID
+hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
 hcls DropTargetEventTargetFilter,EventTargetFilter,MouseEventTargetFilter,WakingRunnable
 
 CLSS public java.awt.FlowLayout
@@ -1372,8 +1372,24 @@ meth public abstract void die()
 meth public abstract void redo()
 meth public abstract void undo()
 
+CLSS public abstract interface org.netbeans.api.actions.Closable
+meth public abstract boolean close()
+
+CLSS public abstract interface org.netbeans.api.actions.Editable
+meth public abstract void edit()
+
+CLSS public abstract interface org.netbeans.api.actions.Openable
+meth public abstract void open()
+
+CLSS public abstract interface org.netbeans.api.actions.Printable
+meth public abstract void print()
+
+CLSS public abstract interface org.netbeans.api.actions.Viewable
+meth public abstract void view()
+
 CLSS public org.openide.awt.Actions
 cons public Actions()
+ anno 0 java.lang.Deprecated()
 innr public abstract interface static ButtonActionConnector
 innr public abstract interface static SubMenuModel
 innr public static CheckboxMenuItem
@@ -1384,16 +1400,21 @@ innr public static ToolbarToggleButton
 meth public static java.lang.String cutAmpersand(java.lang.String)
 meth public static java.lang.String findKey(org.openide.util.actions.SystemAction)
 meth public static javax.swing.Action alwaysEnabled(java.awt.event.ActionListener,java.lang.String,java.lang.String,boolean)
+meth public static javax.swing.Action checkbox(java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean)
+meth public static org.openide.util.ContextAwareAction callback(java.lang.String,javax.swing.Action,boolean,java.lang.String,java.lang.String,boolean)
+meth public static org.openide.util.ContextAwareAction context(java.lang.Class<?>,boolean,boolean,org.openide.util.ContextAwareAction,java.lang.String,java.lang.String,java.lang.String,boolean)
 meth public static void connect(javax.swing.AbstractButton,javax.swing.Action)
 meth public static void connect(javax.swing.AbstractButton,org.openide.util.actions.BooleanStateAction)
 meth public static void connect(javax.swing.AbstractButton,org.openide.util.actions.SystemAction)
+ anno 0 java.lang.Deprecated()
 meth public static void connect(javax.swing.JCheckBoxMenuItem,org.openide.util.actions.BooleanStateAction,boolean)
 meth public static void connect(javax.swing.JMenuItem,javax.swing.Action,boolean)
 meth public static void connect(javax.swing.JMenuItem,org.openide.util.actions.SystemAction,boolean)
+ anno 0 java.lang.Deprecated()
 meth public static void setMenuText(javax.swing.AbstractButton,java.lang.String,boolean)
+ anno 0 java.lang.Deprecated()
 supr java.lang.Object
-hfds DISABLED_BUTTON_FILTER,menuActionCache,menuActionLock
-hcls BooleanButtonBridge,Bridge,ButtonBridge,CheckMenuBridge,DisabledButtonFilter,ISubActionListener,LazyDisabledIcon,MenuBridge,SubMenuBridge
+hcls BooleanButtonBridge,Bridge,ButtonBridge,CheckMenuBridge,ISubActionListener,MenuBridge,SubMenuBridge
 
 CLSS public abstract interface static org.openide.awt.Actions$ButtonActionConnector
 meth public abstract boolean connect(javax.swing.AbstractButton,javax.swing.Action)
@@ -1414,6 +1435,7 @@ supr javax.swing.JMenuItem
 hfds bridge,serialVersionUID
 
 CLSS public static org.openide.awt.Actions$SubMenu
+ anno 0 java.lang.Deprecated()
 cons public SubMenu(javax.swing.Action,org.openide.awt.Actions$SubMenuModel,boolean)
 cons public SubMenu(org.openide.util.actions.SystemAction,org.openide.awt.Actions$SubMenuModel)
 cons public SubMenu(org.openide.util.actions.SystemAction,org.openide.awt.Actions$SubMenuModel,boolean)
@@ -1424,6 +1446,7 @@ supr org.openide.awt.JMenuPlus
 hfds bridge,serialVersionUID
 
 CLSS public abstract interface static org.openide.awt.Actions$SubMenuModel
+ anno 0 java.lang.Deprecated()
 meth public abstract int getCount()
 meth public abstract java.lang.String getLabel(int)
 meth public abstract org.openide.util.HelpCtx getHelpCtx(int)
@@ -1432,6 +1455,7 @@ meth public abstract void performActionAt(int)
 meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 
 CLSS public static org.openide.awt.Actions$ToolbarButton
+ anno 0 java.lang.Deprecated()
 cons public ToolbarButton(javax.swing.Action)
 cons public ToolbarButton(org.openide.util.actions.SystemAction)
 meth public java.awt.Dimension getMaximumSize()
@@ -1440,6 +1464,7 @@ supr org.openide.awt.ToolbarButton
 hfds serialVersionUID
 
 CLSS public static org.openide.awt.Actions$ToolbarToggleButton
+ anno 0 java.lang.Deprecated()
 cons public ToolbarToggleButton(org.openide.util.actions.BooleanStateAction)
 meth public java.awt.Dimension getMaximumSize()
 meth public java.awt.Dimension getMinimumSize()
@@ -1457,6 +1482,7 @@ meth public abstract javax.swing.JComponent[] getMenuPresenters()
 meth public abstract javax.swing.JComponent[] synchMenuPresenters(javax.swing.JComponent[])
 
 CLSS public org.openide.awt.EqualFlowLayout
+ anno 0 java.lang.Deprecated()
 cons public EqualFlowLayout()
 cons public EqualFlowLayout(int)
 cons public EqualFlowLayout(int,int,int)
@@ -1487,6 +1513,7 @@ meth public java.awt.Dimension getPreferredSize()
 meth public javax.accessibility.AccessibleContext getAccessibleContext()
 meth public static java.lang.String getHomePage()
 meth public static void setFactory(org.openide.awt.HtmlBrowser$Factory)
+ anno 0 java.lang.Deprecated()
 meth public static void setHomePage(java.lang.String)
 meth public void requestFocus()
 meth public void setStatusLineVisible(boolean)
@@ -1494,7 +1521,7 @@ meth public void setToolbarVisible(boolean)
 meth public void setURL(java.lang.String)
 meth public void setURL(java.net.URL)
 supr javax.swing.JPanel
-hfds bBack,bForward,bHistory,bHome,bReload,bStop,browserComponent,browserFactory,browserImpl,browserListener,cbLabel,cbLocation,everythinkIListenInCheckBoxIsUnimportant,head,homePage,iBack,iForward,iHistory,iHome,iReload,iStop,lStatusLine,rp,serialVersionUID,statusLineVisible,toolbarVisible
+hfds bBack,bForward,bReload,bStop,browserComponent,browserFactory,browserImpl,browserListener,everythinkIListenInCheckBoxIsUnimportant,head,homePage,lStatusLine,rp,serialVersionUID,statusLineVisible,toolbarVisible,txtLocation
 hcls AccessibleHtmlBrowser,BrowserListener,TrivialURLDisplayer
 
 CLSS public abstract interface static org.openide.awt.HtmlBrowser$Factory
@@ -1523,6 +1550,9 @@ meth public abstract void removePropertyChangeListener(java.beans.PropertyChange
 meth public abstract void setURL(java.net.URL)
 meth public abstract void showHistory()
 meth public abstract void stopLoading()
+meth public java.lang.String getLocation()
+meth public void dispose()
+meth public void setLocation(java.lang.String)
 supr java.lang.Object
 hfds serialVersionUID
 
@@ -1530,6 +1560,7 @@ CLSS public abstract static org.openide.awt.HtmlBrowser$URLDisplayer
 cons protected URLDisplayer()
 meth public abstract void showURL(java.net.URL)
 meth public static org.openide.awt.HtmlBrowser$URLDisplayer getDefault()
+meth public void showURLExternal(java.net.URL)
 supr java.lang.Object
 
 CLSS public final org.openide.awt.HtmlRenderer
@@ -1559,6 +1590,7 @@ meth public abstract void setRenderStyle(int)
 meth public abstract void setText(java.lang.String)
 
 CLSS public org.openide.awt.JInlineMenu
+ anno 0 java.lang.Deprecated()
 cons public JInlineMenu()
 intf org.openide.awt.DynamicMenuContent
 meth public java.awt.Insets getInsets()
@@ -1569,12 +1601,14 @@ supr javax.swing.JMenuItem
 hfds BLANK_ICON,addedItems,items,serialVersionUID,upToDate
 
 CLSS public org.openide.awt.JMenuPlus
+ anno 0 java.lang.Deprecated()
 cons public JMenuPlus()
 cons public JMenuPlus(java.lang.String)
 supr javax.swing.JMenu
 hfds serialVersionUID
 
 CLSS public org.openide.awt.JPopupMenuPlus
+ anno 0 java.lang.Deprecated()
 cons public JPopupMenuPlus()
 supr javax.swing.JPopupMenu
 
@@ -1588,6 +1622,7 @@ supr java.lang.Object
 hfds problem,problemTested,reqProc,task
 
 CLSS public org.openide.awt.ListPane
+ anno 0 java.lang.Deprecated()
 cons public ListPane()
 cons public ListPane(java.lang.Object[])
 cons public ListPane(java.util.Vector)
@@ -1620,20 +1655,25 @@ meth public static int findMnemonicAmpersand(java.lang.String)
 meth public static void setLocalizedText(javax.swing.AbstractButton,java.lang.String)
 meth public static void setLocalizedText(javax.swing.JLabel,java.lang.String)
 supr java.lang.Object
+hfds MNEMONIC_INDEX_LISTENER,PROP_DISPLAYED_MNEMONIC_INDEX,PROP_MNEMONIC,PROP_TEXT
 
 CLSS public org.openide.awt.MouseUtils
 cons public MouseUtils()
 innr public abstract static PopupMouseAdapter
 meth public static boolean isDoubleClick(java.awt.event.MouseEvent)
 meth public static boolean isLeftMouseButton(java.awt.event.MouseEvent)
+ anno 0 java.lang.Deprecated()
 meth public static boolean isRightMouseButton(java.awt.event.MouseEvent)
+ anno 0 java.lang.Deprecated()
 supr java.lang.Object
 hfds DOUBLE_CLICK_DELTA,tempe,temph,tempm,tempx,tempy
 
 CLSS public abstract static org.openide.awt.MouseUtils$PopupMouseAdapter
 cons public PopupMouseAdapter()
 cons public PopupMouseAdapter(int)
+ anno 0 java.lang.Deprecated()
 fld public final static int DEFAULT_THRESHOLD = 5
+ anno 0 java.lang.Deprecated()
 meth protected abstract void showPopup(java.awt.event.MouseEvent)
 meth public void mousePressed(java.awt.event.MouseEvent)
 meth public void mouseReleased(java.awt.event.MouseEvent)
@@ -1658,11 +1698,13 @@ CLSS public final static !enum org.openide.awt.NotificationDisplayer$Priority
 fld public final static org.openide.awt.NotificationDisplayer$Priority HIGH
 fld public final static org.openide.awt.NotificationDisplayer$Priority LOW
 fld public final static org.openide.awt.NotificationDisplayer$Priority NORMAL
+fld public final static org.openide.awt.NotificationDisplayer$Priority SILENT
 meth public static org.openide.awt.NotificationDisplayer$Priority valueOf(java.lang.String)
 meth public static org.openide.awt.NotificationDisplayer$Priority[] values()
 supr java.lang.Enum<org.openide.awt.NotificationDisplayer$Priority>
 
 CLSS public org.openide.awt.SpinButton
+ anno 0 java.lang.Deprecated()
 cons public SpinButton()
 fld protected boolean arrowsOrientation
 fld protected boolean boundsIgnored
@@ -1727,6 +1769,7 @@ supr java.lang.Thread
 hfds finish
 
 CLSS public org.openide.awt.SpinButtonAdapter
+ anno 0 java.lang.Deprecated()
 cons public SpinButtonAdapter()
 intf org.openide.awt.SpinButtonListener
 meth public void changeValue()
@@ -1735,11 +1778,13 @@ meth public void moveUp()
 supr java.lang.Object
 
 CLSS public abstract interface org.openide.awt.SpinButtonListener
+ anno 0 java.lang.Deprecated()
 meth public abstract void changeValue()
 meth public abstract void moveDown()
 meth public abstract void moveUp()
 
 CLSS public org.openide.awt.SplittedPanel
+ anno 0 java.lang.Deprecated()
 cons public SplittedPanel()
 fld public final static int DEFAULT_SPLITTER = 0
 fld public final static int EMPTY_SPLITTER = 1
@@ -1798,6 +1843,7 @@ hfds DEFAULT_SPLIT_TYPE,absolute,accessibleContext,continuousLayout,descriptionF
 hcls DefaultSplitter,MouseListenerAdapter,SplitLayout
 
 CLSS public static org.openide.awt.SplittedPanel$EmptySplitter
+ anno 0 java.lang.Deprecated()
 cons public EmptySplitter()
 cons public EmptySplitter(int)
 intf javax.accessibility.Accessible
@@ -1807,6 +1853,7 @@ supr javax.swing.JComponent
 hfds accessibleContext,serialVersionUID,width
 
 CLSS public static org.openide.awt.SplittedPanel$SplitChangeEvent
+ anno 0 java.lang.Deprecated()
 cons public SplitChangeEvent(org.openide.awt.SplittedPanel,int,int)
 meth public int getNewValue()
 meth public int getOldValue()
@@ -1846,6 +1893,7 @@ meth public static javax.swing.JTabbedPane createCloseButtonTabbedPane()
 supr java.lang.Object
 
 CLSS public org.openide.awt.ToolbarButton
+ anno 0 java.lang.Deprecated()
 cons public ToolbarButton()
 cons public ToolbarButton(javax.swing.Icon)
 meth public void processMouseEvent(java.awt.event.MouseEvent)
@@ -1853,6 +1901,7 @@ supr javax.swing.JButton
 hfds serialVersionUID
 
 CLSS public org.openide.awt.ToolbarToggleButton
+ anno 0 java.lang.Deprecated()
 cons public ToolbarToggleButton()
 cons public ToolbarToggleButton(javax.swing.Icon)
 cons public ToolbarToggleButton(javax.swing.Icon,boolean)
@@ -1873,6 +1922,7 @@ meth public abstract void removeChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void undo()
 
 CLSS public final static org.openide.awt.UndoRedo$Empty
+ anno 0 java.lang.Deprecated()
 cons public Empty()
 intf org.openide.awt.UndoRedo
 meth public boolean canRedo()

@@ -237,6 +237,18 @@
                 </file>
             </MIME-resolver>]]>
         </file>
+        <file name="c-resolver.xml"><![CDATA[<?xml version="1.0"?>
+            <MIME-resolver>
+                <file>
+                    <ext name="C"/>
+                    <resolver mime="text/x-c++"/>
+                </file>
+                <file>
+                    <ext name="c"/>
+                    <resolver mime="text/x-c"/>
+                </file>
+            </MIME-resolver>]]>
+        </file>
         <file name="cpp-resolver.xml"><![CDATA[<?xml version="1.0"?>
             <MIME-resolver>
                 <file>

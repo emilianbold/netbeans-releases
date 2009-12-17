@@ -97,29 +97,29 @@ public class KenaiTest extends NbTestCase {
         br.close();
     }
 
-    public void testQueryTopComponent() throws Throwable {
-        KenaiRepository repo = KenaiConnector.repo;
-
-        LogHandler openedHandler = new LogHandler("QueryAction.openQuery finnish", LogHandler.Compare.STARTS_WITH);
-
-        QueryAction.openQuery(null, repo, true);
-        openedHandler.waitUntilDone();
-
-        QueryTopComponent qtc = getQueryTC();
-        JComboBox combo = (JComboBox) getField(qtc, "repositoryComboBox");
-        assertFalse(combo.isEnabled());
-        JButton button = (JButton) getField(qtc, "newButton");
-        assertFalse(button.isEnabled());
-
-        Kenai.getDefault().login(username, password.toCharArray());
-        Kenai.getDefault().logout();
-        Kenai.getDefault().login(username, password.toCharArray());
-
-        combo = (JComboBox) getField(qtc, "repositoryComboBox");
-        assertFalse(combo.isEnabled());
-        button = (JButton) getField(qtc, "newButton");
-        assertFalse(button.isEnabled());
-    }
+//    public void testQueryTopComponent() throws Throwable {
+//        KenaiRepository repo = KenaiConnector.repo;
+//
+//        LogHandler openedHandler = new LogHandler("QueryAction.openQuery finnish", LogHandler.Compare.STARTS_WITH);
+//
+//        QueryAction.openQuery(null, repo, true);
+//        openedHandler.waitUntilDone();
+//
+//        QueryTopComponent qtc = getQueryTC();
+//        JComboBox combo = (JComboBox) getField(qtc, "repositoryComboBox");
+//        assertFalse(combo.isEnabled());
+//        JButton button = (JButton) getField(qtc, "newButton");
+//        assertFalse(button.isEnabled());
+//
+//        Kenai.getDefault().login(username, password.toCharArray());
+//        Kenai.getDefault().logout();
+//        Kenai.getDefault().login(username, password.toCharArray());
+//
+//        combo = (JComboBox) getField(qtc, "repositoryComboBox");
+//        assertFalse(combo.isEnabled());
+//        button = (JButton) getField(qtc, "newButton");
+//        assertFalse(button.isEnabled());
+//    }
 
     public void testRefreshQueriesInQueryTopComponent() throws Throwable {
         QueryAccessorImpl qa = new QueryAccessorImpl(); // need the instace to listen on kenai
@@ -351,6 +351,16 @@ public class KenaiTest extends NbTestCase {
         }
 
         public Lookup getLookup() {
+            return Lookup.EMPTY;
+        }
+
+        @Override
+        public String getID() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Image getIcon() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.openide.util.NbBundle;
@@ -54,7 +55,7 @@ public class PlatformNone extends Platform {
     };
 
     public PlatformNone() {
-        super(NAME, NbBundle.getBundle(PlatformNone.class).getString("NoPlatform"), Platform.PLATFORM_NONE);
+        super(NAME, NbBundle.getBundle(PlatformNone.class).getString("NoPlatform"), PlatformTypes.PLATFORM_NONE);
     }
 
     public LibraryItem.StdLibItem[] getStandardLibraries() {
@@ -69,10 +70,12 @@ public class PlatformNone extends Platform {
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
         if (libName.endsWith(".so")) { // NOI18N
             int i = libName.indexOf(".so"); // NOI18N
-            if (i > 0)
+            if (i > 0) {
                 libName = libName.substring(0, i);
-            if (libName.startsWith("lib")) // NOI18N
+            }
+            if (libName.startsWith("lib")) { // NOI18N
                 libName = libName.substring(3);
+            }
             return compilerSet.getLibrarySearchOption() +  IpeUtils.escapeOddCharacters(libDir)
                     + " " + compilerSet.getLibraryOption() + IpeUtils.escapeOddCharacters(libName); // NOI18N
         } else {

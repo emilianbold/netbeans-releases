@@ -470,9 +470,31 @@ char * int64ttoCHAR(int64t* value) {
     if(value->High==0) {
         return DWORDtoCHAR(value->Low);
     } else {
-        char * str = newpChar(34);
-        double d = int64ttoDouble(value);
-        sprintf(str, "%.0lf", d);
+        char * high = DWORDtoCHAR(value->High);
+        char * low  = DWORDtoCHAR(value->Low);
+        DWORD highLength = getLengthA(high);
+        DWORD lowLength  = getLengthA(low);
+
+        char * str = newpChar(highLength + lowLength + 9);
+        DWORD i = 0;
+        str[0] = '[';
+        str[1] = 'H';
+        str[2] = ']';
+        str[3] = '[';
+        str[4] = 'L';
+        str[5] = ']';
+        str[6] = '=';
+
+        for(i = 0; i < highLength; i++) {
+            str [7 + i] = high[i];
+        }
+        str [7 + highLength] =L',';
+        for(i = 0; i < lowLength;i++) {
+            str [8 + highLength + i] = low[i];
+        }
+        str [8 + highLength + lowLength] = '\0';
+        FREE(high);
+        FREE(low);
         return str;
     }
 }
@@ -480,9 +502,31 @@ WCHAR * int64ttoWCHAR(int64t*value) {
     if(value->High==0) {
         return DWORDtoWCHAR(value->Low);
     } else {
-        WCHAR * str = newpWCHAR(34);
-        double d = int64ttoDouble(value);
-        wsprintfW(str, L"%.0Lf", d);
+        WCHAR * high = DWORDtoWCHAR(value->High);
+        WCHAR * low  = DWORDtoWCHAR(value->Low);
+        DWORD highLength = getLengthW(high);
+        DWORD lowLength  = getLengthW(low);
+
+        WCHAR * str = newpWCHAR(highLength + lowLength + 9);
+        DWORD i = 0;
+        str[0] = L'[';
+        str[1] = L'H';
+        str[2] = L']';
+        str[3] = L'[';
+        str[4] = L'L';
+        str[5] = L']';
+        str[6] = L'=';
+
+        for(i = 0; i < highLength;i++) {
+            str [7 + i] = high[i];
+        }
+        str [7 + highLength] = L',';
+        for(i = 0; i < lowLength;i++) {
+            str [8 + highLength + i] = low[i];
+        }
+        str [8 + highLength + lowLength] = L'\0';
+        FREE(high);
+        FREE(low);
         return str;
     }
 }

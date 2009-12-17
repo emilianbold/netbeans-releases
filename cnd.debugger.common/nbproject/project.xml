@@ -204,6 +204,9 @@
             </module-dependencies>
             <friend-packages>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
+                <friend>com.sun.tools.debugger.gdb</friend>
+                <friend>com.sun.tools.debugger.dbx</friend>
+                <friend>com.sun.tools.debugger.common</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <package>org.netbeans.modules.cnd.debugger.common</package>

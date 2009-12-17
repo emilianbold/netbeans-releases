@@ -102,6 +102,8 @@ public class FileStatusCache {
     private static final FileInformation FILE_INFORMATION_NOTMANAGED_DIRECTORY = new FileInformation(FileInformation.STATUS_NOTVERSIONED_NOTMANAGED, true);
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(FileInformation.STATUS_UNKNOWN, false);
 
+    private static final int CACHE_SIZE_WARNING_THRESHOLD = 100000; // log when cache gets too big and steps over this threshold
+
     /**
      * Auxiliary conflict file siblings
      * After update: *.r#, *.mine
@@ -720,6 +722,9 @@ public class FileStatusCache {
      */
     void cleanUp() {
         File[] modifiedFiles = cacheProvider.getAllIndexValues();
+        if (modifiedFiles.length > CACHE_SIZE_WARNING_THRESHOLD) {
+            LOG.log(Level.WARNING, "Cache contains too many entries: {0}", (Integer) modifiedFiles.length); //NOI18N
+        }
         for (File file : modifiedFiles) {
             FileInformation info = getCachedStatus(file);
             if (info != null && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {

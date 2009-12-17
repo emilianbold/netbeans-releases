@@ -155,7 +155,7 @@ final class FileObjectKeeper implements FileChangeListener {
 
     public void fileFolderCreated(FileEvent fe) {
         Collection<FileChangeListener> arr = listeners;
-        if (arr == null) {
+        if (arr == null || kept == null) {  //#178378 - ignore queued events when no more listening (kept == null)
             return;
         }
         final FileObject f = fe.getFile();

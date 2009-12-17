@@ -48,6 +48,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -137,6 +138,7 @@ public class NativeExecutionBaseTestSuite extends NbTestSuite {
                         result.add(key);
                     }
                 }
+                Collections.sort(result);
                 return result.toArray(new String[result.size()]);
             } catch (FileNotFoundException ex) {
                 // rcfile does not exists - no tests to run

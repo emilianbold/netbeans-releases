@@ -42,7 +42,10 @@
 package org.netbeans.modules.cnd.discovery.wizard;
 
 import java.awt.Dimension;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.Vector;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -70,7 +73,7 @@ import org.openide.util.Utilities;
  */
 public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
     
-    public static JPanel wrapPanel(ListEditorPanel innerPanel) {
+    public static JPanel wrapPanel(ListEditorPanel<String> innerPanel) {
         JPanel outerPanel = new JPanel();
         outerPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -90,7 +93,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
         getDownButton().setVisible(false);
         getCopyButton().setVisible(false);
     }
-    
+
     @Override
     public String addAction() {
         FileFilter[] filters;
@@ -114,13 +117,36 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
                 filters,
                 "",
                 false);
+        fileChooser.setMultiSelectionEnabled(true);
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return null;
         }
-        String itemPath = fileChooser.getSelectedFile().getPath();
-        itemPath = FilePathAdaptor.normalize(itemPath);
-        return itemPath;
+        StringBuilder buf = new StringBuilder();
+        for (File item : fileChooser.getSelectedFiles()){
+            String itemPath = item.getPath();
+            itemPath = FilePathAdaptor.normalize(itemPath);
+            if (buf.length() > 0) {
+                buf.append(';');
+            }
+            buf.append(itemPath);
+        }
+        if (buf.length()==0) {
+            return null;
+        }
+        return buf.toString();
+    }
+
+    @Override
+    public void addObjectAction(String newObject) {
+        if (newObject != null) {
+            List<String> list = new ArrayList<String>();
+            StringTokenizer st = new StringTokenizer(newObject, ";"); // NOI18N
+            while(st.hasMoreTokens()) {
+                list.add(st.nextToken());
+            }
+            addObjectsAction(list);
+        }
     }
     
     @Override
@@ -167,7 +193,7 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
             return;
         }
         String newS = notifyDescriptor.getInputText();
-        Vector vector = getListData();
+        Vector<String> vector = getListData();
         Object[] arr = getListData().toArray();
         for (int i = 0; i < arr.length; i++) {
             if (arr[i] == o) {

@@ -326,7 +326,8 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     }
 
     private void showBindings() {
-        myInjectableBindings.setText("");
+        // TODO :
+        /*myInjectableBindings.setText("");
         myInjectableBindings.setToolTipText(null);
         TreePath treePath = myJavaHierarchyTree.getSelectionPath();
         if (treePath != null) {
@@ -373,7 +374,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 myInjectableBindings.setCaretPosition(0);
                 myInjectableBindings.setToolTipText(((JavaElement)node).getTooltip());
             }
-        }
+        }*/
     }
 
     private void showJavaDoc() {

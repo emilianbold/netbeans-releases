@@ -86,7 +86,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
     }
 
     protected int getSampleBuildTimeout() throws Exception {
-        int result = 60;
+        int result = 120;
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
         String timeout = rcFile.get("remote", "sample.build.timeout");
         if (timeout != null) {
@@ -114,10 +114,10 @@ public class RemoteBuildTestBase extends RemoteTestBase {
     }
 
     @Override
-    protected List<Class<?>> getServises() {
+    protected List<Class<?>> getServices() {
         List<Class<?>> list = new ArrayList<Class<?>>();
         list.add(MakeProjectType.class);
-        list.addAll(super.getServises());
+        list.addAll(super.getServices());
         return list;
     }
 
@@ -189,6 +189,10 @@ public class RemoteBuildTestBase extends RemoteTestBase {
                 break;
             }
         }
+    }
+
+    protected void changeProjectHost(FileObject projectDir) throws Exception {
+        changeProjectHost(FileUtil.toFile(projectDir));
     }
 
     protected void changeProjectHost(File projectDir) throws Exception {

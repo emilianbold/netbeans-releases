@@ -44,12 +44,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collections;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.openide.util.Lookup;
 
 /**
  * Base test for different RemoteSyncWorker implementations
@@ -133,6 +132,6 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(AbstractSyncWorkerTestCase.class);
+        return new RemoteDevelopmentTestSuite(AbstractSyncWorkerTestCase.class);
     }
 }

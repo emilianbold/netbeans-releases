@@ -43,10 +43,10 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider;
-import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider.Function;
-import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider.Parameter;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider;
+import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.Function;
+import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.Parameter;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
@@ -360,6 +360,9 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                     TokenItem cls = findClassifier(token);
                     if (cls != null) {
                         indent = getTokenIndent(cls);
+                        if (isHalfIndentVisibility()) {
+                            indent += getShiftWidth()/2;
+                        }
                     }
                     break;
                 case CLASS:
@@ -386,6 +389,9 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                 case PRIVATE:
                                 case PROTECTED:
                                     indent = getTokenIndent(tt) + getShiftWidth();
+                                    if (isHalfIndentVisibility()) {
+                                        indent -= getShiftWidth()/2;
+                                    }
                                     break;
                                 case FOR:
                                     if (alignMultilineFor()) {
@@ -444,6 +450,9 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                         TokenItem ttt = getVisibility(t);
                         if (ttt != null){
                             indent = getTokenIndent(ttt) + getRightIndentDeclaration();
+                            if (isHalfIndentVisibility()) {
+                                indent -= getShiftWidth()/2;
+                            }
                         } else {
                             ttt = findAnyToken(t, null,
                                     new CppTokenId[] {CppTokenId.CASE,

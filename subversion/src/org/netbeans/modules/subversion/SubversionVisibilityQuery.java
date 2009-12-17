@@ -43,17 +43,12 @@ package org.netbeans.modules.subversion;
 
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.spi.queries.VisibilityQueryImplementation2;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
 
 import java.io.*;
-import java.util.*;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 
 /**
@@ -61,32 +56,20 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
  * 
  * @author Maros Sandor
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.VisibilityQueryImplementation.class)
-public class SubversionVisibilityQuery implements VisibilityQueryImplementation2, VersioningListener {
+public class SubversionVisibilityQuery extends VCSVisibilityQuery implements VersioningListener {
 
-    private List<ChangeListener>  listeners = new ArrayList<ChangeListener>();
     private FileStatusCache       cache;
     private static Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.SubversionVisibilityQuery");
+
     public SubversionVisibilityQuery() {
     }
 
-    public boolean isVisible(FileObject fileObject) {
+    public boolean isVisible(File file) {
         long t = System.currentTimeMillis();
-        LOG.log(Level.FINE, "isVisible {0}", new Object[] { fileObject });
+        Subversion.LOG.log(Level.FINE, "isVisible {0}", new Object[] { file });
         boolean ret = true;
         try {
-            if (fileObject.isData()) return true;
-            File file = FileUtil.toFile(fileObject);
-            ret = isVisible(file);
-            return ret;
-        } finally {
-            if(LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, " isVisible returns {0} in {1} millis", new Object[] { ret, System.currentTimeMillis() - t });
-            }
-        }
-    }
     
-    public boolean isVisible(File file) {
         if(file == null) return true;
         if (file.isFile()) {
             return true;
@@ -109,6 +92,11 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation2
             LOG.log(Level.SEVERE, e.getMessage(), e);
             return true;
         }        
+        } finally {
+            if(Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, "isVisible returns {0} in {1} millis", new Object[] { ret, System.currentTimeMillis() - t });
+    }
+        }
     }
 
     private synchronized FileStatusCache getCache() {
@@ -119,18 +107,6 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation2
         return cache;
     }
     
-    public synchronized void addChangeListener(ChangeListener l) {
-        ArrayList<ChangeListener> newList = new ArrayList<ChangeListener>(listeners);
-        newList.add(l);
-        listeners = newList;
-    }
-
-    public synchronized void removeChangeListener(ChangeListener l) {
-        ArrayList<ChangeListener> newList = new ArrayList<ChangeListener>(listeners);
-        newList.remove(l);
-        listeners = newList;
-    }
-
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
             File file = (File) event.getParams()[0];
@@ -148,10 +124,4 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation2
         return file.isDirectory() && info != null && info.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
     }
     
-    private void fireVisibilityChanged() {
-        ChangeEvent event = new ChangeEvent(this);
-        for (ChangeListener listener : listeners) {
-            listener.stateChanged(event);          
         }          
-    }
-}

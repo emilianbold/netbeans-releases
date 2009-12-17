@@ -141,6 +141,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         initComponents();
         setupComponents();
         refreshComponents();
+        commitButton.setEnabled(false);
         refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
         refreshStatuses();
     }
@@ -191,6 +192,10 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
     }
 
     boolean canClose() {
+        if (setups == null) {
+            return true;
+        }
+
         EditorCookie[] editorCookies = fileTable.getEditorCookies();
         DiffUtils.cleanThoseUnmodified(editorCookies);
         DiffUtils.cleanThoseWithEditorPaneOpen(editorCookies);
@@ -364,7 +369,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
             if (editorCookie instanceof EditorCookie.Observable) {
                 observableEditorCookie = (EditorCookie.Observable) editorCookie;
             }
-            lookup.setData(fileObj, observableEditorCookie);
             
             diffView = null;
             boolean focus = false;
@@ -391,10 +395,12 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
             } else {
                 diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoContent"));
             }            
+            lookup.setData(fileObj, observableEditorCookie, diffView.getActionMap());
         } else {
             currentModelIndex = -1;
             lookup.setData();
             diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoFileSelected"));
+            lookup.setData(diffView.getActionMap());
             setBottomComponent();
         }
 
@@ -589,6 +595,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                     Dimension dim = fileTable.getComponent().getPreferredSize();
                     fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
                     setDiffIndex(0, 0);
+                    commitButton.setEnabled(true);
                     dpt = new DiffPrepareTask(setups);
                     prepareTask = RequestProcessor.getDefault().post(dpt);
                 }

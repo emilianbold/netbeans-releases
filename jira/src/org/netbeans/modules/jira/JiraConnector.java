@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.jira;
 
+import java.awt.Image;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -56,6 +57,16 @@ import org.openide.util.lookup.Lookups;
 public class JiraConnector extends BugtrackingConnector {
 
     private JiraIssueFinder issueFinder;
+
+    @Override
+    public String getID() {
+        return "org.netbeans.modules.jira";                                     //  NOI18N
+    }
+
+    @Override
+    public Image getIcon() {
+        return null;
+    }
 
     public String getDisplayName() {
         return getConnectorName();
