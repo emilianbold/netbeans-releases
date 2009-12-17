@@ -114,7 +114,7 @@ public final class JsfCompositeComponentAction extends CookieAction {
         templateWizard.putProperty("selectedText", selectedText);
         templateWizard.setTitle("Insert Composite Component");
         DataFolder templatesFolder = templateWizard.getTemplatesFolder();
-        FileObject template = templatesFolder.getPrimaryFile().getFileObject(TEMPLATES_FOLDER+File.separator+TEMPLATE_NAME);
+        FileObject template = templatesFolder.getPrimaryFile().getFileObject(TEMPLATES_FOLDER+"/"+TEMPLATE_NAME);   //NOI18N
         DataObject templateDO;
         FileObject projectDir = project.getProjectDirectory();
         DataFolder targetFolder = DataFolder.findFolder(projectDir);
