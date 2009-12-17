@@ -66,7 +66,7 @@ import org.openide.util.NbPreferences;
 public class EditorOptions {
     public static CodeStyleFactory codeStyleFactory;
     static {
-        Class c = CodeStyle.class;
+        Class<?> c = CodeStyle.class;
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
         } catch (Exception ex) {
@@ -113,6 +113,8 @@ public class EditorOptions {
      */
     public static final String indentPreprocessorDirectives = "indentPreprocessorDirectives"; //NOI18N
     public static final String indentPreprocessorDirectivesDefault = PreprocessorIndent.START_LINE.name();
+    public static final String indentVisibility = "indentVisibility"; //NOI18N
+    public static final String indentVisibilityDefault = CodeStyle.VisibilityIndent.NO_INDENT.name();
     public static final String sharpAtStartLine = "sharpAtStartLine"; //NOI18N
     public static final boolean sharpAtStartLineDefault = true;
     public static final String indentCasesFromSwitch = "indentCasesFromSwitch"; //NOI18N
@@ -338,6 +340,7 @@ public class EditorOptions {
         defaults.put(statementContinuationIndent,statementContinuationIndentDefault);
         defaults.put(constructorListContinuationIndent,constructorListContinuationIndentDefault);
         defaults.put(indentPreprocessorDirectives,indentPreprocessorDirectivesDefault);
+        defaults.put(indentVisibility,indentVisibilityDefault);
         defaults.put(sharpAtStartLine, sharpAtStartLineDefault);
         defaults.put(indentNamespace, indentNamespaceDefault);
         defaults.put(indentCasesFromSwitch, indentCasesFromSwitchDefault);

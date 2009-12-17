@@ -217,6 +217,10 @@ public final class EjbViewController {
     public DataObject getBeanDo() {
         return getDataObject(ejbClass);
     }
+
+    public FileObject getBeanFo() {
+        return findFileObject(ejbClass);
+    }
     
     public DataObject getDataObject(String className) {
         FileObject src = findFileObject(className);

@@ -81,6 +81,7 @@
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.repository</friend>
+                <friend>org.netbeans.modules.cnd.source</friend>
                 <package>org.netbeans.modules.cnd.debug</package>
                 <package>org.netbeans.modules.cnd.spi.editor</package>
                 <package>org.netbeans.modules.cnd.spi.utils</package>

@@ -44,11 +44,11 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.entity;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddActionGroup;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GenerateDTOAction;
 import org.openide.cookies.OpenCookie;
-import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import java.awt.datatransfer.Transferable;
@@ -58,8 +58,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
@@ -198,6 +196,10 @@ public class EntityNode extends AbstractNode implements OpenCookie {
     }
     
     public void open() {
+        FileObject fo = controller.getBeanFo();
+        ElementHandle<TypeElement> beh = controller.getBeanClass();
+        ElementOpen.open(fo, beh);
+/*
         DataObject dataObject = controller.getBeanDo();
         if (dataObject != null) {
             OpenCookie cookie = dataObject.getCookie(OpenCookie.class);
@@ -205,6 +207,7 @@ public class EntityNode extends AbstractNode implements OpenCookie {
                 cookie.open();
             }
         }
+ */
     }
     
     public Action getPreferredAction() {

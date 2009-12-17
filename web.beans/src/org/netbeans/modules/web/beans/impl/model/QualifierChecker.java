@@ -41,20 +41,17 @@
 package org.netbeans.modules.web.beans.impl.model;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.TypeElement;
 
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
 
@@ -63,23 +60,16 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.Ar
  * @author ads
  *
  */
-class QualifierChecker implements Checker {
+class QualifierChecker extends RuntimeAnnotationChecker implements Checker {
     
     private static final String QUALIFIER_TYPE_ANNOTATION=
         "javax.inject.Qualifier";                               // NOI18N
-    
-    private static final String VALUE = "value";                // NOI18N
     
     static QualifierChecker get() {
         // could be changed to cached ThreadLocal access
         return new QualifierChecker();
     }
     
-    void init( TypeElement element, AnnotationModelHelper helper ) {
-        myHelper = helper;
-        myElement = element;
-    }
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.impl.model.Checker#check()
      */
@@ -88,61 +78,32 @@ class QualifierChecker implements Checker {
             return true;
         }
         else {
-            List<? extends AnnotationMirror> annotations = 
-                getElement().getAnnotationMirrors();
-            boolean isQualifierType = getHelper().hasAnnotation(annotations, 
-                    QUALIFIER_TYPE_ANNOTATION);
-            boolean hasRequiredRetention = getHelper().hasAnnotation(annotations, 
-                    Retention.class.getCanonicalName());
-            boolean hasRequiredTarget = getHelper().hasAnnotation(annotations, 
-                    Target.class.getCanonicalName());
-            
-            if ( !isQualifierType ){
-                // this is not qualifier , just return false
-                return false;
-            }
-            
-            if ( !hasRequiredRetention ) {
-                FieldInjectionPointLogic.LOGGER.log(Level.WARNING,
-                        "Annotation "+getElement().getQualifiedName()+
-                        "declared as Qualifier but has no Retention");// NOI18N
-                return false;
-            }
-            
-            if (  !hasRequiredTarget){
-                FieldInjectionPointLogic.LOGGER.log(Level.WARNING,
-                        "Annotation "+getElement().getQualifiedName()+
-                        "declared as Qualifier but has no Target");// NOI18N
-                return false;
-            }
-            
-            AnnotationParser parser = AnnotationParser.create(getHelper());
-            parser.expectEnumConstant(VALUE, 
-                    getHelper().resolveType(RetentionPolicy.class.getCanonicalName()) , 
-                    null);
-            Map<String, ? extends AnnotationMirror> types = getHelper().
-                getAnnotationsByType(annotations);
-            AnnotationMirror retention = types.get(
-                    Retention.class.getCanonicalName() );              // NOI18N
-            String retentionPolicy = parser.parse(retention).get( VALUE , 
-                    String.class);
-            hasRequiredRetention = retentionPolicy.equals( 
-                    RetentionPolicy.RUNTIME.toString());
-            if ( !hasRequiredRetention ){
-                FieldInjectionPointLogic.LOGGER.log(Level.WARNING,
-                        "Annotation "+getElement().getQualifiedName()+
-                        " declared as Qualifier but has wrong retention policy." +
-                        " Correct retention policy is "+
-                        RetentionPolicy.RUNTIME.toString());// NOI18N
-                return false;
-            }
-            hasRequiredTarget = checkTarget( types);
-            
-            return hasRequiredTarget;
+            return super.check();
         }
     }
     
-    private boolean checkTarget( Map<String, ? extends AnnotationMirror> types )
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getAnnotation()
+     */
+    @Override
+    protected String getAnnotation() {
+        return QUALIFIER_TYPE_ANNOTATION;
+    }
+    
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#getLogger()
+     */
+    @Override
+    protected Logger getLogger() {
+        return FieldInjectionPointLogic.LOGGER;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker#checkTarget(java.util.Map)
+     */
+    protected boolean checkTarget( Map<String, ? extends AnnotationMirror> types )
     {
         boolean hasRequiredTarget = false;
         AnnotationParser parser;
@@ -170,24 +131,13 @@ class QualifierChecker implements Checker {
             hasRequiredTarget = true;
         }
         else {
-            FieldInjectionPointLogic.LOGGER.log(Level.WARNING,
+            getLogger().log(Level.WARNING,
                     "Annotation "+getElement().getQualifiedName()+
                     "declared as Qualifier but has wrong target values." +
                     " Correct target values are {METHOD, FIELD, PARAMETER, TYPE})");// NOI18N
         }
         return hasRequiredTarget;
     }
-    
-    private TypeElement getElement(){
-        return myElement;
-    }
-    
-    private AnnotationModelHelper getHelper(){
-        return myHelper;
-    }
-    
-    private AnnotationModelHelper myHelper;
-    private TypeElement myElement;
     private static final Set<String> BUILT_IN_QUALIFIERS = new HashSet<String>();
     
     static {

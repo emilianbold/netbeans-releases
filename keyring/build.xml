@@ -6,7 +6,7 @@
         <ant dir="../nbbuild" target="tryme-debug">
             <property name="tryme.args" value="
                 -J-Dnetbeans.full.hack=true
-                -J-Dorg.netbeans.modules.keyring.level=FINER
+                -J-Dorg.netbeans.modules.keyring.level=0
                 -J-Dnetbeans.keyring.no.native=${nonative}
             "/>
         </ant>

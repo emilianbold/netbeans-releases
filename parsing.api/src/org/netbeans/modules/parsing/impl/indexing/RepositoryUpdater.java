@@ -2656,7 +2656,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
             updateProgress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_ProjectDependencies")); //NOI18N
             long tm1 = System.currentTimeMillis();
+            boolean restarted;
             if (depCtx == null) {
+                restarted = false;
                 depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries2InvDependencies, sourcesForBinaryRoots, useInitialState);
                 final List<URL> newRoots = new LinkedList<URL>();
                 Collection<? extends URL> c = PathRegistry.getDefault().getSources();
@@ -2776,6 +2778,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                 }
             } else {
+                restarted = true;
                 depCtx.newRootsToScan.removeAll(depCtx.scannedRoots);
                 depCtx.scannedRoots.clear();
                 depCtx.newBinariesToScan.removeAll(depCtx.scannedBinaries);
@@ -2813,6 +2816,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 printCollection(missingRoots, log);
                 log.append("Context:");    //NOI18N
                 log.append(depCtx);
+                log.append("Restarted: ");
+                log.append(restarted);
                 LOGGER.info(log.toString());
             }
             scannedRoots2Dependencies.keySet().removeAll(depCtx.oldRoots);
@@ -3593,6 +3598,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             printCollection(scannedRoots, sb);
             sb.append("  scannedBinaries(").append(scannedBinaries.size()).append(")=\n"); //NOI18N
             printCollection(scannedBinaries, sb);
+            sb.append("  newRoots2Deps(").append(newRoots2Deps.size()).append(")=\n"); //NOI18N
+            printMap(newRoots2Deps, sb);
+            sb.append("  newBinaries2InvDeps(").append(newBinaries2InvDeps.size()).append(")=\n"); //NOI18N
+            printMap(newBinaries2InvDeps, sb);
             sb.append("} ----\n"); //NOI18N
             return sb.toString();
         }

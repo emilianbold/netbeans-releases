@@ -82,11 +82,12 @@ public class SelectedNodesScheduler extends Scheduler {
                     final DataObject dataObject = nodes [0].getLookup ().lookup (DataObject.class);
                     if (dataObject != null && dataObject.isValid()) {
                         final FileObject fileObject = dataObject.getPrimaryFile ();
-                        if (fileObject.isValid() && Util.canBeParsed(fileObject.getMIMEType()))
-                        source = Source.create (fileObject);
-                        if (source != null) {
-                            schedule (source, new SchedulerEvent (this) {});
-                            return;
+                        if (fileObject.isValid() && Util.canBeParsed(fileObject.getMIMEType())) {
+                            source = Source.create (fileObject);
+                            if (source != null) {
+                                schedule (source, new SchedulerEvent (SelectedNodesScheduler.this) {});
+                                return;
+                            }
                         }
                     }
                 }

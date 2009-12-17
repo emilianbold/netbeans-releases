@@ -97,18 +97,20 @@ public abstract class AbstractMethodGenerator {
      * Adds method to class
      */
     protected static void addMethod(final MethodModel methodModel, FileObject fileObject, final String className) throws IOException {
-        JavaSource javaSource = JavaSource.forFileObject(fileObject);
-        javaSource.runModificationTask(new Task<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
-                boolean generateDefaultBody = (typeElement.getKind() != ElementKind.INTERFACE) && !methodModel.getModifiers().contains(Modifier.ABSTRACT);
-                MethodTree methodTree = MethodModelSupport.createMethodTree(workingCopy, methodModel, generateDefaultBody);
-                ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
-                ClassTree newClassTree = workingCopy.getTreeMaker().addClassMember(classTree, methodTree);
-                workingCopy.rewrite(classTree, newClassTree);
-            }
-        }).commit();
+        if (fileObject != null && methodModel != null){
+            JavaSource javaSource = JavaSource.forFileObject(fileObject);
+            javaSource.runModificationTask(new Task<WorkingCopy>() {
+                public void run(WorkingCopy workingCopy) throws IOException {
+                    workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
+                    boolean generateDefaultBody = (typeElement.getKind() != ElementKind.INTERFACE) && !methodModel.getModifiers().contains(Modifier.ABSTRACT);
+                    MethodTree methodTree = MethodModelSupport.createMethodTree(workingCopy, methodModel, generateDefaultBody);
+                    ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
+                    ClassTree newClassTree = workingCopy.getTreeMaker().addClassMember(classTree, methodTree);
+                    workingCopy.rewrite(classTree, newClassTree);
+                }
+            }).commit();
+        }
     }
     
     protected void saveXml() throws IOException {

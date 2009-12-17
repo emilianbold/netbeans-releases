@@ -65,8 +65,6 @@ import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -149,8 +147,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
 
             String runDirectory = pae.getProfile().getRunDirectory();
-
-            PlatformInfo pi = PlatformInfo.getDefault(conf.getDevelopmentHost().getExecutionEnvironment());
+            PlatformInfo pi = conf.getPlatformInfo();
 
             boolean unbuffer = false;
             if (pae.getType() == ProjectActionEvent.Type.RUN) {
@@ -172,7 +169,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     }
                 }
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                    if (HostInfoProvider.getPlatform(execEnv) == PlatformTypes.PLATFORM_WINDOWS) {
+                    if (conf.getPlatformInfo().getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                         // we need to run the application under cmd on windows
                         exe = "cmd.exe"; // NOI18N
                         // exe path naturalization is needed for cmd on windows, see issue 149404
@@ -209,8 +206,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                             args2 = "";
                         }
                         if (pae.getType() == ProjectActionEvent.Type.RUN &&
-                                pae.getConfiguration().isApplicationConfiguration() &&
-                                HostInfoProvider.getPlatform(execEnv) == PlatformTypes.PLATFORM_WINDOWS &&
+                                conf.isApplicationConfiguration() &&
+                                conf.getPlatformInfo().getPlatform() == PlatformTypes.PLATFORM_WINDOWS &&
                                 !exe.endsWith(".exe")) { // NOI18N
                             exe = exe + ".exe"; // NOI18N
                         }
@@ -267,21 +264,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             // TODO: this is actual only for sun studio compiler
             env.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
 
-            RemoteSyncWorker syncWorker = null;
-            switch (pae.getType()) {
-                case BUILD:
-                case CLEAN:
-                    syncWorker = RemoteSyncSupport.createSyncWorker(pae.getProject(), io.getOut(), io.getErr());
-                    if (syncWorker != null) {
-                        if (!syncWorker.startup(env)) {
-                            // TODO: fix me
-                            // return null;
-                            syncWorker = null;
-                        }
-                    }
-                    break;
-            }
-
             runDirectory = convertToRemoteIfNeeded(execEnv, runDirectory);
             if (runDirectory == null) {
                 // TODO: fix me
@@ -289,7 +271,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
 
             ProcessChangeListener processChangeListener = new ProcessChangeListener(this, null/*Writer outputListener*/, converter, io,
-                    pae.getActionName(), syncWorker, rcfile);
+                    pae.getActionName(), rcfile);
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
                     .setWorkingDirectory(runDirectory)
                     .unbufferOutput(unbuffer)
@@ -407,19 +389,17 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         private final LineConvertor lineConvertor;
         private final InputOutput tab;
         private final String actionName;
-        private final RemoteSyncWorker syncWorker;
         private long startTimeMillis;
         private Runnable postRunnable;
         private String rcfile;
 
         public ProcessChangeListener(ExecutionListener listener, Writer outputListener, LineConvertor lineConvertor,
-                InputOutput tab, String actionName, RemoteSyncWorker syncWorker, String rcfile) {
+                InputOutput tab, String actionName, String rcfile) {
             this.listener = listener;
             this.outputListener = outputListener;
             this.lineConvertor = lineConvertor;
             this.tab = tab;
             this.actionName = actionName;
-            this.syncWorker = syncWorker;
             this.rcfile = rcfile;
         }
 
@@ -453,7 +433,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 case CANCELLED:
                 {
                     closeOutputListener();
-                    shutdownSyncWorker();
                     postRunnable = new Runnable() {
                         public void run() {
                             StringBuilder res = new StringBuilder();
@@ -480,7 +459,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 case ERROR:
                 {
                     closeOutputListener();
-                    shutdownSyncWorker();
                     postRunnable = new Runnable() {
                         public void run() {
                             StringBuilder res = new StringBuilder();
@@ -507,7 +485,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 case FINISHED:
                 {
                     closeOutputListener();
-                    shutdownSyncWorker();
                     postRunnable = new Runnable() {
                         public void run() {
                             StringBuilder res = new StringBuilder();
@@ -596,12 +573,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     return ProcessChangeListener.this.convert(line);
                 }
             };
-        }
-
-        private void shutdownSyncWorker() {
-            if (syncWorker != null) {
-                syncWorker.shutdown();
-            }
         }
 
         private synchronized void closeOutputListener(){

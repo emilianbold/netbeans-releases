@@ -688,6 +688,10 @@ public class BugzillaRepository extends Repository {
             assert issueData != null;
             return BugzillaIssue.getID(issueData);
         }
+        public Map<String, String> getAttributes(Issue issue) {
+            assert issue != null;
+            return ((BugzillaIssue)issue).getAttributes();
+        }
     }
 
 }

@@ -108,11 +108,12 @@ class TypeProductionFilter extends Filter<Element> {
             iterator.hasNext() ; ) 
         {
             Element productionElement = iterator.next();
-            
+
             TypeElement enclosingElement = getImplementation().getHelper().
                 getCompilationController().getElementUtilities().
                 enclosingTypeElement( productionElement );
-            List<DeclaredType> derived = getDerived( enclosingElement );
+            
+            List<DeclaredType> derived = getDerived( enclosingElement);
             
             for (DeclaredType declaredType : derived) {
                 TypeMirror mirror = null;
@@ -168,10 +169,12 @@ class TypeProductionFilter extends Filter<Element> {
         }
     }
     
-    private List<DeclaredType> getDerived( TypeElement element ) {
+    private List<DeclaredType> getDerived( TypeElement element ) 
+    {
         if ( !isGeneric( element ) ){
             return Collections.singletonList( (DeclaredType)element.asType());
         }
+        
         Set<TypeElement> implementors = FieldInjectionPointLogic.
             getImplementors(getImplementation(), element);
         List<DeclaredType> result = new ArrayList<DeclaredType>( 
@@ -185,7 +188,8 @@ class TypeProductionFilter extends Filter<Element> {
     }
     
     private boolean isGeneric( TypeElement element ) {
-        return element.getTypeParameters().size() == 0 ;
+        //DeclaredType type = (DeclaredType)element.asType();
+        return element.getTypeParameters().size()!=0;
     }
 
     private boolean filterArray( Set<? extends Element> productionElements)

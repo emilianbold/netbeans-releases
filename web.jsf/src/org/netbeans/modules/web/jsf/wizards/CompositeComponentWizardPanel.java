@@ -47,6 +47,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.wizards.Utilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -108,8 +109,9 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
     public boolean isValid() {
 
         String errorMessage = null;
-        if (!Utilities.isJavaEE6(wizard)) {
-            errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Not_JavaEE6");
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (!Utilities.isJavaEE6(wizard)  && !(JSFUtils.isJavaEE5((TemplateWizard) wizard) && JSFUtils.isJSF20(webModule))) {
+            errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Not_JSF20");
         }
         boolean ok = ( component != null && component.getTargetName() != null && component.getTargetGroup() != null );
 
@@ -132,7 +134,6 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
             errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Wrong_Foldername");
         }
 
-        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if (webModule !=null && webModule.getDocumentBase() !=null) {
             String expectedExtension = Templates.getTemplate(wizard).getExt();
             expectedExtension = expectedExtension.length() == 0 ? "" : "."+expectedExtension;   //NOI18N

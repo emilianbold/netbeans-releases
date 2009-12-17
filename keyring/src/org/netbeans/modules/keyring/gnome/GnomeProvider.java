@@ -70,7 +70,7 @@ public class GnomeProvider implements KeyringProvider {
         try {
             appName = MessageFormat.format(
                     NbBundle.getBundle("org.netbeans.core.windows.view.ui.Bundle").getString("CTL_MainWindow_Title_No_Project"),
-                    System.getProperty("netbeans.buildnumber"));
+                    /*System.getProperty("netbeans.buildnumber")*/"…");
         } catch (MissingResourceException x) {
             appName = "NetBeans"; // NOI18N
         }

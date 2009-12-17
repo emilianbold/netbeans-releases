@@ -89,6 +89,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.basic.BasicTextFieldUI;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
@@ -152,14 +153,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     public IssuePanel() {
         initComponents();
-        createdField.setBackground(getBackground());
-        updatedField.setBackground(getBackground());
-        originalEstimateField.setBackground(getBackground());
-        remainingEstimateField.setBackground(getBackground());
-        timeSpentField.setBackground(getBackground());
-        resolutionField.setBackground(getBackground());
-        projectField.setBackground(getBackground());
-        statusField.setBackground(getBackground());
+        updateReadOnlyField(createdField);
+        updateReadOnlyField(updatedField);
+        updateReadOnlyField(originalEstimateField);
+        updateReadOnlyField(remainingEstimateField);
+        updateReadOnlyField(timeSpentField);
+        updateReadOnlyField(resolutionField);
+        updateReadOnlyField(projectField);
+        updateReadOnlyField(statusField);
         customFieldPanelLeft.setBackground(getBackground());
         customFieldPanelRight.setBackground(getBackground());
         parentHeaderPanel.setBackground(getBackground());
@@ -175,6 +176,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         initIssueLinksPanel();
         attachFieldStatusListeners();
         attachHideStatusListener();
+    }
+
+    private void updateReadOnlyField(JTextField field) {
+        if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
+            field.setUI(new BasicTextFieldUI());
+        }
+        field.setBackground(getBackground());
     }
 
     NbJiraIssue getIssue() {
