@@ -283,12 +283,12 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         }
         folder = CompilerSetUtils.getCygwinBase();
         if (folder != null) {
-            newShellCommand = pi.findCommand(folder, shellCommand);
+            newShellCommand = pi.findCommand(folder+"/bin", shellCommand); // NOI18N
             if (newShellCommand != null) {
                 return newShellCommand;
             }
         }
-        folder = CompilerSetUtils.getMSysBase();
+        folder = CompilerSetUtils.getCommandFolder(null);
         if (folder != null) {
             newShellCommand = pi.findCommand(folder, shellCommand);
             if (newShellCommand != null) {

@@ -646,9 +646,9 @@ public class GdbDebugger implements PropertyChangeListener {
         String csdirs = cs.getCompilerSetManager().getCompilerSet(csname).getDirectory();
 
         if (cs.getCompilerSetManager().getCompilerSet(csname).getCompilerFlavor().isMinGWCompiler()) {
-            String msysBase = CompilerSetUtils.getMSysBase();
+            String msysBase = CompilerSetUtils.getCommandFolder(null);
             if (msysBase != null && msysBase.length() > 0) {
-                csdirs += File.pathSeparator + msysBase + "/bin"; // NOI18N;
+                csdirs += File.pathSeparator + msysBase;
             }
         }
 
