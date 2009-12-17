@@ -462,10 +462,6 @@ char * word2char(WORD value) {
     return word2charN(value,0);
 }
 
-double int64ttoDouble(int64t * value) {
-    return (((double) value->High * ((double)(MAXDWORD) + 1)) + ((double) value->Low));
-}
-
 char * int64ttoCHAR(int64t* value) {
     if(value->High==0) {
         return DWORDtoCHAR(value->Low);
@@ -715,6 +711,18 @@ int compare(int64t * size, DWORD value) {
     else //if(size->Low < value)  
         return -1;    
 }
+int compareInt64t(int64t * a1, int64t * a2) {
+    if (a1->High > a2->High) {
+        return 1;
+    } else if(a1->High == a2->High) {
+        if (a1->Low > a2->Low)  {
+            return 1;
+        } else if(a1->Low == a2->Low)  {
+            return 0;
+        }
+    }
+    return -1;
+}
 
 void plus(int64t * size, DWORD value) {
     if(value!=0) {
@@ -724,6 +732,21 @@ void plus(int64t * size, DWORD value) {
             size->High = size->High + 1;
             size->Low  = value - (MAXDWORD - size->Low) - 1;
         }
+    }
+}
+void multiply(int64t * size, DWORD value) {
+    if(value==0) {
+        size->Low = 0;
+        size->High = 0;
+    } else {
+        DWORD i = 0;
+        DWORD low = size->Low;
+        DWORD high = size->High;
+        size->High = 0;
+        for(; i < value - 1 ; i++) {
+            plus(size, low);
+        }
+        size->High += high * value;
     }
 }
 
