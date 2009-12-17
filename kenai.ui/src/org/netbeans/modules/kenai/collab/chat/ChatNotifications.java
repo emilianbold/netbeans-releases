@@ -91,7 +91,7 @@ public class ChatNotifications {
      */
     public synchronized void removeGroup(final String name) {
         Utilities.assertJid(name);
-        MessagingHandleImpl r = groupMessages.get(StringUtils.parseName(name));
+        MessagingHandleImpl r = groupMessages.get(name);
         if (r != null) {
             r.disposeNotification();
             r.notifyMessagesRead();
@@ -180,10 +180,10 @@ public class ChatNotifications {
 
     public synchronized  MessagingHandleImpl getMessagingHandle(KenaiProject prj) {
         //TODO: plain project name will not work for multiple instances
-        MessagingHandleImpl handle=groupMessages.get(prj.getName());
+        MessagingHandleImpl handle=groupMessages.get(prj.getName() + "@muc." + prj.getKenai().getUrl().getHost());
         if (handle==null) {
             handle =new MessagingHandleImpl(prj);
-            groupMessages.put(prj.getName(), handle);
+            groupMessages.put(prj.getName() + "@muc" + prj.getKenai().getUrl().getHost(), handle);
         }
         return handle;
     }
