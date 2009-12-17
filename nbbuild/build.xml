@@ -182,7 +182,22 @@ made subject to such option by the copyright holder.
   </target>
   <target name="nbm"/><!-- dummy target -->
   <target name="conditional-nbm"/><!-- dummy target -->
-  
+
+  <target name="fix-dependencies" depends="init">
+      <pathconvert property="modules.fullpath" >
+          <path>
+              <dirset dir="${nb_all}" includes="${allmodules}" />
+          </path>
+          <mapper type="identity" />
+      </pathconvert>
+
+      <sortsuitemodules unsortedmodules="${modules.fullpath}" sortedmodulesproperty="modules.sorted"/>
+
+      <subant-junit target="fix-dependencies" failonerror="true">
+          <buildpath path="${modules.sorted}"/>
+      </subant-junit>
+  </target>
+
   <property name="jnlp.signjar.keystore" location="build/default.keystore" />
   <available property="jnlp.signjar.keystore.exists" file="${jnlp.signjar.keystore}" />
   <target name="jnlp-generate-keystore" depends="init" unless="jnlp.signjar.keystore.exists" >
