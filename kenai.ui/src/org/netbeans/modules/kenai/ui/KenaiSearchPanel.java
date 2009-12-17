@@ -55,15 +55,12 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -153,7 +150,13 @@ public class KenaiSearchPanel extends JPanel {
                     kenai = ((Kenai) kenaiCombo.getSelectedItem());
                     kenaiFeaturedProjectsList=null;
                     kenaiRecentProjectsList=null;
-                    setOpenPanels();
+                    kenaiFeaturedProjectsListWithRepos=null;
+                    kenaiRecentProjectsListWithRepos=null;
+                    if (panelType == PanelType.OPEN) {
+                        setOpenPanels();
+                    } else {
+                        setBrowsePanels();
+                    }
                 } else {
                     new AddInstanceAction().actionPerformed(e);
                 }
