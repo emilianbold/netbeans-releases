@@ -70,7 +70,7 @@ BUNDLE_IDS [5] = "all";
 var DEFAULT_LANGUAGE = "DEFAULT";
 var PAGELANG_SEP = "pagelang=";
 
-var OMNITURE_CODE_JS = "http://www.netbeans.org/images/js/s_code_remote.js";
+var OMNITURE_CODE_JS = "http://netbeans.org/images_www/js/s_code_remote.js";
 var GOOGLE_ANALYTICS_JS = "http://www.google-analytics.com/ga.js";
 
 function getNameById(id,ids,names) {
