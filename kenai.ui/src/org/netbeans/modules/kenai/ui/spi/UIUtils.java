@@ -218,7 +218,7 @@ public final class UIUtils {
                         if (loginPanel.isStorePassword()) {
                             preferences.put(getPrefName(kenai, KENAI_USERNAME_PREF), loginPanel.getUsername()); // NOI18N
                             Keyring.save(passwordPref, loginPanel.getPassword(),
-                                    NbBundle.getMessage(UIUtils.class, "UIUtils.password_keyring_description", Kenai.getDefault().getUrl().getHost()));
+                                    NbBundle.getMessage(UIUtils.class, "UIUtils.password_keyring_description", kenai.getUrl().getHost()));
                         } else {
                             preferences.remove(getPrefName(kenai, KENAI_USERNAME_PREF)); // NOI18N
                             Keyring.delete(passwordPref);
