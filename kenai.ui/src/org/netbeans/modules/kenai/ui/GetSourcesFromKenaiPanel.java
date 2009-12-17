@@ -112,7 +112,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 
         this.prjAndFeature = prjFtr;
         initComponents();
-        kenaiCombo.setModel(new KenaiComboModel(Kenai.Status.OFFLINE));
+        kenaiCombo.setModel(new KenaiComboModel());
         kenaiCombo.setRenderer(new KenaiListRenderer());
         if (prjAndFeature==null) {
             kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
@@ -512,11 +512,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                         for (ProjectHandle prjHandle : openedProjects) {
                             KenaiProject kProject = null;
                             if (prjHandle != null) {
-                                try {
-                                    kProject = kenai.getProject(prjHandle.getId());
-                                } catch (KenaiException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
+                                kProject = prjHandle.getKenaiProject();
                             }
                             final KenaiProject project = kProject;
                             if (project != null) {
