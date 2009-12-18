@@ -401,7 +401,7 @@ public class KenaiConnection implements PropertyChangeListener {
         if (!connection.isConnected()) {
             return;
         }
-        for (KenaiFeature prj : KenaiConnection.getDefault(kenai).getMyChats()) {
+        for (KenaiFeature prj : getMyChats()) {
             try {
                 createChat(prj);
             } catch (IllegalStateException ise) {
