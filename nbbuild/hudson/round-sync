@@ -43,10 +43,10 @@ else
     hg incoming http://hg.netbeans.org/"$push_repo"
     STATUS=$?
     # status is 1 when there are no incoming changesets
-    if [ $HEAD = 1 ] && [ $STATUS = 1 ]; then
+    if [ "$HEADS" = 1 ] && [ "$STATUS" = 1 ]; then
         hg push -f -r $TIP https://"$push_username":"$push_password"@hg.netbeans.org/"$push_repo" || exit 9
     else
-        echo Too many heads $HEAD in default branch or there are some incoming changesets $STATUS
+        echo Too many heads $HEADS in default branch or there are some incoming changesets $STATUS
         exit 9
     fi
 fi
