@@ -197,7 +197,7 @@ made subject to such option by the copyright holder.
                         <specification-version>8.0</specification-version>
                     </run-dependency>
                 </dependency>
-            <dependency>
+                <dependency>
                     <code-name-base>org.openide.util.lookup</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
