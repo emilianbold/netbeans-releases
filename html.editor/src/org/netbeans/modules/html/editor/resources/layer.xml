@@ -212,6 +212,10 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1666"/>
                     </file>
+    		    <file name="SeparatorBeforeGenerateFold.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
+                    </file>
                     <file name="generate-fold-popup">
                         <attr name="position" intvalue="4200"/>
                     </file>
@@ -307,6 +311,10 @@ made subject to such option by the copyright holder.
                     <file name="SeparatorAfterFormat.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1666"/>
+                    </file>
+    		    <file name="SeparatorBeforeGenerateFold.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="4100"/>
                     </file>
                     <file name="generate-fold-popup">
                         <attr name="position" intvalue="4200"/>
