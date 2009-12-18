@@ -121,7 +121,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 
 	//check the selection context
 	if(Boolean.TRUE.equals((Boolean)wizard.getProperty("incorrectActionContext"))) {
-	    wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, "The selection crosses jsf tags, the generated code may be invalid.");
+	    wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(CompositeComponentVisualPanel.class, "MSG_Invalid_Selection"));
 	    return true; //we can still finish the wizard
 	}
 

@@ -256,7 +256,9 @@ public class InjectCompositeComponent {
 				    AstNode closeTag = node.getMatchingTag();
 				    if (closeTag == null) {
 					//broken source, error
-					fail();
+					if(!node.isEmpty()) {
+					    fail();
+					}
 				    }
 				    if (isInTagItself(node, astFrom) || isInTagItself(node, astTo)
 					    || isInTagItself(closeTag, astFrom) || isInTagItself(closeTag, astTo)) {
@@ -266,7 +268,7 @@ public class InjectCompositeComponent {
 				}
 
 				private boolean isInTagItself(AstNode node, int offset) {
-				    return node.startOffset() < offset && node.endOffset() > offset;
+				    return node != null && node.startOffset() < offset && node.endOffset() > offset;
 				}
 
 				private void fail() {
