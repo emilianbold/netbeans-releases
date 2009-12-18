@@ -63,7 +63,7 @@ import org.netbeans.modules.web.beans.api.model.Result;
  * @author ads
  *
  */
-public class ResultImpl extends BaseResult implements Result.InjectableResult {
+public class ResultImpl extends BaseResult implements Result.ResolutionResult {
     
     private static final String ALTERNATIVE = 
         "javax.enterprise.inject.Alternative";   // NOI18N
@@ -87,6 +87,15 @@ public class ResultImpl extends BaseResult implements Result.InjectableResult {
         myProductions = Collections.emptyMap();
         myHelper = helper;
     }
+    
+    public ResultImpl( VariableElement var, TypeMirror elementType ,
+            AnnotationModelHelper helper ) 
+    {
+        super( var, elementType );
+        myDeclaredTypes =Collections.emptySet();
+        myProductions = Collections.emptyMap();
+        myHelper = helper;
+    }
 
     public Set<TypeElement> getTypeElements() {
         return myDeclaredTypes;
@@ -101,12 +110,11 @@ public class ResultImpl extends BaseResult implements Result.InjectableResult {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result#getElement()
+     * @see org.netbeans.modules.web.beans.api.model.Result#getKind()
      */
-    public Element getElement() {
-        // TODO Auto-generated method stub
+    public ResultKind getKind() {
         return null;
-    }
+    } 
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result.InjectableResult#getStereotypes(javax.lang.model.element.Element)
@@ -115,7 +123,7 @@ public class ResultImpl extends BaseResult implements Result.InjectableResult {
         List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
         Set<Element> foundStereotypesElement = new HashSet<Element>(); 
         StereotypeChecker checker = new StereotypeChecker( getHelper());
-        doGetStereotypes(getElement(), result, foundStereotypesElement, checker);
+        doGetStereotypes(element, result, foundStereotypesElement, checker);
         return result;
     }
     
@@ -159,7 +167,7 @@ public class ResultImpl extends BaseResult implements Result.InjectableResult {
         return getHelper().hasAnnotation(annotations, ALTERNATIVE);
     }
     
-    private AnnotationModelHelper  getHelper(){
+    AnnotationModelHelper  getHelper(){
         return myHelper;
     }
     
@@ -198,5 +206,5 @@ public class ResultImpl extends BaseResult implements Result.InjectableResult {
     
     private Set<TypeElement> myDeclaredTypes;
     private Map<Element, List<DeclaredType>> myProductions;
-    private final AnnotationModelHelper myHelper; 
+    private final AnnotationModelHelper myHelper;
 }

@@ -40,39 +40,56 @@
  */
 package org.netbeans.modules.web.beans.impl.model.results;
 
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
+import java.util.Collections;
+import java.util.Set;
 
-import org.netbeans.modules.web.beans.api.model.Result;
+import javax.lang.model.element.Element;
+
+import org.netbeans.modules.web.beans.api.model.Result.ApplicableResult;
+import org.netbeans.modules.web.beans.api.model.Result.Error;
+import org.netbeans.modules.web.beans.api.model.Result.ResolutionResult;
 
 
 /**
  * @author ads
  *
  */
-public class DefinitionErrorResult extends BaseResult implements Result.Error {
-
-    public DefinitionErrorResult( VariableElement var, TypeMirror type,
-            String error ) 
+public class ResolutionErrorImpl extends ResultImpl implements Error,
+        ResolutionResult, ApplicableResult
+{
+    
+    public ResolutionErrorImpl( ResultImpl origin, String message , 
+            Set<Element> enabledBeans)
     {
-        super(var, type);
-        myMessage  =error;
+        super(origin.getVariable(), origin.getVariableType(), 
+                origin.getTypeElements(), origin.getAllProductions(), 
+                origin.getHelper());
+        myMessage = message;
+        myEnabled = enabledBeans;
+    }
+
+    public ResolutionErrorImpl( ResultImpl origin, String message ) {
+        super(origin.getVariable(), origin.getVariableType(), 
+                origin.getTypeElements(), origin.getAllProductions(), 
+                origin.getHelper());
+        myMessage = message;
+        myEnabled =Collections.emptySet();
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result.Error#getMessage()
      */
-    public String getMessage(){
+    public String getMessage() {
         return myMessage;
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result#getKind()
-     */
-    public ResultKind getKind() {
-        return ResultKind.DEFINITION_ERROR;
-    }
-    
-    private final String myMessage;
 
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.Result.ApplicableResult#isDisabled(javax.lang.model.element.Element)
+     */
+    public boolean isDisabled( Element element ) {
+        return !myEnabled.contains( element );
+    }
+
+    private final String myMessage;
+    private final Set<Element> myEnabled;
 }

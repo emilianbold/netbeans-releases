@@ -82,7 +82,14 @@ public final class BeansModelFactory {
         return model;
     }
     
+    public static BeansModel getModel( ModelUnit unit ){
+        return getModel( unit.getSourceFileObject() );
+    }
+    
     public static synchronized BeansModel getModel( FileObject origin ){
+        if ( origin == null ){
+            return null;
+        }
         WebModule module = WebModule.getWebModule(origin);
         BeansModel model = MODELS.get( module );
         if ( model == null ){
