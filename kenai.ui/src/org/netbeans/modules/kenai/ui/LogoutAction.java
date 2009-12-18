@@ -43,6 +43,7 @@ import javax.swing.AbstractAction;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Jan Becicka
@@ -63,11 +64,16 @@ public final class LogoutAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        for (Kenai k: KenaiManager.getDefault().getKenais()) {
-            if (k.getStatus()!=Kenai.Status.OFFLINE) {
-                k.logout();
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+                for (Kenai k : KenaiManager.getDefault().getKenais()) {
+                    if (k.getStatus() != Kenai.Status.OFFLINE) {
+                        k.logout();
+                    }
+                }
             }
-        }
+        });
     }
 
     @Override
