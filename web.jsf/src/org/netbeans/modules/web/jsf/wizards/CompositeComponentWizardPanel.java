@@ -118,6 +118,14 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
         if (!ok) {
             return false;
         }
+
+	//check the selection context
+	if(Boolean.TRUE.equals((Boolean)wizard.getProperty("incorrectActionContext"))) {
+	    wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, "The selection crosses jsf tags, the generated code may be invalid.");
+	    return true; //we can still finish the wizard
+	}
+
+
         if (component ==null || component.getTargetFolder() == null || !component.getTargetFolder().startsWith(RESOURCES_FOLDER)) {
             errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_resources_folder");
         } else if (component.getTargetFolder().equals(RESOURCES_FOLDER) || component.getTargetFolder().equals(RESOURCES_FOLDER+File.separatorChar)) {
