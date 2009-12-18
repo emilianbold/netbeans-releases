@@ -52,12 +52,14 @@ import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 
@@ -243,5 +245,14 @@ public class JsfUtils {
         }
 
         return new OffsetRange(originalFrom, originalTo);
+    }
+
+     public static Result getEmbeddedParserResult(ResultIterator resultIterator, String mimeType) throws ParseException {
+        for(Embedding e : resultIterator.getEmbeddings()) {
+            if(e.getMimeType().equals(mimeType)) {
+                return resultIterator.getResultIterator(e).getParserResult();
+            }
+        }
+        return null;
     }
 }

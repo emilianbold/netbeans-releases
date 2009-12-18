@@ -104,6 +104,7 @@ public abstract class HtmlExtension {
     //errors, hints
     public abstract void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled);
 
+    public abstract void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> hints, int start, int end);
 
     //--------------------
 
