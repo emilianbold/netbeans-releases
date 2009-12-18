@@ -38,41 +38,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model.results;
+package org.netbeans.modules.web.beans.api.model;
 
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 
 
 /**
  * @author ads
  *
  */
-public class DefinitionErrorResult extends BaseResult implements Result.Error {
+public class BeansModelUnit {
 
-    public DefinitionErrorResult( VariableElement var, TypeMirror type,
-            String error ) 
+    private BeansModelUnit( ClassPath boot, ClassPath compile,ClassPath src, 
+            WebModule module)
     {
-        super(var, type);
-        myMessage  =error;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result.Error#getMessage()
-     */
-    public String getMessage(){
-        return myMessage;
+        myBootPath = boot;
+        myCompilePath = compile;
+        mySourcePath = src;
+        myModule = module;
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result#getKind()
-     */
-    public ResultKind getKind() {
-        return ResultKind.DEFINITION_ERROR;
+    public static BeansModelUnit create( ClassPath boot, ClassPath compile,
+            ClassPath src, WebModule module )
+    {
+        return new BeansModelUnit(boot, compile, src, module);
     }
     
-    private final String myMessage;
+    public ClassPath getBootPath() {
+        return myBootPath;
+    }
 
+    public ClassPath getCompilePath() {
+        return myCompilePath;
+    }
+
+    public ClassPath getSourcePath() {
+        return mySourcePath;
+    }
+    
+    public WebModule getModule(){
+        return myModule;
+    }
+
+    private final ClassPath myBootPath;
+    private final ClassPath myCompilePath;
+    private final ClassPath mySourcePath;
+    private final WebModule myModule;
 }

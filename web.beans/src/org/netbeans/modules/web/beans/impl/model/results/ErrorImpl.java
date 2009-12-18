@@ -43,16 +43,16 @@ package org.netbeans.modules.web.beans.impl.model.results;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.Result.Error;
 
 
 /**
  * @author ads
  *
  */
-public class DefinitionErrorResult extends BaseResult implements Result.Error {
+public class ErrorImpl extends BaseResult implements Error {
 
-    public DefinitionErrorResult( VariableElement var, TypeMirror type,
+    public ErrorImpl( VariableElement var, TypeMirror type,
             String error ) 
     {
         super(var, type);
@@ -65,14 +65,13 @@ public class DefinitionErrorResult extends BaseResult implements Result.Error {
     public String getMessage(){
         return myMessage;
     }
-    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result#getKind()
      */
     public ResultKind getKind() {
-        return ResultKind.DEFINITION_ERROR;
+        return ResultKind.RESOLUTION_ERROR;
     }
-    
-    private final String myMessage;
 
+    private String myMessage;
 }

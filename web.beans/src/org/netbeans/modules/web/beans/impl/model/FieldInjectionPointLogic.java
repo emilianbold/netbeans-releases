@@ -131,18 +131,6 @@ abstract class FieldInjectionPointLogic {
     protected Result getResult( Result result ,WebBeansModelImplementation model )
     {
         /*
-         *  TODO : need to compare set before filtering and after.
-         *  If after filtering there is only one element then 
-         *  it could be safely return as result.
-         *  Otherwise there is two cases:
-         *  1) Empty set after filtering means unsatisfied dependency : 
-         *  there was discovered elements (if original set was not empty ) 
-         *  but they are not eligible for injection for various reasons
-         * ( unproxyables, etc. ).
-         * 2) Several elements set means ambiguous dependency.    
-         */
-        
-        /*
          * Simple filtering related to production elements types.
          * F.e. there could be injection point with String type.
          * String is unproxyable type ( it is final ) so it cannot 
@@ -152,6 +140,8 @@ abstract class FieldInjectionPointLogic {
          */
         filterBeans( result );
         
+        result = filterEnabled(result, model );
+        
         return result;
     }
     
@@ -160,6 +150,17 @@ abstract class FieldInjectionPointLogic {
             BeansFilter filter = BeansFilter.get();
             filter.filter(((ResultImpl)result).getTypeElements() );
         }
+    }
+    
+    protected Result filterEnabled( Result result, 
+            WebBeansModelImplementation model )
+    {
+        if ( result instanceof ResultImpl ){
+            EnableBeansFilter filter = new EnableBeansFilter((ResultImpl)result,
+                    model);
+            return filter.filter();
+        }
+        return result;
     }
     
     protected Result doFindVariableInjectable( VariableElement element,
@@ -362,8 +363,7 @@ abstract class FieldInjectionPointLogic {
                         modelImpl.getHelper());
             }
         }
-        // TODO : don't return null. Should be empty result
-        return null;
+        return new ResultImpl(element, elementType, modelImpl.getHelper());
     }
 
     
