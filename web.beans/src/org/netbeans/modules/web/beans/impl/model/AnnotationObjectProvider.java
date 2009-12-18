@@ -81,7 +81,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectPro
  * @author ads
  *
  */
-class AnnotationObjectProvider implements ObjectProvider<BindingQualifier> {
+public class AnnotationObjectProvider implements ObjectProvider<BindingQualifier> {
     
     private static final String SPECILIZES_ANNOTATION = 
         "javax.enterprise.inject.Specializes";       // NOI18N
@@ -289,7 +289,7 @@ class AnnotationObjectProvider implements ObjectProvider<BindingQualifier> {
         return checker.check();
     }
     
-    static boolean hasSpecializes( Element element , 
+    public static boolean hasSpecializes( Element element , 
             AnnotationModelHelper helper )
     {
         return hasAnnotation(element , SPECILIZES_ANNOTATION , helper );

@@ -41,10 +41,14 @@
 package org.netbeans.modules.web.beans.api.model;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 
@@ -56,6 +60,27 @@ import javax.lang.model.type.TypeMirror;
  */
 public interface Result {
     
+    enum ResultKind {
+        /**
+         * This kind correspond to Error result only
+         */
+        DEFINITION_ERROR,
+        /**
+         * This kind represents at least InjectableResult and ResolutionResult.
+         * Also there could be additional hints with set of eligible for injection
+         * elements ( which are disabled , turned off alternatives, .... )
+         * represented by ApplicableResult.
+         */
+        INJECTABLE_RESOLVED,
+        /**
+         * No eligible for injection element found at all or only disabled
+         * beans are found. It could be represented by Error only ( nothing found
+         * at all ) or Error, ResolutionResult and ApplicableResult with 
+         * information about probable eligible for injection elements. 
+         */
+        RESOLUTION_ERROR,
+    }
+    
     /**
      * @return element injection point which is used for injectable search
      */
@@ -63,27 +88,14 @@ public interface Result {
     
     TypeMirror getVariableType();
     
+    ResultKind getKind();
+    
     interface Error extends Result {
         
         String getMessage();
     }
     
-    interface InjectableResult extends Result {
-        
-        /**
-         * <code>null</code> is returned if there is no eligible element for injection
-         * ( no element which could be a pretender).
-         * 
-         * it could be a result of unsatisfied or ambiguous dependency.
-         * F.e. unsatisfied dependency : there is a pretender satisfy typesafe 
-         * resolution but something incorrect ( parameterized type is not valid , etc. ). 
-         * Ambiguous dependency : there are a number of appropriate elements.
-         *
-         * 
-         * @return element ( type definition, production field/method) 
-         * that is used in injected point identified by {@link #getVariable()}
-         */
-        Element getElement();
+    interface ResolutionResult extends Result {
         
         /**
          * Check whether <code>element</code> is alternative.
@@ -100,6 +112,37 @@ public interface Result {
          * @param element element with stereotypes  
          * @return list of element's stereotypes  
          */
+        List<AnnotationMirror> getAllStereotypes( Element element );
+        
         List<AnnotationMirror> getStereotypes( Element element );
+        
+        boolean hasAlternative( Element element );
+    }
+    
+    interface InjectableResult extends Result {
+        /**
+         * <code>null</code> is returned if there is no eligible element for injection
+         * ( no element which could be a pretender).
+         * 
+         * it could be a result of unsatisfied or ambiguous dependency.
+         * F.e. unsatisfied dependency : there is a pretender satisfy typesafe 
+         * resolution but something incorrect ( parameterized type is not valid , etc. ). 
+         * Ambiguous dependency : there are a number of appropriate elements.
+         *
+         * 
+         * @return element ( type definition, production field/method) 
+         * that is used in injected point identified by {@link #getVariable()}
+         */
+        Element getElement();
+    }
+    
+    interface ApplicableResult {
+        public Set<TypeElement> getTypeElements();
+        
+        public Set<Element> getProductions();
+
+        public Map<Element, List<DeclaredType>>  getAllProductions();
+        
+        boolean isDisabled( Element element );
     }
 }

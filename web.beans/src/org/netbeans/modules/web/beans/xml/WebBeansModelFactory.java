@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,41 +38,38 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model.results;
+package org.netbeans.modules.web.beans.xml;
 
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.xml.impl.WebBeansModelImpl;
+import org.netbeans.modules.xml.xam.AbstractModelFactory;
+import org.netbeans.modules.xml.xam.ModelSource;
 
 
 /**
  * @author ads
  *
  */
-public class DefinitionErrorResult extends BaseResult implements Result.Error {
-
-    public DefinitionErrorResult( VariableElement var, TypeMirror type,
-            String error ) 
-    {
-        super(var, type);
-        myMessage  =error;
+public class WebBeansModelFactory extends AbstractModelFactory<WebBeansModel> {
+    
+    private WebBeansModelFactory(){
+    }
+    
+    public static WebBeansModelFactory getInstance(){
+        return INSTANCE;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result.Error#getMessage()
+     * @see org.netbeans.modules.xml.xam.AbstractModelFactory#createModel(org.netbeans.modules.xml.xam.ModelSource)
      */
-    public String getMessage(){
-        return myMessage;
+    @Override
+    public WebBeansModel createModel( ModelSource modelSource ) {
+        return new WebBeansModelImpl( modelSource );
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result#getKind()
-     */
-    public ResultKind getKind() {
-        return ResultKind.DEFINITION_ERROR;
+    public WebBeansModel getModel(ModelSource source) {
+        return (WebBeansModel) super.getModel(source);
     }
     
-    private final String myMessage;
+    private static final WebBeansModelFactory INSTANCE = new WebBeansModelFactory();
 
 }
