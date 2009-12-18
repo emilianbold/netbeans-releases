@@ -42,8 +42,6 @@
 package org.netbeans.modules.debugger.jpda.projects;
 
 import java.beans.PropertyChangeEvent;
-import java.lang.ref.WeakReference;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.SwingUtilities;
@@ -56,17 +54,13 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 
@@ -149,16 +143,6 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
     }
     
     private void invokeAction() {
-        FileObject fo = Utilities.actionsGlobalContext().lookup(FileObject.class);
-        if (fo != null) {
-            //JavaSource source = JavaSource.forFileObject(fo);
-            Collection mainClasses = SourceUtils.getMainClasses(fo);
-            if (!mainClasses.isEmpty()) {
-                if (debugFile(fo)) {
-                    return ;
-                }
-            }
-        }
         debugProject(MainProjectManager.getDefault ().getMainProject ());
     }
 
@@ -169,20 +153,6 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
             );
     }
 
-    private static boolean debugFile(FileObject fo) {
-        Project p = FileOwnerQuery.getOwner(fo);
-        if (p == null) {
-            return false;
-        }
-        ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
-        if (ap.isActionEnabled(ActionProvider.COMMAND_DEBUG_SINGLE, Utilities.actionsGlobalContext())) {
-            ap.invokeAction(ActionProvider.COMMAND_DEBUG_SINGLE, Utilities.actionsGlobalContext());
-            return true;
-        } else {
-            return false;
-        }
-    }
-    
     private boolean shouldBeEnabled () {
         if (editorContext.getCurrentLineNumber () < 0) return false;
         FileObject fo = editorContext.getCurrentFile();
