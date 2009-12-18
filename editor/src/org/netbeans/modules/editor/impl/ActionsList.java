@@ -85,18 +85,18 @@ public class ActionsList {
             try {
                 dob = DataObject.find(item);
                 if (dob == null && prohibitSeparatorsAndActionNames) {
-                    if (LOG.isLoggable(Level.WARNING)) {
-                        LOG.warning("ActionsList: DataObject is null for item=" + item + "\n");
+                    if (LOG.isLoggable(Level.INFO)) {
+                        LOG.info("ActionsList: DataObject is null for item=" + item + "\n"); //NOI18N
                     }
                 }
             } catch (DataObjectNotFoundException dnfe) {
                 if (prohibitSeparatorsAndActionNames) {
-                    if (LOG.isLoggable(Level.WARNING)) {
-                        LOG.warning("ActionsList: DataObject not found for item=" + item + "\n");
+                    if (LOG.isLoggable(Level.INFO)) {
+                        LOG.info("ActionsList: DataObject not found for item=" + item + "\n"); //NOI18N
                     }
                 } else {
                     if (LOG.isLoggable(Level.FINE)) {
-                        LOG.log(Level.FINE, "DataObject not found for action fileObject=" + item);
+                        LOG.log(Level.FINE, "DataObject not found for action fileObject=" + item); //NOI18N
                     }
                 }
                 continue; // ignore
@@ -105,8 +105,8 @@ public class ActionsList {
             Object toAdd = null;
             InstanceCookie ic = dob.getLookup().lookup(InstanceCookie.class);
             if (prohibitSeparatorsAndActionNames && ic == null) {
-                if (LOG.isLoggable(Level.WARNING)) {
-                    LOG.warning("ActionsList: InstanceCookie not found for item=" + item + "\n");
+                if (LOG.isLoggable(Level.INFO)) {
+                    LOG.info("ActionsList: InstanceCookie not found for item=" + item + "\n"); //NOI18N
                 }
                 continue;
             }
@@ -115,14 +115,13 @@ public class ActionsList {
                     if (!isSeparator(ic)) {
                         toAdd = ic.instanceCreate();
                         if (toAdd == null && prohibitSeparatorsAndActionNames) {
-                            if (LOG.isLoggable(Level.WARNING)) {
-                                LOG.warning("ActionsList: InstanceCookie.instanceCreate() null for item=" +
-                                        item + "\n");
+                            if (LOG.isLoggable(Level.INFO)) {
+                                LOG.info("ActionsList: InstanceCookie.instanceCreate() null for item=" + item + "\n"); //NOI18N
                             }
                         }
                     }
                 } catch (Exception e) {
-                    LOG.log(Level.WARNING, "Can't instantiate object", e); //NOI18N
+                    LOG.log(Level.INFO, "Can't instantiate object", e); //NOI18N
                     continue;
                 }
             } else if (dob instanceof DataFolder) {
@@ -146,8 +145,8 @@ public class ActionsList {
                 actions.add((Action) toAdd);
             } else if (isSeparator(toAdd)) {
                 if (prohibitSeparatorsAndActionNames) {
-                    if (LOG.isLoggable(Level.WARNING)) {
-                        LOG.warning("ActionsList: Separator for item=" + item + "\n");
+                    if (LOG.isLoggable(Level.INFO)) {
+                        LOG.info("ActionsList: Separator for item=" + item + "\n"); //NOI18N
                     }
                 }
                 actions.add(null);
