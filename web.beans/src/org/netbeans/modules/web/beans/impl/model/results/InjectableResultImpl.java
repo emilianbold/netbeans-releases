@@ -40,39 +40,56 @@
  */
 package org.netbeans.modules.web.beans.impl.model.results;
 
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
+import java.util.Set;
 
-import org.netbeans.modules.web.beans.api.model.Result;
+import javax.lang.model.element.Element;
+
+import org.netbeans.modules.web.beans.api.model.Result.ApplicableResult;
+import org.netbeans.modules.web.beans.api.model.Result.InjectableResult;
+import org.netbeans.modules.web.beans.api.model.Result.ResolutionResult;
 
 
 /**
  * @author ads
  *
  */
-public class DefinitionErrorResult extends BaseResult implements Result.Error {
+public class InjectableResultImpl extends ResultImpl implements InjectableResult,
+        ResolutionResult, ApplicableResult
+{
 
-    public DefinitionErrorResult( VariableElement var, TypeMirror type,
-            String error ) 
+    public InjectableResultImpl( ResultImpl origin,Element injectable,
+            Set<Element> enabledBeans)
     {
-        super(var, type);
-        myMessage  =error;
+        super(origin.getVariable(), origin.getVariableType(), 
+                origin.getTypeElements(), origin.getAllProductions(), 
+                origin.getHelper());
+        myInjectable = injectable;
+        myEnabled = enabledBeans;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result.Error#getMessage()
+     * @see org.netbeans.modules.web.beans.api.model.Result.InjectableResult#getElement()
      */
-    public String getMessage(){
-        return myMessage;
+    public Element getElement() {
+        return myInjectable;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.Result.ApplicableResult#isDisabled(javax.lang.model.element.Element)
+     */
+    public boolean isDisabled( Element element ) {
+        return !myEnabled.contains( element );
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result#getKind()
+     * @see org.netbeans.modules.web.beans.impl.model.results.ResultImpl#getKind()
      */
+    @Override
     public ResultKind getKind() {
-        return ResultKind.DEFINITION_ERROR;
+        return ResultKind.INJECTABLE_RESOLVED;
     }
     
-    private final String myMessage;
+    private final Element myInjectable;
+    private final Set<Element> myEnabled;
 
 }
