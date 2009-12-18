@@ -37,62 +37,24 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.hooks.spi;
+package org.netbeans.modules.versioning.hooks;
 
 import java.io.File;
-import java.util.Date;
-import java.util.List;
-import org.netbeans.modules.versioning.hooks.VCSHookContext;
-import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class SvnHookContext extends VCSHookContext {
+public class VCSHookContext {
 
-    private final String msg;
-    private final List<LogEntry> logEntries;
-    private String warning;
+    private final File[] files;
 
-    public SvnHookContext(File[] files, String msg, List<LogEntry> logEntries) {
-        super(files);
-        this.msg = msg;
-        this.logEntries = logEntries;
+    public VCSHookContext(File[] files) {
+        this.files = files;
     }
 
-    public String getMessage() {
-        return msg;
+    public File[] getFiles() {
+        return files;
     }
-
-    public List<LogEntry> getLogEntries() {
-        return logEntries;
-    }
-
-    public String getWarning() {
-        return warning;                                                              // NOI18N
-    }
-
-    public void setWarning(String warning) {
-        this.warning = warning;
-    }
-
-    public static class LogEntry {
-        private final ISVNLogMessage logEntry;
-        public LogEntry(ISVNLogMessage logEntry) {
-            this.logEntry = logEntry;
-        }
-        public String getAuthor() {
-            return logEntry.getAuthor();
-        }
-        public long getRevision() {
-            return logEntry.getRevision().getNumber();
-        }
-        public Date getDate() {
-            return logEntry.getDate();
-        }
-        public String getMessage() {
-            return logEntry.getMessage();
-        }
-    }
+    
 }

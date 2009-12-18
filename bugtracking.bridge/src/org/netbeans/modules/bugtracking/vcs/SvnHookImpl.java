@@ -67,7 +67,6 @@ import org.openide.util.NbBundle;
  * Subversion commit hook implementation
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.subversion.hooks.spi.SvnHook.class)
 public class SvnHookImpl extends SvnHook {
 
     private static final String[] SUPPORT_ISSUE_INFO_VARIABLES = new String[] {"id", "summary"};                        // NOI18N

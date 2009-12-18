@@ -48,6 +48,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.mercurial.HgException;
@@ -64,6 +65,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
+import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -238,8 +240,7 @@ public class PushAction extends ContextAction {
             if (bNoChanges) {
                 list = listOutgoing;
             } else {
-                List<HgHook> hooks = Mercurial.getInstance().getHooks();
-                int a = 0;
+                Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);
                 HgHookContext context = null;
                 if(hooks.size() > 0) {
                     HgHookContext.LogEntry[] entries = new HgHookContext.LogEntry[messages.size()];
