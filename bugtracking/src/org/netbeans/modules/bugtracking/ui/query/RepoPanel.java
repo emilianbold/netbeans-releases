@@ -193,7 +193,6 @@ class RepoPanel extends ViewportWidthAwarePanel {
                              queriesPanel.getBaseline())
                        : repoSelectorPanel.getBaseline();
             baseline += getCachedInsets().top;
-            System.out.println("RepoPanel baseline = " + baseline);
             baselineValid = true;
         }
     }
