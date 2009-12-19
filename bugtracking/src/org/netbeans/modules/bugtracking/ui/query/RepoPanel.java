@@ -120,8 +120,11 @@ class RepoPanel extends ViewportWidthAwarePanel {
             int width = repoSelectorPrefSize.width;
             int height;
 
+            Insets insets = getCachedInsets();
+
             if (!queriesPanel.isVisible()) {
-                height = repoSelectorPrefSize.height;
+                height = repoSelectorPrefSize.height
+                         + insets.top + insets.bottom;
             } else {
                 Dimension queriesPanelPrefSize = queriesPanel.getPreferredSize();
 
@@ -134,12 +137,11 @@ class RepoPanel extends ViewportWidthAwarePanel {
                 int belowBaseline = max(belowBaseline1, belowBaseline2);
 
                 width += MIN_SPACE + queriesPanelPrefSize.width;
-                height = aboveBaseline + belowBaseline;
+                height = aboveBaseline + belowBaseline
+                         + insets.bottom;//top inset is included in the baseline
             }
 
-            Insets insets = getCachedInsets();
             width += insets.left + insets.right;
-            height += insets.bottom;    //top inset is included in the baseline
 
             prefSize = new Dimension(width, height);
         }
@@ -191,6 +193,7 @@ class RepoPanel extends ViewportWidthAwarePanel {
                              queriesPanel.getBaseline())
                        : repoSelectorPanel.getBaseline();
             baseline += getCachedInsets().top;
+            System.out.println("RepoPanel baseline = " + baseline);
             baselineValid = true;
         }
     }

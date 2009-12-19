@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugtracking.ui.query;
 
+import java.awt.Insets;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.FocusEvent;
@@ -69,6 +70,10 @@ public class RepoSelectorPanel extends JPanel implements FocusListener {
     private int baseline;
     private boolean baselineValid;
     private final JLabel repoSelectorLabel;
+    private final JComponent repoSelector;
+    private final JComponent newRepoButton;
+
+    private Insets cachedInsets;
 
     RepoSelectorPanel(JComponent repoSelector,
                       JComponent newRepoButton) {
@@ -82,6 +87,9 @@ public class RepoSelectorPanel extends JPanel implements FocusListener {
                repoSelectorLabel,
                NbBundle.getMessage(getClass(),
                                    "QueryTopComponent.repoLabel.text"));//NOI18N
+
+        this.repoSelector = repoSelector;
+        this.newRepoButton = newRepoButton;
 
         setOpaque(false);
 
@@ -127,22 +135,40 @@ public class RepoSelectorPanel extends JPanel implements FocusListener {
 
     private void validateBaseline() {
         if (!baselineValid) {
-            baseline = repoSelectorLabel.getLocation().y
-                       + Baseline.getBaseline(repoSelectorLabel);
+            baseline = max(Baseline.getBaseline(repoSelectorLabel),
+                           Baseline.getBaseline(repoSelector),
+                           Baseline.getBaseline(newRepoButton))
+                       + getCachedInsets().top;
             baselineValid = true;
         }
     }
 
+    private Insets getCachedInsets() {
+        if (cachedInsets == null) {
+            cachedInsets = super.getInsets();
+        }
+        return cachedInsets;
+    }
+
+    private static int max(int a, int b, int c) {
+        return Math.max(a, Math.max(b, c));
+    }
+
     @Override
     public void setUI(PanelUI ui) {
-        baselineValid = false;
         super.setUI(ui);
+        invalidateUiDependentValues();
     }
 
     @Override
     protected void setUI(ComponentUI newUI) {
-        baselineValid = false;
         super.setUI(newUI);
+        invalidateUiDependentValues();
+    }
+
+    private void invalidateUiDependentValues() {
+        cachedInsets = null;
+        baselineValid = false;
     }
 
     @Override
