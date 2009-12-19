@@ -395,7 +395,7 @@ is the proper place.
             Also a 
             <a href="@TOP@/org/openide/loaders/DataObject.html">DataObject</a> 
             has been retrofitted to implement a 
-            <a href="@org-openide-util@/org/openide/util/Lookup.Provider.html">Lookup.Provider</a>
+            <a href="@org-openide-util-lookup@/org/openide/util/Lookup.Provider.html">Lookup.Provider</a>
             interface and thus have its
             <a href="@TOP@/org/openide/loaders/DataObject.html#getLookup()">getLookup</a> 
             method that can be used instead of the old <code>getCookie</code> one.
