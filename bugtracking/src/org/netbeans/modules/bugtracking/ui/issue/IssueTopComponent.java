@@ -158,7 +158,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 preparingLabel.setVisible(true);
                 repoPanel.setVisible(false);
                 if(issueId != null) {
-                    String desc = NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[]{issueId});
+                    String desc = NbBundle.getMessage(IssueTopComponent.class, "LBL_OPENING_ISSUE", new Object[]{issueId});
                     preparingLabel.setText(desc);
                     setName(NbBundle.getMessage(IssueTopComponent.class, "LBL_LOADING_ISSUE", new Object[]{issueId}));
                     setToolTipText(desc);
