@@ -192,3 +192,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-javacard-spi" value="${javadoc.web.root}/org-netbeans-modules-javacard-spi"/>
 <property name="javadoc.docs.org-netbeans-modules-keyring" value="${javadoc.web.root}/org-netbeans-modules-keyring"/>
 <property name="javadoc.docs.org-netbeans-modules-schema2beans" value="${javadoc.web.root}/org-netbeans-modules-schema2beans"/>
+<property name="javadoc.docs.org-openide-util-lookup" value="${javadoc.web.root}/org-openide-util-lookup"/>
