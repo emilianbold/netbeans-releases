@@ -163,7 +163,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         initFileTable();
         initToolbarButtons();
         initNextPrevActions();
-        commitButton.setEnabled(false);
         if (CvsModuleConfig.getDefault().getPreferences().getBoolean("autoDiffRefresh", true)) {
             onRefreshButton();
         } else {
