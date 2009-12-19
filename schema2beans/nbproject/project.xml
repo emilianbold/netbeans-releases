@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.schema2beans</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.openide.util</code-name-base>
+                    <code-name-base>org.openide.util.lookup</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                 </dependency>
