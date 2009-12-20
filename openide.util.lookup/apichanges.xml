@@ -46,6 +46,33 @@ made subject to such option by the copyright holder.
     <apidef name="lookup">Lookup API</apidef>
 </apidefs>
 <changes>
+    <change id="lookup.is.free">
+        <api name="lookup"/>
+        <summary>Separate module for Lookup API</summary>
+        <version major="8" minor="0"/>
+        <date day="20" month="12" year="2009"/>
+        <author login="jtulach"/>
+        <compatibility modification="yes">
+            <p>
+                Runtime compatibility remains, compile time compatibility is
+                mostly preserved too. It is however recommended to upgrade
+                dependencies of your modules. Try running
+                <code>ant fix-dependencies</code> in your Ant module.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                <a href="@org-openide-util-lookup@/org/openide/util/Lookup.html">Lookup</a>
+                and its associated interfaces are now available as a
+                <a href="@org-openide-util-lookup@/overview-summary.html">separate module</a>.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Lookup"/>
+        <class package="org.openide.util.lookup" name="AbstractLookup"/>
+        <class package="org.openide.util.lookup" name="ProxyLookup"/>
+        <class package="org.openide.util.lookup" name="Lookups"/>
+        <issue number="170056"/>
+    </change>
     <change id="org.openide.util.Lookup.paths">
         <api name="lookup"/>
         <summary>Added

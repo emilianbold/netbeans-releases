@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
 
  <answer id="arch-overall">
   <p>
-    Also this module defines the <a href="@TOP@/org/openide/util/Lookup.html">
+    This module defines the <a href="@TOP@/org/openide/util/Lookup.html">
     Lookup</a> which is the NetBeans way for dynamic registration
     and lookup of 
     components in our modularized component system. It allows lookup and discovery 
