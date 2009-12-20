@@ -2738,44 +2738,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     depCtx.oldRoots.addAll(removed.keySet());
                     depCtx.newRootsToScan.retainAll(addedOrChanged.keySet());
                     depCtx.fullRescanSourceRoots = depCtx.newRoots2Deps.keySet();
-
-                    final Map<URL,List<URL>> adderOrChangedBin = new HashMap<URL, List<URL>>();
-                    final Map<URL,List<URL>> removedBin = new HashMap<URL, List<URL>>();
-                    diff(depCtx.initialBinaries2InvDeps, depCtx.newBinaries2InvDeps, adderOrChangedBin, removedBin);
-
-                    if (LOGGER.isLoggable(logLevel) && (adderOrChangedBin.size() > 0 || removedBin.size() > 0)) {
-                        LOGGER.log(logLevel, "Changes in binary dependencies detected:"); //NOI18N
-                        LOGGER.log(logLevel, "initialBinaries2InvDeps({0})=", depCtx.initialBinaries2InvDeps.size()); //NOI18N
-                        printMap(depCtx.initialBinaries2InvDeps, logLevel);
-                        LOGGER.log(logLevel, "newBinaries2InvDeps({0})=", depCtx.newBinaries2InvDeps.size()); //NOI18N
-                        printMap(depCtx.newBinaries2InvDeps, logLevel);
-                        LOGGER.log(logLevel, "adderOrChangedBin({0})=", adderOrChangedBin.size()); //NOI18N
-                        printMap(adderOrChangedBin, logLevel);
-                        LOGGER.log(logLevel, "removedBin({0})=", removedBin.size()); //NOI18N
-                        printMap(removedBin, logLevel);
-                    }
-
-                    final Set<URL> affectedSourceRoots = new HashSet<URL>();
-                    for (Map.Entry<URL,List<URL>> entry : adderOrChangedBin.entrySet()) {
-                        final List<URL> oldDeps = depCtx.initialBinaries2InvDeps.get(entry.getKey());
-                        final List<URL> newDeps = entry.getValue();
-                        if (oldDeps == null) {
-                            //New
-                            affectedSourceRoots.addAll(newDeps);
-                        }
-                        else {
-                            //Modified
-                            diff(oldDeps,newDeps,affectedSourceRoots,affectedSourceRoots);
-                        }
-                    }
-                    for (List<URL> entry : removedBin.values()) {
-                        affectedSourceRoots.addAll(entry);
-                    }
-                    for (URL affected : affectedSourceRoots) {
-                        if (!depCtx.newRootsToScan.contains(affected)) {
-                            depCtx.newRootsToScan.add(affected);
-                        }
-                    }
                 }
             } else {
                 restarted = true;
