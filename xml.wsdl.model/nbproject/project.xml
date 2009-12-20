@@ -70,6 +70,12 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.lookup</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
             </module-dependencies>
             <test-dependencies>
                 <!-- Dependencies for a source root with tests: -->

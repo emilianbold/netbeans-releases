@@ -75,8 +75,6 @@ import java.util.regex.Pattern;
 import org.bar.Comparator2;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -410,7 +408,22 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         });
         assertNotNull("Interface found", l.lookup(xface));
         assertFalse(event.get());
-        MetaInfServicesLookup.RP.post(new Runnable() {public void run() {}}).waitFinished();
+        class W implements Runnable {
+            boolean ok;
+            public synchronized void run() {
+                ok = true;
+                notifyAll();
+            }
+
+            public synchronized void await() throws Exception {
+                while (!ok) {
+                    wait();
+                }
+            }
+        }
+        W w = new W();
+        MetaInfServicesLookup.RP.execute(w);
+        w.await();
         assertEquals("Now two", 2, res.allInstances().size());
     }
     
@@ -470,7 +483,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
                     try {
                         wait();
                     } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
+                        Logger.getLogger("global").log(Level.WARNING, "", ex);
                     }
                 }
             }
@@ -503,7 +516,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         assertNull(Lookups.metaInfServices(new ClassLoader() {
             protected @Override Enumeration<URL> findResources(String name) throws IOException {
                 if (name.equals("META-INF/services/java.lang.Object")) {
-                    return Enumerations.singleton(new URL(null, "dummy:stuff", new URLStreamHandler() {
+                    return singleton(new URL(null, "dummy:stuff", new URLStreamHandler() {
                         protected URLConnection openConnection(URL u) throws IOException {
                             return new URLConnection(u) {
                                 public void connect() throws IOException {}
@@ -514,9 +527,10 @@ public class MetaInfServicesLookupTest extends NbTestCase {
                         }
                     }));
                 } else {
-                    return Enumerations.empty();
+                    return Collections.enumeration(Collections.<URL>emptyList());
                 }
             }
+
         }).lookup(Object.class));
     }
     public static class Broken1 {
@@ -532,4 +546,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         }
     }
 
+    static <T> Enumeration<T> singleton(T t) {
+        return Collections.enumeration(Collections.singleton(t));
+    }
 }
