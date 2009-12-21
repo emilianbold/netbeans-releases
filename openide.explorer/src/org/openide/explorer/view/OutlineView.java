@@ -931,7 +931,7 @@ public class OutlineView extends JScrollPane {
                     SwingUtilities.isLeftMouseButton ((MouseEvent) e) &&
                     ((MouseEvent) e).getClickCount() > 1) {
                 // Default action.
-                if (column == 0) {
+                if (convertColumnIndexToModel(column) == 0) {
                     Node node = Visualizer.findNode (o);
                     if (node != null) {
                         if (node.isLeaf () && !node.canRename()) {
