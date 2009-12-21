@@ -84,6 +84,7 @@ made subject to such option by the copyright holder.
     <target name="coverage-report" depends="-init-modules">
         <subant buildpath="${dlight.modules.fullpath}" target="coverage-report">
             <property name="cluster.config" value="dlight"/>
+            <property name="coverage.report.format" value="xml"/>
         </subant>
     </target>
 

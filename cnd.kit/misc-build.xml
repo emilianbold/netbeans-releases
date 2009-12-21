@@ -109,6 +109,7 @@ made subject to such option by the copyright holder.
     <target name="coverage-report" depends="-init-modules">
         <subant buildpath="${cnd.modules.fullpath}" target="coverage-report">
             <property name="cluster.config" value="cnd"/>
+            <property name="coverage.report.format" value="xml"/>
         </subant>
     </target>
 
