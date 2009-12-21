@@ -114,14 +114,14 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     // the DO will hold the originally registered connection instance instead of creating a new one.
     private static final Map<FileObject, DatabaseConnection> newFile2Conn = new ConcurrentHashMap<FileObject, DatabaseConnection>();
     
-    private final Reference holder;
+    private final Reference<XMLDataObject> holder;
 
     /**
      * The lookup provided through Environment.Provider.
      */
     private Lookup lookup = null;
 
-    private Reference refConnection = new WeakReference(null);
+    private Reference<DatabaseConnection> refConnection = new WeakReference<DatabaseConnection>(null);
     
     private PCL listener;
 
@@ -130,11 +130,11 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     }
     
     private DatabaseConnectionConvertor() {
-        holder = new WeakReference(null);
+        holder = new WeakReference<XMLDataObject>(null);
     }
 
     private DatabaseConnectionConvertor(XMLDataObject object) {
-        holder = new WeakReference(object);
+        holder = new WeakReference<XMLDataObject>(object);
         InstanceContent cookies = new InstanceContent();
         cookies.add(this);
         lookup = new AbstractLookup(cookies);
@@ -142,7 +142,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     
     private DatabaseConnectionConvertor(XMLDataObject object, DatabaseConnection existingInstance) {
         this(object);
-        refConnection = new WeakReference(existingInstance);
+        refConnection = new WeakReference<DatabaseConnection>(existingInstance);
         attachListener();
     }
     
@@ -164,11 +164,11 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         return obj == null ? "" : obj.getName();
     }
     
-    public Class instanceClass() {
+    public Class<DatabaseConnection> instanceClass() {
         return DatabaseConnection.class;
     }
     
-    public boolean instanceOf(Class type) {
+    public boolean instanceOf(Class<?> type) {
         return (type.isAssignableFrom(DatabaseConnection.class));
     }
 
@@ -203,19 +203,19 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             }
 
             DatabaseConnection inst = createDatabaseConnection(handler);
-            refConnection = new WeakReference(inst);
+            refConnection = new WeakReference<DatabaseConnection>(inst);
             attachListener();
             return inst;
         }
     }
     
     private XMLDataObject getHolder() {
-        return (XMLDataObject)holder.get();
+        return holder.get();
     }
 
     private void attachListener() {
         listener = new PCL();
-        DatabaseConnection dbconn = ((DatabaseConnection)refConnection.get());
+        DatabaseConnection dbconn = (refConnection.get());
         dbconn.addPropertyChangeListener(WeakListeners.propertyChange(listener, dbconn));
     }
 
@@ -261,7 +261,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         DataObject[] objects = folder.getChildren();
         
         for (int i = 0; i < objects.length; i++) {
-            InstanceCookie ic = (InstanceCookie)objects[i].getCookie(InstanceCookie.class);
+            InstanceCookie ic = objects[i].getCookie(InstanceCookie.class);
             if (ic != null) {
                 Object obj = null;
                 try {
@@ -490,7 +490,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
          * The list of PropertyChangeEvent that cause the connections to be saved.
          * Should probably be a set of DatabaseConnection's instead.
          */
-        LinkedList/*<PropertyChangeEvent>*/ keepAlive = new LinkedList();
+        LinkedList<PropertyChangeEvent> keepAlive = new LinkedList<PropertyChangeEvent>();
         
         RequestProcessor.Task saveTask = null;
         
@@ -507,7 +507,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             PropertyChangeEvent e;
 
             synchronized (this) {
-                e = (PropertyChangeEvent)keepAlive.removeFirst();
+                e = keepAlive.removeFirst();
             }
             DatabaseConnection dbconn = (DatabaseConnection)e.getSource();
             XMLDataObject obj = getHolder();
