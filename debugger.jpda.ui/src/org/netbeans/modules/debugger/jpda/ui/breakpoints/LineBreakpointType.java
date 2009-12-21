@@ -55,6 +55,7 @@ import org.openide.util.NbBundle;
 /**
 * @author   Daniel Prusa
 */
+@BreakpointType.Registration(displayName="#CTL_Line_event_type_name")
 public class LineBreakpointType extends BreakpointType {
 
     private Reference<LineBreakpointPanel> customizerRef = new WeakReference<LineBreakpointPanel>(null);

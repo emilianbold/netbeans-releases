@@ -54,6 +54,7 @@ import org.openide.util.NbBundle;
 *
 * @author   Jan Jancura
 */
+@BreakpointType.Registration(displayName="#CTL_Method_event_type_name")
 public class MethodBreakpointType extends BreakpointType {
 
     public String getCategoryDisplayName () {
