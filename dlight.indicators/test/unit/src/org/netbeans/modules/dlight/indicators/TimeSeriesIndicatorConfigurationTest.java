@@ -80,7 +80,6 @@ public class TimeSeriesIndicatorConfigurationTest {
 
     @Test
     public void testCreate() {
-        System.out.println("createIndicatorMetadata");
         TimeSeriesIndicatorConfiguration result = null;
         try {
             FileObject fo = folder.getFileObject("TimeSeriesIndicatorConfiguration.instance");
@@ -99,16 +98,15 @@ public class TimeSeriesIndicatorConfigurationTest {
         }
         assertNotNull("TimeSeriesIndicatorConfiguration should not be null", result);
         TimeSeriesIndicatorConfigurationAccessor accessor = TimeSeriesIndicatorConfigurationAccessor.getDefault();
-        System.out.println("aggregation=" + accessor.getAggregation(result));
-        System.out.println("granurality=" + accessor.getGranularity(result));
-        System.out.println("label.formatter=" + accessor.getLabelRenderer(result));
-        System.out.println("title=" + accessor.getTitle(result));
+        assertEquals(Aggregation.SUM, accessor.getAggregation(result));
+        assertEquals(1000000000L, accessor.getGranularity(result));
+        assertTrue(accessor.getLabelRenderer(result) instanceof org.netbeans.modules.dlight.util.BytesFormatter);
+        assertEquals("I/O Usage", accessor.getTitle(result));
     }
 
     @Test
     @SuppressWarnings({"unchecked"})
     public void testTimeSeriesDescriptorsList() {
-        System.out.println("TimeSeriesDescriptors.List");
         Collection<TimeSeriesDescriptor> result = null;
         try {
             FileObject fo = folder.getFileObject("TimeSeriesDescriptors.List");
@@ -123,6 +121,6 @@ public class TimeSeriesIndicatorConfigurationTest {
             fail("Test is not passed");
         }
         assertNotNull("IndicatorMetadata should not be null", result);
-        System.out.println("size=" + result.size());
+        assertEquals(1, result.size());
     }
 }
