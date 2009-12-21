@@ -166,6 +166,11 @@ public final class CodeStyle {
         return PreprocessorIndent.valueOf(getOption(EditorOptions.indentPreprocessorDirectives,
                                       EditorOptions.indentPreprocessorDirectivesDefault));
     }
+
+    public VisibilityIndent indentVisibility(){
+        return VisibilityIndent.valueOf(getOption(EditorOptions.indentVisibility,
+                                      EditorOptions.indentVisibilityDefault));
+    }
     
     public boolean indentNamespace() {
         return getOption(EditorOptions.indentNamespace,
@@ -549,6 +554,16 @@ public final class CodeStyle {
         @Override
         public String toString() {
             return NbBundle.getMessage(CodeStyle.class, "LBL_pi_"+name()); // NOI18N
+        }
+    }
+
+    public enum VisibilityIndent {
+        NO_INDENT,
+        HALF_INDENT;
+
+        @Override
+        public String toString() {
+            return NbBundle.getMessage(CodeStyle.class, "LBL_vi_"+name()); // NOI18N
         }
     }
 

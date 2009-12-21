@@ -121,7 +121,17 @@ public class AppServerBridge {
                 ObjectName aaaa = new ObjectName("com.sun.appserv:type=appclient-module,name="+mid+",category=config");
                 dirLocation =new java.io.File(""+ddd.getMBeanServerConnection().getAttribute(aaaa,"location"));
             } else{
-                System.out.println("Still Some Work to do in ModuleRestartActikon is AS 8.1 plugin code");
+                if (null == earPart) {
+                    ObjectName aaaa = new ObjectName("com.sun.appserv:type=extension-module,name="+mid+",category=config");
+                    dirLocation =new java.io.File(""+ddd.getMBeanServerConnection().getAttribute(aaaa,"location"));
+                } else {
+                     if (!modulePart.startsWith("/"))
+                        modulePart = "/"+modulePart;
+                    ObjectName aaaa = new ObjectName("com.sun.appserv:j2eeType=WebModule,name=//server"+
+                            modulePart+",J2EEApplication="+earPart+",J2EEServer=server");
+                    dirLocation = new java.io.File(""+ddd.getMBeanServerConnection().getAttribute(aaaa,"docBase"));
+                    modulePart = null;
+                }
             }
             
         } catch(Exception e) {
@@ -161,16 +171,22 @@ public class AppServerBridge {
      */
     public static String getModuleUrl(TargetModuleID module){
         ModuleType mt = ((SunTargetModuleID)module).getModuleType();
-        String suffix = ".jar";
+        String suffix = null;
         String moduleID = module.getModuleID();
         int i = moduleID.indexOf('#');
         if (i > -1) {
             moduleID = moduleID.substring(i+1);
         }
-        if (mt.equals(ModuleType.EAR)){
+        if (ModuleType.EAR.equals(mt)){
             suffix = ".ear";
         }
-        if (mt.equals(ModuleType.WAR)){
+        if (ModuleType.RAR.equals(mt)){
+            suffix = ".rar";
+        }
+        if (ModuleType.EJB.equals(mt) || ModuleType.CAR.equals(mt)){
+            suffix = ".jar";
+        }
+        if (null == suffix){
             suffix = ".war";
             java.io.File dirLocation = null;
             String modulePart = null;
@@ -201,6 +217,17 @@ public class AppServerBridge {
                             moduleID = t.substring(0, t.length() - 4);
                             modulePart = null;
                         }
+                    } else {
+                        if (null == earPart) {
+                            ObjectName aaaa = new ObjectName("com.sun.appserv:type=extension-module,name=" + mid + ",category=config");
+                            dirLocation = new java.io.File("" + ddd.getMBeanServerConnection().getAttribute(aaaa, "location"));
+                        } else {
+                            ObjectName aaaa = new ObjectName("com.sun.appserv:j2eeType=WebModule,name=//server" + modulePart + ",J2EEApplication=" + earPart + ",J2EEServer=server");
+                            dirLocation = new java.io.File("" + ddd.getMBeanServerConnection().getAttribute(aaaa, "docBase"));
+                            String t = dirLocation.getName();
+                            moduleID = t.substring(0, t.length() - 4);
+                            modulePart = null;
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -208,9 +235,6 @@ public class AppServerBridge {
                     ise.initCause(e);
                     throw ise;
                 }
-        }
-        if (mt.equals(ModuleType.RAR)){
-            suffix = ".rar";
         }
 
         if (moduleID.endsWith(suffix) || moduleID.endsWith(suffix.toUpperCase(Locale.ENGLISH))) {

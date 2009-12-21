@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
+import java.nio.charset.CoderMalfunctionError;
 import org.netbeans.modules.cnd.remote.project.*;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 /**
  *
  * @author Vladimir Kvashin
@@ -58,5 +60,11 @@ public abstract class RfsBaseRemoteBuildTestCase extends RemoteBuildTestBase {
 
     public RfsBaseRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);       
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        setupHost("rfs");
     }
 }

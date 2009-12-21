@@ -50,12 +50,12 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.AllFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.openide.DialogDescriptor;
@@ -159,9 +159,9 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
             // Something is wrong
             return new String[]{};
         }
-        ArrayList<String> list = new ArrayList<String>();
-        addExecutables(root, list);
-        return list.toArray(new String[list.size()]);
+        ArrayList<String> aLlist = new ArrayList<String>();
+        addExecutables(root, aLlist);
+        return aLlist.toArray(new String[aLlist.size()]);
     }
 
     private void addExecutables(File dir, List<String> filesAdded) {
@@ -182,11 +182,11 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
                 if (AllFileFilter.getInstance().accept(files[i])) {
                     continue;
                 }
-                if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
+                if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                     if (exeExecutableFileFilter.accept(files[i])) {
                         filesAdded.add(files[i].getPath());
                     }
-                } else if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_MACOSX) {
+                } else if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                     if (machOExecutableFileFilter.accept(files[i])) {
                         filesAdded.add(files[i].getPath());
                     }
@@ -311,9 +311,9 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
             seed = System.getProperty("user.home"); // NOI18N
         }
         FileFilter[] filters;
-        if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
+        if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
             filters = new FileFilter[]{PeExecutableFileFilter.getInstance()};
-        } else if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_MACOSX) {
+        } else if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
             filters = new FileFilter[]{MacOSXExecutableFileFilter.getInstance()};
         } else {
             filters = new FileFilter[]{ElfExecutableFileFilter.getInstance()};

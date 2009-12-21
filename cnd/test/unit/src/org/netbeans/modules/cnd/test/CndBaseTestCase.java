@@ -164,6 +164,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     }
 
     private void setupUserDir() {
+        Logger.getLogger("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage").setLevel(Level.SEVERE);
         File dataDir = getDataDir();
         File dataDirParent = dataDir.getParentFile();
         File userDir = new File(dataDirParent, "userdir");
@@ -184,12 +185,12 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
         System.setProperty("cnd.mode.unittest", "true");
         System.setProperty("SUNW_NO_UPDATE_NOTIFY", "true");
-        List<Class> list = new ArrayList<Class>();
+        List<Class<?>> list = new ArrayList<Class<?>>();
         list.add(MockMimeLookup.class);
-        for(Class cls : getServises()){
+        for(Class<?> cls : getServices()){
             list.add(cls);
         }
-        MockServices.setServices(list.toArray(new Class[list.size()]));
+        MockServices.setServices(list.toArray(new Class<?>[list.size()]));
         setUpMime();
     }
 
@@ -204,8 +205,8 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         MockMimeLookup.setInstances(mimePath, new FKit());
     }
 
-    protected List<Class> getServises(){
-        return Collections.<Class>emptyList();
+    protected List<Class<?>> getServices(){
+        return Collections.<Class<?>>emptyList();
     }
 
     /**
@@ -237,7 +238,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
      * in path ${xtest.data}/goldenfiles/${classname}/filename
      * @see getGoldenFile
      */
-    protected Class getTestCaseGoldenDataClass() {
+    protected Class<?> getTestCaseGoldenDataClass() {
         return getTestCaseDataClass();
     }
 

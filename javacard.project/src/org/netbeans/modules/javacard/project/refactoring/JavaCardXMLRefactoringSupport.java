@@ -51,8 +51,32 @@ import javax.xml.xpath.*;
 import java.io.File;
 
 public class JavaCardXMLRefactoringSupport {
-
+    private XPathFactory xpFactory = XPathFactory.newInstance();
+    private XPath xPath = xpFactory.newXPath();
+    private XPathExpression dynamicallyLoadedClassXPression;
+    private XPathExpression shareableInterfaceClassXPression;
+    private DocumentBuilder docBuilder;
     private Document doc;
+    public JavaCardXMLRefactoringSupport() {
+        DocumentBuilderFactory factory =
+                DocumentBuilderFactory.newInstance();
+        factory.setValidating(false);
+        factory.setIgnoringElementContentWhitespace(true);
+        try {
+            docBuilder = factory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new IllegalStateException("Internal error: failed to obtain" + //NOI18N
+                    " DocumentBuilder instance.", e); //NOI18N
+        }
+        try {
+            dynamicallyLoadedClassXPression =
+                    xPath.compile("/javacard-app/dynamically-loaded-classes/class/@name");
+            shareableInterfaceClassXPression =
+                    xPath.compile("/javacard-app/shareable-interface-classes/class/@name");
+        } catch (XPathExpressionException e) {
+            throw new RuntimeException("Internal initialization failure", e);
+        }
+    }
 
     private JavaCardXMLRefactoringSupport(Document doc) {
         this.doc = doc;
@@ -64,8 +88,9 @@ public class JavaCardXMLRefactoringSupport {
 
     public static JavaCardXMLRefactoringSupport fromFile(File file) {
         try {
-            return new JavaCardXMLRefactoringSupport(
-                    docBuilder.parse(file));
+            JavaCardXMLRefactoringSupport supp = new JavaCardXMLRefactoringSupport();
+            supp.doc = supp.docBuilder.parse(file);
+            return supp;
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -85,36 +110,6 @@ public class JavaCardXMLRefactoringSupport {
             return (NodeList) shareableInterfaceClassXPression.evaluate(doc, XPathConstants.NODESET);
         } catch (XPathExpressionException ex) {
             return null;
-        }
-    }
-    private static DocumentBuilder docBuilder;
-    
-
-    {
-        DocumentBuilderFactory factory =
-                DocumentBuilderFactory.newInstance();
-        factory.setValidating(false);
-        factory.setIgnoringElementContentWhitespace(true);
-        try {
-            docBuilder = factory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException("Internal error: failed to obtain" + " DocumentBuilder instance.", e);
-        }
-    }
-    private XPathFactory xpFactory = XPathFactory.newInstance();
-    private XPath xPath = xpFactory.newXPath();
-    private XPathExpression dynamicallyLoadedClassXPression;
-    private XPathExpression shareableInterfaceClassXPression;
-    
-
-    {
-        try {
-            dynamicallyLoadedClassXPression =
-                    xPath.compile("/javacard-app/dynamically-loaded-classes/class/@name");
-            shareableInterfaceClassXPression =
-                    xPath.compile("/javacard-app/shareable-interface-classes/class/@name");
-        } catch (XPathExpressionException e) {
-            throw new RuntimeException("Internal initialization failure", e);
         }
     }
 }

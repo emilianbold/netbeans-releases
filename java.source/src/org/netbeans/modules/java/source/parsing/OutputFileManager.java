@@ -43,7 +43,9 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -54,7 +56,9 @@ import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.util.Iterators;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -64,7 +68,8 @@ import org.openide.util.Exceptions;
  * @author Tomas Zezula
  */
 public class OutputFileManager extends CachingFileManager {
-    
+
+    private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
     
     /**
      * Exception used to signal that the sourcepath is broken (project is deleted)
@@ -74,15 +79,21 @@ public class OutputFileManager extends CachingFileManager {
     }
 
     private ClassPath scp;
+    private ClassPath apt;
     private final Set<File> filteredFiles = new HashSet<File>();
     private boolean filtered;
     private String outputRoot;
     
     /** Creates a new instance of CachingFileManager */
-    public OutputFileManager(CachingArchiveProvider provider, final ClassPath outputClassPath, final ClassPath sourcePath) {
+    public OutputFileManager(final CachingArchiveProvider provider,
+            final ClassPath outputClassPath,
+            final ClassPath sourcePath,
+            final ClassPath aptPath) {
         super (provider, outputClassPath, false, true);
-	assert sourcePath != null && outputClassPath != null;        
+        assert outputClassPath != null;
+        assert sourcePath != null;
 	this.scp = sourcePath;
+        this.apt = aptPath == null ? EMPTY_PATH : aptPath;
     }
     
     public final boolean isFiltered () {
@@ -130,25 +141,23 @@ public class OutputFileManager extends CachingFileManager {
             if (outputRoot != null) {
                 activeRoot = new File(outputRoot);
             } else {
-                int index;
-                if (sibling != null) {
-                    index = getActiveRoot (sibling);
+                final String baseName = FileObjects.convertPackage2Folder(className);
+                activeRoot = getRootForApt(sibling, baseName);
+                if (activeRoot == null) {
+                    int index = getActiveRoot(sibling, baseName);
+                    if (index == -1) {
+                        //Deleted project
+                        throw new InvalidSourcePath ();
+                    }
+                    if (index < 0) {
+                        //Deleted project or source path changed during the scan, log & ignore it
+                        Logger.getLogger(OutputFileManager.class.getName()).warning(
+                            "No output for class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: "  + this.cp);    //NOI18N
+                        throw new InvalidSourcePath ();
+                    }
+                    assert index < this.cp.entries().size() : "index "+ index +" class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: " + this.cp;
+                    activeRoot = new File (URI.create(this.cp.entries().get(index).getURL().toExternalForm()));
                 }
-                else {
-                    index = getActiveRoot (FileObjects.convertPackage2Folder(className));
-                }
-                if (index == -1) {
-                    //Deleted project
-                    throw new InvalidSourcePath ();
-                }
-                if (index < 0) {                
-                    //Deleted project or source path changed during the scan, log & ignore it
-                    Logger.getLogger(OutputFileManager.class.getName()).warning(
-                        "No output for class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: "  + this.cp);    //NOI18N
-                    throw new InvalidSourcePath ();
-                }
-                assert index < this.cp.entries().size() : "index "+ index +" class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: " + this.cp;
-                activeRoot = new File (URI.create(this.cp.entries().get(index).getURL().toExternalForm()));
             }
             String baseName = className.replace('.', File.separatorChar);       //NOI18N
             String nameStr = baseName + '.' + FileObjects.SIG;
@@ -172,7 +181,7 @@ public class OutputFileManager extends CachingFileManager {
         if (sibling == null) {
             throw new IllegalArgumentException ("sibling == null");
         }        
-        final int index = getActiveRoot (sibling);
+        final int index = getActiveRootImpl (sibling);
         if (index == -1) {
             //Deleted project
             throw new InvalidSourcePath ();
@@ -195,9 +204,12 @@ public class OutputFileManager extends CachingFileManager {
         return OutputFileObject.create (activeRoot,file);
     }
         
-        
+
+    private int getActiveRoot (final javax.tools.FileObject sibling, final String baseName) throws IOException {
+        return sibling == null ? getActiveRootImpl(baseName) : getActiveRootImpl(sibling);
+    }
     
-    private int getActiveRoot (final javax.tools.FileObject file) throws IOException {
+    private int getActiveRootImpl (final javax.tools.FileObject file) throws IOException {
         List<ClassPath.Entry> entries = this.scp.entries();
         int eSize = entries.size();
         if ( eSize == 1) {
@@ -211,7 +223,7 @@ public class OutputFileManager extends CachingFileManager {
         try {
             for (int i = 0; it.hasNext(); i++) {
                 URL rootUrl = it.next().getURL();
-                if (isParentOf(rootUrl, file.toUri().toURL())) {
+                if (FileObjects.isParentOf(rootUrl, file.toUri().toURL())) {
                     return i;
                 }
             }
@@ -223,12 +235,9 @@ public class OutputFileManager extends CachingFileManager {
         return -2;
     }
     
-    private boolean isParentOf (URL folder, final URL file) throws IOException {
-        assert folder != null && file != null;
-        return file.toExternalForm().startsWith(folder.toExternalForm());
-    }
     
-    private int getActiveRoot (String baseName) {
+    
+    private int getActiveRootImpl (String baseName) {
         List<ClassPath.Entry> entries = this.scp.entries();
         int eSize = entries.size();
         if (eSize == 1) {
@@ -237,11 +246,76 @@ public class OutputFileManager extends CachingFileManager {
         if (eSize == 0) {
             return -1;
         }
+        final String[] parentName = splitParentName(baseName);
+        Iterator<ClassPath.Entry> it = entries.iterator();
+        for (int i=0; it.hasNext(); i++) {            
+            FileObject root = it.next().getRoot();
+            if (root != null) {
+                FileObject parentFile = root.getFileObject(parentName[0]);
+                if (parentFile != null) {
+                    if (parentFile.getFileObject(parentName[1], FileObjects.JAVA) != null) {
+                        return i;
+                    }
+                }
+            }
+        }        
+	return -2;
+    }
+
+    private File getRootForApt(final javax.tools.FileObject sibling, final String baseName) {
+        return sibling == null ? getRootForAptImpl(baseName) : getRootForAptImpl(sibling);
+    }
+
+    private File getRootForAptImpl(final javax.tools.FileObject sibling) {
+        try {
+            final URL surl = sibling.toUri().toURL();
+            for (ClassPath.Entry entry : apt.entries()) {
+                if (FileObjects.isParentOf(entry.getURL(), surl)) {
+                    final URL classFolder = AptCacheForSourceQuery.getClassFolder(entry.getURL());
+                    if (classFolder != null) {
+                        try {
+                            return new File(classFolder.toURI());
+                        } catch (URISyntaxException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
+        } catch (MalformedURLException e) {
+            Exceptions.printStackTrace(e);
+        }
+        return null;
+    }
+
+    private File getRootForAptImpl(final String baseName) {
+        String[] parentName = splitParentName(baseName);
+        for (ClassPath.Entry entry : this.scp.entries()) {
+            FileObject root = entry.getRoot();
+            if (root != null) {
+                FileObject parentFile = root.getFileObject(parentName[0]);
+                if (parentFile != null) {
+                    if (parentFile.getFileObject(parentName[1], FileObjects.JAVA) != null) {
+                        final URL classFolder = AptCacheForSourceQuery.getClassFolder(entry.getURL());
+                        if (classFolder != null) {
+                            try {
+                                return new File(classFolder.toURI());
+                            } catch (URISyntaxException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+	return null;
+    }
+
+    private String[] splitParentName(final String baseName) {
         String name, parent = null;
-	int index = baseName.lastIndexOf('/');              //NOI18N        
+	int index = baseName.lastIndexOf('/');              //NOI18N
 	if (index<0) {
             parent = "";
-            name = baseName;	    
+            name = baseName;
 	}
 	else {
             parent = baseName.substring(0, index);
@@ -251,19 +325,7 @@ public class OutputFileManager extends CachingFileManager {
 	if (index > 0) {
 	    name = name.substring(0,index);
 	}
-        Iterator<ClassPath.Entry> it = entries.iterator();
-        for (int i=0; it.hasNext(); i++) {            
-            FileObject root = it.next().getRoot();
-            if (root != null) {
-                FileObject parentFile = root.getFileObject(parent);
-                if (parentFile != null) {
-                    if (parentFile.getFileObject(name, FileObjects.JAVA) != null) {
-                        return i;
-                    }
-                }
-            }
-        }        
-	return -2;
+        return new String[] {parent, name};
     }
     
     @Override

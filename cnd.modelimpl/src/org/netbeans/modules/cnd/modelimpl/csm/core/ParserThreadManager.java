@@ -145,6 +145,7 @@ public final class ParserThreadManager {
         for (Wrapper wrapper : wrappers) {
             wrapper.stop();
         }
+        ParserQueue.instance().shutdown();
         for (Wrapper wrapper : wrappers) {
             while (true) {
                 if (wrapper.isStoped()) {
@@ -158,7 +159,6 @@ public final class ParserThreadManager {
             }
         }
 
-        ParserQueue.instance().shutdown();
         currThread = 0;
         started = false;
     }

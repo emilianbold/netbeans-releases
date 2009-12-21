@@ -64,6 +64,7 @@ public class GenerateDocumentHandlerAction extends XMLGenerateAction implements 
         /** generated Serialized Version UID */
         private static final long serialVersionUID = 1342753912956042368L;
 
+/**********
     public static synchronized GenerateDocumentHandlerAction getInstance() {
         GenerateDocumentHandlerAction actionInstance = null;
         String thisClassName = GenerateDocumentHandlerAction.class.getName();
@@ -75,6 +76,7 @@ public class GenerateDocumentHandlerAction extends XMLGenerateAction implements 
         }
         return actionInstance;
     }
+**********/
 
         /* Human presentable name of the action. This should be
          * presented as an item in a menu.

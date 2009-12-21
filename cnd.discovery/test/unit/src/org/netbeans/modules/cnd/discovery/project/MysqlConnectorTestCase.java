@@ -47,7 +47,7 @@ import org.junit.Test;
  *
  * @author Alexander Simon
  */
-public class MysqlConnectorTestCase extends MakeProjectBase {
+public class MysqlConnectorTestCase extends MakeProjectTestBase {
 
     public MysqlConnectorTestCase() {
         super("MysqlConnector");

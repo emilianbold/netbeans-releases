@@ -444,14 +444,17 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     private void onDisplayedStatusChanged() {
         if (tgbLocal.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_LOCAL_CHANGE);
+            SvnModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_Local")); // NOI18N
         }
         else if (tgbRemote.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE);
+            SvnModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_Remote")); // NOI18N
         }
         else if (tgbAll.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE);
+            SvnModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_ALL);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_All")); // NOI18N
         }
     }

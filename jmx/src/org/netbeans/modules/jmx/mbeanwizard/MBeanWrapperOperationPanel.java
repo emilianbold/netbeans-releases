@@ -234,7 +234,7 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
         public boolean isValid() {
             
             boolean opValid = true;
-            String msg = WizardConstants.EMPTY_STRING;
+            String msg = null;
            
             if (getPanel() != null) {
                 if (getPanel().OperationAlreadyContained()) {
@@ -364,7 +364,7 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
                 getPanel().orderNumber = oNumber;
             } 
             
-            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");// NOI18N
+            setErrorMsg(null);
         }
         
         /**

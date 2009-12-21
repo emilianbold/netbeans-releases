@@ -81,7 +81,6 @@ import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
-import org.netbeans.modules.javacard.spi.ValidationGroupProvider;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 import org.netbeans.validation.api.Severity;
 import org.netbeans.validation.api.Validator;
@@ -95,7 +94,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbPreferences;
 
-public class DevicePropertiesPanel extends JPanel implements DocumentListener, FocusListener, ValidationUI, Runnable, ValidationGroupProvider {
+public class DevicePropertiesPanel extends JPanel implements DocumentListener, FocusListener, ValidationUI, Runnable {
 
     private final ChangeSupport supp = new ChangeSupport(this);
     private boolean updating;
@@ -113,9 +112,9 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         GuiUtils.filterNonNumericKeys(proxy2cjcrePortTextField);
 
         ramSpinner.setValue("1M"); //NOI18N
-        e2pSpinner.setValue("4M"); //NOI18N
+        e2pSpinner.setValue("8M"); //NOI18N
         corSpinner.setValue("4K"); //NOI18N
-        loggerLevelComboBox.setSelectedItem(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("debug"));
+        loggerLevelComboBox.setSelectedItem(org.openide.util.NbBundle.getBundle(DevicePropertiesPanel.class).getString("info"));
         contactedProtocolComboBox.setSelectedItem("T=1"); //NOI18N
         Set<Integer> ports = allPortsInUse();
 
@@ -305,7 +304,6 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
     public DevicePropertiesPanel(final Properties props) {
         initializeComponent();
         read (new KeysAndValues.PropertiesAdapter(props));
-        Thread.dumpStack();
     }
 
     private void initializeComponent() {
@@ -411,7 +409,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
         s.put(DEVICE_LOGGERLEVEL, getLoggerLevel());
         s.put(DEVICE_SECUREMODE, getSecureMode());
         s.put(DEVICE_IS_REMOTE, remoteCheckbox.isSelected() + ""); //NOI18N
-        s.put(DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP, !suspendCheckBox.isSelected() + ""); //NOI18N
+        s.put(DEVICE_SUSPEND_THREADS_ON_STARTUP, suspendCheckBox.isSelected() + ""); //NOI18N
         String host = hostComboBox.getSelectedItem().toString();
         s.put(DEVICE_HOST, host);
         NbPreferences.forModule(DevicePropertiesPanel.class).put("knownHosts",  //NOI18N
@@ -568,10 +566,12 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
             if (val != null) {
                 cardManagerUrlField.setText(val);
             }
-            val = s.get(DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP);
-            if (val != null) {
-                suspendCheckBox.setSelected(Boolean.valueOf(val));
+            val = s.get(DEVICE_SUSPEND_THREADS_ON_STARTUP);
+            if (val == null) {
+                val = "false";
             }
+            suspendCheckBox.setSelected(Boolean.valueOf(val));
+            
             val = s.get(DEVICE_IS_REMOTE);
             if (val != null) {
                 remoteCheckbox.setSelected(Boolean.valueOf(val));
@@ -844,7 +844,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
 
         org.openide.awt.Mnemonics.setLocalizedText(suspendCheckBox, "Suspend Threads on startup");
         suspendCheckBox.setToolTipText("<html>Check this checkbox if you want to start<br>stepping through code in the debugger<br>as soon as the card is started");
-        suspendCheckBox.setHorizontalTextPosition(10);
+        suspendCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 18;
@@ -1018,7 +1018,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
 
         org.openide.awt.Mnemonics.setLocalizedText(remoteCheckbox, "Card Manager is on a remote computer");
         remoteCheckbox.setToolTipText("<html>If true, this card is not running on the same computer<br>as the IDE is");
-        remoteCheckbox.setHorizontalTextPosition(10);
+        remoteCheckbox.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
         remoteCheckbox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onRemoteCheckboxChanged(evt);
@@ -1217,7 +1217,12 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
 
     public void fireChange() {
         if (!updating) {
-            supp.fireChange();
+            updating = true;
+            try {
+                supp.fireChange();
+            } finally {
+                updating = false;
+            }
         }
     }
 

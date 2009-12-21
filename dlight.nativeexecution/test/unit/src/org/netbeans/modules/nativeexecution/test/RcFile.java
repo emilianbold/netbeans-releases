@@ -92,6 +92,10 @@ public final class RcFile {
             return new ArrayList<String>(map.keySet());
         }
 
+        public synchronized boolean containsKey(String key) {
+            return map.containsKey(key);
+        }
+
         private synchronized void put(String key, String value) {
             map.put(key, value);
         }
@@ -107,6 +111,11 @@ public final class RcFile {
 
     public String get(String section, String key) {
         return get(section, key, null);
+    }
+
+    public boolean containsKey(String section, String key) {
+        Section sect = sections.get(section);
+        return (sect == null) ? false : sect.containsKey(key);
     }
 
     public synchronized Collection<String> getSections() {

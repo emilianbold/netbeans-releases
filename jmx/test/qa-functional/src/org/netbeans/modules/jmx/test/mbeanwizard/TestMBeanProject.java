@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.jmx.test.mbeanwizard;
 
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.JMXTestCase;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
@@ -56,26 +55,11 @@ public class TestMBeanProject extends JMXTestCase {
         super(name);
     }
 
-
-    public static NbTestSuite suite() {
-        
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new TestMBeanProject("finish"));
-        
-        return suite;
-    }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
-    
     /**
      * Functional test which selects the node PROJECT_NAME_MBEAN_FUNCTIONAL_TEST
      * and call the Test Project target.
      */
-    public void finish() {
+    public void testFinish() {
         testProject(PROJECT_NAME_MBEAN_FUNCTIONAL);
     }
 }

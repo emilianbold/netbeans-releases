@@ -43,11 +43,8 @@ package org.netbeans.nbbuild;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,7 +58,6 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -93,21 +89,13 @@ public final class CheckModuleConfigs extends Task {
         if (nbroot == null) {
             throw new BuildException("Must define 'nbroot' param", getLocation());
         }
-        File buildPropertiesFile = new File(nbroot, "nbbuild" + File.separatorChar + "build.properties");
         File clusterPropertiesFile = new File(nbroot, "nbbuild" + File.separatorChar + "cluster.properties");
-        File goldenFile = new File(nbroot, "nbbuild" + File.separatorChar + "build" + File.separatorChar + "generated" + File.separatorChar + "moduleconfigs.txt");
         @SuppressWarnings("unchecked")
         Map<String,String> properties = getProject().getProperties();
-        Map<String,Set<String>> configs = loadModuleConfigs(properties, buildPropertiesFile);
         Map<String,Set<String>> clusters = loadModuleClusters(properties, clusterPropertiesFile);
         Set<String> allClusterModules = new TreeSet<String>();
         for (Set<String> s : clusters.values()) {
             allClusterModules.addAll(s);
-        }
-        try {
-            writeModuleConfigs(goldenFile, configs, buildPropertiesFile);
-        } catch (IOException e) {
-            throw new BuildException("Could not write to " + goldenFile, e, getLocation());
         }
         try {
             writeMasterProjectXml(masterProjectXml, allClusterModules);
@@ -116,46 +104,14 @@ public final class CheckModuleConfigs extends Task {
         } catch (IOException e) {
             throw new BuildException("Could not write to " + masterProjectXml, e, getLocation());
         }
-        Set<String> s;
-        /* This is not actually desired; just includes everything:
-        // Check that sigtest <= javadoc:
-        s = new TreeSet((Set) configs.get("sigtest"));
-        s.removeAll((Set) configs.get("javadoc"));
-        if (!s.isEmpty()) {
-            throw new BuildException(buildPropertiesFile + ": sigtest config contains entries not in javadoc config: " + s);
+        // Check that javadoc <= full cluster config:
+        Set<String> javadoc = splitToSet(getProject().getProperty("config.javadoc.all"), "config.javadoc.all");
+        for (Set<String> modules : clusters.values()) {
+            javadoc.removeAll(modules);
         }
-        */
-        // Check that javadoc <= stable + daily-alpha-nbms:
-        s = new TreeSet<String>(configs.get("javadoc"));
-        s.removeAll(configs.get("stable"));
-        s.removeAll(configs.get("daily-alpha-nbms"));
-        if (!s.isEmpty()) {
-            throw new BuildException(buildPropertiesFile + ": javadoc config contains entries not in stable and daily-alpha-nbms configs: " + s);
-        }
-        // Check that stable = modules in enumerated clusters:
-        Set<String> stable = configs.get("all");
-        s = new TreeSet<String>(stable);
-        s.removeAll(allClusterModules);
-        if (!s.isEmpty()) {
-            throw new BuildException(buildPropertiesFile + ": 'all' config not equal to listed cluster modules: " + s);
-        }
-        s = new TreeSet<String>(allClusterModules);
-        s.removeAll(stable);
-        if (!s.isEmpty()) {
-            throw new BuildException(buildPropertiesFile + ": 'all' config not equal to listed cluster modules: " + s);
-        }
-        // Check that platform = modules in platform cluster:
-        Set<String> platform = configs.get("platform");
-        Set<String> platformCluster = clusters.get("nb.cluster.platform");
-        s = new TreeSet<String>(platform);
-        s.removeAll(platformCluster);
-        if (!s.isEmpty()) {
-            throw new BuildException(buildPropertiesFile + ": platform config not equal to platform cluster modules: " + s);
-        }
-        s = new TreeSet<String>(platformCluster);
-        s.removeAll(platform);
-        if (!s.isEmpty()) {
-            throw new BuildException(buildPropertiesFile + ": platform config not equal to platform cluster modules: " + s);
+        if (!javadoc.isEmpty()) {
+            throw new BuildException(new File(nbroot, "nbbuild" + File.separatorChar + "build.properties") +
+                    ": javadoc config contains entries not in known clusters: " + javadoc);
         }
         // Verify sorting and overlaps:
         Pattern clusterNamePat = Pattern.compile("nb\\.cluster\\.([^.]+)");
@@ -217,45 +173,6 @@ public final class CheckModuleConfigs extends Task {
         return set;
     }
     
-    private Map<String,Set<String>> loadModuleConfigs(Map<String,String> buildProperties, File buildPropertiesFile) {
-        Map<String,Set<String>> configs = new TreeMap<String,Set<String>>();
-        for (String k : buildProperties.keySet()) {
-            String prefix = "config.modules.";
-            if (!k.startsWith(prefix)) {
-                continue;
-            }
-            String config = k.substring(prefix.length());
-            Set<String> modules = new TreeSet<String>(splitToSet(buildProperties.get(k), k));
-            String fixedK = "config.fixedmodules." + config;
-            String fixed = buildProperties.get(fixedK);
-            if (fixed != null) {
-                modules.addAll(splitToSet(fixed, fixedK));
-            } else {
-                throw new BuildException(buildPropertiesFile + ": have " + k + " but no " + fixedK);
-            }
-            configs.put(config, modules);
-        }
-        return configs;
-    }
-
-    private void writeModuleConfigs(File goldenFile, Map<String,Set<String>> configs, File buildPropertiesFile) throws IOException {
-        log("Writing moduleconfigs " + configs.keySet() + " from " + buildPropertiesFile + " to " + goldenFile, Project.MSG_VERBOSE);
-        goldenFile.getParentFile().mkdirs();
-        Writer w = new FileWriter(goldenFile); // default encoding OK
-        try {
-            PrintWriter pw = new PrintWriter(w);
-            for (Map.Entry<String,Set<String>> entry : configs.entrySet()) {
-                String config = entry.getKey();
-                for (String module : entry.getValue()) {
-                    pw.println(config + ':' + module);
-                }
-            }
-            pw.flush();
-        } finally {
-            w.close();
-        }
-    }
-
     private Map<String,Set<String>> loadModuleClusters(Map<String,String> clusterProperties, File clusterPropertiesFile) {
         String fullConfig = "clusters.config.full.list";
         String l = clusterProperties.get(fullConfig);

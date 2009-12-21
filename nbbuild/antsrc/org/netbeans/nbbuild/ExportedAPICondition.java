@@ -73,7 +73,7 @@ public class ExportedAPICondition extends ProjectComponent implements Condition 
         }
         ModuleListParser mlp;
         try {
-            mlp = new ModuleListParser(props, ParseProjectXml.TYPE_NB_ORG, getProject());
+            mlp = new ModuleListParser(props, ModuleType.NB_ORG, getProject());
         } catch (IOException x) {
             throw new BuildException(x, getLocation());
         }

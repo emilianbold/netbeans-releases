@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,190 +31,106 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.javacard.api;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.javacard.common.ProblemHandler;
-import org.netbeans.modules.javacard.spi.Card;
-import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
-import org.netbeans.modules.javacard.spi.JavacardPlatform;
+import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import org.netbeans.api.validation.adapters.DialogBuilder;
 import org.netbeans.modules.javacard.spi.PlatformAndDeviceProvider;
+import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.modules.javacard.spi.impl.TempPlatformAndDeviceProvider;
-import org.openide.util.ChangeSupport;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
+import org.netbeans.validation.api.ui.ValidationGroup;
+import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 /**
  *
- * @author Tim Boudreau
+ * @author tim
  */
-public class BadPlatformOrDevicePanel extends javax.swing.JPanel implements LookupListener, ProblemHandler.UI, ActionListener {
-    private Lookup.Result<JavacardPlatform> pRes;
-    private Lookup.Result<Card> cRes;
-    private ProblemHandler handler;
-    private String problem;
-    private PlatformAndDeviceProvider props;
-
-    public BadPlatformOrDevicePanel(String platform, String device) {
-        this (platform, device, true);
-    }
-
-    public BadPlatformOrDevicePanel(String platform, String device, boolean showDontShowAgainCheckbox) {
-        initComponents();
-        if (!showDontShowAgainCheckbox) {
-            jCheckBox1.setVisible(false);
-        }
-        props = new TempPlatformAndDeviceProvider();
-        props.setPlatformName(platform);
-        props.setActiveDevice(device);
-        selPanel.setPlatformAndCard(props);
-    }
-
-    public String getPlatform() {
-        return props.getPlatformName();
-    }
-
-    public String getDevice() {
-        return props.getActiveDevice();
-    }
-
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        pRes = selPanel.getLookup().lookupResult (JavacardPlatform.class);
-        cRes = selPanel.getLookup().lookupResult (Card.class);
-        pRes.addLookupListener(this);
-        cRes.addLookupListener(this);
-        pRes.allInstances();
-        cRes.allInstances();
-    }
-
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        cRes.removeLookupListener(this);
-        pRes.removeLookupListener(this);
-        cRes = null;
-        pRes = null;
-    }
-
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        jLabel1 = new javax.swing.JLabel();
-        selPanel = new org.netbeans.modules.javacard.api.PlatformAndDevicePanel();
-        jCheckBox1 = new javax.swing.JCheckBox();
-
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(BadPlatformOrDevicePanel.class, "BadPlatformOrDevicePanel.jLabel1.text")); // NOI18N
-
-        jCheckBox1.setText(org.openide.util.NbBundle.getMessage(BadPlatformOrDevicePanel.class, "BadPlatformOrDevicePanel.jCheckBox1.text")); // NOI18N
-        jCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 12, 0));
-        jCheckBox1.setHorizontalTextPosition(javax.swing.SwingConstants.LEADING);
-        jCheckBox1.addActionListener(this);
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jCheckBox1)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
-                    .add(selPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(selPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jCheckBox1)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-    }
-
-    // Code for dispatching events from components to event handlers.
-
-    public void actionPerformed(java.awt.event.ActionEvent evt) {
-        if (evt.getSource() == jCheckBox1) {
-            BadPlatformOrDevicePanel.this.dontShowDialogChecked(evt);
-        }
-    }// </editor-fold>//GEN-END:initComponents
-
+public class BadPlatformOrDevicePanel extends JPanel implements ActionListener {
+    private final PlatformAndDevicePanel pnl;
+    private PlatformAndDeviceProvider provider = new TempPlatformAndDeviceProvider();
+    private final JCheckBox box = new JCheckBox(NbBundle.getMessage(
+            BadPlatformOrDevicePanel.class, "BadPlatformOrDevicePanel.jCheckBox1.text")); //NOI18N
     private static final String PREFS_KEY_DONT_SHOW_DLG = "dontShowBrokenPlatformDialog"; //NOI18N
-    private void dontShowDialogChecked(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dontShowDialogChecked
+    private final JLabel instructions = new JLabel(NbBundle.getMessage(
+            BadPlatformOrDevicePanel.class, "BadPlatformOrDevicePanel.jLabel1.text")); //NOI18N
+    public BadPlatformOrDevicePanel(String platform, String device, ProjectKind kind) {
+        this (platform, device, true, kind);
+    }
+
+    public BadPlatformOrDevicePanel(String platform, String device, boolean showDontShowAgainCheckbox, ProjectKind kind) {
+        super (new GridBagLayout());
+        provider.setActiveDevice(device);
+        provider.setPlatformName(platform);
+        pnl = new PlatformAndDevicePanel(provider);
+        pnl.setProjectKind(kind);
+        box.setVisible(showDontShowAgainCheckbox);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.gridheight = 1;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.FIRST_LINE_START;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.BOTH;
+        add (instructions, gbc);
+        gbc.gridy = 1;
+        add (pnl, gbc);
+        gbc.gridy = 2;
+        gbc.gridwidth = 1;
+        gbc.gridx = 1;
+        gbc.anchor = GridBagConstraints.FIRST_LINE_END;
+        int margin = Utilities.isMac() ? 12 : 5;
+        setBorder (BorderFactory.createEmptyBorder(margin, margin, margin, margin));
+    }
+
+    public static PlatformAndDeviceProvider showDialog (String platformName, String deviceName, boolean showCheckbox, ProjectKind kind) {
+        BadPlatformOrDevicePanel p = new BadPlatformOrDevicePanel (platformName, deviceName, showCheckbox, kind);
+        if (new DialogBuilder(BadPlatformOrDevicePanel.class).
+                setTitle(NbBundle.getMessage(
+                BadPlatformOrDevicePanel.class, "TTL_FIX_PLATFORM")). //NOI18N
+                setModal(true).
+                setContent(p).
+                setValidationGroup(p.getValidationGroup()).
+                showDialog(DialogDescriptor.OK_OPTION)) {
+            return p.provider;
+        }
+        return null;
+    }
+
+    public PlatformAndDeviceProvider getProvider() {
+        return provider;
+    }
+
+    public ValidationGroup getValidationGroup() {
+        return pnl.getValidationGroup();
+    }
+
+    public void actionPerformed(ActionEvent e) {
         NbPreferences.forModule(BadPlatformOrDevicePanel.class).putBoolean(
-                PREFS_KEY_DONT_SHOW_DLG, jCheckBox1.isSelected());
-    }//GEN-LAST:event_dontShowDialogChecked
+                PREFS_KEY_DONT_SHOW_DLG, box.isSelected());
+    }
 
     public static boolean isShowBrokenPlatformDialog() {
         return Boolean.getBoolean ("JCProjectTest") ? false :
             NbPreferences.forModule(BadPlatformOrDevicePanel.class).getBoolean(
                 PREFS_KEY_DONT_SHOW_DLG, true);
     }
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JLabel jLabel1;
-    private org.netbeans.modules.javacard.api.PlatformAndDevicePanel selPanel;
-    // End of variables declaration//GEN-END:variables
 
-    public void resultChanged(LookupEvent arg0) {
-        JavacardPlatform platform = selPanel.getLookup().lookup(JavacardPlatform.class);
-        Card card = selPanel.getLookup().lookup (Card.class);
-        if (platform == null || !platform.isValid()) {
-            setProblem(NbBundle.getMessage (BadPlatformOrDevicePanel.class,
-                    "MSG_BAD_PLATFORM")); //NOI18N
-            return;
-        }
-        if (card == null || !card.isValid()) {
-            setProblem(NbBundle.getMessage(BadPlatformOrDevicePanel.class,
-                    "MSG_BAD_CARD")); //NOI18N
-            return;
-        }
-        CardInfo info = card.getCapability(CardInfo.class);
-        String id = info == null ? card.toString() : info.getSystemId();
-        props.setActiveDevice(id);
-
-        String pName = platform.getSystemName();
-        if (pName != null) {
-            props.setPlatformName(pName);
-        }
-
-        setProblem (null);
-    }
-
-    public void setProblemHandler(ProblemHandler handler) {
-        this.handler = handler;
-    }
-
-    private final ChangeSupport supp = new ChangeSupport (this);
-    public void addChangeListener(ChangeListener cl) {
-        supp.addChangeListener(cl);
-    }
-
-    public void removeChangeListener(ChangeListener cl) {
-        supp.removeChangeListener(cl);
-    }
-
-    private void setProblem(String problem) {
-        this.problem = problem;
-        if (handler != null) {
-            handler.setProblem(problem);
-        }
-        supp.fireChange();
-    }
-
-    public String getProblem() {
-        return problem;
-    }
 }

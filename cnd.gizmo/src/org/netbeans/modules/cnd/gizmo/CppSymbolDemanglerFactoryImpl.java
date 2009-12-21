@@ -39,8 +39,17 @@
 package org.netbeans.modules.cnd.gizmo;
 
 import java.util.Map;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
+import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -51,10 +60,48 @@ import org.openide.util.lookup.ServiceProvider;
 public final class CppSymbolDemanglerFactoryImpl implements CppSymbolDemanglerFactory {
 
     public CppSymbolDemangler getForCurrentSession(Map<String, String> serviceInfo) {
-        return new CppSymbolDemanglerImpl(serviceInfo);
+        if (serviceInfo == null ||
+                serviceInfo.get(GizmoServiceInfo.CPP_COMPILER) == null ||
+                serviceInfo.get(GizmoServiceInfo.CPP_COMPILER_BIN_PATH) == null) {
+
+            Project project = org.netbeans.api.project.ui.OpenProjects.getDefault().getMainProject();
+
+            if (project == null) {
+                Project[] projects = org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
+                if (projects.length == 1) {
+                    project = projects[0];
+                }
+            }
+
+            NativeProject nPrj = (project == null) ? null
+                    : project.getLookup().lookup(NativeProject.class);
+
+            MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+
+            if (nPrj == null || conf == null) {
+                return new CppSymbolDemanglerImpl(ExecutionEnvironmentFactory.getLocal(), CPPCompiler.GNU, null);
+            }
+
+            CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+
+            ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
+            CPPCompiler cppCompiler;
+            if (compilerSet.getCompilerFlavor().isGnuCompiler()) {
+                cppCompiler = CPPCompiler.GNU;
+            } else {
+                cppCompiler = CPPCompiler.SS;
+            }
+            String compilerBinDir = compilerSet.getDirectory();
+            return new CppSymbolDemanglerImpl(execEnv, cppCompiler, compilerBinDir);
+        } else {
+            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(serviceInfo.get(ServiceInfoDataStorage.EXECUTION_ENV_KEY));
+            CPPCompiler cppCompiler = CppSymbolDemanglerFactory.CPPCompiler.valueOf(serviceInfo.get(GizmoServiceInfo.CPP_COMPILER));
+            String compilerBinDir = serviceInfo.get(GizmoServiceInfo.CPP_COMPILER_BIN_PATH);
+            return new CppSymbolDemanglerImpl(execEnv, cppCompiler, compilerBinDir);
+        }
     }
 
     public CppSymbolDemangler getDemanglerFor(CPPCompiler cppCompiler) {
-        return new CppSymbolDemanglerImpl(cppCompiler);
+        return new CppSymbolDemanglerImpl(ExecutionEnvironmentFactory.getLocal(), cppCompiler, null);
     }
 }

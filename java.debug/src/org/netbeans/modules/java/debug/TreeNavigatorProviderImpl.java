@@ -40,11 +40,17 @@
  */
 package org.netbeans.modules.java.debug;
 
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ActionMap;
@@ -57,6 +63,7 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.cookies.EditorCookie;
@@ -131,10 +138,12 @@ public class TreeNavigatorProviderImpl implements NavigatorPanel {
 
     public void panelActivated(Lookup context) {
         TreeNavigatorJavaSourceFactory.getInstance().setLookup(context, new TaskImpl());
+        TreeNavigatorJavaSourceFactory.CaretAwareFactoryImpl.getInstance().setTask(new SelectingTaskImpl());
     }
 
     public void panelDeactivated() {
         TreeNavigatorJavaSourceFactory.getInstance().setLookup(Lookup.EMPTY, null);
+        TreeNavigatorJavaSourceFactory.CaretAwareFactoryImpl.getInstance().setTask(null);
     }
 
     static OffsetsBag getBag(Document doc) {
@@ -203,4 +212,83 @@ public class TreeNavigatorProviderImpl implements NavigatorPanel {
         
     }
     
+    private final class SelectingTaskImpl implements CancellableTask<CompilationInfo> {
+
+        public void cancel() {
+        }
+
+        public void run(CompilationInfo info) throws PropertyVetoException {
+            int pos = CaretAwareJavaSourceTaskFactory.getLastPosition(info.getFileObject());
+            TreePath tp = plainPathFor(info, pos);
+            Node toSelect = tp != null ? TreeNode.findNode(manager.getRootContext(), tp) : null;
+
+            if (toSelect != null) {
+                manager.setExploredContext(toSelect);
+                manager.setSelectedNodes(new Node[] {toSelect});
+            } else {
+                manager.setSelectedNodes(new Node[] {});
+            }
+        }
+
+    }
+
+    private static TreePath plainPathFor(final CompilationInfo info, int pos) {
+        //TODO: TreeUtilities.pathFor handles error trees in a strange way - not sure if intentional, but unusable for the tree navigator
+        class Result extends Error {
+            TreePath path;
+            Result(TreePath path) {
+                this.path = path;
+            }
+        }
+
+        class PathFinder extends TreePathScanner<Void,Void> {
+            private int pos;
+            private SourcePositions sourcePositions;
+
+            private PathFinder(int pos, SourcePositions sourcePositions) {
+                this.pos = pos;
+                this.sourcePositions = sourcePositions;
+            }
+
+            @Override
+            public Void scan(Tree tree, Void p) {
+                if (tree != null) {
+                    if (sourcePositions.getStartPosition(getCurrentPath().getCompilationUnit(), tree) < pos && sourcePositions.getEndPosition(getCurrentPath().getCompilationUnit(), tree) >= pos) {
+                        super.scan(tree, p);
+                        throw new Result(new TreePath(getCurrentPath(), tree));
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public Void visitVariable(VariableTree node, Void p) {
+                int[] span = info.getTreeUtilities().findNameSpan(node);
+
+                if (span != null && span[0] <= pos && pos < span[1]) {
+                    throw new Result(getCurrentPath());
+                }
+
+                return super.visitVariable(node, p);
+            }
+
+            @Override
+            public Void visitMethod(MethodTree node, Void p) {
+                int[] span = info.getTreeUtilities().findNameSpan(node);
+
+                if (span != null && span[0] <= pos && pos < span[1]) {
+                    throw new Result(getCurrentPath());
+                }
+
+                return super.visitMethod(node, p);
+            }
+        }
+
+        try {
+            new PathFinder(pos, info.getTrees().getSourcePositions()).scan(new TreePath(info.getCompilationUnit()), null);
+            return null;
+        } catch (Result result) {
+            return result.path;
+        }
+    }
 }

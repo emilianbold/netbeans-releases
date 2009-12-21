@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.trace.TraceDwarf;
 
 /**
@@ -83,17 +84,23 @@ public class ElfReader extends ByteStreamReader {
         
         sections = new ElfSection[sectionHeadersTable.length];
         
-        // Before reading all sections need to read ElfStringTable section.
-        int elfStringTableIdx = elfHeader.getELFStringTableSectionIndex();
         if (!isCoffFormat && !isMachoFormat) {
+            // Before reading all sections need to read ElfStringTable section.
+            int elfStringTableIdx = elfHeader.getELFStringTableSectionIndex();
             stringTableSection = new StringTableSection(this, elfStringTableIdx);
+            sections[elfStringTableIdx] = stringTableSection;
         }
-        sections[elfStringTableIdx] = stringTableSection;
         
         // Initialize Name-To-Idx map
-        
         for (int i = 0; i < sections.length; i++) {
             sectionsMap.put(getSectionName(i), i);
+        }
+        if (isCoffFormat || isMachoFormat) {
+            // string table already read
+            Integer idx = sectionsMap.get(SECTIONS.DEBUG_STR);
+            if (idx != null) {
+                sections[idx] = stringTableSection;
+            }
         }
     }
     
@@ -195,12 +202,6 @@ public class ElfReader extends ByteStreamReader {
         int symbolTableEntries = readInt();
         long stringTableOffset = symbolTableOffset+symbolTableEntries*18;
         int stringTableLength = (int)(shiftIvArchive + lengthIvArchive - stringTableOffset);
-        long pointer = getFilePointer();
-        seek(stringTableOffset);
-        byte[] strings = new byte[stringTableLength];
-        read(strings);
-        stringTableSection = new StringTableSection(this, strings);
-        seek(pointer);
         //
         int optionalHeaderSize = readShort();
         // flags
@@ -209,6 +210,13 @@ public class ElfReader extends ByteStreamReader {
             skipBytes(optionalHeaderSize);
         }
         elfHeader.e_shoff = getFilePointer();
+        // read string table
+        long pointer = getFilePointer();
+        seek(stringTableOffset);
+        byte[] strings = new byte[stringTableLength];
+        read(strings);
+        stringTableSection = new StringTableSection(this, strings);
+        seek(pointer);
     }
     
     private boolean readMachoHeader() throws IOException{
@@ -441,16 +449,6 @@ public class ElfReader extends ByteStreamReader {
         /*int mumberLineNumbers =*/ readShort();
         h.sh_flags = readInt();
         return h;
-    }
-    
-    StringTableSection readStringTableSection(String sectionName) throws IOException {
-        Integer sectionIdx = sectionsMap.get(sectionName);
-        return (sectionIdx == null) ? null : readStringTableSection(sectionIdx);
-    }
-    
-    StringTableSection readStringTableSection(int sectionIdx) throws IOException {
-        sections[sectionIdx] = new StringTableSection(this, sectionIdx);
-        return (StringTableSection)sections[sectionIdx];
     }
     
     public ElfSection getSection(String sectionName) {

@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.32.1
+#Signature file v4.1
+#Version 1.35.0
 
 CLSS public java.beans.FeatureDescriptor
 cons public FeatureDescriptor()
@@ -199,6 +199,8 @@ fld protected final static java.lang.String DATATYPE = "Datatype"
 fld protected final static java.lang.String DATATYPEDESC = "DatatypeDescription"
 fld protected final static java.lang.String DIGITS = "DecimalDigits"
 fld protected final static java.lang.String DIGITSDESC = "DecimalDigitsDescription"
+fld protected final static java.lang.String DISPLAYNAME = "DisplayName"
+fld protected final static java.lang.String DISPLAYNAMEDESC = "DisplayNameDescription"
 fld protected final static java.lang.String DRIVER = "DriverURL"
 fld protected final static java.lang.String DRIVERDESC = "DriverURLDescription"
 fld protected final static java.lang.String FKPOSITION = "PositionInFK"

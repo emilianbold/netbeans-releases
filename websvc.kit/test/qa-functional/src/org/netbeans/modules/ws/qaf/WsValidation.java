@@ -46,10 +46,7 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -480,9 +477,7 @@ public class WsValidation extends WebServicesTestBase {
         createHandler(getHandlersPackage(), "WsMsgHandler2", HandlerType.MESSAGE); //NOI18N
         createHandler(getHandlersPackage(), "WsLogHandler1", HandlerType.LOGICAL); //NOI18N
         createHandler(getHandlersPackage(), "WsLogHandler2", HandlerType.LOGICAL); //NOI18N
-        Sources s = getProject().getLookup().lookup(Sources.class);
-        SourceGroup[] sg = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        FileObject fo = sg[0].getRootFolder().getFileObject(getWsPackage().replace('.', '/')); //NOI18N
+        FileObject fo = getProjectSourceRoot().getFileObject(getWsPackage().replace('.', '/')); //NOI18N
         String wsName = getWsName();
         if (!getProjectType().isAntBasedProject()) {
             wsName += "Service"; //NOI18N

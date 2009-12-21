@@ -131,11 +131,13 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             assert model != null;
             try {
                 model.sync();
-                model.refresh();
+                // model.refresh();
             } catch (IOException ex) {
                 Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Errror while syncing pom model.", ex);
             }
+
             List<ErrorDescription> err = new ArrayList<ErrorDescription>();
+
             if (!model.getState().equals(Model.State.VALID)) {
                 Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Pom model document is not valid, is " + model.getState());
                 return err;
@@ -144,18 +146,29 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Pom model root element missing");
                 return err;
             }
-            Lookup lkp = Lookups.forPath("org-netbeans-modules-maven-hints"); //NOI18N
-            Lookup.Result<POMErrorFixProvider> res = lkp.lookupResult(POMErrorFixProvider.class);
-            for (POMErrorFixProvider prov : res.allInstances()) {
-                if (!prov.getConfiguration().isEnabled(prov.getConfiguration().getPreferences())) {
-                    continue;
-                }
-               List<ErrorDescription> lst = prov.getErrorsForDocument(model, project);
-               if (lst != null) {
-                   err.addAll(lst);
-               }
+            
+            boolean isInTransaction = model.isIntransaction();
+            if (! isInTransaction) {
+                if (! model.startTransaction()) return err;
             }
-            return err;
+            try {
+                Lookup lkp = Lookups.forPath("org-netbeans-modules-maven-hints"); //NOI18N
+                Lookup.Result<POMErrorFixProvider> res = lkp.lookupResult(POMErrorFixProvider.class);
+                for (POMErrorFixProvider prov : res.allInstances()) {
+                    if (!prov.getConfiguration().isEnabled(prov.getConfiguration().getPreferences())) {
+                        continue;
+                    }
+                    List<ErrorDescription> lst = prov.getErrorsForDocument(model, project);
+                    if (lst != null) {
+                        err.addAll(lst);
+                    }
+                }
+                return err;
+            } finally {
+                if ((! isInTransaction) && model.isIntransaction()) {
+                    model.endTransaction();
+                }
+            }
         }
 
         private void initializeModel() {

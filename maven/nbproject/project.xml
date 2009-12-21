@@ -353,7 +353,15 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.22</specification-version>
+                        <specification-version>8.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.lookup</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -382,6 +390,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.nbheaven.sqe.core.maven</friend>
                 <friend>org.netbeans.modules.hudson.maven</friend>
+                <friend>org.netbeans.modules.gwt4nb</friend>
                 <friend>org.netbeans.modules.jbi.fuji.support</friend>
                 <friend>org.netbeans.modules.kenai.maven</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>

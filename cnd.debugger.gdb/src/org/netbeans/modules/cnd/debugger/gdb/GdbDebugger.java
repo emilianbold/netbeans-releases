@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -645,9 +646,9 @@ public class GdbDebugger implements PropertyChangeListener {
         String csdirs = cs.getCompilerSetManager().getCompilerSet(csname).getDirectory();
 
         if (cs.getCompilerSetManager().getCompilerSet(csname).getCompilerFlavor().isMinGWCompiler()) {
-            String msysBase = CompilerSetUtils.getMSysBase();
+            String msysBase = CompilerSetUtils.getCommandFolder(null);
             if (msysBase != null && msysBase.length() > 0) {
-                csdirs += File.pathSeparator + msysBase + "/bin"; // NOI18N;
+                csdirs += File.pathSeparator + msysBase;
             }
         }
 
@@ -718,7 +719,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     // See IZ 147931 (On Mac sometimes response is in wrong format)
                     if (results.startsWith("threadno")) { // NOI18N
                         for (String line : results.split("threadn")) { //NOI18N
-                            Map<String, String> map = GdbUtils.createMapFromString(line);
+                            Map<String, String> map = createMapFromString(line);
                             if (!map.isEmpty()) {
                                 list.add(map.get("o") + " " + map.get("target_tid")); // NOI18N
                             }
@@ -930,7 +931,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
         while ((line = info.substring(start, next > 0 ? next : info.length())) != null) {
             if (line.contains(path)) {
-                return parseMacDylibAddress(line);
+                return parseMacDylibAddress(line, getCharSetEncoding());
             }
             start = next + 12;
             next = info.indexOf(",shlib-info=", start); // NOI18N
@@ -939,10 +940,10 @@ public class GdbDebugger implements PropertyChangeListener {
 
     }
 
-    private static String parseMacDylibAddress(String line) {
+    private static String parseMacDylibAddress(String line, String encoding) {
         int pos1 = GdbUtils.findMatchingCurly(line, 0);
         if (pos1 != -1) {
-            Map<String, String> map = GdbUtils.createMapFromString(line.substring(1, pos1));
+            Map<String, String> map = GdbUtils.createMapFromString(line.substring(1, pos1), encoding);
             if (map.containsKey("loaded_addr")) { // NOI18N
                 return map.get("loaded_addr"); // NOI18N
             }
@@ -1075,11 +1076,11 @@ public class GdbDebugger implements PropertyChangeListener {
         if (msg.startsWith(DONE_PREFIX)) {
             if (msg.startsWith("^done,bkpt=")) { // NOI18N (-break-insert)
                 msg = msg.substring(12, msg.length() - 1);
-                Map<String, String> map = GdbUtils.createMapFromString(msg);
+                Map<String, String> map = createMapFromString(msg);
                 validateBreakpoint(token, map);
             } else if (msg.startsWith("^done,stack=")) { // NOI18N (-stack-list-frames)
                 if (state == State.STOPPED) { // Ignore data if we've resumed running
-                    stackUpdate(GdbUtils.createListFromString((msg.substring(13, msg.length() - 1))));
+                    stackUpdate(createListFromString((msg.substring(13, msg.length() - 1))));
                 }
             } else if (msg.startsWith("^done,locals=")) { // NOI18N (-stack-list-locals)
                 if (state == State.STOPPED) { // Ignore data if we've resumed running
@@ -1222,7 +1223,7 @@ public class GdbDebugger implements PropertyChangeListener {
         if (msg.startsWith("*stopped")) { // NOI18N
             Map<String, String> map;
             if (msg.length() > 9) {
-                map = GdbUtils.createMapFromString(msg.substring(9));
+                map = createMapFromString(msg.substring(9));
             } else {
                 map = new HashMap<String, String>();
             }
@@ -1361,10 +1362,10 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     private void addArgsToLocalVariables(String info) {
-        List<String> frames = GdbUtils.createListFromString(info);
+        List<String> frames = createListFromString(info);
         GdbCallStackFrame curFrame = getCurrentCallStackFrame();
         for (String frame : frames) {
-            Map<String, String> frameMap = GdbUtils.createMapFromString(frame);
+            Map<String, String> frameMap = createMapFromString(frame);
             int level;
             try {
                 level = Integer.parseInt(frameMap.get("level")); // NOI18N
@@ -1679,7 +1680,7 @@ public class GdbDebugger implements PropertyChangeListener {
         if (state == State.STARTING) {
             String frame = map.get("frame"); // NOI18N
             if (frame != null) {
-                map = GdbUtils.createMapFromString(frame);
+                map = createMapFromString(frame);
                 updateLastStop(map);
             }
             setLoading();
@@ -1760,7 +1761,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
                 String frame = map.get("frame"); // NOI18N
                 if (frame != null) {
-                    map = GdbUtils.createMapFromString(frame);
+                    map = createMapFromString(frame);
                     updateLastStop(map);
                 }
                 GdbTimer.getTimer("Startup").stop("Startup1"); // NOI18N
@@ -1773,7 +1774,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 setStopped();
                 String frame = map.get("frame"); // NOI18N
                 if (frame != null) {
-                    map = GdbUtils.createMapFromString(frame);
+                    map = createMapFromString(frame);
                     updateLastStop(map);
                 }
                 if (GdbTimer.getTimer("Step").getSkipCount() == 0) { // NOI18N
@@ -1880,7 +1881,7 @@ public class GdbDebugger implements PropertyChangeListener {
             int next;
 
             while ((next = info.indexOf("shlib-info=", start + 1)) > 0) { // NOI18N
-                map = GdbUtils.createMapFromString(info.substring(start + 12, next - 2));
+                map = createMapFromString(info.substring(start + 12, next - 2));
                 path = map.get("path"); // NOI18N
                 addr = map.get("dyld-addr"); // NOI18N
                 if (path != null && addr != null) {
@@ -1888,7 +1889,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
                 start = next;
             }
-            map = GdbUtils.createMapFromString(info.substring(start + 12, info.length() - 1));
+            map = createMapFromString(info.substring(start + 12, info.length() - 1));
             path = map.get("path"); // NOI18N
             addr = map.get("dyld-addr"); // NOI18N
             if (path != null && addr != null) {
@@ -1967,8 +1968,8 @@ public class GdbDebugger implements PropertyChangeListener {
         boolean valid = true;
         boolean checkNextFrame = false;
 
-        for (String frame : GdbUtils.createListFromString(msg)) {
-            Map<String, String> map = GdbUtils.createMapFromString(frame);
+        for (String frame : createListFromString(msg)) {
+            Map<String, String> map = createMapFromString(frame);
             String func = map.get("func"); // NOI18N
             if (func != null && func.equals("dlopen") && !checkNextFrame) { // NOI18N
                 if (platform == PlatformTypes.PLATFORM_MACOSX) {
@@ -2249,7 +2250,7 @@ public class GdbDebugger implements PropertyChangeListener {
 
             for (int i = 0; i < stack.size(); i++) {
                 String line = stack.get(i);
-                Map<String, String> map = GdbUtils.createMapFromString(line);
+                Map<String, String> map = createMapFromString(line);
 
                 String func = map.get("func"); // NOI18N
                 String file = map.get("file"); // NOI18N
@@ -2792,5 +2793,25 @@ public class GdbDebugger implements PropertyChangeListener {
         if (isUnitTest() && tlog.isLoggable(Level.WARNING)) {
             System.out.println("    " + msg); // NOI18N
         }
+    }
+
+    private final static String remoteCharSet = System.getProperty("cnd.remote.charset", "UTF-8"); // NOI18N
+    public String getCharSetEncoding() {
+        String encoding;
+        if (execEnv.isRemote()) {
+            encoding = remoteCharSet;
+        } else {
+            // TODO: use Charset.defaultCharset().name(), but now leave as is...
+            encoding = System.getProperty("sun.jnu.encoding");
+        }
+        return encoding;
+    }
+
+    public Map<String, String> createMapFromString(String info) {
+        return GdbUtils.createMapFromString(info, getCharSetEncoding());
+    }
+
+    public List<String> createListFromString(String info) {
+        return GdbUtils.createListFromString(info, getCharSetEncoding());
     }
 }

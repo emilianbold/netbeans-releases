@@ -267,6 +267,8 @@ public class ProjectActionSupport {
             list.add(sa);
             list.add(ra);
             additional = BuildActionsProvider.getDefault().getActions(name, paes);
+            // TODO: actions should have acces to output writer. Action should listen output writer.
+            // Provide parameter outputListener for DefaultProjectActionHandler.ProcessChangeListener
             list.addAll(additional);
             InputOutput tab;
             if (reuse) {

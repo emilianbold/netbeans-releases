@@ -216,9 +216,7 @@ final class PaletteSwitch implements Runnable, LookupListener {
         return lkp.lookup( PaletteController.class );
     }
     
-    private void showHidePaletteTopComponent( PaletteController prevPalette, PaletteController newPalette ) {
-        if( prevPalette == newPalette && null != newPalette )
-            return;
+    private void showHidePaletteTopComponent(PaletteController newPalette, boolean isNewVisible) {
         PaletteController oldPalette = currentPalette;
         currentPalette = newPalette;
         WindowManager wm = WindowManager.getDefault();
@@ -230,7 +228,7 @@ final class PaletteSwitch implements Runnable, LookupListener {
             palette = PaletteTopComponent.getDefault();
         }
         
-        if( PaletteVisibility.isVisible(newPalette) || PaletteVisibility.isVisible(null) ) {
+        if (isNewVisible) {
             if( !palette.isOpened() )
                 palette.open();
             PaletteVisibility.setVisible(newPalette, true);
@@ -345,10 +343,14 @@ final class PaletteSwitch implements Runnable, LookupListener {
                 palette = availablePalettes.get( 0 );
         }
         final PaletteController newPalette = palette;
+        if (existingPalette == newPalette && null != newPalette) {
+            return;
+        }
+        final boolean isNewVisible = PaletteVisibility.isVisible(newPalette) || PaletteVisibility.isVisible(null);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if( currentToken == token )
-                    showHidePaletteTopComponent(existingPalette, newPalette);
+                    showHidePaletteTopComponent(newPalette, isNewVisible);
             }
         });
     }

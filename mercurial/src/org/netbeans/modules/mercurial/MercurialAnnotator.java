@@ -60,10 +60,10 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.lang.reflect.Field;
 import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
+import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffChangesAction;
@@ -78,8 +78,11 @@ import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
 import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.mercurial.ui.update.UpdateAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.WeakSet;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Responsible for coloring file labels and file icons in the IDE and providing IDE with menu items.
@@ -92,6 +95,7 @@ public class MercurialAnnotator extends VCSAnnotator {
     private static MessageFormat uptodateFormat = getFormat("uptodateFormat");  // NOI18N
     private static MessageFormat newLocallyFormat = getFormat("newLocallyFormat");  // NOI18N
     private static MessageFormat addedLocallyFormat = getFormat("addedLocallyFormat"); // NOI18N
+    private static MessageFormat copiedLocallyFormat = getFormat("copiedLocallyFormat"); // NOI18N
     private static MessageFormat modifiedLocallyFormat = getFormat("modifiedLocallyFormat"); // NOI18N
     private static MessageFormat removedLocallyFormat = getFormat("removedLocallyFormat"); // NOI18N
     private static MessageFormat deletedLocallyFormat = getFormat("deletedLocallyFormat"); // NOI18N
@@ -100,6 +104,7 @@ public class MercurialAnnotator extends VCSAnnotator {
 
     private static MessageFormat newLocallyTooltipFormat = getFormat("newLocallyTooltipFormat");  // NOI18N
     private static MessageFormat addedLocallyTooltipFormat = getFormat("addedLocallyTooltipFormat"); // NOI18N
+    private static MessageFormat copiedLocallyTooltipFormat = getFormat("copiedLocallyTooltipFormat"); // NOI18N
     private static MessageFormat modifiedLocallyTooltipFormat = getFormat("modifiedLocallyTooltipFormat"); // NOI18N
     private static MessageFormat removedLocallyTooltipFormat = getFormat("removedLocallyTooltipFormat"); // NOI18N
     private static MessageFormat deletedLocallyTooltipFormat = getFormat("deletedLocallyTooltipFormat"); // NOI18N
@@ -137,12 +142,6 @@ public class MercurialAnnotator extends VCSAnnotator {
     private FileStatusCache cache;
     private MessageFormat format;
     private String emptyFormat;
-    private File folderToScan;
-    private ConcurrentLinkedQueue<File> dirsToScan = new ConcurrentLinkedQueue<File>();
-    private Map<File, FileInformation> modifiedFiles = null;
-    private RequestProcessor.Task scanTask;
-    private final RequestProcessor.Task modifiedFilesRPScanTask;
-    private final ModifiedFilesScanTask modifiedFilesScanTask;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private static final RequestProcessor rp = new RequestProcessor("MercurialAnnotateScan", 1, true); // NOI18N
 
@@ -157,8 +156,6 @@ public class MercurialAnnotator extends VCSAnnotator {
 
     public MercurialAnnotator() {
         cache = Mercurial.getInstance().getFileStatusCache();
-        scanTask = rp.create(new ScanTask());
-        modifiedFilesRPScanTask = rp.create(modifiedFilesScanTask = new ModifiedFilesScanTask());
         initDefaults();
     }
     
@@ -200,16 +197,22 @@ public class MercurialAnnotator extends VCSAnnotator {
      *
      * @param name name of the color to change. Can be one of:
      * newLocally, addedLocally, modifiedLocally, removedLocally, deletedLocally, newInRepository, modifiedInRepository,
-     * removedInRepository, conflict, mergeable, excluded.
+     * removedInRepository, conflict, mergeable, excluded, copiedLocally.
      * @param colorString new color in the format: 4455AA (RGB hexadecimal)
      */
     private void setAnnotationColor(String name, String colorString) {
         try {
+            if (!colorString.startsWith("#")) {                         //NOI18N
+                colorString = "#" + colorString;                        //NOI18N
+            }
             Field field = MercurialAnnotator.class.getDeclaredField(name + "Format");  // NOI18N
             MessageFormat format = new MessageFormat("<font color=\"" + colorString + "\">{0}</font><font color=\"#999999\">{1}</font>");  // NOI18N
             field.set(null, format);
+            field = MercurialAnnotator.class.getDeclaredField(name + "TooltipFormat");  // NOI18N
+            format = new MessageFormat("<font color=\"" + colorString + "\">{0}</font>");  // NOI18N
+            field.set(null, format);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid color name");  // NOI18N
+            Mercurial.LOG.log(Level.WARNING, "Invalid color name {0}", name); //NOI18N
         }
     }
 
@@ -225,15 +228,6 @@ public class MercurialAnnotator extends VCSAnnotator {
                 
         for (final File file : context.getRootFiles()) {
             FileInformation info = cache.getCachedStatus(file);
-            if (info == null) {
-                File parentFile = file.getParentFile();
-                Mercurial.LOG.log(Level.FINE, "null cached status for: {0} {1} {2}", new Object[] {file, folderToScan, parentFile});
-                if (!Mercurial.getInstance().isRefreshScheduled(parentFile)) {
-                    folderToScan = parentFile;
-                    reScheduleScan(1000);
-                }
-                info = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
-            }
             int status = info.getStatus();
             if ((status & STATUS_IS_IMPORTANT) == 0) continue;
             
@@ -277,23 +271,16 @@ public class MercurialAnnotator extends VCSAnnotator {
 
     private Image annotateFileIcon(VCSContext context, Image icon) throws IllegalArgumentException {
         FileInformation mostImportantInfo = null;
+        File mostImportantFile = null;
         for (final File file : context.getRootFiles()) {
             FileInformation info = cache.getCachedStatus(file);
-            if (info == null) {
-                File parentFile = file.getParentFile();
-                Mercurial.LOG.log(Level.FINE, "null cached status for: {0} {1} {2}", new Object[]{file, folderToScan, parentFile});
-                if (!Mercurial.getInstance().isRefreshScheduled(parentFile)) {
-                    folderToScan = parentFile;
-                    reScheduleScan(1000);
-                }
-                info = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
-            }
             int status = info.getStatus();
             if ((status & STATUS_IS_IMPORTANT) == 0) {
                 continue;
             }
             if (isMoreImportant(info, mostImportantInfo)) {
                 mostImportantInfo = info;
+                mostImportantFile = file;
             }
         }
         if(mostImportantInfo == null) return null; 
@@ -308,7 +295,12 @@ public class MercurialAnnotator extends VCSAnnotator {
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
             statusText = newLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
-            statusText = addedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+            FileStatus fileStatus = mostImportantInfo.getStatus(mostImportantFile);
+            if (fileStatus != null && fileStatus.isCopied()) {
+                statusText = copiedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+            } else {
+                statusText = addedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+            }
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
             statusText = modifiedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_UPTODATE)) {
@@ -341,62 +333,18 @@ public class MercurialAnnotator extends VCSAnnotator {
         if (!isVersioned) {
             return null;
         }
-        if (!"false".equals(System.getProperty("mercurial.newGenerationCache", "true"))) { //NOI18N
-            Image badge = null;
-            if (cache.containsFileOfStatus(context, FileInformation.STATUS_VERSIONED_CONFLICT, true, true)) {
-                badge = ImageUtilities.assignToolTipToImage(
-                        ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
-            } else if (cache.containsFileOfStatus(context, FileInformation.STATUS_LOCAL_CHANGE, true, true)) {
-                badge = ImageUtilities.assignToolTipToImage(
-                        ImageUtilities.loadImage(badgeModified, true), toolTipModified);
-            }
-            if (badge != null) {
-                return ImageUtilities.mergeImages(icon, badge, 16, 9);
-            } else {
-                return icon;
-            }
-        } else {
-            IconSelector sc = new IconSelector(context.getRootFiles(), icon);
-            // return the icon as soon as possible and schedule a complete scan if needed
-            sc.scanFilesLazy();
-            return sc.getBadge();
+        Image badge = null;
+        if (cache.containsFileOfStatus(context, FileInformation.STATUS_VERSIONED_CONFLICT, true)) {
+            badge = ImageUtilities.assignToolTipToImage(
+                    ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
+        } else if (cache.containsFileOfStatus(context, FileInformation.STATUS_LOCAL_CHANGE, true)) {
+            badge = ImageUtilities.assignToolTipToImage(
+                    ImageUtilities.loadImage(badgeModified, true), toolTipModified);
         }
-    }
-
-    /**
-     * Returns modified files from tha cache.
-     * @param changed if not null, returns cached modified files and changed[0] denotes if the returned values are outdated.
-     * If null, performs the complete scan which may access I/O
-     * @return
-     */
-    private Map<File, FileInformation> getLocallyChangedFiles (final boolean changed[]) {
-        Map<File, FileInformation> map;
-        if (changed != null) {
-            // return cached values
-            map = cache.getAllModifiedFilesCached(changed);
+        if (badge != null) {
+            return ImageUtilities.mergeImages(icon, badge, 16, 9);
         } else {
-            // perform complete scan if needed
-            map = cache.getAllModifiedFiles();
-        }
-        Map<File, FileInformation> m = null;
-        synchronized (allModifiedFiles) {
-            for (Map<File, FileInformation> sm : allModifiedFiles) {
-                m = sm;
-                break;
-            }
-            if (modifiedFiles == null || map != m) {
-                allModifiedFiles.clear();
-                allModifiedFiles.add(map);
-                modifiedFiles = new HashMap<File, FileInformation>();
-                for (Iterator i = map.keySet().iterator(); i.hasNext();) {
-                    File file = (File) i.next();
-                    FileInformation info = map.get(file);
-                    if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
-                        modifiedFiles.put(file, info);
-                    }
-                }
-            }
-            return modifiedFiles;
+            return icon;
         }
     }
 
@@ -412,33 +360,29 @@ public class MercurialAnnotator extends VCSAnnotator {
 
         List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
-            actions.add(new CreateAction(loc.getString("CTL_MenuItem_Create"), ctx)); // NOI18N
+            actions.add(SystemAction.get(CreateAction.class));
             actions.add(null);
-            actions.add(new StatusAction(loc.getString("CTL_PopupMenuItem_Status"), ctx)); // NOI18N
-            actions.add(new DiffAction(loc.getString("CTL_PopupMenuItem_Diff"), ctx)); // NOI18N
-            actions.add(new UpdateAction(loc.getString("CTL_PopupMenuItem_Update"), ctx)); // NOI18N
-            actions.add(new CommitAction(loc.getString("CTL_PopupMenuItem_Commit"), ctx)); // NOI18N
+            actions.add(SystemAction.get(StatusAction.class));
+            actions.add(SystemAction.get(DiffAction.class));
+            actions.add(SystemAction.get(UpdateAction.class));
+            actions.add(SystemAction.get(CommitAction.class));
             actions.add(null);
-            actions.add(new ExportDiffAction(loc.getString("CTL_PopupMenuItem_ExportDiff"), ctx)); // NOI18N
-            actions.add(new ExportDiffChangesAction(loc.getString("CTL_PopupMenuItem_ExportDiffChanges"), ctx)); // NOI18N
-            actions.add(new ImportDiffAction(loc.getString("CTL_PopupMenuItem_ImportDiff"), ctx)); // NOI18N
+            actions.add(SystemAction.get(ExportDiffAction.class));
+            actions.add(SystemAction.get(ExportDiffChangesAction.class));
+            actions.add(SystemAction.get(ImportDiffAction.class));
 
             actions.add(null);
             if (!noneVersioned) {
-                String name = roots.size() == 1 ?
-                                NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_CloneLocal", roots.iterator().next().getName()) :
-                                NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_CloneRepository");
-                actions.add(new CloneAction(name, ctx));
+                actions.add(SystemAction.get(CloneAction.class));
             }
-            actions.add(new CloneExternalAction(loc.getString("CTL_PopupMenuItem_CloneOther"), ctx));     // NOI18N        
-            actions.add(new FetchAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_FetchLocal"), ctx)); // NOI18N
-            actions.add(new ShareMenu(ctx)); 
-            actions.add(new MergeMenu(ctx, false));                 
+            actions.add(SystemAction.get(CloneExternalAction.class));
+            actions.add(SystemAction.get(FetchAction.class));
+            actions.add(new ShareMenu(ctx));
+            actions.add(new MergeMenu(ctx, false));
             actions.add(null);
-            actions.add(new LogAction(loc.getString("CTL_PopupMenuItem_Log"), ctx)); // NOI18N
+            actions.add(SystemAction.get(LogAction.class));
             if (!onlyProjects  && !onlyFolders) {
-                AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), ctx); // NOI18N
-
+                AnnotateAction tempA = SystemAction.get(AnnotateAction.class);
                 if (tempA.visible(nodes)) {
                     actions.add(new ShowMenu(ctx, true, true));
                 } else {
@@ -448,47 +392,46 @@ public class MercurialAnnotator extends VCSAnnotator {
                 actions.add(new ShowMenu(ctx, false, false));
             }
             actions.add(null);
-            actions.add(new RevertModificationsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Revert"), ctx)); // NOI18N
-            actions.add(new RecoverMenu(ctx)); 
+            actions.add(SystemAction.get(RevertModificationsAction.class));
+            actions.add(new RecoverMenu(ctx));
             if (!onlyProjects && !onlyFolders) {
-                IgnoreAction tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Ignore"), ctx); // NOI18N
-                actions.add(tempIA);
+                actions.add(SystemAction.get(IgnoreAction.class));
             }
             actions.add(null);
-            actions.add(new PropertiesAction(loc.getString("CTL_PopupMenuItem_Properties"), ctx)); // NOI18N
+            actions.add(SystemAction.get(PropertiesAction.class));
         } else {
+            Lookup context = ctx.getElements();
             if (noneVersioned){
-                actions.add(new CreateAction(loc.getString("CTL_PopupMenuItem_Create"), ctx)); // NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(CreateAction.class).createContextAwareInstance(context), loc.getString("CTL_PopupMenuItem_Create"), context)); //NOI18N
             }else{
-                actions.add(new StatusAction(loc.getString("CTL_PopupMenuItem_Status"), ctx)); // NOI18N
-                actions.add(new DiffAction(loc.getString("CTL_PopupMenuItem_Diff"), ctx)); // NOI18N
-                actions.add(new CommitAction(loc.getString("CTL_PopupMenuItem_Commit"), ctx)); // NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context)); //NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(DiffAction.class), loc.getString("CTL_PopupMenuItem_Diff"), context)); //NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context)); //NOI18N
                 actions.add(null);
-                actions.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class,
-                        "CTL_PopupMenuItem_Resolve"), ctx)); // NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_Resolve"), context)); //NOI18N
                 if (!onlyProjects  && !onlyFolders) {
-                    actions.add(new ConflictResolvedAction(NbBundle.getMessage(MercurialAnnotator.class,
-                        "CTL_PopupMenuItem_MarkResolved"), ctx)); // NOI18N
+                    actions.add(SystemActionBridge.createAction(SystemAction.get(ConflictResolvedAction.class), loc.getString("CTL_PopupMenuItem_MarkResolved"), context)); // NOI18N
                 }
-                actions.add(null);                
+                actions.add(null);
 
                 if (!onlyProjects  && !onlyFolders) {
-                    AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), ctx);  // NOI18N
-                    if (tempA.visible(nodes)) {
-                        tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_HideAnnotations"), ctx);  // NOI18N
-                    }
-                    actions.add(tempA);
+                    actions.add(SystemActionBridge.createAction(SystemAction.get(AnnotateAction.class),
+                                                                ((AnnotateAction)SystemAction.get(AnnotateAction.class)).visible(nodes) ?
+                                                                        loc.getString("CTL_PopupMenuItem_HideAnnotations") : //NOI18N
+                                                                        loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context)); //NOI18N
                 }
-                actions.add(new LogAction(loc.getString("CTL_PopupMenuItem_Log"), ctx)); // NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(LogAction.class), loc.getString("CTL_PopupMenuItem_Log"), context)); //NOI18N
                 actions.add(null);
-                actions.add(new RevertModificationsAction(NbBundle.getMessage(MercurialAnnotator.class,
-                        "CTL_PopupMenuItem_Revert"), ctx)); // NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(RevertModificationsAction.class), loc.getString("CTL_PopupMenuItem_Revert"), context)); //NOI18N
                 if (!onlyProjects  && !onlyFolders) {
-                    IgnoreAction tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Ignore"), ctx);  // NOI18N
-                    actions.add(tempIA);
+                    actions.add(SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class), loc.getString("CTL_PopupMenuItem_Ignore"), context)); //NOI18N
+                    ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
+                    actions.add(SystemActionBridge.createAction(exclude, exclude.getActionStatus(null) == ExcludeFromCommitAction.INCLUDING
+                            ? loc.getString("CTL_PopupMenuItem_IncludeInCommit") //NOI18N
+                            : loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context)); //NOI18N
                 }
                 actions.add(null);
-                actions.add(new PropertiesAction(loc.getString("CTL_PopupMenuItem_Properties"), ctx)); // NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(PropertiesAction.class), loc.getString("CTL_PopupMenuItem_Properties"), context)); //NOI18N
             }
         }
         return actions.toArray(new Action[actions.size()]);
@@ -581,7 +524,12 @@ public class MercurialAnnotator extends VCSAnnotator {
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
             return newLocallyFormat.format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
-            return addedLocallyFormat.format(new Object [] { name, textAnnotation });
+            FileStatus fileStatus = mostImportantInfo.getStatus(mostImportantFile);
+            if (fileStatus != null && fileStatus.isCopied()) {
+                return copiedLocallyFormat.format(new Object [] { name, textAnnotation });
+            } else {
+                return addedLocallyFormat.format(new Object [] { name, textAnnotation });
+            }
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
             return modifiedLocallyFormat.format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_UPTODATE)) {
@@ -747,199 +695,5 @@ public class MercurialAnnotator extends VCSAnnotator {
             }
         }
         return true;
-    }
-
-    private void reScheduleScan(int delayMillis) {
-        if (!dirsToScan.contains(folderToScan)) {
-            if (!dirsToScan.offer(folderToScan)) {
-                Mercurial.LOG.log(Level.FINE, "reScheduleScan failed to add to dirsToScan queue: {0} ", folderToScan);
-            }
-        }
-        scanTask.schedule(delayMillis);
-    }
-
-    private class ScanTask implements Runnable {
-        public void run() {
-            Thread.interrupted();
-            File dirToScan = dirsToScan.poll();
-            if (dirToScan != null) {
-                cache.getScannedFiles(dirToScan, null);
-                dirToScan = dirsToScan.peek();
-                if (dirToScan != null) {
-                    scanTask.schedule(1000);
-                }
-            }
-        }
-    }
-
-    /**
-     * A task which performs a complete modified files scan, reevaluates all registered icon selectors
-     * and fires events if a wrong folder badge should be repainted
-     */
-    private class ModifiedFilesScanTask implements Runnable {
-        private final LinkedList<IconSelector> scanners;
-
-        public ModifiedFilesScanTask() {
-            scanners = new LinkedList<IconSelector>();
-        }
-
-        public void run() {
-            LinkedList<IconSelector> toScan;
-            synchronized (scanners) {
-                toScan = new LinkedList<IconSelector>(scanners);
-                scanners.clear();
-            }
-            // complete modified files scan
-            Map<File, FileInformation> modifiedFiles = getLocallyChangedFiles(null);
-            Set<File> filesToRefresh = new HashSet<File>();
-            for (IconSelector scanner : toScan) {
-                // all registered iconn selectors are re-evaluated
-                scanner.scanFiles(modifiedFiles);
-                filesToRefresh.addAll(scanner.getFilesToRefresh());
-            }
-            // fire an event if needed
-            if (filesToRefresh.size() > 0) {
-                support.firePropertyChange(PROP_ICON_BADGE_CHANGED, null, filesToRefresh);
-            }
-        }
-
-        /**
-         * Registers a given badge selector and reschedules this task
-         * @param scanner
-         */
-        public void schedule (IconSelector scanner) {
-            synchronized (scanners) {
-                scanners.add(scanner);
-                modifiedFilesRPScanTask.schedule(1000);
-            }
-        }
-    }
-
-    /**
-     * Evaluates root files' status and return their common badge. It tries to evaluate as fast as possible so it can return a fake badge.
-     *
-     * If cached all modified files, which it uses in the evaluation, are outdated, it schedules a complete scan of those files (which may access I/O)
-     * With these freshly scanned files it recalculates the icon and if that differs from the one returned after the first scan,
-     * the instance method getFilesToRefresh returns a non-empty set of responsible files which should be refreshed.
-     */
-    private final class IconSelector {
-        private Set<File> rootFiles;
-        private final Image initialIcon;
-        private Image badge = null;
-        private String badgePath;
-        private String originalBadgePath;
-        private final Set<File> responsibleFiles;
-
-        boolean allExcluded;
-        boolean modified;
-
-        public IconSelector (Set<File> rootFiles, Image initialIcon) {
-            this.rootFiles = rootFiles;
-            this.initialIcon = initialIcon;
-            this.responsibleFiles = new HashSet<File>();
-        }
-
-        void scanFilesLazy () {
-            boolean changed[] = new boolean[1];
-            Map<File, FileInformation> locallyChangedFiles = getLocallyChangedFiles(changed);
-            scanFiles(locallyChangedFiles);
-            if (changed[0]) {
-                // schedule a scan
-                scheduleDeepScan();
-            }
-        }
-
-        /**
-         * Computes the badge for given root files.
-         * Iterates through all root files and check if any of its children is by any chance included in a map of modified files.
-         * If it finds any such child, it sets the badge to modified (or conflicted if any of rootfile's children is in conflict).
-         * @param locallyChangedFiles
-         */
-        private void scanFiles(Map<File, FileInformation> locallyChangedFiles) {
-            allExcluded = true;
-            modified = false;
-            HgModuleConfig config = HgModuleConfig.getDefault();
-            responsibleFiles.clear();
-            for (File file : rootFiles) {
-                for (Map.Entry<File, FileInformation> entry : locallyChangedFiles.entrySet()) {
-                    File mf = entry.getKey();
-                    FileInformation info = entry.getValue();
-                    int status = info.getStatus();
-                    if (VersioningSupport.isFlat(file)) {
-                        if (mf.getParentFile().equals(file)) {
-                            if (info.isDirectory()) {
-                                continue;
-                            }
-                            if (checkConflictAndUpdateFlags(mf, config, status)) {
-                                return;
-                            }
-                        }
-                    } else {
-                        if (Utils.isAncestorOrEqual(file, mf)) {
-                            if ((status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY || status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) && file.equals(mf)) {
-                                continue;
-                            }
-                            if (checkConflictAndUpdateFlags(mf, config, status)) {
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (modified && !allExcluded) {
-                badge = ImageUtilities.assignToolTipToImage(
-                        ImageUtilities.loadImage(badgePath = badgeModified, true), toolTipModified);
-                badge = ImageUtilities.mergeImages(initialIcon, badge, 16, 9);
-            } else {
-                badge = null;
-                badgePath = "";
-                responsibleFiles.addAll(rootFiles);
-            }
-        }
-
-        /**
-         *
-         * @param modifiedFile
-         * @param config
-         * @param status
-         * @return true if the badge should be 'CONFLICT', false otherwise
-         */
-        private boolean checkConflictAndUpdateFlags (File modifiedFile, HgModuleConfig config, int status) {
-            responsibleFiles.add(modifiedFile);
-            // conflict - this status has the highest weight
-            if (status == FileInformation.STATUS_VERSIONED_CONFLICT) {
-                badge = ImageUtilities.assignToolTipToImage(
-                        ImageUtilities.loadImage(badgePath = badgeConflicts, true), toolTipConflict);
-                badge = ImageUtilities.mergeImages(initialIcon, badge, 16, 9);
-                return true;
-            }
-            modified = true;
-            allExcluded = allExcluded && config.isExcludedFromCommit(modifiedFile.getAbsolutePath());
-            return false;
-        }
-
-        Image getBadge () {
-            return badge;
-        }
-
-        private void scheduleDeepScan () {
-            originalBadgePath = badgePath; // save the badge path for later comparison
-            modifiedFilesScanTask.schedule(this);
-        }
-
-        /**
-         * Returns files which are responsible for a badge being changed and whose refresh should result in badge repainting.
-         * @return
-         */
-        public Set<File> getFilesToRefresh () {
-            assert originalBadgePath != null; // scan has been already run
-            if (!badgePath.equals(originalBadgePath)) {
-                // badge has changed
-                return responsibleFiles;
-            } else {
-                return Collections.EMPTY_SET;
-            }
-        }
     }
 }

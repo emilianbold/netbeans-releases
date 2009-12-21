@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.discovery.wizard;
 
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -50,7 +52,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.prefs.Preferences;
+import javax.swing.ComboBoxEditor;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -74,6 +80,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
@@ -82,16 +89,18 @@ import org.openide.util.Utilities;
  */
 public class ProviderControl {
     private ProviderProperty property;
+    private String propertyKey;
     private String description;
     private JLabel label;
-    private JTextField field;
+    private JComboBox field;
     private JButton button;
     private int chooserMode = 0;
     private JPanel panel;
     private ChangeListener listener;
     
-    public ProviderControl(ProviderProperty property, DiscoveryDescriptor wizardDescriptor,
+    public ProviderControl(String key, ProviderProperty property, DiscoveryDescriptor wizardDescriptor,
             JPanel panel, ChangeListener listener){
+        this.propertyKey = key;
         this.property = property;
         this.panel = panel;
         this.listener = listener;
@@ -100,7 +109,8 @@ public class ProviderControl {
         Mnemonics.setLocalizedText(label, property.getName());
         switch(property.getKind()) {
             case MakeLogFile:
-                field = new JTextField();
+                field = new JComboBox();
+                field.setEditable(true);
                 chooserMode = JFileChooser.FILES_ONLY;
                 initBuildOrRoot(wizardDescriptor);
                 button = new JButton();
@@ -115,7 +125,8 @@ public class ProviderControl {
                 addListeners();
                 break;
             case BinaryFile:
-                field = new JTextField();
+                field = new JComboBox();
+                field.setEditable(true);
                 chooserMode = JFileChooser.FILES_ONLY;
                 initBuildOrRoot(wizardDescriptor);
                 button = new JButton();
@@ -130,7 +141,8 @@ public class ProviderControl {
                 addListeners();
                 break;
             case Folder:
-                field = new JTextField();
+                field = new JComboBox();
+                field.setEditable(true);
                 chooserMode = JFileChooser.DIRECTORIES_ONLY;
                 initRoot(wizardDescriptor);
                 button = new JButton();
@@ -144,7 +156,8 @@ public class ProviderControl {
                 addListeners();
                 break;
             case BinaryFiles:
-                field = new JTextField();
+                field = new JComboBox();
+                field.setEditable(true);
                 chooserMode = JFileChooser.FILES_ONLY;
                 initArray();
                 button = new JButton();
@@ -170,15 +183,15 @@ public class ProviderControl {
             output = (String)val;
         }
         if (output != null && output.length() > 0){
-            initFields(output,field);
+            initFields(output);
             return;
         }
         output = wizardDescriptor.getBuildResult();
         if (output != null && output.length() > 0){
-            initFields(output,field);
+            initFields(output);
             return;
         }
-        initFields(wizardDescriptor.getRootFolder(),field);
+        initFields(wizardDescriptor.getRootFolder());
     }
     
     private void initRoot(DiscoveryDescriptor wizardDescriptor){
@@ -188,10 +201,10 @@ public class ProviderControl {
             output = (String)val;
         }
         if (output != null && output.length() > 0){
-            initFields(output,field);
+            initFields(output);
             return;
         }
-        initFields(wizardDescriptor.getRootFolder(),field);
+        initFields(wizardDescriptor.getRootFolder());
     }
     
     private void initArray(){
@@ -204,28 +217,57 @@ public class ProviderControl {
                 }
                 buf.append(s);
             }
-            field.setText(buf.toString());
+            initFields(buf.toString());
+        } else {
+            initFields(""); // NOI18N
         }
+    }
+
+    private void initComboBox(String root){
+        Vector<String> vector = new Vector<String>();
+        vector.add(root);
+        Preferences prefs = NbPreferences.forModule(ProviderControl.class);
+        String old = prefs.get(propertyKey, ""); // NOI18N
+        StringTokenizer st = new StringTokenizer(old, "\u0000"); // NOI18N
+        int history = 5;
+        while(st.hasMoreTokens()) {
+            String s = st.nextToken();
+            if (!vector.contains(s)) {
+                vector.add(s);
+                history--;
+                if (history == 0) {
+                    break;
+                }
+            }
+        }
+        DefaultComboBoxModel rootModel = new DefaultComboBoxModel(vector);
+        field.setModel(rootModel);
     }
     
     private void addListeners(){
-        DocumentListener documentListener = new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                update(e);
+        field.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                update();
             }
-            
-            public void removeUpdate(DocumentEvent e) {
-                update(e);
-            }
-            
-            public void changedUpdate(DocumentEvent e) {
-                update(e);
-            }
-        };
-        field.getDocument().addDocumentListener(documentListener);
+        });
+        ComboBoxEditor editor = field.getEditor();
+        Component component = editor.getEditorComponent();
+        if (component instanceof JTextField) {
+            ((JTextField)component).getDocument().addDocumentListener(new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) {
+                    update();
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    update();
+                }
+                public void changedUpdate(DocumentEvent e) {
+                    update();
+                }
+            });
+        }
     }
     
-    private void update(DocumentEvent e) {
+    private void update() {
         listener.stateChanged(null);
     }
     
@@ -234,23 +276,47 @@ public class ProviderControl {
             case MakeLogFile:
             case Folder:
             case BinaryFile:
-                property.setValue(field.getText());
+                property.setValue(getComboBoxText());
+                storeHistory();
                 break;
             case BinaryFiles:
-                String text = field.getText();
+                String text = getComboBoxText();
                 StringTokenizer st = new StringTokenizer(text,";"); // NOI18N
                 List<String> list = new ArrayList<String>();
                 while(st.hasMoreTokens()){
                     list.add(st.nextToken());
                 }
                 property.setValue(list.toArray(new String[list.size()]));
+                storeHistory();
                 break;
             default:
                 break;
         }
+
     }
+    
+    private void storeHistory() {
+        Vector<String> vector = new Vector<String>();
+        vector.add(getComboBoxText());
+        for(int i = 0; i < field.getModel().getSize(); i++){
+            String s = field.getModel().getElementAt(i).toString();
+            if (!vector.contains(s)) {
+                vector.add(s);
+            }
+        }
+        StringBuilder buf = new StringBuilder();
+        for(String s : vector) {
+            if (buf.length()>0) {
+                buf.append((char)0);
+            }
+            buf.append(s);
+        }
+        Preferences prefs = NbPreferences.forModule(ProviderControl.class);
+        prefs.put(propertyKey, buf.toString()); // NOI18N
+    }
+
     public boolean valid() {
-        String path = field.getText();
+        String path = getComboBoxText();
         File file;
         switch(property.getKind()) {
             case Folder:
@@ -273,7 +339,7 @@ public class ProviderControl {
                 }
                 break;
             case BinaryFiles:
-                String text = field.getText();
+                String text = getComboBoxText();
                 StringTokenizer st = new StringTokenizer(text,";"); // NOI18N
                 while(st.hasMoreTokens()){
                     path = st.nextToken();
@@ -311,18 +377,23 @@ public class ProviderControl {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new Insets(4, 4, 0, 0);
         panel.add(field, gridBagConstraints);
+        StringBuilder buf = new StringBuilder();
+        for(int i = 0; i < 35; i++) {
+            buf.append("w"); // NOI18N
+        }
+        field.setPrototypeDisplayValue(buf.toString());
         
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = GridBagConstraints.RELATIVE;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.anchor = GridBagConstraints.SOUTH;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         panel.add(button, gridBagConstraints);
     }
     
     private void additionalLibrariesButtonActionPerformed(ActionEvent evt) {
-        StringTokenizer tokenizer = new StringTokenizer(field.getText(), ";"); // NOI18N
+        StringTokenizer tokenizer = new StringTokenizer(getComboBoxText(), ";"); // NOI18N
         List<String> list = new ArrayList<String>();
         while (tokenizer.hasMoreTokens()) {
             list.add(tokenizer.nextToken());
@@ -332,7 +403,7 @@ public class ProviderControl {
                 getString("ADDITIONAL_LIBRARIES_TXT"));
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue()  == DialogDescriptor.OK_OPTION) {
-            Vector newList = libPanel.getListData();
+            Vector<String> newList = libPanel.getListData();
             StringBuilder includes = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
                 if (i > 0) {
@@ -340,7 +411,7 @@ public class ProviderControl {
                 }
                 includes.append(newList.elementAt(i));
             }
-            field.setText(includes.toString());
+            field.setSelectedItem(includes.toString());
         }
     }
     
@@ -374,7 +445,7 @@ public class ProviderControl {
                 getString("ROOT_DIR_BUTTON_TXT"), // NOI18N
                 chooserMode,
                 filters,
-                field.getText(),
+                getComboBoxText(),
                 false
                 );
         int ret = fileChooser.showOpenDialog(panel);
@@ -382,19 +453,32 @@ public class ProviderControl {
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        //path = FilePathAdaptor.normalize(path);
-        field.setText(path);
+        field.setSelectedItem(path);
+    }
+
+    private String getComboBoxText() {
+        ComboBoxEditor editor = field.getEditor();
+        if (editor != null) {
+            Component component = editor.getEditorComponent();
+            if (component instanceof JTextField) {
+                return ((JTextField)component).getText();
+            }
+        }
+        if (field.getSelectedItem() != null) {
+            return field.getSelectedItem().toString();
+        }
+        return null;
     }
     
-    private void initFields(String path, JTextField field) {
+    private void initFields(String path) {
         // Set default values
         if (path == null) {
-            field.setText(""); // NOI18N
+            initComboBox(""); // NOI18N
         } else {
             if (Utilities.isWindows()) {
                 path = path.replace('/', File.separatorChar);
             }
-            field.setText(path);
+            initComboBox(path);
         }
     }
     

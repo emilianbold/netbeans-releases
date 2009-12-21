@@ -88,8 +88,6 @@ public class DwarfLineInfoSection extends ElfSection {
     }
     
     private DwarfStatementList readStatementList(long offset) throws IOException {
-        long currPos = reader.getFilePointer();
-        
         reader.seek(header.getSectionOffset() + offset);
         
         DwarfStatementList stmt_list = new DwarfStatementList(offset);
@@ -122,12 +120,7 @@ public class DwarfLineInfoSection extends ElfSection {
             stmt_list.fileEntries.add(new FileEntry(fname, reader.readUnsignedLEB128(), reader.readUnsignedLEB128(), reader.readUnsignedLEB128()));
             fname = reader.readString();
         }
-
-        reader.seek(currPos);
-        
-        //TODO: add code...
         return stmt_list;
-        
     }
 
     @Override

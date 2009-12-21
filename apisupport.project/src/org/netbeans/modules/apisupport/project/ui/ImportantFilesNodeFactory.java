@@ -52,8 +52,8 @@ import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.layers.LayerNode;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -182,7 +182,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     }
     
     public static Node createLayerNode(Project prj) {
-        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(prj);
+        LayerHandle handle = LayerHandle.forProject(prj);
         if (handle != null && handle.getLayerFile() != null) {
             return new SpecialFileNode(new LayerNode(handle), null);
         }
@@ -244,8 +244,8 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 } catch (DataObjectNotFoundException e) {
                     throw new AssertionError(e);
                 }
-            } else if (key instanceof LayerUtils.LayerHandle) {
-                return new Node[] {/* #68240 */ new SpecialFileNode(new LayerNode((LayerUtils.LayerHandle) key), null)};
+            } else if (key instanceof LayerHandle) {
+                return new Node[] {/* #68240 */ new SpecialFileNode(new LayerNode((LayerHandle) key), null)};
             } else {
                 throw new AssertionError(key);
             } 
@@ -254,7 +254,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         private void refreshKeys() {
             Set<FileObject> files = new HashSet<FileObject>();
             List<Object> newVisibleFiles = new ArrayList<Object>();
-            LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
+            LayerHandle handle = LayerHandle.forProject(project);
             FileObject layerFile = handle.getLayerFile();
             if (layerFile != null) {
                 newVisibleFiles.add(handle);

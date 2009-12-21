@@ -85,6 +85,7 @@ public class PlatformDataObjectTest  {
     static File tmp;
     @BeforeClass
     public static void setUpClass() throws Exception {
+        System.setProperty ("PlatformDataObjectTest", "true");
         tmp = new File (System.getProperty("java.io.tmpdir"));
         userdir = new File (tmp, "ud" + System.currentTimeMillis());
         System.setProperty ("netbeans.user", userdir.getAbsolutePath());

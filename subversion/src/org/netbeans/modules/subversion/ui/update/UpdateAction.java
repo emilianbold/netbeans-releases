@@ -62,8 +62,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
@@ -112,6 +110,10 @@ public class UpdateAction extends ContextAction {
         //   test/ (project1 but imagine it's in repository, to be updated )
         // Is there a way how to update project1 without updating project2?
         final Context ctx = getContext(nodes);
+        if (ctx.getRootFiles().length == 0) {
+            Subversion.LOG.info("UpdateAction.performUpdate: context is empty, some files may be unversioned."); //NOI18N
+            return;
+        }
         ContextAction.ProgressSupport support = new ContextAction.ProgressSupport(this, nodes) {
             public void perform() {
                 update(ctx, this, getContextDisplayName(nodes));
@@ -344,15 +346,11 @@ public class UpdateAction extends ContextAction {
         }
 
         public void logMessage(String logMsg) {
-            FileUpdateInfo[] fuis = FileUpdateInfo.createFromLogMsg(logMsg);
-            if(fuis != null) {
-                for(FileUpdateInfo fui : fuis) {
-                    if(fui != null) getResults().add(fui);
-                }                
-            }                 
+            catchMessage(logMsg);
         }
 
         public void logError(String str) {
+            catchMessage(str);
         }
 
         public void logRevision(long rev, String str) {
@@ -370,6 +368,15 @@ public class UpdateAction extends ContextAction {
             }
             return results;
         }
+
+        private void catchMessage(String logMsg) {
+            FileUpdateInfo[] fuis = FileUpdateInfo.createFromLogMsg(logMsg);
+            if(fuis != null) {
+                for(FileUpdateInfo fui : fuis) {
+                    if(fui != null) getResults().add(fui);
+                }
+            }
+        }
         
     };
 
@@ -377,19 +384,24 @@ public class UpdateAction extends ContextAction {
         private Pattern p = Pattern.compile("C   (.+)");
         boolean causedConflict = false;
         public void logMessage(String msg) {
-            // XXX JAVAHL - different msg in case of conflicts
+            catchMessage(msg);
+        }
+        public void logError(String msg) {
+            catchMessage(msg);
+        }
+        public void setCommand(int arg0)                    { /* boring */  }
+        public void logCommandLine(String arg0)             { /* boring */  }
+        public void logRevision(long arg0, String arg1)     { /* boring */  }
+        public void logCompleted(String arg0)               { /* boring */  }
+        public void onNotify(File arg0, SVNNodeKind arg1)   { /* boring */  }
+
+        private void catchMessage (String message) {
             if(causedConflict) return;
-            Matcher m = p.matcher(msg);
+            Matcher m = p.matcher(message);
             if(m.matches()) {
                 causedConflict = true;
             }
         }
-        public void setCommand(int arg0)                    { /* boring */  }
-        public void logCommandLine(String arg0)             { /* boring */  }
-        public void logError(String arg0)                   { /* boring */  }
-        public void logRevision(long arg0, String arg1)     { /* boring */  }
-        public void logCompleted(String arg0)               { /* boring */  }
-        public void onNotify(File arg0, SVNNodeKind arg1)   { /* boring */  }
     }
     
 }

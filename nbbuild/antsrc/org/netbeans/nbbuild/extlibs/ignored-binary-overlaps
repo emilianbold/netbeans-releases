@@ -19,8 +19,7 @@ enterprise*/modules/ext/struts/oro-2.0.8.jar ide*/modules/ext/jakarta-oro-2.0.8.
 enterprise*/modules/ext/struts/bsf-2.3.0.jar ruby*/jruby-1.2.0/lib/bsf.jar
 
 # More maintainable to have Cobertura libs separately than to modify its Ant scripts
-harness/testcoverage/cobertura/lib/jakarta-oro-2.0.8.jar enterprise*/modules/ext/struts/oro-2.0.8.jar
-harness/testcoverage/cobertura/lib/jakarta-oro-2.0.8.jar ide*/modules/ext/jakarta-oro-2.0.8.jar
+harness/testcoverage/cobertura/lib/* **
 
 # impractical to modify jruby dist build to use the same yydebug as libs.jrubyparser
 # XXX paths should be within build, not sources!

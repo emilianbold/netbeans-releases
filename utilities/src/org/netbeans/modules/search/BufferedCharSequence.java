@@ -174,7 +174,7 @@ public class BufferedCharSequence implements CharSequence {
         this.source = new Source(channel);
         this.decoder = decoder;
         this.sink = new Sink(this.source);
-        LOG.info("<init> " + this.source + "; decoder = " + this.decoder +
+        LOG.finer("<init> " + this.source + "; decoder = " + this.decoder +
                 "; " + this.sink); // NOI18N
     }
 
@@ -528,10 +528,9 @@ public class BufferedCharSequence implements CharSequence {
 
         private int getSize(long size) {
             if (size > Integer.MAX_VALUE) {
-                LOG.log(Level.WARNING,
-                        "File size is " + size + "bytes. " +
-                        "Only first " + MAX_FILE_SIZE +
-                        " bytes will be processed.");
+                LOG.warning("File size is " + size + "bytes. " +
+                            "Only first " + MAX_FILE_SIZE +
+                            " bytes will be processed.");
                 return MAX_FILE_SIZE;
             }
             return (int) size;
@@ -647,7 +646,7 @@ public class BufferedCharSequence implements CharSequence {
                 charBuffer.flip();
                 o.put(charBuffer);
                 charBuffer = o;
-                LOG.info("The sink char buffer capacity has been grown: " +
+                LOG.finer("The sink char buffer capacity has been grown: " +
                         capacity + " -> " + charBuffer.capacity());
                 return charBuffer;
             }

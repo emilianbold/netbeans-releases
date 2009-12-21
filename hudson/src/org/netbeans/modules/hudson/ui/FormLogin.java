@@ -42,6 +42,7 @@ package org.netbeans.modules.hudson.ui;
 import java.net.URL;
 import java.util.prefs.Preferences;
 import javax.swing.JPanel;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
 import org.netbeans.modules.hudson.spi.PasswordAuthorizer;
 import org.openide.DialogDescriptor;
@@ -73,6 +74,10 @@ public class FormLogin extends JPanel {
             String username = loginPrefs().get(server, null);
             if (username != null) {
                 panel.userField.setText(username);
+                char[] savedPassword = Keyring.read(server);
+                if (savedPassword != null) {
+                    panel.passField.setText(new String(savedPassword));
+                }
             }
             panel.locationField.setText(home.toString());
             DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(FormLogin.class, "FormLogin.log_in"));
@@ -83,6 +88,7 @@ public class FormLogin extends JPanel {
             loginPrefs().put(server, username);
             String password = new String(panel.passField.getPassword());
             panel.passField.setText("");
+            Keyring.save(server, password.toCharArray(), NbBundle.getMessage(FormLogin.class, "FormLogin.password_description", home, username));
             return new String[] {username, password};
         }
     }

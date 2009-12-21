@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,111 +31,136 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ */
+
+/*
+ * ServersPanel2.java
+ *
+ * Created on Nov 23, 2009, 8:02:16 AM
  */
 package org.netbeans.modules.javacard.ri.platform.installer;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.ActionListener;
-import org.netbeans.validation.api.Problem;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.ListView;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-
+import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.Action;
+import javax.swing.ListSelectionModel;
 import org.netbeans.api.validation.adapters.DialogBuilder;
 import org.netbeans.modules.javacard.common.CommonSystemFilesystemPaths;
-import org.netbeans.modules.javacard.common.JCConstants;
+import org.netbeans.modules.javacard.common.GuiUtils;
+import org.netbeans.modules.javacard.common.Utils;
+import org.netbeans.modules.javacard.spi.AddCardHandler;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.CardCustomizer;
+import org.netbeans.modules.javacard.spi.JavacardPlatform;
+import org.netbeans.modules.javacard.spi.actions.CardActions;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
-import org.netbeans.modules.javacard.spi.ValidationGroupProvider;
 import org.netbeans.validation.api.ui.ValidationGroup;
-import org.netbeans.validation.api.ui.ValidationUI;
+import org.openide.DialogDescriptor;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
+import org.openide.explorer.view.ListView;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
+import org.openide.windows.WindowManager;
 
 /**
- * Panel which shows the available servers and their customizers
  *
  * @author Tim Boudreau
  */
-public final class ServersPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, ActionListener {
-    private final ExplorerManager mgr = new ExplorerManager();
-    private final VUI vui = new VUI();
-    private final ValidationGroup group = ValidationGroup.create(vui);
+public class ServersPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, AddCardHandler.CardCreatedCallback, Lookup.Provider, Runnable {
 
-    public ServersPanel(Node root) {
+    private final ExplorerManager mgr = new ExplorerManager();
+    private final JavacardPlatform pform;
+    private final ValidationGroup grp = ValidationGroup.create();
+    private Lookup lkp;
+
+    public ServersPanel(JavacardPlatform pform) {
+        this.pform = pform;
+        mgr.setRootContext(new AbstractNode(pform.getCards().createChildren(), Lookups.fixed(pform)));
         initComponents();
-        listView().setPopupAllowed(false);
-        mgr.setRootContext(root);
-        jLabel1.setText("   ");
+        ((ListView) view).setPopupAllowed(false);
+        ((ListView) view).setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        GuiUtils.prepareContainer(this);
+        addButton.setEnabled(AddCardHandler.createAddDeviceAction(Utils.findPlatformDataObjectNamed(pform.getSystemName()), pform, this) != null);
+        removeButton.setAction(CardActions.createDeleteAction().createContextAwareInstance(lkp = ExplorerUtils.createLookup(mgr, getActionMap())));
         mgr.addPropertyChangeListener(this);
-        Node[] n = root.getChildren().getNodes(true);
-        if (n != null && n.length > 0) {
-            try {
-                mgr.setSelectedNodes(new Node[]{n[0]});
-            } catch (PropertyVetoException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
     }
 
     public void showDialog() {
         DialogBuilder b = new DialogBuilder(ServersPanel.class).setModal(true).
-                setContent(this).setValidationGroup(group);
+                setTitle(NbBundle.getMessage(ServersPanel.class, "TTL_MANAGE_DEVICES", pform.getDisplayName())). //NOI18N
+                setContent(this).setValidationGroup(grp);
         if (b.showDialog(DialogDescriptor.OK_OPTION)) {
             save();
         }
     }
 
-    ListView listView() {
-        return (ListView) jScrollPane1;
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        EventQueue.invokeLater(this);
+    }
+
+    public void run() {
+        final Node[] n = mgr.getRootContext().getChildren().getNodes(true);
+        if (n != null && n.length > 0) {
+            try {
+                mgr.setSelectedNodes(new Node[]{n[0]});
+            } catch (PropertyVetoException ex) {
+                //do nothing
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new ListView();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
+        view = new ListView();
+        customizerPanel = new javax.swing.JPanel();
+        noCustomizerLabel = new javax.swing.JLabel();
+        addButton = new javax.swing.JButton();
+        removeButton = new javax.swing.JButton();
+        jLabel1 = grp.createProblemLabel();
 
-        jScrollPane1.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("controlShadow")));
-        jScrollPane1.setMinimumSize(new java.awt.Dimension(100, 100));
+        view.setBorder(new javax.swing.border.LineBorder(javax.swing.UIManager.getDefaults().getColor("controlShadow"), 1, true));
 
-        jButton1.setText(org.openide.util.NbBundle.getMessage(ServersPanel.class, "ServersPanel.jButton1.text")); // NOI18N
-        jButton1.addActionListener(this);
+        customizerPanel.setLayout(new java.awt.BorderLayout());
 
-        jButton2.setText(org.openide.util.NbBundle.getMessage(ServersPanel.class, "ServersPanel.jButton2.text")); // NOI18N
-        jButton2.addActionListener(this);
+        noCustomizerLabel.setText(org.openide.util.NbBundle.getMessage(ServersPanel.class, "ServersPanel.noCustomizerLabel.text")); // NOI18N
+        customizerPanel.add(noCustomizerLabel, java.awt.BorderLayout.CENTER);
 
-        jPanel1.setLayout(new java.awt.BorderLayout());
+        addButton.setText(org.openide.util.NbBundle.getMessage(ServersPanel.class, "ServersPanel.addButton.text")); // NOI18N
+        addButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onAdd(evt);
+            }
+        });
 
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(ServersPanel.class, "ServersPanel.jLabel2.text")); // NOI18N
-        jPanel1.add(jLabel2, java.awt.BorderLayout.CENTER);
+        removeButton.setText(org.openide.util.NbBundle.getMessage(ServersPanel.class, "ServersPanel.removeButton.text")); // NOI18N
+        removeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onRemove(evt);
+            }
+        });
 
-        jLabel1.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
         jLabel1.setText(org.openide.util.NbBundle.getMessage(ServersPanel.class, "ServersPanel.jLabel1.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -149,208 +168,172 @@ public final class ServersPanel extends javax.swing.JPanel implements ExplorerMa
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jButton1)
+                        .add(20, 20, 20)
+                        .add(view, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 256, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton2))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE))
+                        .add(customizerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(addButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(removeButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 325, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+            .add(layout.createSequentialGroup()
+                .add(20, 20, 20)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, customizerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, view, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jButton1)
-                    .add(jButton2)
+                    .add(addButton)
+                    .add(removeButton)
                     .add(jLabel1))
-                .add(12, 12, 12))
+                .add(20, 20, 20))
         );
-    }
-
-    // Code for dispatching events from components to event handlers.
-
-    public void actionPerformed(java.awt.event.ActionEvent evt) {
-        if (evt.getSource() == jButton1) {
-            ServersPanel.this.jButton1ActionPerformed(evt);
-        }
-        else if (evt.getSource() == jButton2) {
-            ServersPanel.this.jButton2ActionPerformed(evt);
-        }
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        String title = NbBundle.getMessage(ServersPanel.class, "TTL_NEW_SERVER"); //NOI18N
-        String msg = NbBundle.getMessage(ServersPanel.class, "MSG_NEW_SERVER"); //NOI18N
-
-        NotifyDescriptor.InputLine in = new NotifyDescriptor.InputLine(msg, title);
-        if (DialogDisplayer.getDefault().notify(in) == DialogDescriptor.OK_OPTION) {
-            String txt = in.getInputText().trim();
-            if (txt.length() == 0) {
-                JOptionPane.showMessageDialog(this, NbBundle.getMessage(ServersPanel.class,
-                        "ERR_EMPTY_NAME")); //NOI18N
-                return;
-            }
-            if (txt.indexOf('/') > 0 || txt.indexOf('\\') > 0 || txt.indexOf(':') > 0 || txt.indexOf(';') > 0) { //NOI18N
-                JOptionPane.showMessageDialog(this, NbBundle.getMessage(ServersPanel.class,
-                        "ERR_BAD_NAME")); //NOI18N
-                return;
-            }
-
-            try {
-                FileObject template = FileUtil.getConfigFile(
-                        CommonSystemFilesystemPaths.SFS_DEVICE_TEMPLATE_PATH);
-                if (template == null) {
-                    throw new IllegalStateException(CommonSystemFilesystemPaths.SFS_DEVICE_TEMPLATE_PATH
-                            + " not registered in the system filesystem"); //NOI18N
-                }
-                DataObject deviceTemplate = DataObject.find(template);
-                DataFolder fld = mgr.getRootContext().getLookup().lookup(DataFolder.class);
-                String name;
-                if (fld.getChildren().length == 0) {
-                    name = JCConstants.TEMPLATE_DEFAULT_DEVICE_NAME; //NOI18N
-                } else {
-                    name = txt;
-                }
-                Map<String, String> substitutions = new HashMap<String, String>();
-                substitutions.put(PlatformTemplateWizardKeys.PROJECT_TEMPLATE_DEVICE_NAME_KEY, txt);
-                deviceTemplate.createFromTemplate(fld, name, substitutions);
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
+    private void onAdd(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onAdd
+        Action a = AddCardHandler.createAddDeviceAction(Utils.findPlatformDataObjectNamed(pform.getSystemName()), pform, this);
+        if (a != null) {
+            a.actionPerformed(evt);
         }
+    }//GEN-LAST:event_onAdd
 
-    }//GEN-LAST:event_jButton1ActionPerformed
-
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        Node[] nodes = mgr.getSelectedNodes();
-        for (Node n : nodes) {
-            DataObject dob = n.getLookup().lookup(DataObject.class);
-            if (dob != null) {
-                try {
-                    dob.delete();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-        try {
-            mgr.setSelectedNodes(new Node[0]);
-        } catch (PropertyVetoException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }//GEN-LAST:event_jButton2ActionPerformed
+    private void onRemove(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onRemove
+    }//GEN-LAST:event_onRemove
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JButton addButton;
+    private javax.swing.JPanel customizerPanel;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel noCustomizerLabel;
+    private javax.swing.JButton removeButton;
+    private javax.swing.JScrollPane view;
     // End of variables declaration//GEN-END:variables
 
-    @Override
     public ExplorerManager getExplorerManager() {
         return mgr;
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt == null || ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+            Node[] n = mgr.getSelectedNodes();
+            if (n == null || n.length != 1) {
+                clear();
+                return;
+            }
+            Node nd = n[0];
+            Card card = nd.getLookup().lookup(Card.class);
+            if (card == null) {
+                clear();
+                return;
+            }
+            CardCustomizer cust = findCustomizer(nd, card);
+            if (cust != null) {
+                ValidationGroup group = cust.getValidationGroup();
+                if (group != null) {
+                    try {
+                        //XXX use url boolean below does not actually work
+                        this.grp.addValidationGroup(group, false);
+                    } catch (AssertionError e) {
+                        //XXX fixed in next rev of validation api - cannot add twice
+                        Logger.getLogger(ServersPanel.class.getName()).log(Level.INFO, null, e);
+                    } catch (Throwable e) {
+                        //XXX fixed in next rev of validation api - cannot add twice
+                        Logger.getLogger(ServersPanel.class.getName()).log(Level.INFO, null, e);
+                    }
+                }
+                Component comp = cust.getComponent();
+                setCustomizerComponent(comp);
+            } else {
+                if (nd.hasCustomizer()) {
+                    setCustomizerComponent(nd.getCustomizer());
+                }
+            }
+        }
+    }
+
     private void save() {
-        for (CardCustomizer c : toSave.values()) {
+        for (CardCustomizer c : cache.values()) {
             if (c.isContentValid()) {
                 c.save();
             }
         }
-        toSave.clear();
+        cache.clear();
+    }
+    private Map<Node, CardCustomizer> cache = new HashMap<Node, CardCustomizer>();
+
+    private CardCustomizer findCustomizer(Node n, Card card) {
+        //Okay, we've got way too many ways to do this...
+        CardCustomizer result = cache.get(n);
+        if (result == null) {
+            CardCustomizerProvider prov = card.getCapability(CardCustomizerProvider.class);
+            if (prov == null) {
+                prov = n.getLookup().lookup(CardCustomizerProvider.class);
+            }
+            if (prov == null) {
+                prov = Lookups.forPath(CommonSystemFilesystemPaths.SFS_ADD_HANDLER_REGISTRATION_ROOT
+                        + pform.getPlatformKind()).lookup(CardCustomizerProvider.class);
+            }
+            if (prov != null) {
+                result = prov.getCardCustomizer(card);
+                if (result != null) {
+                    cache.put(n, result);
+                }
+            }
+        }
+        return result;
     }
 
+    private void clear() {
+        setCustomizerComponent(null);
+    }
 
-    private final Map<Node, CardCustomizer> toSave = new HashMap<Node, CardCustomizer>();
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-            Node[] n = mgr.getSelectedNodes();
-            if (n != null && n.length > 0) {
-                jPanel1.removeAll();
-                CardCustomizer cust = toSave.get(n[0]);
-                if (cust == null) {
-                    Card card = n[0].getLookup().lookup(Card.class);
-                    CardCustomizerProvider prov = card == null ? null :
-                        card.getLookup().lookup(CardCustomizerProvider.class);
-                    if (prov != null) {
-                        cust = prov.getCardCustomizer(card);
-                        if (cust == null) {
-                            throw new NullPointerException ("CardCustomizerProvider " + prov //NOI18N
-                                    + " provides a null CardCustomizer"); //NOI18N
-                        }
-                        toSave.put(n[0], cust);
-                    }
-                }
-
-                if (cust == null) {
-                    Component customizer = n[0].getCustomizer();
-                    if (customizer != null) { //hack - we return false from hasCustomizer() to avoid getting an extra Customize action
-                        if (customizer != null) {
-                            if (customizer instanceof ValidationGroupProvider) {
-                                ValidationGroup g = ((ValidationGroupProvider) customizer).getValidationGroup();
-                                this.group.addValidationGroup(g, true);
-                            }
-                            jPanel1.add(customizer, BorderLayout.CENTER);
-                        }
-                    } else {
-                        JLabel lbl = new JLabel(NbBundle.getMessage(ServersPanel.class,
-                                "MSG_NO_CUSTOMIZER")); //NOI18N
-                        lbl.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-                        jPanel1.add(lbl, BorderLayout.CENTER);
-                    }
-                } else {
-                    Component customizer = cust.getComponent();
-                    if (customizer == null) {
-                        throw new NullPointerException ("CardCustomizer " + cust //NOI18N
-                                + " provides a null component"); //NOI18N
-                    }
-                    ValidationGroup g = cust.getValidationGroup();
-                    if (g == null) {
-                        throw new NullPointerException ("CardCustomizer " + cust //NOI18N
-                                + " provides a null validation group"); //NOI18N
-                    }
-                    this.group.addValidationGroup(g, true);
-                    jPanel1.add(customizer, BorderLayout.CENTER);
-                }
-                invalidate();
-                revalidate();
-                repaint();
-                repack();
+    private void setCustomizerComponent(Component c) {
+        c = c == null ? noCustomizerLabel : c;
+        customizerPanel.removeAll();
+        customizerPanel.add(c, BorderLayout.CENTER);
+        customizerPanel.invalidate();
+        customizerPanel.revalidate();
+        customizerPanel.repaint();
+        if (c != noCustomizerLabel) {
+            if (getTopLevelAncestor() instanceof Dialog) {
+                ((Dialog) getTopLevelAncestor()).pack();
+                ((Dialog) getTopLevelAncestor()).setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
             }
         }
     }
 
-    private void repack() {
-        JDialog dlg = (JDialog) SwingUtilities.getAncestorOfClass(JDialog.class, this);
-        if (dlg != null) {
-            dlg.pack();
-        }
+    public void onCardCreated(final Card card, final FileObject file) {
+        EventQueue.invokeLater(new Runnable() {
+
+            public void run() {
+                for (final Node nd : mgr.getRootContext().getChildren().getNodes(true)) {
+                    if (card.equals(nd.getLookup().lookup(Card.class))) {
+                        EventQueue.invokeLater(new Runnable() {
+
+                            public void run() {
+                                try {
+                                    mgr.setSelectedNodes(new Node[]{nd});
+                                } catch (PropertyVetoException ex) {
+                                    //do nothing
+                                }
+                            }
+                        });
+                        return;
+                    }
+                }
+            }
+        });
     }
 
-    private final class VUI implements ValidationUI {
-
-        public void clearProblem() {
-            jScrollPane1.setEnabled(true);
-            jScrollPane1.getViewport().getView().setEnabled(true);
-        }
-
-        public void setProblem(Problem arg0) {
-            jScrollPane1.setEnabled(false);
-            jScrollPane1.getViewport().getView().setEnabled(false);
-        }
+    public Lookup getLookup() {
+        return lkp;
     }
 }

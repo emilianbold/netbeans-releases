@@ -83,8 +83,8 @@ import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.overridden.AnnotationType;
+import org.netbeans.modules.java.editor.overridden.ComputeOverriding;
 import org.netbeans.modules.java.editor.overridden.ElementDescription;
-import org.netbeans.modules.java.editor.overridden.IsOverriddenAnnotationHandler;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
@@ -222,7 +222,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                 if (!org.netbeans.modules.java.hints.errors.Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) pathRec.getLeaf())) {
                     List<ElementDescription> eds = new LinkedList<ElementDescription>();
                     TypeElement enclosingType = (TypeElement) method.getEnclosingElement();
-                    AnnotationType at = IsOverriddenAnnotationHandler.detectOverrides(info, enclosingType, method,eds);
+                    AnnotationType at = ComputeOverriding.detectOverrides(info, enclosingType, method,eds);
                     List<TypeMirror> declaredThrows = null;
                     
                     if (at != null) {

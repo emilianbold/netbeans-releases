@@ -309,6 +309,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         WebModule wm = WebModule.getWebModule(file);
         if (wm != null){
             url = FileUtil.getRelativePath(wm.getDocumentBase(), file);
+            if (url == null) {
+                return null;
+            }
             if (url.charAt(0)!='/')
                 url = "/" + url;
             String mapping = ConfigurationUtils.getFacesServletMapping(wm);

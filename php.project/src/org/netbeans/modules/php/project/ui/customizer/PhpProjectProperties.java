@@ -174,6 +174,7 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
     // all these fields don't have to be volatile - this ensures request processor
     // CustomizerSources
     private String srcDir;
+    private String testDir;
     private String copySrcFiles;
     private String copySrcTarget;
     private String webRoot;
@@ -295,6 +296,20 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             srcDir = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(SRC_DIR);
         }
         return srcDir;
+    }
+
+    public String getTestDir() {
+        if (testDir == null) {
+            FileObject tests = ProjectPropertiesSupport.getTestDirectory(project, false);
+            if (tests != null) {
+                testDir = FileUtil.toFile(tests).getAbsolutePath();
+            }
+        }
+        return testDir;
+    }
+
+    public void setTestDir(String testDir) {
+        this.testDir = testDir;
     }
 
     public String getUrl() {
@@ -432,6 +447,9 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
         EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 
         // sources
+        if (testDir != null) {
+            projectProperties.setProperty(TEST_SRC_DIR, testDir);
+        }
         if (copySrcFiles != null) {
             privateProperties.setProperty(COPY_SRC_FILES, copySrcFiles);
         }

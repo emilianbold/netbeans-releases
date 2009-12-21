@@ -91,6 +91,7 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -107,7 +108,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class NbJiraIssue extends Issue {
+public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     private TaskData taskData;
     private JiraRepository repository;
     private Controller controller;
@@ -946,7 +947,6 @@ public class NbJiraIssue extends Issue {
         return "";
     }
 
-    @Override
     public Map<String, String> getAttributes() {
         if(attributes == null) {
             attributes = new HashMap<String, String>();
@@ -1308,7 +1308,8 @@ public class NbJiraIssue extends Issue {
     }
 
     private class Controller extends BugtrackingController {
-        private JComponent issuePanel;
+        private JComponent component;
+        private IssuePanel issuePanel;
 
         public Controller() {
             IssuePanel panel = new IssuePanel();
@@ -1323,14 +1324,33 @@ public class NbJiraIssue extends Issue {
                 scrollPane.getVerticalScrollBar().setUnitIncrement(size);
             }
             BugtrackingUtil.keepFocusedComponentVisible(scrollPane);
-            issuePanel = scrollPane;
+            issuePanel = panel;
+            component = scrollPane;
 
             refreshViewData();
         }
 
         @Override
         public JComponent getComponent() {
-            return issuePanel;
+            return component;
+        }
+
+        @Override
+        public void opened() {
+            NbJiraIssue issue = issuePanel.getIssue();
+            if (issue != null) {
+                // Hack - reset any previous modifications when the issue window is reopened
+                issuePanel.reloadForm(true);
+                issue.opened();
+            }
+        }
+
+        @Override
+        public void closed() {
+            NbJiraIssue issue = issuePanel.getIssue();
+            if (issue != null) {
+                issue.closed();
+            }
         }
 
         @Override

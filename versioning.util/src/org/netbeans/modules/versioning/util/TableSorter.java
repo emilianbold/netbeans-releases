@@ -415,28 +415,19 @@ public final class TableSorter extends AbstractTableModel {
             }
 
             // We can map a cell event through to the view without widening             
-            // when the following conditions apply: 
+            // when the event is known to be preserving the sorting or when
+            // the following conditions apply:
             // 
             // a) all the changes are on one row (e.getFirstRow() == e.getLastRow()) and, 
             // b) all the changes are in one column (column != TableModelEvent.ALL_COLUMNS) and,
             // c) we are not sorting on that column (getSortingStatus(column) == NOT_SORTED) and, 
-            // d) a reverse lookup will not trigger a sort (modelToView != null)
             //
             // Note: INSERT and DELETE events fail this test as they have column == ALL_COLUMNS.
-            // 
-            // The last check, for (modelToView != null) is to see if modelToView 
-            // is already allocated. If we don't do this check; sorting can become 
-            // a performance bottleneck for applications where cells  
-            // change rapidly in different parts of the table. If cells 
-            // change alternately in the sorting column and then outside of             
-            // it this class can end up re-sorting on alternate cell updates - 
-            // which can be a performance problem for large tables. The last 
-            // clause avoids this problem. 
             int column = e.getColumn();
-            if (e.getFirstRow() == e.getLastRow()
-                    && column != TableModelEvent.ALL_COLUMNS
-                    && getSortingStatus(column) == NOT_SORTED
-                    && modelToView != null) {
+            if ((e instanceof SortingSafeTableModelEvent)
+                    || e.getFirstRow() == e.getLastRow()
+                       && column != TableModelEvent.ALL_COLUMNS
+                       && getSortingStatus(column) == NOT_SORTED) {
                 int viewIndex = getModelToView()[e.getFirstRow()];
                 fireTableChanged(new TableModelEvent(TableSorter.this, 
                                                      viewIndex, viewIndex, 
@@ -515,4 +506,15 @@ public final class TableSorter extends AbstractTableModel {
             this.direction = direction;
         }
     }
+
+    public static class SortingSafeTableModelEvent extends TableModelEvent {
+
+        public SortingSafeTableModelEvent(TableModel source,
+                                          int row,
+                                          int column) {
+            super(source, row, row, column, TableModelEvent.UPDATE);
+        }
+
+    }
+
 }

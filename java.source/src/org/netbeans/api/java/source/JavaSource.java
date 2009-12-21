@@ -213,10 +213,11 @@ public final class JavaSource {
     }
     
     private static Map<FileObject, Reference<JavaSource>> file2JavaSource = new WeakHashMap<FileObject, Reference<JavaSource>>();
+    private static final String[] supportedMIMETypes = new String[] {"application/x-class-file", "text/x-java"};
     
     /**
      * Returns a {@link JavaSource} instance associated to given {@link org.openide.filesystems.FileObject},
-     * it returns null if the {@link Document} is not associanted with data type providing the {@link JavaSource}.
+     * it returns null if the {@link Document} is not associated with data type providing the {@link JavaSource}.
      * @param fileObject for which the {@link JavaSource} should be found/created.
      * @return {@link JavaSource} or null
      * @throws IllegalArgumentException if fileObject is null
@@ -228,6 +229,8 @@ public final class JavaSource {
         if (!fileObject.isValid()) {
             return null;
         }
+
+        String mimeType = null;
 
         try {
             if (   fileObject.getFileSystem().isDefault()
@@ -241,7 +244,8 @@ public final class JavaSource {
             
             if (!(ec instanceof CloneableEditorSupport)) {
                 //allow creation of JavaSource for .class files:
-                if (!("application/x-class-file".equals(FileUtil.getMIMEType(fileObject)) || "class".equals(fileObject.getExt()))) {
+                mimeType = FileUtil.getMIMEType(fileObject, supportedMIMETypes);
+                if (!("application/x-class-file".equals(mimeType) || "class".equals(fileObject.getExt()))) {
                     return null;
                 }
             }
@@ -256,7 +260,8 @@ public final class JavaSource {
         Reference<JavaSource> ref = file2JavaSource.get(fileObject);
         JavaSource js = ref != null ? ref.get() : null;
         if (js == null) {
-            if ("application/x-class-file".equals(FileUtil.getMIMEType(fileObject)) || "class".equals(fileObject.getExt())) {   //NOI18N
+            mimeType = mimeType == null ? FileUtil.getMIMEType(fileObject, supportedMIMETypes) : mimeType;
+            if ("application/x-class-file".equals(mimeType) || "class".equals(fileObject.getExt())) {   //NOI18N
                 ClassPath bootPath = ClassPath.getClassPath(fileObject, ClassPath.BOOT);
                 ClassPath compilePath = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
                 if (compilePath == null) {
@@ -282,7 +287,7 @@ public final class JavaSource {
                 }
             } 
             else {
-                if (!"text/x-java".equals(FileUtil.getMIMEType(fileObject)) && !"java".equals(fileObject.getExt())) {  //NOI18N                    
+                if (!"text/x-java".equals(mimeType) && !"java".equals(fileObject.getExt())) {  //NOI18N
                     return null;
                 }
                 js = _create(null, Collections.singletonList(fileObject));

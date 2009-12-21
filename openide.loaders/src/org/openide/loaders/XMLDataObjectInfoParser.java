@@ -179,7 +179,6 @@ implements FileChangeListener, LexicalHandler, LookupListener {
                 if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
                     XMLDataObject.ERR.fine("Querying the result: " + r);
                 }
-                r.allItems();
             } else {
                 if (XMLDataObject.ERR.isLoggable(Level.FINE)) {
                     XMLDataObject.ERR.fine("No result for lookup: " + lookup);

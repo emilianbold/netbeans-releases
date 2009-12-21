@@ -1038,12 +1038,17 @@ class OccurenceBuilder {
                         foundElems = indexScope.findInterfaces(currentContextInfo.getName());
                         break;
                     case CONSTRUCTOR:
-                        Collection<IndexedClass> classes = index.getClasses(null, currentContextInfo.getName(), QuerySupport.Kind.EXACT);
+                        Collection<ModelElement> elements = new HashSet<ModelElement>();
+                        Collection<IndexedClass> classes = new HashSet<IndexedClass>(index.getClasses(null, currentContextInfo.getName(), QuerySupport.Kind.EXACT));
                         Collection<IndexedClassMember<IndexedFunction>> constructors = new HashSet<IndexedClassMember<IndexedFunction>>();
                         for (IndexedClass cls : classes) {
-                            constructors.addAll(index.getConstructors(null, cls));
-                        }
-                        Collection<ModelElement> elements = new HashSet<ModelElement>();
+                            final Collection<IndexedClassMember<IndexedFunction>> tmpConstruct = index.getConstructors(null, cls);
+                            if (!tmpConstruct.isEmpty()) {
+                                constructors.addAll(tmpConstruct);
+                            } else {
+                                elements.add(new ClassScopeImpl(indexScope, cls));
+                            }
+                        }                        
                         for (IndexedClassMember<IndexedFunction> clsMember : constructors) {
                             ClassScopeImpl csi = new ClassScopeImpl(indexScope, (IndexedClass) clsMember.getType());
                             elements.add(new MethodScopeImpl(csi, clsMember.getMember()));

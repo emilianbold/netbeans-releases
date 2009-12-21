@@ -40,6 +40,10 @@
 package org.netbeans.modules.websvc.rest.codegen;
 
 
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.WebXmlHelper;
 
 /**
@@ -56,5 +60,19 @@ public class J2eeEntityResourcesGenerator extends EntityResourcesGenerator {
     protected void configurePersistence() {
         // Add <persistence-context-ref> to web.xml
         new WebXmlHelper(project, persistenceUnit.getName()).configure();
+    }
+
+    @Override
+    protected List<String> getAdditionalContainerResourceImports(EntityResourceBean bean) {
+        List<String> imports = new ArrayList<String>();
+        imports.add(RestConstants.RESOURCE_CONTEXT);
+        return imports;
+    }
+
+    @Override
+    protected List<String> getAdditionalItemResourceImports(EntityResourceBean bean) {
+        List<String> imports = new ArrayList<String>();
+        imports.add(RestConstants.RESOURCE_CONTEXT);
+        return imports;
     }
 }

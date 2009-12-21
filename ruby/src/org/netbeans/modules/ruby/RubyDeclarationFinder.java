@@ -79,6 +79,7 @@ import org.jrubyparser.ast.StrNode;
 import org.jrubyparser.ast.SymbolNode;
 import org.jrubyparser.ast.VCallNode;
 import org.jrubyparser.ast.INameNode;
+import org.jrubyparser.ast.NodeType;
 import org.jrubyparser.ast.SuperNode;
 import org.jrubyparser.ast.ZSuperNode;
 import org.netbeans.api.lexer.Token;
@@ -776,31 +777,10 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
                     name = "_" + name;
                 }
                 
-                // Try to find the partial file
-                FileObject partial = dir.getFileObject(name);
-                // try extensions
-                if (partial == null) {
-                    for (String ext : RubyUtils.RUBY_VIEW_EXTS) {
-                        partial = dir.getFileObject(name + ext);
-                        if (partial != null) {
-                            break;
-                        }
-                    }
+                DeclarationLocation partialLocation = findPartial(name, dir);
+                if (partialLocation != DeclarationLocation.NONE) {
+                    return partialLocation;
                 }
-                if (partial == null) {
-                    // Handle some other file types for the partials
-                    for (FileObject child : dir.getChildren()) {
-                        if (child.isValid() && !child.isFolder() && child.getName().equals(name)) {
-                            partial = child;
-                            break;
-                        }
-                    }
-                }
-
-                if (partial != null) {
-                    return new DeclarationLocation(partial, 0);
-                }
-                
             } else if (type.indexOf(CONTROLLER) != -1 || type.indexOf(ACTION) != -1) { // NOI18N
                 // Look for the controller file in the corresponding directory
                 FileObject file = RubyUtils.getFileObject(info);
@@ -899,6 +879,48 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
         return getLocation(methods);
     }
 
+    /**
+     * Finds the location of the partial matching the given <code>name</code> in the
+     * given <code>dir</code>.
+     * 
+     * @param name
+     * @param dir
+     * @return
+     */
+    private DeclarationLocation findPartial(String name, FileObject dir) {
+        // Try to find the partial file
+        FileObject partial = dir.getFileObject(name);
+        if (partial != null) {
+            return new DeclarationLocation(partial, 0);
+        }
+        // try extensions
+        for (String ext : RubyUtils.RUBY_VIEW_EXTS) {
+            partial = dir.getFileObject(name + ext);
+            if (partial != null) {
+                return new DeclarationLocation(partial, 0);
+
+            }
+        }
+        // Handle some other file types for the partials
+        for (FileObject child : dir.getChildren()) {
+            if (child.isValid() && !child.isFolder() && child.getName().equals(name)) {
+                return new DeclarationLocation(child, 0);
+            }
+        }
+
+        // finally, try matching just the first part of the file name
+        for (FileObject child : dir.getChildren()) {
+            if (child.isValid() && !child.isFolder()) {
+                String fileName = child.getName();
+                int firstDot = fileName.indexOf('.');
+                if (firstDot != -1 && name.equals(fileName.substring(0, firstDot))) {
+                    return new DeclarationLocation(child, 0);
+                }
+            }
+        }
+        return DeclarationLocation.NONE;
+
+    }
     /** Locate the :action and :controller strings in the hash list that is under the
      * given offsets
      * @return A string[2] where string[0] is the controller or null, and string[1] is the
@@ -1170,7 +1192,13 @@ public class RubyDeclarationFinder extends RubyDeclarationFinderHelper implement
             }
 
             Node node = AstUtilities.getForeignNode(candidate);
-            int nodeOffset = node != null ? node.getPosition().getStartOffset() : 0;
+            int nodeOffset = 0;
+            if (node != null) {
+                nodeOffset = node.getPosition().getStartOffset();
+                if (node.getNodeType() == NodeType.ALIASNODE) {
+                    nodeOffset += 6; // 6 = lenght of 'alias '
+                }
+            }
 
             DeclarationLocation loc = new DeclarationLocation(
                 fileObject, nodeOffset, candidate);

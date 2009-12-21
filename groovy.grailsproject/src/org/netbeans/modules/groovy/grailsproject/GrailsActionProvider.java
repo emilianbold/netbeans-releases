@@ -168,7 +168,7 @@ public class GrailsActionProvider implements ActionProvider {
         ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
         String displayName = inf.getDisplayName() + " (run-app)"; // NOI18N
 
-        ExecutionDescriptor descriptor = project.getCommandSupport().getRunDescriptor();
+        ExecutionDescriptor descriptor = project.getCommandSupport().getRunDescriptor(debug);
 
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
