@@ -169,7 +169,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             refreshSetups();
         }
         refreshComponents();
-        commitButton.setEnabled(false);
         refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
     }
 

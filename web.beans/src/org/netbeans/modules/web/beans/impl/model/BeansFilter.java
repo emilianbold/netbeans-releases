@@ -67,7 +67,7 @@ class BeansFilter extends Filter<TypeElement> {
         {
             TypeElement element = iterator.next();
             String name = element.getQualifiedName().toString();
-            if (name.startsWith("java.lang")) { // NOI18N
+            if (name.startsWith("java.") ||name.startsWith("javax.")) { // NOI18N
                 iterator.remove();
             }
         }

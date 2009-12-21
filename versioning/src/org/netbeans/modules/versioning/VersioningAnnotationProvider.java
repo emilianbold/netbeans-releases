@@ -628,9 +628,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                 Set<ItemKey<T, KEY>> keys = index.get(fo);
                 if (keys != null) {
                     for (ItemKey<T, KEY> key : keys) {
-                        assert cachedValues.containsKey(key);
                         cachedValues.remove(key);
-                        addFilesToAnnotate(key);
                     }
                     ItemKey<T, KEY>[] keysArray = keys.toArray(new ItemKey[keys.size()]);
                     for (ItemKey<T, KEY> key : keysArray) {

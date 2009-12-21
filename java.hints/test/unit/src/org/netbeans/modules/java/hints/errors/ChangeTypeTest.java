@@ -62,7 +62,7 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
     public void testIntToString() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {int i = \"s\";}", 41, "Change type of i to String");
     }
-    
+
     public void testIntToStringFix() throws Exception {
         performFixTest("test/Test.java",
                        "package test; public class Test {int i = \"s\";}",
@@ -70,11 +70,11 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
                        "Change type of i to String",
                        "package test; public class Test { String i = \"s\";}");
     }
-    
+
     public void testStringToInt() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {String s = 5;}", 44, "Change type of s to int");
     }
-    
+
     public void testStringToIntFix() throws Exception {
         performFixTest("test/Test.java",
                 "package test; public class Test {String s = 5;}",
@@ -82,7 +82,7 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
                 "Change type of s to int",
                 "package test; public class Test { int s = 5;}");
     }
-    
+
     public void testStringToObject() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {String s = new Object();}", 44, "Change type of s to Object");
     }
@@ -94,11 +94,11 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
                 "Change type of s to Object",
                 "package test; public class Test {Object s = new Object();}");
     }
-    
+
     public void testLocalVariableIntToString() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {private void test() {int i = \"s\";}}", 62, "Change type of i to String");
     }
-    
+
     public void testLocalVariableIntToStringFix() throws Exception {
         performFixTest("test/Test.java",
                 "package test; public class Test {private void test() {int i = \"s\";}}",
@@ -111,7 +111,7 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
     public void testLocalVariableStringToInt() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {private void test() {String s = 5;}}", 65, "Change type of s to int");
     }
-    
+
     public void testLocalVariableStringToIntFix() throws Exception {
         performFixTest("test/Test.java",
                 "package test; public class Test {private void test() {String s = 5;}}",
@@ -123,7 +123,7 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
     public void testLocalVariableStringToObject() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {private void test() {String s = new Object();}}", 65, "Change type of s to Object");
     }
-    
+
     public void testLocalVariableStringToObjectFix() throws Exception {
         performFixTest("test/Test.java",
                 "package test; public class Test {private void test() {String s = new Object();}}",
@@ -131,14 +131,14 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
                 "Change type of s to Object",
                 "package test; public class Test {private void test() {Object s = new Object();}}");
     }
-    
+
     public void testCapturedWildcard1() throws Exception {
         performFixTest("test/Test.java",
                 "package test; import java.util.List; public class Test {private void test() {String o = |test1();} private List<? extends CharSequence> test1() {return null;}}",
                 "Change type of o to List<? extends CharSequence>",
                 "package test; import java.util.List; public class Test {private void test() { List<? extends CharSequence> o = test1();} private List<? extends CharSequence> test1() {return null;}}");
     }
-    
+
     public void testCapturedWildcard2() throws Exception {
         performFixTest("test/Test.java",
                 "package test; import java.util.List; public class Test {private void test() {List<? extends CharSequence> l = null; Number o = |l.get(0);}}",
@@ -152,12 +152,33 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
                        "Change type of d to Runnable",
                        "package test; public class Test {public void foo() {Runnable d = new Runnable() {public void run() {}};}}");
     }
-    
+
     /**
      * change to &lt;nulltype&gt; should not be offered
      */
     public void test141664() throws Exception {
         performAnalysisTest("test/Test.java", "package test; public class Test {private void test() {char x = |null;}}");
+    }
+
+    public void testForEach1() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void foo(Iterable<Object> it) { for (String o : |it) { } } }",
+                       "Change type of o to Object",
+                       "package test; public class Test {public void foo(Iterable<Object> it) { for (Object o : it) { } } }");
+    }
+
+    public void testForEach2() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void foo(java.util.List<? extends Object> it) { for (String o : |it) { } } }",
+                       "Change type of o to Object",
+                       "package test; public class Test {public void foo(java.util.List<? extends Object> it) { for (Object o : it) { } } }");
+    }
+
+    public void testForEach3() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void foo(Object[] it) { for (String o : |it) { } } }",
+                       "Change type of o to Object",
+                       "package test; public class Test {public void foo(Object[] it) { for (Object o : it) { } } }");
     }
 
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) {

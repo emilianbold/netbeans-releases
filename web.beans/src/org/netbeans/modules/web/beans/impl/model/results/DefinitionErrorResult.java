@@ -59,9 +59,20 @@ public class DefinitionErrorResult extends BaseResult implements Result.Error {
         myMessage  =error;
     }
 
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.Result.Error#getMessage()
+     */
     public String getMessage(){
         return myMessage;
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.Result#getKind()
+     */
+    public ResultKind getKind() {
+        return ResultKind.DEFINITION_ERROR;
+    }
+    
     private final String myMessage;
+
 }

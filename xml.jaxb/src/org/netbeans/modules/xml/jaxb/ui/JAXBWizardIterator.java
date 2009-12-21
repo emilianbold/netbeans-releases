@@ -175,7 +175,8 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
             project.getProjectDirectory().getFileSystem().refresh(true);
             throw new IOException(msg);
         }
-        
+
+        ProjectHelper.addJaxbApiEndorsed(project);
         return Collections.singleton(dTemplate);
     }
 

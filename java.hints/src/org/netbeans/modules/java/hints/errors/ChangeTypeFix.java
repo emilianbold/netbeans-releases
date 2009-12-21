@@ -82,11 +82,10 @@ final class ChangeTypeFix implements Fix {
             public void run(final WorkingCopy working) throws IOException {
                 working.toPhase(Phase.RESOLVED);
                 TypeMirror[] tm = new TypeMirror[1];
-                ExpressionTree[] expression = new ExpressionTree[1];
                 TypeMirror[] expressionType = new TypeMirror[1];
                 Tree[] leaf = new Tree[1];
 
-                ChangeType.computeType(working, position, tm, expression, expressionType, leaf);
+                ChangeType.computeType(working, position, tm, expressionType, leaf);
 
                 //anonymous class?
                 expressionType[0] = Utilities.convertIfAnonymous(expressionType[0]);

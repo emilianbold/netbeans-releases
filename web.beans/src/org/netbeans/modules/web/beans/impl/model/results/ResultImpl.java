@@ -63,7 +63,7 @@ import org.netbeans.modules.web.beans.api.model.Result;
  * @author ads
  *
  */
-public class ResultImpl extends BaseResult implements Result.InjectableResult {
+public class ResultImpl extends BaseResult implements Result.ResolutionResult {
     
     private static final String ALTERNATIVE = 
         "javax.enterprise.inject.Alternative";   // NOI18N
@@ -87,6 +87,15 @@ public class ResultImpl extends BaseResult implements Result.InjectableResult {
         myProductions = Collections.emptyMap();
         myHelper = helper;
     }
+    
+    public ResultImpl( VariableElement var, TypeMirror elementType ,
+            AnnotationModelHelper helper ) 
+    {
+        super( var, elementType );
+        myDeclaredTypes =Collections.emptySet();
+        myProductions = Collections.emptyMap();
+        myHelper = helper;
+    }
 
     public Set<TypeElement> getTypeElements() {
         return myDeclaredTypes;
@@ -101,29 +110,49 @@ public class ResultImpl extends BaseResult implements Result.InjectableResult {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.api.model.Result#getElement()
+     * @see org.netbeans.modules.web.beans.api.model.Result#getKind()
      */
-    public Element getElement() {
-        // TODO Auto-generated method stub
+    public ResultKind getKind() {
         return null;
-    }
+    } 
 
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.Result.InjectableResult#getStereotypes(javax.lang.model.element.Element)
+     */
+    public List<AnnotationMirror> getAllStereotypes( Element element ) {
+        List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
+        Set<Element> foundStereotypesElement = new HashSet<Element>(); 
+        StereotypeChecker checker = new StereotypeChecker( getHelper());
+        doGetStereotypes(element, result, foundStereotypesElement, checker);
+        return result;
+    }
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result.InjectableResult#getStereotypes(javax.lang.model.element.Element)
      */
     public List<AnnotationMirror> getStereotypes( Element element ) {
         List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
-        Set<Element> foundStereotypesElement = new HashSet<Element>(); 
+        List<? extends AnnotationMirror> annotationMirrors = 
+            getController().getElements().getAllAnnotationMirrors( element );
         StereotypeChecker checker = new StereotypeChecker( getHelper());
-        doGetStereotypes(getElement(), result, foundStereotypesElement, checker);
-        return result;
+        for (AnnotationMirror annotationMirror : annotationMirrors) {
+            TypeElement annotationElement = (TypeElement)annotationMirror.
+                getAnnotationType().asElement();
+            if ( isStereotype( annotationElement, checker ) ){
+                result.add( annotationMirror );
+            }
+        }
+        return result; 
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.api.model.Result.InjectableResult#isAlternative(javax.lang.model.element.Element)
      */
     public boolean isAlternative( Element element ) {
-        for (AnnotationMirror annotationMirror : getStereotypes(element)) {
+        if (hasAlternative(element)){
+            return true;
+        }
+        for (AnnotationMirror annotationMirror : getAllStereotypes(element)) {
             DeclaredType annotationType = annotationMirror.getAnnotationType();
             if ( hasAlternative( annotationType.asElement()) ){
                 return true;
@@ -132,13 +161,13 @@ public class ResultImpl extends BaseResult implements Result.InjectableResult {
         return false;
     }
     
-    private boolean hasAlternative( Element element ){
+    public boolean hasAlternative( Element element ){
         List<? extends AnnotationMirror> annotations = getController().
             getElements().getAllAnnotationMirrors(element);
         return getHelper().hasAnnotation(annotations, ALTERNATIVE);
     }
     
-    private AnnotationModelHelper  getHelper(){
+    AnnotationModelHelper  getHelper(){
         return myHelper;
     }
     
@@ -159,6 +188,7 @@ public class ResultImpl extends BaseResult implements Result.InjectableResult {
                 getAnnotationType().asElement();
             if ( isStereotype( annotationElement, checker ) ){
                 foundStereotypesElement.add( annotationElement );
+                result.add(annotationMirror);
                 doGetStereotypes(annotationElement, result, 
                         foundStereotypesElement, checker );
             }
@@ -176,5 +206,5 @@ public class ResultImpl extends BaseResult implements Result.InjectableResult {
     
     private Set<TypeElement> myDeclaredTypes;
     private Map<Element, List<DeclaredType>> myProductions;
-    private final AnnotationModelHelper myHelper; 
+    private final AnnotationModelHelper myHelper;
 }

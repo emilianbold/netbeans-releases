@@ -47,7 +47,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.SyntaxTree;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
@@ -63,7 +62,6 @@ import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -100,6 +98,10 @@ public class HtmlHintsProvider implements HintsProvider {
      */
     @Override
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
+        //html extensions
+        for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
+            ext.computeSelectionHints(manager, context, suggestions, start, end);
+        }
     }
 
     /**
