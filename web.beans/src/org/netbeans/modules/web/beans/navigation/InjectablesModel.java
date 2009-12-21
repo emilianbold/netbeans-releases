@@ -66,29 +66,31 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.openide.filesystems.FileObject;
 
 /**
  * @author ads
  */
-public final class AmbiguousInjectablesModel extends DefaultTreeModel {
+public final class InjectablesModel extends DefaultTreeModel {
     
     private static final long serialVersionUID = -6845959436250662000L;
 
     private static final Logger LOG = Logger.getLogger(
-            AmbiguousInjectablesModel.class.getName());
+            InjectablesModel.class.getName());
     
     static Element[] EMPTY_ELEMENTS_ARRAY = new Element[0];
     static ElementHandle<?>[] EMPTY_ELEMENTHANDLES_ARRAY = new ElementHandle[0];
 
-    public AmbiguousInjectablesModel(Collection<Element> elements, 
+    public InjectablesModel(Result result, 
             CompilationController controller ,MetadataModel<WebBeansModel> model ) 
     {
         super(null);
 
         myModel = model;
-        if (elements.size() == 0 ) {
+        /* TODO :
+         * if (elements.size() == 0 ) {
             myElementHandles = EMPTY_ELEMENTHANDLES_ARRAY;
         } else {
             List<ElementHandle<?>> elementHandlesList = 
@@ -101,7 +103,7 @@ public final class AmbiguousInjectablesModel extends DefaultTreeModel {
             myElementHandles = elementHandlesList.toArray(EMPTY_ELEMENTHANDLES_ARRAY);
         }
 
-        update(elements , controller );
+        update(elements , controller );*/
     }
     
     void update() {

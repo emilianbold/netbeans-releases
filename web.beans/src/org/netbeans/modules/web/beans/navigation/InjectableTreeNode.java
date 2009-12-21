@@ -185,7 +185,7 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
     protected void openElementHandle() {
     	if (myFileObject == null) {
             StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(AmbiguousInjectablesModel.class, 
+                    NbBundle.getMessage(InjectablesModel.class, 
                             "MSG_CouldNotOpenElement", getFQNLabel())); // NOI18N
             return;
         }
@@ -196,7 +196,7 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
 
         if (!ElementOpen.open(myCpInfo, myElementHandle)) {
             StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(AmbiguousInjectablesModel.class, 
+                    NbBundle.getMessage(InjectablesModel.class, 
                             "MSG_CouldNotOpenElement", getFQNLabel()));// NOI18N
         }
     }
