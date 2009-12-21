@@ -95,10 +95,14 @@ public class JsfSupport {
         if (wm == null) {
             return null;
         }
+	ClassPath classPath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+	if(classPath == null) {
+	    return null;
+	}
         synchronized (INSTANCIES) {
             JsfSupport instance = INSTANCIES.get(wm);
             if (instance == null) {
-                instance = new JsfSupport(wm);
+                instance = new JsfSupport(wm, classPath);
                 INSTANCIES.put(wm, instance);
             }
             return instance;
@@ -112,12 +116,12 @@ public class JsfSupport {
     private ClassPath classpath;
     private JsfIndex index;
 
-    private JsfSupport(WebModule wm) {
+    private JsfSupport(WebModule wm, ClassPath classPath) {
         assert wm != null;
 
         this.wm = wm;
 
-        this.classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+        this.classpath = classPath;
         
         //create classpath support
         this.tldLibrariesCache = new TldLibrariesCache(this);
