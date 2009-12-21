@@ -92,6 +92,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -103,7 +104,7 @@ import org.openide.util.RequestProcessor;
  * @author ads
  *
  */
-public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
+public class InjectablesPanel extends javax.swing.JPanel {
 
     private static final long serialVersionUID = -1643692494954311020L;
 
@@ -121,14 +122,13 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
         root.add(new DefaultMutableTreeNode(NbBundle.getMessage(
-                AmbiguousInjectablesPanel.class, "LBL_WaitNode"))); // NOI18N
+                InjectablesPanel.class, "LBL_WaitNode"))); // NOI18N
         pleaseWaitTreeModel = new DefaultTreeModel(root);
     }
     
-    private AmbiguousInjectablesModel javaHierarchyModel;
+    private InjectablesModel javaHierarchyModel;
 
-    public AmbiguousInjectablesPanel(Collection<Element> elements, 
-            VariableElement var,  List<AnnotationMirror> bindings , 
+    public InjectablesPanel(Result result,  List<AnnotationMirror> bindings , 
             CompilationController controller, MetadataModel<WebBeansModel> model ) 
     {
         initComponents();
@@ -147,7 +147,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         myShowFQNToggleButton.setSelected(
                 WebBeansNavigationOptions.isShowFQN());
 
-        initInjectionPoint( var, bindings , controller );
+        initInjectionPoint( result.getVariable(), bindings , controller );
 
         myJavaHierarchyTree.getSelectionModel().setSelectionMode(
                 TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -155,7 +155,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         myJavaHierarchyTree.setShowsRootHandles(true);
         myJavaHierarchyTree.setCellRenderer(new JavaTreeCellRenderer());
 
-        javaHierarchyModel = new AmbiguousInjectablesModel(elements, 
+        javaHierarchyModel = new InjectablesModel(result, 
                 controller, model );
         myJavaHierarchyTree.setModel(javaHierarchyModel);
 
@@ -206,7 +206,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     
     private void enterBusy() {
         myJavaHierarchyTree.setModel(pleaseWaitTreeModel);
-        JRootPane rootPane = SwingUtilities.getRootPane(AmbiguousInjectablesPanel.this);
+        JRootPane rootPane = SwingUtilities.getRootPane(InjectablesPanel.this);
         if (rootPane != null) {
             rootPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         }
@@ -222,7 +222,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     
     private void leaveBusy() {
         myJavaHierarchyTree.setModel(javaHierarchyModel);
-        JRootPane rootPane = SwingUtilities.getRootPane(AmbiguousInjectablesPanel.this);
+        JRootPane rootPane = SwingUtilities.getRootPane(InjectablesPanel.this);
         if (rootPane != null) {
             rootPane.setCursor(Cursor.getDefaultCursor());
         }
@@ -269,7 +269,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(
                 new Runnable() {
             public void run() {
-                JRootPane rootPane = SwingUtilities.getRootPane(AmbiguousInjectablesPanel.this);
+                JRootPane rootPane = SwingUtilities.getRootPane(InjectablesPanel.this);
                 if (rootPane != null) {
                     rootPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 }
@@ -287,7 +287,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                     }
                     selectMatchingRow();
                 } finally {
-                    JRootPane rootPane = SwingUtilities.getRootPane(AmbiguousInjectablesPanel.this);
+                    JRootPane rootPane = SwingUtilities.getRootPane(InjectablesPanel.this);
                     if (rootPane != null) {
                         rootPane.setCursor(Cursor.getDefaultCursor());
                     }
@@ -326,8 +326,6 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     }
 
     private void showBindings() {
-        // TODO :
-        /*myInjectableBindings.setText("");
         myInjectableBindings.setToolTipText(null);
         TreePath treePath = myJavaHierarchyTree.getSelectionPath();
         if (treePath != null) {
@@ -346,7 +344,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                             }
                             else {
                                 List<AnnotationMirror> bindings = 
-                                    model.getBindings(element);
+                                    model.getQualifiers(element);
                                 StringBuilder builder = new StringBuilder();
                                 for (AnnotationMirror annotationMirror : bindings) {
                                     appendBinding(annotationMirror, builder,  
@@ -364,17 +362,17 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                     });
                 }
                 catch (MetadataModelException e) {
-                    Logger.getLogger( AmbiguousInjectablesPanel.class.getName() ).
+                    Logger.getLogger( InjectablesPanel.class.getName() ).
                         log( Level.WARNING, e.getMessage(), e);
                 }
                 catch (IOException e) {
-                    Logger.getLogger( AmbiguousInjectablesPanel.class.getName() ).
+                    Logger.getLogger( InjectablesPanel.class.getName() ).
                     log( Level.WARNING, e.getMessage(), e);
                 }
                 myInjectableBindings.setCaretPosition(0);
                 myInjectableBindings.setToolTipText(((JavaElement)node).getTooltip());
             }
-        }*/
+        }
     }
 
     private void showJavaDoc() {
@@ -388,7 +386,7 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
     }
 
     private void close() {
-        Window window = SwingUtilities.getWindowAncestor(AmbiguousInjectablesPanel.this);
+        Window window = SwingUtilities.getWindowAncestor(InjectablesPanel.this);
         if (window != null) {
             window.setVisible(false);
         }
@@ -787,21 +785,21 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
 
         myJavaHierarchyTreeScrollPane.setBorder(null);
         myJavaHierarchyTreeScrollPane.setViewportView(myJavaHierarchyTree);
-        myJavaHierarchyTree.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_InjectableHierarchy")); // NOI18N
+        myJavaHierarchyTree.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSD_InjectableHierarchy")); // NOI18N
 
         mySplitPane.setLeftComponent(myJavaHierarchyTreeScrollPane);
 
         myFilterLabel.setLabelFor(myFilterTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(myFilterLabel, org.openide.util.NbBundle.getBundle(AmbiguousInjectablesPanel.class).getString("LABEL_filterLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(myFilterLabel, org.openide.util.NbBundle.getBundle(InjectablesPanel.class).getString("LABEL_filterLabel")); // NOI18N
 
-        myFilterTextField.setToolTipText(org.openide.util.NbBundle.getBundle(AmbiguousInjectablesPanel.class).getString("TOOLTIP_filterTextField")); // NOI18N
+        myFilterTextField.setToolTipText(org.openide.util.NbBundle.getBundle(InjectablesPanel.class).getString("TOOLTIP_filterTextField")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(myCaseSensitiveFilterCheckBox, org.openide.util.NbBundle.getBundle(AmbiguousInjectablesPanel.class).getString("LABEL_caseSensitiveFilterCheckBox")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(myCaseSensitiveFilterCheckBox, org.openide.util.NbBundle.getBundle(InjectablesPanel.class).getString("LABEL_caseSensitiveFilterCheckBox")); // NOI18N
         myCaseSensitiveFilterCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(myАiltersLabel, org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "LABEL_filtersLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(myАiltersLabel, org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "LABEL_filtersLabel")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(myCloseButton, org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "LABEL_Close")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(myCloseButton, org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "LABEL_Close")); // NOI18N
 
         myFiltersToolbar.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         myFiltersToolbar.setFloatable(false);
@@ -810,13 +808,13 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
 
         myShowFQNToggleButton.setIcon(FQN_ICON);
         myShowFQNToggleButton.setMnemonic('Q');
-        myShowFQNToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(AmbiguousInjectablesPanel.class).getString("TOOLTIP_showFQNToggleButton")); // NOI18N
+        myShowFQNToggleButton.setToolTipText(org.openide.util.NbBundle.getBundle(InjectablesPanel.class).getString("TOOLTIP_showFQNToggleButton")); // NOI18N
         myShowFQNToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         myFiltersToolbar.add(myShowFQNToggleButton);
 
         myExpandAllButton.setIcon(EXPAND_ALL_ICON);
         myExpandAllButton.setMnemonic('E');
-        myExpandAllButton.setToolTipText(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "TOOLTIP_expandAll")); // NOI18N
+        myExpandAllButton.setToolTipText(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "TOOLTIP_expandAll")); // NOI18N
         myExpandAllButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         myFiltersToolbar.add(myExpandAllButton);
 
@@ -825,21 +823,21 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
         myBindings.setEditable(false);
 
         myBindingLbl.setLabelFor(myBindings);
-        org.openide.awt.Mnemonics.setLocalizedText(myBindingLbl, org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "LBL_Bindings")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(myBindingLbl, org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "LBL_Bindings")); // NOI18N
 
         myType.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Nb.ScrollPane.Border.color")));
         myType.setContentType("text/x-java");
         myType.setEditable(false);
 
         myTypeLbl.setLabelFor(myType);
-        org.openide.awt.Mnemonics.setLocalizedText(myTypeLbl, org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "LBL_Type")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(myTypeLbl, org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "LBL_Type")); // NOI18N
 
         myInjectableBindings.setBorder(javax.swing.BorderFactory.createLineBorder(javax.swing.UIManager.getDefaults().getColor("Nb.ScrollPane.Border.color")));
         myInjectableBindings.setContentType("text/x-java");
         myInjectableBindings.setEditable(false);
 
         myInjectableBindingLbl.setLabelFor(myInjectableBindings);
-        org.openide.awt.Mnemonics.setLocalizedText(myInjectableBindingLbl, org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "LBL_CurrentElementBindings")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(myInjectableBindingLbl, org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "LBL_CurrentElementBindings")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -909,21 +907,21 @@ public class AmbiguousInjectablesPanel extends javax.swing.JPanel {
                 .addContainerGap())
         );
 
-        myFilterLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_TextFilter")); // NOI18N
-        myFilterLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_TextFilter")); // NOI18N
-        myFilterTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_TextFieldFilter")); // NOI18N
-        myCaseSensitiveFilterCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_CaseSensitive")); // NOI18N
-        myCaseSensitiveFilterCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "caseSensitiveFilterCheckBox_ACSD")); // NOI18N
-        myАiltersLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_Filters")); // NOI18N
-        myАiltersLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_Filters")); // NOI18N
-        myCloseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_Close")); // NOI18N
-        myCloseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_Close")); // NOI18N
-        myBindingLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_Bindings")); // NOI18N
-        myBindingLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_Bindnigs")); // NOI18N
-        myTypeLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_Type")); // NOI18N
-        myTypeLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_Type")); // NOI18N
-        myInjectableBindingLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSN_InjectableBindings")); // NOI18N
-        myInjectableBindingLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AmbiguousInjectablesPanel.class, "ACSD_InjectableBindnigs")); // NOI18N
+        myFilterLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSN_TextFilter")); // NOI18N
+        myFilterLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSD_TextFilter")); // NOI18N
+        myFilterTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSD_TextFieldFilter")); // NOI18N
+        myCaseSensitiveFilterCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSN_CaseSensitive")); // NOI18N
+        myCaseSensitiveFilterCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "caseSensitiveFilterCheckBox_ACSD")); // NOI18N
+        myАiltersLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSN_Filters")); // NOI18N
+        myАiltersLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSD_Filters")); // NOI18N
+        myCloseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSN_Close")); // NOI18N
+        myCloseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSD_Close")); // NOI18N
+        myBindingLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSN_Bindings")); // NOI18N
+        myBindingLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSD_Bindnigs")); // NOI18N
+        myTypeLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSN_Type")); // NOI18N
+        myTypeLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSD_Type")); // NOI18N
+        myInjectableBindingLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSN_InjectableBindings")); // NOI18N
+        myInjectableBindingLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSD_InjectableBindnigs")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
