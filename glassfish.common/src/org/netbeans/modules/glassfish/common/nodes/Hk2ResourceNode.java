@@ -85,7 +85,7 @@ public class Hk2ResourceNode extends Hk2ItemNode {
                     Future<OperationState> result = null;
                     GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
                     if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(commonModule.getCommandFactory(), commonModule.getInstanceProperties());
+                        CommandRunner mgr = new CommandRunner(true, commonModule.getCommandFactory(), commonModule.getInstanceProperties());
                         result = mgr.unregister(resource.getName(), resource.getCommandSuffix(),
                                 decorator.getCmdPropertyName(), decorator.isCascadeDelete());
                         status = new WeakReference<Future<OperationState>>(result);
@@ -128,7 +128,7 @@ public class Hk2ResourceNode extends Hk2ItemNode {
                                     if (commonSupport != null) {
                                         //try {
                                         java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                                        CommandRunner mgr = new CommandRunner(commonSupport.getCommandFactory(), ip);
+                                        CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
                                         if (!GlassfishModule.JDBC_RESOURCE.equals(resource.getCommandSuffix())) {
                                             retVal.initializeData(getDisplayName(), mgr.getResourceData(getDisplayName()));
                                         } else {
@@ -152,7 +152,7 @@ public class Hk2ResourceNode extends Hk2ItemNode {
                                                 if (commonSupport != null) {
                                                     //try {
                                                     java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                                                    CommandRunner mgr = new CommandRunner(commonSupport.getCommandFactory(), ip);
+                                                    CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
                                                     //retVal.initializeData(getDisplayName(), mgr.getResourceData(getDisplayName()));
                                                     try {
                                                         mgr.putResourceData(retVal.getData());

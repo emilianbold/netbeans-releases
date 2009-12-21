@@ -64,6 +64,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.StandardLocation;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -588,7 +589,7 @@ public final class LayerBuilder {
             org.w3c.dom.Element e = doc.getDocumentElement();
             String[] pieces = path.split("/");
             for (String piece : Arrays.asList(pieces).subList(0, pieces.length - 1)) {
-                org.w3c.dom.Element kid = find(e, piece);
+                org.w3c.dom.Element kid = find(e, piece, "file|folder");
                 if (kid != null) {
                     if (!kid.getNodeName().equals("folder")) {
                         throw new IllegalArgumentException(path);
@@ -600,7 +601,7 @@ public final class LayerBuilder {
                 }
             }
             String piece = pieces[pieces.length - 1];
-            org.w3c.dom.Element file = find(e,piece);
+            org.w3c.dom.Element file = find(e, piece, "file|folder");
             if (folder) {
                 if (file == null) {
                     file = (org.w3c.dom.Element) e.appendChild(doc.createElement("folder"));
@@ -612,7 +613,28 @@ public final class LayerBuilder {
                 file = (org.w3c.dom.Element) e.appendChild(doc.createElement("file"));
             }
             file.setAttribute("name", piece);
+            if (originatingElement != null) {
+                // Embed comment in generated-layer.xml for easy navigation back to the annotation.
+                String name;
+                switch (originatingElement.getKind()) {
+                case CONSTRUCTOR:
+                case ENUM_CONSTANT:
+                case FIELD:
+                case INSTANCE_INIT:
+                case METHOD:
+                case STATIC_INIT:
+                    name = originatingElement.getEnclosingElement() + "." + originatingElement;
+                    break;
+                default:
+                    name = originatingElement.toString();
+                }
+                file.appendChild(doc.createComment(name));
+            }
             for (Map.Entry<String,String[]> entry : attrs.entrySet()) {
+                org.w3c.dom.Element former = find(file, entry.getKey(), "attr");
+                if (former != null) {
+                    file.removeChild(former);
+                }
                 org.w3c.dom.Element attr = (org.w3c.dom.Element) file.appendChild(doc.createElement("attr"));
                 attr.setAttribute("name", entry.getKey());
                 attr.setAttribute(entry.getValue()[0], entry.getValue()[1]);
@@ -625,11 +647,15 @@ public final class LayerBuilder {
             return LayerBuilder.this;
         }
 
-        private org.w3c.dom.Element find(org.w3c.dom.Element parent, String name) {
-            NodeList nl = parent.getElementsByTagName("*");
+        private org.w3c.dom.Element find(org.w3c.dom.Element parent, String name, String kindRx) {
+            NodeList nl = parent.getChildNodes();
             for (int i = 0; i < nl.getLength(); i++) {
-                org.w3c.dom.Element e = (org.w3c.dom.Element) nl.item(i);
-                if (e.getAttribute("name").equals(name)) {
+                Node item = nl.item(i);
+                if (item.getNodeType() != Node.ELEMENT_NODE) {
+                    continue;
+                }
+                org.w3c.dom.Element e = (org.w3c.dom.Element) item;
+                if (e.getAttribute("name").equals(name) && e.getNodeName().matches(kindRx)) {
                     return e;
                 }
             }

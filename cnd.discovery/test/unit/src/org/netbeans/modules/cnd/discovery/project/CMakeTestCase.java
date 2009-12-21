@@ -42,10 +42,10 @@ package org.netbeans.modules.cnd.discovery.project;
 import org.junit.Test;
 
 /**
- *
+ * Not in suite
  * @author Alexander Simon
  */
-public class CMakeTestCase extends MakeProjectBase {
+public class CMakeTestCase extends MakeProjectTestBase {
 
     public CMakeTestCase() {
         super("CMake");

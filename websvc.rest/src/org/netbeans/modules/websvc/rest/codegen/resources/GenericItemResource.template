@@ -16,7 +16,7 @@ package ${package};
  */
 
 public class ${name} {
-    ${field_list};
+    ${field_list}
     /** Creates a new instance of ${name} */
     private ${name}(${param_list}) {
         ${assignment_list}

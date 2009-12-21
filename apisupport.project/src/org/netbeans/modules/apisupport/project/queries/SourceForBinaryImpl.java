@@ -78,13 +78,17 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
             File binaryJarF = FileUtil.archiveOrDirForURL(binaryRoot);
             if (binaryJarF != null) {
                 FileObject srcDir = null;
+                File genSrcDirF = null;
                 if (binaryJarF.getAbsolutePath().endsWith(project.evaluator().getProperty("module.jar").replace('/', File.separatorChar))) {
                     srcDir = project.getSourceDirectory();
+                    genSrcDirF = project.getGeneratedClassesDirectory();
                 } else {
                     // maybe tests.jar in testdistribution
                     TestEntry entry = TestEntry.get(binaryJarF);
                     if (entry != null && project.getCodeNameBase().equals(entry.getCodeNameBase())) {
-                        srcDir = project.getTestSourceDirectory(entry.getTestType());
+                        String type = entry.getTestType();
+                        srcDir = project.getTestSourceDirectory(type);
+                        genSrcDirF = project.getTestGeneratedClassesDirectory(type);
                     } else {
                         // try classpath-extension
                         // // convention-over-cfg per mkleint's suggestion: <jarname>-src(.zip) folder or ZIP first
@@ -94,13 +98,13 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
                             File jFolder = new File(binaryJarF.getParentFile(),
                                     n.substring(0, n.length() - ".jar".length()) + "-src");
                             if (jFolder.isDirectory()) {
-                                res = new Result(FileUtil.toFileObject(jFolder));
+                                res = new Result(FileUtil.toFileObject(jFolder), null);
                                 cache.put(binaryRoot,res);
                                 return res;
                             } else {
                                 File jZip = new File(jFolder.getAbsolutePath() + ".zip");
                                 if (jZip.isFile()) {
-                                    res = new Result(FileUtil.getArchiveRoot(FileUtil.toFileObject(jZip)));
+                                    res = new Result(FileUtil.getArchiveRoot(FileUtil.toFileObject(jZip)), null);
                                     cache.put(binaryRoot,res);
                                     return res;
                                 }
@@ -109,7 +113,7 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
                     }
                 }
                 if (srcDir != null) {
-                    res = new Result(srcDir);
+                    res = new Result(srcDir, genSrcDirF);
                     cache.put(binaryRoot,res);
                     return res;
                 }
@@ -117,14 +121,14 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
             if (binaryRoot.equals(getClassesUrl())) {
                 FileObject srcDir = project.getSourceDirectory();
                 if (srcDir != null) {
-                    res = new Result(srcDir);
+                    res = new Result(srcDir, project.getGeneratedClassesDirectory());
                 }
             } else {
                 for (String testType : project.supportedTestTypes()) {
                     if (binaryRoot.equals(getTestClassesUrl(testType))) {
                         FileObject testSrcDir = project.getTestSourceDirectory(testType);
                         if (testSrcDir != null) {
-                            res = new Result(testSrcDir);
+                            res = new Result(testSrcDir, project.getTestGeneratedClassesDirectory(testType));
                             break;
                         }
                     }
@@ -149,7 +153,7 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
                                     "In " + FileUtil.getFileDisplayName(project.getProjectDirectory()) +
                                     " " + loc + " is neither a directory nor a JAR");
                         } else if (u.equals(binaryRoot)) {
-                            res = new Result(entry.getKey());
+                            res = new Result(entry.getKey(), null);
                             break ECUS;
                         }
                     }
@@ -182,15 +186,20 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
     
     private static class Result implements SourceForBinaryQuery.Result {
                
-        private FileObject res;
+        private FileObject[] res;
         
-        public Result(FileObject res) {
+        public Result(FileObject res, File other) {
             assert res != null;
-            this.res = res;
+            FileObject otherFO = other != null ? FileUtil.toFileObject(other) : null;
+            if (otherFO != null) {
+                this.res = new FileObject[] {res, otherFO};
+            } else {
+                this.res = new FileObject[] {res};
+            }
         }
         
         public FileObject[] getRoots () {
-            return new FileObject[] {res};
+            return res;
         }
         
         public void addChangeListener (ChangeListener l) {

@@ -542,7 +542,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
             
             boolean credentials = true;
             
-            String msg = WizardConstants.EMPTY_STRING;
+            String msg = null;
             
             if (getPanel() != null) {
                         if (isSecurityCheckBoxSelected() &&
@@ -620,7 +620,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         {
             wiz = (WizardDescriptor) settings;
             
-            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WizardConstants.EMPTY_STRING);
+            setErrorMsg(null);
             //getPanel().mainClassJCheckBox.setEnabled(shouldEnableMainProjectClass());
         }
         

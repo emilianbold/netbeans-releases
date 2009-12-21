@@ -1264,7 +1264,7 @@ class DTDParser extends Object {
         /** Get List of all Elements whose names starts with given prefix  */
         public List getElementList( String prefix ) {
             List l = new ArrayList();
-            prefix = prefix == null ? "" : xmlDTD ? prefix : prefix.toUpperCase();
+            prefix = prefix == null ? "" : xmlDTD ? prefix : prefix.toUpperCase(Locale.ENGLISH);
             Iterator i = elements.tailMap( prefix ).entrySet().iterator();
             
             while( i.hasNext() ) {
@@ -1281,7 +1281,7 @@ class DTDParser extends Object {
         
         /** Get the Element of given name. */
         public DTD.Element getElement( String name ) {
-            return (DTD.Element)elements.get( xmlDTD ? name : name.toUpperCase() );
+            return (DTD.Element)elements.get( xmlDTD ? name : name.toUpperCase(Locale.ENGLISH) );
         }
         
         /** Get List of all CharRefs whose aliases starts with given prefix. */
@@ -1371,7 +1371,7 @@ class DTDParser extends Object {
             if(prefix == null) {
                 prefix = "";
             }
-            prefix = xmlDTD ? prefix : prefix.toLowerCase();
+            prefix = xmlDTD ? prefix : prefix.toLowerCase(Locale.ENGLISH);
             Iterator i = attributes.tailMap(prefix).entrySet().iterator();
             
             while( i.hasNext() ) {

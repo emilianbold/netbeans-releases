@@ -57,6 +57,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiUser;
@@ -125,15 +126,37 @@ public final class UIUtils {
         if (uname==null) {
             return false;
         }
-        String password=preferences.get(getPrefName(KENAI_PASSWORD_PREF), null); // NOI18N
         PresenceIndicator.getDefault().init();
         try {
             KenaiConnection.getDefault();
-            Kenai.getDefault().login(uname, Scrambler.getInstance().descramble(password).toCharArray(), force?true:Boolean.parseBoolean(preferences.get(getPrefName(ONLINE_STATUS_PREF), String.valueOf(Utilities.isChatSupported()))));
+            char[] password = loadPassword(preferences);
+            if (password == null) {
+                return false;
+            }
+            Kenai.getDefault().login(uname, password,
+                    force ? true : Boolean.parseBoolean(preferences.get(getPrefName(ONLINE_STATUS_PREF), String.valueOf(Utilities.isChatSupported()))));
         } catch (KenaiException ex) {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Loads password from the keyring. For settings compatibility,
+     * can also interpret and upgrade old insecure storage.
+     */
+    @SuppressWarnings("deprecation")
+    private static char[] loadPassword(Preferences preferences) {
+        String passwordPref = getPrefName(KENAI_PASSWORD_PREF);
+        String scrambledPassword = preferences.get(passwordPref, null); // NOI18N
+        char[] newPassword = Keyring.read(passwordPref);
+        if (scrambledPassword != null) {
+            preferences.remove(passwordPref);
+            if (newPassword == null) {
+                return Scrambler.getInstance().descramble(scrambledPassword).toCharArray();
+            }
+        }
+        return newPassword;
     }
 
     /**
@@ -186,13 +209,16 @@ public final class UIUtils {
                                 }
                             }
                         });
+                        String passwordPref = getPrefName(KENAI_PASSWORD_PREF);
                         if (loginPanel.isStorePassword()) {
                             preferences.put(getPrefName(KENAI_USERNAME_PREF), loginPanel.getUsername()); // NOI18N
-                            preferences.put(getPrefName(KENAI_PASSWORD_PREF), Scrambler.getInstance().scramble(new String(loginPanel.getPassword()))); // NOI18N
+                            Keyring.save(passwordPref, loginPanel.getPassword(),
+                                    NbBundle.getMessage(UIUtils.class, "UIUtils.password_keyring_description", Kenai.getDefault().getUrl().getHost()));
                         } else {
                             preferences.remove(getPrefName(KENAI_USERNAME_PREF)); // NOI18N
-                            preferences.remove(getPrefName(KENAI_PASSWORD_PREF)); // NOI18N
+                            Keyring.delete(passwordPref);
                         }
+                        preferences.remove(passwordPref);
                     } else {
                         loginPanel.putClientProperty("cancel", "true"); // NOI18N
                         JDialog parent = (JDialog) loginPanel.getRootPane().getParent();
@@ -205,10 +231,12 @@ public final class UIUtils {
         Dialog d = DialogDisplayer.getDefault().createDialog(login);
 
         String uname=preferences.get(getPrefName(KENAI_USERNAME_PREF), null); // NOI18N
-        String password=preferences.get(getPrefName(KENAI_PASSWORD_PREF), null); // NOI18N
-        if (uname!=null && password!=null) {
+        if (uname != null) {
             loginPanel.setUsername(uname);
-            loginPanel.setPassword(Scrambler.getInstance().descramble(password).toCharArray());
+            char[] password = loadPassword(preferences);
+            if (password != null) {
+                loginPanel.setPassword(password);
+            }
         }
         d.pack();
         d.setResizable(false);

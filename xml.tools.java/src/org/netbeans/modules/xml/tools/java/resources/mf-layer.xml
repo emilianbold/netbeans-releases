@@ -40,7 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd" [
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd" [
     <!ENTITY localize-it "<attr name='SystemFileSystem.localizingBundle' stringvalue='org.netbeans.modules.xml.tools.java.resources.Bundle'/>">
     <!-- Defer class loading by declaring hint for lookup. -->
     <!ENTITY dtd-action-attributes "<attr name='instanceOf' stringvalue='org.netbeans.modules.xml.actions.CollectDTDAction$DTDAction'/>">
@@ -51,7 +51,6 @@ made subject to such option by the copyright holder.
     
     <folder name="Services">
         <folder name="Hidden">
-           
             <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.instance"/>
             </file>
@@ -61,13 +60,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-xml-tools-java-generator-DTDGenerateSupportFactory$Creator.instance">
                 &dtd-cookie-attributes;
             </file>
-            
-              
-            
-            
-            
-           
-        </folder>
+    </folder>
 
     </folder>
 
@@ -76,20 +69,24 @@ made subject to such option by the copyright holder.
         <folder name="XML">
             
             <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDocumentHandlerAction.instance">
+<!--
                 <attr name="instanceCreate"
                       methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="displayName"
                       bundlevalue="org.netbeans.modules.xml.tools.java.actions.Bundle#PROP_GenerateSAXHandler"/>
                 <attr name="delegate"
                       methodvalue="org.netbeans.modules.xml.tools.java.actions.GenerateDocumentHandlerAction.getInstance"/>
+-->
             </file>
             <file name="org-netbeans-modules-xml-tools-java-actions-GenerateDOMScannerAction.instance">
+<!--
                 <attr name="instanceCreate"
                       methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="displayName" 
                       bundlevalue="org.netbeans.modules.xml.tools.java.actions.Bundle#PROP_GenerateDOMScanner"/>
                 <attr name="delegate"
                       methodvalue="org.netbeans.modules.xml.tools.java.actions.GenerateDOMScannerAction.getInstance"/>
+-->
             </file>
             
         </folder>

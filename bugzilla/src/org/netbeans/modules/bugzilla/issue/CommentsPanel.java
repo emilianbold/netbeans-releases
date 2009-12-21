@@ -45,6 +45,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URI;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -77,9 +79,12 @@ import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
+import org.openide.ErrorManager;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -91,6 +96,7 @@ import org.openide.util.RequestProcessor;
 public class CommentsPanel extends JPanel {
     private static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // NOI18N
     private final static String ISSUE_ATTRIBUTE = "issue"; // NOI18N
+    private final static String URL_ATTRIBUTE = "url hyperlink";        //NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private final static int MAX_COMMENT_HEIGHT = 10000;
@@ -110,6 +116,7 @@ public class CommentsPanel extends JPanel {
                         StyledDocument doc = pane.getStyledDocument();
                         Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
                         AttributeSet as = elem.getAttributes();
+
                         IssueAction issueAction = (IssueAction)as.getAttribute(ISSUE_ATTRIBUTE);
                         if (issueAction != null) {
                             int startOffset = elem.getStartOffset();
@@ -117,6 +124,17 @@ public class CommentsPanel extends JPanel {
                             int length = endOffset - startOffset;
                             String hyperlinkText = doc.getText(startOffset, length);
                             issueAction.openIssue(hyperlinkText);
+                            return;
+                        }
+
+                        UrlAction urlAction = (UrlAction) as.getAttribute(URL_ATTRIBUTE);
+                        if (urlAction != null) {
+                            int startOffset = elem.getStartOffset();
+                            int endOffset = elem.getEndOffset();
+                            int length = endOffset - startOffset;
+                            String hyperlinkText = doc.getText(startOffset, length);
+                            urlAction.openUrlHyperlink(hyperlinkText);
+                            return;
                         }
                     }
                 } catch(Exception ex) {
@@ -236,7 +254,6 @@ public class CommentsPanel extends JPanel {
             vGroup.add(stateLabel);
         }
         verticalGroup.add(vGroup)
-            .addPreferredGap(LayoutStyle.RELATED)
             .add(pane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
     }
 
@@ -270,6 +287,31 @@ public class CommentsPanel extends JPanel {
                         blex.printStackTrace();
                 }
             }
+        }
+
+        // URL hyperlinks
+        final int[] boundaries = WebUrlHyperlinkSupport.findBoundaries(comment);
+        if ((boundaries != null) && (boundaries.length != 0)) {
+            Style defStyle = StyleContext.getDefaultStyleContext()
+                             .getStyle(StyleContext.DEFAULT_STYLE);
+            Style hlStyle = doc.addStyle("regularBlue", defStyle);      //NOI18N
+            hlStyle.addAttribute(URL_ATTRIBUTE, new UrlAction());
+            StyleConstants.setForeground(hlStyle, Color.BLUE);
+            StyleConstants.setUnderline(hlStyle, true);
+            
+            for (int i = 0; i < boundaries.length; i+=2) {
+                int off = boundaries[i];
+                int length = boundaries[i + 1] - boundaries[i];
+                try {
+                    doc.remove(off, length);
+                    doc.insertString(off, comment.substring(boundaries[i],
+                                                            boundaries[i + 1]),
+                                                            hlStyle);
+                } catch (BadLocationException ex) {
+                    ex.printStackTrace();
+                }
+            }
+
         }
 
         textPane.setBorder(BorderFactory.createCompoundBorder(
@@ -319,6 +361,22 @@ public class CommentsPanel extends JPanel {
                     }
                 }
             });
+        }
+    }
+
+    private class UrlAction {
+        void openUrlHyperlink(String hyperlinkText) {
+            try {
+                URL url = new URI(hyperlinkText).toURL();
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            } catch (Exception ex) {
+                assert false;
+                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                              "Could not open URL: "    //NOI18N
+                                                      + hyperlinkText);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                                 ex);
+            }
         }
     }
 

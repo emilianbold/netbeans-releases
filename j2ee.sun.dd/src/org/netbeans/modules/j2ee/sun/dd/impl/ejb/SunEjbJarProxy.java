@@ -175,14 +175,27 @@ public class SunEjbJarProxy implements SunEjbJar, RootInterfaceImpl {
                 document =
                         ((org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_1.SunEjbJar)ejbJarRoot).graphManager().getXmlDocument();
                 currentVersion = SunEjbJar.VERSION_3_0_1;
+            } else if (ejbJarRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_0.SunEjbJar) {
+                document =
+                        ((org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_0.SunEjbJar)ejbJarRoot).graphManager().getXmlDocument();
+                currentVersion = SunEjbJar.VERSION_3_1_0;
             }
             
             //remove the doctype
             document = removeDocType(document);
             
-            if(newVersion.equals(SunEjbJar.VERSION_3_0_1)){
+            if(newVersion.equals(SunEjbJar.VERSION_3_1_0)){
                 //This will always be an upgrade
-                generate3_01Graph(document);
+                generate3_10Graph(document);
+            } else if(newVersion.equals(SunEjbJar.VERSION_3_0_1)){
+                //This will always be an upgrade
+                if(currentVersion.equals(SunEjbJar.VERSION_3_0_0) ||
+                        currentVersion.equals(SunEjbJar.VERSION_2_1_1) ||
+                        currentVersion.equals(SunEjbJar.VERSION_2_1_0) ||
+                        currentVersion.equals(SunEjbJar.VERSION_2_0_0))
+                    generate3_01Graph(document);
+                else
+                    downgradeEjbJarGraph(document, newVersion, currentVersion);
             } else if(newVersion.equals(SunEjbJar.VERSION_3_0_0)){
                 //This will always be an upgrade
                 if(currentVersion.equals(SunEjbJar.VERSION_2_1_1) || 
@@ -236,6 +249,13 @@ public class SunEjbJarProxy implements SunEjbJar, RootInterfaceImpl {
             }
     }
     
+    private void generate3_10Graph(Document document){
+        org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_0.SunEjbJar ejbGraph =
+                org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_1_0.SunEjbJar.createGraph(document);
+        ejbGraph.changeDocType(DTDRegistry.SUN_EJBJAR_310_DTD_PUBLIC_ID, DTDRegistry.SUN_EJBJAR_310_DTD_SYSTEM_ID);
+        this.ejbJarRoot = ejbGraph;
+    }
+
     private void generate3_01Graph(Document document){
         org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_1.SunEjbJar ejbGraph =
                 org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_1.SunEjbJar.createGraph(document);

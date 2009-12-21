@@ -39,8 +39,13 @@
 package org.netbeans.modules.javacard.spi;
 
 import java.awt.Image;
+import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
@@ -50,8 +55,13 @@ import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.ChangeSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * The set of Card objects owned by a JavacardPlatform, which can be
@@ -163,11 +173,39 @@ public abstract class Cards {
     }
 
     /**
+     * Create a Children object which, if necessary, will contain a fake
+     * card with the given system id
+     * @param expectedCardSystemId The system ID for a card that is expected to
+     * exist
+     * @return
+     */
+    public Children createChildren(String expectedCardSystemId) {
+        return Children.create(new CF(expectedCardSystemId), true);
+    }
+
+    /**
      * Fire a change, indicating to any listener that the set of cards
      * has changed.
      */
     protected final void fireChange() {
         supp.fireChange();
+    }
+
+    /**
+     * Find a card with the given system ID (usually DataObject name).
+     * @param systemId The system ID, unique per platform
+     * @param <code>returnDummyCard</code> If true, never return null, but return a card
+     * with the requested name which returns false from isValid().
+     * @return A card or null if no card with that ID exists and
+     * <code>returnDummyCard</code> is false
+     */
+    public final Card find (String systemId, boolean returnDummyCard) {
+        for (Card c : getCards(false)) {
+            if (systemId.equals(c.getSystemId())) {
+                return c;
+            }
+        }
+        return returnDummyCard ? AbstractCard.createBrokenCard(systemId) : null;
     }
 
     private Card findCard(Lookup.Provider prov) {
@@ -188,6 +226,14 @@ public abstract class Cards {
     }
 
     private class CF extends ChildFactory.Detachable<Lookup.Provider> implements ChangeListener {
+        private final String brokenCardName;
+        CF(String brokenCardName) {
+            this.brokenCardName = brokenCardName;
+        }
+
+        CF() {
+            this(null);
+        }
 
         @Override
         protected void addNotify() {
@@ -204,6 +250,19 @@ public abstract class Cards {
         @Override
         protected boolean createKeys(List<Lookup.Provider> toPopulate) {
             toPopulate.addAll(getCardSources());
+            if (brokenCardName != null) {
+                boolean found = false;
+                for (Lookup.Provider lp : toPopulate) {
+                    Card card = lp.getLookup().lookup(Card.class);
+                    found = card != null && brokenCardName.equals(card.getSystemId());
+                    if (found) {
+                        break;
+                    }
+                }
+                if (!found) {
+                    toPopulate.add(new DummyProvider(brokenCardName));
+                }
+            }
             return true;
         }
 
@@ -234,11 +293,29 @@ public abstract class Cards {
         }
     }
 
-    private static final class CardNode extends AbstractNode {
+    private static final class WeakCardStateObserver implements CardStateObserver {
+        private final Reference<CardStateObserver> ref;
+        WeakCardStateObserver(CardStateObserver real) {
+            ref = new WeakReference<CardStateObserver>(real);
+        }
+        public void onStateChange(Card card, CardState old, CardState nue) {
+            CardStateObserver real = ref.get();
+            if (real == null) {
+                card.removeCardStateObserver(this);
+            } else {
+                real.onStateChange(card, old, nue);
+            }
+        }
 
+    }
+
+    private static final class CardNode extends AbstractNode implements CardStateObserver {
+        private Card hardRef;
         CardNode(Lookup.Provider p) {
             super(Children.LEAF, p.getLookup());
             Card card = getLookup().lookup(Card.class);
+            hardRef = card; //Ensure Card lifecycle matches Node's, otherwise
+                            //polling to update node state will stop
             setName(card.getSystemId());
             CardInfo info = card.getCapability(CardInfo.class);
             if (info != null) {
@@ -247,23 +324,153 @@ public abstract class Cards {
             } else {
                 setDisplayName(getName());
             }
+            card.addCardStateObserver(new WeakCardStateObserver(this));
+        }
+
+        @Override
+        public void destroy() throws IOException {
+            //Ensure anything polling isn't kept alive by someone
+            //keeping a reference to a dead node
+            hardRef = null;
+            super.destroy();
+        }
+
+        @Override
+        public Action[] getActions (boolean ignored) {
+            Card card = getLookup().lookup(Card.class);
+            JavacardPlatform platform = card.getPlatform();
+            String kind = platform.getPlatformKind();
+            String path = "org-netbeans-modules-javacard-spi/kinds/" + kind + "/Actions/"; //NOI18N
+            return Lookups.forPath(path).lookupAll(Action.class).toArray(new Action[0]);
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            Card card = getLookup().lookup(Card.class);
+            if (!card.isValid()) {
+                //XXX error fg?
+                return "<font color='!nb.errorForeground'>" + getDisplayName(); //NOI18N
+            } else if (!card.getState().isRunning()) {
+                return "<font color='!controlShadow'>" + getDisplayName(); //NOI18N
+            }
+            return null;
         }
 
         @Override
         public Image getIcon(int type) {
+            Image result = null;
             Card card = getLookup().lookup(Card.class);
             if (card != null) {
                 CardInfo info = card.getCapability(CardInfo.class);
                 if (info != null) {
-                    return info.getIcon();
+                    result = info.getIcon();
                 }
             }
-            return super.getIcon(type);
+            result = result == null ? super.getIcon(type) : result;
+            if (card != null && card.getState().isRunning()) {
+                Image badge = ImageUtilities.loadImage(
+                        "org/netbeans/modules/javacard/spi/resources/running.png"); //NOI18N
+                result = ImageUtilities.mergeImages(result, badge, 11, 11);
+            }
+            return result;
         }
 
         @Override
         public Image getOpenedIcon(int type) {
             return getIcon(type);
+        }
+
+        @Override
+        protected Sheet createSheet() {
+            Sheet sheet = Sheet.createDefault();
+            Sheet.Set set = Sheet.createPropertiesSet();
+            set.put(new IdProp());
+            set.put(new StateProp());
+            set.put(new ValidProp());
+            sheet.put(set);
+            return sheet;
+        }
+
+        public void onStateChange(Card card, CardState old, CardState nue) {
+            fireIconChange();
+            fireDisplayNameChange("", getDisplayName());
+            firePropertyChange("state", old.toString(), nue.toString());
+        }
+
+        private class StateProp extends PropertySupport.ReadOnly<String> {
+
+            StateProp() {
+                super("state", String.class, NbBundle.getMessage(StateProp.class, //NOI18N
+                        "PROP_STATE"), NbBundle.getMessage(StateProp.class, //NOI18N
+                        "DESC_PROP_STATE")); //NOI18N
+
+            }
+
+            @Override
+            public String getValue() throws IllegalAccessException, InvocationTargetException {
+                Card card = getLookup().lookup(Card.class);
+                return card == null ? "" : card.getState().toString();
+            }
+        }
+
+        private class ValidProp extends PropertySupport.ReadOnly<Boolean> {
+            ValidProp() {
+                super ("valid", Boolean.class, NbBundle.getMessage(ValidProp.class, //NOI18N
+                        "PROP_VALID"), NbBundle.getMessage(ValidProp.class, //NOI18N
+                        "DESC_PROP_VALID")); //NOI18N
+            }
+
+            @Override
+            public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
+                Card card = getLookup().lookup(Card.class);
+                return card != null && card.isValid();
+            }
+        }
+
+        private class IdProp extends PropertySupport.ReadOnly<String> {
+            IdProp() {
+                super ("id", String.class, NbBundle.getMessage(IdProp.class, //NOI18N
+                        "PROP_ID"), NbBundle.getMessage(IdProp.class, //NOI18N
+                        "DESC_PROP_ID")); //NOI18N
+            }
+
+            @Override
+            public String getValue() throws IllegalAccessException, InvocationTargetException {
+                Card card = getLookup().lookup(Card.class);
+                return card == null ? "?" : card.getSystemId(); //NOI18N
+            }
+        }
+    }
+
+    private static final class DummyProvider implements Lookup.Provider {
+        private final Card dummyCard;
+        DummyProvider(String s) {
+            dummyCard = AbstractCard.createBrokenCard(s);
+        }
+
+        public Lookup getLookup() {
+            return Lookups.singleton(dummyCard);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final DummyProvider other = (DummyProvider) obj;
+            if (this.dummyCard != other.dummyCard && (this.dummyCard == null ||
+                    !this.dummyCard.equals(other.dummyCard))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return dummyCard.getSystemId().hashCode();
         }
     }
 }

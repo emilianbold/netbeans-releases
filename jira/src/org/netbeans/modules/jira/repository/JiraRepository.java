@@ -253,6 +253,7 @@ public class JiraRepository extends Repository {
 
     @Override
     protected void fireAttributesChanged(Map<String, Object> oldAttributes, Map<String, Object> newAttributes) {
+        // XXX move to spi
         LinkedList<String> equalAttributes = new LinkedList<String>();
         // find unchanged values
         for (Map.Entry<String, Object> e : newAttributes.entrySet()) {
@@ -556,21 +557,23 @@ public class JiraRepository extends Repository {
         if(refreshQueryTask == null) {
             refreshQueryTask = getRefreshProcessor().create(new Runnable() {
                 public void run() {
-                    Set<JiraQuery> queries;
-                    synchronized(refreshQueryTask) {
-                        queries = new HashSet<JiraQuery>(queriesToRefresh);
+                    try {
+                        Set<JiraQuery> queries;
+                        synchronized(refreshQueryTask) {
+                            queries = new HashSet<JiraQuery>(queriesToRefresh);
+                        }
+                        if(queries.size() == 0) {
+                            Jira.LOG.log(Level.FINE, "no queries to refresh {0}", new Object[] {name}); // NOI18N
+                            return;
+                        }
+                        for (JiraQuery q : queries) {
+                            Jira.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
+                            QueryController qc = q.getController();
+                            qc.autoRefresh();
+                        }
+                    } finally {
+                        scheduleQueryRefresh();
                     }
-                    if(queries.size() == 0) {
-                        Jira.LOG.log(Level.FINE, "no queries to refresh {0}", new Object[] {name}); // NOI18N
-                        return;
-                    }
-                    for (JiraQuery q : queries) {
-                        Jira.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
-                        QueryController qc = q.getController();
-                        qc.autoRefresh();
-                    }
-
-                    scheduleQueryRefresh();
                 }
             });
             scheduleQueryRefresh();
@@ -722,6 +725,10 @@ public class JiraRepository extends Repository {
         public String getID(TaskData issueData) {
             assert issueData != null;
             return NbJiraIssue.getID(issueData);
+        }
+        public Map<String, String> getAttributes(Issue issue) {
+            assert issue != null;
+            return ((NbJiraIssue)issue).getAttributes();
         }
     }
 }

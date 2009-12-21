@@ -45,7 +45,8 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.mdb;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import org.netbeans.api.java.source.ElementHandle;
-import org.openide.loaders.DataObject;
+import org.netbeans.api.java.source.ui.ElementOpen;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import java.beans.PropertyChangeEvent;
@@ -158,6 +159,10 @@ public class MessageNode extends AbstractNode implements OpenCookie {
     }
     
     public void open() {
+        FileObject fo = controller.getBeanFo();
+        ElementHandle<TypeElement> beh = controller.getBeanClass();
+        ElementOpen.open(fo, beh);
+/*
         DataObject dataObject = controller.getBeanDo();
         if (dataObject != null) {
             OpenCookie cookie = (OpenCookie) dataObject.getCookie(OpenCookie.class);
@@ -165,6 +170,7 @@ public class MessageNode extends AbstractNode implements OpenCookie {
                 cookie.open();
             }
         }
+ */
     }
 
     public Action getPreferredAction() {

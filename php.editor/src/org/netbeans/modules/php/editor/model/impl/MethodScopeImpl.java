@@ -137,10 +137,12 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
                     sb.append(", ");
                 }
                 final Parameter param = parameterList.get(i);
-                    List<QualifiedName> types = param.getTypes();
-                    if (types.size() == 1) {
-                        for (QualifiedName qName : types) {
-                            sb.append(qName.toString()).append(' ');//NOI18N
+                    if (param.hasRawType()) {
+                        List<QualifiedName> types = param.getTypes();
+                        if (types.size() == 1) {
+                            for (QualifiedName qName : types) {
+                                sb.append(qName.toString()).append(' ');//NOI18N
+                            }
                         }
                     }
 

@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 /**
  * Class OperationWrappedMBean6
- * 
+ *
  * @author <author>
  */
 public class OperationWrappedMBean6 extends StandardMBean implements OperationWrappedMBean6MBean {
@@ -53,7 +53,6 @@ public class OperationWrappedMBean6 extends StandardMBean implements OperationWr
     @Override
     protected String getDescription(MBeanAttributeInfo info) {
         String description = null;
-
         return description;
     }
 
@@ -85,7 +84,6 @@ public class OperationWrappedMBean6 extends StandardMBean implements OperationWr
                     return null;
             }
         }
-
         return null;
     }
 
@@ -117,7 +115,6 @@ public class OperationWrappedMBean6 extends StandardMBean implements OperationWr
                     return null;
             }
         }
-
         return null;
     }
 
@@ -134,23 +131,18 @@ public class OperationWrappedMBean6 extends StandardMBean implements OperationWr
             signature[i] = params[i].getType();
         }
         String[] methodSignature;
-
         methodSignature = new String[]{java.lang.Object.class.getName(), java.lang.String.class.getName()};
         if (info.getName().equals("genericOperation1") && Arrays.equals(signature, methodSignature)) {
             description = "Operation exposed for management";
         }
-
         methodSignature = new String[]{};
         if (info.getName().equals("genericOperation2") && Arrays.equals(signature, methodSignature)) {
             description = "Operation exposed for management";
         }
-
         methodSignature = new String[]{java.lang.String.class.getName()};
         if (info.getName().equals("genericOperation3") && Arrays.equals(signature, methodSignature)) {
             description = "Operation exposed for management";
         }
-
-
         return description;
     }
 

@@ -226,8 +226,7 @@ public abstract class VCSKenaiSupport {
          */
         public abstract void startChat(String msg);
 
-        public static String getChatLink(Document document, int line) {
-            FileObject fo = NbEditorUtilities.getFileObject(document);
+        public static String getChatLink(FileObject fo, int line) {
             ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
             String ret = "";       // NOI18N
             if (cp != null) {

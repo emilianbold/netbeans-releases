@@ -111,7 +111,7 @@ final class InspectorUI extends TopComponent implements ExplorerManager.Provider
                 try {
                     lockSelectionSetting = true;
                     Node[] selectedNodes = explorerManager.getSelectedNodes();
-                    WeakSet<DesignComponent> selectedComponents = new WeakSet<DesignComponent>();
+                    Collection<DesignComponent> selectedComponents = new WeakSet<DesignComponent>();
                     for (Node node : selectedNodes) {
                         if (node instanceof InspectorFolderNode) {
                             Long componentID = ((InspectorFolderNode) node).getComponentID();
@@ -145,9 +145,6 @@ final class InspectorUI extends TopComponent implements ExplorerManager.Provider
         getExplorerManager().setRootContext(rootNode);
         revalidate();
         repaint();
-    }
-
-    public void activeComponentsChanged(Collection<DesignComponent> activeComponents) {
     }
 
     @Override

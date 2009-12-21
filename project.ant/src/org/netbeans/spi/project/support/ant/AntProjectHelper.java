@@ -1064,7 +1064,7 @@ public final class AntProjectHelper {
     /**
      * Create a basic implementation of {@link AntArtifact} which assumes everything of interest
      * is in a fixed location under a standard Ant-based project.
-     * @param type the type of artifact, e.g. <a href="@JAVA/PROJECT@/org/netbeans/api/java/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>
+     * @param type the type of artifact, e.g. <a href="@org-netbeans-modules-java-project@/org/netbeans/api/java/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>
      * @param locationProperty an Ant property name giving the project-relative
      *                         location of the artifact, e.g. <samp>dist.jar</samp>
      * @param eval a way to evaluate the location property (e.g. {@link #getStandardPropertyEvaluator})
@@ -1081,7 +1081,7 @@ public final class AntProjectHelper {
     /**
      * Create a basic implementation of {@link AntArtifact} which assumes everything of interest
      * is in a fixed location under a standard Ant-based project.
-     * @param type the type of artifact, e.g. <a href="@JAVA/PROJECT@/org/netbeans/api/java/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>
+     * @param type the type of artifact, e.g. <a href="@org-netbeans-modules-java-project@/org/netbeans/api/java/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>
      * @param locationProperty an Ant property name giving the project-relative
      *                         location of the artifact, e.g. <samp>dist.jar</samp>
      * @param eval a way to evaluate the location property (e.g. {@link #getStandardPropertyEvaluator})

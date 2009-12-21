@@ -1139,7 +1139,7 @@ exists or setup the property manually. For example like this:
                 </xsl:for-each>
                 
                 <mkdir dir="${{build.web.dir}}/META-INF"/>
-                <manifest file="${{build.web.dir}}/META-INF/MANIFEST.MF"/>
+                <manifest file="${{build.web.dir}}/META-INF/MANIFEST.MF" mode="update"/>
 <!--                <manifest file="${{build.web.dir}}/META-INF/MANIFEST.MF" mode="update">
                     <xsl:if test="//webproject3:web-module-libraries/webproject3:library[webproject3:path-in-war]">
                         <attribute>
@@ -1197,7 +1197,7 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="dist-ear">
-                <xsl:attribute name="depends">init,-init-cos,compile,-pre-dist,do-ear-dist,-post-dist</xsl:attribute>
+                <xsl:attribute name="depends">init,-clean-webinf-lib,-init-cos,compile,-pre-dist,do-ear-dist,-post-dist</xsl:attribute>
                 <xsl:attribute name="description">Build distribution (WAR) to be packaged into an EAR.</xsl:attribute>
             </target>
             

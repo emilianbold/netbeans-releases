@@ -67,6 +67,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.JComponent;
@@ -145,7 +146,13 @@ public class CollectionRemove extends AbstractHint {
 
             OUTER: switch (select.getKind()) {
                 case MEMBER_SELECT:
-                    site = (DeclaredType) info.getTrees().getTypeMirror(new TreePath(method, ((MemberSelectTree) select).getExpression()));
+                    TypeMirror tm = info.getTrees().getTypeMirror(new TreePath(method, ((MemberSelectTree) select).getExpression()));
+                    if (tm != null && tm.getKind() == TypeKind.TYPEVAR)
+                        tm = ((TypeVariable) tm).getUpperBound();
+                    if (tm != null && tm.getKind() == TypeKind.DECLARED)
+                        site = (DeclaredType) tm;
+                    else
+                        site = null;
                     break;
                 case IDENTIFIER:
                     Scope s = info.getTrees().getScope(tp);

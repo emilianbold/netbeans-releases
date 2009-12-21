@@ -312,13 +312,9 @@ public class MakeActionProvider implements ActionProvider {
     }
 
     private static void runActionWorker(ExecutionEnvironment exeEnv, CancellableTask actionWorker) {
-        if (exeEnv.isLocal()) {
-            actionWorker.run();
-        } else {
-            ServerRecord record = ServerList.get(exeEnv);
-            assert record != null;
-            invokeRemoteHostAction(record, actionWorker);
-        }
+        ServerRecord record = ServerList.get(exeEnv);
+        assert record != null;
+        invokeRemoteHostAction(record, actionWorker);
     }
 
     public void invokeCustomAction(final String projectName, final MakeConfigurationDescriptor pd, final MakeConfiguration conf, final ProjectActionHandler customProjectActionHandler) {
@@ -546,7 +542,7 @@ public class MakeActionProvider implements ActionProvider {
             } else if (conf.isApplicationConfiguration()) {
                 RunProfile runProfile = null;
                 int platform = conf.getDevelopmentHost().getBuildPlatform();
-                if (platform == Platform.PLATFORM_WINDOWS) {
+                if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     // On Windows we need to add paths to dynamic libraries from subprojects to PATH
                     runProfile = conf.getProfile().clone(conf);
                     Set<String> subProjectOutputLocations = conf.getSubProjectOutputLocations();
@@ -573,7 +569,7 @@ public class MakeActionProvider implements ActionProvider {
                     }
                     path = path + ";" + userPath; // NOI18N
                     runProfile.getEnvironment().putenv(pi.getPathName(), path);
-                } else if (platform == Platform.PLATFORM_MACOSX) {
+                } else if (platform == PlatformTypes.PLATFORM_MACOSX) {
                     // On Mac OS X we need to add paths to dynamic libraries from subprojects to DYLD_LIBRARY_PATH
                     StringBuilder path = new StringBuilder();
                     Set<String> subProjectOutputLocations = conf.getSubProjectOutputLocations();
@@ -610,9 +606,9 @@ public class MakeActionProvider implements ActionProvider {
                             }
                         runProfile.getEnvironment().putenv("DYLD_LIBRARY_PATH", path.toString()); // NOI18N
                         }
-                } else if (platform == Platform.PLATFORM_SOLARIS_INTEL ||
-                        platform == Platform.PLATFORM_SOLARIS_SPARC ||
-                        platform == Platform.PLATFORM_LINUX) {
+                } else if (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL ||
+                        platform == PlatformTypes.PLATFORM_SOLARIS_SPARC ||
+                        platform == PlatformTypes.PLATFORM_LINUX) {
                     // Add paths from -L option
                     StringBuilder path = new StringBuilder();
                     List<String> list = conf.getLinkerConfiguration().getAdditionalLibs().getValue();
@@ -640,10 +636,10 @@ public class MakeActionProvider implements ActionProvider {
                         }
                 }
 
-                if (platform == Platform.PLATFORM_MACOSX ||
-                        platform == Platform.PLATFORM_SOLARIS_INTEL ||
-                        platform == Platform.PLATFORM_SOLARIS_SPARC ||
-                        platform == Platform.PLATFORM_LINUX) {
+                if (platform == PlatformTypes.PLATFORM_MACOSX ||
+                        platform == PlatformTypes.PLATFORM_SOLARIS_INTEL ||
+                        platform == PlatformTypes.PLATFORM_SOLARIS_SPARC ||
+                        platform == PlatformTypes.PLATFORM_LINUX) {
                     // Make sure DISPLAY variable has been set
                     if (cancelled.get()) {
                         return false; // getEnv() might be costly for remote host
@@ -742,7 +738,7 @@ public class MakeActionProvider implements ActionProvider {
             }
             String buildCommand;
             String args;
-            if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
+            if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                 buildCommand = "cmd.exe"; // NOI18N
                 args = "/c sh "; // NOI18N
                 } else {
@@ -848,7 +844,7 @@ public class MakeActionProvider implements ActionProvider {
                     // Clean command
                     String commandLine;
                     String args;
-                    if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
+                    if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                         commandLine = "cmd.exe"; // NOI18N
                         args = "/c rm -rf " + outputFile; // NOI18N
                         } else {
@@ -1128,15 +1124,14 @@ public class MakeActionProvider implements ActionProvider {
             conf.getDevelopmentHost().setBuildPlatform(hostPlatformId);
         }
 
-        boolean unknownCompilerSet = false;
         if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) { // NOI18N
             // Confiiguration was created with unknown tool set. Use the now default one.
-            unknownCompilerSet = true;
             csname = csconf.getOption();
             cs = CompilerSetManager.getDefault(env).getCompilerSet(csname);
             if (cs == null) {
                 cs = CompilerSetManager.getDefault(env).getDefaultCompilerSet();
             }
+            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_UnknownCompiler", csname)); // NOI18N
             runBTA = true;
         } else if (csconf.isValid()) {
             csname = csconf.getOption();
@@ -1184,21 +1179,21 @@ public class MakeActionProvider implements ActionProvider {
             return false;
         }
         if (cRequired && !exists(cTool.getPath(), pi)) {
-            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCCompiler", csname, cTool.getDisplayName())); // NOI18N
+            //errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCCompiler", csname, cTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
         if (cancelled.get()) {
             return false;
         }
         if (cppRequired && !exists(cppTool.getPath(), pi)) {
-            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCppCompiler", csname, cppTool.getDisplayName())); // NOI18N
+            //errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingCppCompiler", csname, cppTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
         if (cancelled.get()) {
             return false;
         }
         if (fRequired && !exists(fTool.getPath(), pi)) {
-            errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
+            //errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_MissingFortranCompiler", csname, fTool.getDisplayName())); // NOI18N
             runBTA = true;
         }
         if (cancelled.get()) {
@@ -1209,10 +1204,6 @@ public class MakeActionProvider implements ActionProvider {
             runBTA = true;
         }
         if (conf.isQmakeConfiguration() && !exists(qmakeTool.getPath(), pi)) {
-            runBTA = true;
-        }
-
-        if (conf.getDevelopmentHost().isLocalhost() && Boolean.getBoolean("netbeans.cnd.always_show_bta")) { // NOI18N
             runBTA = true;
         }
 
@@ -1411,14 +1402,6 @@ public class MakeActionProvider implements ActionProvider {
 //        }
 //        return "";
 //    }
-
-    private static boolean isAbsolutePath(MakeConfiguration conf, String path) {
-        if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-            return path.length() > 3 && path.charAt(1) == ':' && path.charAt(2) == '/';
-        } else {
-            return path.length() > 0 && path.charAt(0) == '/';
-        }
-    }
 
     // Private methods -----------------------------------------------------
     /** Look up i18n strings here */

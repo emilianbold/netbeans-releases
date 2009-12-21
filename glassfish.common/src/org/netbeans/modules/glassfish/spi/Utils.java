@@ -40,6 +40,7 @@
 package org.netbeans.modules.glassfish.spi;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -50,6 +51,7 @@ import java.net.SocketTimeoutException;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -108,6 +110,74 @@ public class Utils {
             // we can actually trust the canWrite() implementation...
             return f.canWrite();
         }
+    }
+
+    public static final String VERSIONED_JAR_SUFFIX_MATCHER = "(?:-[0-9]+(?:\\.[0-9]+(?:_[0-9]+|)|).*|).jar"; // NOI18N
+
+    /**
+     *
+     * @param jarNamePattern the name pattern to search for
+     * @param modulesDir the place to look for the pattern
+     * @return the jar file that matches the pattern, null otherwise.
+     *
+     * @since 1.5
+     */
+    public static File getFileFromPattern(String jarNamePattern, File modulesDir) {
+        // if asserts are on... blame the caller
+        assert jarNamePattern != null : "jarNamePattern should not be null";
+        // if this is in production, asserts are off and we should handle this a bit more gracefully
+        if (null == jarNamePattern) {
+            // and log an error message
+            Logger.getLogger("glassfish").log(Level.INFO, "caller passed invalid jarNamePattern",
+                    new NullPointerException("jarNamePattern"));
+            return null;
+        }
+
+        // if asserts are on... blame the caller
+        assert modulesDir != null : "modulesDir  should not be null";
+        // if this is in production, asserts are off and we should handle this a bit more gracefully
+        if (null == modulesDir) {
+            // and log an error message
+            Logger.getLogger("glassfish").log(Level.INFO, "caller passed invalid param",
+                    new NullPointerException("modulesDir"));
+            return null;
+        }
+
+        int subindex = jarNamePattern.lastIndexOf("/");
+        if (subindex != -1) {
+            String subdir = jarNamePattern.substring(0, subindex);
+            jarNamePattern = jarNamePattern.substring(subindex + 1);
+            modulesDir = new File(modulesDir, subdir);
+        }
+        if (modulesDir.canRead() && modulesDir.isDirectory()) {
+            File[] candidates = modulesDir.listFiles(new VersionFilter(jarNamePattern));
+            if (candidates != null && candidates.length > 0) {
+                return candidates[0]; // the first one
+            }
+        }
+        return null;
+    }
+
+        private static class VersionFilter implements FileFilter {
+
+        private final Pattern pattern;
+
+        public VersionFilter(String namePattern) {
+            pattern = Pattern.compile(namePattern);
+        }
+
+        public boolean accept(File file) {
+            return pattern.matcher(file.getName()).matches();
+        }
+
+    }
+
+    public static String sanitizeName(String name) {
+        if (null == name || name.matches("[\\p{L}\\p{N}_][\\p{L}\\p{N}\\-_./;#]*")) {
+            return name;
+        }
+        // the string is bad...
+        return "_" + name.replaceAll("[^\\p{L}\\p{N}\\-_./;#]", "_");
     }
 
     /**

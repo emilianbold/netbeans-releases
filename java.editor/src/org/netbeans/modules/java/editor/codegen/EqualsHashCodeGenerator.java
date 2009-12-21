@@ -321,6 +321,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     }
     
     public void invoke() {
+        final int caretOffset = component.getCaretPosition();
         final EqualsHashCodePanel panel = new EqualsHashCodePanel(description, generateEquals, generateHashCode);
         String title = NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_equals_and_hashcode"); //NOI18N
         if( !generateEquals )
@@ -334,7 +335,6 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
             JavaSource js = JavaSource.forDocument(component.getDocument());
             if (js != null) {
                 try {
-                    final int caretOffset = component.getCaretPosition();
                     ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                         public void run(WorkingCopy copy) throws IOException {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);

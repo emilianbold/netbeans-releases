@@ -61,9 +61,11 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
+import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
@@ -96,6 +98,12 @@ public class JiraQuery extends Query {
         this.jiraFilter = jiraFilter;
         this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
         if(initControler) createControler(repository, this, jiraFilter);
+        if(repository instanceof KenaiRepository) {
+            boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
+            if(autoRefresh) {
+                getRepository().scheduleForRefresh(this);
+            }
+        }
     }
 
     @Override

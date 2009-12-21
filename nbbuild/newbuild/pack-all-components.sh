@@ -35,11 +35,11 @@ pack_all_components()
 	ant zip-cluster-config -Dcluster.config=full -Dzip.name=$DIST_DIR/zip/$NAME-javafx-full.zip || exit 1
 
         cd $NB_ALL/nbbuild/netbeans
-	cp $NB_ALL/javafx/build/clusters/common.jar      $DIST_DIR/zip/moduleclusters/$NAME-javafx.zip
-	cp $NB_ALL/javafx/build/clusters/windows.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-windows.zip
-	cp $NB_ALL/javafx/build/clusters/linux.jar       $DIST_DIR/zip/moduleclusters/$NAME-javafx-linux.zip
-	cp $NB_ALL/javafx/build/clusters/mac.jar         $DIST_DIR/zip/moduleclusters/$NAME-javafx-mac.zip
-	cp $NB_ALL/javafx/build/clusters/solaris.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-solaris-x86.zip
+	cp $NB_ALL/javafx/build/clusters/common.jar      $DIST_DIR/zip/moduleclusters/$NAME-javafx.zip             || exit 1
+	cp $NB_ALL/javafx/build/clusters/windows.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-windows.zip     || exit 1
+	cp $NB_ALL/javafx/build/clusters/linux.jar       $DIST_DIR/zip/moduleclusters/$NAME-javafx-linux.zip       || exit 1
+	cp $NB_ALL/javafx/build/clusters/mac.jar         $DIST_DIR/zip/moduleclusters/$NAME-javafx-mac.zip         || exit 1
+	cp $NB_ALL/javafx/build/clusters/solaris.jar     $DIST_DIR/zip/moduleclusters/$NAME-javafx-solaris-x86.zip || exit 1
 	rm -rf javafx*
     fi
 
@@ -144,6 +144,9 @@ pack_all_components()
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME cnd "cnd*"
     rm -rf cnd*
+
+    pack_component $DIST_DIR/zip/moduleclusters $NAME python "python*"
+    rm -rf python*
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME nb6.0-etc "*"
 }

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
@@ -79,7 +79,7 @@ import org.openide.util.Utilities;
  */
 public class LogReader {
     private static boolean TRACE = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.log"); // NOI18N
-    
+
     private String workingDir;
     private String guessWorkingDir;
     private String baseWorkingDir;
@@ -88,7 +88,7 @@ public class LogReader {
     private List<SourceFileProperties> result;
     private final PathMap pathMapper;
     private final ProjectProxy project;
-    
+
     public LogReader(String fileName, String root, ProjectProxy project) {
         if (root.length()>0) {
             this.root = CndFileUtils.normalizeFile(new File(root)).getAbsolutePath();
@@ -98,7 +98,7 @@ public class LogReader {
         this.fileName = fileName;
         this.project = project;
         this.pathMapper = getPathMapper(project);
-       
+
         // XXX
         setWorkingDir(root);
     }
@@ -139,7 +139,7 @@ public class LogReader {
         }
         return null;
     }
-    
+
     private void run(Progress progress, AtomicBoolean isStoped) {
         if (TRACE) {System.out.println("LogReader is run for " + fileName);} //NOI18N
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
@@ -205,14 +205,14 @@ public class LogReader {
             }
         }
     }
-    
+
     public List<SourceFileProperties> getResults(Progress progress, AtomicBoolean isStoped) {
         if (result == null) {
             run(progress, isStoped);
         }
         return result;
     }
-    
+
     private static final String CURRENT_DIRECTORY = "Current working directory"; //NOI18N
     private static final String ENTERING_DIRECTORY = "Entering directory"; //NOI18N
 
@@ -279,29 +279,31 @@ public class LogReader {
         }
         return false;
     }
-    
+
     /*package-local*/ enum CompilerType {
         CPP, C, UNKNOWN;
     };
-    
+
     /*package-local*/ static class LineInfo {
         public String compileLine;
         public CompilerType compilerType = CompilerType.UNKNOWN;
-        
+
         LineInfo(String line) {
             compileLine = line;
         }
     }
-    
+
     private static final String LABEL_CD = "cd "; //NOI18N
     private static final String INVOKE_SUN_C = "cc "; //NOI18N
     private static final String INVOKE_SUN_CC = "CC "; //NOI18N
     private static final String INVOKE_GNU_C = "gcc "; //NOI18N
+    private static final String INVOKE_GNU_C2 = "gcc.exe "; //NOI18N
     //private static final String INVOKE_GNU_XC = "xgcc "; //NOI18N
     private static final String INVOKE_GNU_CC = "g++ "; //NOI18N
+    private static final String INVOKE_GNU_CC2 = "g++.exe "; //NOI18N
     private static final String INVOKE_MSVC = "cl "; //NOI18N
     private static final String MAKE_DELIMITER = ";"; //NOI18N
-    
+
     /*package-local*/ static LineInfo testCompilerInvocation(String line) {
         LineInfo li = new LineInfo(line);
         int start = 0, end = -1;
@@ -311,29 +313,41 @@ public class LogReader {
 //                li.compilerType = CompilerType.C;
 //                end = start + INVOKE_GNU_XC.length();
 //            }
-//        } 
+//        }
         if (li.compilerType == CompilerType.UNKNOWN) {
             start = line.indexOf(INVOKE_GNU_C);
             //TODO: can fail on gcc calls with -shared-libgcc
             if (start>=0) {
                 li.compilerType = CompilerType.C;
                 end = start + INVOKE_GNU_C.length();
+            } else {
+                start = line.indexOf(INVOKE_GNU_C2);
+                if (start>=0) {
+                    li.compilerType = CompilerType.C;
+                    end = start + INVOKE_GNU_C2.length();
+                }
             }
-        } 
+        }
         if (li.compilerType == CompilerType.UNKNOWN) {
             start = line.indexOf(INVOKE_GNU_CC);
             if (start>=0) {
                 li.compilerType = CompilerType.CPP;
                 end = start + INVOKE_GNU_CC.length();
+            } else {
+                start = line.indexOf(INVOKE_GNU_CC2);
+                if (start>=0) {
+                    li.compilerType = CompilerType.CPP;
+                    end = start + INVOKE_GNU_CC2.length();
+                }
             }
-        } 
+        }
         if (li.compilerType == CompilerType.UNKNOWN) {
             start = line.indexOf(INVOKE_SUN_C);
             if (start>=0) {
                 li.compilerType = CompilerType.C;
                 end = start + INVOKE_SUN_C.length();
             }
-        } 
+        }
         if (li.compilerType == CompilerType.UNKNOWN) {
             start = line.indexOf(INVOKE_SUN_CC);
             if (start>=0) {
@@ -348,7 +362,7 @@ public class LogReader {
                 end = start + INVOKE_MSVC.length();
             }
         }
-       
+
         if (li.compilerType != CompilerType.UNKNOWN) {
             li.compileLine = line.substring(start);
             while(end < line.length() && (line.charAt(end) == ' ' || line.charAt(end) == '\t')){
@@ -376,7 +390,7 @@ public class LogReader {
         }
         return li;
     }
-    
+
     private void setWorkingDir(String workingDir) {
         if (TRACE) {System.err.println("**>> new working dir: " + workingDir);}
         this.workingDir = CndFileUtils.normalizeFile(new File(workingDir)).getAbsolutePath();
@@ -386,7 +400,7 @@ public class LogReader {
         if (TRACE) {System.err.println("**>> alternative guess working dir: " + workingDir);}
         this.guessWorkingDir = CndFileUtils.normalizeFile(new File(workingDir)).getAbsolutePath();
     }
-    
+
     private boolean parseLine(String line){
        if (checkDirectoryChange(line)) {
            return false;
@@ -401,7 +415,7 @@ public class LogReader {
        if (!workingDir.startsWith(root)){
            return false;
        }
-       
+
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
            gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP); // NOI18N
@@ -579,7 +593,7 @@ public class LogReader {
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private Set<String> includedFiles = Collections.<String>emptySet();
 
-        private CommandLineSource(boolean isCPP, String compilePath, String sourcePath, 
+        private CommandLineSource(boolean isCPP, String compilePath, String sourcePath,
                 List<String> userIncludes, Map<String, String> userMacros) {
             if (isCPP) {
                 language = ItemProperties.LanguageKind.CPP;
@@ -659,7 +673,7 @@ public class LogReader {
         }
         System.err.println();
     }
-    
+
     private static boolean findFiles(File file, String relativePath, String[] out) throws IOException {
         File f = new File(file.getAbsolutePath() + File.separator + relativePath);
         //System.err.println("# " + file.getAbsolutePath());
@@ -676,7 +690,7 @@ public class LogReader {
         }
         return true;
     }
-    
+
     private final static FileFilter dirFilter = new FileFilter() {
 
             public boolean accept(File pathname) {

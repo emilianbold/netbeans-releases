@@ -50,12 +50,12 @@ import org.openide.filesystems.FileObject;
  * <p class="nonnormative">
  * Rather than registering a global instance, if your implementation
  * is applicable only to project-owned files, you should add it to
- * <a href="@PROJECTS/PROJECTAPI@/org/netbeans/api/project/Project.html#getLookup"><code>Project.getLookup()</code></a>
+ * <a href="@org-netbeans-modules-projectapi@/org/netbeans/api/project/Project.html#getLookup"><code>Project.getLookup()</code></a>
  * and depend on
  * the <code>org.netbeans.modules.projectapi</code> module.
  * </p>
  * @see FileBuiltQuery
- * @see <a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/AntProjectHelper.html#createGlobFileBuiltQuery(java.lang.String[],%20java.lang.String[])"><code>AntProjectHelper.createGlobFileBuiltQuery(...)</code></a>
+ * @see <a href="@org-netbeans-modules-project-ant@/org/netbeans/spi/project/support/ant/AntProjectHelper.html#createGlobFileBuiltQuery(java.lang.String[],%20java.lang.String[])"><code>AntProjectHelper.createGlobFileBuiltQuery(...)</code></a>
  * @author Jesse Glick
  */
 public interface FileBuiltQueryImplementation {

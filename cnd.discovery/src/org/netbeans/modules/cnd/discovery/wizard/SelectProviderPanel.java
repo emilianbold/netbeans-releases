@@ -40,13 +40,21 @@
  */
 package org.netbeans.modules.cnd.discovery.wizard;
 
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringTokenizer;
+import java.util.Vector;
+import java.util.prefs.Preferences;
+import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
@@ -63,6 +71,7 @@ import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
@@ -84,20 +93,26 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     }
     
     private void addListeners(){
-        DocumentListener documentListener = new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                update(e);
+        rootFolder.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                update();
             }
-            
-            public void removeUpdate(DocumentEvent e) {
-                update(e);
-            }
-            
-            public void changedUpdate(DocumentEvent e) {
-                update(e);
-            }
-        };
-        rootFolder.getDocument().addDocumentListener(documentListener);
+        });
+        ComboBoxEditor editor = rootFolder.getEditor();
+        Component component = editor.getEditorComponent();
+        if (component instanceof JTextField) {
+            ((JTextField)component).getDocument().addDocumentListener(new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) {
+                    update();
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    update();
+                }
+                public void changedUpdate(DocumentEvent e) {
+                    update();
+                }
+            });
+        }
         CsmListeners.getDefault().addProgressListener(this);
     }
     
@@ -110,7 +125,6 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        rootFolder = new javax.swing.JTextField();
         rootFolderButton = new javax.swing.JButton();
         instructionPanel = new javax.swing.JPanel();
         instructionsTextArea = new javax.swing.JTextArea();
@@ -121,16 +135,9 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         labelForProviders = new javax.swing.JLabel();
         restrictSources = new javax.swing.JCheckBox();
         restrictCompile = new javax.swing.JCheckBox();
+        rootFolder = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        add(rootFolder, gridBagConstraints);
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/discovery/wizard/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(rootFolderButton, bundle.getString("ROOT_DIR_BROWSE_BUTTON_TXT")); // NOI18N
@@ -142,6 +149,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(rootFolderButton, gridBagConstraints);
 
@@ -242,6 +250,15 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(restrictCompile, gridBagConstraints);
+
+        rootFolder.setEditable(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        add(rootFolder, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     private void providersComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_providersComboBoxItemStateChanged
@@ -258,7 +275,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         }
 }//GEN-LAST:event_providersComboBoxItemStateChanged
     
-    private void update(DocumentEvent e) {
+    private void update() {
         wizard.stateChanged(null);
     }
     
@@ -268,7 +285,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
                 getString("ROOT_DIR_BUTTON_TXT"), // NOI18N
                 JFileChooser.DIRECTORIES_ONLY,
                 null,
-                rootFolder.getText(),
+                getRootText(),
                 false
                 );
         int ret = fileChooser.showOpenDialog(this);
@@ -276,8 +293,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        //path = FilePathAdaptor.normalize(path);
-        rootFolder.setText(path);
+        rootFolder.setSelectedItem(path);
     }//GEN-LAST:event_rootFolderButtonActionPerformed
     
     
@@ -291,7 +307,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     private javax.swing.JComboBox prividersComboBox;
     private javax.swing.JCheckBox restrictCompile;
     private javax.swing.JCheckBox restrictSources;
-    private javax.swing.JTextField rootFolder;
+    private javax.swing.JComboBox rootFolder;
     private javax.swing.JButton rootFolderButton;
     // End of variables declaration//GEN-END:variables
     
@@ -342,9 +358,47 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         if (Utilities.isWindows()) {
             path = path.replace('/', File.separatorChar);
         }
-        rootFolder.setText(path);
+        Vector<String> vector = new Vector<String>();
+        vector.add(path);
+        {
+            Preferences prefs = NbPreferences.forModule(SelectProviderPanel.class);
+            String old = prefs.get("rootFolder", ""); // NOI18N
+            StringTokenizer st = new StringTokenizer(old, "\u0000"); // NOI18N
+            int history = 5;
+            while(st.hasMoreTokens()) {
+                String s = st.nextToken();
+                if (!vector.contains(s)) {
+                    vector.add(s);
+                    history--;
+                    if (history == 0) {
+                        break;
+                    }
+                }
+            }
+        }
+        DefaultComboBoxModel rootModel = new DefaultComboBoxModel(vector);
+        rootFolder.setModel(rootModel);
+        StringBuilder buf = new StringBuilder();
+        for(int i = 0; i < 35; i++) {
+            buf.append("w"); // NOI18N
+        }
+        rootFolder.setPrototypeDisplayValue(buf.toString());
     }
     
+    private String getRootText() {
+        ComboBoxEditor editor = rootFolder.getEditor();
+        if (editor != null) {
+            Component component = editor.getEditorComponent();
+            if (component instanceof JTextField) {
+                return ((JTextField)component).getText();
+            }
+        }
+        if (rootFolder.getSelectedItem() != null) {
+            return rootFolder.getSelectedItem().toString();
+        }
+        return null;
+    }
+
     private ProviderItem getDefaultProvider(List<ProviderItem> list, ProjectProxy proxy, DiscoveryDescriptor wizardDescriptor){
         ProviderItem def = null;
         int assurance = 0;
@@ -368,11 +422,30 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     void store(DiscoveryDescriptor wizardDescriptor) {
         ProviderItem provider = (ProviderItem)prividersComboBox.getSelectedItem();
         wizardDescriptor.setProvider(provider.getProvider());
-        wizardDescriptor.setRootFolder(rootFolder.getText());
+        wizardDescriptor.setRootFolder(getRootText());
+        {
+            Vector<String> vector = new Vector<String>();
+            vector.add(getRootText());
+            for(int i = 0; i < rootFolder.getModel().getSize(); i++){
+                String s = rootFolder.getModel().getElementAt(i).toString();
+                if (!vector.contains(s)) {
+                    vector.add(s);
+                }
+            }
+            StringBuilder buf = new StringBuilder();
+            for(String s : vector) {
+                if (buf.length()>0) {
+                    buf.append((char)0);
+                }
+                buf.append(s);
+            }
+            Preferences prefs = NbPreferences.forModule(SelectProviderPanel.class);
+            prefs.put("rootFolder", buf.toString()); // NOI18N
+        }
         ProviderProperty p = provider.getProvider().getProperty("restrict_source_root"); // NOI18N
         if (p != null) {
             if (restrictSources.isSelected()){
-                p.setValue(rootFolder.getText());
+                p.setValue(getRootText());
             } else {
                 p.setValue(""); // NOI18N
             }
@@ -380,7 +453,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         p = provider.getProvider().getProperty("restrict_compile_root"); // NOI18N
         if (p != null) {
             if (restrictCompile.isSelected()){
-                p.setValue(rootFolder.getText());
+                p.setValue(getRootText());
             } else {
                 p.setValue(""); // NOI18N
             }
@@ -388,8 +461,11 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     }
     
     boolean valid(DiscoveryDescriptor wizardDescriptor) {
-  	    wizardDescriptor.setMessage(null);
-        String path = rootFolder.getText();
+  	wizardDescriptor.setMessage(null);
+        String path = getRootText();
+        if (path == null){
+            return false;
+        }
         File file = new File(path);
         if (!(file.exists() && file.isDirectory())) {
             return false;

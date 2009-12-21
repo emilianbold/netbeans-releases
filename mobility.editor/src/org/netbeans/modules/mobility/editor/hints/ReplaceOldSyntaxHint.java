@@ -72,11 +72,11 @@ import org.openide.util.NbBundle;
 public class ReplaceOldSyntaxHint implements Fix {
     
     final protected Document doc;
-    final protected ArrayList<PPLine> lineList;
+    final protected List<PPLine> lineList;
     protected PPBlockInfo block;
     
     /** Creates a new instance of InlineIncludeHint */
-    public ReplaceOldSyntaxHint(final Document doc, final ArrayList<PPLine> lineList, final PPBlockInfo block) {
+    public ReplaceOldSyntaxHint(final Document doc, final List<PPLine> lineList, final PPBlockInfo block) {
         this.doc = doc;
         this.lineList = lineList;
         this.block = block;

@@ -219,7 +219,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
 
         final Component absoluteComp = absolute ? createAbsolutePanel(resourcePanelGUI) : null;
         final JCheckBox switchBox = new JCheckBox();
-        switchBox.setVisible(this.property instanceof RADProperty);
+        switchBox.setVisible((this.property instanceof RADProperty) && (this.property.getDefaultValue() != null));
         Mnemonics.setLocalizedText(switchBox, NbBundle.getMessage(FontEditor.class, "CTL_DeriveFont")); // NOI18N
         switchBox.setSelected(!absolute);
         final RelativeFontPanel relativeComp = new RelativeFontPanel();
@@ -545,6 +545,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
 
         void updateFromPropertyValue() {
             NbFont propertyValue = (NbFont) getUnwrappedValue();
+            if (propertyValue == null) return;
 
             ignoreUpdates = true;
             boolean changeItalic = (propertyValue.italic != null);

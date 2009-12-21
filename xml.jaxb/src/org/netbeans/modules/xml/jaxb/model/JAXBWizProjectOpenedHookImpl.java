@@ -82,7 +82,11 @@ public class JAXBWizProjectOpenedHookImpl extends ProjectOpenedHook{
             ProjectManager.mutex().writeAccess(
                     new Mutex.Action() {
                         public Object run() {
-                            ProjectHelper.setPrivateProjPros(prj);
+                            try {
+                                ProjectHelper.addJaxbApiEndorsed(prj);
+                            } catch (java.io.IOException ex) {
+                                ex.printStackTrace();
+                            }
                             return null;
                         }
                     });

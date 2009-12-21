@@ -51,6 +51,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOContainer;
 import org.openide.windows.OutputWriter;
@@ -59,6 +60,7 @@ import org.openide.windows.OutputWriter;
  *
  * @author tim
  */
+@RandomlyFails // timed out in NB-Core-Build #3589; no thread dump despite timeOut override
 public class LifecycleTest extends NbTestCase {
 
     public LifecycleTest(String testName) {

@@ -49,6 +49,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.api.keyring.Keyring;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
@@ -148,9 +150,21 @@ public class ProxySettings {
     }
     
     public static char[] getAuthenticationPassword () {
-        return getPreferences ().get (PROXY_AUTHENTICATION_PASSWORD, "").toCharArray ();
+        String old = getPreferences().get(PROXY_AUTHENTICATION_PASSWORD, null);
+        if (old != null) {
+            getPreferences().remove(PROXY_AUTHENTICATION_PASSWORD);
+            setAuthenticationPassword(old.toCharArray());
+        }
+        char[] pwd = Keyring.read(PROXY_AUTHENTICATION_PASSWORD);
+        return pwd != null ? pwd : new char[0];
     }
     
+    public static void setAuthenticationPassword(char[] password) {
+        Keyring.save(ProxySettings.PROXY_AUTHENTICATION_PASSWORD, password,
+                // XXX consider including getHttpHost and/or getHttpsHost
+                NbBundle.getMessage(ProxySettings.class, "ProxySettings.password.description"));
+    }
+
     static void addPreferenceChangeListener (PreferenceChangeListener l) {
         getPreferences ().addPreferenceChangeListener (l);
     }
@@ -158,7 +172,7 @@ public class ProxySettings {
     static void removePreferenceChangeListener (PreferenceChangeListener l) {
         getPreferences ().removePreferenceChangeListener (l);
     }
-    
+
     static class SystemProxySettings extends ProxySettings {
         
         public static String getHttpHost () {

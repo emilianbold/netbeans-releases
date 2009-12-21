@@ -40,6 +40,7 @@
 package org.netbeans.modules.jira.issue;
 
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
+import org.openide.ErrorManager;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -85,7 +86,12 @@ public class JiraIssueFinder extends IssueFinder {
     }
 
     private static int[] findBoundaries(CharSequence str) {
-        return getImpl().findBoundaries(str);
+        try {
+            return getImpl().findBoundaries(str);
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            return null;
+        }
     }
 
     private static Impl getImpl() {

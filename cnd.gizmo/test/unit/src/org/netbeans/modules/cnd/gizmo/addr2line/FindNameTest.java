@@ -43,6 +43,7 @@ import org.netbeans.modules.cnd.gizmo.addr2line.dwarf2line.Dwarf2NameFinder;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -211,12 +212,14 @@ public class FindNameTest extends NbTestCase {
             System.err.println("Dwarf Provider:\t" + fileInfo.getFileName() + ":" + fileInfo.getLine());
         }
         if (full) {
-            Dwarf2NameFinder source = getDwarfSource(executable);
-            source.lookup(base + shift);
-            System.err.println("Dwarf Finder:\t" + source.getSourceFile() + ":" + source.getLineNumber());
+            if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN){
+                Dwarf2NameFinder source = getDwarfSource(executable);
+                source.lookup(base + shift);
+                System.err.println("Dwarf Finder:\t" + source.getSourceFile() + ":" + source.getLineNumber());
+                assertEquals(number.line, source.getLineNumber());
+            }
             assertNotNull(fileInfo);
             assertNotNull(number);
-            assertEquals(number.line, source.getLineNumber());
             assertNotNull(candidate);
             assertEquals(number.line, candidate.line);
         } else {

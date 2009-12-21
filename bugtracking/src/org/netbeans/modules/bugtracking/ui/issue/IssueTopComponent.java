@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.MissingResourceException;
 import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
@@ -60,6 +61,7 @@ import org.netbeans.modules.bugtracking.RepositoriesSupport;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.ui.search.FindSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.RepositoryComboRenderer;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
@@ -97,6 +99,9 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 onNewClick();
             }
         });
+        JComponent findBar = FindSupport.create(this).getFindBar();
+        findBar.setVisible(false);
+        issuePanel.add(findBar, BorderLayout.PAGE_END);
     }
 
     /**
@@ -153,7 +158,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 preparingLabel.setVisible(true);
                 repoPanel.setVisible(false);
                 if(issueId != null) {
-                    String desc = NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[]{issueId});
+                    String desc = NbBundle.getMessage(IssueTopComponent.class, "LBL_OPENING_ISSUE", new Object[]{issueId});
                     preparingLabel.setText(desc);
                     setName(NbBundle.getMessage(IssueTopComponent.class, "LBL_LOADING_ISSUE", new Object[]{issueId}));
                     setToolTipText(desc);
@@ -235,7 +240,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     .add(findIssuesLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(152, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         repoPanelLayout.setVerticalGroup(
             repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -264,14 +269,14 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(repoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 598, Short.MAX_VALUE)
+            .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(repoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE))
+                .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

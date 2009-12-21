@@ -15,14 +15,14 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
 import javax.persistence.EntityManager;
-import o.n.m.ws.qaf.rest.crud.Product;
 import o.n.m.ws.qaf.rest.crud.Customer;
+import o.n.m.ws.qaf.rest.crud.Product;
 import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
 import o.n.m.ws.qaf.rest.crud.converter.PurchaseOrderConverter;
+import com.sun.jersey.api.core.ResourceContext;
 
 /**
  *
@@ -31,16 +31,16 @@ import o.n.m.ws.qaf.rest.crud.converter.PurchaseOrderConverter;
 
 public class PurchaseOrderResource {
     @Context
-    protected UriInfo uriInfo;
-    @Context
     protected ResourceContext resourceContext;
+    @Context
+    protected UriInfo uriInfo;
     protected Integer id;
-
+  
     /** Creates a new instance of PurchaseOrderResource */
     public PurchaseOrderResource() {
     }
 
-    protected void setId(Integer id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -53,7 +53,7 @@ public class PurchaseOrderResource {
     @GET
     @Produces({"application/xml", "application/json"})
     public PurchaseOrderConverter get(@QueryParam("expandLevel")
-    @DefaultValue("1")
+                                      @DefaultValue("1")
     int expandLevel) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
@@ -123,7 +123,7 @@ public class PurchaseOrderResource {
      * @param newEntity the entity containing the new data
      * @return the updated entity
      */
-    protected PurchaseOrder updateEntity(PurchaseOrder entity, PurchaseOrder newEntity) {
+    private PurchaseOrder updateEntity(PurchaseOrder entity, PurchaseOrder newEntity) {
         EntityManager em = PersistenceService.getInstance().getEntityManager();
         Customer customerId = entity.getCustomerId();
         Customer customerIdNew = newEntity.getCustomerId();
@@ -150,7 +150,7 @@ public class PurchaseOrderResource {
      *
      * @param entity the entity to deletle
      */
-    protected void deleteEntity(PurchaseOrder entity) {
+    private void deleteEntity(PurchaseOrder entity) {
         EntityManager em = PersistenceService.getInstance().getEntityManager();
         Customer customerId = entity.getCustomerId();
         if (customerId != null) {
@@ -171,9 +171,9 @@ public class PurchaseOrderResource {
      */
     @Path("customerId/")
     public CustomerResource getCustomerIdResource() {
-        CustomerIdResourceSub resource = resourceContext.getResource(CustomerIdResourceSub.class);
-        resource.setParent(getEntity());
-        return resource;
+        CustomerIdResourceSub customerIdResourceSub = resourceContext.getResource(CustomerIdResourceSub.class);
+        customerIdResourceSub.setParent(getEntity());
+        return customerIdResourceSub;
     }
 
     /**
@@ -184,16 +184,16 @@ public class PurchaseOrderResource {
      */
     @Path("productId/")
     public ProductResource getProductIdResource() {
-        ProductIdResourceSub resource = resourceContext.getResource(ProductIdResourceSub.class);
-        resource.setParent(getEntity());
-        return resource;
+        ProductIdResourceSub productIdResourceSub = resourceContext.getResource(ProductIdResourceSub.class);
+        productIdResourceSub.setParent(getEntity());
+        return productIdResourceSub;
     }
 
     public static class CustomerIdResourceSub extends CustomerResource {
 
         private PurchaseOrder parent;
 
-        protected void setParent(PurchaseOrder parent) {
+        public void setParent(PurchaseOrder parent) {
             this.parent = parent;
         }
 
@@ -211,7 +211,7 @@ public class PurchaseOrderResource {
 
         private PurchaseOrder parent;
 
-        protected void setParent(PurchaseOrder parent) {
+        public void setParent(PurchaseOrder parent) {
             this.parent = parent;
         }
 

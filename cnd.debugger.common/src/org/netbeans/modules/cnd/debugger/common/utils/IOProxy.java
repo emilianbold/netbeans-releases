@@ -240,7 +240,7 @@ public abstract class IOProxy {
                     if (toolFile.exists()) {
                         tool = toolFile.getAbsolutePath();
                     } else {
-                        toolFile = new File(CompilerSetUtils.getMSysBase() + "/bin", tool); // NOI18N
+                        toolFile = new File(CompilerSetUtils.getCommandFolder(null), tool); // NOI18N
                         if (toolFile.exists()) {
                             tool = toolFile.getAbsolutePath();
                         }

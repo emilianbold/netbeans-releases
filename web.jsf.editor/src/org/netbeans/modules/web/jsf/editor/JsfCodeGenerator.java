@@ -54,6 +54,9 @@ public class JsfCodeGenerator {
 
             JTextComponent component = context.lookup(JTextComponent.class);
             List<CodeGenerator> generators = new ArrayList<CodeGenerator>();
+	    generators.add(new InjectCompositeComponent.InjectCCCodeGen());
+
+	    //add palette items
             for(PaletteItem item : PaletteItemsProvider.getPaletteItems()) {
                 generators.add(new PaletteCodeGenerator(component, item));
             }

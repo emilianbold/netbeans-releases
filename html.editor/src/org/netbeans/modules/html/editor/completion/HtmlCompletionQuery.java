@@ -40,9 +40,11 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
+import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import java.util.*;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.Document;
 import org.netbeans.editor.ext.html.dtd.*;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -115,15 +117,38 @@ public class HtmlCompletionQuery extends UserTask {
         }
     }
 
-    private CompletionResult queryHtmlEndTagInEmbeddedCode(Snapshot snapshot, int embeddedOffset, String endTagName) {
-        // </sty|
-        // </style
-        // 01234567
-        //PS = 7
-        //tli = 1
-        //index = embeddedOffset -
+    private CompletionResult queryHtmlEndTagInEmbeddedCode(final Snapshot snapshot, final int embeddedOffset, final String endTagName) {
+        // End tag autocompletion support
+        // We want the end tag autocompletion to appear just after <style> and <script> tags.
+        // Since there is css language as leaf languge, this needs to be treated separately.
+        final Document doc = snapshot.getSource().getDocument(false);
+        if(doc != null) {
+            final AtomicReference<CompletionResult> result = new AtomicReference<CompletionResult>();
+            doc.render(new Runnable() {
+                public void run() {
+                    int documentItemOffset = snapshot.getOriginalOffset(embeddedOffset);
+                    TokenSequence ts = Utils.getJoinedHtmlSequence(doc, documentItemOffset - 1);
+                    if(ts != null)  {
+                        if(ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL && CharSequenceUtilities.equals(ts.token().text(), ">")) {
+                            Token openTagToken = Utils.findTagOpenToken(ts);
+                            if (openTagToken != null && CharSequenceUtilities.equals(openTagToken.text(), endTagName)) {
+
+                                List<? extends CompletionItem> items = Collections.singletonList(
+                                        HtmlCompletionItem.createAutocompleteEndTag(endTagName, documentItemOffset));
+                                result.set(new CompletionResult(items, offset));
+                            }
+                        }
+                    }
+                }
+            });
+            if(result.get() != null) {
+                return result.get();
+            }
+
+        }
 
         String expectedCode = "</" + endTagName;
+        // Common end tag completion
 
         //get searched area before caret size
         int patternSize = Math.max(embeddedOffset, embeddedOffset - expectedCode.length());

@@ -18,10 +18,10 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import com.sun.jersey.api.core.ResourceContext;
 import javax.persistence.EntityManager;
 import converter.PeopleConverter;
 import converter.PersonConverter;
+import com.sun.jersey.api.core.ResourceContext;
 
 /**
  *
@@ -31,9 +31,9 @@ import converter.PersonConverter;
 @Path("/people/")
 public class PeopleResource {
     @Context
-    protected UriInfo uriInfo;
-    @Context
     protected ResourceContext resourceContext;
+    @Context
+    protected UriInfo uriInfo;
   
     /** Creates a new instance of PeopleResource */
     public PeopleResource() {
@@ -47,13 +47,13 @@ public class PeopleResource {
     @GET
     @Produces({"application/xml", "application/json"})
     public PeopleConverter get(@QueryParam("start")
-    @DefaultValue("0")
+                               @DefaultValue("0")
     int start, @QueryParam("max")
-    @DefaultValue("10")
+               @DefaultValue("10")
     int max, @QueryParam("expandLevel")
-    @DefaultValue("1")
+             @DefaultValue("1")
     int expandLevel, @QueryParam("query")
-    @DefaultValue("SELECT e FROM Person e")
+                     @DefaultValue("SELECT e FROM Person e")
     String query) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
@@ -95,9 +95,9 @@ public class PeopleResource {
     @Path("{id}/")
     public PersonResource getPersonResource(@PathParam("id")
     String id) {
-        PersonResource resource = resourceContext.getResource(PersonResource.class);
-        resource.setId(id);
-        return resource;
+        PersonResource personResource = resourceContext.getResource(PersonResource.class);
+        personResource.setId(id);
+        return personResource;
     }
 
     /**

@@ -41,26 +41,24 @@
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
 import java.util.ArrayList;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 
 public class Platforms {
+    private static final ArrayList<Platform> platforms = new ArrayList<Platform>();
 
-    private static ArrayList<Platform> platforms = null;
-    private static Object lock = new Object();
+    static {
+        platforms.add(new PlatformSolarisSparc());
+        platforms.add(new PlatformSolarisIntel());
+        platforms.add(new PlatformLinux());
+        platforms.add(new PlatformWindows());
+        platforms.add(new PlatformMacOSX());
+        platforms.add(new PlatformGeneric());
+        platforms.add(new PlatformNone());
+        platforms.trimToSize();
+    }
 
     public static ArrayList<Platform> getPlatforms() {
-        synchronized (lock) {
-            if (platforms == null) {
-                platforms = new ArrayList<Platform>();
-                platforms.add(new PlatformSolarisSparc());
-                platforms.add(new PlatformSolarisIntel());
-                platforms.add(new PlatformLinux());
-                platforms.add(new PlatformWindows());
-                platforms.add(new PlatformMacOSX());
-                platforms.add(new PlatformGeneric());
-                platforms.add(new PlatformNone());
-            }
-            return platforms;
-        }
+        return platforms;
     }
 
     public static Platform getPlatform(String name) {
@@ -87,11 +85,14 @@ public class Platforms {
     public static String[] getPlatformDisplayNames() {
         ArrayList<String> ret = new ArrayList<String>();
         for (Platform pl : getPlatforms()) {
-            if (pl.getId() == Platform.PLATFORM_GENERIC || pl.getId() == Platform.PLATFORM_NONE) {
+            if (pl.getId() == PlatformTypes.PLATFORM_GENERIC || pl.getId() == PlatformTypes.PLATFORM_NONE) {
                 continue;
             }
             ret.add(pl.getDisplayName());
         }
         return ret.toArray(new String[ret.size()]);
+    }
+
+    private Platforms() {
     }
 }

@@ -42,9 +42,13 @@ package org.netbeans.modules.web.beans.xml.impl;
 
 import javax.xml.namespace.QName;
 
+import org.netbeans.modules.web.beans.xml.Alternatives;
+import org.netbeans.modules.web.beans.xml.BeanClass;
+import org.netbeans.modules.web.beans.xml.BeanClassContainer;
 import org.netbeans.modules.web.beans.xml.Beans;
-import org.netbeans.modules.web.beans.xml.Deploy;
-import org.netbeans.modules.web.beans.xml.Type;
+import org.netbeans.modules.web.beans.xml.Decorators;
+import org.netbeans.modules.web.beans.xml.Interceptors;
+import org.netbeans.modules.web.beans.xml.Stereotype;
 import org.netbeans.modules.web.beans.xml.WebBeansComponent;
 import org.netbeans.modules.web.beans.xml.WebBeansVisitor;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
@@ -70,25 +74,53 @@ class WebBeansComponentBuildVisitor implements WebBeansVisitor {
      * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Beans)
      */
     public void visit( Beans beans ) {
-        if ( isAcceptable( WebBeansElements.DEPLOY)){
-            setResult( new DeployImpl( getModel() , getElement()));
+        if ( isAcceptable( WebBeansElements.INTERCEPTORS)){
+            setResult( new InterceptorsImpl(getModel() , getElement()));
+        }
+        else if (isAcceptable( WebBeansElements.DECORATORS )){
+            setResult( new DecoratorsImpl(getModel(), getElement()));
+        }
+        else if (isAcceptable( WebBeansElements.ALTERNATIVES)){
+            setResult( new AlternativesImpl(getModel(), getElement()));
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Interceptors)
+     */
+    public void visit( Interceptors interceptors ) {
+        visitClassContainer( interceptors );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Decorators)
+     */
+    public void visit( Decorators decorators ) {
+        visitClassContainer( decorators );
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Alternatives)
+     */
+    public void visit( Alternatives alternatives ) {
+        if ( isAcceptable( WebBeansElements.CLASS)){
+            setResult( new BeanClassImpl(getModel(), getElement()));
+        }
+        else if ( isAcceptable( WebBeansElements.STEREOTYPE )){
+            setResult( new StereotypeImpl( getModel(), getElement()));
         }
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Deploy)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.BeanClass)
      */
-    public void visit( Deploy deploy ) {
-        if ( isAcceptable( WebBeansElements.TYPE)){
-            setResult( new TypeImpl( getModel() , getElement()));
-        }
+    public void visit( BeanClass clazz ) {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Type)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansVisitor#visit(org.netbeans.modules.web.beans.xml.Stereotype)
      */
-    public void visit( Type type ) {
-        // type doesn't have children
+    public void visit( Stereotype stereotype ) {
     }
 
     WebBeansComponent create( WebBeansComponent context, Element element )
@@ -107,6 +139,13 @@ class WebBeansComponentBuildVisitor implements WebBeansVisitor {
             context.accept( this );
         }
         return myResult;
+    }
+    
+    
+    private void visitClassContainer( BeanClassContainer container ) {
+        if ( isAcceptable( WebBeansElements.CLASS)){
+            setResult( new BeanClassImpl(getModel(), getElement()));
+        }        
     }
     
     private WebBeansModelImpl getModel(){

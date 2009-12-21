@@ -91,26 +91,35 @@ public class NativeExecutionTestFrameworkTestCase extends NativeExecutionBaseTes
     public void testForAllTestPlatforms() {
     }
 
-    @Conditional(section="test.conditional", key="cond-true")
+    @If(section="test.conditional", key="cond-true")
     public void testConditionalTrue() {
     }
 
-    @Conditional(section="test.conditional", key="cond-false")
+    @If(section="test.conditional", key="cond-false")
     public void testConditionalFalse() {
     }
 
-    @Conditional(section="test.conditional", key="cond-err")
+    @If(section="test.conditional", key="cond-err")
     public void testConditionalErrValue() {
     }
 
-    @Conditional(section="test.conditional.inexistent", key="cond-err")
+    @If(section="test.conditional.inexistent", key="cond-err")
     public void testConditionalInexistentKey() {
     }
 
-    @Conditional(key="inexistent", section="inexistent", defaultValue=false)
-        public void testConditionalDefault() {
+    @If(key="inexistent", section="inexistent", defaultValue=false)
+    public void testConditionalDefault() {
     }
-    
+
+    @Ifdef(section="ifdef.section", key="ifdef.key")
+    public void testIfdef() {
+    }
+
+    @Ifdef(section="ifdef.section", key="ifdef.key")
+    @If(section="ifdef.section", key="ifdef.and.if.key")
+    public void testIfdefAndIf() {
+    }
+
     public static junit.framework.Test suite() {
         Class testClass = NativeExecutionTestFrameworkTestCase.class;
         return new NativeExecutionBaseTestSuite(

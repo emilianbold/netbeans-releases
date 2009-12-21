@@ -40,6 +40,8 @@
 package org.netbeans.modules.cnd.api.compilers;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.compilers.impl.ToolchainManagerImpl;
@@ -51,7 +53,7 @@ import org.openide.util.Utilities;
  */
 public final class CompilerSetUtils {
     private static String cygwinBase;
-    private static String msysBase;
+    private static Map<ToolchainDescriptor, String> commandsFolders = new HashMap<ToolchainDescriptor, String>(8);
 
     private CompilerSetUtils() {
     }
@@ -91,31 +93,52 @@ public final class CompilerSetUtils {
     }
 
     /**
-     * Get the MSys base directory from MinGW.xml (toolchain definition, which users the Windows registry) or the user's path
+     * Get the command folder (toolchain definition, which users the Windows registry) or the user's path
      */
-    public static String getMSysBase() {
-        if (msysBase == null && Utilities.isWindows()) {
-            ToolchainManagerImpl tcm = ToolchainManager.getImpl();
-            for(ToolchainDescriptor td : tcm.getToolchains(PlatformTypes.PLATFORM_WINDOWS)){
-                if (td != null) {
-                    String msysBin = tcm.getCommandFolder(td, PlatformTypes.PLATFORM_WINDOWS);
-                    if (msysBin != null) {
-                        msysBase = msysBin.substring(0, msysBin.length() - 4).replace("\\", "/"); // NOI18N
-                        break;
-                    }
-                }
-            }
-            if (msysBase == null) {
-                for (String dir : Path.getPath()) {
-                    dir = dir.toLowerCase().replace("\\", "/"); // NOI18N
-                    if (dir.contains("/msys/1.0") && dir.toLowerCase().contains("/bin")) { // NOI18N
-                        msysBase = dir.substring(0, dir.length() - 4);
-                        break;
-                    }
+    public static String getCommandFolder(ToolchainDescriptor descriptor) {
+        if (!Utilities.isWindows()) {
+            return null;
+        }
+        String res = getCommandDir(descriptor);
+        if (res != null) {
+            return res;
+        }
+        ToolchainManagerImpl tcm = ToolchainManager.getImpl();
+        for(ToolchainDescriptor td : tcm.getToolchains(PlatformTypes.PLATFORM_WINDOWS)){
+            if (td != null) {
+                res = getCommandDir(td);
+                if (res != null) {
+                    return res;
                 }
             }
         }
-        return msysBase;
+        for (String dir : Path.getPath()) {
+            dir = dir.toLowerCase().replace("\\", "/"); // NOI18N
+            if (dir.contains("/msys/1.0") && dir.contains("/bin")) { // NOI18N
+                return dir;
+            }
+        }
+        return null;
+    }
+
+    private static String getCommandDir(ToolchainDescriptor td) {
+        if (td != null) {
+            String dir = commandsFolders.get(td);
+            if (dir == null) {
+                ToolchainManagerImpl tcm = ToolchainManager.getImpl();
+                String msysBin = tcm.getCommandFolder(td, PlatformTypes.PLATFORM_WINDOWS);
+                if (msysBin != null) {
+                    dir = msysBin.replace("\\", "/"); // NOI18N
+                } else {
+                    dir = ""; // NOI18N
+                }
+                commandsFolders.put(td, dir);
+            }
+            if (dir.length() > 0) {
+                return dir;
+            }
+        }
+        return null;
     }
 
     static String getPlatformName(int platform) {
@@ -154,9 +177,9 @@ public final class CompilerSetUtils {
     static String findCommand(String name) {
         String path = Path.findCommand(name);
         if (path == null) {
-            String dir = CompilerSetUtils.getMSysBase();
+            String dir = CompilerSetUtils.getCommandFolder(null);
             if (dir != null) {
-                path = findCommand(name, dir+"/bin"); // NOI18N
+                path = findCommand(name, dir); // NOI18N
             }
         }
         return path;

@@ -56,7 +56,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.apisupport.project.EditableManifest;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;

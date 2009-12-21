@@ -15,15 +15,15 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
 import javax.persistence.EntityManager;
-import java.util.Collection;
 import o.n.m.ws.qaf.rest.crud.Customer;
-import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
 import o.n.m.ws.qaf.rest.crud.DiscountCode;
+import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
+import java.util.Collection;
 import o.n.m.ws.qaf.rest.crud.converter.CustomerConverter;
+import com.sun.jersey.api.core.ResourceContext;
 
 /**
  *
@@ -32,16 +32,16 @@ import o.n.m.ws.qaf.rest.crud.converter.CustomerConverter;
 
 public class CustomerResource {
     @Context
-    protected UriInfo uriInfo;
-    @Context
     protected ResourceContext resourceContext;
+    @Context
+    protected UriInfo uriInfo;
     protected Integer id;
-
+  
     /** Creates a new instance of CustomerResource */
     public CustomerResource() {
     }
 
-    protected void setId(Integer id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -54,7 +54,7 @@ public class CustomerResource {
     @GET
     @Produces({"application/xml", "application/json"})
     public CustomerConverter get(@QueryParam("expandLevel")
-    @DefaultValue("1")
+                                 @DefaultValue("1")
     int expandLevel) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
@@ -124,7 +124,7 @@ public class CustomerResource {
      * @param newEntity the entity containing the new data
      * @return the updated entity
      */
-    protected Customer updateEntity(Customer entity, Customer newEntity) {
+    private Customer updateEntity(Customer entity, Customer newEntity) {
         EntityManager em = PersistenceService.getInstance().getEntityManager();
         DiscountCode discountCode = entity.getDiscountCode();
         DiscountCode discountCodeNew = newEntity.getDiscountCode();
@@ -159,7 +159,7 @@ public class CustomerResource {
      *
      * @param entity the entity to deletle
      */
-    protected void deleteEntity(Customer entity) {
+    private void deleteEntity(Customer entity) {
         EntityManager em = PersistenceService.getInstance().getEntityManager();
         DiscountCode discountCode = entity.getDiscountCode();
         if (discountCode != null) {
@@ -179,9 +179,9 @@ public class CustomerResource {
      */
     @Path("discountCode/")
     public DiscountCodeResource getDiscountCodeResource() {
-        DiscountCodeResourceSub resource = resourceContext.getResource(DiscountCodeResourceSub.class);
-        resource.setParent(getEntity());
-        return resource;
+        DiscountCodeResourceSub discountCodeResourceSub = resourceContext.getResource(DiscountCodeResourceSub.class);
+        discountCodeResourceSub.setParent(getEntity());
+        return discountCodeResourceSub;
     }
 
     /**
@@ -192,16 +192,16 @@ public class CustomerResource {
      */
     @Path("purchaseOrderCollection/")
     public PurchaseOrdersResource getPurchaseOrderCollectionResource() {
-        PurchaseOrderCollectionResourceSub resource = resourceContext.getResource(PurchaseOrderCollectionResourceSub.class);
-        resource.setParent(getEntity());
-        return resource;
+        PurchaseOrderCollectionResourceSub purchaseOrderCollectionResourceSub = resourceContext.getResource(PurchaseOrderCollectionResourceSub.class);
+        purchaseOrderCollectionResourceSub.setParent(getEntity());
+        return purchaseOrderCollectionResourceSub;
     }
 
     public static class DiscountCodeResourceSub extends DiscountCodeResource {
 
         private Customer parent;
 
-        protected void setParent(Customer parent) {
+        public void setParent(Customer parent) {
             this.parent = parent;
         }
 
@@ -219,7 +219,7 @@ public class CustomerResource {
 
         private Customer parent;
 
-        protected void setParent(Customer parent) {
+        public void setParent(Customer parent) {
             this.parent = parent;
         }
 

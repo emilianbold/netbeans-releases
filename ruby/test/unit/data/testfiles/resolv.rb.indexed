@@ -709,6 +709,7 @@ Searchable Keys:
   method : [](i)
   method : absolute?;;TrueClass|FalseClass;
   method : create(arg)|STATIC|;;Name;
+  method : eql?;;TrueClass|FalseClass;
   method : hash
   method : initialize(labels,absolute)|PRIVATE|;;TrueClass;
   method : inspect;;String;

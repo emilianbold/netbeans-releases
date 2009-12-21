@@ -63,7 +63,7 @@ import org.openide.windows.CloneableTopComponent;
 /**
  * Formerly HtmlBrowser.BrowserComponent.
  */
-class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChangeListener {
+public class HtmlBrowserComponent extends CloneableTopComponent implements PropertyChangeListener {
     /** generated Serialized Version UID */
     static final long                   serialVersionUID = 2912844785502987960L;
 
