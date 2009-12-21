@@ -316,19 +316,21 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     /**
      * Called when project is closed.
      * Unregisters any previously registered classpaths.
-     * XXX: Threading: calls non private code under lock
      */
-    public synchronized void closed() {
-        if (registeredClasspaths == null) {
-            return;
+    public void closed() {
+        Map<String,Set<ClassPath>> toUnregister;
+        synchronized (this) {
+            if (registeredClasspaths == null) {
+                return;
+            }
+            toUnregister = new HashMap<String,Set<ClassPath>>(registeredClasspaths);
+            registeredClasspaths = null;
         }
         GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
-        for (int i = 0; i < TYPES.length; i++) {
-            String type = TYPES[i];
-            Set<ClassPath> registeredClasspathsOfType = registeredClasspaths.get(type);
+        for (String type : TYPES) {
+            Set<ClassPath> registeredClasspathsOfType = toUnregister.get(type);
             gpr.unregister(type, registeredClasspathsOfType.toArray(new ClassPath[registeredClasspathsOfType.size()]));
         }
-        registeredClasspaths = null;
     }
     
     static List<String> findPackageRootNames(Element compilationUnitEl) {
