@@ -333,6 +333,10 @@ class PropertiesRowModel implements RowModel {
         return -1;
     }
 
+    Object getPropertyValue(String propName, int column) {
+        return prop[column].getValue(propName);
+    }
+
     /**
      * Changes the value of the boolean property.
      */

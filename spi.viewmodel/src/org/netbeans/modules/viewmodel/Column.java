@@ -72,7 +72,7 @@ public class Column extends PropertySupport.ReadWrite {
         );
         this.columnModel = columnModel;
         setValue (
-            "ComparableColumnTTV", 
+            "SortableColumn",
             Boolean.valueOf (columnModel.isSortable ())
         );
         if (columnModel.getType () == null)
@@ -137,8 +137,9 @@ public class Column extends PropertySupport.ReadWrite {
         }
         if ("InvisibleInTreeTableView".equals (propertyName)) 
             return Boolean.valueOf (!columnModel.isVisible ());
-        if ("SortingColumnTTV".equals (propertyName)) 
-            return Boolean.valueOf (columnModel.isSorted ());
+        if ("SortableColumn".equals (propertyName)) {
+            return Boolean.valueOf (columnModel.isSortable());
+        }
         if ("DescendingOrderTTV".equals (propertyName)) 
             return Boolean.valueOf (columnModel.isSortedDescending ());
         return super.getValue (propertyName);
@@ -149,11 +150,11 @@ public class Column extends PropertySupport.ReadWrite {
             int index = ((Integer) newValue).intValue();
             columnModel.setCurrentOrderNumber(index);
         } else
-        if ("SortingColumnTTV".equals (propertyName)) 
+        /*if ("SortableColumn".equals (propertyName))
             columnModel.setSorted (
                 ((Boolean) newValue).booleanValue ()
             );
-        else
+        else*/
         if ("DescendingOrderTTV".equals (propertyName)) 
             columnModel.setSortedDescending (
                 ((Boolean) newValue).booleanValue ()

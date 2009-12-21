@@ -47,11 +47,18 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
+import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.openide.WizardDescriptor;
+import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -64,6 +71,7 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
     int currentIndex;
     PanelConfigureProject basicPanel;
     private transient WizardDescriptor wiz;
+    private FileChangeListener fcl = new NbprojectFileChangeListener();
 
     static Object create() {
         return new WebSampleProjectIterator();
@@ -126,7 +134,18 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
             FileObject index = getIndexFile(webRoot);
             if (webRoot != null) hset.add(DataObject.find(prj));
             if (index != null) hset.add(DataObject.find(index));
+            
+            // run wsimport-client-generate target when jaxws-build.xml is created
+            if (prj.getName().contains("Client")) { //NOI18N
+                FileObject nbprojectDir = prj.getFileObject("nbproject"); //NOI18N
+                if (nbprojectDir != null) {
+                    hset.add(nbprojectDir);
+                    FileChangeListener weakListener = FileUtil.weakFileChangeListener(fcl,nbprojectDir);
+                    nbprojectDir.addFileChangeListener(weakListener);
+                }                
+            }
         }
+
         return hset;
     }
     
@@ -162,6 +181,33 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
             file = webRoot.getFileObject("index", "html");
         }
         return file;
+    }
+
+    private class NbprojectFileChangeListener extends FileChangeAdapter {
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            if ("jaxws-build.xml".equals(fe.getFile().getNameExt())) { //NOI18N
+                FileObject nbprojectDir = (FileObject) fe.getSource();
+                final FileObject buildImplFo = nbprojectDir.getFileObject("build-impl.xml");
+                if (buildImplFo != null) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            try {
+                                ExecutorTask wsimportTask =
+                                        ActionUtils.runTarget(buildImplFo,
+                                        new String[]{"wsimport-client-generate"}, null); //NOI18N
+                                wsimportTask.waitFinished();
+                            } catch (IllegalArgumentException ex) {
+                                // do nothing if there is no wsimport-client-generate target
+                            } catch (java.io.IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    },1000);
+                }
+            }
+        }
     }
     
 }
