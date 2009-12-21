@@ -45,6 +45,18 @@ made subject to such option by the copyright holder.
 
 <MIME-resolver >
     <file>
+	<!-- Mac Power PC peff executable -->
+	<!--          J o y ! p e f f     -->
+	<magic   hex="4a6f792170656666"
+	        mask="ffffffffffffffff"/>
+	<!-- Next 4 bytes contains architecture type:
+             "pwpc" for the PowerPC CFM
+             "m68k" for CFM-68K
+             Ignore architecture. -->
+        <resolver mime="application/x-exe"/>
+    </file>
+
+    <file>
 	<!-- Mach-O executable i386 -->
 	<!--                  v       v       v       v-->
 	<magic   hex="cefaedfe0000000000000000020000000000"

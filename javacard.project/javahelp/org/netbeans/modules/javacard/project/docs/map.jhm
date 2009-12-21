@@ -93,8 +93,8 @@
 	<mapID target="org.netbeans.modules.javacard.RunningExtendedAppletProject" url="help/RunningExtendedAppletProject.html"/>
 	<mapID target="org.netbeans.modules.javacard.RunningExtendedAppletSamples" url="help/RunningExtendedAppletSamples.html"/>
 	<mapID target="org.netbeans.modules.javacard.GetAdditionalExtendedAppletSamples" url="help/GetAdditionalExtendedAppletSamples.html"/>
-	<mapID target="org.netbeans.modules.javacard.CreatingClassicalLibProject" url="help/CreatingClassicLibProject.html"/>
-	<mapID target="org.netbeans.modules.javacard.CreateClassicaLibProjectFromTemplate" url="help/CreateClassicaLibProjectFromTemplate.html"/>
+	<mapID target="org.netbeans.modules.javacard.CreatingClassicLibProject" url="help/CreatingClassicLibProject.html"/>
+	<mapID target="org.netbeans.modules.javacard.CreateClassicLibProjectFromTemplate" url="help/CreateClassicLibProjectFromTemplate.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreateClassicLibProjectFromExistingCode" url="help/CreateClassicLibProjectFromExistingCode.html"/>
 	<mapID target="org.netbeans.modules.javacard.CustomizingClassicLibProject" url="help/CustomizingClassicLibProject.html"/>
 	<mapID target="org.netbeans.modules.javacard.SetClassicLibProjectProperties" url="help/SetClassicLibProjectProperties.html"/>

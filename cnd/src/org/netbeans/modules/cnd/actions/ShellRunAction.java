@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.actions;
 
+import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -65,6 +66,7 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.loaders.ShellDataObject;
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.LifecycleManager;
@@ -72,9 +74,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.WindowManager;
 
 /**
  * Base class for Make Actions ...
@@ -106,18 +108,31 @@ public class ShellRunAction extends AbstractExecutorRunAction {
 
     public static Future<Integer> performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project, final InputOutput inputOutput) {
         if (SwingUtilities.isEventDispatchThread()){
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    _performAction(node, listener, outputListener, project, inputOutput);
+            final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
+                private ExecutionService es;
+                public void doWork() {
+                    es = prepare(node, listener, outputListener, project, inputOutput);
                 }
-            });
+                public void doPostRunInEDT() {
+                    if (es != null) {
+                        es.run();
+                    }
+                }
+            };
+            Frame mainWindow = WindowManager.getDefault().getMainWindow();
+            String title = getString("DLG_TITLE_Prepare",node.getName()); // NOI18N
+            String msg = getString("MSG_TITLE_Prepare",node.getName()); // NOI18N
+            ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
         } else {
-            return _performAction(node, listener, outputListener, project, inputOutput);
+            ExecutionService es = prepare(node, listener, outputListener, project, inputOutput);
+            if (es != null) {
+                return es.run();
+            }
         }
         return null;
     }
 
-    private static Future<Integer> _performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
+    private static ExecutionService prepare(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
         ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
         if (bes == null) {
             return null;
@@ -214,8 +229,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         .outConvertorFactory(processChangeListener);
 
         // Execute the shellfile
-        ExecutionService es = ExecutionService.newService(npb, descr, "Run"); // NOI18N
-        return es.run();
+        return ExecutionService.newService(npb, descr, "Run"); // NOI18N
     }
 
     private static String findWindowsShell(String shellCommand, ExecutionEnvironment execEnv, Node node) {
@@ -269,12 +283,12 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         }
         folder = CompilerSetUtils.getCygwinBase();
         if (folder != null) {
-            newShellCommand = pi.findCommand(folder, shellCommand);
+            newShellCommand = pi.findCommand(folder+"/bin", shellCommand); // NOI18N
             if (newShellCommand != null) {
                 return newShellCommand;
             }
         }
-        folder = CompilerSetUtils.getMSysBase();
+        folder = CompilerSetUtils.getCommandFolder(null);
         if (folder != null) {
             newShellCommand = pi.findCommand(folder, shellCommand);
             if (newShellCommand != null) {

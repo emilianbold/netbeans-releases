@@ -42,13 +42,9 @@ package org.netbeans.modules.cnd.editor;
 
 // This file was initially based on org.netbeans.modules.java.JavaEditor
 // (Rev 61)
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.*;
-import javax.swing.text.*;
+import java.io.IOException;
 
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
-import org.openide.ErrorManager;
 import org.openide.text.*;
 import org.openide.loaders.DataObject;
 
@@ -69,11 +65,7 @@ import org.openide.windows.CloneableOpenSupport;
  *  If we plan to use guarded sections, we'd need to implement that
  *  here. For now, this is used to get toggle-breakpoint behavior.
  */
-public class CppEditorSupport extends DataEditorSupport implements EditorCookie, EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie {
-
-    private long lastModified = 0;
-    private static final ErrorManager log =
-            ErrorManager.getDefault().getInstance("CppFoldTracer"); // NOI18N
+public class CppEditorSupport extends DataEditorSupport implements EditorCookie, EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie, ReadOnlySupport {
 
     /** SaveCookie for this support instance. The cookie is adding/removing 
      * data object's cookie set depending on if modification flag was set/unset. */
@@ -87,6 +79,7 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
     };
 
     private final CookieSet cookies;
+    private boolean readonly;
 
     /**
      *  Create a new Editor support for the given C/C++/Fortran source.
@@ -95,17 +88,6 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
     public CppEditorSupport(DataObject obj, CookieSet cookies) {
         super(obj, new Environment(obj));
         this.cookies = cookies;
-
-        // Add change listener. Note: This should be "addPropertyChange"!
-        addPropertyChangeListener(new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                // XXX - Need to update parser information...
-                if (!isDocumentLoaded()) {
-                    notifyClose();
-                }
-            }
-        });
     }
 
     /** 
@@ -119,7 +101,6 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
             return false;
         }
 
-        lastModified = System.currentTimeMillis();
         addSaveCookie();
 
         return true;
@@ -156,12 +137,14 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
         }
     }
 
-    /** True, if there's a visible editor component flying around */
-    private boolean componentsCreated = false;
+    @Override
+    public boolean isReadOnly() {
+        return readonly;
+    }
 
-    /** Notify about the editor closing */
-    protected void notifyClose() {
-        componentsCreated = false;
+    @Override
+    public void setReadOnly(boolean readOnly) {
+        this.readonly = readOnly;
     }
 
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
@@ -175,11 +158,13 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
         }
 
         /** Implements abstract superclass method. */
+        @Override
         protected FileObject getFile() {
             return getDataObject().getPrimaryFile();
         }
 
         /** Implements abstract superclass method.*/
+        @Override
         protected FileLock takeLock() throws IOException {
             ReadOnlySupport readOnly = getDataObject().getLookup().lookup(ReadOnlySupport.class);
             if (readOnly != null && readOnly.isReadOnly()) {
@@ -198,150 +183,4 @@ public class CppEditorSupport extends DataEditorSupport implements EditorCookie,
             return getDataObject().getCookie(CppEditorSupport.class);
         }
     } // End of nested Environment class.    
-
-    // ==================== Misc not-public methods ========================
-    /** A method to create a new component. Overridden in subclasses.
-     * @return the {@link HtmlEditor} for this support
-     */
-    @Override
-    protected CloneableEditor createCloneableEditor() {
-        return new CppEditorComponent(this);
-    }
-
-    /**
-     *  The real component of the C/C++/f77 editor.
-     *  Subclasses should not attempt to work with this;
-     *  if they require special editing support, separate windows
-     *  should be created by overriding (e.g.) {@link EditorSupport#open}.
-     */
-    public static class CppEditorComponent extends CloneableEditor {
-
-        /** The support, subclass of EditorSupport */
-        CppEditorSupport support = null;
-
-        //static final long serialVersionUID =6223349196427270209L;
-        /** Only for externalization */
-        public CppEditorComponent() {
-            super();
-            initialize();
-        }
-
-        /** Creates new editor */
-        public CppEditorComponent(CloneableEditorSupport sup) {
-            super(sup);
-            initialize();
-        }
-
-        /** Return the support object */
-        public CppEditorSupport getSupport() {
-            return support;
-        }
-
-        /** Obtain a support for this component */
-        private void initialize() {
-            support = (CppEditorSupport) cloneableEditorSupport();
-        }
-
-        /**
-         *  This method is called when parent window of this component has focus,
-         *  and this component is preferred one in it. This implementation adds 
-         *  performer to the ToggleBreakpointAction.
-         */
-        @Override
-        protected void componentActivated() {
-            super.componentActivated();
-            Document doc = support.getDocument();
-            if (doc != null) {
-                log.log("CES.componentActivated: Activating " + getShortName(doc) + // NOI18N
-                        " [" + Thread.currentThread().getName() + "]"); // NOI18N
-//                if (activationPerformers != null) {
-//                    int n = activationPerformers.size();
-//                    for (int i = 0; i < n; i++) {
-//                        CppEditorActivationPerformer a = activationPerformers.get(i);
-//                        a.performActivation(this);
-//                    }
-//                }
-            } else {
-                log.log("CES.componentActivated: Activating without document!!!" + // NOI18N
-                        " [" + Thread.currentThread().getName() + "]"); // NOI18N
-            }
-        }
-
-        /* XXX -Debug method. Remove later? */
-        private static String getShortName(Document doc) {
-            String longname = (String) doc.getProperty(Document.TitleProperty);
-            longname = longname == null ? "" : longname;
-            int slash = longname.lastIndexOf(File.separatorChar);
-
-            if (slash != -1) {
-                return longname.substring(slash + 1);
-            } else {
-                return longname;
-            }
-        }
-
-        /** Return the current line number */
-        public int getLineNumber() {
-            int l = NbDocument.findLineNumber(support.getDocument(),
-                    getEditorPane().getCaret().getDot());
-            return l;
-        }
-
-        /**
-         * This method is called when parent window of this component losts focus,
-         * or when this component loses preferrence in the parent window.
-         */
-        @Override
-        protected void componentDeactivated() {
-            super.componentDeactivated();
-        }
-
-        /**
-         *  When closing last view, also close the document.
-         *  @return <code>true</code> if close succeeded
-         */
-        @Override
-        protected boolean closeLast() {
-            if (!super.closeLast()) {
-                return false;
-            }
-            if (support != null) {
-                support.componentsCreated = false;
-            }
-            return true;
-        }
-
-        /**
-         *  Deserialize this top component.
-         *  @param in the stream to deserialize from
-         */
-        @Override
-        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-            super.readExternal(in);
-            initialize();
-        }
-    } // end of CppEditorComponent inner class
-
-//    static Vector<CppEditorActivationPerformer> activationPerformers = null;
-//
-//    /**
-//     *  Add an activation performer. This actionperformer will be called whenever
-//     *  this component is activated.
-//     */
-//    public static void addActivationPerformer(
-//            CppEditorActivationPerformer a) {
-//        if (activationPerformers == null) {
-//            activationPerformers = new Vector<CppEditorActivationPerformer>(2);
-//        }
-//        activationPerformers.add(a);
-//    }
-
-    /**
-     * Returns last modification timestamp or since file was opened, or 0
-     * if not modifed at all. Note the timestamp doesn't get reset if file saved.
-     */
-    public long getLastModified() {
-        return lastModified;
-    }
-
 }

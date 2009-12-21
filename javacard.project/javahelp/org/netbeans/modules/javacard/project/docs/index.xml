@@ -2,8 +2,83 @@
 <!DOCTYPE index
   PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Index Version 1.0//EN"
          "http://java.sun.com/products/javahelp/index_1_0.dtd">
-
-<index version="1.0">
-
- <indexitem target="org.netbeans.modules.javacard.DevelopingforJavaCard3Platform" text="topic guidelines"></indexitem><indexitem target="org.netbeans.modules.javacard.CustomizingJavaCardPlatform" text="topic guidelines"></indexitem>
+ <index version="1.0"> 
+ <indexitem target="org.netbeans.modules.javacard.ClassicAppletAddInstanceApplet" text="add applet instance"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.JavaCard3AddLibraryWizard" text="Add Libraries wizard"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AddLibrary" text="Add Libraries wizard"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AddClassicAppletLibrary" text="Add Libraries wizard"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AddExtendedAppletLibrary" text="Add Libraries wizard"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AddClassicLibrary" text="Add Libraries wizard"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AddExtensionLibrary" text="Add Libraries wizard"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AddWebAppLibrary" text="Add Libraries wizard"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AddClassicAppletLibrary" text="add library, classic applet"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AddExistingClassicAppletSources" text="add sources, classic applet"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AppletsPanel" text="AID"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AppletsPanel" text="AID"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AppletsPanel" text="AID"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.RemoveInstanceApplet" text="AID"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AddInstanceApplet" text="AID"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.GetRefAppSample" text="API"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AppletsPanel" text="Applets panel"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.ChangeClassicAppletLibraryDeployment" text="change deployment, classic applet library"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreateProject" text="classic applet"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AppletsPanel" text="classic applet, customize"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.BuildPackagingPanel" text="classic applet, package AID"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.SettingClassicAppletDependencies" text="classic applet JAR file"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.SettingClassicLibraryDependencies" text="classic applet JAR file"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AddClassicLibrary" text="classic applet library"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.SettingClassicAppletDependencies" text="classic applet library project"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.RunningClassicAppletProject" text="classic applet output"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.JavaCard3NewProjectWizard" text="classic applet project"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.AppletsPanel" text="classic applet project"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreatingClassicAppletProject" text="classic applet project"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreateClassicAppletProjectFromTemplate" text="classic applet project"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreateClassicAppletProjectFromExistingCode" text="classic applet project"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreateClassicLibProjectFromTemplate" text="classic package AID"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.BuildCompilingPanel" text="Compiling panel"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreateClassicAppletProjectFromTemplate" text="create classic applet project"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreateClassicAppletProjectFromExistingCode" text="create classic applet project"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CustomizingClassicAppletProject" text="customize classic applet project"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.RunningClassicAppletProject" text="Default Device"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.DeployingClassicLibrary" text="deploy classic library"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.EditAppletAID" text="edit AID"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.ClassicAppletEditAppletAID" text="edit applet AID"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.EditAppletAID" text="edit PIX value"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.EditAppletAID" text="edit RID value"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.WebPanel" text="edit servlet properties"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.EditAppletAID" text="generate PIX value"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreateClassicLibProjectFromTemplate" text="ISO"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreateProject" text="New Project wizard"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.JavaCard3NewProjectWizard" text="New Project wizard"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreateClassicAppletProjectFromTemplate" text="New Project wizard"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreateExtendedAppletProjectFromTemplate" text="New Project wizard"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreateClassicLibProjectFromTemplate" text="New Project wizard"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreateExtensionLibProjectFromTemplate" text="New Project wizard"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreateWebAppProjectFromTemplate" text="New Project wizard"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.BuildPackagingPanel" text="Packaging panel"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.BuildPackagingPanel" text="PIX"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreateClassicLibProjectFromTemplate" text="PIX value"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.SetAppletProjectProperties" text="properties, classic applet project"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.SettingClassicLibPackagingProperties" text="proprietary identifier"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.ClassicAppletRemoveInstanceApplet" text="remove applet instance"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.ClassicAppletRemoveApplet" text="remove classic applets"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.RemoveClassicAppletLibrary" text="remove library, classic applet"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.RemoveClassicAppletSourcePackages" text="remove source packages, classic applet"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.BuildPackagingPanel" text="RID"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.ClassicAppletEditAppletAID" text="RID"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CreateClassicLibProjectFromTemplate" text="RID value"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.RunningClassicAppletProject" text="run, classic applet project"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.RunPanel" text="Run panel"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.BuildSecurityPanel" text="Security panel"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.WebPanel" text="servlet properties"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.SettingApplets" text="set classic applets"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.SettingClassicLibPackagingProperties" text="set classic library properties"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.SettingClassicAppletCompilingProperties" text="set compiling properties, classic applet"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.SettingClassicAppletDependencies" text="set dependencies, classic applet"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.SettingClassicAppletPackagingProperties" text="set packaging properties, classic applet"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.SettingClassicAppletRunProperties" text="set run properties, classic applet"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.SettingClassicAppletSecurityProperties" text="set security properties, classic applet"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.SettingClassicAppletSources" text="sources, classic applet"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.CustomizingJavaCardPlatform" text="topic guidelines"></indexitem>
+ <indexitem target="org.netbeans.modules.javacard.WebPanel" text="Web panel"></indexitem>
 </index>

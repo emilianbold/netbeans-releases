@@ -58,12 +58,19 @@ made subject to such option by the copyright holder.
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-cnd-error.xml" url="error-annotation.xml"/>
         </folder>
-        
+
         <folder name="text">
+
+            <folder name="x-cnd-sourcefile">
+                <file name="org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance" />
+            </folder>
+
             <folder name="x-h">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
 
-                <file name="org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance" />
+                <file name="FakeHighlightsFactory.shadow">
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance"/>
+                </file>
 
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
@@ -85,7 +92,9 @@ made subject to such option by the copyright holder.
             <folder name="x-c++">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
 
-                <file name="org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance" />
+                <file name="FakeHighlightsFactory.shadow">
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance"/>
+                </file>
 
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
@@ -107,8 +116,10 @@ made subject to such option by the copyright holder.
             
             <folder name="x-c">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
-                
-                <file name="org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance" />
+
+                <file name="FakeHighlightsFactory.shadow">
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance"/>
+                </file>
 
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
@@ -271,6 +282,10 @@ made subject to such option by the copyright holder.
             <!--file name="MSVC.xml" url="toolchain/MSVC.xml">
                <attr name="position" intvalue="3610"/>
             </file-->
+            <file name="WinAVR.xml" url="toolchain/WinAVR.xml">
+                <attr name="position" intvalue="3710"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
             <file name="GNU_solaris.xml" url="toolchain/GNU_solaris.xml">
                 <attr name="position" intvalue="4010"/>
                 <attr name="extends" stringvalue="GNU"/>

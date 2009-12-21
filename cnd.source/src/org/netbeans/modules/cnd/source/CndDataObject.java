@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.source;
 import java.io.IOException;
 
 import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
-import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
@@ -62,13 +61,11 @@ public abstract class CndDataObject extends MultiDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = -6788084224129713370L;
-    private final ReadOnlySupportImpl readOnlySupport = new ReadOnlySupportImpl(false);
 
     public CndDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
 
         CookieSet cookies = getCookieSet();
-        cookies.add(readOnlySupport);
         CndCookieProvider.getDefault().addCookies(this, cookies);
     }
 
@@ -126,22 +123,5 @@ public abstract class CndDataObject extends MultiDataObject {
             }
         }
         return true;
-    }
-
-    private static final class ReadOnlySupportImpl implements ReadOnlySupport, Node.Cookie {
-
-        private boolean isReadOnly;
-
-        public ReadOnlySupportImpl(boolean isReadOnly) {
-            this.isReadOnly = isReadOnly;
-        }
-
-        public boolean isReadOnly() {
-            return isReadOnly;
-        }
-
-        public void setReadOnly(boolean readOnly) {
-            this.isReadOnly = readOnly;
-        }
     }
 }

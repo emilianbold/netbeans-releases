@@ -43,6 +43,7 @@ import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestResult;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbModuleSuite.Configuration;
 import static org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server.*;
@@ -68,6 +69,7 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
         System.clearProperty("org.netbeans.modules.tomcat.autoregister.catalinaHome");
         System.clearProperty("org.netbeans.modules.j2ee.jboss4.installRoot");
         System.clearProperty("testA");
+        System.clearProperty("testB");
     }
 
     public void testGlassfishWithoutDomain() {
@@ -97,6 +99,17 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
         assertEquals("both tests", 2, t.countTestCases());
     }
 
+    public void testGlassfishV3Home() throws IOException {
+        setGlassfishHome();
+        Configuration conf = NbModuleSuite.createConfiguration(TD.class);
+        System.setProperty("registered", "GLASSFISH_V3");
+        conf = J2eeTestCase.addServerTests(GLASSFISH_V3, conf, "testA", "testB").gui(false);
+        Test t = NbModuleSuite.create(conf);
+        t.run(new TestResult());
+        assertEquals("both tests", 2, t.countTestCases());
+        assertEquals("test B was running", "BBB", System.getProperty("testB"));
+    }
+
     public void testCreateAllModulesServerSuiteWithoutFiles() throws IOException {
         setGlassfishHome();
         Test t = J2eeTestCase.createAllModulesServerSuite(ANY, TD.class);
@@ -117,6 +130,7 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
     private void setGlassfishHome() throws IOException{
         System.setProperty("glassfish.home", getWorkDirPath());
         new File(getWorkDir(), "domains/domain1").mkdirs();
+        new File(getWorkDir(), "glassfish/domains/domain1").mkdirs();
     }
 
 
@@ -131,6 +145,12 @@ public class J2eeTestCaseGlassfishTest extends JellyTestCase {
         }
 
         public void testB() {
+            String prop = System.getProperty("registered");
+            if (prop != null){
+                Server registered = Server.valueOf(prop);
+                assertTrue(isRegistered(registered));
+            }
+            System.setProperty("testB", "BBB");
         }
     }
 }

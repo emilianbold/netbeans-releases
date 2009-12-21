@@ -962,9 +962,9 @@ public class CompilerSetManager {
                                 } else if ("$MSYS".equals(method)){ // NOI18N
                                     if (env.isLocal()) {
                                         for(String name : descriptor.getNames()){
-                                            String dir = CompilerSetUtils.getMSysBase();
+                                            String dir = CompilerSetUtils.getCommandFolder(cs.getCompilerFlavor().getToolchainDescriptor());
                                             if (dir != null) {
-                                                String path = CompilerSetUtils.findCommand(name, dir+"/bin"); // NOI18N
+                                                String path = CompilerSetUtils.findCommand(name, dir); // NOI18N
                                                 if (path != null) {
                                                     if (notSkipedName(cs, descriptor, path, name)) {
                                                         return cs.addNewTool(env, IpeUtils.getBaseName(path), path, tool);

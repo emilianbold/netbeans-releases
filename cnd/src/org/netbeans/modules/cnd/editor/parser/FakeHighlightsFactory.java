@@ -52,39 +52,35 @@ import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
  * This fake factory is needed to add property change listener to {@link EditorRegistry}.
  * There is no better way to do it so far. See bug 173002.
  *
- * Hmm, is it needed at all?
+ * With the listener registered, every C/C++/H editor has code folding
+ * controls right after it's opened. Without the listener, code folding
+ * controls used to appear only after editing a file.
  *
  * @author Alexey Vladykin
  */
-public final class FakeHighlightsFactory implements HighlightsLayerFactory {
+public final class FakeHighlightsFactory implements HighlightsLayerFactory, PropertyChangeListener {
 
     private static final HighlightsLayer[] EMPTY = {};
-    private static PropertyChangeListener pcl = null;
+
+    public FakeHighlightsFactory() {
+        EditorRegistry.addPropertyChangeListener(this);
+    }
 
     @Override
     public HighlightsLayer[] createLayers(Context context) {
-        synchronized (this) {
-            if (pcl == null) {
-                pcl = new EditorRegistryListener();
-                EditorRegistry.addPropertyChangeListener(pcl);
-            }
-        }
         return EMPTY;
     }
 
-    private static final class EditorRegistryListener implements PropertyChangeListener {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            Document docToReparse = null;
-            if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
-                docToReparse = ((JTextComponent) evt.getNewValue()).getDocument();
-            } else if (EditorRegistry.FOCUSED_DOCUMENT_PROPERTY.equals(evt.getPropertyName())) {
-                docToReparse = (Document) evt.getNewValue();
-            }
-            if (docToReparse != null && MIMENames.isHeaderOrCppOrC(DocumentUtilities.getMimeType(docToReparse))) {
-                CppMetaModel.getDefault().scheduleParsing(docToReparse);
-            }
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        Document docToReparse = null;
+        if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
+            docToReparse = ((JTextComponent) evt.getNewValue()).getDocument();
+        } else if (EditorRegistry.FOCUSED_DOCUMENT_PROPERTY.equals(evt.getPropertyName())) {
+            docToReparse = (Document) evt.getNewValue();
+        }
+        if (docToReparse != null && MIMENames.isHeaderOrCppOrC(DocumentUtilities.getMimeType(docToReparse))) {
+            CppMetaModel.getDefault().scheduleParsing(docToReparse);
         }
     }
 }

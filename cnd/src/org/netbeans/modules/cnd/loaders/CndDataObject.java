@@ -42,13 +42,8 @@
 package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Set;
 
-import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -61,7 +56,6 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
-import org.openide.util.WeakSet;
 
 /**
  *  Abstract superclass of a C/C++/Fortran DataObject.
@@ -168,44 +162,5 @@ public abstract class CndDataObject extends MultiDataObject {
 	    }
 	}
 	return true;
-    }
-
-    private static final class ReadOnlySupportImpl implements ReadOnlySupport, Node.Cookie {
-        private boolean isReadOnly;
-
-        public ReadOnlySupportImpl(boolean isReadOnly) {
-            this.isReadOnly = isReadOnly;
-        }
-
-        public boolean isReadOnly() {
-            return isReadOnly;
-        }
-
-        public void setReadOnly(boolean readOnly) {
-            this.isReadOnly = readOnly;
-        }
-    }
-
-    private static class MyNativeFileItemSet implements NativeFileItemSet {
-        private Set<NativeFileItem> items = new WeakSet<NativeFileItem>(1);
-
-        public synchronized Collection<NativeFileItem> getItems() {
-            return new ArrayList<NativeFileItem>(items);
-        }
-        public synchronized void add(NativeFileItem item){
-            if (item == null) {
-                return;
-            }
-            items.add(item);
-        }
-        public synchronized void remove(NativeFileItem item){
-            if (item == null) {
-                return;
-            }
-            items.remove(item);
-        }
-        public boolean isEmpty() {
-            return items.isEmpty();
-        }
     }
 }

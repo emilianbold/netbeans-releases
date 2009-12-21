@@ -526,8 +526,18 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     }
 
+    @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
         //just delegate to the hints registry and add all gathered results
         hints.addAll(HintsRegistry.getDefault().gatherHints(context));
+    }
+
+    @Override
+    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> hints, int start, int end) {
+	//inject composite component support
+	Hint injectCC = InjectCompositeComponent.getHint(context, start, end);
+	if(injectCC != null) {
+	    hints.add(injectCC);
+	}
     }
 }

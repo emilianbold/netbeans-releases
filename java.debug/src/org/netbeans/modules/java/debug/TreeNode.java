@@ -80,6 +80,7 @@ import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -91,14 +92,19 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -118,9 +124,41 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         return result.get(0);
     }
 
+    public static @CheckForNull Node findNode(@NonNull Node parent, @NonNull TreePath tree) {
+        List<Tree> trees = new LinkedList<Tree>();
+
+        while (tree != null) {
+            trees.add(tree.getLeaf());
+            tree = tree.getParentPath();
+        }
+
+        if (trees.isEmpty()) return null;
+        
+        Collections.reverse(trees);
+        Iterator<Tree> it = trees.iterator();
+
+        it.next();
+
+        return findNode(parent, it);
+    }
+
+    private static @NonNull Node findNode(@NonNull Node parent, @NonNull Iterator<Tree> trees) {
+        if (!trees.hasNext()) return parent;
+
+        Tree next = trees.next();
+
+        for (Node child : parent.getChildren().getNodes(true)) {
+            if (child.getLookup().lookup(Tree.class) == next) {
+                return findNode(child, trees);
+            }
+        }
+
+        return parent;
+    }
+
     /** Creates a new instance of TreeNode */
     public TreeNode(CompilationInfo info, TreePath tree, List<Node> nodes) {
-        super(nodes.isEmpty() ? Children.LEAF: new NodeChilren(nodes));
+        super(nodes.isEmpty() ? Children.LEAF: new NodeChilren(nodes), Lookups.singleton(tree.getLeaf()));
         this.tree = tree;
         this.info = info;
         this.synthetic = info.getTreeUtilities().isSynthetic(tree);
@@ -361,7 +399,7 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             
             addCorrespondingType(below);
             addCorrespondingComments(below);
-            scan(((com.sun.tools.javac.tree.JCTree.JCErroneous)tree).errs, below);
+            scan(tree.getErrorTrees(), below);
             
             d.add(new TreeNode(info, getCurrentPath(), below));
             return null;
