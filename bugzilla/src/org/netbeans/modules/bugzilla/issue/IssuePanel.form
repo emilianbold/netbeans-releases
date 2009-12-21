@@ -56,13 +56,13 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="separator" alignment="1" pref="740" max="32767" attributes="0"/>
-          <Component id="dummyCommentsPanel" alignment="0" pref="740" max="32767" attributes="0"/>
+          <Component id="separator" alignment="1" max="32767" attributes="0"/>
+          <Component id="dummyCommentsPanel" alignment="0" max="32767" attributes="0"/>
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="headerLabel" pref="359" max="32767" attributes="0"/>
+                      <Component id="headerLabel" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="tasklistButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -97,7 +97,7 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Component id="dummyAttachmentsPanel" pref="566" max="32767" attributes="0"/>
+                              <Component id="dummyAttachmentsPanel" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -204,13 +204,13 @@
                                       <Component id="modifiedField" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="40" max="32767" attributes="0"/>
+                              <EmptySpace pref="20" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="scrollPane1" alignment="0" pref="576" max="32767" attributes="0"/>
+                                  <Component id="scrollPane1" alignment="0" max="32767" attributes="0"/>
                                   <Group type="102" alignment="1" attributes="0">
-                                      <Component id="summaryField" pref="557" max="32767" attributes="0"/>
+                                      <Component id="summaryField" max="32767" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="summaryWarning" min="-2" pref="9" max="-2" attributes="0"/>
                                   </Group>
@@ -219,7 +219,7 @@
                                       <EmptySpace min="-2" max="-2" attributes="0"/>
                                       <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="messagePanel" alignment="0" pref="576" max="32767" attributes="0"/>
+                                  <Component id="messagePanel" alignment="0" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                           </Group>
@@ -1021,6 +1021,9 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
         <Component class="javax.swing.JTextArea" name="addCommentArea">
+          <Properties>
+            <Property name="lineWrap" type="boolean" value="true"/>
+          </Properties>
           <AccessibilityProperties>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.addCommentArea.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

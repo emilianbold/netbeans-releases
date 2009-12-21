@@ -358,23 +358,24 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         // Reparse file.
         myEntry.getHandler().autoParse();
 
-        if (super.notifyModified()) {
-            if (hasOpenedEditorComponent() || hasOpenedTableComponent()) {
-                ((Environment)env).addSaveCookie();
-            
-                return true;
-            } else {
-            //Issue 89029: Need to save properties file if no editors opened
-                try {
-                    ((Environment) env).save();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                return false;
-            }
-        } else {
+        if (!super.notifyModified()) {
             return false;
         }
+
+        if (hasOpenedEditorComponent() || hasOpenedTableComponent()) {
+            ((Environment)env).addSaveCookie();
+            return true;
+        }
+        
+        //Issue 89029: Need to save properties file if no editors opened
+        try {
+            ((Environment) env).save();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        // #175275
+        super.notifyModified(); // to set up the modified flag again after save.
+        return true; 
     }
     
     @Override

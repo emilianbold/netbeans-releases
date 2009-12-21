@@ -107,28 +107,29 @@ class LuceneIndex extends Index implements Evictable {
 
     private static final boolean debugIndexMerging = Boolean.getBoolean("LuceneIndex.debugIndexMerge");     // NOI18N
     private static final String REFERENCES = "refs";    // NOI18N
-    
+
     private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
     private static final String CACHE_LOCK_PREFIX = "nb-lock";  //NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(LuceneIndex.class.getName(), 1);
-    
+
     private final File refCacheRoot;
     //@GuardedBy(this)
     private Directory directory;
     private Long rootTimeStamp;
-    
+
     //@GuardedBy (this)
     private IndexReader reader; //Cache, do not use this dirrectly, use getReader
     private Set<String> rootPkgCache;   //Cache, do not use this dirrectly
     private Analyzer analyzer;  //Analyzer used to store documents
     private volatile boolean closed;
-    
-    static Index create (final File cacheRoot) throws IOException {        
+    private volatile Boolean validCache;
+
+    static Index create (final File cacheRoot) throws IOException {
         assert cacheRoot != null && cacheRoot.exists() && cacheRoot.canRead() && cacheRoot.canWrite();
         return new LuceneIndex (getReferencesCacheFolder(cacheRoot));
     }
-    
+
     /** Creates a new instance of LuceneIndex */
     private LuceneIndex (final File refCacheRoot) throws IOException {
         assert refCacheRoot != null;
@@ -211,7 +212,7 @@ class LuceneIndex extends Index implements Evictable {
             searcher.close();
         }
     }
-        
+
     @SuppressWarnings ("unchecked") // NOI18N, unchecked - lucene has source 1.4
     public <T> void getDeclaredTypes (final String name, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws IOException, InterruptedException {
         checkPreconditions();
@@ -221,7 +222,7 @@ class LuceneIndex extends Index implements Evictable {
         }
         final AtomicBoolean cancel = this.cancel.get();
         assert cancel != null;
-        assert name != null;                
+        assert name != null;
         final Set<Term> toSearch = new TreeSet<Term> (new TermComparator());
         final IndexReader in = getReader();
         switch (kind) {
@@ -759,15 +760,15 @@ class LuceneIndex extends Index implements Evictable {
             ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     _store(refs, topLevels);
+                    validCache = true;
                     return null;
                 }
             });
         } catch (InterruptedException ie) {
-            //Never happens, just declared. The _store never throws InterruptedException
-            Exceptions.printStackTrace(ie);
+            throw new IOException("Interrupted");   //NOI18N
         }
     }
-    
+
     private void _store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException {
         checkPreconditions();
         assert ClassIndexManager.getDefault().holdsWriteLock();
@@ -782,7 +783,7 @@ class LuceneIndex extends Index implements Evictable {
                 }
                 out.deleteDocuments (DocumentUtil.rootDocumentTerm());
             }
-            storeData(out, refs, create, timeStamp);
+            storeData(out, refs, timeStamp);
         } finally {
             try {
                 out.close();
@@ -798,12 +799,12 @@ class LuceneIndex extends Index implements Evictable {
             ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     _store(refs, toDelete);
+                    validCache = true;
                     return null;
                 }
             });
         } catch (InterruptedException ie) {
-            //Never happens, just declared. The _store never throws InterruptedException
-            Exceptions.printStackTrace(ie);
+            throw new IOException("Interrupted");   //NOI18N
         }
     }
 
@@ -821,7 +822,7 @@ class LuceneIndex extends Index implements Evictable {
                 }
                 out.deleteDocuments (DocumentUtil.rootDocumentTerm());
             }
-            storeData(out, refs, create, timeStamp);
+            storeData(out, refs, timeStamp);
         } finally {
             try {
                 out.close();
@@ -830,8 +831,8 @@ class LuceneIndex extends Index implements Evictable {
             }
         }
     }
-    
-    private void storeData (final IndexWriter out, final Map<Pair<String,String>, Object[]> refs, final boolean create, final long timeStamp) throws IOException {
+
+    private void storeData (final IndexWriter out, final Map<Pair<String,String>, Object[]> refs, final long timeStamp) throws IOException {
         if (debugIndexMerging) {
             out.setInfoStream (System.err);
         }
@@ -850,7 +851,7 @@ class LuceneIndex extends Index implements Evictable {
         else {
             memDir = new RAMDirectory ();
             activeOut = new IndexWriter (memDir, analyzer, true);
-        }        
+        }
         activeOut.addDocument (DocumentUtil.createRootTimeStampDocument (timeStamp));
         for (Iterator<Map.Entry<Pair<String,String>,Object[]>> it = refs.entrySet().iterator(); it.hasNext();) {
             Map.Entry<Pair<String,String>,Object[]> refsEntry = it.next();
@@ -884,33 +885,38 @@ class LuceneIndex extends Index implements Evictable {
 
     public boolean isValid (boolean force) throws IOException {
         checkPreconditions();
-        boolean res = false;
-        final Collection<? extends String> locks = getOrphanLock();
-        if (!locks.isEmpty()) {
-            LOGGER.warning("Broken (locked) index folder: " + refCacheRoot.getAbsolutePath());   //NOI18N
-            for (String lockName : locks) {
-                directory.deleteFile(lockName);
+        Boolean valid = validCache;
+        if (force ||  valid == null) {
+            final Collection<? extends String> locks = getOrphanLock();
+            boolean res = false;
+            if (!locks.isEmpty()) {
+                LOGGER.warning("Broken (locked) index folder: " + refCacheRoot.getAbsolutePath());   //NOI18N
+                for (String lockName : locks) {
+                    directory.deleteFile(lockName);
+                }
+                if (force) {
+                    clear();
+                }
+            } else {
+                res = exists();
+                if (res && force) {
+                    try {
+                        getReader();
+                    } catch (java.io.IOException e) {
+                        res = false;
+                        clear();
+                    } catch (RuntimeException e) {
+                        res = false;
+                        clear();
+                    }
+                }
             }
-            if (force) {
-                clear();
-            }
-            return res;
+            valid = res;
+            validCache = valid;
         }
-        res = exists();
-        if (res && force) {
-            try {
-                getReader();
-            } catch (java.io.IOException e) {
-                res = false;
-                clear();
-            } catch (RuntimeException e) {
-                res = false;
-                clear();
-            }
-        }
-        return res;
-    }    
-    
+        return valid;
+    }
+
     public void clear () throws IOException {
         try {
             checkPreconditions();

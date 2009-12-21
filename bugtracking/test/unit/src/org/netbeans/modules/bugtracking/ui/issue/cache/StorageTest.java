@@ -265,7 +265,6 @@ public class StorageTest extends NbTestCase {
             return id;
         }
 
-        @Override
         public Map<String, String> getAttributes() {
             return m;
         }
@@ -280,7 +279,6 @@ public class StorageTest extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        @Override
         public IssueNode getNode() {
             throw new UnsupportedOperationException("Not supported yet.");
         }

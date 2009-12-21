@@ -223,7 +223,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         List<IssueNode> issueNodes = new ArrayList<IssueNode>(issues.size());
         for (Issue issue : issues) {
             if(filter == null || filter.accept(issue)) {
-                issueNodes.add(issue.getNode());
+                issueNodes.add(((NodeProvider)issue).getNode());
             }
         }
         setTableModel(issueNodes.toArray(new IssueNode[issueNodes.size()]));
@@ -527,11 +527,16 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     public void keyReleased(KeyEvent e) {
     }
 
+    public static interface NodeProvider {
+        IssueNode getNode();
+    }
+
     private class NotifyListener implements QueryNotifyListener {
         public void notifyData(final Issue issue) {
+            assert issue instanceof NodeProvider;
             issues.add(issue);
             if(filter == null || filter.accept(issue)) {
-                final IssueNode node = issue.getNode();
+                final IssueNode node = ((NodeProvider)issue).getNode();
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         tableModel.insertNode(node);

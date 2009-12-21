@@ -41,9 +41,9 @@
 package org.netbeans.modules.mercurial.ui.log;
 
 import org.netbeans.modules.versioning.spi.VCSContext;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -54,21 +54,22 @@ import org.openide.util.NbBundle;
  */
 public class IncomingAction extends SearchHistoryAction {
 
-    public IncomingAction(String name, VCSContext context) {
-        super(context);
-        putValue(Action.NAME, name);
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_ShowIncoming";                             //NOI18N
     }
 
-    public void performAction(ActionEvent e) {
-        openIncoming();
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        openIncoming(context);
     }
 
     /**
      * Opens the Seach History panel to view Mercurial Incoming Changesets that will be sent on next Pull from remote repo
      * using: hg incoming - to get the data
      */
-    private void openIncoming() {
-        File repositoryRoot = getRepositoryRoot();
+    private void openIncoming (VCSContext context) {
+        File repositoryRoot = getRepositoryRoot(context);
         if (repositoryRoot == null) {
             return;
         }

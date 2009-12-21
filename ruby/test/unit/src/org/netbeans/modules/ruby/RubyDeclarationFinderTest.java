@@ -116,6 +116,14 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         checkDeclaration("testfiles/alias_method.rb", "Far.new.far_far_aw^ay", "alias_method.rb", 48);
     }
 
+    public void testAliasMethodKeyword() throws Exception {
+        checkDeclaration("testfiles/alias_method.rb", "Here.new.right_the^re", "alias_method.rb", 296);
+    }
+
+    public void testDefineMethod() throws Exception {
+        checkDeclaration("testfiles/define_method.rb", "Calcutec.new.laun^der", "define_method.rb", 69);
+    }
+
     public void testSuperMethod() throws Exception {
         checkDeclaration("testfiles/super_method.rb", "sup^er", "super_method.rb", 13);
     }

@@ -77,10 +77,8 @@ public class EmbeddingProviderImpl extends EmbeddingProvider {
         Embedding e = gen.getSimplifiedServlet();
         
         if (e != null) {
-            System.out.println("Embeddings: " + e);
             return Collections.singletonList(e);
         } else {
-            System.out.println("NO EMBEDDINGS!");
             return Collections.emptyList();
         }
     }

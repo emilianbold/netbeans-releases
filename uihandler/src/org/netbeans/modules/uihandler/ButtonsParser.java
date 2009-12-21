@@ -73,7 +73,7 @@ final class ButtonsParser {
     private String url;
 
     public ButtonsParser(InputStream is) {
-        this.is = is;
+        this.is = new CuttingInputStream(is);
     }
 
     void parse() throws IOException, ParserConfigurationException, SAXException, InterruptedException, InvocationTargetException {
@@ -218,4 +218,29 @@ final class ButtonsParser {
         return false;
     }
 
+
+    private static class CuttingInputStream extends InputStream {
+
+        private static int[] TERMINAL_PATTERN = new int[]{'<', '/', 'h', 't', 'm', 'l', '>'};
+        private final InputStream br;
+        private int processed = 0;
+
+        public CuttingInputStream(InputStream originalIS) {
+            br = originalIS;
+        }
+
+        @Override
+        public int read() throws IOException {
+            if (processed >= TERMINAL_PATTERN.length){
+                return -1;
+            }
+            int next = br.read();
+            if (next == TERMINAL_PATTERN[processed]) {
+                ++processed;
+            } else {
+                processed = 0;
+            }
+            return next;
+        }
+    }
 }

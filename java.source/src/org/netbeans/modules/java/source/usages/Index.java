@@ -59,7 +59,7 @@ public abstract class Index {
     };
         
     public static final ThreadLocal<AtomicBoolean> cancel = new ThreadLocal<AtomicBoolean> () {
-        protected synchronized AtomicBoolean initialValue() {
+        protected synchronized @Override AtomicBoolean initialValue() {
              return new AtomicBoolean ();
          }
     };    

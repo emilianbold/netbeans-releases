@@ -113,7 +113,11 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
         return result;
     }
 
+    private boolean deleting;
     public void refreshNode() {
+        if (deleting || !isValid()) {
+            return;
+        }
         CardDataNode nd = nodeRef == null ? null : nodeRef.get();
         if (nd != null) {
             nd.updateChildren();
@@ -127,20 +131,25 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
 
     @Override
     protected void onDelete(FileObject parentFolder) throws Exception {
-        Card card = getLookup().lookup(Card.class);
-        if (card != null && card.getState().isRunning()) {
-            StopCapability c = card.getCapability(StopCapability.class);
-            if (c != null) {
-                c.stop();
+        deleting = true;
+        try {
+            Card card = getLookup().lookup(Card.class);
+            if (card != null && card.getState().isRunning()) {
+                StopCapability c = card.getCapability(StopCapability.class);
+                if (c != null) {
+                    c.stop();
+                }
             }
-        }
-        File eepromfile = Utils.eepromFileForDevice(platformName, myName, false);
-        if (eepromfile != null) {
-            //Use FileObject so any views will be notified
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(eepromfile));
-            if (fo != null) {
-                fo.delete();
+            File eepromfile = Utils.eepromFileForDevice(platformName, myName, false);
+            if (eepromfile != null) {
+                //Use FileObject so any views will be notified
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(eepromfile));
+                if (fo != null) {
+                    fo.delete();
+                }
             }
+        } finally {
+            deleting = false;
         }
     }
 
@@ -233,44 +242,6 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
         firePropertyChange(propertyName, null, newValue);
     }
 
-    /*
-    private class CustomizerProvider implements CardCustomizerProvider {
-
-        public CardCustomizer getCardCustomizer() {
-            return new CardCustomizerImpl();
-        }
-    }
-
-    private class CardCustomizerImpl implements CardCustomizer {
-
-        private final DevicePropertiesPanel pnl;
-
-        CardCustomizerImpl() {
-            assert EventQueue.isDispatchThread() : "Not on event thread"; //NOI18N
-            PropertiesAdapter adap = getLookup().lookup(PropertiesAdapter.class);
-            pnl = new DevicePropertiesPanel(adap.asProperties());
-            pnl.setBorder(BorderFactory.createEmptyBorder(12, 0, 12, 12));
-        }
-
-        public void save() {
-            PropertiesAdapter adap = getLookup().lookup(PropertiesAdapter.class);
-            pnl.write(new KeysAndValues.PropertiesAdapter(adap.asProperties()));
-        }
-
-        public ValidationGroup getValidationGroup() {
-            return pnl.getValidationGroup();
-        }
-
-        public boolean isContentValid() {
-            return pnl.isAllDataValid();
-        }
-
-        public Component getComponent() {
-            return pnl;
-        }
-    }
-     */
-
     private class PlatformConverter implements InstanceContent.Convertor<StringBuilder, JavacardPlatform> {
 
         public JavacardPlatform convert(StringBuilder arg0) {
@@ -362,7 +333,7 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
             Card cardLocal = cardRef == null ? null : cardRef.get();
             if (cardLocal != null && cardLocal.getState().isRunning()) {
                 Image badge = ImageUtilities.loadImage(
-                        "org/netbeans/modules/javacard/resources/running.png"); //NOI18N
+                        "org/netbeans/modules/javacard/spi/resources/running.png"); //NOI18N
                 result = ImageUtilities.mergeImages(result, badge, 11, 11);
             }
             return result;
@@ -424,7 +395,6 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
                 null,
                 SystemAction.get(DeleteAction.class),
                 null,
-//                new CustomCustomizeAction(),
                 CardActions.createCustomizeAction(),
                 SystemAction.get(PropertiesAction.class),};
             return others;
@@ -535,41 +505,4 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
             }
         }
     }
-/*
-    private final class CustomCustomizeAction extends Single<AbstractJavacardPlatform> {
-
-        CustomCustomizeAction() {
-            super(JavacardPlatform.class, NbBundle.getMessage(CardDataObject.class,
-                    "ACTION_CUSTOMIZE"), null); //NOI18N
-        }
-
-        @Override
-        protected void actionPerformed(JavacardPlatform target) {
-            String title = NbBundle.getMessage(CustomCustomizeAction.class,
-                    "TTL_DEVICE_DIALOG", getName()); //NOI18N
-            PropertiesAdapter adap = getLookup().lookup(PropertiesAdapter.class);
-            final DevicePropertiesPanel inner = new DevicePropertiesPanel(adap.asProperties());
-            DialogBuilder builder = new DialogBuilder(CardDataObject.class).setModal(true).
-                    setTitle(title).
-                    setContent(inner).
-                    setValidationGroup(inner.getValidationGroup());
-
-            if (builder.showDialog(DialogDescriptor.OK_OPTION)) {
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Customize Action closed with OK_OPTION " + //NOI18N
-                            getPrimaryFile().getPath() + " - saving customized " + //NOI18N
-                            "card"); //NOI18N
-                }
-                inner.write(new KeysAndValues.PropertiesAdapter(adap.asProperties()));
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Write of " + //NOI18N
-                            getPrimaryFile().getPath() + " completed."); //NOI18N
-                }
-            } else {
-                    LOGGER.log(Level.FINE, "Customize Action closed with Cancel on " + //NOI18N
-                            getPrimaryFile().getPath() + " - discarding changes"); //NOI18N
-            }
-        }
-    }
- */
 }

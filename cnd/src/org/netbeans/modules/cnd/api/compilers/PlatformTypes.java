@@ -48,7 +48,7 @@ import org.openide.util.Utilities;
  * 
  * @author gordonp
  */
-public class PlatformTypes {
+public final class PlatformTypes {
     
     // Platform id's
     public static final int PLATFORM_SOLARIS_SPARC = 0;
@@ -61,7 +61,7 @@ public class PlatformTypes {
 
     private static int defaultPlatform = -1;
 
-    protected PlatformTypes(){
+    private PlatformTypes(){
     }
     
     public static int getDefaultPlatform() {

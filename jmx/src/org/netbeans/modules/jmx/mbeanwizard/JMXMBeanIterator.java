@@ -63,7 +63,6 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.jmx.common.WizardConstants;
 import org.netbeans.modules.jmx.common.WizardHelpers;
 import org.netbeans.modules.jmx.common.FinishableDelegatedWizardPanel;
-import org.netbeans.modules.jmx.common.WizardPanelWithoutReadSettings;
 import org.netbeans.modules.jmx.mbeanwizard.generator.GeneratorControler;
 
 /**
@@ -224,7 +223,7 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
                 JavaTemplates.createPackageChooser(project,
                 mbeanSrcGroups,
                 mbeanTemplatePanel);
-        mbeanPanel = new WizardPanelWithoutReadSettings(
+        mbeanPanel = new FinishableDelegatedWizardPanel(
                 delegateMBeanPanel,mbeanTemplatePanel);
         mbeanPanel.getComponent().setName(
                 bundle.getString("LBL_Standard_Panel"));// NOI18N

@@ -44,6 +44,7 @@ import java.awt.Dialog;
 import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
+import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
@@ -100,6 +101,11 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         return NbModuleSuite.create(conf);
     }
 
+    @Override
+    protected String getEEVersion(){
+        return JAVA_EE_5;
+    }
+
     public void testNewMavenWebProject() throws IOException {
         installJemmyQueue();
         FileUtil.createFolder(new File(PROJECT_LOCATION));
@@ -113,11 +119,14 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         projectName.setText("");
         projectName.typeText(PROJECT_NAME);
 
-
         Component plComp = new JLabelOperator(mavenWebAppWizardOperator, "Project Location").getLabelFor();
         JTextFieldOperator projectLocation = new JTextFieldOperator((JTextField)plComp);
         projectLocation.setText("");
         projectLocation.typeText(PROJECT_LOCATION);
+
+        Component javaee = new JLabelOperator(mavenWebAppWizardOperator, "Java EE Version:").getLabelFor();
+        JComboBoxOperator javaeeOp = new JComboBoxOperator((JComboBox)javaee);
+        javaeeOp.selectItem(getEEVersion());
         mavenWebAppWizardOperator.finish();
 
         // wait for project creation
@@ -145,7 +154,6 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         sleep(5000);
         ProjectSupport.waitScanFinished();
         verifyWebPagesNode("index.jsp");
-        verifyWebPagesNode("WEB-INF|web.xml");
     }
 
     @Override

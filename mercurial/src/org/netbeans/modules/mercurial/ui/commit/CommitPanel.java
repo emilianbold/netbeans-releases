@@ -121,6 +121,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private CommitTable commitTable;
     private List<HgHook> hooks = Collections.emptyList();
     private HgHookContext hookContext;
+    private boolean hooksPanelInitialized;
 
     /** Creates new form CommitPanel */
     public CommitPanel() {
@@ -256,6 +257,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
             }
             hookSectionPanel.add(hooksTabbedPane);
         }
+        hooksPanelInitialized = true;
     }
 
     String getCommitMessage() {
@@ -431,5 +433,13 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     public void removeVersioningListener(VersioningListener listener) {
         listenerSupport.removeListener(listener);
     }    
+
+    /**
+     * Returns true if the hooks panel has been initialized, otherwise false
+     * @return
+     */
+    boolean isHooksPanelInitialized() {
+        return hooksPanelInitialized;
+    }
     
 }

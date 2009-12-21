@@ -47,7 +47,6 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.Attribute;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
@@ -76,35 +75,12 @@ public class MBeanAttributesWizard extends MBeanWizardTestCase {
         super(name);
     }
     
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new MBeanAttributesWizard("createMBean1"));
-        suite.addTest(new MBeanAttributesWizard("createMBean2"));
-        return suite;
-    }
-    
-    public void setUp() {
-        // Select project node
-        selectNode(PROJECT_NAME_MBEAN_FUNCTIONAL);
-        // Initialize the wrapper java class
-        initWrapperJavaClass(
-                PROJECT_NAME_MBEAN_FUNCTIONAL,
-                PACKAGE_COM_FOO_BAR,
-                EMPTY_JAVA_CLASS_NAME);
-    }
-    
     //========================= JMX CLASS =================================//
     
     /**
      * MBean from existing java class
      */
-    public void createMBean1() {
+    public void testCreateMBean1() {
         
         System.out.println("==========  createMBean1  ==========");
         
@@ -119,7 +95,7 @@ public class MBeanAttributesWizard extends MBeanWizardTestCase {
     /**
      * StandardMBean with metadata
      */
-    public void createMBean2() {
+    public void testCreateMBean2() {
         
         System.out.println("==========  createMBean2  ==========");
         

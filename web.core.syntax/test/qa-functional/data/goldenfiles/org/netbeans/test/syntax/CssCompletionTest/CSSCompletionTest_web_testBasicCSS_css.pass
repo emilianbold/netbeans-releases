@@ -46,13 +46,13 @@ End cursor position = 174
 font-size
 font-style
 End cursor position = 239
-[caption{co|}, color, caption{color:}, 278]
+[caption{co|}, color, caption{color: }, 279]
 color
 content
 counter-increment
 counter-reset
-End cursor position = 293
-[caption{color:blue; p|}, position, caption{color:blue; position:}, 354]
+End cursor position = 295
+[caption{color:blue; p|}, position, caption{color:blue; position: }, 356]
 padding
 padding-bottom
 padding-left
@@ -69,4 +69,4 @@ pitch
 pitch-range
 play-during
 position
-End cursor position = 384
+End cursor position = 387

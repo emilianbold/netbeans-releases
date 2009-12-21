@@ -69,7 +69,7 @@ made subject to such option by the copyright holder.
             <folder name="Output">
                 <file name="AnalyzerAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-hints-analyzer-ui-AnalyzerAction.instance"/>
-                    <attr name="position" intvalue="2467" />
+                    <attr name="position" intvalue="2467"/>
                 </file>
             </folder>
         </folder>
@@ -137,7 +137,7 @@ made subject to such option by the copyright holder.
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-java-hints-infrastructure-JavaUpToDateStateProviderFactory.instance"/>
                 </folder>
-                <file name="org-netbeans-modules-java-hints-infrastructure-ErrorHintsFactory.instance" />
+                <file name="org-netbeans-modules-java-hints-infrastructure-ErrorHintsFactory.instance"/>
                 <file name="org-netbeans-modules-java-hints-infrastructure-JavaHintsPositionRefresher.instance"/>
             </folder>
         </folder>
@@ -185,6 +185,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-java-hints-CollectionRemove.instance"/>
                     <file name="org-netbeans-modules-java-hints-FieldForUnusedParam.instance"/>
                     <file name="org-netbeans-modules-java-hints-SerialVersionUID.instance"/>
+                    <file name="org-netbeans-modules-java-hints-ThisInAnonymous.instance"/>
                 </folder>
 
                 <folder name="errors">
@@ -204,6 +205,7 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>                    
                     <file name="org-netbeans-modules-java-hints-AddOverrideAnnotation.instance"/>
                     <file name="org-netbeans-modules-java-hints-AnnotationAsSuperInterface.instance"/>
+                    <file name="org-netbeans-modules-java-hints-StaticImport.instance"/>
                 </folder>
                 
                 <folder name="imports">
@@ -324,6 +326,11 @@ made subject to such option by the copyright holder.
                     <file name="EmptyIf.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.EmptyStatements.createIf"/>
                     </file>
+                </folder>
+
+                <folder name="performance">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                    <file name="org-netbeans-modules-java.hints-StringBuilderAppend.instance"/>
                 </folder>
 
                 <!--

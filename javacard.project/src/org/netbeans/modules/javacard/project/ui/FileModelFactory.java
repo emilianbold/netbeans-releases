@@ -113,11 +113,11 @@ public class FileModelFactory {
             if (isDefault) {
                 result.setDefaultServlet(name);
                 result.setDefaultMapping(mapping);
-                if (clazz != null && selected) {
-                    int o = order == null ? Integer.MAX_VALUE : order;
-                    WebXmlServletEntry info = new WebXmlServletEntry(name, clazz, mapping, o);
-                    result.add(info);
-                }
+            }
+            if (clazz != null && selected) {
+                int o = order == null ? Integer.MAX_VALUE : order;
+                WebXmlServletEntry info = new WebXmlServletEntry(name, clazz, mapping, o);
+                result.add(info);
             }
         }
         return result;

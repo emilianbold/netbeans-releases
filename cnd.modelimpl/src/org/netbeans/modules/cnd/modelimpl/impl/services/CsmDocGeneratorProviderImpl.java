@@ -50,14 +50,14 @@ import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.class)
 public class CsmDocGeneratorProviderImpl extends CsmDocGeneratorProvider {
 
     @Override

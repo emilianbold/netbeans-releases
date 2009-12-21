@@ -104,7 +104,7 @@ public class QueryRefreshTest extends NbTestCase {
             public void run() {
                 // init columndescriptors before opening query to prevent some "do not call in awt asserts"
                 NbJiraIssue.getColumnDescriptors(JiraTestUtil.getRepository());
-                QueryAction.openQuery(jq);
+                QueryAction.openQuery(jq, null);
             }
         }).waitFinished();
         assertFalse(lh.isDone());    // but this one wasn't yet
@@ -137,7 +137,7 @@ public class QueryRefreshTest extends NbTestCase {
             public void run() {
                 // init columndescriptors before opening query to prevent some "do not call in awt asserts"
                 NbJiraIssue.getColumnDescriptors(JiraTestUtil.getRepository());
-                QueryAction.openQuery(jq);
+                QueryAction.openQuery(jq, null);
             }
         }).waitFinished();
         schedulingHandler.waitUntilDone();

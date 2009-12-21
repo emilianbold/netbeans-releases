@@ -115,7 +115,7 @@ public class DirectoryDeployment extends IncrementalDeployment {
         else{
             s = new String[] { ".timestamp" };
         }
-        
+
         return s;
     }
     

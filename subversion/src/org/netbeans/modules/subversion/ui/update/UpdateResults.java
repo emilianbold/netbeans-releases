@@ -46,7 +46,9 @@ import org.openide.util.NbBundle;
 import javax.swing.*;
 import java.util.*;
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.text.DateFormat;
+import org.netbeans.modules.subversion.Subversion;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -66,9 +68,18 @@ class UpdateResults extends JComponent {
         if (results.size() == 0) {
             add(new NoContentPanel(NbBundle.getMessage(UpdateResults.class, "MSG_NoFilesUpdated"))); // NOI18N
         } else {
-            UpdateResultsTable urt = new UpdateResultsTable();
-            urt.setTableModel(createNodes());
-            add(urt.getComponent());
+            final UpdateResultsTable urt = new UpdateResultsTable();
+            Subversion.getInstance().getRequestProcessor().post(new Runnable () {
+                public void run() {
+                    final UpdateResultNode[] nodes = createNodes();
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            urt.setTableModel(nodes);
+                            add(urt.getComponent());
+                        }
+                    });
+                }
+            });
         }
     }
 

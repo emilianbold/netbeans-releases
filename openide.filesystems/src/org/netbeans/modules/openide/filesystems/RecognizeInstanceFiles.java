@@ -69,17 +69,6 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
     
     
     public Lookup create(String path) {
-        if (path.equals("URLStreamHandler/nbres/")) { // NOI18N
-            // Need to avoid a stack overflow during initialization.
-            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
-            if (l == null) {
-                l = Thread.currentThread().getContextClassLoader();
-                if (l == null) {
-                    l = RecognizeInstanceFiles.class.getClassLoader();
-                }
-            }
-            return Lookups.metaInfServices(l, "META-INF/namedservices/URLStreamHandler/nbres/"); // NOI18N
-        }
         return new OverFiles(path);
     }        
     

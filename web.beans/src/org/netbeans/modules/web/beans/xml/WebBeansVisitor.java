@@ -48,6 +48,9 @@ package org.netbeans.modules.web.beans.xml;
 public interface WebBeansVisitor {
 
     void visit( Beans beans );
-    void visit( Deploy deploy );
-    void visit( Type type );
+    void visit( Interceptors interceptors );
+    void visit( Decorators decorators );
+    void visit( Alternatives alternatives );
+    void visit( BeanClass clazz );
+    void visit( Stereotype stereotype );
 }

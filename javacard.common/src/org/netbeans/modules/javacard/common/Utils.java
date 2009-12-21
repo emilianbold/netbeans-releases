@@ -92,7 +92,9 @@ public final class Utils {
      * @return A DataObject which may have the requested card in its lookup (this
      * method does matching by file name and does not check if there is really
      * an instance of Card present)
+     * @deprecated Not all cards are DataObjects anymore
      */
+    @Deprecated
     public static DataObject findDeviceForPlatform(String platform, String card) {
         FileObject deviceFolder = sfsFolderForDeviceConfigsForPlatformNamed(platform, false);
         if (deviceFolder != null) {
@@ -125,6 +127,7 @@ public final class Utils {
      * @param invalidDeviceName The device name
      * @return
      */
+    /*
     public static FileObject folderForInvalidDeviceConfigsForPlatformNamed(String platformName, String invalidDeviceName) {
         FileSystem fs = FileUtil.createMemoryFileSystem();
         try {
@@ -140,6 +143,7 @@ public final class Utils {
             throw new IllegalStateException(ex);
         }
     }
+     */
 
     /**
      * Get the system filesystem folder for files that define Card objects,
@@ -236,6 +240,30 @@ public final class Utils {
         return fld;
     }
 
+    public static FileObject sfsFolderForRegisteredJavaPlatforms(String expectedName) {
+        FileObject fld = sfsFolderForRegisteredJavaPlatforms();
+        if (expectedName != null) {
+            boolean found = false;
+            for (FileObject fo : fld.getChildren()) {
+                found = expectedName.equals(fo.getName());
+                if (found) {
+                    break;
+                }
+            }
+            if (!found) {
+                FileSystem memfs = FileUtil.createMemoryFileSystem();
+                try {
+                    FileObject dummyFolder = FileUtil.createFolder(memfs.getRoot(), CommonSystemFilesystemPaths.SFS_JAVA_PLATFORMS_FOLDER);
+                    FileObject dummyPlatform = dummyFolder.createData(expectedName, JCConstants.JAVACARD_PLATFORM_FILE_EXTENSION);
+                    MultiFileSystem mfs = new MultiFileSystem(new FileSystem[] { memfs, FileUtil.getConfigRoot().getFileSystem() });
+                    fld = mfs.getRoot().getFileObject(CommonSystemFilesystemPaths.SFS_JAVA_PLATFORMS_FOLDER);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return fld;
+    }
     /**
      * Locates all Javacard Platform DataObjects which use the .jcard extension.
      * @return An iterable over all such files
@@ -563,6 +591,11 @@ public final class Utils {
         return AID.generateInstanceAid(RID, packageName, clazz);
     }
 
+    public static AID generateRandomAppletAid(String clazz) {
+        byte[] RID = getDefaultRID();
+        return AID.generateApplicationAid(RID, generateRandomPackageName(), clazz);
+    }
+
     public static String generateRandomPackageName() {
         StringBuilder sb = new StringBuilder();
         Random r = new Random (System.currentTimeMillis());
@@ -628,7 +661,7 @@ public final class Utils {
             if (exePart.trim().length() == 0) {
                 exePart = null;
             }
-            argsPart = "-" + m.group(2).trim();
+            argsPart = "-" + m.group(2).trim(); //NOI18N
         } else {
             m = EXE_NOARGS_SPLIT.matcher(s);
             if (m.find()) {

@@ -121,7 +121,7 @@ public final class RefreshDependencyVersions extends Task {
         @SuppressWarnings("unchecked") Map<String,String> properties = getProject().getProperties();
         ModuleListParser listParser;
         try {
-            listParser = new ModuleListParser(properties, ParseProjectXml.TYPE_NB_ORG, getProject());
+            listParser = new ModuleListParser(properties, ModuleType.NB_ORG, getProject());
         } catch (IOException ioe) {
             throw new BuildException("Can't read module list!", ioe, getLocation());
         }

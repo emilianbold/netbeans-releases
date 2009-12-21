@@ -261,8 +261,8 @@ public class JarWithModuleAttributes extends Jar {
     }
 
     private void specVersBaseWarning(File manifestFile, String message) throws BuildException {
-        message = manifestFile + ": " + message + "\n(see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency)" +
-                "\n(define spec.version.base.fatal.warning=false in project.properties to suppress this warning)";
+        message = manifestFile + ": " + message + "\n(see http://wiki.netbeans.org/DevFaqImplementationDependency)" +
+                "\n(define spec.version.base.fatal.warning=false in project.properties to make this be a nonfatal warning)";
         if (Project.toBoolean(getProject().getProperty("spec.version.base.fatal.warning"))) {
             throw new BuildException(message);
         } else {

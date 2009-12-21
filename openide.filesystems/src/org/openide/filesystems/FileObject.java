@@ -749,7 +749,7 @@ public abstract class FileObject extends Object implements Serializable {
     * an "archive" feature it should archive only <code>.java</code> files.
     * @param b true if the file should be considered important
     * @deprecated No longer used. Instead use
-    * <a href="@PROJECTS/QUERIES@/org/netbeans/api/queries/SharabilityQuery.html"><code>SharabilityQuery</code></a>.
+    * <a href="@org-netbeans-modules-queries@/org/netbeans/api/queries/SharabilityQuery.html"><code>SharabilityQuery</code></a>.
     */
     @Deprecated
     public abstract void setImportant(boolean b);

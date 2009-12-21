@@ -247,7 +247,7 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
         public boolean isValid() {
             
             boolean attrValid = true;
-            String msg = WizardConstants.EMPTY_STRING;
+            String msg = null;
            
             if (getPanel() != null) {
                 if (getPanel().AttributeNameAlreadyChecked()) { 
@@ -345,7 +345,7 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
                 getPanel().orderNumber = oNumber;
             } 
             
-            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");// NOI18N
+            setErrorMsg(null);
         }
         
         /**

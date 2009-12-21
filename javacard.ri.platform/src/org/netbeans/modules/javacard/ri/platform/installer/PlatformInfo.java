@@ -40,8 +40,10 @@
  */
 package org.netbeans.modules.javacard.ri.platform.installer;
 
+import java.util.Map;
 import org.netbeans.api.java.platform.Profile;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.openide.modules.SpecificationVersion;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -108,6 +110,17 @@ public final class PlatformInfo {
         return getName();
     }
 
+    public boolean isRi() {
+        return JavacardPlatformKeyNames.PLATFORM_KIND.equals(
+                props.getProperty(JavacardPlatformKeyNames.PLATFORM_KIND));
+    }
+
+    public EditableProperties getDeviceDefaults() {
+        EditableProperties result = new EditableProperties(true);
+        boolean found = RIPlatformFactory.addPrototypeValues(result, props);
+        return found ? result : null;
+    }
+
     public EditableProperties writeTo(EditableProperties props) {
         props.putAll(this.props);
         String kind = props.getProperty(JavacardPlatformKeyNames.PLATFORM_KIND);
@@ -116,7 +129,7 @@ public final class PlatformInfo {
         if (JavacardPlatformKeyNames.PLATFORM_KIND_RI.equals(kind)) {
             //XXX and the point of this is?
             String home = props.getProperty(JavacardPlatformKeyNames.PLATFORM_HOME);
-            props.setProperty(JavacardPlatformKeyNames.RI_HOME, home);
+            props.setProperty(JavacardPlatformKeyNames.PLATFORM_RI_HOME, home);
         }
         return props;
     }

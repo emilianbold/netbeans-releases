@@ -194,6 +194,7 @@ public class ClientStubModel {
             String name = null;
             String path = null;
             String template = RestUtils.findUri(rSrc);
+            boolean isRootResource = false;
             if (template != null) {
                 path = template;
                 name = path;
@@ -204,12 +205,14 @@ public class ClientStubModel {
                     name = name.substring(0, name.length() - 1);
                 }
                 name = name.substring(0, 1).toUpperCase() + name.substring(1);
+                isRootResource = true;
             } else {
                 String className = JavaSourceHelper.getClassNameQuietly(rSrc);
                 name = RestUtils.findStubNameFromClass(className);
                 path = name.substring(0, 1).toLowerCase() + name.substring(1);
             }
             Resource r = new Resource(normalizeName(name), path);
+            r.setRootResource(isRootResource);
             buildResource(r, rSrc);
             return r;
         }
@@ -967,6 +970,7 @@ public class ClientStubModel {
         private RepresentationDocument rep;
         private boolean isContainer;
         private boolean isContainerItem;
+        private boolean rootResource;
 
         private List<Method> methodList = Collections.emptyList();
 
@@ -976,7 +980,15 @@ public class ClientStubModel {
             this.desc = desc;
             this.methodList = new ArrayList<Method>();
             this.rep = new RepresentationDocument();
-        } 
+        }
+
+        public boolean isRootResource() {
+            return rootResource;
+        }
+
+        public void setRootResource(boolean rootResource) {
+            this.rootResource = rootResource;
+        }
         
         public Resource(String name, String path) {
             this(name, path, name);

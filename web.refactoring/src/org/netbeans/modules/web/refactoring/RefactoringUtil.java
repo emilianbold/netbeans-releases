@@ -39,6 +39,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -263,12 +265,7 @@ public class RefactoringUtil {
                         parameter.toPhase(JavaSource.Phase.RESOLVED);
                         Element element = handle.resolveElement(parameter);
 
-                        // if the class is a generic then the <...> will also be
-                        // returned.  We just want the class name.
-                        // Accurate fix for IZ#156699 - IllegalArgumentException: The given fqn [pencom.webclient.notification.WebControlAppearance<V>] does not represent a fully qualified class name
-                        String type = parameter.getTypes().erasure(
-                                element.asType()).toString();
-                        result.add(type);
+                        result.add(getTypeName( element , parameter ));
                     }
                 }, true);
             } catch (IOException ioe) {
@@ -276,6 +273,29 @@ public class RefactoringUtil {
             }
         }
         return result;
+    }
+    
+    /*
+     * Fix for BZ#176088 - IllegalArgumentException:
+     */
+    private static String getTypeName( Element element , 
+            CompilationController controller )
+    {
+        if ( element instanceof TypeElement ){
+            // if the class is a generic then the <...> will also be
+            // returned.  We just want the class name.
+            // Accurate fix for IZ#156699 - IllegalArgumentException: The given fqn [pencom.webclient.notification.WebControlAppearance<V>] does not represent a fully qualified class name
+            try { // just for sure ( javadoc for "erasure" is not absolutely obvious  
+                return controller.getTypes().erasure(element.asType()).toString();
+            }
+            catch( IllegalArgumentException e){
+                // it should never happen, but if unknown case appears it will be handled here
+                return element.asType().toString();
+            }
+        }
+        else {
+            return element.asType().toString();
+        }
     }
     
     private static TreePathHandle resolveHandle(FileObject fileObject){

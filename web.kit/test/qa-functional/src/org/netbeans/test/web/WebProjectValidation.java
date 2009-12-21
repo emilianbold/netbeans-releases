@@ -49,6 +49,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import javax.swing.JComboBox;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
@@ -113,8 +114,8 @@ public class WebProjectValidation extends J2eeTestCase {
         }
     };
     public static final String J2EE_4 = "J2EE 1.4";
-    public static final String J2EE_3 = "J2EE 1.3";
-    public static final String JAVA_EE_5 = "JAVA EE 5";
+    public static final String JAVA_EE_5 = "Java EE 5";
+    public static final String JAVA_EE_6 = "Java EE 6";
     // location of sample project (parent of PROJECT_FOLDER)
     protected static String PROJECT_LOCATION;
     // name of sample project
@@ -123,7 +124,7 @@ public class WebProjectValidation extends J2eeTestCase {
     protected static String PROJECT_FOLDER;
     protected TestURLDisplayer urlDisplayer;
     private static final String BUILD_SUCCESSFUL = "BUILD SUCCESSFUL";
-    private ServerInstance server;
+    protected ServerInstance server;
     protected static int logIdx = 0;
     
     /** Need to be defined because of JUnit */
@@ -173,7 +174,7 @@ public class WebProjectValidation extends J2eeTestCase {
                 "FrameWaiter.WaitFrameTimeout", 180000);
         JemmyProperties.setCurrentTimeout(
                 "DialogWaiter.WaitDialogTimeout",180000);
-        server = ServerInstance.getDefault();
+        server = new ServerInstance();
     }
     
     @Override
@@ -182,7 +183,11 @@ public class WebProjectValidation extends J2eeTestCase {
     }
     
     public void testRegisterTomcat() {
-        assertNotNull(getServerNode(Server.TOMCAT));
+        assertNotNull(getServerNode(Server.ANY));
+    }
+
+    protected String getEEVersion() {
+        return J2EE_4;
     }
     
     /** checks if the Server ports are not used */
@@ -233,7 +238,7 @@ public class WebProjectValidation extends J2eeTestCase {
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
         serverStep.cboServer().selectItem(0);
-        serverStep.selectJavaEEVersion(J2EE_4);
+        serverStep.selectJavaEEVersion(getEEVersion());
         serverStep.next();
         NewWebProjectSourcesStepOperator frameworkStep =  new NewWebProjectSourcesStepOperator();
         frameworkStep.finish();
@@ -241,8 +246,10 @@ public class WebProjectValidation extends J2eeTestCase {
         sleep(5000);
         ProjectSupport.waitScanFinished();
         verifyWebPagesNode("index.jsp");
-        verifyWebPagesNode("WEB-INF|web.xml");
-        verifyWebPagesNode("META-INF|context.xml");
+        if (J2EE_4.equals(getEEVersion())){
+            verifyWebPagesNode("WEB-INF|web.xml");
+            verifyWebPagesNode("META-INF|context.xml");
+        }
     }
     
     protected void verifyProjectNode(String nodePath) {
@@ -338,21 +345,23 @@ public class WebProjectValidation extends J2eeTestCase {
         // check class is opened in Editor and close it
         new EditorOperator("Servlet1.java").close();
         // check the servlet is specified in web.xml
-        WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-        webPages.setComparator(new Operator.DefaultStringComparator(true, true));
-        Node webXml = new Node(webPages, "WEB-INF|web.xml");
-        new EditAction().performPopup(webXml);
-        String xmlText = new EditorOperator("web.xml").getText();
-        new EditorOperator("web.xml").closeAllDocuments();
-        String[] content = new String[] {
-            "<servlet-name>Servlet1</servlet-name>",
-            "<servlet-class>test1.Servlet1</servlet-class>",
-            "<url-pattern>/Servlet1</url-pattern>"
-        };
-        for (int i=0; i<content.length; i++) {
-            assertTrue("Servlet is not correctly specifeid in web.xml." +
-                    " Following line is missing in the web.xml:\n"+content[i],
-                    xmlText.indexOf(content[i]) != -1);
+        if (J2EE_4.equals(getEEVersion())){
+            WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
+            webPages.setComparator(new Operator.DefaultStringComparator(true, true));
+            Node webXml = new Node(webPages, "WEB-INF|web.xml");
+            new EditAction().performPopup(webXml);
+            String xmlText = new EditorOperator("web.xml").getText();
+            new EditorOperator("web.xml").closeAllDocuments();
+            String[] content = new String[] {
+                "<servlet-name>Servlet1</servlet-name>",
+                "<servlet-class>test1.Servlet1</servlet-class>",
+                "<url-pattern>/Servlet1</url-pattern>"
+            };
+            for (int i=0; i<content.length; i++) {
+                assertTrue("Servlet is not correctly specifeid in web.xml." +
+                        " Following line is missing in the web.xml:\n"+content[i],
+                        xmlText.indexOf(content[i]) != -1);
+            }
         }
         ref(Util.dumpProjectView(PROJECT_NAME));
         //compareReferenceFiles();
@@ -545,7 +554,7 @@ public class WebProjectValidation extends J2eeTestCase {
         editor.replace("            */", "");
         editor.replace("out.println(\"<title>Servlet Servlet1</title>\");",
                 "out.println(\"<title>Servlet with name=\"+request.getParameter(\"name\")+\"</title>\");");
-        new ActionNoBlock("Run|Run File",null).perform();
+        new ActionNoBlock(null, "Run File").perform(editor);
         NbDialogOperator dialog = new NbDialogOperator("Set Servlet Execution URI");
         JComboBoxOperator combo = new JComboBoxOperator(dialog);
         combo.setSelectedItem(combo.getSelectedItem()+"?name=Servlet1");
@@ -572,6 +581,16 @@ public class WebProjectValidation extends J2eeTestCase {
         // clear text field
         txtName.setText("");
         txtName.typeText("MyTags");
+
+        JLabelOperator jlex = new JLabelOperator(newFileWizard, "Location:");
+        JComboBoxOperator location = new JComboBoxOperator((JComboBox)jlex.getLabelFor());
+        location.selectItem("Web Pages");
+
+        JLabelOperator jle = new JLabelOperator(newFileWizard, "Folder");
+        JTextFieldOperator folder = new JTextFieldOperator((JTextField)jle.getLabelFor());
+        folder.setText("");
+        folder.typeText("WEB-INF/tlds");
+
         newFileWizard.finish();
         //XXX try { Thread.currentThread().sleep(5000); } catch (InterruptedException e) {}
         //XXX HACK #48865
@@ -939,30 +958,20 @@ public class WebProjectValidation extends J2eeTestCase {
         }
     }
 
-    private static class ServerInstance {
+    protected class ServerInstance {
         private String host;
         private int serverPort;
-        private String nodeName;
-        private String userName;
-        private String password;
         private URL serverURL;
-        private static ServerInstance instance;
         
         private ServerInstance() {
-        }
-        
-        public static ServerInstance getDefault() {
-            if (instance == null) {
-                instance = new ServerInstance();
-                instance.host = "localhost";
-                instance.serverPort = 8084;
-                instance.nodeName = "Tomcat";
-                instance.userName = "tomcat";
-                instance.password = "tomcat";
+            host = "localhost";
+            if (WebProjectValidation.isRegistered(Server.TOMCAT)){
+                serverPort = 8084;
+            }else if (WebProjectValidation.isRegistered(Server.GLASSFISH_V3) || WebProjectValidation.isRegistered(Server.GLASSFISH)){
+                serverPort = 8080;
             }
-            return instance;
         }
-        
+              
         public URL getServerURL() {
             if (serverURL == null) {
                 try {
@@ -976,7 +985,7 @@ public class WebProjectValidation extends J2eeTestCase {
         }
         
         public J2eeServerNode getServerNode() {
-            return J2eeServerNode.invoke(nodeName);
+            return WebProjectValidation.this.getServerNode(Server.ANY);
         }
         
         public void stop() {
@@ -990,8 +999,16 @@ public class WebProjectValidation extends J2eeTestCase {
 
     private void verifyServerIsStopped() throws IOException {
         URL url = server.getServerURL();
-        URLConnection connection = url.openConnection();
         try {
+            URLConnection connection = url.openConnection();
+            connection.connect();
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            //try for second time after a timeout
+            connection = url.openConnection();
             connection.connect();
             fail("Connection to: "+url+" established, but the server" +
                     " should not be running.");

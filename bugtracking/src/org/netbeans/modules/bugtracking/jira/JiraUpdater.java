@@ -231,6 +231,16 @@ public class JiraUpdater {
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
+
+        @Override
+        public String getID() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Image getIcon() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     private class JiraProxyRepository extends Repository {

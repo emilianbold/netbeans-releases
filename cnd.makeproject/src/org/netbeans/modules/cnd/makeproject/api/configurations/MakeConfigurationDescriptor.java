@@ -286,8 +286,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     /**
-     * @deprecated. Use org.netbeans.modules.cnd.api.project.NativeProject interface instead.
+     * @deprecated Use org.netbeans.modules.cnd.api.project.NativeProject interface instead.
      */
+    @Deprecated
     public void addProjectItemsChangeListener(ChangeListener cl) {
         synchronized (projectItemsChangeListeners) {
             projectItemsChangeListeners.add(cl);
@@ -295,8 +296,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     /**
-     * @deprecated. Use org.netbeans.modules.cnd.api.project.NativeProject interface instead.
+     * @deprecated Use org.netbeans.modules.cnd.api.project.NativeProject interface instead.
      */
+    @Deprecated
     public void removeProjectItemsChangeListener(ChangeListener cl) {
         synchronized (projectItemsChangeListeners) {
             projectItemsChangeListeners.remove(cl);
@@ -304,14 +306,14 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     public void fireProjectItemsChangeEvent(Item item, int action) {
-        Iterator it;
+        Iterator<ChangeListener> it;
 
         synchronized (projectItemsChangeListeners) {
             it = new HashSet<ChangeListener>(projectItemsChangeListeners).iterator();
         }
         ChangeEvent ev = new ProjectItemChangeEvent(this, item, action);
         while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
+            it.next().stateChanged(ev);
         }
     }
 
@@ -362,10 +364,10 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     // External File Items
-    public void setExternalFileItems(Vector items) {
+    public void setExternalFileItems(Vector<String> items) {
         externalFileItems.reset();
-        for (Enumeration e = items.elements(); e.hasMoreElements();) {
-            externalFileItems.addItem(new Item((String) e.nextElement()));
+        for (Enumeration<String> e = items.elements(); e.hasMoreElements();) {
+            externalFileItems.addItem(new Item(e.nextElement()));
         }
     }
 
@@ -654,6 +656,8 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
         updateExtensionList();
         if (!getModified()) {
+            // Always check for missing or out-of-date makefiles. They may not have been generated or have been removed.
+            new ConfigurationMakefileWriter(this).writeMissingMakefiles();
             return true;
         }
 

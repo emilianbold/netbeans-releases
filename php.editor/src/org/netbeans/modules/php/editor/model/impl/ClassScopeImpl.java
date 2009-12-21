@@ -236,20 +236,6 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     }
 
 
-    public List<? extends ClassScope> getSuperClassesChain() {
-        Set<ClassScope> set = new HashSet<ClassScope>();
-        return new ArrayList<ClassScope>(collectSuperClassesChain(set, this));
-    }
-
-    private static Set<ClassScope> collectSuperClassesChain(Set<ClassScope> result, ClassScope classScope) {
-        result.add(classScope);
-        Collection<? extends ClassScope> superClasses = classScope.getSuperClasses();
-        for (ClassScope superCls : superClasses) {
-            collectSuperClassesChain(result, superCls);
-        }
-        return result;
-    }
-
     @Override
     public String getNormalizedName() {
         return super.getNormalizedName()+(getSuperClassName() != null ? getSuperClassName() : "");//NOI18N

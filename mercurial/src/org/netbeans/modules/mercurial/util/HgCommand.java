@@ -78,7 +78,6 @@ import org.netbeans.modules.mercurial.FileStatus;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
-import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
@@ -116,12 +115,10 @@ public class HgCommand {
     private static final String HG_OPT_USERNAME = "--user"; // NOI18N
 
     private static final String HG_OPT_FOLLOW = "--follow"; // NOI18N
-    private static final String HG_STATUS_FLAG_ALL_CMD = "-marduicC"; // NOI18N
     private static final String HG_FLAG_REV_CMD = "--rev"; // NOI18N
     private static final String HG_STATUS_FLAG_TIP_CMD = "tip"; // NOI18N
     private static final String HG_STATUS_FLAG_REM_DEL_CMD = "-rd"; // NOI18N
     private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-marduC"; // NOI18N
-    private static final String HG_STATUS_FLAG_UNKNOWN_CMD = "-u"; // NOI18N
     private static final String HG_HEAD_STR = "HEAD"; // NOI18N
     private static final String HG_FLAG_DATE_CMD = "--date"; // NOI18N
 
@@ -359,6 +356,24 @@ public class HgCommand {
         GUARDED_COMMANDS.add(HG_MERGE_CMD);
         GUARDED_COMMANDS.add(HG_UNBUNDLE_CMD);
         GUARDED_COMMANDS.add(HG_UPDATE_ALL_CMD);
+    }
+
+    private static final HashSet<String> REPOSITORY_NOMODIFICATION_COMMANDS;
+    static {
+        REPOSITORY_NOMODIFICATION_COMMANDS = new HashSet<String>(8);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_ANNOTATE_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_CAT_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_EXPORT_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_INCOMING_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_LOG_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_OUTGOING_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_OUT_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_PUSH_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_STATUS_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_TIP_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VERIFY_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VERSION_CMD);
+        REPOSITORY_NOMODIFICATION_COMMANDS.add(HG_VIEW_CMD);
     }
 
     /**
@@ -2173,22 +2188,9 @@ public class HgCommand {
         if (repositoryUrl == null ) return null;
         if (revision == null ) return null;
 
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_PARENT_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repositoryUrl);
-        command.add(HG_FLAG_REV_CMD);
-        command.add(revision);
-        command.add("--template={rev}\t");                              //NOI18N
-
-        List<String> list = null;
-        if (file != null) command.add(file.getAbsolutePath());
-        list = exec(command);
         String parentRevision = "-1";                                   //NOI18N
-        if (!list.isEmpty() && !isErrorAbort(list.get(0))) {
-            String[] revisions = list.get(0).split("\t");               //NOI18N
+        String[] revisions = getParents(repositoryUrl, file, revision);
+        if (revisions != null) {
             if (revisions.length > 1) {
                 String rev1 = revisions[0].trim();
                 String rev2 = revisions[1].trim();
@@ -2203,108 +2205,49 @@ public class HgCommand {
         return parentRevision;
     }
 
-
     /**
-     * Returns the mercurial status for a given file
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @param cwd current working directory containing file to be checked
-     * @param filename name of file whose status is to be checked
-     * @return FileInformation for the given filename
-     * @throws org.netbeans.modules.mercurial.HgException
+     * Returns parent revisions of the given file
+     * @param repositoryUrl cannot be null
+     * @param file revisions of this file will be returned
+     * @param revision if not null, returns parents of this revision limited on the file
+     * @return parent revisions
+     * @throws HgException
      */
-    public static FileInformation getSingleStatus(File repository, String cwd, String filename)  throws HgException{
-        FileInformation info = null;
-        long startTime = 0;
-        if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
-            Mercurial.STATUS_LOG.finer("getSingleStatus: starting for " + filename); //NOI18N
-            startTime = System.currentTimeMillis();
+    public static String[] getParents (String repositoryUrl, File file, String revision) throws HgException {
+        if (repositoryUrl == null ) return null;
+        List<String> command = new ArrayList<String>();
+        command.add(getHgCommand());
+        command.add(HG_PARENT_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repositoryUrl);
+        if (revision != null) {
+            command.add(HG_FLAG_REV_CMD);
+            command.add(revision);
         }
-        List<String> list = doSingleStatusCmd(repository, cwd, filename);
-        if(list == null || list.isEmpty())
-            return new FileInformation(FileInformation.STATUS_UNKNOWN,null, false);
+        command.add("--template={rev}\t");                              //NOI18N
 
-        info =  getFileInformationFromStatusLine(list.get(0));
-        // Handles Copy status
-        // Could save copy source in FileStatus but for now we don't need it.
-        // FileStatus used in Fileinformation.java:getStatusText() and getShortStatusText() to check if
-        // file is Locally Copied when it's status is Locally Added
-        if(list.size() == 2) {
-            if (list.get(1).length() > 0){
-                if (list.get(1).charAt(0) == ' '){
-
-                    info =  new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY,
-                            new FileStatus(new File(new File(cwd), filename), true), false);
-                    Mercurial.LOG.log(Level.FINE, "getSingleStatus() - Copied: Locally Added {0}, Copy Source {1}", // NOI18N
-                            new Object[] {list.get(0), list.get(1)} );
-                }
-            } else {
-                Mercurial.LOG.log(Level.FINE, "getSingleStatus() - Second line empty: first line: {0}", list.get(0)); // NOI18N
-            }
+        List<String> list = null;
+        if (file != null) command.add(file.getAbsolutePath());
+        list = exec(command);
+        String[] revisions = null;
+        if (!list.isEmpty() && !isErrorAbort(list.get(0))) {
+            revisions = list.get(0).split("\t");               //NOI18N
         }
-
-        // Handle Conflict Status
-        // TODO: remove this if Hg status supports Conflict marker
-        if(existsConflictFile(cwd + File.separator + filename)){
-            info =  new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, null, false);
-            Mercurial.LOG.log(Level.FINE, "getSingleStatus(): CONFLICT StatusLine: {0} Status: {1}  {2} RepoPath:{3} cwd:{4} CONFLICT {5}", // NOI18N
-                new Object[] {list.get(0), info.getStatus(), filename, repository.getAbsolutePath(), cwd,
-                cwd + File.separator + filename + HgCommand.HG_STR_CONFLICT_EXT} );
-        }
-
-        Mercurial.LOG.log(Level.FINE, "getSingleStatus(): StatusLine: {0} Status: {1}  {2} RepoPath:{3} cwd:{4}", // NOI18N
-                new Object[] {list.get(0), info.getStatus(), filename, repository.getAbsolutePath(), cwd} );
-        if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
-            Mercurial.STATUS_LOG.finer("getSingleStatus for " + filename + " lasted " + (System.currentTimeMillis() - startTime));
-        }
-        return info;
+        return revisions;
     }
 
-    /**
-     * Returns the mercurial status for all files in a given  subdirectory of
-     * a repository
-     *
-     * @param File repository of the mercurial repository's root directory
-     * @param File dir of the subdirectoy of interest.
-     * @return Map of files and status for all files in the specified subdirectory, map contains normalized files as keys
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static Map<File, FileInformation> getAllStatus(File repository, File dir)  throws HgException{
-        return getDirStatusWithFlags(repository, Collections.singletonList(dir), HG_STATUS_FLAG_ALL_CMD, true);
-    }
 
     /**
      * Returns the mercurial status for only files of interest to us in a given directory in a repository
      * that is modified, locally added, locally removed, locally deleted, locally new and ignored.
      *
      * @param File repository of the mercurial repository's root directory
-     * @param dirs directories of interest
-     * @return Map of files and status for all files of interest in the directory of interest, map contains normalized files as keys
+     * @param files files or directories of interest
+     * @return Map of files and status for all files of interest, map contains normalized files as keys
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static Map<File, FileInformation> getInterestingStatus(File repository, List<File> dirs)  throws HgException{
-        return getDirStatusWithFlags(repository, dirs, HG_STATUS_FLAG_INTERESTING_CMD, true);
-    }
-
-    /**
-     * Returns the unknown files in a specified directory under a mercurial repository root
-     *
-     * @param File of the mercurial repository's root directory
-     * @param File of the directory whose files are required
-     * @return Map of files and status for all files under the repository root, map contains normalized files as keys
-     * @throws org.netbeans.modules.mercurial.HgException
-     */
-    public static Map<File, FileInformation> getUnknownStatus(File repository, File dir)  throws HgException{
-        Map<File, FileInformation> files = getDirStatusWithFlags(repository, Collections.singletonList(dir), HG_STATUS_FLAG_UNKNOWN_CMD, false);
-        int share = SharabilityQuery.getSharability(dir == null ? repository : dir);
-        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            if((share == SharabilityQuery.MIXED && SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) ||
-               (share == SharabilityQuery.NOT_SHARABLE)) {
-                i.remove();
-             }
-        }
-        return files;
+    public static Map<File, FileInformation> getStatus (File repository, List<File> files)  throws HgException{
+        return getStatusWithFlags(repository, files, HG_STATUS_FLAG_INTERESTING_CMD, true);
     }
 
     /**
@@ -2496,11 +2439,11 @@ public class HgCommand {
         return list;
     }
 
-    private static Map<File, FileInformation> getDirStatusWithFlags(File repository, List<File> dirs, String statusFlags, boolean bIgnoreUnversioned)  throws HgException{
+    private static Map<File, FileInformation> getStatusWithFlags(File repository, List<File> dirs, String statusFlags, boolean bIgnoreUnversioned)  throws HgException{
         if (repository == null) return null;
         long startTime = 0;
         if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
-            Mercurial.STATUS_LOG.finer("getDirStatusWithFlags: starting for " + dirs); //NOI18N
+            Mercurial.STATUS_LOG.finer("getStatusWithFlags: starting for " + dirs); //NOI18N
             startTime = System.currentTimeMillis();
         }
         FileInformation prev_info = null;
@@ -2511,16 +2454,16 @@ public class HgCommand {
         File file = null;
         for(String statusLine: list){
             FileInformation info = getFileInformationFromStatusLine(statusLine);
-            Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): status line {0}  info {1}", new Object[]{statusLine, info}); // NOI18N
+            Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): status line {0}  info {1}", new Object[]{statusLine, info}); // NOI18N
             if (statusLine.length() > 0) {
                 if (statusLine.charAt(0) == ' ') {
                     // Locally Added but Copied
                     if (file != null) {
                         prev_info =  new FileInformation(FileInformation.STATUS_VERSIONED_ADDEDLOCALLY,
                                 new FileStatus(file, true), false);
-                        Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): prev_info {0}  filePath {1}", new Object[]{prev_info, file}); // NOI18N
+                        Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): prev_info {0}  filePath {1}", new Object[]{prev_info, file}); // NOI18N
                     } else {
-                        Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): repository path: {0} status flags: {1} status line {2} filepath == nullfor prev_info ", new Object[]{repository.getAbsolutePath(), statusFlags, statusLine}); // NOI18N
+                        Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): repository path: {0} status flags: {1} status line {2} filepath == nullfor prev_info ", new Object[]{repository.getAbsolutePath(), statusFlags, statusLine}); // NOI18N
                     }
                     continue;
                 } else {
@@ -2548,7 +2491,7 @@ public class HgCommand {
             // TODO: remove this if Hg status supports Conflict marker
             if (existsConflictFile(file.getAbsolutePath())) {
                 info = new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, null, false);
-                Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): CONFLICT repository path: {0} status flags: {1} status line {2} CONFLICT {3}", new Object[]{repository.getAbsolutePath(), statusFlags, statusLine, file + HgCommand.HG_STR_CONFLICT_EXT}); // NOI18N
+                Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): CONFLICT repository path: {0} status flags: {1} status line {2} CONFLICT {3}", new Object[]{repository.getAbsolutePath(), statusFlags, statusLine, file + HgCommand.HG_STR_CONFLICT_EXT}); // NOI18N
             }
             prev_info = info;
         }
@@ -2558,16 +2501,16 @@ public class HgCommand {
 
         if (Mercurial.LOG.isLoggable(Level.FINE)) {
             if (list.size() < 10) {
-                Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): repository path: {0} status flags: {1} status list {2}", // NOI18N
+                Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): repository path: {0} status flags: {1} status list {2}", // NOI18N
                     new Object[] {repository.getAbsolutePath(), statusFlags, list} );
             } else {
-                Mercurial.LOG.log(Level.FINE, "getDirStatusWithFlags(): repository path: {0} status flags: {1} status list has {2} elements", // NOI18N
+                Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): repository path: {0} status flags: {1} status list has {2} elements", // NOI18N
                     new Object[] {repository.getAbsolutePath(), statusFlags, list.size()} );
             }
         }
 
         if (Mercurial.STATUS_LOG.isLoggable(Level.FINER)) {
-            Mercurial.STATUS_LOG.finer("getDirStatusWithFlags for " + dirs + " lasted " + (System.currentTimeMillis() - startTime)); //NOI18N
+            Mercurial.STATUS_LOG.finer("getStatusWithFlags for " + dirs + " lasted " + (System.currentTimeMillis() - startTime)); //NOI18N
         }
         return repositoryFiles;
     }
@@ -2616,35 +2559,6 @@ public class HgCommand {
         }
 
         return info;
-    }
-
-    /**
-     * Gets hg status command output line for a given file
-     */
-    private static List<String> doSingleStatusCmd(File repository, String cwd, String filename)  throws HgException{
-        List<String> command = new ArrayList<String>();
-        
-        command.add(getHgCommand());
-        command.add(HG_STATUS_CMD);
-        command.add(HG_STATUS_FLAG_ALL_CMD);
-        command.add(HG_OPT_REPOSITORY);
-        command.add(repository.getAbsolutePath());
-        command.add(HG_OPT_CWD_CMD);
-        command.add(repository.getAbsolutePath());
-
-        // In 0.9.3 hg status does not give back copy information unless we
-        // use relative paths from repository. This is fixed in 0.9.4.
-        // See http://www.selenic.com/mercurial/bts/issue545.
-        String filePath = new File(cwd, filename).getAbsolutePath();
-        String repoPath = repository.getAbsolutePath();
-        if(repoPath.length() >= filePath.length()) {
-            Mercurial.LOG.log(Level.WARNING, "Please report! Wrong repository path: {0}, {1}, {2}", new Object[] {repository, cwd, filename});
-            command.add(filePath);
-        } else {
-            command.add(filePath.substring(repoPath.length() + 1));
-        }
-
-        return exec(command);
     }
 
     /**
@@ -2738,6 +2652,8 @@ public class HgCommand {
         }
         logCommand(command);
         File outputStyleFile = null;
+        File repository = null;
+        final String hgCommand = getHgCommandName(command); // command name
         try {
             try {
                 outputStyleFile = createOutputStyleFile(command);
@@ -2752,8 +2668,6 @@ public class HgCommand {
                     envOrig.put(s.substring(0, s.indexOf('=')), s.substring(s.indexOf('=') + 1));
                 }
             }
-            File repository;
-            final String hgCommand = getHgCommandName(command); // command name
             if (isGuardedCommand(hgCommand) && (repository = getRepositoryFromCommand(command, hgCommand)) != null) {
                 // indexing is supposed to be disabled for the time the command is running
                 return runWithoutIndexing(new Callable<List<String>>() {
@@ -2767,6 +2681,14 @@ public class HgCommand {
         } finally{
             if (outputStyleFile != null) {
                 outputStyleFile.delete();
+            }
+            if (modifiesRepository(hgCommand)) {
+                if (repository == null) {
+                    repository = getRepositoryFromCommand(command, hgCommand);
+                }
+                if (repository != null) {
+                    Mercurial.getInstance().refreshWorkingCopyTimestamp(repository);
+                }
             }
         }
     }
@@ -3469,6 +3391,10 @@ public class HgCommand {
      */
     private static boolean isGuardedCommand(String hgCommand) {
         return GUARDED_COMMANDS.contains(hgCommand);
+    }
+
+    private static boolean modifiesRepository (String hgCommand) {
+        return !REPOSITORY_NOMODIFICATION_COMMANDS.contains(hgCommand);
     }
 
     /**

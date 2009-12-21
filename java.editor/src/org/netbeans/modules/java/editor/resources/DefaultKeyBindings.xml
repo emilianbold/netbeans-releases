@@ -51,6 +51,7 @@ made subject to such option by the copyright holder.
     <bind actionName="fast-import" key="OS-I"/>
     <bind actionName="fix-imports" key="DS-I"/>
     <bind actionName="goto-super-implementation" key="DS-P"/>
+    <bind actionName="goto-implementation" key="DA-B"/>
     <bind actionName="goto-help" key="O-F1"/>
 <!--    <bind actionName="make-is" key="O-U$I"/> -->
 <!--    <bind actionName="make-getter" key="O-U$G"/> -->

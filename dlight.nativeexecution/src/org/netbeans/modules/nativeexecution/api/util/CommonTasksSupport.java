@@ -269,7 +269,7 @@ public final class CommonTasksSupport {
                 synchronized (ssMap) {
                     support = ssMap.get(execEnv);
                     if (support == null) {
-                        support = new SignalSupport(execEnv);
+                        support = SignalSupport.getSignalSupportFor(execEnv);
                         ssMap.put(execEnv, support);
                     }
                 }

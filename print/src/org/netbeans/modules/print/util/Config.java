@@ -54,7 +54,7 @@ import java.util.StringTokenizer;
 
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
-import static org.netbeans.modules.print.ui.UI.*;
+import static org.netbeans.modules.print.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

@@ -62,7 +62,7 @@ import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbCollections;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -78,6 +78,9 @@ abstract class PlatformValidator implements Runnable {
     private volatile Exception failException;
     private boolean hasRun;
     private volatile boolean running = true;
+
+    //Allow setting up a platform on an unsupported OS for dev-time work
+    private boolean debugMode = !Utilities.isWindows(); //NOI18N
 
     PlatformValidator(FileObject baseDir) {
         this.file = baseDir;
@@ -211,12 +214,12 @@ abstract class PlatformValidator implements Runnable {
         if (!RIPlatformFactory.canInstall(props)) {
             throw new IOException (NbBundle.getMessage(RIPlatformFactory.class,
                     "ERR_TOO_OLD", //NOI18N
-                    props.get(JavacardPlatformKeyNames.PLATFORM_JAVACARD_SPECIFICATION_VERSION),
+                    props.get(JavacardPlatformKeyNames.PLATFORM_JAVACARD_VERSION),
                     RIPlatformFactory.MINIMUM_SUPPORTED_VERSION)); //NOI18N
         }
 
         String path = props.getProperty(JavacardPlatformKeyNames.PLATFORM_EMULATOR_PATH);
-        if (path != null) { //Conceivably a platform may not have an emulator
+        if (!debugMode && path != null) { //Conceivably a platform may not have an emulator
             path = RIPlatformFactory.translatePath(dir, path);
             String cmd = path + " -version"; //NOI18N
             Process proc = Runtime.getRuntime().exec(cmd);

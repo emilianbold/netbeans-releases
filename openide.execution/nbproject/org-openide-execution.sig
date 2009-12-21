@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.13.1
+#Signature file v4.1
+#Version 1.16
 
 CLSS public abstract interface java.io.Serializable
 
@@ -37,7 +37,7 @@ meth public void setClassAssertionStatus(java.lang.String,boolean)
 meth public void setDefaultAssertionStatus(boolean)
 meth public void setPackageAssertionStatus(java.lang.String,boolean)
 supr java.lang.Object
-hfds bootstrapClassPath,classAssertionStatus,classes,defaultAssertionStatus,defaultDomain,domains,initialized,loadedLibraryNames,nativeLibraries,nativeLibraryContext,nocerts,package2certs,packageAssertionStatus,packages,parent,scl,sclSet,sys_paths,systemNativeLibraries,usr_paths
+hfds classAssertionStatus,classes,defaultAssertionStatus,defaultDomain,domains,initialized,loadedLibraryNames,nativeLibraries,nativeLibraryContext,nocerts,package2certs,packageAssertionStatus,packages,parent,scl,sclSet,sys_paths,systemNativeLibraries,usr_paths
 hcls NativeLibrary
 
 CLSS public abstract interface !annotation java.lang.Deprecated

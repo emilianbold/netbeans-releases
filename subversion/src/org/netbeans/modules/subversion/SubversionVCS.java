@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.subversion;
 
+import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
@@ -70,6 +71,7 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
     
     private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
     
+    private SubversionVisibilityQuery visibilityQuery;
     public SubversionVCS() {
         putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_DisplayName"));
         putProperty(PROP_MENU_LABEL, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_MainMenu"));
@@ -152,6 +154,14 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
     @Override
     public CollocationQueryImplementation getCollocationQueryImplementation() {
         return collocationQueryImplementation;
+    }
+
+    @Override
+    public VCSVisibilityQuery getVisibilityQuery() {
+        if(visibilityQuery == null) {
+            visibilityQuery = new SubversionVisibilityQuery();
+        }
+        return visibilityQuery;
     }
 
     private final CollocationQueryImplementation collocationQueryImplementation = new CollocationQueryImplementation() {

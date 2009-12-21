@@ -203,7 +203,12 @@ public class TreeLoader extends LazyTreeLoader {
             dumpCouplingAbort(new CouplingAbort(clazz, t), null);
         }
     }
-    
+
+    @Override
+    public void updateContext(Context context) {
+        this.context = context;
+    }
+
     public final void startPartialReparse () {
         this.partialReparse = true;
     }
@@ -276,6 +281,8 @@ public class TreeLoader extends LazyTreeLoader {
         }
     }
 
+    private static final int MAX_DUMPS = Integer.getInteger("org.netbeans.modules.java.source.parsing.JavacParser.maxDumps", 255);
+    
     public static void dumpCouplingAbort(CouplingAbort couplingAbort, String treeInfo) {
         if (treeInfo == null)
             treeInfo = getTreeInfo(couplingAbort.getTree()).toString();
@@ -288,7 +295,7 @@ public class TreeLoader extends LazyTreeLoader {
         File f = new File(dumpDir + origName + ".dump"); // NOI18N
         boolean dumpSucceeded = false;
         int i = 1;
-        while (i < 255) {
+        while (i < MAX_DUMPS) {
             if (!f.exists())
                 break;
             f = new File(dumpDir + origName + '_' + i + ".dump"); // NOI18N

@@ -51,7 +51,7 @@ import java.util.List;
 import javax.swing.JComponent;
 
 import org.netbeans.modules.print.util.Config;
-import static org.netbeans.modules.print.ui.UI.*;
+import static org.netbeans.modules.print.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
