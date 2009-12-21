@@ -480,6 +480,12 @@ NodeActionsProvider {
         public Class getType () {
             return null;
         }
+
+        @Override
+        public boolean isSortable() {
+            return false;
+        }
+
     }
 
     private JFileChooser newSourceFileChooser;
