@@ -490,6 +490,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         //icolumns = new IndexedColumn[k];
         columnVisibleMap = new int[k];
         isDefaultColumnAdded = false;
+        ColumnModel treeColumn = null;
         boolean addDefaultColumn = true;
         List<Node.Property> columnList = new ArrayList<Node.Property>(k);
         int d = 0;
@@ -507,6 +508,7 @@ ExplorerManager.Provider, PropertyChangeListener {
             if (cs[i].getType() != null) {
                 columnList.add(c);
             } else {
+                treeColumn = cs[i];
                 nodesColumnName[0] = Actions.cutAmpersand(cs[i].getDisplayName());
                 addDefaultColumn = false;
                 defaultColumnIndex = i;
@@ -535,6 +537,9 @@ ExplorerManager.Provider, PropertyChangeListener {
             columnVisibleMap = columnVisibleMap2;
             isDefaultColumnAdded = true;
             defaultColumnIndex = 0;
+        }
+        if (treeColumn != null) {
+            treeTable.setTreeSortable(treeColumn.isSortable());
         }
         // Check visible map (order) for duplicities and gaps
         checkOrder(columnVisibleMap);
