@@ -71,7 +71,17 @@ import org.openide.util.Lookup;
 final class MetaInfServicesLookup extends AbstractLookup {
 
     private static final Logger LOGGER = Logger.getLogger(MetaInfServicesLookup.class.getName());
-    static final Executor RP = Executors.newSingleThreadExecutor(); 
+    static final Executor RP;
+    static {
+        Executor res = null;
+        try {
+            Class<?> seek = Class.forName("org.openide.util.RequestProcessor");
+            res = (Executor)seek.newInstance();
+        } catch (Throwable t) {
+            res = Executors.newSingleThreadExecutor();
+        }
+        RP = res;
+    }
     /*TBD: Inject RequestProcessor somehow
      new RequestProcessor(MetaInfServicesLookup.class.getName(), 1);
      */
