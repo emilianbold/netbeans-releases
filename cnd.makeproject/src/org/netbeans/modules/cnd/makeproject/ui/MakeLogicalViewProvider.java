@@ -1964,7 +1964,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    a.actionPerformed(new ActionEvent(this, 0, null));
+                    a.actionPerformed(new ActionEvent(StandardNodeAction.this, 0, null));
                 }
             });
         }
