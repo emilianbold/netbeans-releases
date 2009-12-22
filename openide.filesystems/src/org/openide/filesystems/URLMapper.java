@@ -290,7 +290,7 @@ public abstract class URLMapper {
         public FileObject[] getFileObjects(URL url) {
             String prot = url.getProtocol();
 
-            if (prot.equals("nbfs")) { //// NOI18N
+            if (prot.equals(FileURL.PROTOCOL)) { //// NOI18N
 
                 FileObject retVal = FileURL.decodeURL(url);
 

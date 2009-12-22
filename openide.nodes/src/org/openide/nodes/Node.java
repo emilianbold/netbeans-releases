@@ -544,17 +544,20 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     */
     public abstract boolean canDestroy();
 
-    // [PENDING] "valid" property?  --jglick // NOI18N
-
-    /** Remove the node from its parent and deletes it.
+    /**
+     * Called when a node is deleted.
+     * Generally you would never call this method yourself (only override it);
+     * perform modifications on the underlying model itself.
+     * <p>
     * The default
     * implementation obtains write access to
-    * the {@link Children#MUTEX children's lock}, and removes
+    * {@link Children#MUTEX}, and removes
     * the node from its parent (if any). Also fires a property change.
-    * <P>
-    * This may be overridden by subclasses to do any additional
-    * cleanup.
-    *
+     * <p>Subclasses which return true from {@link #canDestroy} should override
+     * this method to remove the associated model object from its parent. There
+     * is no need to call the super method in this case.
+     * <p>There is no guarantee that after this method has been called, other
+     * methods such as {@link #getIcon} will not also be called for a little while.
     * @exception IOException if something fails
     */
     public void destroy() throws IOException {

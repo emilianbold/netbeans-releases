@@ -65,8 +65,8 @@ public abstract class TestBaseHid extends MultiThreadedTestCaseHid {
     static {        
         URL.setURLStreamHandlerFactory(new URLStreamHandlerFactory() {
             public java.net.URLStreamHandler createURLStreamHandler(String protocol) {
-                if (protocol.equals("nbfs")) { // NOI18N
-                    return FileUtil.nbfsURLStreamHandler();
+                if (protocol.equals(FileURL.PROTOCOL)) {
+                    return new FileURL.Handler();
                 } 
                 return null;
         }});
