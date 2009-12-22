@@ -86,7 +86,6 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.PlaceholderPanel;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
@@ -332,7 +331,6 @@ public final class QueryTopComponent extends TopComponent
     @Override
     public void componentOpened() {
         openQueries.add(this);
-        Kenai.getDefault().addPropertyChangeListener(this);
         if(query != null) {
             query.getController().opened();
         }
@@ -352,7 +350,6 @@ public final class QueryTopComponent extends TopComponent
             query.removeNotifyListener(this);
             query.getController().closed();
         }
-        Kenai.getDefault().removePropertyChangeListener(this);
         if(prepareTask != null) {
             prepareTask.cancel();
         }

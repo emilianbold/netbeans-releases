@@ -65,6 +65,7 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -77,6 +78,7 @@ public class KenaiTest extends NbTestCase {
 
     private String username;
     private String password;
+    private Kenai kenai;
 
     public KenaiTest(String arg0) {
         super(arg0);
@@ -95,6 +97,8 @@ public class KenaiTest extends NbTestCase {
         username = br.readLine();
         password = br.readLine();
         br.close();
+
+        kenai = KenaiManager.getDefault().createKenai("testkenai", "https://testkenai.com");
     }
 
 //    public void testQueryTopComponent() throws Throwable {
@@ -111,9 +115,9 @@ public class KenaiTest extends NbTestCase {
 //        JButton button = (JButton) getField(qtc, "newButton");
 //        assertFalse(button.isEnabled());
 //
-//        Kenai.getDefault().login(username, password.toCharArray());
-//        Kenai.getDefault().logout();
-//        Kenai.getDefault().login(username, password.toCharArray());
+//        kenai.login(username, password.toCharArray());
+//        kenai.logout();
+//        kenai.login(username, password.toCharArray());
 //
 //        combo = (JComboBox) getField(qtc, "repositoryComboBox");
 //        assertFalse(combo.isEnabled());
@@ -124,7 +128,7 @@ public class KenaiTest extends NbTestCase {
     public void testRefreshQueriesInQueryTopComponent() throws Throwable {
         QueryAccessorImpl qa = new QueryAccessorImpl(); // need the instace to listen on kenai
 
-        Kenai.getDefault().login(username, password.toCharArray());
+        kenai.login(username, password.toCharArray());
 
         KenaiRepository repo = KenaiConnector.repo;
         repo.queries.add(new KenaiQuery(repo));
@@ -145,7 +149,7 @@ public class KenaiTest extends NbTestCase {
 
         repo.queries.add(new KenaiQuery(repo));
         savedHandler.reset();
-        Kenai.getDefault().logout();
+        kenai.logout();
         savedHandler.waitUntilDone();
 
         savedQueries = getSavedQueries(qtc);
@@ -153,7 +157,7 @@ public class KenaiTest extends NbTestCase {
 
         repo.queries.clear();
         LogHandler noQueriesHandler = new LogHandler("No queries.", LogHandler.Compare.ENDS_WITH);
-        Kenai.getDefault().login(username, password.toCharArray());
+        kenai.login(username, password.toCharArray());
         noQueriesHandler.waitUntilDone();
 
         savedQueries = getSavedQueries(qtc);

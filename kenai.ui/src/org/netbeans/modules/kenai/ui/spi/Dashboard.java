@@ -6,6 +6,7 @@
 package org.netbeans.modules.kenai.ui.spi;
 
 import java.beans.PropertyChangeListener;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 
 /**
@@ -70,5 +71,11 @@ public abstract class Dashboard {
      * @param listener listener to be removed
      */
     public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+
+    /**
+     * currently visible kenai
+     * @return
+     */
+    public abstract Kenai getKenai();
 
 }

@@ -8,6 +8,7 @@ package org.netbeans.modules.kenai.ui.spi;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
  * Abstraction of a single Kenai project.
@@ -73,6 +74,8 @@ public abstract class ProjectHandle implements Comparable<ProjectHandle> {
      * @return Display name
      */
     public abstract String getDisplayName();
+
+    public abstract KenaiProject getKenaiProject();
 
     /**
      * Is this project private?

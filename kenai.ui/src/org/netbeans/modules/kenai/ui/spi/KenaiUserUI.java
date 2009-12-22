@@ -128,7 +128,7 @@ public final class KenaiUserUI {
 
             public void run() {
 
-                final Kenai kenai = Kenai.getDefault();
+                final Kenai kenai = user.getKenai();
                 if (kenai.getStatus() != Status.ONLINE) {
                     if (JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(Utilities.class, "MSG_GO_ONLINE"), NbBundle.getMessage(Utilities.class, "MSG_GO_ONLINE_TITLE"),JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION) {
                         RequestProcessor.getDefault().post(new Runnable() {
@@ -143,7 +143,7 @@ public final class KenaiUserUI {
                                         Exceptions.printStackTrace(ex);
                                     }
                                 } else {
-                                    if (UIUtils.tryLogin(true)) {
+                                    if (UIUtils.tryLogin(user.getKenai(), true)) {
                                         startChat();
                                     } else {
                                         SwingUtilities.invokeLater(new Runnable() {
@@ -168,7 +168,7 @@ public final class KenaiUserUI {
                 ChatTopComponent tc = ChatTopComponent.findInstance();
                 tc.open();
                 tc.requestActive();
-                tc.setActivePrivate(user.getUserName());
+                tc.setActivePrivate(user.getFQN());
                 tc.insertToActiveChat(message);
                 tc.requestFocus();
             }

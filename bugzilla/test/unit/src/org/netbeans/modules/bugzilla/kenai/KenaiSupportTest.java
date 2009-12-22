@@ -55,6 +55,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
@@ -81,7 +82,8 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
         try {
             System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
             System.setProperty("kenai.com.url","https://testkenai.com");
-            instance = Kenai.getDefault();
+            instance = KenaiManager.getDefault().createKenai("testkenai", "https://testkenai.com");
+//            instance = KenaiManager.getDefault().getKenai("https://testkenai.com");
             BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
             String username = br.readLine();
             String password = br.readLine();
@@ -249,7 +251,7 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
     }
 
     private KenaiProject getKenaiProject() throws KenaiException {
-        return Kenai.getDefault().getProject("koliba");
+        return instance.getProject("koliba");
     }
 
 }
