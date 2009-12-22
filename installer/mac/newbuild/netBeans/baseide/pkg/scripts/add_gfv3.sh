@@ -16,7 +16,7 @@ then
   if [ -f netbeans.conf ]
   then
     echo netbeans.conf found: `pwd`/netbeans.conf
-    if  grep -q "netbeans_default_options=\"-J-Dorg.glassfish.v3ee6.installRoot=$gf_dir" netbeans.conf
+    if  grep -q "J-Dorg.glassfish.v3ee6.installRoot=$gf_dir" netbeans.conf
     then
        echo Glassfish "$gf_dir" has been already added
     else
