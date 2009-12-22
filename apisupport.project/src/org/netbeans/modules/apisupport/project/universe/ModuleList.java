@@ -1001,7 +1001,7 @@ public final class ModuleList {
                         scanJars(cluster, ci, nbDestDir, cluster, entries, registerEntry, jar);
                     }
                 } catch (Exception ex) {
-                    throw new IOException(ex);
+                    throw (IOException) new IOException(ex.toString()).initCause(ex);
                 }
             }
         }
