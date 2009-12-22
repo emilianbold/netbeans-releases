@@ -100,11 +100,12 @@ int queryValue(int mode, HKEY section, const unsigned short* key, const unsigned
                 if (RegQueryValueExW(hkey, name, NULL, (LPDWORD) &tempType, tempValue, (LPDWORD) &tempSize) == ERROR_SUCCESS) {
                     if (expand && (tempType == REG_EXPAND_SZ)) {
                         int expandedSize = (int) wcslen((unsigned short*) tempValue) + 2;
-                        byte* expandedValue = (byte*) malloc(expandedSize);
-                        int expandedCharsNumber = ExpandEnvironmentStringsW((unsigned short*) tempValue, (unsigned short*) expandedValue, tempSize);
-                        
-                        if (expandedCharsNumber > tempSize) {
-                            expandedValue       = (byte*) realloc(expandedValue, expandedCharsNumber * sizeof(byte));
+                        byte* expandedValue = (byte*) malloc(expandedSize * sizeof(wchar_t));
+                        int expandedCharsNumber = 0;
+                        memset(expandedValue, 0, expandedSize);
+                        expandedCharsNumber = ExpandEnvironmentStringsW((unsigned short*) tempValue, (unsigned short*) expandedValue, tempSize);
+                        if (expandedCharsNumber > tempSize) {                            
+                            expandedValue       = (byte*) realloc(expandedValue, expandedCharsNumber * sizeof(wchar_t));
                             expandedCharsNumber = ExpandEnvironmentStringsW((unsigned short*) tempValue, (unsigned short*) expandedValue, expandedCharsNumber);
                         }
                         
