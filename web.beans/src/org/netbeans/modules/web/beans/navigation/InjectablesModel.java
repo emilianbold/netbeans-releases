@@ -44,11 +44,15 @@ package org.netbeans.modules.web.beans.navigation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,6 +60,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -63,6 +68,7 @@ import javax.swing.tree.TreeNode;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
@@ -81,33 +87,67 @@ public final class InjectablesModel extends DefaultTreeModel {
             InjectablesModel.class.getName());
     
     static Element[] EMPTY_ELEMENTS_ARRAY = new Element[0];
-    static ElementHandle<?>[] EMPTY_ELEMENTHANDLES_ARRAY = new ElementHandle[0];
 
     public InjectablesModel(Result result, 
             CompilationController controller ,MetadataModel<WebBeansModel> model ) 
     {
         super(null);
-
+        
         myModel = model;
-        /* TODO :
-         * if (elements.size() == 0 ) {
-            myElementHandles = EMPTY_ELEMENTHANDLES_ARRAY;
-        } else {
-            List<ElementHandle<?>> elementHandlesList = 
-                new ArrayList<ElementHandle<?>>(elements.size());
+        if ( result.getKind() == Result.ResultKind.DEFINITION_ERROR || 
+                !( result instanceof Result.ApplicableResult))
+        {
+            myTypeHandles= Collections.emptyList();
+            myProductionHandles = Collections.emptyMap();
+            return;
+        }
+        
+        if ( result instanceof Result.ResolutionResult ){
+            myResult = (Result.ResolutionResult)result;
+        }
+        
+        Result.ApplicableResult applicableResult = (Result.ApplicableResult) result;
+        Set<TypeElement> typeElements = applicableResult.getTypeElements();
+        
+        myProductionHandles = new HashMap<ElementHandle<?>, 
+            List<TypeMirrorHandle<DeclaredType>>>();
+        
+        myDisabledBeans = new HashSet<ElementHandle<?>>();
+        Set<Element> disabled = new HashSet<Element>();
 
-            for (Element el : elements) {
-                elementHandlesList.add(ElementHandle.create(el));
+        myTypeHandles = new ArrayList<ElementHandle<TypeElement>>(typeElements.size());
+        for (TypeElement el : typeElements) {
+            ElementHandle<TypeElement> handle = ElementHandle.create(el);
+            myTypeHandles.add(handle);
+            if ( applicableResult.isDisabled(el)){
+                myDisabledBeans.add( handle );
+                disabled.add( el );
             }
-
-            myElementHandles = elementHandlesList.toArray(EMPTY_ELEMENTHANDLES_ARRAY);
+        }
+        
+        Map<Element, List<DeclaredType>> allProductions = 
+            applicableResult.getAllProductions();
+        for (Entry<Element, List<DeclaredType>> entry : allProductions.entrySet()) {
+            ElementHandle<Element> handleKey = ElementHandle.create( entry.getKey());
+            List<TypeMirrorHandle<DeclaredType>> list = 
+                new ArrayList<TypeMirrorHandle<DeclaredType>>( entry.getValue().size());
+            for (DeclaredType type : entry.getValue()) {
+                TypeMirrorHandle<DeclaredType> typeHandle = 
+                    TypeMirrorHandle.create( type );
+                list.add( typeHandle );
+            }
+            myProductionHandles.put(handleKey,  list );
+            if ( applicableResult.isDisabled(entry.getKey())){
+                myDisabledBeans.add( handleKey );
+                disabled.add( entry.getKey() );
+            }
         }
 
-        update(elements , controller );*/
+        update( typeElements, allProductions, disabled , controller);
     }
     
     void update() {
-        update(myElementHandles);
+        update( myTypeHandles , myProductionHandles );
     }
 
     void fireTreeNodesChanged() {
@@ -115,50 +155,130 @@ public final class InjectablesModel extends DefaultTreeModel {
                 null, null);
     }
 
-    private void update(final ElementHandle<?>[] elementHandles) {
-        if ((elementHandles == null) || (elementHandles.length == 0)) {
-            return;
-        }
+    private void update( final List<ElementHandle<TypeElement>> typeHandles ,
+            final Map<ElementHandle<?>,List<TypeMirrorHandle<DeclaredType>>> 
+            productions ) 
+    {
+        try {
+            getModel().runReadAction(
+                    new MetadataModelAction<WebBeansModel, Void>() {
 
-            try {
-                getModel().runReadAction(new MetadataModelAction<WebBeansModel, Void>() {
-                        public Void run( WebBeansModel model ){
-                            List<Element> elementsList = new ArrayList<Element>(
-                                    elementHandles.length);
+                        public Void run( WebBeansModel model ) {
+                            Set<Element> disabled = new HashSet<Element>();
+                            List<TypeElement> typesList = fillTypes(typeHandles, 
+                                    model, disabled);
+                            
+                            Map<Element, List<DeclaredType>> productionsMap = 
+                                fillProductions( productions, model , disabled);
 
-                            for (ElementHandle<?> elementHandle : elementHandles) {
-                                final Element element = elementHandle.resolve(
-                                        model.getCompilationController());
-                                if (element != null) {
-                                    elementsList.add(element);
-                                }
-                                else {
-                                    LOG.warning(elementHandle.toString()+
-                                            " cannot be resolved using: " 
-                                            +model.getCompilationController().
-                                            getClasspathInfo());
-                                }
-                            }
-
-                            update(elementsList, model.getCompilationController());
+                            update(typesList, productionsMap , disabled , model
+                                    .getCompilationController());
                             return null;
                         }
                     });
 
-                return;
-            } 
-            catch (MetadataModelException e ){
-                LOG.log(Level.WARNING, e.getMessage(), e);
+            return;
+        }
+        catch (MetadataModelException e) {
+            LOG.log(Level.WARNING, e.getMessage(), e);
+        }
+        catch (IOException e) {
+            LOG.log(Level.WARNING, e.getMessage(), e);
+        }
+    }
+    
+    private Map<Element, List<DeclaredType>> fillProductions(
+            Map<ElementHandle<?>, List<TypeMirrorHandle<DeclaredType>>> productions,
+            WebBeansModel model, Set<Element> disabled )
+    {
+        Map<Element, List<DeclaredType>> result;
+        if ( productions == null || productions.size() == 0){
+            result = Collections.emptyMap();
+        }
+        else {
+            result = new HashMap<Element, List<DeclaredType>>();
+            for(Entry<ElementHandle<?>,List<TypeMirrorHandle<DeclaredType>>>
+                entry : productions.entrySet() )
+            {
+                ElementHandle<?> handle = entry.getKey();
+                Element element = handle.resolve(model.getCompilationController());
+                if (element != null) {
+                    if (myDisabledBeans.contains(handle)) {
+                        disabled.add(element);
+                    }
+                    List<DeclaredType> list = new ArrayList<DeclaredType>( 
+                            entry.getValue().size());
+                    for( TypeMirrorHandle<DeclaredType> mirrorHandle : 
+                        entry.getValue())
+                    {
+                        DeclaredType mirror = mirrorHandle.resolve( 
+                                model.getCompilationController());
+                        if ( mirror!= null){
+                            list.add( mirror );
+                        }
+                        else {
+                            LOG.warning(mirrorHandle.toString()
+                                    + " cannot be resolved using: " // NOI18N
+                                    + model.getCompilationController()
+                                            .getClasspathInfo());
+                        }
+                    }
+                    if ( list.size() >0 ){
+                        result.put(element, list);
+                    }
+                }
+                else {
+                    LOG.warning(handle.toString()
+                            + " cannot be resolved using: " // NOI18N
+                            + model.getCompilationController()
+                                    .getClasspathInfo());
+                }
             }
-            catch (IOException e ){
-                LOG.log(Level.WARNING, e.getMessage(), e);
-            }
+        }
+        return result;
     }
 
-    private void update(final Collection<Element> elements, 
+    private  List<TypeElement> fillTypes(final List<ElementHandle<TypeElement>> 
+            typeHandles, WebBeansModel model, Set<Element> disabled )
+    {
+        List<TypeElement> typesList;
+        if (typeHandles != null && typeHandles.size() != 0)
+        {
+            typesList = new ArrayList<TypeElement>(
+                    typeHandles.size());
+
+            for (ElementHandle<TypeElement> 
+                typeHandle : typeHandles)
+            {
+                TypeElement element = typeHandle
+                        .resolve(model
+                                .getCompilationController());
+                if (element != null) {
+                    typesList.add(element);
+                    if ( myDisabledBeans.contains( typeHandle)){
+                        disabled.add( element);
+                    }
+                }
+                else {
+                    LOG.warning(typeHandle.toString()
+                        + " cannot be resolved using: "     // NOI18N
+                         + model.getCompilationController()
+                                .getClasspathInfo());
+                }
+            }
+        }
+        else {
+            typesList = Collections.emptyList();
+        }
+        return typesList;
+    }
+
+    private void update(final Collection<TypeElement> typeElements, 
+            final Map<Element, List<DeclaredType>> productions, final 
+            Set<Element> disabledBeans,
             CompilationController controller) 
     {
-        if (elements.size()==0 ) {
+        if (typeElements.size()==0 && productions.size() == 0 ) {
             return;
         }
 
@@ -166,29 +286,51 @@ public final class InjectablesModel extends DefaultTreeModel {
         Map<Element, InjectableTreeNode<? extends Element>> elementMap= 
             new LinkedHashMap<Element, InjectableTreeNode<? extends Element>>();
 
-        for (Element element : elements) {
-            FileObject fileObject = SourceUtils.getFile(
-                    ElementHandle.create(element), controller.getClasspathInfo());
-            if (element instanceof TypeElement) {
-                // Type declaration 
-                TypeTreeNode node = new TypeTreeNode(fileObject, 
-                        (TypeElement)element, controller); 
-                insertTreeNode( elementMap , (TypeElement)element, node , 
-                        root , controller);
-            }
-            else if ( element instanceof ExecutableElement ){
+        for (TypeElement element : typeElements) {
+            FileObject fileObject = SourceUtils.getFile(ElementHandle
+                    .create(element), controller.getClasspathInfo());
+            // Type declaration
+            TypeTreeNode node = new TypeTreeNode(fileObject,
+                    (TypeElement) element, controller);
+            insertTreeNode(elementMap, (TypeElement) element, node, root, 
+                    disabledBeans.contains(element), controller);
+        }
+        
+        for (Entry<Element,List<DeclaredType>> entry : productions.entrySet()){
+            Element element = entry.getKey();
+            FileObject fileObject = SourceUtils.getFile(ElementHandle
+                    .create(element), controller.getClasspathInfo());
+            if ( element instanceof ExecutableElement ){
                 // Method definition
                 MethodTreeNode node = new MethodTreeNode(fileObject, 
-                        (ExecutableElement)element, controller);
+                        (ExecutableElement)element, entry.getValue().get( 0 ),
+                        disabledBeans.contains( element), controller);
                 insertTreeNode( elementMap , (ExecutableElement)element , 
-                        node , root , controller);
+                        node , root ,  controller);
+                if ( entry.getValue().size() >1 ){
+                    /*
+                     *  TODO : tree could be extended with children : 
+                     *  executable element  may be considered as parent
+                     *  for type mirrors that are this executable element
+                     *  viewed as member of DeclaredType ( item in entry.getValue() ).
+                     */
+                }
             }
             else  {
                 // Should be produces field.
                 InjectableTreeNode<Element> node = 
                     new InjectableTreeNode<Element>(fileObject, element,  
-                            controller);
+                            entry.getValue().get( 0 ), 
+                            disabledBeans.contains(element),controller);
                 insertTreeNode( elementMap , node , root );
+                if ( entry.getValue().size() >1 ){
+                    /*
+                     *  TODO : tree could be extended with children : 
+                     *  field element  may be considered as parent
+                     *  for type mirrors that are this filed 
+                     *  viewed as member of DeclaredType ( item in entry.getValue() ).
+                     */
+                }
             }
         }
 
@@ -197,7 +339,7 @@ public final class InjectablesModel extends DefaultTreeModel {
     
     private void insertTreeNode( Map<Element, 
             InjectableTreeNode<? extends Element>> elementMap,TypeElement element , 
-            TypeTreeNode node, DefaultMutableTreeNode root ,
+            TypeTreeNode node, DefaultMutableTreeNode root , boolean isDisabled,
             CompilationController controller)
     {
         TypeTreeNode parent = null;
@@ -231,7 +373,7 @@ public final class InjectablesModel extends DefaultTreeModel {
         if ( parentNode == null ){
             parentNode = root;
         }
-        Enumeration children = parentNode.children();
+        Enumeration<?> children = parentNode.children();
         List<TypeTreeNode> movedChildren = new LinkedList<TypeTreeNode>();
         while (children.hasMoreElements()) {
             TypeTreeNode childNode = (TypeTreeNode) children.nextElement();
@@ -301,7 +443,7 @@ public final class InjectablesModel extends DefaultTreeModel {
         if ( parentNode == null ){
             parentNode = root;
         }
-        Enumeration children = parentNode.children();
+        Enumeration<?> children = parentNode.children();
         List<MethodTreeNode> movedChildren = new LinkedList<MethodTreeNode>();
         while (children.hasMoreElements()) {
             MethodTreeNode childNode = (MethodTreeNode) children.nextElement();
@@ -330,6 +472,9 @@ public final class InjectablesModel extends DefaultTreeModel {
         return myModel;
     }
     
-    private ElementHandle<?>[] myElementHandles;
+    private List<ElementHandle<TypeElement>> myTypeHandles;
+    private Map<ElementHandle<?>,List<TypeMirrorHandle<DeclaredType>>> myProductionHandles;
+    private Set<ElementHandle<?>> myDisabledBeans;
     private MetadataModel<WebBeansModel> myModel;
+    private Result.ResolutionResult myResult;
 }

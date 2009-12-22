@@ -46,6 +46,7 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.DeclaredType;
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -70,7 +71,8 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
     private static final long serialVersionUID = -6398205566811265151L;
     
     InjectableTreeNode(FileObject fileObject,
-        T element, CompilationInfo compilationInfo) 
+        T element, DeclaredType parentType, boolean disabled , 
+        CompilationInfo compilationInfo) 
     {
         myFileObject = fileObject;
         myElementHandle = ElementHandle.create(element);
