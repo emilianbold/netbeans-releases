@@ -155,17 +155,18 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
             }, "Applying property changes"); // NOI18N
         } else {
             if (TraceFlags.TIMING) {
-                System.err.printf("\nskipped filesPropertiesChanged %s...\n", nativeProject.getProjectDisplayName());
+                System.err.printf("\nskipped filesPropertiesChanged(list) %s...\n",
+                        nativeProject.getProjectDisplayName());
             }
         }
-        enabledEventsHandling = true;
     }
 
-    public void disableListening() {
+    /*package*/final void enableListening(boolean enable) {
         if (TraceFlags.TIMING) {
-            System.err.printf("\ndisable ProjectListeners %s...\n", nativeProject.getProjectDisplayName());
+            System.err.printf("\n%s ProjectListeners %s...\n", enable?"enable":"disable",
+                    nativeProject.getProjectDisplayName());
         }
-        enabledEventsHandling = false;
+        enabledEventsHandling = enable;
     }
 
     private void filesPropertiesChangedImpl(List<NativeFileItem> fileItems) {
@@ -182,25 +183,31 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                 System.err.println("\t"+fileItem.getFile().getAbsolutePath()); // NOI18N
             }
         }
-	// FIXUP for #109425
-	ModelImpl.instance().enqueueModelTask(new Runnable() {
-	    public void run() {
-                ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
-                for(NativeFileItem item : nativeProject.getAllFiles()){
-                    if (!item.isExcluded()) {
-                        switch(item.getLanguage()){
-                            case C:
-                            case CPP:
-                                list.add(item);
-                                break;
-                            default:
-                                break;
+        if (enabledEventsHandling) {
+            // FIXUP for #109425
+            ModelImpl.instance().enqueueModelTask(new Runnable() {
+                public void run() {
+                    ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
+                    for(NativeFileItem item : nativeProject.getAllFiles()){
+                        if (!item.isExcluded()) {
+                            switch(item.getLanguage()){
+                                case C:
+                                case CPP:
+                                    list.add(item);
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                     }
+                    filesPropertiesChangedImpl(list);
                 }
-                filesPropertiesChangedImpl(list);
-	    }
-	}, "Applying property changes"); // NOI18N
+            }, "Applying property changes"); // NOI18N
+        } else {
+            if (TraceFlags.TIMING) {
+                System.err.printf("\nskipped filesPropertiesChanged %s...\n", nativeProject.getProjectDisplayName());
+            }
+        }
     }
 
     public void projectDeleted(NativeProject nativeProject) {

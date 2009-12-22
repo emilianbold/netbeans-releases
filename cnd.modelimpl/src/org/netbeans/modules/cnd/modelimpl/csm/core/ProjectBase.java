@@ -551,9 +551,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    public final synchronized void disableProjectListeners() {
+    public final synchronized void enableProjectListeners(boolean enable) {
         if (projectListener != null) {
-            projectListener.disableListening();
+            projectListener.enableListening(enable);
         }
     }
 
