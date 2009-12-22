@@ -375,7 +375,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (oldConf == null) {
             // What else can we do?
             firePropertiesChanged(getMakeConfigurationDescriptor().getProjectItems(), true, true, true);
-            MakeLogicalViewProvider.checkForChangedItems(getMakeConfigurationDescriptor().getProject(), null, null);
+            MakeLogicalViewProvider.checkForChangedViewItemNodes(getMakeConfigurationDescriptor().getProject(), null, null);
             MakeLogicalViewProvider.checkForChangedName(getMakeConfigurationDescriptor().getProject());
             return;
         }
@@ -384,7 +384,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName()) ||
                 !oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
             fireFilesPropertiesChanged(); // firePropertiesChanged(getAllFiles(), true);
-            MakeLogicalViewProvider.checkForChangedItems(getMakeConfigurationDescriptor().getProject(), null, null);
+            MakeLogicalViewProvider.checkForChangedViewItemNodes(getMakeConfigurationDescriptor().getProject(), null, null);
             if (!oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
                 MakeLogicalViewProvider.checkForChangedName(getMakeConfigurationDescriptor().getProject());
             }
@@ -415,7 +415,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     // included
                     added.add(items[i]);
                 }
-                MakeLogicalViewProvider.checkForChangedItems(proj, null, items[i]);
+                MakeLogicalViewProvider.checkForChangedViewItemNodes(proj, null, items[i]);
             }
 
             if (newItemConf.getExcluded().getValue()) {

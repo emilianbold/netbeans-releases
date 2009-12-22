@@ -501,7 +501,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         if (getNativeProject() != null) { // once not null, it never becomes null
             getNativeProject().checkForChangedItems(folder, item);
         }
-        MakeLogicalViewProvider.checkForChangedItems(project, folder, item);
+        MakeLogicalViewProvider.checkForChangedViewItemNodes(project, folder, item);
     }
 
     public void copyFromProjectDescriptor(ConfigurationDescriptor copyProjectDescriptor) {
