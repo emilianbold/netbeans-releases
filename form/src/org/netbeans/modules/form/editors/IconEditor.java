@@ -402,9 +402,14 @@ public class IconEditor extends PropertyEditorSupport
         }
         if (fo != null) {
             try {
-                Image image = ImageIO.read(fo.getURL());
-                if (image != null) { // issue 157546
-                    return new NbImageIcon(TYPE_CLASSPATH, resName, new ImageIcon(image));
+                try {
+                    Image image = ImageIO.read(fo.getURL());
+                    if (image != null) { // issue 157546
+                        return new NbImageIcon(TYPE_CLASSPATH, resName, new ImageIcon(image));
+                    }
+                } catch (IllegalArgumentException iaex) { // Issue 178906
+                    Logger.getLogger(IconEditor.class.getName()).log(Level.INFO, null, iaex);
+                    return new NbImageIcon(TYPE_CLASSPATH, resName, new ImageIcon(fo.getURL()));
                 }
             } catch (IOException ex) { // should not happen
                 Logger.getLogger(IconEditor.class.getName()).log(Level.WARNING, null, ex);
@@ -440,9 +445,14 @@ public class IconEditor extends PropertyEditorSupport
             if (url != null) { // treat as url
                 Icon icon = null;
                 try {
-                    Image image = ImageIO.read(url);
-                    if (image != null) {
-                        icon = new ImageIcon(image);
+                    try {
+                        Image image = ImageIO.read(url);
+                        if (image != null) {
+                            icon = new ImageIcon(image);
+                        }
+                    } catch (IllegalArgumentException iaex) { // Issue 178906
+                        Logger.getLogger(IconEditor.class.getName()).log(Level.INFO, null, iaex);
+                        icon = new ImageIcon(url);
                     }
                 } catch (IOException ex) {}
                 // for URL-based icon create NbImageIcon even if no icon can be loaded from the URL
@@ -458,9 +468,14 @@ public class IconEditor extends PropertyEditorSupport
         File file = new File(fileName);
         if (file.exists()) {
             try {
-                Image image = ImageIO.read(file);
-                if (image != null) {
-                    return new NbImageIcon(TYPE_FILE, fileName, new ImageIcon(image));
+                try {
+                    Image image = ImageIO.read(file);
+                    if (image != null) {
+                        return new NbImageIcon(TYPE_FILE, fileName, new ImageIcon(image));
+                    }
+                } catch (IllegalArgumentException iaex) { // Issue 178906
+                    Logger.getLogger(IconEditor.class.getName()).log(Level.INFO, null, iaex);
+                    return new NbImageIcon(TYPE_FILE, fileName, new ImageIcon(fileName));
                 }
             } catch (IOException ex) {
                 Logger.getLogger(IconEditor.class.getName()).log(Level.INFO, null, ex);
