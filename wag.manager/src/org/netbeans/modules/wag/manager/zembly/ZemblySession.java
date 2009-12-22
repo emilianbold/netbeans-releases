@@ -54,6 +54,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.wag.manager.util.WagPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -88,7 +89,7 @@ public class ZemblySession implements PropertyChangeListener {
 
     static {
         ZemblySession session = ZemblySession.getInstance();
-        Kenai kenai = Kenai.getDefault();
+        Kenai kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
 
         kenai.addPropertyChangeListener(WeakListeners.propertyChange(session, kenai));
     }

@@ -55,7 +55,7 @@ public class UserListItem implements ContactListItem {
 
     @Override
     public String toString() {
-        return entry.getUser();
+        return entry.getJid();
     }
 
     @Override
@@ -81,16 +81,16 @@ public class UserListItem implements ContactListItem {
     }
 
     public void openChat() {
-        KenaiUserUI user = new KenaiUserUI(entry.getUser());
+        KenaiUserUI user = new KenaiUserUI(entry.getJid());
         user.startChat();
     }
 
     public Icon getIcon() {
-        return new KenaiUserUI(entry.getUser()).getIcon();
+        return new KenaiUserUI(entry.getJid()).getIcon();
     }
 
     public boolean hasMessages() {
-        return ChatNotifications.getDefault().hasNewPrivateMessages(entry.getUser());
+        return ChatNotifications.getDefault().hasNewPrivateMessages(entry.getJid());
     }
 
 

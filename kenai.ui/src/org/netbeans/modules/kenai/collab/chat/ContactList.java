@@ -55,6 +55,7 @@ import javax.swing.event.DocumentListener;
 //import org.jivesoftware.smack.RosterGroup;
 //import org.jivesoftware.smack.RosterListener;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
  *
@@ -93,11 +94,11 @@ public class ContactList extends javax.swing.JPanel {
 
 
     public void updateFilter() {
-        roster = new FakeRoster(Kenai.getDefault().getXMPPConnection());
+        roster = new FakeRoster();
         filterModel.removeAllElements();
         filterModel.addElement(new FilterItem());
         for (FakeRosterGroup group : roster.getGroups()) {
-            filterModel.addElement(new FilterItem(group.getName()));
+            filterModel.addElement(new FilterItem(group.getName(), group.getKenaiProject()));
         }
         filterCombo.setSelectedIndex(0);
         
@@ -258,7 +259,8 @@ public class ContactList extends javax.swing.JPanel {
             }
         } else {
             String group = ((FilterItem) filterCombo.getSelectedItem()).getName();
-            FakeRosterGroup g = roster.getGroup(group);
+            Kenai k = ((FilterItem) filterCombo.getSelectedItem()).getKenaiProject().getKenai();
+            FakeRosterGroup g = roster.getGroup(k, group);
             listModel.addElement(new GroupListItem(g));
             for (FakeRosterEntry entry:g.getEntries()) {
                 listModel.addElement(new UserListItem(entry));

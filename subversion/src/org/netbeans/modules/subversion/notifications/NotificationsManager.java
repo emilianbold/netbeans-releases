@@ -65,6 +65,7 @@ import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.util.VCSNotificationDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
@@ -121,9 +122,10 @@ public class NotificationsManager {
      * @param file file to scan
      */
     public void scheduleFor(File file) {
-        if (!isEnabled() || isSeen(file) || !isUpToDate(file)) {
+        boolean isEnabled = isEnabled(file);
+        if (!isEnabled || isSeen(file) || !isUpToDate(file)) {
             if (LOG.isLoggable(Level.FINER)) {
-                LOG.finer("File " + file.getAbsolutePath() + " is " + (isUpToDate(file) ? "" : "not ") + " up to date, notifications enabled: " + isEnabled()); //NOI18N
+                LOG.finer("File " + file.getAbsolutePath() + " is " + (isUpToDate(file) ? "" : "not ") + " up to date, notifications enabled: " + isEnabled); //NOI18N
             }
             return;
         }
@@ -173,12 +175,18 @@ public class NotificationsManager {
      * Notifications are enabled only for logged kenai users and unless disabled by a switch
      * @return
      */
-    private boolean isEnabled() {
+    private boolean isEnabled(File file) {
         if (enabled == null) {
             // let's leave a possibility to disable the notifications
             enabled = new Boolean(!"false".equals(System.getProperty("subversion.notificationsEnabled", "true"))); //NOI18N
         }
-        return enabled.booleanValue() && supp.isLogged();
+        SVNUrl url;
+        try {
+            url = SvnUtils.getRepositoryUrl(file);
+        } catch (SVNClientException ex) {
+            return false;
+        }
+        return enabled.booleanValue() && supp.isLogged(url.toString());
     }
 
     private boolean isUpToDate(File file) {

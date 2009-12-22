@@ -1733,7 +1733,7 @@ public class HgCommand {
         PasswordAuthentication credentials = null;
         HgKenaiSupport supp = HgKenaiSupport.getInstance();
         String rawUrl = repository.toUrlStringWithoutUserInfo();
-        if (supp.isKenai(rawUrl) && supp.isLoggedIntoKenai()) {
+        if (supp.isKenai(rawUrl) && supp.isLoggedIntoKenai(rawUrl)) {
             credentials = supp.getPasswordAuthentication(rawUrl, false);
         }
 
@@ -3488,7 +3488,7 @@ public class HgCommand {
             credentials = null;
             HgKenaiSupport supp = HgKenaiSupport.getInstance();
             String rawUrl = remoteUrl.toUrlStringWithoutUserInfo();
-            acquireCredentialsFirst |= supp.isLoggedIntoKenai();
+            acquireCredentialsFirst |= supp.isLoggedIntoKenai(rawUrl);
             if (supp.isKenai(rawUrl) && acquireCredentialsFirst) {
                 // will force user to login into kenai, if he isn't yet
                 credentials = supp.getPasswordAuthentication(rawUrl, false);

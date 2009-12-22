@@ -82,7 +82,7 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
         this.project = project;
         messaging = load();
         messaging.addPropertyChangeListener(this);
-        Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_XMPP_LOGIN, this);
+        project.getKenaiProject().getKenai().addPropertyChangeListener(Kenai.PROP_XMPP_LOGIN, this);
     }
 
     @Override
@@ -185,6 +185,6 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
         super.dispose();
         if( null != messaging )
             messaging.removePropertyChangeListener(this);
-        Kenai.getDefault().removePropertyChangeListener(this);
+        project.getKenaiProject().getKenai().removePropertyChangeListener(this);
     }
 }

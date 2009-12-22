@@ -63,13 +63,8 @@ public class GroupListItem implements ContactListItem {
 
     @Override
     public String toString() {
-        try {
-            return NbBundle.getMessage(GroupListItem.class, "ChatRoomRenderer", 
-                    Kenai.getDefault().getProject(group.getName()).getDisplayName());
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
+        return NbBundle.getMessage(GroupListItem.class, "ChatRoomRenderer",
+                group.getDisplayName());
     }
 
     @Override
@@ -95,7 +90,7 @@ public class GroupListItem implements ContactListItem {
     }
 
     public void openChat() {
-        ChatTopComponent.findInstance().setActiveGroup(group.getName());
+        ChatTopComponent.findInstance().setActiveGroup(group.getJid());
     }
 
     public Icon getIcon() {
@@ -103,6 +98,6 @@ public class GroupListItem implements ContactListItem {
     }
 
     public boolean hasMessages() {
-        return ChatNotifications.getDefault().getMessagingHandle(group.getName()).getMessageCount()>0;
+        return ChatNotifications.getDefault().getMessagingHandle(group.getKenaiProject()).getMessageCount()>0;
     }
 }

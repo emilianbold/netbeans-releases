@@ -37,33 +37,52 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.nodes;
+package org.netbeans.modules.kenai.ui;
 
-import org.netbeans.modules.kenai.api.KenaiManager;
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
+import java.awt.Component;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Becicka
  */
-public class RemoveInstanceAction extends AbstractAction {
+public class KenaiListRenderer extends JLabel
+                       implements ListCellRenderer {
 
-    public Kenai key;
-    public RemoveInstanceAction(Kenai name) {
-        super(NbBundle.getMessage(RemoveInstanceAction.class, "CTL_RemoveInstance"));
-        this.key = name;
+    public KenaiListRenderer() {
+        setOpaque(true);
     }
 
+    /*
+     * This method finds the image and text corresponding
+     * to the selected value and returns the label, set up
+     * to display the text and image.
+     */
+    public Component getListCellRendererComponent(
+                                       JList list,
+                                       Object value,
+                                       int index,
+                                       boolean isSelected,
+                                       boolean cellHasFocus) {
 
-    public void actionPerformed(ActionEvent e) {
-        KenaiManager.getDefault().removeKenai(key);
+        if (value instanceof Kenai) {
+            setText(((Kenai)value).getName());
+            setIcon(((Kenai)value).getIcon());
+        } else {
+            setIcon(null);
+            setText(value==null?null:value.toString());
+        }
+
+        if (isSelected) {
+            setBackground(list.getSelectionBackground());
+            setForeground(list.getSelectionForeground());
+        } else {
+            setBackground(list.getBackground());
+            setForeground(list.getForeground());
+        }
+        return this;
     }
-
-//    @Override
-//    public boolean isEnabled() {
-//        return !key.getUrl().equals(Kenai.getDefault().getUrl().toString());
-//    }
 }

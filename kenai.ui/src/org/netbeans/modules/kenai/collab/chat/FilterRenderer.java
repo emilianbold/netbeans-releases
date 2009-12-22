@@ -88,10 +88,12 @@ public class FilterRenderer extends javax.swing.JPanel implements ListCellRender
             int index,
             boolean isSelected,
             boolean cellHasFocus) {
+        if (value!=null) {
         groupLabel.setText(value.toString());
         FilterItem item = (FilterItem) value;
         groupLabel.setBorder(new EmptyBorder(0,item.getIcon()==null?19:0,0,0));
         groupLabel.setIcon(item.getIcon());
+        }
         groupLabel.setOpaque(isSelected);
         if (isSelected) {
             groupLabel.setBackground(UIManager.getColor("ComboBox.selectionBackground")); // NOI18N

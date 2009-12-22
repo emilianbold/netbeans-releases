@@ -52,7 +52,6 @@ import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonManager;
 import org.netbeans.modules.hudson.api.UI;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -74,7 +73,7 @@ public class BuildAccessorImpl extends BuildAccessor {
         List<HudsonInstance> servers = new ArrayList<HudsonInstance>();
         String id = handle.getId();
         try {
-            KenaiProject prj = Kenai.getDefault().getProject(id);
+            KenaiProject prj = handle.getKenaiProject().getKenai().getProject(id);
             if (prj != null) {
                 for (KenaiFeature feature : prj.getFeatures(Type.HUDSON)) {
                     String server = feature.getWebLocation().toString();
@@ -91,7 +90,7 @@ public class BuildAccessorImpl extends BuildAccessor {
     public boolean isEnabled(ProjectHandle handle) {
         String id = handle.getId();
         try {
-            KenaiProject prj = Kenai.getDefault().getProject(id);
+            KenaiProject prj = handle.getKenaiProject().getKenai().getProject(id);
             if (prj != null) {
                 // Avoid calling findServers as that would load hudson module code
                 // just to show that there is a Builds node (even if never expanded).

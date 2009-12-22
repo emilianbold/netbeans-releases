@@ -36,71 +36,67 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.kenai.ui.nodes;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiManager;
+import org.netbeans.modules.kenai.ui.KenaiLoginTask;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
+import org.openide.util.WeakListeners;
 
 /**
  * @author Jan Becicka
  */
 public final class LoginAction extends AbstractAction {
 
-    private static LoginAction instance;
-
-    private LoginAction() {
-        super(NbBundle.getMessage(LoginAction.class, "CTL_LoginAction", NAME));
-    }
-
-    public static synchronized LoginAction getDefault() {
-        if (instance==null) {
-            instance=new LoginAction();
-            KenaiManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+    private Kenai kenai;
+    private PropertyChangeListener l;
+    public LoginAction(Kenai kenai) {
+        this.kenai = kenai;
+            kenai.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
 
                 public void propertyChange(PropertyChangeEvent pce) {
-                    if (Kenai.PROP_LOGIN.equals(pce.getPropertyName())) {
-                        if (!Kenai.PROP_URL_CHANGED.equals(pce.getPropagationId())) {
-                            final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-                            preferences.put(UIUtils.getPrefName((Kenai) pce.getSource(), UIUtils.LOGIN_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
+                    if (Kenai.PROP_LOGIN.equals(pce.getPropertyName()))  {
+                        if (pce.getNewValue() == null) {
+                            setLogout(false);
+                        } else {
+                            setLogout(true);
                         }
-
-                    } else if (Kenai.PROP_XMPP_LOGIN.equals(pce.getPropertyName())) {
-                        if (!Kenai.PROP_URL_CHANGED.equals(pce.getPropagationId())) {
-                            final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-                            preferences.put(UIUtils.getPrefName((Kenai) pce.getSource(), UIUtils.ONLINE_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
-                        }
+//                        if (!Kenai.PROP_URL_CHANGED.equals(pce.getPropagationId())) {
+//                            final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+//                            preferences.put(UIUtils.getPrefName(UIUtils.LOGIN_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
+//                        }
+//
+//                    } else if (Kenai.PROP_XMPP_LOGIN.equals(pce.getPropertyName())) {
+//                        if (!Kenai.PROP_URL_CHANGED.equals(pce.getPropagationId())) {
+//                            final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+//                            preferences.put(UIUtils.getPrefName(UIUtils.ONLINE_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
+//                        }
                     }
                 }
-            });
-        }
-        return instance;
+            }, kenai));
+            setLogout(kenai.getStatus() != Kenai.Status.OFFLINE);
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (!UIUtils.showLogin()) {
-            return;
-        }
-        KenaiTopComponent.findInstance().open();
-        KenaiTopComponent.findInstance().requestActive();
-    }
-
-    @Override
-    public boolean isEnabled() {
-        for (Kenai k: KenaiManager.getDefault().getKenais()) {
-            if (k.getStatus()==Kenai.Status.OFFLINE) {
-                return true;
+        if (kenai.getStatus() != Kenai.Status.OFFLINE) {
+            kenai.logout();
+        } else {
+            if (!UIUtils.showLogin(kenai)) {
+                return;
             }
         }
-        return false;
     }
 
-
+    private void setLogout(boolean b) {
+        if (b) {
+            putValue(NAME, NbBundle.getMessage(KenaiLoginTask.class, "CTL_LogoutAction"));
+        } else {
+            putValue(NAME, NbBundle.getMessage(KenaiLoginTask.class, "CTL_LoginAction"));
+        }
+    }
 }

@@ -138,7 +138,7 @@ public class MyProjectNode extends LeafNode {
         this.qaccessor = QueryAccessor.getDefault();
         this.mh = maccessor.getMessaging(project);
         this.mh.addPropertyChangeListener(projectListener);
-        Kenai.getDefault().addPropertyChangeListener(projectListener);
+        project.getKenaiProject().getKenai().addPropertyChangeListener(projectListener);
     }
 
     ProjectHandle getProject() {
@@ -275,7 +275,7 @@ public class MyProjectNode extends LeafNode {
         if (null != mh) {
             mh.removePropertyChangeListener(projectListener);
         }
-        Kenai.getDefault().removePropertyChangeListener(projectListener);
+        project.getKenaiProject().getKenai().removePropertyChangeListener(projectListener);
         synchronized(MyProjectNode.class) {
             rp=null;
         }
