@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
@@ -282,9 +281,8 @@ public class ProjectBridge {
     
     public Folder getRoot(){
         Folder folder = makeConfigurationDescriptor.getLogicalFolders();
-        Vector sources = folder.getFolders();
-        for (Object o : sources){
-            Folder sub = (Folder)o;
+        Vector<Folder> sources = folder.getFolders();
+        for (Folder sub : sources){
             if (sub.isProjectFiles()) {
                 if (MakeConfigurationDescriptor.SOURCE_FILES_FOLDER.equals(sub.getName())) {
                     return sub;
@@ -298,16 +296,8 @@ public class ProjectBridge {
         makeConfigurationDescriptor.save();
     }
     
-    public Set getResult(){
-        if (SwingUtilities.isEventDispatchThread()) {
-            makeConfigurationDescriptor.checkForChangedItems(project, null, null);
-        } else {
-            SwingUtilities.invokeLater(new Runnable(){
-                public void run() {
-                    makeConfigurationDescriptor.checkForChangedItems(project, null, null);
-                }
-            });
-        }
+    public Set<Project> getResult(){
+        makeConfigurationDescriptor.checkForChangedItems(project, null, null);
         return resultSet;
     }
     
