@@ -133,7 +133,8 @@ public class CppSymbolProvider implements SymbolProvider {
         CsmSelect.NameAcceptor nameAcceptor = createNameAcceptor(context);
         if (nameAcceptor == null) {
             if (CndUtils.isDebugMode()) {
-                Logger.global.severe("Can not create matcher for '" + context.getText() + "' search type " + context.getSearchType()); //NOI18N
+                Logger log = Logger.getLogger("org.netbeans.modules.cnd.gotodeclaration"); // NOI18N
+                log.severe("Can not create matcher for '" + context.getText() + "' search type " + context.getSearchType()); //NOI18N
             }
             return;
         }
