@@ -62,7 +62,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.StringTokenizer;
+import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -80,7 +82,8 @@ import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.KenaiSearchPanel.KenaiProjectSearchInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
+import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.subversion.api.Subversion;
@@ -91,9 +94,9 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
-import sun.awt.image.ImageWatched.WeakLink;
 
 /**
  *
@@ -381,6 +384,12 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(emptySpace, gridBagConstraints);
+
+        kenaiCombo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                kenaiComboActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -498,17 +507,22 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         localFolderPathEdited = true;
     }//GEN-LAST:event_localFolderTextFieldKeyTyped
 
-    private class KenaiRepositoriesComboModel extends DefaultComboBoxModel implements PropertyChangeListener {
+    private void kenaiComboActionPerformed(ActionEvent evt) {//GEN-FIRST:event_kenaiComboActionPerformed
+        kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
+        kenaiRepoComboBox.setModel(new KenaiRepositoriesComboModel());
+        refreshUsername();
+    }//GEN-LAST:event_kenaiComboActionPerformed
+
+    private class KenaiRepositoriesComboModel extends DefaultComboBoxModel  {
 
         public KenaiRepositoriesComboModel() {
-            Dashboard.getDefault().addPropertyChangeListener(this);
             addOpenedProjects();
         }
 
         private void addOpenedProjects() {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    ProjectHandle[] openedProjects = Dashboard.getDefault().getOpenProjects();
+                    ProjectHandle[] openedProjects = getOpenProjects();
                         for (ProjectHandle prjHandle : openedProjects) {
                             KenaiProject kProject = null;
                             if (prjHandle != null) {
@@ -540,21 +554,38 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                         }
                     }
                 }
+
+                private ProjectHandle[] getOpenProjects() {
+                    String kenaiName = kenai.getUrl().getHost();
+                    Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(DashboardImpl.PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName) ? "" : "-" + kenaiName)); //NOI18N
+                    int count = prefs.getInt(DashboardImpl.PREF_COUNT, 0); //NOI18N
+                    ProjectHandle[] handles = new ProjectHandle[count];
+                    ArrayList<String> ids = new ArrayList<String>(count);
+                    for (int i = 0; i < count; i++) {
+                        String id = prefs.get(DashboardImpl.PREF_ID + i, null); //NOI18N
+                        if (null != id && id.trim().length() > 0) {
+                            ids.add(id.trim());
+                        }
+                    }
+
+                    HashSet<ProjectHandle> projects = new HashSet<ProjectHandle>(ids.size());
+                    ProjectAccessor accessor = ProjectAccessor.getDefault();
+                    for (String id : ids) {
+                        ProjectHandle handle = accessor.getNonMemberProject(kenai, id, false);
+                        if (handle != null) {
+                            projects.add(handle);
+                        } else {
+                            //projects=null;
+                        }
+                    }
+                    PasswordAuthentication pa = kenai.getPasswordAuthentication();
+                    if (pa!=null) {
+                        projects.addAll(accessor.getMemberProjects(kenai, new LoginHandleImpl(pa.getUserName()), false));
+                    }
+                    return projects.toArray(handles);
+                }
             });
         }
-
-        // listening for opened projects in dashboard
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (Dashboard.PROP_OPENED_PROJECTS.equals(evt.getPropertyName())) {
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        removeAllElements();
-                    }
-                });
-                addOpenedProjects();
-            }
-        }
-
     }
 
     public static class KenaiFeatureListItem {
