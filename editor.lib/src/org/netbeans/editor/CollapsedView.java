@@ -278,7 +278,7 @@ import org.openide.util.WeakListeners;
         int eo = parentElem.getElement(eei).getEndOffset();
         
         LockView fakeView = new LockView(
-        new DrawEngineFakeDocView(parentElem, so, eo, false)
+        new DrawEngineFakeDocView(parentElem, so, eo, false, true)
         );
         RootView rootView = new RootView();
         rootView.setView(fakeView);

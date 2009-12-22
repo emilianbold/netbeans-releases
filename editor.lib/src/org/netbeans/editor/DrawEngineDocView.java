@@ -87,7 +87,11 @@ implements FoldHierarchyListener, PropertyChangeListener {
     private boolean estimatedSpanResetInitiated;
     
     DrawEngineDocView(Element elem) {
-        super(elem);
+        this(elem, false);
+    }
+    
+    DrawEngineDocView(Element elem, boolean hideBottomPadding) {
+        super(elem, hideBottomPadding);
         
         setEstimatedSpan(true);
     }
