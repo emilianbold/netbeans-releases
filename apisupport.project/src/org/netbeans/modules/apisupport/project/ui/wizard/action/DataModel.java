@@ -307,6 +307,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         // add dependency on util to project.xml
         cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
+        if (actionProxy) {
+            cmf.add(cmf.addModuleDependency("org.openide.awt")); // NOI18N
+        }
         if (!alwaysEnabled) {
             cmf.add(cmf.addModuleDependency("org.openide.nodes")); // NOI18N
             for (String fqn : addedFQNCs) {
