@@ -353,12 +353,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         });
     }
 
-    public static void checkForChangedItems(final Project project, final Folder folder, final Item item) {
+    public static void checkForChangedViewItemNodes(final Project project, final Folder folder, final Item item) {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
                 if (item == null) {
-                    checkForChangedItems(project);
+                    checkForChangedViewItemNodes(project);
                     return;
                 }
                 Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
@@ -376,15 +376,15 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         });
     }
 
-    private static void checkForChangedItems(Project project) {
+    private static void checkForChangedViewItemNodes(Project project) {
         Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
-        checkForChangedItems(findProjectNode(rootNode, project));
+        checkForChangedViewItemNodes(findProjectNode(rootNode, project));
     }
 
-    private static void checkForChangedItems(Node root) {
+    private static void checkForChangedViewItemNodes(Node root) {
         if (root != null) {
             for (Node node : root.getChildren().getNodes(true)) {
-                checkForChangedItems(node);
+                checkForChangedViewItemNodes(node);
                 if (node instanceof FilterNode) {
                     Object o = node.getLookup().lookup(ViewItemNode.class);
                     if (o != null) {
@@ -1964,7 +1964,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    a.actionPerformed(new ActionEvent(this, 0, null));
+                    a.actionPerformed(new ActionEvent(StandardNodeAction.this, 0, null));
                 }
             });
         }

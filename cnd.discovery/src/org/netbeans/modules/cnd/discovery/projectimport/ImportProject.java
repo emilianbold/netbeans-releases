@@ -857,17 +857,20 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void saveMakeConfigurationDescriptor(final ProjectBase p) {
-        ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        final MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-        makeConfigurationDescriptor.setModified();
         if (p != null) {
-            p.disableProjectListeners();
+            p.enableProjectListeners(false);
         }
-        makeConfigurationDescriptor.save();
-        if (p != null) {
-            p.disableProjectListeners();
+        try {
+            ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            final MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+            makeConfigurationDescriptor.setModified();
+            makeConfigurationDescriptor.save();
+            makeConfigurationDescriptor.checkForChangedItems(makeProject, null, null);
+        } finally {
+            if (p != null) {
+                p.enableProjectListeners(true);
+            }
         }
-        makeConfigurationDescriptor.checkForChangedItems(makeProject, null, null);
         if (TRACE) {
             logger.log(Level.INFO, "#save configuration descriptor"); // NOI18N
         }

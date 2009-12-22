@@ -138,7 +138,8 @@ public abstract class RemoteSyncFactory {
                 return factory;
             }
         }
-        Logger.global.severe("No RemoteSyncFactory found by with ID " + id); //NOI18N
+        Logger log = Logger.getLogger("org.netbeans.modules.cnd.spi.remote"); // NOI18N
+        log.severe("No RemoteSyncFactory found by with ID " + id); //NOI18N
         return null;
     }
 
