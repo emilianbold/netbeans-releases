@@ -83,7 +83,6 @@ implements Stamps.Updater {
     private static NetigsoActivator activator;
     private static Framework framework;
     private static Set<String> registered;
-    private static NetigsoServices services;
 
     /** used from tests.
      */
@@ -173,7 +172,7 @@ implements Stamps.Updater {
             FrameworkFactory frameworkFactory = Lookup.getDefault().lookup(FrameworkFactory.class);
             framework = frameworkFactory.newFramework(configMap);
             framework.init();
-            services = new NetigsoServices(framework);
+            new NetigsoServices(framework);
             NetigsoModule.LOG.finer("OSGi Container initialized"); // NOI18N
         }
         return framework;
@@ -239,8 +238,7 @@ implements Stamps.Updater {
         InputStream is = fakeBundle(m);
         if (is != null) {
             try {
-                Bundle bundle;
-                bundle = getContainer().getBundleContext().installBundle("netigso://" + m.getCodeNameBase(), is);
+                getContainer().getBundleContext().installBundle("netigso://" + m.getCodeNameBase(), is);
                 activator.register(m);
                 is.close();
             } catch (BundleException ex) {
