@@ -89,6 +89,14 @@ public class ResolutionErrorImpl extends ResultImpl implements Error,
     public boolean isDisabled( Element element ) {
         return !myEnabled.contains( element );
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.results.ResultImpl#getKind()
+     */
+    @Override
+    public ResultKind getKind() {
+        return ResultKind.RESOLUTION_ERROR;
+    }
 
     private final String myMessage;
     private final Set<Element> myEnabled;
