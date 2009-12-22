@@ -104,6 +104,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="GapDocumentView.hideBottomPadding">
+            <summary>Add flag hideBottomPadding to GapDocumentView constructor to be able to control adding bottom padding.</summary>
+            <version major="1" minor="46"/>
+            <date day="14" month="12" year="2009"/>
+            <author login="mslama"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+                <p>
+                Add flag hideBottomPadding to GapDocumentView constructor. Subclasses should override this constructor
+                to pass this flag to superclass constructor.
+                </p>
+            </description>
+            <issue number="178284"/>
+        </change>
+        
         <change id="MimeTypeInitializer">
             <summary>Adding interface enabling initialization of lookups performed by SideBarFactory implementations.</summary>
             <version major="1" minor="41"/>
