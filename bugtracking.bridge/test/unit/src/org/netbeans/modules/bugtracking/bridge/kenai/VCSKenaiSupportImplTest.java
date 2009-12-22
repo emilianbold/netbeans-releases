@@ -60,6 +60,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiNotification;
 import org.netbeans.modules.kenai.api.KenaiNotification.Modification;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -80,6 +81,7 @@ import org.openide.util.Lookup;
 public class VCSKenaiSupportImplTest extends NbTestCase {
     private String username;
     private String password;
+    private Kenai kenai;
 
     public VCSKenaiSupportImplTest(String name) {
         super(name);
@@ -89,7 +91,7 @@ public class VCSKenaiSupportImplTest extends NbTestCase {
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         try {
             System.setProperty("kenai.com.url","https://testkenai.com");
-            Kenai kenai = Kenai.getDefault();
+            kenai = KenaiManager.getDefault().createKenai("testkenai","https://testkenai.com");
             BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
             username = br.readLine();
             password = br.readLine();
@@ -110,7 +112,7 @@ public class VCSKenaiSupportImplTest extends NbTestCase {
         for (VersioningSystem vs : systems) {
             if(vs.getClass().equals(VCSSystem.class)) {
                 ((VCSSystem)vs).project = f;
-                KenaiProject kp = Kenai.getDefault().getProject("koliba");
+                KenaiProject kp = kenai.getProject("koliba");
                 ((VCSSystem)vs).kp = kp;
                 break;
             }
@@ -121,13 +123,13 @@ public class VCSKenaiSupportImplTest extends NbTestCase {
         VCSKenaiSupportImpl support = new VCSKenaiSupportImpl();
         assertFalse(support.isKenai("mirnixdirnix"));
         assertFalse(support.isKenai("http://mirnixdirnix.com/project"));
-        KenaiFeature f = getSourceFeature(Kenai.getDefault().getProject("koliba"));
+        KenaiFeature f = getSourceFeature(kenai.getProject("koliba"));
         assertTrue(support.isKenai(f.getLocation()));
     }
 
     public void testAuthetication() {
         VCSKenaiSupportImpl support = new VCSKenaiSupportImpl();
-        PasswordAuthentication pa = support.getPasswordAuthentication();
+        PasswordAuthentication pa = support.getPasswordAuthentication("https://testkenai.com");
         assertNotNull(pa);
         assertEquals(username, pa.getUserName());
         if(!password.equals(new String(pa.getPassword()))) {
@@ -143,20 +145,20 @@ public class VCSKenaiSupportImplTest extends NbTestCase {
     }
 
     public void testLogin() throws KenaiException {
-        Kenai.getDefault().logout();
+        kenai.logout();
         VCSKenaiSupportImpl support = new VCSKenaiSupportImpl();
-        assertFalse(support.isLogged());
+        assertFalse(support.isLogged("https://testkenai.com"));
         assertFalse(support.isUserOnline(username));
 
-        Kenai.getDefault().login(username, password.toCharArray());
+        kenai.login(username, password.toCharArray());
 
-        assertTrue(support.isLogged());
+        assertTrue(support.isLogged("https://testkenai.com"));
         assertTrue(support.isUserOnline(username));
     }
 
     public void testHandleKenaiProjectEvent() throws URISyntaxException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, KenaiException {
         Date date = new Date(System.currentTimeMillis());
-        KenaiProject kp = Kenai.getDefault().getProject("koliba");
+        KenaiProject kp = kenai.getProject("koliba");
         KenaiFeature feature = getSourceFeature(kp);
 
         Modification m =

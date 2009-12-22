@@ -61,7 +61,9 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiUser;
+import org.netbeans.modules.kenai.ui.LogoutAction;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -75,14 +77,14 @@ import org.openide.util.RequestProcessor;
  */
 
 public class PresenceIndicator {
-    private static ImageIcon ONLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/online.png")); // NOI18N
-    private static ImageIcon OFFLINE = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/offline.png")); // NOI18N
+    private static final ImageIcon ONLINE = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/online.png", true); // NOI18N
+    private static final ImageIcon OFFLINE = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/offline.png", true); // NOI18N
     private static PresenceIndicator instance;
 
     private JLabel label;
     private MouseL helper;
 
-    public void setStatus(Kenai.Status status) {
+    private void setStatus(Kenai.Status status) {
         label.setIcon(status == Kenai.Status.ONLINE?ONLINE:OFFLINE);
         if (status!=Kenai.Status.ONLINE) {
             label.setText(""); // NOI18N
@@ -99,6 +101,18 @@ public class PresenceIndicator {
                 break;
         }
             label.setVisible(status!=Kenai.Status.OFFLINE);
+    }
+
+    private static Kenai.Status getKenaiStatus() {
+        Kenai.Status s = Kenai.Status.OFFLINE;
+        for (Kenai k: KenaiManager.getDefault().getKenais()) {
+            if (k.getStatus() == Kenai.Status.ONLINE)
+                return Kenai.Status.ONLINE;
+            else if (k.getStatus() == Kenai.Status.LOGGED_IN) {
+                s = Kenai.Status.LOGGED_IN;
+            }
+        }
+        return s;
     }
 
     Component getComponent() {
@@ -124,11 +138,13 @@ public class PresenceIndicator {
 
     private boolean inited = false;
     public synchronized void init() {
-        if (inited)
+        if (inited) {
             return;
-        Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+        }
+        KenaiManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+
             public void propertyChange(PropertyChangeEvent evt) {
-                setStatus(Kenai.getDefault().getStatus());
+                setStatus(getKenaiStatus());
             }
         });
         inited = true;
@@ -150,7 +166,7 @@ public class PresenceIndicator {
             }
         @Override
         public void mouseClicked(MouseEvent event) {
-              Kenai.Status s = Kenai.getDefault().getStatus();
+              Kenai.Status s = getKenaiStatus();
             if (event.getClickCount() == 2) {
                 if (s == Kenai.Status.ONLINE) {
                     ChatTopComponent.openAction(ChatTopComponent.findInstance(), "", "", false).actionPerformed(new ActionEvent(event, event.getID(), "")); // NOI18N
@@ -163,10 +179,8 @@ public class PresenceIndicator {
                     contactListMenu.setEnabled(s==Kenai.Status.ONLINE);
                     final JCheckBoxMenuItem onlineCheckBox = new JCheckBoxMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_OnlineCheckboxMenuItem"),s==Kenai.Status.ONLINE); // NOI18N
                     menu.add(onlineCheckBox);
-                    onlineCheckBox.setEnabled(Utilities.isChatSupported());
                     final JMenuItem logoutItem = new JMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_LogoutMenuItem")); // NOI18N
                     menu.add(logoutItem);
-                    final Kenai kenai = Kenai.getDefault();
                     onlineCheckBox.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent e) {
@@ -174,8 +188,12 @@ public class PresenceIndicator {
 
                                 public void run() {
                                     try {
-                                        PasswordAuthentication passwordAuthentication = kenai.getPasswordAuthentication();
-                                        kenai.login(passwordAuthentication.getUserName(), passwordAuthentication.getPassword(), onlineCheckBox.isSelected());
+                                        for(Kenai kenai: KenaiManager.getDefault().getKenais()) {
+                                            PasswordAuthentication passwordAuthentication = kenai.getPasswordAuthentication();
+                                            if (passwordAuthentication!=null) {
+                                                kenai.login(passwordAuthentication.getUserName(), passwordAuthentication.getPassword(), onlineCheckBox.isSelected());
+                                            }
+                                        }
                                     } catch (KenaiException ex) {
                                         Exceptions.printStackTrace(ex);
                                     }
@@ -186,7 +204,7 @@ public class PresenceIndicator {
                     logoutItem.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent e) {
-                            kenai.logout();
+                            LogoutAction.getDefault().actionPerformed(e);
                         }
                     });
 
@@ -204,10 +222,10 @@ public class PresenceIndicator {
         public void processPacket(Packet packet) {
             PresenceIndicator.getDefault().label.setText(KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1+"":""); // NOI18N
             PresenceIndicator.getDefault().label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip", KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1:""));
-            for (MultiUserChat muc : KenaiConnection.getDefault().getChats()) {
+            for (MultiUserChat muc : KenaiConnection.getDefault(KenaiManager.getDefault().getKenai("https://kenai.com")).getChats()) {
                 String chatName = StringUtils.parseName(muc.getRoom());
                 assert chatName != null : "muc.getRoom() = " + muc.getRoom(); // NOI18N
-                ChatNotifications.getDefault().getMessagingHandle(chatName).setOnlineCount(muc.getOccupantsCount());
+                ChatNotifications.getDefault().getMessagingHandle(KenaiConnection.getKenaiProject(muc)).setOnlineCount(muc.getOccupantsCount());
             }
         }
     }

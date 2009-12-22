@@ -36,44 +36,55 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.kenai.ui.nodes;
+package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
-import java.net.MalformedURLException;
-import java.net.URL;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
- *
  * @author Jan Becicka
  */
-public class SetAsDefaultAction extends AbstractAction {
+public final class LogoutAction extends AbstractAction {
 
-    private URL url;
-    private Node node;
+    private static LogoutAction instance;
 
-    public SetAsDefaultAction(Node node) {
-        super(NbBundle.getMessage(RemoveInstanceAction.class, "CTL_SetAsDefault"));
-        this.node=node;
-        try {
-            this.url = new URL(node.getName());
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+    private LogoutAction() {
+        super(NbBundle.getMessage(LogoutAction.class, "CTL_LogoutAction", NAME));
+    }
+
+    public static synchronized LogoutAction getDefault() {
+        if (instance==null) {
+            instance=new LogoutAction();
         }
+        return instance;
     }
 
     public void actionPerformed(ActionEvent e) {
-        KenaiInstancesManager.getDefault().setDefaultInstance(url);
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+                for (Kenai k : KenaiManager.getDefault().getKenais()) {
+                    if (k.getStatus() != Kenai.Status.OFFLINE) {
+                        k.logout();
+                    }
+                }
+            }
+        });
     }
 
     @Override
     public boolean isEnabled() {
-        return !node.getName().equals(Kenai.getDefault().getUrl().toString());
+        for (Kenai k: KenaiManager.getDefault().getKenais()) {
+            if (k.getStatus()!=Kenai.Status.OFFLINE) {
+                return true;
+            }
+        }
+        return false;
     }
-}
 
+
+}

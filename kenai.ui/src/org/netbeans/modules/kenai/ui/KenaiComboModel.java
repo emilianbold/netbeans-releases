@@ -37,61 +37,68 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.nodes;
+package org.netbeans.modules.kenai.ui;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.AbstractListModel;
+import javax.swing.ComboBoxModel;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 
 /**
  *
  * @author Jan Becicka
  */
-public class KenaiInstance implements Comparable<KenaiInstance> {
+public class KenaiComboModel extends AbstractListModel implements ComboBoxModel {
 
-    private String url;
-    private String displayName;
+    private Object selected = KenaiManager.getDefault().getKenai("https://kenai.com");
+    private Kenai.Status status;
 
-    public KenaiInstance(String url, String name) {
-        if (url.endsWith("/")) { // NOI18N
-            url=url.substring(0, url.length()-1);
+    public KenaiComboModel(Kenai.Status status) {
+        this.status = status;
+    }
+
+    public KenaiComboModel() {
+        KenaiManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                fireContentsChanged(evt.getSource(), 0, getSize());
+            }
+        });
+
+    }
+
+    public void setSelectedItem(Object anItem) {
+        selected = anItem;
+    }
+
+    public Object getSelectedItem() {
+        return selected;
+    }
+
+    public Object getElementAt(int index) {
+        int i = 0;
+        for (Kenai k: KenaiManager.getDefault().getKenais()) {
+            if (i++ == index) {
+                return k;
+            }
         }
-        this.url=url;
-        this.displayName=name;
+        return "add new";
     }
 
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    @Override
-    public String toString() {
-        return url+ "," +displayName; // NOI18N
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+    public int getSize() {
+        if (status==null) {
+            return KenaiManager.getDefault().getKenais().size() + 1;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
+
+        int i=0;
+        for (Kenai k: KenaiManager.getDefault().getKenais()) {
+            if (k.getStatus()==status) {
+                i++;
+            }
         }
-        final KenaiInstance other = (KenaiInstance) obj;
-        if ((this.url == null) ? (other.url != null) : !this.url.equals(other.url)) {
-            return false;
-        }
-        return true;
+        return i + 1;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 79 * hash + (this.url != null ? this.url.hashCode() : 0);
-        return hash;
-    }
-
-    public int compareTo(KenaiInstance o) {
-        return this.displayName.compareToIgnoreCase(o.displayName);
-    }
 }

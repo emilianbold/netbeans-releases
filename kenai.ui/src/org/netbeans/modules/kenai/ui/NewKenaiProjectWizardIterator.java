@@ -60,6 +60,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
@@ -105,6 +106,8 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     // special values when no features are created
     public static final String NO_REPO = "none"; // NOI18N
     public static final String NO_ISSUES = "none"; // NOI18N
+    //TODO: add instance
+    private Kenai kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
 
     private Logger logger = Logger.getLogger("org.netbeans.modules.kenai"); // NOI18N
 
@@ -156,7 +159,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
             logger.log(Level.FINE, "Creating Kenai Project - Name: " + newPrjName + // NOI18N
                     ", Title: " + newPrjTitle + ", Description: " + newPrjDesc + ", License: " + newPrjLicense); // NOI18N
 
-            Kenai.getDefault().createProject(newPrjName, newPrjTitle,
+            kenai.createProject(newPrjName, newPrjTitle,
                     newPrjDesc, new String[] { newPrjLicense }, /*no tags*/ null);
 
         } catch (KenaiException kex) {
@@ -179,7 +182,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                 logger.log(Level.FINE, "Creating SCM Repository - Name: " + newPrjScmName + // NOI18N
                         ", Type: " + newPrjScmType + ", Ext. URL: " + newPrjScmUrl + ", Local Folder: " + newPrjScmLocal); // NOI18N
 
-                Kenai.getDefault().getProject(newPrjName).createProjectFeature(newPrjScmName,
+                kenai.getProject(newPrjName).createProjectFeature(newPrjScmName,
                         displayName, description, newPrjScmType, /*ext issues URL*/ null, extScmUrl, /*browse repo URL*/ null);
 
                 repoCreated = KenaiService.Names.SUBVERSION.equals(newPrjScmType) || KenaiService.Names.MERCURIAL.equals(newPrjScmType);
@@ -206,7 +209,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                 logger.log(Level.FINE, "Creating Issue Tracking - Name: " + newPrjIssues + ", Ext. URL: " + newPrjIssuesUrl); // NOI18N
 
                 // XXX issue tracking name not clear !!!
-                Kenai.getDefault().getProject(newPrjName).createProjectFeature(newPrjName + newPrjIssues,
+                kenai.getProject(newPrjName).createProjectFeature(newPrjName + newPrjIssues,
                     displayName, description, newPrjIssues, extIssuesUrl, /*ext repo URL*/ null, /*browse repo URL*/ null);
 
             } catch (KenaiException kex) {
@@ -222,7 +225,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         // After the repository is created it must be checked out
         if (repoCreated) {
             try {
-                KenaiFeature features[] = Kenai.getDefault().getProject(newPrjName).getFeatures(KenaiService.Type.SOURCE);
+                KenaiFeature features[] = kenai.getProject(newPrjName).getFeatures(KenaiService.Type.SOURCE);
                 String scmLoc = null;
                 String featureService = null;
                 for (KenaiFeature feature : features) {
@@ -237,7 +240,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                             "NewKenaiProject.progress.repositoryCheckout"),4); // NOI18N
                     logger.log(Level.FINE, "Checking out repository - Location: " + scmLoc + // NOI18N
                             ", Local Folder: " + newPrjScmLocal + ", Service: " + featureService); // NOI18N
-                    PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
+                    PasswordAuthentication passwdAuth = kenai.getPasswordAuthentication();
                     if (passwdAuth != null) {
                         final File localScmRoot = new File(newPrjScmLocal);
                         boolean inPlaceRepository = isCommonParent(sharedItems, newPrjScmLocal);
@@ -307,7 +310,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
 
         if (createChat) {
             handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "CTL_CreatingChatProgress"), 6);
-            KenaiProject project = Kenai.getDefault().getProject(newPrjName);
+            KenaiProject project = kenai.getProject(newPrjName);
             if (project.getFeatures(KenaiService.Type.CHAT).length==0) {
                 //chat already exist
                 final KenaiFeature f = project.createProjectFeature(
@@ -324,7 +327,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         // Open the project in Dashboard
         Set<CreatedProjectInfo> set = new HashSet<CreatedProjectInfo>();
         try {
-            KenaiProject project = Kenai.getDefault().getProject(newPrjName);
+            KenaiProject project = kenai.getProject(newPrjName);
             Dashboard.getDefault().addProject(new ProjectHandleImpl(project), true, true);
             set.add(new CreatedProjectInfo(project, newPrjScmLocal));
         } catch (KenaiException ex) {
@@ -460,6 +463,14 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     public void addChangeListener(ChangeListener l) { }
 
     public void removeChangeListener(ChangeListener l) { }
+
+    Kenai getKenai() {
+        return kenai;
+    }
+
+    public void setKenai(Kenai kenai) {
+        this.kenai = kenai;
+    }
 
     // ----------
 
@@ -599,9 +610,9 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     private WizardDescriptor.Panel[] createPanels() {
         List<SharedItem> initialItems = getInitialItems(activeNodes);
         return new WizardDescriptor.Panel[]{
-                    new NameAndLicenseWizardPanel(initialItems),
-                    new SourceAndIssuesWizardPanel(initialItems),
-                    new SummaryWizardPanel()
+                    new NameAndLicenseWizardPanel(this,initialItems),
+                    new SourceAndIssuesWizardPanel(this,initialItems),
+                    new SummaryWizardPanel(this)
                 };
     }
 

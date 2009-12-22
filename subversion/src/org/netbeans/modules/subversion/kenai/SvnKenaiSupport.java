@@ -70,8 +70,8 @@ public class SvnKenaiSupport {
         return kenaiSupport != null && kenaiSupport.isKenai(url);
     }
 
-    public PasswordAuthentication getPasswordAuthentication(boolean forceRelogin) {
-        return kenaiSupport != null ? kenaiSupport.getPasswordAuthentication(forceRelogin) : null;
+    public PasswordAuthentication getPasswordAuthentication(String url, boolean forceRelogin) {
+        return kenaiSupport != null ? kenaiSupport.getPasswordAuthentication(url, forceRelogin) : null;
     }
 
     public void setFirmAssociations(File[] files, String url) {
@@ -96,8 +96,8 @@ public class SvnKenaiSupport {
         return kenaiSupport != null ? kenaiSupport.forName(user) : null;
     }
 
-    public boolean isLogged () {
-        return kenaiSupport != null && kenaiSupport.isLogged();
+    public boolean isLogged (String url) {
+        return kenaiSupport != null && kenaiSupport.isLogged(url);
     }
 
     public String getRevisionUrl(String repositoryUrl, String revision) {

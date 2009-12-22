@@ -41,8 +41,11 @@ package org.netbeans.modules.hudson.kenai;
 
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.hudson.spi.PasswordAuthorizer;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -52,11 +55,15 @@ import org.openide.util.lookup.ServiceProvider;
 public class KenaiAuthentication implements PasswordAuthorizer {
 
     public String[] authorize(URL home) {
-        if (home.toString().matches("https?://(test)?kenai\\.com/hudson/[^/]+/")) { // NOI18N
-            // could use UIUtils.tryLogin(), but this seems to get called automatically anyway
-            PasswordAuthentication auth = Kenai.getDefault().getPasswordAuthentication();
-            if (auth != null) {
-                return new String[] {auth.getUserName(), new String(auth.getPassword())};
+        Matcher m = Pattern.compile("(https?://(test)?kenai\\.com)/hudson/[^/]+/").matcher(home.toString());
+        if (m.matches()) {
+            Kenai kenai = KenaiManager.getDefault().getKenai(m.group(1));
+            if (kenai != null) {
+                // could use UIUtils.tryLogin(), but this seems to get called automatically anyway
+                PasswordAuthentication auth = kenai.getPasswordAuthentication();
+                if (auth != null) {
+                    return new String[] {auth.getUserName(), new String(auth.getPassword())};
+                }
             }
         }
         return null;

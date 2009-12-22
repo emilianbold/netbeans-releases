@@ -37,91 +37,134 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.nodes;
+package org.netbeans.modules.kenai.api;
 
+import java.net.MalformedURLException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
+import java.util.TreeMap;
 import java.util.prefs.Preferences;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
 
 /**
- *
+ * Manager of Kenai instances
  * @author Jan Becicka
  */
-public class KenaiInstancesManager {
+public final class KenaiManager {
 
-    private static KenaiInstancesManager instance;
-    private List<KenaiInstance> instances = new ArrayList();
-    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private static KenaiManager instance;
+    private TreeMap<String, Kenai> instances = new TreeMap<String, Kenai>();
+    PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     public static final String PROP_INSTANCES = "prop_instances"; // NOI18N
     private Preferences prefs = NbPreferences.forModule(Kenai.class);
     private static final String INSTANCES_PREF="kenai.instances"; // NOI18N
 
-    public static synchronized KenaiInstancesManager getDefault() {
+    /**
+     * singleton instance
+     * @return
+     */
+    public static synchronized KenaiManager getDefault() {
         if (instance==null) {
-            instance = new KenaiInstancesManager();
+            instance = new KenaiManager();
         }
         return instance;
     }
 
-    private KenaiInstancesManager() {
-        String s = prefs.get(INSTANCES_PREF, ""); // NOI18N
-        if (s.length() > 1) {
-            for (String inst : s.split(";")) { // NOI18N
-                if (inst.length()>0) {
-                    instances.add(new KenaiInstance(inst.split(",")[0], inst.split(",")[1])); // NOI18N
-                }
-            }
-        }
-        Kenai aDefault = Kenai.getDefault();
-        String def = aDefault.getUrl().toString();
-        String name = aDefault.getName();
-        KenaiInstance i = new KenaiInstance(def, name);
-        if (!instances.contains(i)) {
-            instances.add(i);
-            store();
-        }
+    private KenaiManager() {
     }
     
-    public void addInstance(KenaiInstance instance) {
-        instances.add(instance);
+    /**
+     * Creates a new instance of kenai server.
+     * You probably want to use {@link #getKenai(java.lang.String)}
+     * @param name display name
+     * @param url
+     * @return
+     * @throws MalformedURLException
+     */
+    public synchronized Kenai createKenai(String name, String url) throws MalformedURLException {
+        return addInstance(Kenai.createInstance(name, url));
+    }
+    
+    private synchronized Kenai addInstance(Kenai instance) {
+        initInstances();
+        instances.put(instance.getUrl().toString(), instance);
         store();
         propertyChangeSupport.firePropertyChange(PROP_INSTANCES, null, instance);
+        return instance;
     }
 
     private void store() {
         StringBuffer b = new StringBuffer();
-        Iterator<KenaiInstance> it = instances.iterator();
+        Iterator<Kenai> it = instances.values().iterator();
         while (it.hasNext()) {
-            b.append(it.next());
+            Kenai n = it.next();
+            b.append(n.getUrl()).append(',').append(n.getName());
             if (it.hasNext()) {
-                b.append(";"); // NOI18N
+                b.append(';');
             }
         }
         prefs.put(INSTANCES_PREF, b.toString()); // NOI18N
     }
 
 
-    public boolean removeInstance(KenaiInstance instance) {
-        boolean r = instances.remove(instance);
+    /**
+     * remove kenai instance from manager
+     * @param instance
+     */
+    public synchronized void removeKenai(Kenai instance) {
+        initInstances();
+        instances.remove(instance.getUrl().toString());
         store();
         propertyChangeSupport.firePropertyChange(PROP_INSTANCES, instance, null);
-        return r;
     }
 
-    public Collection<KenaiInstance> getInstances() {
-        return Collections.unmodifiableList(instances);
+    /**
+     * returns all kenai instances registered in this manager
+     * @return
+     */
+    public synchronized Collection<Kenai> getKenais() {
+        initInstances();
+        return instances.values();
+    }
+
+    private boolean instancesInited = false;
+
+    private void initInstances() {
+        if (instancesInited)
+            return;
+        String s = prefs.get(INSTANCES_PREF, ""); // NOI18N
+        if (s.length() > 1) {
+            for (String inst : s.split(";")) { // NOI18N
+                if (inst.length()>0) {
+                    try {
+                        instances.put(inst.split(",")[0], Kenai.createInstance(inst.split(",")[1], inst.split(",")[0])); // NOI18N
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+        if (instances.isEmpty()) {
+            try {
+                instances.put("https://kenai.com", Kenai.createInstance("kenai.com", "https://kenai.com"));
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        instancesInited=true;
+    }
+
+    /**
+     * get kenai instance for specified url
+     * @param url
+     * @return
+     */
+    public synchronized Kenai getKenai(String url) {
+        initInstances();
+        return instances.get(url);
     }
 
     /**
@@ -140,22 +183,6 @@ public class KenaiInstancesManager {
      */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.removePropertyChangeListener(listener);
-    }
-
-    public void setDefaultInstance(final URL url) {
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            public void run() {
-                Kenai.getDefault().setUrl(url);
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        UIUtils.tryLogin(false);
-                        DashboardImpl.getInstance().refreshNonMemberProjects();
-                    }
-                });
-            }
-        });
     }
 }
 

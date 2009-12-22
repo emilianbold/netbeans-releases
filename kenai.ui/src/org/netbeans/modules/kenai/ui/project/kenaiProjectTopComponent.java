@@ -67,6 +67,7 @@ import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  * Top component which displays something.
@@ -91,7 +92,6 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     private static final String ICON_PATH = "org/netbeans/modules/kenai/ui/resources/kenai-small.png"; //NOI18N
 
     private static final String PREFERRED_ID = "kenaiProjectTopComponent"; //NOI18N
-    private static final String KENAI_URL = Kenai.getDefault().getUrl().toString(); //NOI18N
 
     private static kenaiProjectTopComponent inst = null;
     private KenaiProject instProj = null;
@@ -107,7 +107,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         instProj = proj;
         addSpecificContent();
-        Kenai.getDefault().addPropertyChangeListener(this);
+        proj.getKenai().addPropertyChangeListener(WeakListeners.propertyChange(this, proj.getKenai()));
         mainScrollPane.getVerticalScrollBar().setUnitIncrement(30);
         mainScrollPane.getHorizontalScrollBar().setUnitIncrement(30);
         backToTopLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -626,6 +626,8 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     public void reinitialize(final KenaiProject proj, boolean hardReinit) {
         // must be here because of the specific contents
         instProj = proj;
+        final String KENAI_URL = instProj.getKenai().getUrl().toString(); //NOI18N
+
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {

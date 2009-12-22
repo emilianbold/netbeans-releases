@@ -48,13 +48,12 @@ import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.NotificationDisplayer.Priority;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -66,14 +65,16 @@ import org.openide.util.NbPreferences;
 public class ChatNotifications {
     public static final String NOTIFICATIONS_PREF = "chat.notifications."; // NOI18N
     
-    private static ImageIcon NEWMSG = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/newmessage.png")); // NOI18N
+    private static ImageIcon NEWMSG = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true); // NOI18N
     private static ChatNotifications instance;
 
+    //key is FQN (e.g. anagram-game@muc.kenai.com)
     private HashMap<String, MessagingHandleImpl> groupMessages = new HashMap<String, MessagingHandleImpl>();
+    //key is FQN (e.g. john@kenai.com)
     private HashMap<String, Notification> privateNotifications = new HashMap();
+    //key is FQN (e.g. john@kenai.com)
     private HashMap<String, Integer> privateMessagesCounter = new HashMap();
     private Preferences preferences = NbPreferences.forModule(ChatNotifications.class);
-
     
     private ChatNotifications() {
     }
@@ -89,6 +90,7 @@ public class ChatNotifications {
      * @param name kenai project name
      */
     public synchronized void removeGroup(final String name) {
+        Utilities.assertJid(name);
         MessagingHandleImpl r = groupMessages.get(name);
         if (r != null) {
             r.disposeNotification();
@@ -101,6 +103,7 @@ public class ChatNotifications {
      * @param name user short name
      */
     public synchronized void removePrivate(final String name) {
+        Utilities.assertJid(name);
         Notification n = privateNotifications.get(name);
         if (n != null) {
             n.clear();
@@ -112,21 +115,15 @@ public class ChatNotifications {
 
     synchronized void addGroupMessage(final Message msg) {
         assert SwingUtilities.isEventDispatchThread();
-        String name = StringUtils.parseName(msg.getFrom());
-        if (name.contains("@")) { // NOI18N
-            name = StringUtils.parseName(name);
-        }
-        final String chatRoomName = name;
-        final MessagingHandleImpl r = getMessagingHandle(chatRoomName);
+        KenaiProject prj = KenaiConnection.getKenaiProject(StringUtils.parseBareAddress(msg.getFrom()));
+        final MessagingHandleImpl r = getMessagingHandle(prj);
         r.notifyMessageReceived(msg);
         String title = null;
-        try {
         int count = r.getMessageCount();
         if (count==1) {
-            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotification", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), count});
+            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotification", new Object[]{prj.getDisplayName(), count});
         } else {
-            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotifications", new Object[]{Kenai.getDefault().getProject(chatRoomName).getDisplayName(), count});
-
+            title = NbBundle.getMessage(ChatTopComponent.class, "LBL_ChatNotifications", new Object[]{prj.getDisplayName(), count});
         }
             final String description = NbBundle.getMessage(ChatTopComponent.class, "LBL_ReadIt");
 
@@ -135,7 +132,7 @@ public class ChatNotifications {
                 public void actionPerformed(ActionEvent arg0) {
                     final ChatTopComponent chatTc = ChatTopComponent.findInstance();
                     ChatTopComponent.openAction(chatTc, "", "", false).actionPerformed(arg0); // NOI18N
-                    chatTc.setActiveGroup(chatRoomName);
+                    chatTc.setActiveGroup(StringUtils.parseBareAddress(msg.getFrom()));
                 }
             };
 
@@ -143,15 +140,12 @@ public class ChatNotifications {
                 Notification n = NotificationDisplayer.getDefault().notify(title, getIcon(), description, l, Priority.NORMAL);
                 r.updateNotification(n);
             }
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
-        }
         ChatTopComponent.refreshContactList();
     }
 
     synchronized void addPrivateMessage(final Message msg) {
         assert SwingUtilities.isEventDispatchThread();
-        final String name = StringUtils.parseName(msg.getFrom());
+        final String name = StringUtils.parseBareAddress(msg.getFrom());
         Notification n = privateNotifications.get(name);
         if (n != null) {
             n.clear();
@@ -180,14 +174,16 @@ public class ChatNotifications {
     }
 
     public synchronized boolean hasNewPrivateMessages(String name) {
+        Utilities.assertJid(name);
         return privateNotifications.get(name)!=null;
     }
 
-    public synchronized  MessagingHandleImpl getMessagingHandle(String id) {
-        MessagingHandleImpl handle=groupMessages.get(id);
+    public synchronized  MessagingHandleImpl getMessagingHandle(KenaiProject prj) {
+        //TODO: plain project name will not work for multiple instances
+        MessagingHandleImpl handle=groupMessages.get(prj.getName() + "@muc." + prj.getKenai().getUrl().getHost());
         if (handle==null) {
-            handle =new MessagingHandleImpl(id);
-            groupMessages.put(id, handle);
+            handle =new MessagingHandleImpl(prj);
+            groupMessages.put(prj.getName() + "@muc." + prj.getKenai().getUrl().getHost(), handle);
         }
         return handle;
     }
@@ -202,11 +198,13 @@ public class ChatNotifications {
     }
 
     boolean isEnabled(String name) {
+        Utilities.assertJid(name);
         assert name!=null;
         return preferences.getBoolean(NOTIFICATIONS_PREF + name, true);
     }
 
     void setEnabled(String name, boolean b) {
+        Utilities.assertJid(name);
         assert name!=null;
         preferences.putBoolean(NOTIFICATIONS_PREF + name, b);
     }
@@ -216,10 +214,12 @@ public class ChatNotifications {
     }
 
     private void increasePrivateMessagesCount(String name) {
+        Utilities.assertJid(name);
         privateMessagesCounter.put(name, getPrivateMessagesCount(name)+1);
     }
 
     private int getPrivateMessagesCount(String name) {
+        Utilities.assertJid(name);
         Integer count = privateMessagesCounter.get(name);
         if (count==null) {
             return 0;
