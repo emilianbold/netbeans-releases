@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import org.netbeans.ProxyClassLoader;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
+import org.openide.util.NbCollections;
 import org.osgi.framework.Bundle;
 
 final class NetigsoLoader extends ProxyClassLoader {
@@ -36,15 +37,14 @@ final class NetigsoLoader extends ProxyClassLoader {
     }
 
     @Override
-    @SuppressWarnings(value = "unchecked")
     public Enumeration<URL> findResources(String name) {
-        Enumeration<URL> ret = null;
+        Enumeration ret = null;
         try {
             ret = bundle.getResources(name);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return ret == null ? Enumerations.<URL>empty() : ret;
+        return ret == null ? Enumerations.<URL>empty() : NbCollections.checkedEnumerationByFilter(ret, URL.class, true);
     }
 
     @Override
