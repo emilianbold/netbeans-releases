@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -78,6 +79,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 final public class NativeProjectProvider implements NativeProject, PropertyChangeListener {
+    private static final boolean TRACE = false;
 
     private Project project;
     private ConfigurationDescriptorProvider projectDescriptorProvider;
@@ -141,36 +143,6 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         return ProjectUtils.getInformation(project).getDisplayName();
     }
 
-//    public List<NativeFileItem> getAllSourceFiles() {
-//        ArrayList list = new ArrayList();
-//        if (getMakeConfigurationDescriptor() == null || getMakeConfiguration() == null)
-//            return list;
-//        Item[] items = getMakeConfigurationDescriptor().getProjectItems();
-//        for (int i = 0; i < items.length; i++) {
-//            ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(items[i].getPath()));
-//            if (itemConfiguration != null && itemConfiguration.isCompilerToolConfiguration() && !itemConfiguration.getExcluded().getValue())
-//                list.add(items[i]);
-//        }
-//        return list;
-//    }
-//    
-//    public List<NativeFileItem> getAllHeaderFiles() {
-//        ArrayList list = new ArrayList();
-//        if (getMakeConfigurationDescriptor() == null || getMakeConfiguration() == null)
-//            return list;
-//        Item[] items = getMakeConfigurationDescriptor().getProjectItems();
-//        for (int i = 0; i < items.length; i++) {
-//	    if (items[i].hasHeaderOrSourceExtension(true, true)) {
-//		ItemConfiguration itemConfiguration = items[i].getItemConfiguration(getMakeConfiguration());
-//		if (itemConfiguration != null && !itemConfiguration.isCompilerToolConfiguration()){
-//		    if (!itemConfiguration.getExcluded().getValue()){
-//			list.add(items[i]);
-//		    }
-//		}		
-//	    }
-//        }
-//        return list;
-//    }
     public List<NativeFileItem> getAllFiles() {
         List<NativeFileItem> list = new ArrayList<NativeFileItem>();
         if (getMakeConfigurationDescriptor() == null || getMakeConfiguration() == null) {
@@ -240,12 +212,14 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     public void fireFilesAdded(List<NativeFileItem> nativeFileIetms) {
-        //System.out.println("fireFileAdded ");
+        if (TRACE){
+            System.out.println("fireFileAdded "); // NOI18N
+        }
         ArrayList<NativeFileItem> actualList = new ArrayList<NativeFileItem>();
         // Remove non C/C++ items
-        Iterator iter = nativeFileIetms.iterator();
+        Iterator<NativeFileItem> iter = nativeFileIetms.iterator();
         while (iter.hasNext()) {
-            NativeFileItem nativeFileIetm = (NativeFileItem) iter.next();
+            NativeFileItem nativeFileIetm = iter.next();
             int tool = ((Item) nativeFileIetm).getDefaultTool();
             if (tool == Tool.CustomTool 
                 // check of mime type is better to support headers without extensions
@@ -253,7 +227,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 continue; // IZ 87407
             }
             actualList.add(nativeFileIetm);
-        //System.out.println("    " + ((Item)nativeFileIetm).getPath());
+            if (TRACE){
+                System.out.println("    " + ((Item)nativeFileIetm).getPath()); // NOI18N
+            }
         }
         // Fire NativeProject change event
         if (actualList.size() > 0) {
@@ -268,12 +244,14 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     public void fireFilesRemoved(List<NativeFileItem> nativeFileIetms) {
-        //System.out.println("fireFilesRemoved ");
+        if (TRACE){
+            System.out.println("fireFilesRemoved "); // NOI18N
+        }
         ArrayList<NativeFileItem> actualList = new ArrayList<NativeFileItem>();
         // Remove non C/C++ items
-        Iterator iter = nativeFileIetms.iterator();
+        Iterator<NativeFileItem> iter = nativeFileIetms.iterator();
         while (iter.hasNext()) {
-            NativeFileItem nativeFileIetm = (NativeFileItem) iter.next();
+            NativeFileItem nativeFileIetm = iter.next();
             ItemConfiguration itemConfiguration = ((Item) nativeFileIetm).getItemConfiguration(getMakeConfiguration());
             if (itemConfiguration == null) {
                 continue;
@@ -284,7 +262,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 continue; // IZ 87407
             }
             actualList.add(nativeFileIetm);
-        //System.out.println("    " + ((Item)nativeFileIetm).getPath());
+            if (TRACE){
+                System.out.println("    " + ((Item)nativeFileIetm).getPath()); // NOI18N
+            }
         }
         // Fire NativeProject change event
         if (actualList.size() > 0) {
@@ -319,14 +299,19 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     public void fireFilesPropertiesChanged() {
-        //System.out.println("fireFilesPropertiesChanged ");
+        if (TRACE){
+            new Exception().printStackTrace(System.err);
+            System.out.println("fireFilesPropertiesChanged "); // NOI18N
+        }
         for (NativeProjectItemsListener listener : getListenersCopy()) {
             listener.filesPropertiesChanged();
         }
     }
 
     public void fireProjectDeleted() {
-        //System.out.println("fireProjectDeleted ");
+        if (TRACE){
+            System.out.println("fireProjectDeleted "); // NOI18N
+        }
         for (NativeProjectItemsListener listener : getListenersCopy()) {
             listener.projectDeleted(this);
         }
@@ -348,12 +333,18 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     private void checkConfigurationChanged(final Configuration oldConf, final Configuration newConf) {
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            public void run() {
-                checkConfigurationChangedWorker(oldConf, newConf);
-            }
-        });
+        if (TRACE){
+            new Exception().printStackTrace(System.err);
+        }
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    checkConfigurationChangedWorker(oldConf, newConf);
+                }
+            });
+        } else {
+            checkConfigurationChangedWorker(oldConf, newConf);
+        }
     }
 
     private void checkConfigurationChangedWorker(Configuration oldConf, Configuration newConf) {
@@ -466,12 +457,15 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     public void checkForChangedItems(final Folder folder, final Item item) {
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            public void run() {
-                checkForChangedItemsWorker(folder, item);
-            }
-        });
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    checkForChangedItemsWorker(folder, item);
+                }
+            });
+        } else {
+            checkForChangedItemsWorker(folder, item);
+        }
     }
 
     private void checkForChangedItemsWorker(Folder folder, Item item) {
@@ -508,6 +502,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             makeConfiguration.getCompilerSet().setDirty(false);
             items = getMakeConfigurationDescriptor().getProjectItems();
             firePropertiesChanged(items, true, true, true);
+            return;
         }
 
         if (folder != null) {
@@ -627,7 +622,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        //System.out.println("propertyChange " + evt.getPropertyName());
+        if (TRACE){
+            System.out.println("propertyChange " + evt.getPropertyName()); // NOI18N
+        }
         if (evt.getPropertyName().equals(Configurations.PROP_ACTIVE_CONFIGURATION)) {
             checkConfigurationChanged((Configuration) evt.getOldValue(), (Configuration) evt.getNewValue());
         }
@@ -675,9 +672,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             ArrayList<String> vec2 = new ArrayList<String>();
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
             // Convert all paths to absolute paths
-            Iterator iter = vec2.iterator();
+            Iterator<String> iter = vec2.iterator();
             while (iter.hasNext()) {
-                vec.add(IpeUtils.toAbsolutePath(makeConfiguration.getBaseDir(), (String) iter.next()));
+                vec.add(IpeUtils.toAbsolutePath(makeConfiguration.getBaseDir(), iter.next()));
             }
         }
         return vec;
