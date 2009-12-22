@@ -299,12 +299,12 @@ public class DiscoveryProjectGenerator {
     }
 
 
-    public Set makeProject(){
+    public Set<Project> makeProject(){
         if (projectBridge.isValid()) {
             process();
             return projectBridge.getResult();
         }
-        return Collections.emptySet();
+        return Collections.<Project>emptySet();
     }
     
     private Set<String> getSourceFolders(){
