@@ -695,40 +695,45 @@ public class DwarfSource implements SourceFileProperties{
             try {
                 BufferedReader in = new BufferedReader(new FileReader(file));
                 int lineNo = 0;
-                fileLoop:while(true){
-                    String line = in.readLine();
-                    if (line == null){
-                        break;
-                    }
+                int size;
+                String line;
+                int first;
+                fileLoop:while((line = in.readLine()) != null) {
                     lineNo++;
-                    int size = line.length();
-                    if (size == 0) {
+                    if ((size = line.length()) == 0) {
                         continue;
                     }
-                    int first = 0;
-                    for(; first < size; first++) {
-                        char c = line.charAt(first);
-                        if (c == ' ' || c == '\t') { // NOI18N
-                            continue;
+                    firstLoop:for(first = 0; first < size; first++) {
+                        switch (line.charAt(first)) {
+                            case ' ':
+                            case '\t':
+                                break;
+                            case '#':
+                                break firstLoop;
+                            default:
+                                continue fileLoop;
                         }
-                        if (c == '#') { // NOI18N
-                            break;
-                        }
-                        continue fileLoop;
                     }
                     first++;
                     if (first >= size) {
                         continue;
                     }
-                    for(; first < size; first++) {
-                        char c = line.charAt(first);
-                        if (c == ' ' || c == '\t') { // NOI18N
-                            continue;
+                    secondLoop:for(; first < size; first++) {
+                        switch (line.charAt(first)) {
+                            case ' ':
+                            case '\t':
+                                break;
+                            case 'i':
+                                if (first + 1 < size && line.charAt(first + 1) != 'n') {
+                                    // not "include" prefix
+                                    continue fileLoop;
+                                }
+                                break secondLoop;
+                            case 'd':
+                                break secondLoop;
+                            default:
+                                continue fileLoop;
                         }
-                        if (c == 'i' || c == 'd') { // NOI18N
-                            break;
-                        }
-                        continue fileLoop;
                     }
                     if (first >= size) {
                         continue;
