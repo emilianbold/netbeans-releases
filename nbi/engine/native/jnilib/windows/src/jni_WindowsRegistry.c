@@ -167,7 +167,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_
     int   err    = 0;
     int   index  = 0 ;
     
-    unsigned short* buffer = (unsigned short*) malloc(sizeof(char) * MAX_LEN_VALUE_NAME);
+    unsigned short* buffer = (unsigned short*) MALLOC(sizeof(char) * MAX_LEN_VALUE_NAME);
     
     jobjectArray result = NULL;
     if (RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_READ | getMode(jMode), &hkey) == ERROR_SUCCESS) {
@@ -214,7 +214,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_
     int   err          = 0;
     int   index        = 0;
     
-    unsigned short* buffer = (unsigned short*) malloc(sizeof(char) * MAX_LEN_VALUE_NAME);
+    unsigned short* buffer = (unsigned short*) MALLOC(sizeof(char) * MAX_LEN_VALUE_NAME);
     
     jobjectArray result = NULL;
     if (RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_QUERY_VALUE | getMode(jMode), &hkey) == ERROR_SUCCESS) {
@@ -398,7 +398,7 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_windows_WindowsR
     unsigned short* name  = getWideChars(jEnv, jName);
     unsigned short* value = getWideChars(jEnv, jValue);
     
-    if (!setValue(getMode(jMode), getHKEY(jSection), key, name, jExpand ? REG_EXPAND_SZ : REG_SZ, (byte*) value, ((int) wcslen(value)) * sizeof(unsigned short), 0)) {
+    if (!setValue(getMode(jMode), getHKEY(jSection), key, name, jExpand ? REG_EXPAND_SZ : REG_SZ, (byte*) value, ((int) WCSLEN(value)) * sizeof(unsigned short), 0)) {
         throwException(jEnv, "Could not set value");
     }
     
@@ -472,7 +472,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_netbeans_installer_utils_system_windows_
     if(RegOpenKeyExW(getHKEY(jSection), key, 0, KEY_QUERY_VALUE | getMode(jMode), &hkey) == ERROR_SUCCESS) {
         if (RegQueryValueExW(hkey, value, NULL, &dwType, NULL, &size) == ERROR_SUCCESS) {
             if (dwType == REG_MULTI_SZ) {
-                data = (unsigned short*) malloc(size + 8);
+                data = (unsigned short*) LocalAlloc(LPTR, size + 8);
                 
                 if (data != NULL) {
                     if (RegQueryValueExW(hkey, value, NULL, &dwType, (byte*) data, &size) == ERROR_SUCCESS) {
@@ -568,7 +568,7 @@ JNIEXPORT jbyteArray JNICALL Java_org_netbeans_installer_utils_system_windows_Wi
         
         if (RegQueryValueExW(hkey, value, NULL, &dwType, NULL, &size) == ERROR_SUCCESS) {
             if (dwType == REG_BINARY || dwType == REG_NONE) {
-                data = (BYTE*) malloc(size + 8);
+                data = (BYTE*) LocalAlloc(LPTR, size + 8);
                 if (RegQueryValueExW(hkey, value, NULL, &dwType, (BYTE*) data, &size) == ERROR_SUCCESS) {
                     if (data != NULL) {
                         result = (*jEnv)->NewByteArray(jEnv, (jsize) size);

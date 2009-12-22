@@ -105,11 +105,11 @@ jstring newStringFromJCharArray(JNIEnv* jEnv, jcharArray jCharArray, int length)
 }
 
 jstring getString(JNIEnv* jEnv, const char* chars) {
-    return (jstring) getStringWithLength(jEnv, chars, (int) strlen(chars));
+    return (jstring) getStringWithLength(jEnv, chars, (int) STRLEN(chars));
 }
 
 jstring getStringW(JNIEnv* jEnv, const wchar_t * chars) {
-    return (jstring) getStringWithLengthW(jEnv, chars, (int) wcslen(chars));
+    return (jstring) getStringWithLengthW(jEnv, chars, (int) WCSLEN(chars));
 }
 
 jstring getStringWithLength(JNIEnv* jEnv, const char* chars, int length) {
@@ -163,12 +163,12 @@ char* getChars(JNIEnv* jEnv, jstring jString) {
         
         long index = 0;
         if (jBytes != NULL) {
-            int length = (int) strlen((char*) jBytes);
+            int length = (int) STRLEN((char*) jBytes);
             
-            result = (char*) malloc(sizeof(char) * (length + 1));
+            result = (char*) MALLOC(sizeof(char) * (length + 1));
             if (result != NULL) {
-                memset(result, 0, length);
-                strncpy(result, (char*) jBytes, length);
+                ZERO(result, length);
+                STRNCPY(result, (char*) jBytes, length);
                 result[length] = 0;
             }
             (*jEnv)->ReleaseByteArrayElements(jEnv, jByteArray, jBytes, JNI_ABORT);
@@ -261,11 +261,19 @@ void writeLog(JNIEnv* jEnv, int level, const char* message) {
         jmethodID method = (*jEnv)->GetStaticMethodID(jEnv, clazz, "log", "(ILjava/lang/String;)V");
         if (method != NULL) {
             jstring jMessage = NULL;
-            char* string = (char*) malloc(sizeof(char) * (strlen(message) + strlen(prefix)));
+            int prefix_length = STRLEN(prefix);
+            int message_length = STRLEN(message);
+            char* string = (char*) MALLOC(sizeof(char) * (prefix_length + message_length + 1));
+            int i = 0;
+            for(i=0;i<prefix_length;i++) {
+               string[i]=prefix[i];
+            }
             
-            string[0] = '\0';
-            strcat(string, prefix);
-            strcat(string, message);
+            for(i=0;i<message_length;i++) {
+               string[i + prefix_length]=message[i];
+            }
+            string[i+prefix_length + message_length] = '\0';
+
             
             jMessage = getString(jEnv, string);
             
@@ -352,7 +360,7 @@ unsigned char* getByteFromMultiString(JNIEnv *jEnv, jobjectArray jObjectArray, u
     }
     totalLength++; // add null to the end of array
       
-    result = (unsigned short*) malloc(sizeof(unsigned short) * (totalLength));
+    result = (unsigned short*) MALLOC(sizeof(unsigned short) * totalLength);
     if (result != NULL) {
         int index = 0 ; 
         
@@ -362,7 +370,7 @@ unsigned char* getByteFromMultiString(JNIEnv *jEnv, jobjectArray jObjectArray, u
             if (jString != NULL) {
                 wchar_t * chars = getWideChars(jEnv, jString);
                 if (chars != NULL) {
-                    for (j = 0; j < wcslen(chars); j++) {
+                    for (j = 0; j < (WCSLEN(chars)); j++) {
                         result[index++] = chars[j];
                     }
                     
@@ -383,9 +391,9 @@ wchar_t * getWideChars(JNIEnv *jEnv, jstring jString) {
     } else {
         long length = (*jEnv)->GetStringLength( jEnv, jString);
         const jchar * unicodeStr = (*jEnv)->GetStringChars( jEnv, jString, 0 );
-        wchar_t * copy = (wchar_t *) malloc(sizeof(wchar_t *)*(length + 1));
-        memset(copy, 0, sizeof(wchar_t *)*(length + 1));
-        wcsncpy(copy, (const wchar_t*)unicodeStr, length);
+        wchar_t * copy = (wchar_t *) MALLOC(sizeof(wchar_t) * (length + 1));
+        ZERO(copy, sizeof(wchar_t)*(length + 1));        
+        WCSNCPY(copy, (const wchar_t *) unicodeStr, length + 1);
         (*jEnv)->ReleaseStringChars( jEnv, jString, unicodeStr);
         return copy;
     }
