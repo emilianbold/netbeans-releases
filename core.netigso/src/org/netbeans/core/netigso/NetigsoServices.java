@@ -42,7 +42,6 @@ package org.netbeans.core.netigso;
 import java.util.logging.Level;
 import org.netbeans.core.startup.MainLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
@@ -56,6 +55,9 @@ import org.osgi.framework.launch.Framework;
 final class NetigsoServices
 implements ServiceListener, InstanceContent.Convertor<ServiceReference, Object> {
     public NetigsoServices(Framework f) {
+        for (ServiceReference ref : f.getRegisteredServices()) {
+            MainLookup.register(ref, this);
+        }
         f.getBundleContext().addServiceListener(this);
     }
 
