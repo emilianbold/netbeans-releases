@@ -1,0 +1,26 @@
+%%TestCase addSuppressWarnings
+package test;
+public class Test {
+    private void test() {
+        java.io.File f = null;
+        f.isDirectory();
+    }
+}
+%%=>
+package test;
+public class Test {
+    @SuppressWarnings("isDirectory")
+    private void test() {
+        java.io.File f = null;
+        f.isDirectory();
+    }
+}
+%%TestCase suppressedWarnings
+package test;
+public class Test {
+    @SuppressWarnings("isDirectory")
+    private void test() {
+        java.io.File f = null;
+        f.isDirectory();
+    }
+}

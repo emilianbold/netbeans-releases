@@ -196,7 +196,7 @@ public class CopyFinderTest extends NbTestCase {
     }
 
     protected Collection<TreePath> computeDuplicates(TreePath path) {
-        return CopyFinder.computeDuplicates(info, path, new TreePath(info.getCompilationUnit()), new AtomicBoolean());
+        return CopyFinder.computeDuplicates(info, path, new TreePath(info.getCompilationUnit()), new AtomicBoolean(), null).keySet();
     }
 
 }
