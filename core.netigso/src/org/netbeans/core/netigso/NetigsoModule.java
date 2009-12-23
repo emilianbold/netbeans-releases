@@ -95,10 +95,12 @@ final class NetigsoModule extends Module {
         return new SpecificationVersion(version.substring(0, pos));
     }
 
+    /* Probably undesirable as this masks OIDE-M-I-V/-B-V added by NB build harness:
     @Override
     public String getImplementationVersion() {
         return (String) bundle.getHeaders().get("Bundle-Version"); // NOI18N
     }
+     */
 
     @Override
     protected void parseManifest() throws InvalidException {
