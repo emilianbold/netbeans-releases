@@ -60,8 +60,6 @@ typedef struct file_data {
     volatile enum file_state state;
     pthread_mutex_t cond_mutex;
     pthread_cond_t cond;
-    struct file_data *left;
-    struct file_data *right;
     #if TRACE
     int cnt;
     #endif
@@ -73,11 +71,22 @@ typedef struct file_data {
  */
 file_data *find_file_data(const char* filename);
 
+/** Should be called before first file data is added */
+void start_adding_file_data();
+
 /**
- * Inserts file_data for the given file name;
- * returns a reference to the newly inserted one
+ * Adds file_data for the given file name;
+ * returns a reference to the newly inserted one.
+ *
+ * Note that you should call start_adding_file_data() once
+ * before adding file data
+ * and call stop_adding_file_data
+ * once all file data is added
  */
-file_data *insert_file_data(const char* filename, enum file_state state);
+file_data *add_file_data(const char* filename, enum file_state state);
+
+/** Should be called after the last file data is added */
+void stop_adding_file_data();
 
 /**
  * Visits all file_data elements - calls function passed as a 1-st parameter

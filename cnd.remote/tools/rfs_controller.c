@@ -361,6 +361,7 @@ static int init_files() {
     int success = false;
     file_elem* list = NULL;
     file_elem* tail = NULL;
+    start_adding_file_data();
     while (1) {
         fgets(buffer, bufsize, stdin);
         if (buffer[0] == '\n') {
@@ -416,13 +417,14 @@ static int init_files() {
 
             char real_path[PATH_MAX];
             if ( realpath(path, real_path)) {
-                insert_file_data(real_path, new_state);
+                add_file_data(real_path, new_state);
             } else {
                 report_unresolved_path(path);
             }
 
         }
     }
+    stop_adding_file_data();
     trace("Files list initialization done\n");
     if (success) {
         // send info about touched files which were passed as copied files
