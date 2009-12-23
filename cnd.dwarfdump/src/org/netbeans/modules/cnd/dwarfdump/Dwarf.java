@@ -96,7 +96,7 @@ public class Dwarf {
 
             }
         } catch (IOException ex) {
-            magic.dispose();
+            dispose();
             throw ex;
         }
     }
