@@ -36,50 +36,35 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.ruby.railsprojects.classpath;
 
+import java.util.List;
 import junit.framework.TestCase;
 
 /**
  *
  * @author Erno Mononen
  */
-public class GemRequirementTest extends TestCase {
+public class RequiredGemsTest extends TestCase {
 
-    public GemRequirementTest() {
-    }
-
-    public void testParse() {
-        GemRequirement info = GemRequirement.parse("- [I] color");
-        assertNotNull(info);
-        assertEquals("color", info.getName());
-        assertEquals(GemRequirement.Status.INSTALLED, info.getStatus());
-
-        info = GemRequirement.parse("      - [I] rubyforge ~> 1.0.4");
-        assertEquals("rubyforge", info.getName());
-        assertEquals("1.0.4", info.getVersion());
-        assertEquals("~>", info.getOperator());
-        assertEquals(GemRequirement.Status.INSTALLED, info.getStatus());
-
-        info = GemRequirement.parse("- [ ] javan-whenever");
-        assertEquals("javan-whenever", info.getName());
-        assertEquals(GemRequirement.Status.NOT_INSTALLED, info.getStatus());
-
-        info = GemRequirement.parse("      - [R] rake >= 0.8.7");
-        assertEquals("rake", info.getName());
-        assertEquals("0.8.7", info.getVersion());
-        assertEquals(GemRequirement.Status.FRAMEWORK, info.getStatus());
-
+    public RequiredGemsTest() {
     }
 
     public void testFromString() {
-        GemRequirement info = GemRequirement.fromString("color");
-        assertNotNull(info);
-        assertEquals("color", info.getName());
+        String str = "some >= 1.2.3, another, yet-another = 2.0.0";
+        List<GemRequirement> requirements = RequiredGems.fromString(str);
+        assertEquals(3, requirements.size());
+        GemRequirement some = requirements.get(0);
+        assertEquals("some", some.getName());
+        assertEquals("1.2.3", some.getVersion());
+        assertEquals(">=", some.getOperator());
 
-        info = GemRequirement.fromString("rubyforge ~> 1.0.4");
-        assertEquals("rubyforge", info.getName());
-        assertEquals("1.0.4", info.getVersion());
-        assertEquals("~>", info.getOperator());
+        GemRequirement another = requirements.get(1);
+        assertEquals("another", another.getName());
+        assertEquals("", another.getVersion());
+        assertEquals("", another.getOperator());
     }
+
+
 }
