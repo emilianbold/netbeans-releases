@@ -1,0 +1,46 @@
+%%TestCase simple-readlock
+package test;
+import javax.swing.text.AbstractDocument;
+public class Test {
+     private void test(AbstractDocument d) {
+         d.readLock();
+         System.err.println(d.getText(0, d.getLength()));
+         d.readUnlock();
+     }
+}
+%%=>
+package test;
+import javax.swing.text.AbstractDocument;
+public class Test {
+     private void test(AbstractDocument d) {
+         d.readLock();
+         try {
+             System.err.println(d.getText(0, d.getLength()));
+         } finally {
+             d.readUnlock();
+         }
+     }
+}
+%%TestCase simple-writelock
+package test;
+import javax.swing.text.AbstractDocument;
+public class Test {
+     private void test(AbstractDocument d) {
+         d.writeLock();
+         System.err.println(d.getText(0, d.getLength()));
+         d.writeUnlock();
+     }
+}
+%%=>
+package test;
+import javax.swing.text.AbstractDocument;
+public class Test {
+     private void test(AbstractDocument d) {
+         d.writeLock();
+         try {
+             System.err.println(d.getText(0, d.getLength()));
+         } finally {
+             d.writeUnlock();
+         }
+     }
+}

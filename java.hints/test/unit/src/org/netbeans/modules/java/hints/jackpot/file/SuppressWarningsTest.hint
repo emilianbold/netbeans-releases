@@ -1,0 +1,1 @@
+$1.isDirectory <!suppress-warnings=isDirectory> :: $1 instanceof java.io.File ;;
