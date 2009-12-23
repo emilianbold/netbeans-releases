@@ -57,15 +57,18 @@ class DrawEngineFakeDocView extends DrawEngineDocView{
         private int fakeEndOffset;
         
         DrawEngineFakeDocView(Element elem, int startOffset, int endOffset, boolean useCollapsing){
-            super(elem);
-            
+            this(elem, startOffset, endOffset, useCollapsing, false);
+        }
+
+        DrawEngineFakeDocView(Element elem, int startOffset, int endOffset, boolean useCollapsing, boolean hideBottomPadding){
+            super(elem, hideBottomPadding);
+
             this.useCollapsing = useCollapsing;
             this.fakeStartOffset = startOffset;
             this.fakeEndOffset = endOffset;
             setEstimatedSpan(false);
-            
         }
- 
+        
         @Override
         public int getStartOffset(){
             return fakeStartOffset;

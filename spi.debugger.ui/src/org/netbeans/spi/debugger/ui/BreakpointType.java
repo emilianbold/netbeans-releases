@@ -202,6 +202,11 @@ public abstract class BreakpointType {
         }
 
         @Override
+        public Controller getController() {
+            return getDelegate().getController();
+        }
+
+        @Override
         public String getCategoryDisplayName() {
             return getDelegate().getCategoryDisplayName();
         }

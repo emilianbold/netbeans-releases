@@ -88,7 +88,6 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -106,6 +105,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.completion.JsfElCompletionItem;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
@@ -190,7 +190,7 @@ public class JsfElExpression extends ELExpression {
                 ParserManager.parse(Collections.singleton(source), new UserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
-                        Result result = getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
+                        Result result = JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
                         if (result instanceof HtmlParserResult) {
                             JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult)result);
                             _value[0] = model.resolveExpression(expr, findNearestMapableOffsetForward(result.getSnapshot(), offset), NESTING_AWARE);
@@ -388,7 +388,7 @@ public class JsfElExpression extends ELExpression {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    HtmlParserResult result = (HtmlParserResult)getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
+                    HtmlParserResult result = (HtmlParserResult)JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
                     if(result == null) {
                         return ;
                     }
@@ -430,7 +430,7 @@ public class JsfElExpression extends ELExpression {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     //one level - works only if xhtml is top level
-                    Result result = getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
+                    Result result = JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
                     if (result instanceof HtmlParserResult) {
                         JsfVariablesModel model = JsfVariablesModel.getModel((HtmlParserResult) result);
                         List<JsfVariableContext> contexts = model.getAllAvailableVariables(getContextOffset(), false);
@@ -449,15 +449,6 @@ public class JsfElExpression extends ELExpression {
         }
 
         return items;
-    }
-
-    private Result getEmbeddedParserResult(ResultIterator resultIterator, String mimeType) throws ParseException {
-        for(Embedding e : resultIterator.getEmbeddings()) {
-            if(e.getMimeType().equals(mimeType)) {
-                return resultIterator.getResultIterator(e).getParserResult();
-            }
-        }
-        return null;
     }
 
     //generic properties completion

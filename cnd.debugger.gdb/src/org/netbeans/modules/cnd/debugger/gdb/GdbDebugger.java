@@ -47,7 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -257,7 +256,7 @@ public class GdbDebugger implements PropertyChangeListener {
         setStarting();
         try {
             pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
-            execEnv = (pae.getConfiguration()).getDevelopmentHost().getExecutionEnvironment();
+            execEnv = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
             pathMap = HostInfoProvider.getMapper(execEnv);
             iotab = lookupProvider.lookupFirst(null, InputOutput.class);
             if (iotab != null) {
@@ -269,7 +268,7 @@ public class GdbDebugger implements PropertyChangeListener {
             conType = execEnv.isLocal() ? pae.getProfile().getConsoleType().getValue() : RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
             // See IZ 161592: we do not care what platform we have in project configuration
             // we use real platform instead
-            platform = HostInfoProvider.getPlatform(execEnv);
+            platform = pae.getConfiguration().getPlatformInfo().getPlatform();
             if (platform != PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW && pae.getType() != DEBUG_ATTACH) {
                 termpath = pae.getProfile().getTerminalPath();
             }
@@ -646,9 +645,9 @@ public class GdbDebugger implements PropertyChangeListener {
         String csdirs = cs.getCompilerSetManager().getCompilerSet(csname).getDirectory();
 
         if (cs.getCompilerSetManager().getCompilerSet(csname).getCompilerFlavor().isMinGWCompiler()) {
-            String msysBase = CompilerSetUtils.getMSysBase();
+            String msysBase = CompilerSetUtils.getCommandFolder(null);
             if (msysBase != null && msysBase.length() > 0) {
-                csdirs += File.pathSeparator + msysBase + "/bin"; // NOI18N;
+                csdirs += File.pathSeparator + msysBase;
             }
         }
 
@@ -2041,7 +2040,7 @@ public class GdbDebugger implements PropertyChangeListener {
         props.getProperties("ThreadSuspended").setBoolean("visible", false); // NOI18N
     }
 
-    public void addPendingBreakpoint(int token, BreakpointImpl impl) {
+    public void addPendingBreakpoint(int token, BreakpointImpl<?> impl) {
         pendingBreakpointMap.put(token, impl);
     }
 
@@ -2190,7 +2189,7 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     private static int getDevelopmentHostPlatform(MakeConfiguration conf) {
-        return HostInfoProvider.getPlatform(conf.getDevelopmentHost().getExecutionEnvironment());
+        return conf.getPlatformInfo().getPlatform();
     }
 
     /**

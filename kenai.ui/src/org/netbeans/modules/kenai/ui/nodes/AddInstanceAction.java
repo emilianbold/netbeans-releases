@@ -39,10 +39,15 @@
 
 package org.netbeans.modules.kenai.ui.nodes;
 
+import java.net.MalformedURLException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import javax.swing.JComboBox;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,8 +63,30 @@ public class AddInstanceAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         KenaiInstance s = showInputDialog();
         if (s!=null) {
-            KenaiInstancesManager.getDefault().addInstance(s);
+            try {
+                Kenai kenai = KenaiManager.getDefault().createKenai(s.name, s.url);
+                if (e!=null && e.getSource() instanceof JComboBox) {
+                    ((JComboBox) e.getSource()).setSelectedItem(kenai);
+                }
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            if (e != null && e.getSource() instanceof JComboBox) {
+                ((JComboBox) e.getSource()).setSelectedIndex(0);
+            }
         }
+    }
+
+    private static class KenaiInstance {
+
+        public KenaiInstance(String name, String url) {
+            this.name = name;
+            this.url = url;
+        }
+
+        String name;
+        String url;
     }
 
     private static KenaiInstance showInputDialog() {
@@ -73,7 +100,7 @@ public class AddInstanceAction extends AbstractAction {
         } else {
             return null;
         }
-        return new KenaiInstance(ret, kenaiInstanceCustomizer.getDisplayName());
+        return new KenaiInstance(kenaiInstanceCustomizer.getDisplayName(), ret);
     }
 
 }

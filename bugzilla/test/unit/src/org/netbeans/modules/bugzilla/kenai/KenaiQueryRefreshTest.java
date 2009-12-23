@@ -56,12 +56,14 @@ import org.netbeans.modules.bugzilla.TestUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 
 /**
  *
  * @author tomas
  */
 public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, QueryConstants {
+    private Kenai instance;
 
     public KenaiQueryRefreshTest(String arg0) {
         super(arg0);
@@ -77,11 +79,12 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
 
         System.setProperty("kenai.com.url","https://testkenai.com");
+        instance = KenaiManager.getDefault().createKenai("testkenai", "https://testkenai.com");
         BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
         String username = br.readLine();
         String password = br.readLine();
         br.close();
-        Kenai.getDefault().login(username, password.toCharArray());
+        instance.login(username, password.toCharArray());
 
         BugzillaCorePlugin bcp = new BugzillaCorePlugin();
         try {
@@ -154,7 +157,7 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
 
     private KenaiRepository getKenaiRepository() throws KenaiException {
         // using kenai project 'koliba' - even if the actually used repository is different, it should have no effect on the result
-        return new KenaiRepository(Kenai.getDefault().getProject("koliba"), REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD, "product=" + TEST_PROJECT, TEST_PROJECT);
+        return new KenaiRepository(instance.getProject("koliba"), REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD, "product=" + TEST_PROJECT, TEST_PROJECT);
     }
 
 

@@ -87,7 +87,7 @@ public class KenaiTestSimple extends NbTestCase {
             final Logger logger = Logger.getLogger("TIMER.kenai");
             logger.setLevel(Level.FINE);
             System.setProperty("kenai.com.url", "https://kenai.com");
-            instance = Kenai.getDefault();
+            instance = KenaiManager.getDefault().createKenai("testkenai.com", "https://testkenai.com");
             System.out.println("kurl " + instance.getUrl());
             if (uname == null) {
                 uname = System.getProperty("kenai.user.login");
@@ -127,9 +127,9 @@ public class KenaiTestSimple extends NbTestCase {
     }
 
     public void testCheckName() throws KenaiException, MalformedURLException {
-        assertNull(KenaiProject.checkName("non-existing-project"));
-        assertNotNull("Project does not exist, but it should...", KenaiProject.checkName(UNITTESTUNIQUENAME));
-        assertTrue(KenaiProject.checkName(UNITTESTUNIQUENAME).equals("Name has already been taken"));
+        assertNull(instance.checkProjectName("non-existing-project"));
+        assertNotNull("Project does not exist, but it should...", instance.checkProjectName(UNITTESTUNIQUENAME));
+        assertTrue(instance.checkProjectName(UNITTESTUNIQUENAME).equals("Name has already been taken"));
     }
 
     public void testService() throws IOException {

@@ -47,6 +47,17 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="OutlineView.setTreeSortable">
+        <api name="explorer"/>
+        <summary><code>OutlineView.setTreeSortable</code> added.</summary>
+        <version major="6" minor="24"/>
+        <date day="21" month="12" year="2009"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>Added method to set or unset the tree column as sortable.</description>
+        <class package="org.openide.explorer.view" name="OutlineView"/>
+        <issue number="178613"/>
+    </change>
     <change id="TreeView.setAutoWaitCursor">
         <api name="explorer"/>
         <summary><code>TreeView.setAutoWaitCursor</code> added.</summary>

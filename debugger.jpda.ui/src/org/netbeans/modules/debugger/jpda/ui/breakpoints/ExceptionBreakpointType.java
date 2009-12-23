@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
 import javax.swing.JComponent;
@@ -53,6 +52,7 @@ import org.openide.util.NbBundle;
 *
 * @author   Jan Jancura
 */
+@BreakpointType.Registration(displayName="#CTL_Exception_event_name_type_name")
 public class ExceptionBreakpointType extends BreakpointType {
 
     public String getCategoryDisplayName() {

@@ -40,7 +40,16 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
@@ -316,6 +325,7 @@ public final class ParserQueue {
     private final Object lock = new Lock();
     private final boolean addAlways;
     private final Diagnostic.StopWatch stopWatch = TraceFlags.TIMING ? new Diagnostic.StopWatch(false) : null;
+    private final Map<ProjectBase, AtomicInteger> onStartLevel = new HashMap<ProjectBase, AtomicInteger>();
 
     private ParserQueue(boolean addAlways) {
         this.addAlways = addAlways;
@@ -728,15 +738,41 @@ public final class ParserQueue {
     }
 
     public void onStartAddingProjectFiles(ProjectBase project) {
-        getProjectData(project, true).notifyListeners = true;
-        ProgressSupport.instance().fireProjectParsingStarted(project);
+        boolean fire;
+        synchronized(onStartLevel) {
+            AtomicInteger level = onStartLevel.get(project);
+            if (level == null) {
+                level = new AtomicInteger();
+                onStartLevel.put(project, level);
+            }
+            fire = level.incrementAndGet() == 1;
+        }
+        if (fire) {
+            getProjectData(project, true).notifyListeners = true;
+            ProgressSupport.instance().fireProjectParsingStarted(project);
+        }
     }
 
     public void onEndAddingProjectFiles(ProjectBase project) {
-        int cnt = getProjectFiles(project).size();
-        ProgressSupport.instance().fireProjectFilesCounted(project, cnt);
-        if (cnt == 0) {
-            ProgressSupport.instance().fireProjectParsingFinished(project);
+        boolean fire;
+        synchronized(onStartLevel) {
+            AtomicInteger level = onStartLevel.get(project);
+            if (level == null) {
+                assert false : "Not balanced start/end adding in project"; // NOI18N
+                level = new AtomicInteger(1);
+                onStartLevel.put(project, level);
+            }
+            fire = level.decrementAndGet() == 0;
+            if (fire) {
+                onStartLevel.remove(project);
+            }
+        }
+        if (fire) {
+            int cnt = getProjectFiles(project).size();
+            ProgressSupport.instance().fireProjectFilesCounted(project, cnt);
+            if (cnt == 0) {
+                ProgressSupport.instance().fireProjectParsingFinished(project);
+            }
         }
     }
 

@@ -114,6 +114,8 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private MultiUserChat muc;
     private Chat suc;
+    private Kenai kenai;
+    private KenaiConnection kc;
     private boolean disableAutoScroll = false;
     private HTMLEditorKit editorKit = null;
     private static final String[][] smileysMap = new String[][] {
@@ -200,12 +202,7 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private void addNotificationsMenuItem(JPopupMenu menu) throws MissingResourceException {
         NotificationsEnabledAction bubbleEnabled = new NotificationsEnabledAction();
-        String name = null;
-        try {
-            name = isPrivate() ? getPrivateName() : Kenai.getDefault().getProject(getName()).getDisplayName();
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        String name = isPrivate() ? getShortName() : getKenaiProject().getDisplayName();
         JCheckBoxMenuItem jCheckBoxMenuItem = new JCheckBoxMenuItem(NbBundle.getMessage(ChatPanel.class, "CTL_NotificationsFor", new Object[]{name}), ChatNotifications.getDefault().isEnabled(getName()));
         jCheckBoxMenuItem.addActionListener(bubbleEnabled);
         menu.add(jCheckBoxMenuItem);
@@ -214,6 +211,11 @@ public class ChatPanel extends javax.swing.JPanel {
         if (EditorRegistry.lastFocusedComponent() != null) {
             new InsertLinkAction(EditorRegistry.lastFocusedComponent(), outbox, true, false).actionPerformed(null);
         }
+    }
+
+    private KenaiProject getKenaiProject() {
+        assert !isPrivate();
+        return KenaiConnection.getKenaiProject(muc);
     }
 
     private TopComponent selectedEditorComponent() {
@@ -231,12 +233,7 @@ public class ChatPanel extends javax.swing.JPanel {
         if (muc==null) {
             issues = KenaiIssueAccessor.getDefault().getRecentIssues();
         } else {
-            try {
-                issues = KenaiIssueAccessor.getDefault().getRecentIssues(Kenai.getDefault().getProject(StringUtils.parseName(muc.getRoom())));
-            } catch (KenaiException ex) {
-                issues = new IssueHandle[0];
-                Exceptions.printStackTrace(ex);
-            }
+            issues = KenaiIssueAccessor.getDefault().getRecentIssues(getKenaiProject());
         }
         if (issues.length >0) {
             new InsertLinkAction(issues[0], outbox, false).actionPerformed(null);
@@ -245,40 +242,38 @@ public class ChatPanel extends javax.swing.JPanel {
     private void selectIssueReport(Matcher m) {
         final String issueNumber = m.group(3);
         KenaiProject _proj = null;
-        try {
-            if (isPrivate()) {
-                try { // in case of private chats, use the first project's repo with the correct type of issuetracker
-                    Iterator<KenaiProject> it = Kenai.getDefault().getMyProjects().iterator();
-                    _proj = it.next();
-                    if (m.group(2) == null || m.group(2).equals("")) { //Bugzilla issue?
-                        while (it.hasNext()) { // iterate over all your projects and find any project with BZ issuetracker
-                            KenaiFeature[] bt = _proj.getFeatures(Type.ISSUES);
-                            if (bt.length == 0) continue;
-                            KenaiFeature btinst = bt[0];
-                            if (btinst.getService().equals(KenaiService.Names.BUGZILLA)) {
-                                break;
-                            }
-                            _proj = it.next();
+        if (isPrivate()) {
+            try { // in case of private chats, use the first project's repo with the correct type of issuetracker
+                Iterator<KenaiProject> it = kenai.getMyProjects().iterator();
+                _proj = it.next();
+                if (m.group(2) == null || m.group(2).equals("")) { //Bugzilla issue?
+                    while (it.hasNext()) { // iterate over all your projects and find any project with BZ issuetracker
+                        KenaiFeature[] bt = _proj.getFeatures(Type.ISSUES);
+                        if (bt.length == 0) {
+                            continue;
                         }
-                    } else { //Jira issue?
-                        while (it.hasNext()) { // find the project according to the part of the issue, for example "bug SAMPLE_PROJECT-1"=>sample-project
-                            System.out.println(_proj.getName());
-                            String s = m.group(2).replaceAll("-", "_").toLowerCase();
-                            s = s.substring(0, s.length() - 1);
-                            if (_proj.getName().replaceAll("-", "_").toLowerCase().equals(s)) {
-                                break;
-                            }
-                            _proj = it.next();
+                        KenaiFeature btinst = bt[0];
+                        if (btinst.getService().equals(KenaiService.Names.BUGZILLA)) {
+                            break;
                         }
+                        _proj = it.next();
                     }
-                } catch (KenaiException ex1) {
-                    Exceptions.printStackTrace(ex1);
+                } else { //Jira issue?
+                    while (it.hasNext()) { // find the project according to the part of the issue, for example "bug SAMPLE_PROJECT-1"=>sample-project
+                        System.out.println(_proj.getName());
+                        String s = m.group(2).replaceAll("-", "_").toLowerCase();
+                        s = s.substring(0, s.length() - 1);
+                        if (_proj.getName().replaceAll("-", "_").toLowerCase().equals(s)) {
+                            break;
+                        }
+                        _proj = it.next();
+                    }
                 }
-            } else {
-                _proj = Kenai.getDefault().getProject(StringUtils.parseName(this.muc.getRoom())); // project name ~ chatroom name
+            } catch (KenaiException ex1) {
+                Exceptions.printStackTrace(ex1);
             }
-        } catch (KenaiException ex) {
-            ex.printStackTrace();
+        } else {
+            _proj = getKenaiProject(); // project name ~ chatroom name
         }
         final KenaiProject proj = _proj;
         if (proj == null) return;
@@ -393,11 +388,14 @@ public class ChatPanel extends javax.swing.JPanel {
     public ChatPanel(MultiUserChat muc) {
         super();
         this.muc=muc;
-        setName(StringUtils.parseName(muc.getRoom()));
+        setName(muc.getRoom());
+        KenaiProject kenaiProject = getKenaiProject();
+        kenai = kenaiProject.getKenai();
+        kc = KenaiConnection.getDefault(kenai);
         init();
-        if (!Kenai.getDefault().getXMPPConnection().isConnected()) {
+        if (!kenai.getXMPPConnection().isConnected()) {
             try {
-                KenaiConnection.getDefault().reconnect(muc);
+                kc.reconnect(muc);
             } catch (XMPPException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -407,24 +405,25 @@ public class ChatPanel extends javax.swing.JPanel {
                 insertPresence((Presence) presence);
             }
         });
-        KenaiConnection.getDefault().join(muc,new ChatListener());
+        kc.join(muc,new ChatListener());
 
     }
 
     public ChatPanel(String jid) {
         super();
-        setName(createPrivateName(StringUtils.parseName(jid)));
+        setName(jid);
         init();
-        this.suc = KenaiConnection.getDefault().joinPrivate(jid, new ChatListener());
+        kenai = KenaiConnection.getKenai(jid);
+        kc = KenaiConnection.getDefault(kenai);
+        this.suc = kc.joinPrivate(jid, new ChatListener());
     }
 
     public boolean isPrivate() {
-        return getName().startsWith("private.");  //NOI18N
+        return muc == null;  //NOI18N
     }
 
-    public String getPrivateName() {
-        assert isPrivate();
-        return getName().substring(getName().indexOf('.')+1);
+    public String getShortName() {
+        return StringUtils.parseName(getName());
     }
 
     
@@ -433,7 +432,7 @@ public class ChatPanel extends javax.swing.JPanel {
         online.setHorizontalTextPosition(JLabel.LEFT);
         if (isPrivate()) {
             topPanel.remove(online);
-            online = new KenaiUserUI(getPrivateName()).createUserWidget();
+            online = new KenaiUserUI(getName()).createUserWidget();
             online.setText(null);
             online.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 1, 3, 1));
             topPanel.add(online, java.awt.BorderLayout.EAST);
@@ -458,7 +457,7 @@ public class ChatPanel extends javax.swing.JPanel {
 //        users.setModel(new BuddyListModel(ctrl.getRoster()));
 //        chat.addParticipantListener(getBuddyListModel());
         if (!isPrivate()) {
-            MessagingHandleImpl handle = ChatNotifications.getDefault().getMessagingHandle(getName());
+            MessagingHandleImpl handle = ChatNotifications.getDefault().getMessagingHandle(getKenaiProject());
             handle.addPropertyChangeListener(new PresenceListener());
         }
         //KenaiConnection.getDefault().join(chat);
@@ -540,6 +539,14 @@ public class ChatPanel extends javax.swing.JPanel {
             outbox.getDocument().insertString(outbox.getCaretPosition(), message, null);
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+
+    void leave() {
+        if (isPrivate()) {
+            kc.leavePrivate(getName());
+        } else {
+            kc.leaveGroup(getShortName());
         }
     }
 
@@ -797,9 +804,9 @@ public class ChatPanel extends javax.swing.JPanel {
                 return;
             }
             try {
-                if (muc!=null&& (!KenaiConnection.getDefault().isConnected() || !muc.isJoined())) {
+                if (muc!=null&& (!kc.isConnected() || !muc.isJoined())) {
                     try {
-                        KenaiConnection.getDefault().reconnect(muc);
+                        kc.reconnect(muc);
                     } catch (XMPPException xMPPException) {
                         JOptionPane.showMessageDialog(this, xMPPException.getMessage());
                         return;
@@ -903,18 +910,13 @@ public class ChatPanel extends javax.swing.JPanel {
             }
             return issues[0].isShowing();
         } else {
-            try {
-                issues = KenaiIssueAccessor.getDefault().getRecentIssues(Kenai.getDefault().getProject(StringUtils.parseName(muc.getRoom())));
-                IssueHandle[] allIssues = KenaiIssueAccessor.getDefault().getRecentIssues();
-                if (issues.length<1) {
-                    return false;
-                }
-                if (issues[0].getID().equals(allIssues[0].getID())) {
-                    return issues[0].isShowing();
-                }
-            } catch (KenaiException ex) {
-                Exceptions.printStackTrace(ex);
+            issues = KenaiIssueAccessor.getDefault().getRecentIssues(getKenaiProject());
+            IssueHandle[] allIssues = KenaiIssueAccessor.getDefault().getRecentIssues();
+            if (issues.length < 1) {
                 return false;
+            }
+            if (issues[0].getID().equals(allIssues[0].getID())) {
+                return issues[0].isShowing();
             }
         }
         return false;
@@ -969,14 +971,8 @@ public class ChatPanel extends javax.swing.JPanel {
         if (muc==null) {
             issues = KenaiIssueAccessor.getDefault().getRecentIssues();
         } else {
-            try {
-                issues = KenaiIssueAccessor.getDefault().getRecentIssues(Kenai.getDefault().getProject(StringUtils.parseName(muc.getRoom())));
-            } catch (KenaiException ex) {
-                issues = new IssueHandle[0];
-                Exceptions.printStackTrace(ex);
-            }
+            issues = KenaiIssueAccessor.getDefault().getRecentIssues(getKenaiProject());
         }
-
 
         for (int i=0;issues!=null&& i<3 && i< issues.length;i++) {
             Mode editor = WindowManager.getDefault().findMode("editor");//NOI18N
@@ -1055,7 +1051,7 @@ public class ChatPanel extends javax.swing.JPanel {
         if (projectName.contains("@")) { // NOI18N
             projectName = StringUtils.parseName(projectName);
         }
-        String url = Kenai.getDefault().getUrl().toString()+ "/projects/" + projectName + "/sources/" + n.getServiceName() + "/revision/" + id; // NOI18N
+        String url = kenai.getUrl().toString()+ "/projects/" + projectName + "/sources/" + n.getServiceName() + "/revision/" + id; // NOI18N
         return body + "\n" + url; // NOI18N
     }
 

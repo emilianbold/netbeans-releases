@@ -79,8 +79,8 @@ public class HgKenaiSupport {
         }
     }
     
-    public boolean isLoggedIntoKenai () {
-        return kenaiSupport != null && kenaiSupport.isLogged();
+    public boolean isLoggedIntoKenai (String url) {
+        return kenaiSupport != null && kenaiSupport.isLogged(url);
     }
 
     public PasswordAuthentication getPasswordAuthentication(String url, boolean forceRelogin) {
@@ -94,7 +94,7 @@ public class HgKenaiSupport {
                 }
             }
             queriedUrls.add(url);
-            return kenaiSupport.getPasswordAuthentication();
+            return kenaiSupport.getPasswordAuthentication(url);
         } else {
             return null;
         }

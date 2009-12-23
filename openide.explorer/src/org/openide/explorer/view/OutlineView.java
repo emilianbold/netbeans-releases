@@ -118,7 +118,7 @@ import org.openide.util.WeakListeners;
 public class OutlineView extends JScrollPane {
 
     /** The table */
-    private Outline outline;
+    private OutlineViewOutline outline;
     /** Explorer manager, valid when this view is showing */
     ExplorerManager manager;
     /** not null if popup menu enabled */
@@ -284,6 +284,16 @@ public class OutlineView extends JScrollPane {
             popupListener = null;
             return;
         }
+    }
+
+    /**
+     * Set the tree column as sortable
+     * @param treeSortable <code>true</code> to make the tree column sortable,
+     *        <code>false</code> otherwise. The tree column is sortable by default.
+     * @since 6.24
+     */
+    public void setTreeSortable(boolean treeSortable) {
+        outline.setTreeSortable(treeSortable);
     }
     
     /** Initializes the component and lookup explorer manager.
@@ -882,6 +892,9 @@ public class OutlineView extends JScrollPane {
     private static class OutlineViewOutline extends Outline {
         private final PropertiesRowModel rowModel;
         private static final String COLUMNS_SELECTOR_HINT = "ColumnsSelectorHint"; // NOI18N
+
+        private boolean treeSortable = true;
+
         public OutlineViewOutline(OutlineModel mdl, PropertiesRowModel rowModel) {
             super(mdl);
             this.rowModel = rowModel;
@@ -931,7 +944,7 @@ public class OutlineView extends JScrollPane {
                     SwingUtilities.isLeftMouseButton ((MouseEvent) e) &&
                     ((MouseEvent) e).getClickCount() > 1) {
                 // Default action.
-                if (column == 0) {
+                if (convertColumnIndexToModel(column) == 0) {
                     Node node = Visualizer.findNode (o);
                     if (node != null) {
                         if (node.isLeaf () && !node.canRename()) {
@@ -993,6 +1006,14 @@ public class OutlineView extends JScrollPane {
             return new OutlineViewOutlineColumn(modelIndex);
         }
 
+        boolean isTreeSortable() {
+            return this.treeSortable;
+        }
+
+        void setTreeSortable(boolean treeSortable) {
+            this.treeSortable = treeSortable;
+        }
+
         /**
          * Extension of ETableColumn using TableViewRowComparator as
          * comparator.
@@ -1006,20 +1027,17 @@ public class OutlineView extends JScrollPane {
             }
             @Override
             public boolean isSortingAllowed() {
-                boolean res = super.isSortingAllowed();
-                TableModel model = getModel();
-                if (model.getRowCount() <= 0) {
-                    return res;
+                int index = getModelIndex();
+                Object sortable;
+                if (index > 0) {
+                    sortable = rowModel.getPropertyValue("SortableColumn", index - 1); // NOI18N
+                } else {
+                    return isTreeSortable();
                 }
-                Object sampleValue = model.getValueAt(0, getModelIndex());
-                if (sampleValue instanceof Node.Property) {
-                    Node.Property prop = (Node.Property)sampleValue;
-                    Object sortableColumnProperty = prop.getValue("SortableColumn");
-                    if (sortableColumnProperty instanceof Boolean) {
-                        return ((Boolean)sortableColumnProperty).booleanValue();
-                    }
+                if (sortable != null) {
+                    return Boolean.TRUE.equals(sortable);
                 }
-                return res;
+                return super.isSortingAllowed();
             }
 
             @Override

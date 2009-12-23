@@ -40,6 +40,7 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -48,8 +49,10 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -89,6 +92,7 @@ public class AttachmentsPanel extends JPanel {
     private JLabel noneLabel;
     private LinkButton createNewButton;
     private JLabel dummyLabel = new JLabel();
+    private Method maxMethod;
 
     public AttachmentsPanel() {
         setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
@@ -96,6 +100,12 @@ public class AttachmentsPanel extends JPanel {
         noneLabel = new JLabel(bundle.getString("AttachmentsPanel.noneLabel.text")); // NOI18N
         createNewButton = new LinkButton(new CreateNewAction());
         createNewButton.getAccessibleContext().setAccessibleDescription(bundle.getString("AttachmentPanels.createNewButton.AccessibleContext.accessibleDescription")); // NOI18N
+        try {
+            maxMethod = GroupLayout.Group.class.getDeclaredMethod("calculateMaximumSize", int.class); // NOI18N
+            maxMethod.setAccessible(true);
+        } catch (NoSuchMethodException nsmex) {
+            nsmex.printStackTrace();
+        }
     }
 
     public void setIssue(BugzillaIssue issue) {
@@ -114,8 +124,7 @@ public class AttachmentsPanel extends JPanel {
         horizontalGroup.add(layout.createSequentialGroup()
             .add(noneLabel)
             .addPreferredGap(LayoutStyle.RELATED)
-            .add(noAttachments ? createNewButton : dummyLabel)
-            .add(0, 0, Short.MAX_VALUE));
+            .add(noAttachments ? createNewButton : dummyLabel));
         verticalGroup.add(layout.createParallelGroup(GroupLayout.BASELINE)
             .add(noneLabel)
             .add(noAttachments ? createNewButton : dummyLabel));
@@ -126,6 +135,7 @@ public class AttachmentsPanel extends JPanel {
             // noneLabel + createNewButton
             verticalGroup.add(newVerticalGroup);
         } else {
+            List<JPanel> panels = new ArrayList<JPanel>();
             JLabel descriptionLabel = new JLabel(bundle.getString("AttachmentsPanel.table.description")); // NOI18N
             JLabel filenameLabel = new JLabel(bundle.getString("AttachmentsPanel.table.filename")); // NOI18N
             JLabel dateLabel =  new JLabel(bundle.getString("AttachmentsPanel.table.date")); // NOI18N
@@ -139,22 +149,20 @@ public class AttachmentsPanel extends JPanel {
             GroupLayout.ParallelGroup dateGroup = layout.createParallelGroup();
             GroupLayout.ParallelGroup authorGroup = layout.createParallelGroup();
             int descriptionWidth = Math.max(descriptionLabel.getPreferredSize().width, 150);
-            descriptionGroup.add(descriptionLabel, GroupLayout.PREFERRED_SIZE, descriptionWidth, GroupLayout.PREFERRED_SIZE);
+            descriptionGroup.add(descriptionLabel, descriptionWidth, descriptionWidth, descriptionWidth);
             filenameGroup.add(filenameLabel);
             dateGroup.add(dateLabel);
             authorGroup.add(authorLabel);
             JPanel panel = createHighlightPanel();
-            GroupLayout.ParallelGroup horizontalSubgroup = layout.createParallelGroup(GroupLayout.LEADING, false);
-            horizontalGroup.add(horizontalSubgroup
-                .add(panel, 0, 0, Short.MAX_VALUE)
-                .add(layout.createSequentialGroup()
+            panels.add(panel);
+            horizontalGroup.add(layout.createSequentialGroup()
                     .add(descriptionGroup)
-                    .addPreferredGap(LayoutStyle.UNRELATED)
+                    .addPreferredGap(descriptionLabel, filenameLabel, LayoutStyle.UNRELATED)
                     .add(filenameGroup)
-                    .addPreferredGap(LayoutStyle.UNRELATED)
+                    .addPreferredGap(filenameLabel, dateLabel, LayoutStyle.UNRELATED)
                     .add(dateGroup)
-                    .addPreferredGap(LayoutStyle.UNRELATED)
-                    .add(authorGroup)));
+                    .addPreferredGap(dateLabel, authorLabel, LayoutStyle.UNRELATED)
+                    .add(authorGroup));
             verticalGroup.add(layout.createParallelGroup(GroupLayout.LEADING, false)
                 .add(panel, 0, 0, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
@@ -180,7 +188,7 @@ public class AttachmentsPanel extends JPanel {
                     rBrace = new JLabel(")"); // NOI18N
                     hPatchGroup = layout.createSequentialGroup()
                             .add(filenameButton)
-                            .addPreferredGap(LayoutStyle.RELATED)
+                            .addPreferredGap(filenameButton, lBrace, LayoutStyle.RELATED)
                             .add(lBrace)
                             .add(patchButton)
                             .add(rBrace);
@@ -195,7 +203,7 @@ public class AttachmentsPanel extends JPanel {
                 filenameButton.setComponentPopupMenu(menu);
                 dateLabel.setComponentPopupMenu(menu);
                 authorLabel.setComponentPopupMenu(menu);
-                descriptionGroup.add(descriptionLabel);
+                descriptionGroup.add(descriptionLabel, 0, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
                 if (isPatch) {
                     lBrace.setComponentPopupMenu(menu);
                     patchButton.setComponentPopupMenu(menu);
@@ -209,7 +217,7 @@ public class AttachmentsPanel extends JPanel {
                 panel = createHighlightPanel();
                 panel.addMouseListener(new MouseAdapter() {}); // Workaround for bug 6272233
                 panel.setComponentPopupMenu(menu);
-                horizontalSubgroup.add(panel, 0, 0, Short.MAX_VALUE);
+                panels.add(panel);
                 GroupLayout.ParallelGroup pGroup = layout.createParallelGroup(GroupLayout.BASELINE);
                 pGroup.add(descriptionLabel);
                 pGroup.add(filenameButton);
@@ -227,6 +235,17 @@ public class AttachmentsPanel extends JPanel {
                         .add(pGroup));
             }
             verticalGroup.add(newVerticalGroup);
+            int groupWidth = 0;
+            if (maxMethod != null) {
+                try {
+                    groupWidth = (Integer)maxMethod.invoke(horizontalGroup, 1);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+            for (JPanel p : panels) {
+                horizontalGroup.add(p, 0, 0, groupWidth);
+            }
         }
         horizontalGroup.add(layout.createSequentialGroup()
                 .add(noAttachments ? dummyLabel : createNewButton)
@@ -238,6 +257,11 @@ public class AttachmentsPanel extends JPanel {
         layout.setVerticalGroup(verticalGroup);
         ((CreateNewAction)createNewButton.getAction()).setLayoutGroups(horizontalGroup, newVerticalGroup);
         setLayout(layout);
+    }
+
+    @Override
+    public Dimension getMinimumSize() {
+        return new Dimension(0, super.getMinimumSize().height);
     }
 
     private JPopupMenu menuFor(Attachment attachment, LinkButton patchButton) {

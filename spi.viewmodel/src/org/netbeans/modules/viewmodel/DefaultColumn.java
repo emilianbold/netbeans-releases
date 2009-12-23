@@ -60,7 +60,7 @@ public class DefaultColumn extends PropertySupport.ReadWrite {
             "SDN"
         );
         setValue (
-            "ComparableColumnTTV",
+            "SortableColumn",
             Boolean.TRUE
         );
         setValue (

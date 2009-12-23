@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -54,33 +55,27 @@ import org.openide.util.NbPreferences;
 public final class LoginAction extends AbstractAction {
 
     private static LoginAction instance;
-    private boolean logout;
 
     private LoginAction() {
-        setLogout(Kenai.getDefault().getPasswordAuthentication()!=null);
+        super(NbBundle.getMessage(LoginAction.class, "CTL_LoginAction", NAME));
     }
 
     public static synchronized LoginAction getDefault() {
         if (instance==null) {
             instance=new LoginAction();
-            Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+            KenaiManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
 
                 public void propertyChange(PropertyChangeEvent pce) {
-                    if (Kenai.PROP_LOGIN.equals(pce.getPropertyName()))  {
-                        if (pce.getNewValue() == null) {
-                            instance.setLogout(false);
-                        } else {
-                            instance.setLogout(true);
-                        }
+                    if (Kenai.PROP_LOGIN.equals(pce.getPropertyName())) {
                         if (!Kenai.PROP_URL_CHANGED.equals(pce.getPropagationId())) {
                             final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-                            preferences.put(UIUtils.getPrefName(UIUtils.LOGIN_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
+                            preferences.put(UIUtils.getPrefName((Kenai) pce.getSource(), UIUtils.LOGIN_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
                         }
 
                     } else if (Kenai.PROP_XMPP_LOGIN.equals(pce.getPropertyName())) {
                         if (!Kenai.PROP_URL_CHANGED.equals(pce.getPropagationId())) {
                             final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-                            preferences.put(UIUtils.getPrefName(UIUtils.ONLINE_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
+                            preferences.put(UIUtils.getPrefName((Kenai) pce.getSource(), UIUtils.ONLINE_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
                         }
                     }
                 }
@@ -90,23 +85,22 @@ public final class LoginAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (logout) {
-            Kenai.getDefault().logout();
-        } else {
-            if (!UIUtils.showLogin()) {
-                return;
-            }
-            KenaiTopComponent.findInstance().open();
-            KenaiTopComponent.findInstance().requestActive();
+        if (!UIUtils.showLogin()) {
+            return;
         }
+        KenaiTopComponent.findInstance().open();
+        KenaiTopComponent.findInstance().requestActive();
     }
 
-    private void setLogout(boolean b) {
-        this.logout=b;
-        if (b) {
-            putValue(NAME, NbBundle.getMessage(LoginAction.class, "CTL_LogoutAction"));
-        } else {
-            putValue(NAME, NbBundle.getMessage(LoginAction.class, "CTL_LoginAction"));
+    @Override
+    public boolean isEnabled() {
+        for (Kenai k: KenaiManager.getDefault().getKenais()) {
+            if (k.getStatus()==Kenai.Status.OFFLINE) {
+                return true;
+            }
         }
+        return false;
     }
+
+
 }

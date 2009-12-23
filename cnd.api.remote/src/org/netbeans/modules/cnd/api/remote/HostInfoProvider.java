@@ -61,21 +61,6 @@ public abstract class HostInfoProvider {
     /** Returns path mapper for the given host */
     protected abstract PathMap getMapper();
 
-    /** Returns PlatformTypes constant representing remote host platform
-     * @deprecated because declare implicit dependency on module "C/C++ core"
-     */
-    @Deprecated
-    public static int getPlatform(ExecutionEnvironment execEnv) {
-        assert false : "Unsupported method, use HostInfoUtils or PlatformInfo";
-        return getDefault(execEnv).getPlatform();
-    }
-
-    /** Returns PlatformTypes constant representing remote host platform
-     * @deprecated because declare implicit dependency on module "C/C++ core"
-     */
-    @Deprecated
-    protected abstract int getPlatform();
-
     /** Returns system environment for the given host */
     public static Map<String, String> getEnv(ExecutionEnvironment execEnv) {
         return getDefault(execEnv).getEnv();

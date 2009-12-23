@@ -175,7 +175,8 @@ public class CommentsPanel extends JPanel {
         rightLabel.setLabelFor(textPane);
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
-            KenaiUserUI ku = new KenaiUserUI(author);
+            String host = ((KenaiRepository) issue.getRepository()).getHost();
+            KenaiUserUI ku = new KenaiUserUI(author + "@" + host);
             ku.setMessage(KenaiUtil.getChatLink(issue));
             stateLabel = ku.createUserWidget();
             stateLabel.setText(null);
@@ -210,7 +211,6 @@ public class CommentsPanel extends JPanel {
             vGroup.add(stateLabel);
         }
         verticalGroup.add(vGroup)
-            .addPreferredGap(LayoutStyle.RELATED)
             .add(textPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
     }
 

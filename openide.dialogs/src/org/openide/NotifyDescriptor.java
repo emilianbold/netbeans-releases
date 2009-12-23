@@ -909,7 +909,9 @@ public class NotifyDescriptor extends Object {
     * execution of the IDE. The best is to use this class together with
     * {@link DialogDisplayer#notifyLater} as that allows an exception
     * to be notified from any thread.
+    * @deprecated No longer used. Try {@link java.util.logging} or {@link org.openide.util.Exceptions}.
     */
+    @Deprecated
     public static final class Exception extends Confirmation {
         static final long serialVersionUID = -3387516993124229948L;
 

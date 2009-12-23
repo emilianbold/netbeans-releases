@@ -80,27 +80,20 @@ import org.openide.windows.WindowManager;
 @ServiceProvider(service=SourceAccessor.class)
 public class SourceAccessorImpl extends SourceAccessor {
 
-    private Kenai kenai = Kenai.getDefault();
     private Map<SourceHandle,ProjectAndFeature> handlesMap = new HashMap<SourceHandle,ProjectAndFeature>();
 
     @Override
     public List<SourceHandle> getSources(ProjectHandle prjHandle) {
 
-        KenaiProject project = null;
+        KenaiProject project = prjHandle.getKenaiProject();
         List<SourceHandle> handlesList = new ArrayList<SourceHandle>();
 
-        try {
-            project = kenai.getProject(prjHandle.getId());
-        } catch (KenaiException ex) {
-            // XXX
-            Exceptions.printStackTrace(ex);
-        }
         if (project != null) {
             try {
                 for (KenaiFeature feature : project.getFeatures(Type.SOURCE)) {
                     SourceHandle srcHandle = new SourceHandleImpl(prjHandle, feature);
                     handlesList.add(srcHandle);
-                    handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getId(), feature, ((SourceHandleImpl) srcHandle).getExternalScmType()));
+                    handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getKenaiProject(), feature, ((SourceHandleImpl) srcHandle).getExternalScmType()));
                 }
             } catch (KenaiException ex) {
                 Exceptions.printStackTrace(ex);
@@ -234,11 +227,11 @@ public class SourceAccessorImpl extends SourceAccessor {
 
     public static class ProjectAndFeature {
 
-        public String projectName;
+        public KenaiProject projectName;
         public KenaiFeature feature;
         public String externalScmType;
 
-        public ProjectAndFeature(String name, KenaiFeature ftr, String externalScmType) {
+        public ProjectAndFeature(KenaiProject name, KenaiFeature ftr, String externalScmType) {
             projectName = name;
             feature = ftr;
             this.externalScmType=externalScmType;

@@ -90,7 +90,7 @@ public class MemberHandleImpl extends MemberHandle {
 
     @Override
     public boolean hasMessages() {
-        return ChatNotifications.getDefault().hasNewPrivateMessages(getName());
+        return ChatNotifications.getDefault().hasNewPrivateMessages(delegate.getKenaiUser().getFQN());
     }
 
     @Override
@@ -126,6 +126,11 @@ public class MemberHandleImpl extends MemberHandle {
         if (res==0)
             return getDisplayName().compareToIgnoreCase(o.getDisplayName());
         return res;
+    }
+
+    @Override
+    public String getFQN() {
+        return getName() + "@" + this.delegate.getKenaiUser().getKenai().getUrl().getHost().toString();
     }
 
 }

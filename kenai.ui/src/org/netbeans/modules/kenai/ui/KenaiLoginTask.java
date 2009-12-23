@@ -41,6 +41,8 @@ package org.netbeans.modules.kenai.ui;
 
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
@@ -61,7 +63,9 @@ public class KenaiLoginTask implements Runnable {
             Preferences prefs = NbPreferences.forModule(KenaiLoginTask.class);
             try {
                 if (prefs.keys().length > 0) {
-                    UIUtils.tryLogin(false);
+                    for (Kenai k: KenaiManager.getDefault().getKenais()) {
+                        UIUtils.tryLogin(k, false);
+                    }
                 }
             } catch (BackingStoreException ex) {
                 Exceptions.printStackTrace(ex);

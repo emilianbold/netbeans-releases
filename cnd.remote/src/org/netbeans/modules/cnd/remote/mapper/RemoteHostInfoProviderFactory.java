@@ -40,7 +40,6 @@ package org.netbeans.modules.cnd.remote.mapper;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
@@ -120,37 +119,6 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
                 isCshShell = Boolean.valueOf(support.run() != 0);
             }
             return isCshShell.booleanValue();
-        }
-
-        @Override
-        @Deprecated
-        public int getPlatform() {
-            assert false : "Unsupported method, use HostInfoUtils or PlatformInfo";
-            if (platform == null) {
-                RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "uname -sm"); //NOI18N
-                int result;
-                if (support.run() == 0) {
-                    result = recognizePlatform(support.getOutput());
-                } else {
-                    result = PlatformTypes.PLATFORM_GENERIC;
-                }
-                platform = Integer.valueOf(result);
-            }
-            return platform.intValue();
-        }
-
-        private static int recognizePlatform(String platform) {
-            if (platform.startsWith("Windows")) { // NOI18N
-                return PlatformTypes.PLATFORM_WINDOWS;
-            } else if (platform.startsWith("Linux")) { // NOI18N
-                return PlatformTypes.PLATFORM_LINUX;
-            } else if (platform.startsWith("SunOS")) { // NOI18N
-                return platform.contains("86") ? PlatformTypes.PLATFORM_SOLARIS_INTEL : PlatformTypes.PLATFORM_SOLARIS_SPARC; // NOI18N
-            } else if (platform.toLowerCase().startsWith("mac")) { // NOI18N
-                return PlatformTypes.PLATFORM_MACOSX;
-            } else {
-                return PlatformTypes.PLATFORM_GENERIC;
-            }
         }
     }
 
