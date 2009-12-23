@@ -82,7 +82,8 @@ public class KenaiUtil {
      * @return
      */
     public static boolean isLoggedIn(String url) {
-        return getKenai(url).getPasswordAuthentication() != null;
+        Kenai kenai = getKenai(url);
+        return (kenai != null) && (kenai.getPasswordAuthentication() != null);
     }
 
     /**
