@@ -82,7 +82,8 @@ public class KenaiUtil {
      * @return
      */
     public static boolean isLoggedIn(String url) {
-        return getKenai(url).getPasswordAuthentication() != null;
+        Kenai kenai = getKenai(url);
+        return (kenai != null) && (kenai.getPasswordAuthentication() != null);
     }
 
     /**
@@ -240,15 +241,15 @@ public class KenaiUtil {
         return kp;
     }
 
-    public static Kenai getKenai(String ulr) {
+    public static Kenai getKenai(String url) {
         try {
-            KenaiProject kp = KenaiProject.forRepository(ulr);
+            KenaiProject kp = KenaiProject.forRepository(url);
             if (kp == null) {
                 return null;
             }
             return kp.getKenai();
         } catch (KenaiException ex) {
-            BugtrackingManager.LOG.log(Level.FINE, ulr, ex);
+            BugtrackingManager.LOG.log(Level.FINE, url, ex);
             return null;
         }
     }
