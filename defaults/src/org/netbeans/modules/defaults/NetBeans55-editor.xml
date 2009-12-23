@@ -47,6 +47,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="code-folding" foreColor="ff666666"/>
     <fontcolor name="code-folding-bar" foreColor="ff666666"/>
     <fontcolor name="guarded" bgColor="ffe1ecf7"/>
+    <fontcolor name="readonly-files" bgColor="ffe1ecf7"/>
     <fontcolor name="highlight-caret-row" bgColor="ffffffdc"/>
     <fontcolor name="highlight-search" foreColor="black" bgColor="fff6f88b"/>
     <fontcolor name="inc-search" foreColor="black" bgColor="ffff9900"/>
