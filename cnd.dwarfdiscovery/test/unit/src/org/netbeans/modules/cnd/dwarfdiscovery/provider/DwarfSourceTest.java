@@ -89,6 +89,47 @@ public class DwarfSourceTest extends TestCase {
         }
         assertFalse(sb.toString(), true);
     }
+    /**
+     * Test of scanCommandLine method, of class DwarfSource.
+     */
+    public void testFirefoxCommandLine() {
+        String line = "c++ -o nsDependentString.o -c -I../../../dist/include/system_wrappers "+
+                      "-include /net/elif/export1/sside/av202691/mozilla-1.9.1/config/gcc_hidden.h "+
+                      "-DMOZILLA_INTERNAL_API -DOSTYPE=\"Linux2.6\" -DOSARCH=Linux -D_IMPL_NS_COM  "+
+                      "-I/net/elif/export1/sside/av202691/mozilla-1.9.1/xpcom/string/src -I. "+
+                      "-I../../../dist/include/xpcom -I../../../dist/include   -I../../../dist/include/string "+
+                      "-I/net/elif/export1/sside/av202691/mozilla-1.9.1/ff-dbg/dist/include/nspr       "+
+                      "-fPIC   -fno-rtti -fno-exceptions -Wall -Wpointer-arith -Woverloaded-virtual -Wsynth "+
+                      "-Wno-ctor-dtor-privacy -Wno-non-virtual-dtor -Wcast-align -Wno-invalid-offsetof "+
+                      "-Wno-long-long -pedantic -g3 -gdwarf-2 -fno-strict-aliasing -fshort-wchar -pthread "+
+                      "-pipe  -DDEBUG -D_DEBUG -DDEBUG_av202691 -DTRACING -g -fno-inline   -DMOZILLA_CLIENT "+
+                      "-include ../../../mozilla-config.h -Wp,-MD,.deps/nsDependentString.pp "+
+                      "/net/elif/export1/sside/av202691/mozilla-1.9.1/xpcom/string/src/nsDependentString.cpp";
+        String expResult =
+                      "Source:/net/elif/export1/sside/av202691/mozilla-1.9.1/xpcom/string/src/nsDependentString.cpp\n"+
+                      "Macros:\n"+
+                      "DEBUG\n"+
+                      "DEBUG_av202691\n"+
+                      "MOZILLA_CLIENT\n"+
+                      "MOZILLA_INTERNAL_API\n"+
+                      "OSARCH=Linux\n"+
+                      "OSTYPE=\"Linux2.6\"\n"+
+                      "TRACING\n"+
+                      "_DEBUG\n"+
+                      "_IMPL_NS_COM\n"+
+                      "Paths:\n"+
+                      "../../../dist/include/system_wrappers\n"+
+                      "/net/elif/export1/sside/av202691/mozilla-1.9.1/config/gcc_hidden.h\n"+
+                      "/net/elif/export1/sside/av202691/mozilla-1.9.1/xpcom/string/src\n"+
+                      ".\n"+
+                      "../../../dist/include/xpcom\n"+
+                      "../../../dist/include\n"+
+                      "../../../dist/include/string\n"+
+                      "/net/elif/export1/sside/av202691/mozilla-1.9.1/ff-dbg/dist/include/nspr\n"+
+                      "../../../mozilla-config.h";
+        String result = processLine(line, true);
+        assertDocumentText(line, expResult, result);
+    }
 
     public void testCygdrive() {
         String CYGWIN_PATH = ":/cygwin"; // NOI18N
