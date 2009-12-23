@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * A container for information about a set of related compilers, typicaly from a vendor or
@@ -360,14 +359,6 @@ public class CompilerSet {
         return cs;
     }
     
-    public static CompilerSet getCompilerSet(String directory, int platform) {
-        List<CompilerFlavor> flavors = getCompilerSetFlavor(directory, platform);
-        if (flavors.size()>0) {
-            return new CompilerSet(flavors.get(0), directory, null);
-        }
-        return new CompilerSet(CompilerFlavor.getUnknown(platform), directory, null);
-    }
-    
     /**
      * If no compilers are found an empty compiler set is created so we don't have an empty list.
      * Too many places in CND expect a non-empty list and throw NPEs if it is empty!
@@ -388,11 +379,11 @@ public class CompilerSet {
         return flavor;
     }
     
-    public void setFlavor(CompilerFlavor flavor) {
+    /*package-local*/ void setFlavor(CompilerFlavor flavor) {
         this.flavor = flavor;
     }
     
-    public void addDirectory(String path) {
+    private void addDirectory(String path) {
         if (path != null) {
             if (directory.length() == 0) {
                 directory.append(path);
@@ -420,7 +411,7 @@ public class CompilerSet {
         return displayName;
     }
     
-    public Tool addTool(ExecutionEnvironment env, String name, String path, int kind) {
+    /*package-local*/ Tool addTool(ExecutionEnvironment env, String name, String path, int kind) {
         if (findTool(kind) != null) {
             return null;
         }
@@ -432,79 +423,18 @@ public class CompilerSet {
         return tool;
     }
     
-    public void addTool(Tool tool) {
+    /*package-local*/ void addTool(Tool tool) {
         tools.add(tool);
         tool.setCompilerSet(this);
     }
     
-    public Tool addNewTool(ExecutionEnvironment env, String name, String path, int kind) {
+    /*package-local*/ Tool addNewTool(ExecutionEnvironment env, String name, String path, int kind) {
         Tool tool = compilerProvider.createCompiler(env, flavor, kind, name, Tool.getToolDisplayName(kind), path);
         tools.add(tool);
         tool.setCompilerSet(this);
         return tool;
     }
-    
-    public void removeTool(String name, String path, int kind) {
-        for (Tool tool : tools) {
-            if (tool.getName().equals(name) && tool.getPath().equals(path) && tool.getKind() == kind) {
-                tools.remove(tool);
-                tool.setCompilerSet(null);
-                return;
-            }
-        }
-    }
-    
-    public void reparent(String newPath) {
-        directory = new StringBuilder(256);
-        addDirectory(newPath);
-        tools.clear();
-    }
-    
-    /**
-     * Get a tool by name
-     *
-     * @param name The name of the desired tool
-     * @return The Tool or null
-     */
-    public Tool getTool(String name) {
-        String exename = null;
         
-        if (Utilities.isWindows()) {
-            exename = name + ".exe"; // NOI18N
-        }
-        for (Tool tool : tools) {
-            if (tool.getDisplayName().equals(name) || tool.getName().equals(name) ||
-                    (exename != null && tool.getName().equals(exename))) {
-                return tool;
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Get a tool by name
-     *
-     * @param name The name of the desired tool
-     * @return The Tool or null
-     */
-    public Tool getTool(String name, int kind) {
-        String exename = null;
-        
-        if (Utilities.isWindows()) {
-            exename = name + ".exe"; // NOI18N
-        }
-        for (Tool tool : tools) {
-            if ((tool.getDisplayName().equals(name) || tool.getName().equals(name) ||
-                    (exename != null && tool.getName().equals(exename))) && kind == tool.getKind()) {
-                return tool;
-            }
-        }
-        CndUtils.assertFalse(true, "Should not be here, cuz we should create empty tools in CompilerSetManager");  //NOI18N
-        //TODO: remove this code, empty tools should be created in CompilerSetManager
-        return compilerProvider.createCompiler(ExecutionEnvironmentFactory.getLocal(),
-                CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
-    }
-    
     /**
      * Get the first tool of its kind.
      *
@@ -557,27 +487,15 @@ public class CompilerSet {
         return dynamicLibrarySearchOption;
     }
 
-    public void setDynamicLibrarySearchOption(String dynamicLibrarySearchOption) {
-        this.dynamicLibrarySearchOption = dynamicLibrarySearchOption;
-    }
-
     public String getLibrarySearchOption() {
         return librarySearchOption;
-    }
-
-    public void setLibrarySearchOption(String librarySearchOption) {
-        this.librarySearchOption = librarySearchOption;
     }
 
     public String getLibraryOption() {
         return libraryOption;
     }
 
-    public void setLibraryOption(String libraryOption) {
-        this.libraryOption = libraryOption;
-    }
-    
-    public String getDriveLetterPrefix() {
+    private String getDriveLetterPrefix() {
         return driveLetterPrefix;
     }
 
@@ -620,25 +538,25 @@ public class CompilerSet {
         return path;
     }
     
-    void addPathCandidate(int tool, String path) {
+    /*package-local*/ void addPathCandidate(int tool, String path) {
         if (pathSearch == null){
             pathSearch = new HashMap<Integer, String>();
         }
         pathSearch.put(tool, path);
     }
 
-    String getPathCandidate(int tool){
+    /*package-local*/String getPathCandidate(int tool){
         if (pathSearch == null){
             return null;
         }
         return pathSearch.get(tool);
     }
 
-    void setSunStudioDefault(boolean isSunStudioDefault){
+    /*package-local*/void setSunStudioDefault(boolean isSunStudioDefault){
         this.isSunStudioDefault = isSunStudioDefault;
     }
 
-    boolean isSunStudioDefault(){
+    /*package-local*/boolean isSunStudioDefault(){
         return isSunStudioDefault;
     }
 
