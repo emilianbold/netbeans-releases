@@ -555,7 +555,7 @@ public class LogReader {
             }
         }
         if (TRACE)  {System.err.println("**** Not found "+file);} //NOI18N
-        if (!what.startsWith("/")){  //NOI18N
+        if (!what.startsWith("/") && userIncludes.size()+userMacros.size() > 0){  //NOI18N
             try {
                 String[] out = new String[1];
                 boolean areThereOnlyOne = findFiles(new File(root), what, out);
