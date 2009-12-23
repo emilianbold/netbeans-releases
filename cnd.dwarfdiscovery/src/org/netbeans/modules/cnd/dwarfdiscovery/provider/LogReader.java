@@ -683,9 +683,12 @@ public class LogReader {
             }
             out[0] = file.getAbsolutePath();
         }
-        for (File subs : file.listFiles(dirFilter)) {
-            if (!findFiles(subs, relativePath, out)) {
-                return false;
+        File[] ff = file.listFiles(dirFilter);
+        if (ff != null) {
+            for (File subs : ff) {
+                if (!findFiles(subs, relativePath, out)) {
+                    return false;
+                }
             }
         }
         return true;

@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -164,7 +165,9 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                 }
                 Dwarf dwarf = new Dwarf(executable);
                 try {
-                    for (CompilationUnit compilationUnit : dwarf.getCompilationUnits()) {
+                    Iterator<CompilationUnit> iterator = dwarf.iteratorCompilationUnits();
+                    while(iterator.hasNext()) {
+                        CompilationUnit compilationUnit = iterator.next();
                         TreeSet<LineNumber> lineNumbers = getCompilationUnitLines(compilationUnit);
                         String filePath = compilationUnit.getSourceFileAbsolutePath();
                         String compDir = compilationUnit.getCompilationDir();
