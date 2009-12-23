@@ -65,15 +65,20 @@ public final class ReadOnlyFilesHighlighting extends AbstractHighlightsContainer
         this.document = doc;
         FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
         if (fcs != null) {
-            this.attribs = AttributesUtilities.createImmutable(
-                    fcs.getFontColors("readonly-files"), //NOI18N
-                    AttributesUtilities.createImmutable(ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE, ATTR_EXTENDS_EOL, Boolean.TRUE));
+            AttributeSet readOnlyFilesColoring = fcs.getFontColors("readonly-files"); //NOI18N
+            if (readOnlyFilesColoring != null) {
+                this.attribs = AttributesUtilities.createImmutable(
+                        readOnlyFilesColoring,
+                        AttributesUtilities.createImmutable(ATTR_EXTENDS_EMPTY_LINE, Boolean.TRUE, ATTR_EXTENDS_EOL, Boolean.TRUE));
+            } else {
+                this.attribs = null;
+            }
         } else {
             this.attribs = null;
         }
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("~~~ this=" + s2s(this) + ", doc=" + s2s(doc) + ", file=" + fileFromDoc(doc) //NOI18N
-                    + ", attribs=" + attribs + ", bg=" + attribs.getAttribute(StyleConstants.Background)); //NOI18N
+                    + ", attribs=" + attribs + (attribs != null ? ", bg=" + attribs.getAttribute(StyleConstants.Background) : "")); //NOI18N
         }
     }
     
