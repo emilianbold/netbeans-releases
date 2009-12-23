@@ -43,6 +43,7 @@ package org.netbeans.modules.web.beans.navigation;
 import java.util.List;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.DeclaredType;
 
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -58,9 +59,10 @@ class MethodTreeNode extends InjectableTreeNode<ExecutableElement> {
     private static final long serialVersionUID = -137177182006814794L;
 
     MethodTreeNode( FileObject fileObject, ExecutableElement element,
+            DeclaredType parentType, boolean disabled , 
             CompilationInfo compilationInfo )
     {
-        super(fileObject, element, compilationInfo);
+        super(fileObject, element, parentType , disabled, compilationInfo);
     }
 
     boolean isOverridden( int index,
