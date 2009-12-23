@@ -20,7 +20,7 @@ AS=gas
 
 # Macros
 CND_PLATFORM=GNU-Solaris-x86
-CND_CONF=Test32
+CND_CONF=Test_filedata_32
 CND_DISTDIR=dist
 
 # Include project Makefile
@@ -50,7 +50,7 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	cd . && ${MAKE} TRACE=1 DEBUG=-g test_build
+	cd . && ${MAKE} TRACE=1 DEBUG=-g  test_filedata_build
 
 # Subprojects
 .build-subprojects:

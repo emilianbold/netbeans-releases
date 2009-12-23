@@ -7,12 +7,12 @@
 # Macros
 TOP=`pwd`
 CND_PLATFORM=GNU-Solaris-x86
-CND_CONF=Test32
+CND_CONF=Test_filedata_32
 CND_DISTDIR=dist
 TMPDIR=build/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=build/SunOS-x86/test_pkg_client
-OUTPUT_BASENAME=test_pkg_client
+OUTPUT_PATH=build/SunOS-x86/test_rfs_filedata
+OUTPUT_BASENAME=test_rfs_filedata
 PACKAGE_TOP_DIR=tools/
 
 # Functions
