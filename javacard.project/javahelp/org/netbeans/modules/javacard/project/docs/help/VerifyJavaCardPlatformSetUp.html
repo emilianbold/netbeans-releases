@@ -4,15 +4,21 @@
 <!-- GenHTML revision 23224-->    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
   <title>Verify the Java Card Platform is Set Up - Java Card 3 Development
-   </head><body class="body"><a name="VerifyJavaCardPlatformSetUp"></a><h2>Verify the Java Card Platform is Set Up</h2><h2>Before You Begin</h2><p class="p">If the Services window is not displayed in the IDE, choose Window &gt;
+   </title></head><body class="body"><a name="VerifyJavaCardPlatformSetUp"></a><h2>Verify the Java Card Platform is Set Up</h2><h2>Before You Begin</h2><p class="p">If the Services window is not displayed in the IDE, choose Window &gt;
 Services from the main window to activate it.</p><ol class="ol">
 <li class="li"><b>Click the Services tab at the far left of the main IDE window
 and confirm the Java Card Runtimes node is displayed.</b></li>
-<li class="li"><b> Open the Java Card Runtimes node and verify that it contains a
-Bundled Java Card 3 Runtime node.Open the Bundled Java Card 3 Runtime node
-and verify that it contains a Default Device node.</b></li>
-<li class="li"><b>Right click the Java Card Runtimes node and choose Properties.</b></li>
-<li class="li"><a name="z400000b1395910"></a><b>Verify that the default values are correct for your application.</b><p class="p">If the properties for the platform are not suitable for your application you
-will need to create a custom platform. See <a href="CustomizingJavaCardPlatform.html">Customizing a Java Card Platform</a>.</p></li></ol>
+<li class="li"><b>Open the Java Card Runtimes node and verify that it contains a
+Java Card 3 platform node.</b></li>
+<li class="li"><b>Open the Java Card 3 platform node and verify that it contains 
+a Default Device node.</b></li>
+<li class="li"><b>Right click the Java Card platform node and choose Properties.</b></li>
+<li class="li"><a name="z400000b1395910"></a><b>Verify that the default values are correct for your application.</b>
+<p class="p">If the properties for the platform are not correct for your application (such as using different versions of the Java Card specification or reference implementation) you can either add a Java Card platform that has the correct properties for running your application or (if you are a Java Card technology licensee and have access to the source files for the Java Card reference implementation) you can create a custom Java Card platform for your application.</p>
+<p class="p">See the appropriate Java Card 3 platform specifications and documentation on the Java Card 3 Kenai project site for information about the JAva Card 3 platform. See <a href="AddJavaCardPlatform.html">Add a Java Card Platform</a> and <a href="CustomizingJavaCardPlatform.html">Customizing a Java Card Platform</a> for the p[rocedures used in this IDE to add a platform or to create a custom Java Card platform.</p></li>
+<li class="li"><b>Right click the device node and choose Properties.</b></li>
+<li class="li"><a name="z400000b1395910"></a><b>Verify that the default values are correct for your application.</b>
+<p class="p">If the properties for the device are not correct for your application (such as using different port values or requiring larger memory settings) you can either modify the existing device or add a new custom device to the Java Card platform for your application. 
+See <a href="AddNewDevice.html">Add a New Device</a> and <a href="CustomizingDeviceNode.html">Customizing the Device Node.</a></p></li></ol>
 </body>
 </html>
