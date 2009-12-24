@@ -44,6 +44,7 @@ package org.netbeans.nbbuild;
 import java.io.*;
 import java.util.*;
 import java.io.FileOutputStream;
+import java.util.zip.CRC32;
 
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -92,7 +93,7 @@ class UpdateTracking {
         this.nbPath = nbPath;
         origin = INST_ORIGIN;
     }
-    
+
     /**
      * Use this constructor, only when you want to use I/O Streams
      */
@@ -376,6 +377,19 @@ class UpdateTracking {
         }
         version.addFile (file );
     }
+
+    static CRC32 crcForFile(File inFile) throws FileNotFoundException, IOException {
+        FileInputStream inFileStream = new FileInputStream(inFile);
+        byte[] array = new byte[(int) inFile.length()];
+        CRC32 crc = new CRC32();
+        int len = inFileStream.read(array);
+        if (len != array.length) {
+            throw new BuildException("Cannot fully read " + inFile);
+        }
+        inFileStream.close();
+        crc.update(array);
+        return crc;
+    }
     
     class Module extends Object {        
         
@@ -552,7 +566,18 @@ class UpdateTracking {
             files = newFiles;
             
         }
-        
+
+        void addFileForRoot(File file) throws IOException {
+            CRC32 crc = crcForFile(file);
+            if (!file.getPath().startsWith(nbPath)) {
+                throw new BuildException("File " + file + " needs to be under " + nbPath);
+            }
+            String rel = file.getPath().substring(nbPath.length()).replace(File.separatorChar, '/');
+            if (rel.startsWith("/")) {
+                rel = rel.substring(1);
+            }
+            addFileWithCrc(rel, "" + crc.getValue());
+        }
     }
     
     class ModuleFile extends Object {        
