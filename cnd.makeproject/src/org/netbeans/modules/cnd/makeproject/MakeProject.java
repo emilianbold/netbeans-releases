@@ -306,7 +306,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                 }
             }
         }
-        if (usedExtension.size() > 0 && addNewExtensionDialog(usedExtension, "H")) { // NOI18N
+        if (usedExtension.size() > 0) {
             // add unknown extension to header files
             addMIMETypeExtensions(usedExtension, MIMENames.HEADER_MIME_TYPE);
             headerExtensions.addAll(usedExtension);
