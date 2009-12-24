@@ -84,7 +84,7 @@ public class ElfReader extends ByteStreamReader {
         
         sections = new ElfSection[sectionHeadersTable.length];
         
-        if (!isCoffFormat && !isMachoFormat) {
+        if (!isCoffFormat) {
             // Before reading all sections need to read ElfStringTable section.
             int elfStringTableIdx = elfHeader.getELFStringTableSectionIndex();
             stringTableSection = new StringTableSection(this, elfStringTableIdx);
@@ -95,7 +95,7 @@ public class ElfReader extends ByteStreamReader {
         for (int i = 0; i < sections.length; i++) {
             sectionsMap.put(getSectionName(i), i);
         }
-        if (isCoffFormat || isMachoFormat) {
+        if (isCoffFormat) {
             // string table already read
             Integer idx = sectionsMap.get(SECTIONS.DEBUG_STR);
             if (idx != null) {
@@ -290,7 +290,9 @@ public class ElfReader extends ByteStreamReader {
                 return false;
             }
             throw new WrongFileFormatException("Dwarf section not found in Mach-O file"); // NOI18N
-        } 
+        }
+        // clear string section, another string section will be read late
+        stringTableSection = null;
         sectionHeadersTable = new SectionHeader[headers.size()];
         for(int i = 0; i < headers.size(); i++){
             sectionHeadersTable[i] = headers.get(i);
