@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.drawing;
 
 import java.awt.Graphics;
 import java.awt.Font;
@@ -53,6 +53,12 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import javax.swing.JComponent;
 import javax.swing.text.View;
+import org.netbeans.editor.Analyzer;
+import org.netbeans.editor.AnnotationDesc;
+import org.netbeans.editor.AnnotationTypes;
+import org.netbeans.editor.Annotations;
+import org.netbeans.editor.FontMetricsCache;
+import org.netbeans.editor.PrintContainer;
 
 /** Draw graphics functions as abstraction over various kinds of drawing. It's used
 * for drawing into classic graphics, printing and measuring.
@@ -63,7 +69,7 @@ import javax.swing.text.View;
 * @author Miloslav Metelka
 * @version 1.00
 */
-interface DrawGraphics {
+public interface DrawGraphics {
     
     /** Set foreground color */
     public void setForeColor(Color foreColor);
@@ -191,7 +197,7 @@ interface DrawGraphics {
     /** Abstract draw-graphics that maintains a fg and bg color, font,
     * current x and y coordinates.
     */
-    static abstract class AbstractDG implements DrawGraphics {
+    public static abstract class AbstractDG implements DrawGraphics {
 
         /** Current foreground color */
         Color foreColor;
@@ -326,7 +332,7 @@ interface DrawGraphics {
 
     } // End of AbstractDG class
 
-    static class SimpleDG extends AbstractDG {
+    public static class SimpleDG extends AbstractDG {
 
         public Graphics getGraphics() {
             return null;
@@ -359,7 +365,7 @@ interface DrawGraphics {
     * It optimizes the drawing by joining together the pieces of
     * the text drawn with the same font and fg/bg color.
     */
-    static final class GraphicsDG extends SimpleDG {
+    public static final class GraphicsDG extends SimpleDG {
 
         /** Whether debug messages should be displayed */
         private static final boolean debug
@@ -420,7 +426,7 @@ interface DrawGraphics {
 
         private JComponent component;
 
-        GraphicsDG(Graphics graphics) {
+        public GraphicsDG(Graphics graphics) {
             this.graphics = graphics;
             // #33165 - set invalid y initially
             this.y = -1;
@@ -532,11 +538,12 @@ interface DrawGraphics {
         }
 
         public @Override void init(DrawContext ctx) {
+            EditorUiAccessor accessor = EditorUiAccessor.get();
             annos = ctx.getEditorUI().getDocument().getAnnotations();
-            drawTextLimitLine = ctx.getEditorUI().textLimitLineVisible;
-            textLimitWidth = ctx.getEditorUI().textLimitWidth();
-            defaultSpaceWidth = ctx.getEditorUI().defaultSpaceWidth;
-            textLimitLineColor = ctx.getEditorUI().getTextLimitLineColor();
+            drawTextLimitLine = accessor.getTextLimitLineVisible(ctx.getEditorUI());
+            textLimitWidth = accessor.getTextLimitWidth(ctx.getEditorUI());
+            defaultSpaceWidth = accessor.getDefaultSpaceWidth(ctx.getEditorUI());
+            textLimitLineColor = accessor.getTextLimitLineColor(ctx.getEditorUI());
             absoluteX = ctx.getEditorUI().getTextMargin().left;
             maxWidth = ctx.getEditorUI().getExtentBounds().width;
             component = ctx.getEditorUI().getComponent();
@@ -822,7 +829,7 @@ interface DrawGraphics {
 
     } // End of GraphicsDG class
 
-    static final class PrintDG extends SimpleDG {
+    public static final class PrintDG extends SimpleDG {
 
         PrintContainer container;
 

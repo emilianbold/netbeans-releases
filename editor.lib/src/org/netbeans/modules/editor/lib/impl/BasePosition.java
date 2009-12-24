@@ -39,50 +39,42 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.impl;
 
-import javax.swing.text.Element;
-import org.netbeans.api.editor.fold.Fold;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Position;
 
 /**
- *  Fake view of the whole document supporting the code folding, operating from given startOffset
- *  to endOffset
- *
- * @author Martin Roskanin
- */
-class DrawEngineFakeDocView extends DrawEngineDocView{
+* Position in document. This is enhanced version of
+* Swing <CODE>Position</CODE> interface. It supports
+* insert after feature. If Position has
+* <CODE>insertAfter</CODE> flag set and text is inserted
+* right at the mark's position, the position will NOT move.
+*
+* @author Miloslav Metelka
+* @version 1.00
+*/
 
-        private boolean useCollapsing = true;
-        private int fakeStartOffset;
-        private int fakeEndOffset;
-        
-        DrawEngineFakeDocView(Element elem, int startOffset, int endOffset, boolean useCollapsing){
-            super(elem);
-            
-            this.useCollapsing = useCollapsing;
-            this.fakeStartOffset = startOffset;
-            this.fakeEndOffset = endOffset;
-            setEstimatedSpan(false);
-            
-        }
- 
-        @Override
-        public int getStartOffset(){
-            return fakeStartOffset;
-        }
-        
-        @Override
-        public int getEndOffset(){
-            return fakeEndOffset;
-        }
-        
-        @Override
-        protected Fold nextCollapsedFold() {
-            return null; // simulate no collapsed folds
-        }
-        
-        @Override
-        protected void attachListeners(){
-        }
+public final class BasePosition implements Position {
+
+    /** The mark that serves this position */
+    private MultiMark mark;
+
+    public BasePosition() throws BadLocationException {
+    }
+
+    /** Get offset in document for this position */
+    public int getOffset() {
+        return mark.getOffset();
+    }
+
+    void setMark(MultiMark mark) {
+        this.mark = mark;
+    }
     
+    @Override
+    public String toString() {
+        return super.toString() + " offset=" + getOffset(); // NOI18N
+    }
+
 }

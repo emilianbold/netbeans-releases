@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,44 +31,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.drawing;
 
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Mark;
+import org.netbeans.editor.MarkBlockChain;
 
-/**
-* Position in document. This is enhanced version of
-* Swing <CODE>Position</CODE> interface. It supports
-* insert after feature. If Position has
-* <CODE>insertAfter</CODE> flag set and text is inserted
-* right at the mark's position, the position will NOT move.
-*
-* @author Miloslav Metelka
-* @version 1.00
-*/
+/* package */ class LayerChain extends MarkBlockChain {
 
-class BasePosition implements Position {
+    private String layerName;
 
-    /** The mark that serves this position */
-    private MultiMark mark;
-
-    BasePosition() throws BadLocationException {
+    public LayerChain(BaseDocument doc, String layerName) {
+        super(doc);
+        this.layerName = layerName;
     }
 
-    /** Get offset in document for this position */
-    public int getOffset() {
-        return mark.getOffset();
+    public final String getLayerName() {
+        return layerName;
     }
 
-    void setMark(MultiMark mark) {
-        this.mark = mark;
+    protected @Override Mark createBlockStartMark() {
+        DrawMark startMark = new DrawMark(layerName, null);
+        startMark.activateLayer = true;
+        return startMark;
     }
-    
-    @Override
-    public String toString() {
-        return super.toString() + " offset=" + getOffset(); // NOI18N
+
+    protected @Override Mark createBlockEndMark() {
+        DrawMark endMark = new DrawMark(layerName, null, Position.Bias.Backward);
+        return endMark;
     }
 
 }

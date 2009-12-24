@@ -42,7 +42,6 @@ package org.netbeans.modules.debugger.jpda.ui;
 
 import java.awt.AWTKeyStroke;
 import java.awt.Dimension;
-import java.awt.FontMetrics;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.InvocationTargetException;
@@ -71,13 +70,11 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.ext.ExtCaret;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.ErrorManager;
@@ -254,7 +251,10 @@ public class WatchPanel {
                 if (eui == null) {
                     return ;
                 }
-                eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+                editorPane.putClientProperty(
+                    "HighlightsLayerExcludes", //NOI18N
+                    "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" //NOI18N
+                );
                 // Do not draw text limit line
                 try {
                     java.lang.reflect.Field textLimitLineField = EditorUI.class.getDeclaredField("textLimitLineVisible"); // NOI18N

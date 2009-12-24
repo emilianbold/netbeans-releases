@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.drawing;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -61,7 +61,11 @@ import javax.swing.text.Position.Bias;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.View;
 import org.netbeans.api.editor.settings.AttributesUtilities;
-import org.netbeans.editor.ext.ExtCaret;
+import org.netbeans.editor.AtomicLockEvent;
+import org.netbeans.editor.AtomicLockListener;
+import org.netbeans.editor.BaseCaret;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Coloring;
 import org.netbeans.editor.view.spi.LockView;
 import org.netbeans.modules.editor.lib2.highlighting.CaretBasedBlockHighlighting.CaretRowHighlighting;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
@@ -80,7 +84,7 @@ import org.openide.util.WeakListeners;
  *
  * @author vita
  */
-/* package */ final class HighlightingDrawLayer extends DrawLayer.AbstractLayer 
+public final class HighlightingDrawLayer extends DrawLayer.AbstractLayer
     implements HighlightsChangeListener, AtomicLockListener
 {
     // -J-Dorg.netbeans.editor.HighlightingDrawLayer.level=FINE
@@ -89,8 +93,7 @@ import org.openide.util.WeakListeners;
     // Above CaretRowHighlighting.LAYER_TYPE_ID
     private static final String LAYER_A_NAME = "org-netbeans-lib-editor-nview-HighlightingDrawLayer/A"; //NOI18N
     // above ZOrder.SYNTAX_RACK and below (including) CaretRowHighlighting.LAYER_TYPE_ID
-    // Using the original name for the caret row highlighting, some clients use it to remove the layer.
-    private static final String LAYER_B_NAME = ExtCaret.HIGHLIGHT_ROW_LAYER_NAME; 
+    private static final String LAYER_B_NAME = "org-netbeans-lib-editor-nview-HighlightingDrawLayer/B"; //NOI18N
     // Only ZOrder.SYNTAX_RACK
     private static final String LAYER_C_NAME = "org-netbeans-lib-editor-nview-HighlightingDrawLayer/C"; //NOI18N
     // ZOrder.BOTTOM_RACK
@@ -188,60 +191,61 @@ import org.openide.util.WeakListeners;
         }
     }; // End of FILTER_D constant
     
-    public static void hookUp(EditorUI eui) {
-        DrawLayer layerA = eui.findLayer(LAYER_A_NAME);
+    public static void hookUp(JTextComponent jtc) {
+        DrawLayerList dll = DrawLayerList.forComponent(jtc);
+        DrawLayer layerA = dll.findLayer(LAYER_A_NAME);
         if (layerA == null) {
             layerA = new HighlightingDrawLayer(LAYER_A_NAME, FILTER_A);
-            eui.addLayer(layerA, 10000); // the old text selection layer's z-order (DrawLayerFactory.CaretLayer)
+            dll.add(layerA, 10000); // the old text selection layer's z-order (DrawLayerFactory.CaretLayer)
 
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Successfully registered layerA in " + simpleToString(eui)); //NOI18N
+                LOG.fine("Successfully registered layerA in " + simpleToString(jtc)); //NOI18N
             }
         } else {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("LayerA is already registered in " + simpleToString(eui)); //NOI18N
+                LOG.fine("LayerA is already registered in " + simpleToString(jtc)); //NOI18N
             }
         }
 
-        DrawLayer layerB = eui.findLayer(LAYER_B_NAME);
+        DrawLayer layerB = dll.findLayer(LAYER_B_NAME);
         if (layerB == null) {
             layerB = new HighlightingDrawLayer(LAYER_B_NAME, FILTER_B);
-            eui.addLayer(layerB, 2050); // the old caret row highlight layer's z-order
+            dll.add(layerB, 2050); // the old caret row highlight layer's z-order
 
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Successfully registered layerB in " + simpleToString(eui)); //NOI18N
+                LOG.fine("Successfully registered layerB in " + simpleToString(jtc)); //NOI18N
             }
         } else {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("LayerB is already registered in " + simpleToString(eui)); //NOI18N
+                LOG.fine("LayerB is already registered in " + simpleToString(jtc)); //NOI18N
             }
         }
 
-        DrawLayer layerC = eui.findLayer(LAYER_C_NAME);
+        DrawLayer layerC = dll.findLayer(LAYER_C_NAME);
         if (layerC == null) {
             layerC = new HighlightingDrawLayer(LAYER_C_NAME, FILTER_C);
-            eui.addLayer(layerC, 1000); // the old syntax draw layer's z-order (DrawLayerFactory.SyntaxLayer)
+            dll.add(layerC, 1000); // the old syntax draw layer's z-order (DrawLayerFactory.SyntaxLayer)
 
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Successfully registered layerC in " + simpleToString(eui)); //NOI18N
+                LOG.fine("Successfully registered layerC in " + simpleToString(jtc)); //NOI18N
             }
         } else {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("LayerC is already registered in " + simpleToString(eui)); //NOI18N
+                LOG.fine("LayerC is already registered in " + simpleToString(jtc)); //NOI18N
             }
         }
 
-        DrawLayer layerD = eui.findLayer(LAYER_D_NAME);
+        DrawLayer layerD = dll.findLayer(LAYER_D_NAME);
         if (layerD == null) {
             layerD = new HighlightingDrawLayer(LAYER_D_NAME, FILTER_D);
-            eui.addLayer(layerD, 500);
+            dll.add(layerD, 500);
 
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Successfully registered layerD in " + simpleToString(eui)); //NOI18N
+                LOG.fine("Successfully registered layerD in " + simpleToString(jtc)); //NOI18N
             }
         } else {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("LayerD is already registered in " + simpleToString(eui)); //NOI18N
+                LOG.fine("LayerD is already registered in " + simpleToString(jtc)); //NOI18N
             }
         }
     }
@@ -341,7 +345,7 @@ import org.openide.util.WeakListeners;
         }
     }
     
-    public boolean isActive(DrawContext ctx, MarkFactory.DrawMark mark) {
+    public boolean isActive(DrawContext ctx, DrawMark mark) {
         if (highlights != null) {
             return processOffset(ctx, false);
         } else {
@@ -351,21 +355,22 @@ import org.openide.util.WeakListeners;
 
     public void updateContext(DrawContext ctx) {
         if (highlights != null) {
+            ColoringAccessor accessor = ColoringAccessor.get();
             if (ctx.isEOL() && ctx.isBOL()) {
                 if (extendsEmptyLine() && !theLittleSpitAtTheBeginningOfAnEmptyLineDrawn) {
                     theLittleSpitAtTheBeginningOfAnEmptyLineDrawn = true;
                     Coloring coloring = Coloring.fromAttributeSet(lastELAttribs);
-                    coloring.apply(ctx);
+                    accessor.apply(coloring, ctx);
                 } else {
                     if (extendsEOL()) {
                         Coloring coloring = Coloring.fromAttributeSet(lastEOLAttribs);
-                        coloring.apply(ctx);
+                        accessor.apply(coloring, ctx);
                     }
                 }
             } else if (ctx.isEOL()) {
                 if (extendsEOL()) {
                     Coloring coloring = Coloring.fromAttributeSet(lastEOLAttribs);
-                    coloring.apply(ctx);
+                    accessor.apply(coloring, ctx);
                 }
             } else {
                 processOffset(ctx, true);
@@ -624,7 +629,7 @@ import org.openide.util.WeakListeners;
             if (hs.getStartOffset() <= currentOffset) {
                 if (applyAttributes) {
                     Coloring coloring = Coloring.fromAttributeSet(hs.getAttributes());
-                    coloring.apply(ctx);
+                    ColoringAccessor.get().apply(coloring, ctx);
                 }
                 
                 lastAttributeSet = hs.getAttributes();
@@ -676,7 +681,7 @@ import org.openide.util.WeakListeners;
 
         return new AttributeSet [] { eolAttribs, elAttribs };
     }
-    
+
     private static String simpleToString(Object o) {
         return o == null ? "null" : o.getClass() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
     }
