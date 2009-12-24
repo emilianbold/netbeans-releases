@@ -75,9 +75,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.modules.ModuleInfo;
 import org.openide.util.Cancellable;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -87,7 +85,7 @@ import org.openide.util.TaskListener;
  * Manage a set of CompilerSets. The CompilerSets are dynamically created based on which compilers
  * are found in the user's $PATH variable.
  */
-public class CompilerSetManager {
+public final class CompilerSetManager {
     
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
@@ -118,10 +116,6 @@ public class CompilerSetManager {
         return getDefaultImpl(env, true);
     }
     
-    public void saveToDisk() {
-        CompilerSetPreferences.saveToDisk(this);
-    }
-
     private static CompilerSetManager getDefaultImpl(ExecutionEnvironment env, boolean initialize) {
         CompilerSetManager csm = null;
         boolean no_compilers = false;
@@ -262,7 +256,7 @@ public class CompilerSetManager {
         return ToolchainScriptGenerator.generateScript(path);
     }
     
-    public boolean isValid() {
+    private boolean isValid() {
         return sets.size() > 0 && !sets.get(0).getName().equals(CompilerSet.None);
     }
 
@@ -274,7 +268,7 @@ public class CompilerSetManager {
         return state == State.STATE_UNINITIALIZED;
     }
 
-    public boolean isComplete() {
+    /*package-local*/ boolean isComplete() {
         return state == State.STATE_COMPLETE;
     }
 
@@ -742,11 +736,6 @@ public class CompilerSetManager {
         completeCompilerSet(executionEnvironment, cs, sets);
     }
 
-    public void reInitCompilerSet(CompilerSet cs, String path) {
-        cs.reparent(path);
-        initCompilerSet(cs);
-    }
-
     private boolean initCompilerSet(String path, CompilerSet cs, boolean known) {
         CompilerFlavor flavor = cs.getCompilerFlavor();
         ToolchainDescriptor d = flavor.getToolchainDescriptor();
@@ -1046,7 +1035,7 @@ public class CompilerSetManager {
         return !path.startsWith(s);
     }
 
-    static void completeCompilerSet(ExecutionEnvironment env, CompilerSet cs, List<CompilerSet> sets) {
+    /*package-local*/ static void completeCompilerSet(ExecutionEnvironment env, CompilerSet cs, List<CompilerSet> sets) {
         //if (cs.findTool(Tool.CCompiler) == null && cs.findTool(Tool.CCCompiler) == null) {
         //    // do not complete empty tool
         //    return;
@@ -1135,37 +1124,6 @@ public class CompilerSetManager {
         return null;
     }
 
-    public CompilerSet getCompilerSetByDisplayName(String name) {
-        for (CompilerSet cs : sets) {
-            if (cs.getDisplayName().equals(name)) {
-                return cs;
-            }
-        }
-        return null;
-    }
-
-    public CompilerSet getCompilerSetByPath(String path) {
-        for (CompilerSet cs : sets) {
-            if (cs.getDirectory().equals(path)) {
-                return cs;
-            }
-        }
-        return null;
-    }
-
-    public CompilerSet getCompilerSet(String name, String dname) {
-        //waitForCompletion();
-        if (isPending()) {
-            log.warning("calling getCompilerSet() on uninitializad " + getClass().getSimpleName());
-        }
-        for (CompilerSet cs : sets) {
-            if (cs.getName().equals(name) && cs.getDisplayName().equals(dname)) {
-                return cs;
-            }
-        }
-        return null;
-    }
-
     public CompilerSet getCompilerSet(int idx) {
         //waitForCompletion();
         if (isPending()) {
@@ -1179,14 +1137,6 @@ public class CompilerSetManager {
 
     public List<CompilerSet> getCompilerSets() {
         return new ArrayList<CompilerSet>(sets);
-    }
-
-    public List<String> getCompilerSetDisplayNames() {
-        List<String> names = new ArrayList<String>();
-        for (CompilerSet cs : getCompilerSets()) {
-            names.add(cs.getDisplayName());
-        }
-        return names;
     }
 
     public List<String> getCompilerSetNames() {
@@ -1227,21 +1177,6 @@ public class CompilerSetManager {
 
     public static ExecutionEnvironment getDefaultExecutionEnvironment() {
         return ServerList.getDefaultRecord().getExecutionEnvironment();
-    }
-
-    /**
-     * Check if the gdb module is enabled. Don't show the gdb line if it isn't.
-     *
-     * @return true if the gdb module is enabled, false if missing or disabled
-     */
-    protected boolean isGdbEnabled() {
-        Lookup.Result<ModuleInfo> providers = Lookup.getDefault().lookup(new Lookup.Template<ModuleInfo>(ModuleInfo.class));
-        for (ModuleInfo info : providers.allInstances()) {
-            if (info.getCodeNameBase().equals("org.netbeans.modules.cnd.debugger.gdb") && info.isEnabled()) { // NOI18N
-                return true;
-            }
-        }
-        return false;
     }
 
     /** Look up i18n strings here */

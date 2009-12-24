@@ -239,7 +239,7 @@ public class LogReader {
             if (TRACE) {message = "**>> by [just path string] ";} //NOI18N
         }
 
-        if (workDir == null) {
+        if (workDir == null || workDir.length() == 0) {
             return false;
         }
 
@@ -247,34 +247,35 @@ public class LogReader {
             workDir = ""+workDir.charAt(10)+":"+workDir.substring(11); // NOI18N
         }
 
-        if (!workDir.startsWith(".") && (new File(workDir).exists())) { // NOI18N
+        if (workDir.charAt(0) == '/' || workDir.charAt(0) == '\\' || (workDir.length() > 1 && workDir.charAt(1) == ':')) {
+            if ((new File(workDir).exists())) {
+                if (TRACE) {System.err.print(message);}
+                setWorkingDir(workDir);
+                return true;
+            }
+        }
+        String dir = workingDir + File.separator + workDir;
+        if (new File(dir).exists()) {
             if (TRACE) {System.err.print(message);}
-            setWorkingDir(workDir);
+            setWorkingDir(dir);
             return true;
-        } else {
-            String dir = workingDir + File.separator + workDir;
+        }
+        if (Utilities.isWindows() && workDir.length()>3 &&
+            workDir.charAt(0)=='/' &&
+            workDir.charAt(2)=='/'){
+            String d = ""+workDir.charAt(1)+":"+workDir.substring(2); // NOI18N
+            if (new File(d).exists()) {
+                if (TRACE) {System.err.print(message);}
+                setWorkingDir(d);
+                return true;
+            }
+        }
+        if (baseWorkingDir != null) {
+            dir = baseWorkingDir + File.separator + workDir;
             if (new File(dir).exists()) {
                 if (TRACE) {System.err.print(message);}
                 setWorkingDir(dir);
                 return true;
-            }
-            if (Utilities.isWindows() && workDir.length()>3 &&
-                workDir.charAt(0)=='/' &&
-                workDir.charAt(2)=='/'){
-                String d = ""+workDir.charAt(1)+":"+workDir.substring(2); // NOI18N
-                if (new File(d).exists()) {
-                    if (TRACE) {System.err.print(message);}
-                    setWorkingDir(d);
-                    return true;
-                }
-            }
-            if (baseWorkingDir != null) {
-                dir = baseWorkingDir + File.separator + workDir;
-                if (new File(dir).exists()) {
-                    if (TRACE) {System.err.print(message);}
-                    setWorkingDir(dir);
-                    return true;
-                }
             }
         }
         return false;
@@ -293,73 +294,64 @@ public class LogReader {
         }
     }
 
-    private static final String LABEL_CD = "cd "; //NOI18N
-    private static final String INVOKE_SUN_C = "cc "; //NOI18N
-    private static final String INVOKE_SUN_CC = "CC "; //NOI18N
-    private static final String INVOKE_GNU_C = "gcc "; //NOI18N
-    private static final String INVOKE_GNU_C2 = "gcc.exe "; //NOI18N
+    private static final String LABEL_CD        = "cd "; //NOI18N
+    private static final String INVOKE_GNU_C    = "gcc "; //NOI18N
+    private static final String INVOKE_GNU_C2   = "gcc.exe "; //NOI18N
+    private static final String INVOKE_SUN_C    = "cc "; //NOI18N
     //private static final String INVOKE_GNU_XC = "xgcc "; //NOI18N
-    private static final String INVOKE_GNU_CC = "g++ "; //NOI18N
-    private static final String INVOKE_GNU_CC2 = "g++.exe "; //NOI18N
-    private static final String INVOKE_MSVC = "cl "; //NOI18N
-    private static final String MAKE_DELIMITER = ";"; //NOI18N
+    private static final String INVOKE_GNU_Cpp  = "g++ "; //NOI18N
+    private static final String INVOKE_GNU_Cpp2 = "g++.exe "; //NOI18N
+    private static final String INVOKE_GNU_Cpp3 = "c++ "; //NOI18N
+    private static final String INVOKE_GNU_Cpp4 = "c++.exe "; //NOI18N
+    private static final String INVOKE_SUN_Cpp  = "CC "; //NOI18N
+    private static final String INVOKE_MSVC_Cpp = "cl "; //NOI18N
+    private static final String MAKE_DELIMITER  = ";"; //NOI18N
+
+    private static int[] foundCompiler(String line, String ... patterns){
+        for(String pattern : patterns)    {
+            int start = line.indexOf(pattern);
+            if (start>=0) {
+                int end = start + pattern.length();
+                return new int[]{start,end};
+            }
+        }
+        return null;
+    }
 
     /*package-local*/ static LineInfo testCompilerInvocation(String line) {
         LineInfo li = new LineInfo(line);
         int start = 0, end = -1;
-//        if (li.compilerType == CompilerType.UNKNOWN) {
-//            start = line.indexOf(INVOKE_GNU_XC);
-//            if (start>=0) {
-//                li.compilerType = CompilerType.C;
-//                end = start + INVOKE_GNU_XC.length();
-//            }
-//        }
         if (li.compilerType == CompilerType.UNKNOWN) {
-            start = line.indexOf(INVOKE_GNU_C);
             //TODO: can fail on gcc calls with -shared-libgcc
-            if (start>=0) {
+            int[] res = foundCompiler(line, INVOKE_GNU_C, INVOKE_GNU_C2 /*, INVOKE_GNU_XC*/);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
                 li.compilerType = CompilerType.C;
-                end = start + INVOKE_GNU_C.length();
-            } else {
-                start = line.indexOf(INVOKE_GNU_C2);
-                if (start>=0) {
-                    li.compilerType = CompilerType.C;
-                    end = start + INVOKE_GNU_C2.length();
-                }
             }
         }
         if (li.compilerType == CompilerType.UNKNOWN) {
-            start = line.indexOf(INVOKE_GNU_CC);
-            if (start>=0) {
+            int[] res = foundCompiler(line, INVOKE_GNU_Cpp,INVOKE_GNU_Cpp2,INVOKE_GNU_Cpp3,INVOKE_GNU_Cpp4);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
                 li.compilerType = CompilerType.CPP;
-                end = start + INVOKE_GNU_CC.length();
-            } else {
-                start = line.indexOf(INVOKE_GNU_CC2);
-                if (start>=0) {
-                    li.compilerType = CompilerType.CPP;
-                    end = start + INVOKE_GNU_CC2.length();
-                }
             }
         }
         if (li.compilerType == CompilerType.UNKNOWN) {
-            start = line.indexOf(INVOKE_SUN_C);
-            if (start>=0) {
+            int[] res = foundCompiler(line, INVOKE_SUN_C);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
                 li.compilerType = CompilerType.C;
-                end = start + INVOKE_SUN_C.length();
             }
         }
         if (li.compilerType == CompilerType.UNKNOWN) {
-            start = line.indexOf(INVOKE_SUN_CC);
-            if (start>=0) {
+            int[] res = foundCompiler(line, INVOKE_SUN_Cpp, INVOKE_MSVC_Cpp);
+            if (res != null) {
+                start = res[0];
+                end = res[1];
                 li.compilerType = CompilerType.CPP;
-                end = start + INVOKE_SUN_CC.length();
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            start = line.indexOf(INVOKE_MSVC);
-            if (start>=0) {
-                li.compilerType = CompilerType.CPP;
-                end = start + INVOKE_MSVC.length();
             }
         }
 
@@ -405,10 +397,6 @@ public class LogReader {
        if (checkDirectoryChange(line)) {
            return false;
        }
-//       if (line.startsWith(CURRENT_DIRECTORY)) {
-//           workingDir= line.substring(CURRENT_DIRECTORY.length()+1).trim();
-//           return false;
-//       }
        if (workingDir == null) {
            return false;
        }
@@ -510,12 +498,6 @@ public class LogReader {
     }
 
     private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP) {
-        // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
-        // /opt/SUNWspro/bin/cc -xO3 -xarch=amd64 -Ui386 -U__i386 -Xa -xildoff -errtags=yes -errwarn=%all
-        // -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_STATEMENT_NOT_REACHED -xc99=%none -W0,-xglobalstatic
-        // -D_ELF64 -DTEXT_DOMAIN="SUNW_OST_OSCMD" -D_TS_ERRNO -I/export/opensolaris/testws77/proto/root_i386/usr/include
-        // -I/export/opensolaris/testws77/usr/src/uts/common/inet/ipf -I/export/opensolaris/testws77/usr/src/uts/common/inet/pfil
-        // -DSUNDDI -DUSE_INET6 -DSOLARIS2=11 -I. -DIPFILTER_LOOKUP -DIPFILTER_LOG -c ../ipmon_l.c -o ipmon_l.o
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
         String what = DiscoveryUtils.gatherCompilerLine(line, isScriptOutput, userIncludes, userMacros,null);
@@ -555,7 +537,7 @@ public class LogReader {
             }
         }
         if (TRACE)  {System.err.println("**** Not found "+file);} //NOI18N
-        if (!what.startsWith("/")){  //NOI18N
+        if (!what.startsWith("/") && userIncludes.size()+userMacros.size() > 0){  //NOI18N
             try {
                 String[] out = new String[1];
                 boolean areThereOnlyOne = findFiles(new File(root), what, out);
@@ -683,9 +665,12 @@ public class LogReader {
             }
             out[0] = file.getAbsolutePath();
         }
-        for (File subs : file.listFiles(dirFilter)) {
-            if (!findFiles(subs, relativePath, out)) {
-                return false;
+        File[] ff = file.listFiles(dirFilter);
+        if (ff != null) {
+            for (File subs : ff) {
+                if (!findFiles(subs, relativePath, out)) {
+                    return false;
+                }
             }
         }
         return true;

@@ -43,6 +43,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -738,9 +739,10 @@ public class DwarfSourceReaderTest extends NbTestCase {
         Dwarf dump = null;
         try {
             dump = new Dwarf(objFileName);
-            List <CompilationUnit> units = dump.getCompilationUnits();
-            if (units != null && units.size() > 0) {
-                for (CompilationUnit cu : units) {
+            Iterator<CompilationUnit> units = dump.iteratorCompilationUnits();
+            if (units != null && units.hasNext()) {
+                while (units.hasNext()) {
+                    CompilationUnit cu = units.next();
                     BaseDwarfProvider.CompilerSettings settings = new BaseDwarfProvider.CompilerSettings(new ProjectProxy() {
                         public boolean createSubProjects() { return false; }
                         public Project getProject() { return null; }
