@@ -395,8 +395,8 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("function_pointer_as_template_parameter.cc"); // NOI18N
     }
 
-    public void test100000parameters() throws Exception {
-        performTest("100000parameters.c"); // NOI18N
+    public void test10000parameters() throws Exception {
+        performTest("10000parameters.c"); // NOI18N
     }
     
     public void testTypedefPointerToStaticMember() throws Exception {
