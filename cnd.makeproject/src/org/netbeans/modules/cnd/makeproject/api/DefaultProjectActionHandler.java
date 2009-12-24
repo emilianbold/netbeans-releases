@@ -69,16 +69,17 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.CompilerLineConvertor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
@@ -136,7 +137,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         if (pae.getType() == ProjectActionEvent.Type.RUN ||
                 pae.getType() == ProjectActionEvent.Type.BUILD ||
                 pae.getType() == ProjectActionEvent.Type.CLEAN) {
-            String exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
+            String exe = pae.getExecutable(); // we don't need quoting - it's execution responsibility
             ArrayList<String> args = new ArrayList<String>();
             for(String arg : pae.getProfile().getArgsArray()){
                 args.add(arg);
@@ -170,11 +171,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 }
                 if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
                     if (conf.getPlatformInfo().getPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                        // we need to run the application under cmd on windows
-                        exe = "cmd.exe"; // NOI18N
-                        // exe path naturalization is needed for cmd on windows, see issue 149404
-                        args.add(0, FilePathAdaptor.naturalize(pae.getExecutable()));
-                        args.add(0, "/c"); // NOI18N
+                        exe = FilePathAdaptor.naturalize(pae.getExecutable());
                     } else if (conf.getDevelopmentHost().isLocalhost()) {
                         exe = IpeUtils.toAbsolutePath(pae.getProfile().getRunDir(), pae.getExecutable());
                     }
@@ -183,39 +180,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     showInput = false;
                     if (conType == RunProfile.CONSOLE_TYPE_DEFAULT) {
                         conType = RunProfile.getDefaultConsoleType();
-                    }
-                    if (conType == RunProfile.CONSOLE_TYPE_EXTERNAL) {
-                        try {
-                            rcfile = File.createTempFile("nbcnd_rc", "").getAbsolutePath(); // NOI18N
-                        } catch (IOException ex) {
-                        }
-                        String flatArgs = getArguments();
-                        String args2;
-                        if (pae.getProfile().getTerminalPath().indexOf("gnome-terminal") != -1) { // NOI18N
-                                /* gnome-terminal has differnt quoting rules... */
-                            StringBuilder b = new StringBuilder();
-                            for (int i = 0; i < flatArgs.length(); i++) {
-                                if (flatArgs.charAt(i) == '"') {
-                                    b.append("\\\""); // NOI18N
-                                } else {
-                                    b.append(flatArgs.charAt(i));
-                                }
-                            }
-                            args2 = b.toString();
-                        } else {
-                            args2 = "";
-                        }
-                        if (pae.getType() == ProjectActionEvent.Type.RUN &&
-                                conf.isApplicationConfiguration() &&
-                                conf.getPlatformInfo().getPlatform() == PlatformTypes.PLATFORM_WINDOWS &&
-                                !exe.endsWith(".exe")) { // NOI18N
-                            exe = exe + ".exe"; // NOI18N
-                        }
-                        // TODO: redesign terminal options. It should be string array.
-                        flatArgs = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, flatArgs, args2);
-                        args = new ArrayList<String>(ImportUtils.normalizeParameters(ImportUtils.parseArgs(flatArgs.toString())));
-
-                        exe = pae.getProfile().getTerminalPath();
                     }
                 }
                 // Append compilerset base to run path. (IZ 120836)
@@ -279,6 +243,19 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                     .setArguments(args.toArray(new String[args.size()]))
                     .addNativeProcessListener(processChangeListener);
             npb.getEnvironment().putAll(env);
+
+            if (pae.getType() == ProjectActionEvent.Type.RUN &&
+                    pae.getProfile().getConsoleType().getValue() == RunProfile.CONSOLE_TYPE_EXTERNAL) {
+
+                String termPath = pae.getProfile().getTerminalPath();
+                CndUtils.assertNotNull(termPath, "null terminal path"); // NOI18N; should be checked above
+                if (termPath != null) {
+                    String termBaseName = IpeUtils.getBaseName(termPath);
+                    if (ExternalTerminalProvider.getSupportedTerminalIDs().contains(termBaseName)) {
+                        npb.useExternalTerminal(ExternalTerminalProvider.getTerminal(execEnv, termBaseName));
+                    }
+                }
+            }
 
             ExecutionDescriptor descr = new ExecutionDescriptor()
                     .controllable(true)
