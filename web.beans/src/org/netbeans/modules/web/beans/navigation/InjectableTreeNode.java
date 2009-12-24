@@ -79,13 +79,21 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
         myElementKind = element.getKind();
         myModifiers = element.getModifiers();
         myCpInfo = compilationInfo.getClasspathInfo();
+        isDisabled = disabled;
 
         setName(element.getSimpleName().toString());
         setIcon(ElementIcons.getElementIcon(element.getKind(), element.getModifiers()));
-        setLabel(Utils.format(element));
-        setFQNLabel(Utils.format(element, false, true));
-        setToolTip(Utils.format(element, true, 
+        setLabel(Utils.format(element, parentType, compilationInfo));
+        setFQNLabel(Utils.format(element, parentType, compilationInfo , false, true));
+        setToolTip(Utils.format(element, parentType, compilationInfo, true, 
                 WebBeansNavigationOptions.isShowFQN()));            
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.JavaElement#isDisabled()
+     */
+    public boolean isDisabled() {
+        return isDisabled;
     }
 
     public FileObject getFileObject() {
@@ -214,5 +222,6 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
     private Icon myIcon ;
     private ElementJavadoc myJavaDoc;
     private final ClasspathInfo myCpInfo;
+    private boolean isDisabled;
 
 }

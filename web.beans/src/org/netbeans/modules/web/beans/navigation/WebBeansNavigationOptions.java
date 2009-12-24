@@ -80,7 +80,7 @@ final class WebBeansNavigationOptions {
     }
 
     static void setShowFQN( boolean selected ) {
-        getPreferences().putBoolean(PROP_showFQN, myShowFQN);         
+        getPreferences().putBoolean(PROP_showFQN, selected);         
     }
 
     static void setLastBounds( Rectangle bounds ) {

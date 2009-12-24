@@ -55,12 +55,15 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+
+import org.netbeans.api.java.source.CompilationInfo;
 
 
 /**
@@ -168,18 +171,23 @@ final class Utils {
         }
     }
     
-    static String format(Element element) {
-        return format(element, false, false);
+    static String format(Element element, DeclaredType parent ,
+            CompilationInfo compilationInfo) 
+    {
+        return format(element, parent, compilationInfo, false, false);
     }
     
-    static String format(Element element, boolean forSignature, boolean FQNs) {
+    static String format(Element element, DeclaredType parent , 
+            CompilationInfo compilationInfo, boolean forSignature, boolean FQNs) 
+    {
         StringBuilder stringBuilder = new StringBuilder();
-        format(element, stringBuilder, forSignature, FQNs);
+        format(element, parent , compilationInfo , stringBuilder, forSignature, FQNs);
 
         return stringBuilder.toString();
     }
     
-    static void format(Element element, StringBuilder stringBuilder, 
+    static void format(Element element, DeclaredType parent ,  
+            CompilationInfo compilationInfo , StringBuilder stringBuilder, 
             boolean forSignature, boolean FQNs) 
     {
         if (element == null) {
@@ -226,7 +234,8 @@ final class Utils {
                 ? typeElement.getQualifiedName().toString()
                 : typeElement.getSimpleName().toString());
 
-            formatTypeParameters(typeElement.getTypeParameters(), stringBuilder, FQNs);
+            formatTypeParameters(typeElement.getTypeParameters(), 
+                    compilationInfo, stringBuilder, FQNs);
 
             break;
 
@@ -235,9 +244,12 @@ final class Utils {
 
         case METHOD:
             ExecutableElement methodElement = (ExecutableElement) element;
-            TypeMirror returnTypeMirror = methodElement.getReturnType();
-            List<?extends TypeParameterElement> typeParameters = 
-                methodElement.getTypeParameters();
+            ExecutableType methodType = (ExecutableType)compilationInfo.getTypes().
+                asMemberOf(parent, methodElement);
+            TypeMirror returnTypeMirror = methodType.getReturnType();
+            /*List<?extends TypeParameterElement> typeParameters = 
+                methodElement.getTypeParameters();*/
+            List<? extends TypeVariable> typeVars = methodType.getTypeVariables();
 
             if (forSignature) {
                 stringBuilder.append(toString(modifiers));
@@ -248,8 +260,15 @@ final class Utils {
                     }
                 }
 
-                if ((typeParameters != null) && (typeParameters.size() > 0)) {
-                    formatTypeParameters(typeParameters, stringBuilder, FQNs);
+                /*if ((typeParameters != null) && (typeParameters.size() > 0)) {
+                    formatTypeParameters(typeParameters, compilationInfo, 
+                            stringBuilder, FQNs);
+                    if (stringBuilder.length() > 0) {
+                        stringBuilder.append(" ");
+                    }
+                }*/
+                if ((typeVars != null) && (typeVars.size() > 0)) {
+                    formatTypeMirrors(typeVars, stringBuilder, FQNs);
                     if (stringBuilder.length() > 0) {
                         stringBuilder.append(" ");
                     }
@@ -264,8 +283,13 @@ final class Utils {
 
             stringBuilder.append(methodElement.getSimpleName().toString());
             stringBuilder.append("(");
-            formatVariableElements(methodElement.getParameters(),
-                methodElement.isVarArgs(), stringBuilder, FQNs);
+            List<? extends TypeMirror> parameterTypes = methodType.getParameterTypes();
+            /*formatVariableElements(methodElement.getParameters(),
+                methodElement.isVarArgs(), compilationInfo, stringBuilder, FQNs);*/
+            formatTypeMirrors(parameterTypes, stringBuilder, FQNs);
+            if (methodElement.isVarArgs()) {
+                stringBuilder.append("...");
+            }
             stringBuilder.append(")");
 
             List<? extends TypeMirror> thrownTypesMirrorsByMethod = methodElement.getThrownTypes();
@@ -298,9 +322,14 @@ final class Utils {
 
                 formatTypeMirror(returnTypeMirror, stringBuilder, FQNs);
 
-                if ((typeParameters != null) && (typeParameters.size() > 0)) {
+                /*if ((typeParameters != null) && (typeParameters.size() > 0)) {
                     stringBuilder.append(":");
-                    formatTypeParameters(typeParameters, stringBuilder, FQNs);
+                    formatTypeParameters(typeParameters, compilationInfo, 
+                            stringBuilder, FQNs);
+                }*/
+                if ((typeVars != null) && (typeVars.size() > 0)) {
+                    stringBuilder.append(":");
+                    formatTypeMirrors(typeVars, stringBuilder, FQNs);
                 }
 
             }
@@ -312,6 +341,8 @@ final class Utils {
 
         case FIELD:
             VariableElement fieldElement = (VariableElement) element;
+            TypeMirror fieldType = compilationInfo.getTypes().
+                asMemberOf(parent, fieldElement);
             if (forSignature) {
                 stringBuilder.append(toString(modifiers));
 
@@ -319,7 +350,7 @@ final class Utils {
                     stringBuilder.append(" ");
                 }
 
-                formatTypeMirror(fieldElement.asType(), stringBuilder, FQNs);
+                formatTypeMirror(fieldType, stringBuilder, FQNs);
             }
 
             if (stringBuilder.length() > 0) {
@@ -347,7 +378,7 @@ final class Utils {
             } else {
                 stringBuilder.append(":");
 
-                formatTypeMirror(fieldElement.asType(), stringBuilder, FQNs);
+                formatTypeMirror(fieldType, stringBuilder, FQNs);
             }
             
             break;
@@ -417,8 +448,9 @@ final class Utils {
     }
     
     static void formatTypeParameters(
-            List<? extends TypeParameterElement> typeParameters,
-            StringBuilder stringBuilder, boolean FQNs )
+            List<? extends TypeParameterElement> typeParameters, 
+            CompilationInfo compilationInfo,StringBuilder stringBuilder, 
+            boolean FQNs )
     {
         if ((typeParameters == null) || (typeParameters.size() == 0)) {
             return;
@@ -437,23 +469,24 @@ final class Utils {
                     stringBuilder.append(", ");
                 }
 
-                format(typeParameterElement, stringBuilder, false, FQNs);
+                format(typeParameterElement, null, compilationInfo,
+                        stringBuilder, false, FQNs);
             }
 
             stringBuilder.append(">");
         }
     }
     
-    static void formatTypeMirrors( List<? extends TypeMirror> thrownTypeMirros,
+    static void formatTypeMirrors( List<? extends TypeMirror> typeMirros,
             StringBuilder stringBuilder, boolean FQNs )
     {
-        if ((thrownTypeMirros == null) || (thrownTypeMirros.size() == 0)) {
+        if ((typeMirros == null) || (typeMirros.size() == 0)) {
             return;
         }
 
         boolean first = true;
 
-        for (TypeMirror typeMirror : thrownTypeMirros) {
+        for (TypeMirror typeMirror : typeMirros) {
             if (first) {
                 first = false;
             }
@@ -550,7 +583,7 @@ final class Utils {
         }
     }
     
-    static void formatVariableElements(
+    /*static void formatVariableElements(
             List<? extends VariableElement> variableElements, boolean varArgs,
             StringBuilder stringBuilder, boolean FQNs )
     {
@@ -574,5 +607,5 @@ final class Utils {
         if (varArgs) {
             stringBuilder.append("...");
         }
-    }
+    }*/
 }

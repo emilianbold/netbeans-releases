@@ -78,6 +78,18 @@ public class ModelUnit {
         }
     }
     
+    public ClassPath getBootPath() {
+        return myBootPath;
+    }
+
+    public ClassPath getCompilePath() {
+        return myCompilePath;
+    }
+
+    public ClassPath getSourcePath() {
+        return mySourcePath;
+    }
+    
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */

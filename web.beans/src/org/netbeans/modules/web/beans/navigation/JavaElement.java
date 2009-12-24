@@ -66,6 +66,7 @@ public interface JavaElement {
     String getFQNLabel();
     String getTooltip();
     Icon getIcon();
+    boolean isDisabled();
     ElementJavadoc getJavaDoc();
     void gotoElement();
     FileObject getFileObject();

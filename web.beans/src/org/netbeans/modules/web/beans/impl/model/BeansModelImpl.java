@@ -54,8 +54,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.beans.api.model.BeansModel;
-import org.netbeans.modules.web.beans.api.model.BeansModelUnit;
+import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.xml.Alternatives;
 import org.netbeans.modules.web.beans.xml.BeanClass;
 import org.netbeans.modules.web.beans.xml.BeanClassContainer;
@@ -88,7 +91,7 @@ public class BeansModelImpl implements BeansModel {
     
     private static final String WEB_INF = "WEB-INF/";       //NOI18N
     
-    public BeansModelImpl( BeansModelUnit unit ){
+    public BeansModelImpl( ModelUnit unit ){
         myUnit = unit;
         myLock = new Object();
         registerChangeListeners();
@@ -395,11 +398,11 @@ public class BeansModelImpl implements BeansModel {
         return myModels;
     }
     
-    private BeansModelUnit getUnit(){
+    private ModelUnit getUnit(){
         return myUnit;
     }
 
-    private BeansModelUnit myUnit;
+    private ModelUnit myUnit;
     private Object myLock;
     private List<WebBeansModel> myModels;
     private Map<FileObject, List<WebBeansModel>> myCompileRootToModel = 

@@ -48,9 +48,12 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.api.model.BeansModel;
@@ -77,6 +80,9 @@ class EnableBeansFilter {
     }
     
     Result filter(){
+        myAlternatives = new HashSet<Element>();
+        myEnabledAlternatives = new HashSet<Element>();
+        
         Set<TypeElement> typeElements = getResult().getTypeElements();
         for (TypeElement typeElement : typeElements) {
             if ( getResult().isAlternative(typeElement)){
@@ -111,7 +117,7 @@ class EnableBeansFilter {
         if ( commonSize == 1 ){
             Element injectable = enabledTypes.size() ==0 ? 
                     enabledProductions.iterator().next(): 
-                        enabledTypeElements.iterator().next();
+                        enabledTypes.iterator().next();
             enabledTypes.addAll( enabledProductions);
             return new InjectableResultImpl( getResult(), injectable, enabledTypes ); 
         }
@@ -195,23 +201,76 @@ class EnableBeansFilter {
             TypeElement typeElement = (TypeElement)element;
             if ( typeElement.getKind() != ElementKind.CLASS){
                 enabledTypes.remove( typeElement );
+                continue;
             }
+            checkProxyability( typeElement , enabledTypes );
             checkSpecializes(typeElement, enabledTypes);
         }
         return enabledTypes;
     }
     
+    private void checkProxyability( TypeElement typeElement,
+            Set<Element> enabledTypes )
+    {
+        /*
+         * Certain legal bean types cannot be proxied by the container:
+         * - classes which don't have a non-private constructor with no parameters,
+         * - classes which are declared final or have final methods,
+         * - primitive types,
+         * -  and array types.
+         */
+        if ( hasModifier(typeElement, Modifier.FINAL)){
+            enabledTypes.remove(typeElement);
+            return;
+        }
+        List<ExecutableElement> methods = ElementFilter.methodsIn(
+                typeElement.getEnclosedElements()) ;
+        for (ExecutableElement executableElement : methods) {
+            if ( hasModifier(executableElement, Modifier.FINAL)){
+                enabledTypes.remove(typeElement);
+                return;
+            }
+        }
+        
+        List<ExecutableElement> constructors = ElementFilter.constructorsIn(
+                typeElement.getEnclosedElements()) ;
+        boolean appropriateCtor = false;
+        for (ExecutableElement constructor : constructors) {
+            if ( hasModifier(constructor, Modifier.PRIVATE)){
+                continue;
+            }
+            if ( constructor.getParameters().size() == 0 ){
+                appropriateCtor = true;
+                break;
+            }
+        }
+        
+        if ( !appropriateCtor){
+            enabledTypes.remove(typeElement);
+        }
+    }
+    
+    private boolean hasModifier ( Element element , Modifier mod){
+        Set<Modifier> modifiers = element.getModifiers();
+        for (Modifier modifier : modifiers) {
+            if ( modifier.equals( mod )){
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void checkSpecializes( TypeElement typeElement, 
             Set<Element> enabledBeans)
     {
         if (AnnotationObjectProvider.hasSpecializes(typeElement, getHelper())) {
             TypeMirror superClass = typeElement.getSuperclass();
             if (superClass instanceof DeclaredType) {
-                typeElement = (TypeElement) ((DeclaredType) superClass)
+                TypeElement superElement = (TypeElement) ((DeclaredType) superClass)
                         .asElement();
-                if (enabledBeans.contains(typeElement)) {
+                if (enabledBeans.contains(superElement)) {
                     enabledBeans.remove(typeElement);
-                    checkSpecializes(typeElement, enabledBeans);
+                    checkSpecializes(superElement, enabledBeans);
                 }
                 else {
                     return;

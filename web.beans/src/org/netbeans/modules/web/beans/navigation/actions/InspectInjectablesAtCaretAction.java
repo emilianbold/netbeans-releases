@@ -43,8 +43,6 @@ package org.netbeans.modules.web.beans.navigation.actions;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,7 +60,6 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -80,6 +77,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.Result;
@@ -234,11 +232,19 @@ public final class InspectInjectablesAtCaretAction extends BaseAction {
         }
         SourceGroup[] sourceGroups = sources.getSourceGroups( 
                 JavaProjectConstants.SOURCES_TYPE_JAVA );
-        ClassPath[] paths = new ClassPath[ sourceGroups.length];
+        SourceGroup[] webGroup = sources.getSourceGroups(
+                WebProjectConstants.TYPE_WEB_INF);
+        ClassPath[] paths = new ClassPath[ sourceGroups.length+webGroup.length];
         int i=0;
         for (SourceGroup sourceGroup : sourceGroups) {
             FileObject rootFolder = sourceGroup.getRootFolder();
             paths[ i ] = provider.findClassPath( rootFolder, type);
+            i++;
+        }
+        for (SourceGroup sourceGroup : webGroup) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            paths[ i ] = provider.findClassPath( rootFolder, type);
+            i++;
         }
         return ClassPathSupport.createProxyClassPath( paths );
     }

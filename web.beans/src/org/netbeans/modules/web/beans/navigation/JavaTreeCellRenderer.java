@@ -65,8 +65,10 @@ public final class JavaTreeCellRenderer extends DefaultTreeCellRenderer {
         }
 
         if (value instanceof JavaElement) {
-            label.setIcon(((JavaElement) value).getIcon());
-            label.setToolTipText(((JavaElement) value).getTooltip());
+            JavaElement javaElement  = (JavaElement) value;
+            label.setIcon(javaElement.getIcon());
+            label.setToolTipText(javaElement.getTooltip());
+            label.setEnabled( !javaElement.isDisabled() );
         }
 
         return label;
