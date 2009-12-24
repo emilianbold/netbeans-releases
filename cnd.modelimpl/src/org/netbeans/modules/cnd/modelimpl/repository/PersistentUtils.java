@@ -247,40 +247,6 @@ public class PersistentUtils {
         return res;
     }
 
-    public static void writeLongUTF(CharSequence st, DataOutput aStream) throws IOException {
-        if (st != null) {
-            // write extent count
-            // NB: for an empty string, 0 is written
-            aStream.writeShort(st.length() / UTF_LIMIT + ((st.length() % UTF_LIMIT == 0) ? 0 : 1));
-            // write extents
-            // NB: for an empty string, nothing is written
-            for (int start = 0; start < st.length(); start += UTF_LIMIT) {
-                CharSequence extent = st.subSequence(start, Math.min(start + UTF_LIMIT, st.length()));
-                aStream.writeUTF(extent.toString());
-            }
-        } else {
-            aStream.writeShort(-1);
-        }
-    }
-
-    public static String readLongUTF(DataInput aStream) throws IOException {
-        short cnt = aStream.readShort();
-        switch (cnt) {
-            case -1:
-                return null;
-            case 0:
-                return ""; // NOI18N
-            case 1:
-                return aStream.readUTF();
-            default:
-                StringBuilder sb = new StringBuilder(cnt * UTF_LIMIT);
-                for (int i = 0; i < cnt; i++) {
-                    sb.append(aStream.readUTF());
-                }
-                return sb.toString();
-        }
-    }
-
     ////////////////////////////////////////////////////////////////////////////
     // support CsmExpression
     public static void writeExpression(CsmExpression expr, DataOutput output) throws IOException {
