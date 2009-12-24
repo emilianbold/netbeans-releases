@@ -71,4 +71,15 @@ public class GemRequirementTest extends TestCase {
         assertEquals(GemRequirement.Status.FRAMEWORK, info.getStatus());
 
     }
+
+    public void testFromString() {
+        GemRequirement info = GemRequirement.fromString("color");
+        assertNotNull(info);
+        assertEquals("color", info.getName());
+
+        info = GemRequirement.fromString("rubyforge ~> 1.0.4");
+        assertEquals("rubyforge", info.getName());
+        assertEquals("1.0.4", info.getVersion());
+        assertEquals("~>", info.getOperator());
+    }
 }

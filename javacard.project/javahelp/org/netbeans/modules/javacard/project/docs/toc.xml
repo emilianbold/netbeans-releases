@@ -35,8 +35,9 @@
         <tocitem target="org.netbeans.modules.javacard.CustomizeDevice" text="Customize a Device" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.RemoveDeviceFromPlatform" text="Remove a Device From a Platform" expand="false">
     </tocitem></tocitem>
-    <tocitem target="org.netbeans.modules.javacard.DebuggingApplications" text="Debugging Applications" expand="false">
-        <tocitem target="org.netbeans.modules.javacard.DebugApplication2" text="Debug an Application" expand="false"></tocitem></tocitem>
+    <<tocitem target="org.netbeans.modules.javacard.DebuggingApplications" text="Debugging Applications" expand="false">
+        <tocitem target="org.netbeans.modules.javacard.DebugApplication2" text="Debug an Application" expand="false"></tocitem>
+    </tocitem>
     <tocitem target="org.netbeans.modules.javacard.CreatingClassicAppletProject" text="Creating a Classic Applet Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.CreateClassicAppletProjectFromTemplate" text="Create a Classic Applet Project From the Template" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.CreateClassicAppletProjectFromExistingCode" text="Create a Classic Applet Project From Existing Code" expand="false"></tocitem></tocitem>

@@ -1,0 +1,46 @@
+%%TestCase simple
+package test;
+public class Test {
+    private static Object TEST;
+    public static Object get() {
+        if (TEST == null) {
+            synchronized (Test.class) {
+                if (TEST == null) {
+                    TEST = new Object();
+                }
+            }
+        }
+
+        return TEST;
+    }
+}
+%%=>
+package test;
+public class Test {
+    private static Object TEST;
+    public static Object get() {
+        synchronized (Test.class) {
+            if (TEST == null) {
+                TEST = new Object();
+            }
+        }
+
+        return TEST;
+    }
+}
+%%TestCase volatile
+package test;
+public class Test {
+    private static volatile Object TEST;
+    public static Object get() {
+        if (TEST == null) {
+            synchronized (Test.class) {
+                if (TEST == null) {
+                    TEST = new Object();
+                }
+            }
+        }
+
+        return TEST;
+    }
+}

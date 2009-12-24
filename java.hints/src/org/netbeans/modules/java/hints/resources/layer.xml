@@ -139,6 +139,9 @@ made subject to such option by the copyright holder.
                 </folder>
                 <file name="org-netbeans-modules-java-hints-infrastructure-ErrorHintsFactory.instance"/>
                 <file name="org-netbeans-modules-java-hints-infrastructure-JavaHintsPositionRefresher.instance"/>
+
+                <!-- Jackpot -->
+                <file name="org-netbeans-modules-java-hints-jackpot-impl-hints-HintsInvoker$FactoryImpl.instance"/>
             </folder>
         </folder>
     </folder>
@@ -346,7 +349,14 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-java-hints-DeclarationForInstanceOf.instance"/>
             </folder>
          </folder>
-        
+
+        <folder name="declarative">
+            <file name="assert2if.hint" url="../jackpot/hintsimpl/assert2if.hint" />
+            <file name="variable-decl-assignment.hint" url="../jackpot/hintsimpl/variable-decl-assignment.hint" />
+            <file name="double-checked-locking.hint" url="../jackpot/hintsimpl/double-checked-locking.hint" />
+            <file name="sync-on-non-final.hint" url="../jackpot/hintsimpl/sync-on-non-final.hint" />
+            <file name="abstract-document.hint" url="../jackpot/hintsimpl/abstract-document.hint" />
+        </folder>
     </folder>
     
     <folder name="OptionsDialog">

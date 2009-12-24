@@ -1,0 +1,4 @@
+$modifiers$ java.lang.String $name = $initializer;
+=>
+$modifiers$ java.lang.CharSequence $name = $initializer;
+;;
