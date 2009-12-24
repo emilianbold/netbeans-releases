@@ -94,55 +94,56 @@ public class DwarfReader extends ElfReader {
     }
     
     public Object readForm(FORM form) throws IOException {
-        if (form.equals(FORM.DW_FORM_addr)) {
-            return read(new byte[getAddressSize()]);
-        } else if (form.equals(FORM.DW_FORM_block2)) {
-            return read(new byte[readShort()]);
-        } else if (form.equals(FORM.DW_FORM_block4)) {
-            return read(new byte[readInt()]);
-        } else if (form.equals(FORM.DW_FORM_data2)) {
-            //TODO: check on all architectures!
-            //return read(new byte[2]);
-            return readShort();
-        } else if (form.equals(FORM.DW_FORM_data4)) {
-            //TODO: check on all architectures!
-            //return read(new byte[4]);
-            return readInt();
-        } else if (form.equals(FORM.DW_FORM_data8)) {
-            //TODO: check on all architectures!
-            //return read(new byte[8]);
-            return readLong();
-        } else if (form.equals(FORM.DW_FORM_string)) {
-            return readString();
-        } else if (form.equals(FORM.DW_FORM_block)) {
-            return read(new byte[readUnsignedLEB128()]);
-        } else if (form.equals(FORM.DW_FORM_block1)) {
-            return read(new byte[readUnsignedByte()]);
-        } else if (form.equals(FORM.DW_FORM_data1)) {
-            return readByte();
-        } else if (form.equals(FORM.DW_FORM_flag)) {
-            return readBoolean();
-        } else if (form.equals(FORM.DW_FORM_sdata)) {
-            return readSignedLEB128();
-        } else if (form.equals(FORM.DW_FORM_strp)) {
-            return ((StringTableSection)getSection(SECTIONS.DEBUG_STR)).getString(readInt()); 
-        } else if (form.equals(FORM.DW_FORM_udata)) {
-            return readUnsignedLEB128();
-        } else if (form.equals(FORM.DW_FORM_ref_addr)) {
-            return read(new byte[getAddressSize()]);
-        } else if (form.equals(FORM.DW_FORM_ref1)) {
-            return read(new byte[readUnsignedByte()]);
-        } else if (form.equals(FORM.DW_FORM_ref2)) {
-            return read(new byte[2]);
-        } else if (form.equals(FORM.DW_FORM_ref4)) {
-            return readInt();
-        } else if (form.equals(FORM.DW_FORM_ref8)) {
-            return readLong();
-        } else if (form.equals(FORM.DW_FORM_ref_udata)) {
-            return read(new byte[readUnsignedLEB128()]);
-        } else if (form.equals(FORM.DW_FORM_indirect)) {
-            return readForm(FORM.get(readUnsignedLEB128()));
-        } else {
+        switch(form) {
+            case DW_FORM_addr:
+                return read(new byte[getAddressSize()]);
+            case DW_FORM_block2:
+                return read(new byte[readShort()]);
+            case DW_FORM_block4:
+                return read(new byte[readInt()]);
+            case DW_FORM_data2:
+                //TODO: check on all architectures!
+                //return read(new byte[2]);
+                return readShort();
+            case DW_FORM_data4:
+                //TODO: check on all architectures!
+                //return read(new byte[4]);
+                return readInt();
+            case DW_FORM_data8:
+                //TODO: check on all architectures!
+                //return read(new byte[8]);
+                return readLong();
+            case DW_FORM_string:
+                return readString();
+            case DW_FORM_block:
+                return read(new byte[readUnsignedLEB128()]);
+            case DW_FORM_block1:
+                return read(new byte[readUnsignedByte()]);
+            case DW_FORM_data1:
+                return readByte();
+            case DW_FORM_flag:
+                return readBoolean();
+            case DW_FORM_sdata:
+                return readSignedLEB128();
+            case DW_FORM_strp:
+                return ((StringTableSection)getSection(SECTIONS.DEBUG_STR)).getString(readInt());
+            case DW_FORM_udata:
+                return readUnsignedLEB128();
+            case DW_FORM_ref_addr:
+                return read(new byte[getAddressSize()]);
+            case DW_FORM_ref1:
+                return read(new byte[readUnsignedByte()]);
+            case DW_FORM_ref2:
+                return read(new byte[2]);
+            case DW_FORM_ref4:
+                return readInt();
+            case DW_FORM_ref8:
+                return readLong();
+            case DW_FORM_ref_udata:
+                return read(new byte[readUnsignedLEB128()]);
+            case DW_FORM_indirect:
+                return readForm(FORM.get(readUnsignedLEB128()));
+            default:
             throw new IOException("unknown type " + form); // NOI18N
         }
     }

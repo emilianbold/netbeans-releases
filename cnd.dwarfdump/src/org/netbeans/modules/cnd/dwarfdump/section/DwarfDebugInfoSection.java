@@ -50,8 +50,6 @@
 package org.netbeans.modules.cnd.dwarfdump.section;
 
 import java.io.ByteArrayOutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import java.io.IOException;
@@ -119,7 +117,7 @@ public class DwarfDebugInfoSection extends ElfSection {
         try {
             for (CompilationUnit unit : getCompilationUnits()) {
                 unit.dump(out);
-            }
+    }
         } catch (IOException ex) {
             ex.printStackTrace();
         }
