@@ -40,9 +40,17 @@ package org.netbeans.modules.ruby.railsprojects.classpath;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
+import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
+import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
+import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
+import org.openide.util.EditableProperties;
+import org.openide.util.Exceptions;
 
 /**
  * Represents the explicit gem requirements of a Rails application.
@@ -51,7 +59,7 @@ import org.netbeans.modules.ruby.railsprojects.RailsProject;
  */
 public final class RequiredGems {
 
-    static final String REQUIRED_GEMS_PROPERTY = "required-gems"; //NOI18N
+    static final String REQUIRED_GEMS_PROPERTY = "required.gems"; //NOI18N
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     private List<GemRequirement> requirements;
     private final RailsProject project;
@@ -66,12 +74,58 @@ public final class RequiredGems {
      * @return
      */
     List<GemRequirement> geGemRequirements() {
+        if (requirements == null) {
+            String required = project.evaluator().getProperty(REQUIRED_GEMS_PROPERTY);
+            if (required != null) {
+                requirements = fromString(required);
+            }
+        }
         return requirements;
+    }
+
+    String asString() {
+        if (requirements == null || requirements.isEmpty()) {
+            return "";
+        }
+        StringBuilder result = new StringBuilder();
+        for (Iterator<GemRequirement> it = requirements.iterator(); it.hasNext();) {
+            GemRequirement gemRequirement = it.next();
+            result.append(gemRequirement.asString());
+            if (it.hasNext()) {
+                result.append(", ");
+            }
+        }
+        return result.toString();
+    }
+
+    static List<GemRequirement> fromString(String str) {
+        String[] gems = str.split(",");
+        List<GemRequirement> result = new ArrayList<GemRequirement>();
+        for (String gem : gems) {
+            result.add(GemRequirement.fromString(gem.trim()));
+        }
+        return result;
     }
 
     void setRequiredGems(List<GemRequirement> requirements) {
         List<GemRequirement> old = this.requirements;
         this.requirements = requirements;
+
+        UpdateHelper helper = project.getUpdateHelper();
+        EditableProperties projectProperties = helper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
+        if (requirements == null) {
+            projectProperties.remove(REQUIRED_GEMS_PROPERTY);
+        } else {
+            projectProperties.put(REQUIRED_GEMS_PROPERTY, asString());
+        }
+        helper.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+        try {
+            ProjectManager.getDefault().saveProject(project);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         changeSupport.firePropertyChange(REQUIRED_GEMS_PROPERTY, old, requirements);
     }
 
