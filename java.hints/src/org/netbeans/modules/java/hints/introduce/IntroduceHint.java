@@ -368,8 +368,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             boolean expressionStatement = resolved.getParentPath().getLeaf().getKind() == Kind.EXPRESSION_STATEMENT;
             boolean isConstant = checkConstantExpression(info, resolved) && !expressionStatement;
             boolean isVariable = findStatement(resolved) != null && method != null;
-            List<TreePath> duplicatesForVariable = isVariable ? CopyFinder.computeDuplicates(info, resolved, method, cancel) : null;
-            List<TreePath> duplicatesForConstant = /*isConstant ? */CopyFinder.computeDuplicates(info, resolved, new TreePath(info.getCompilationUnit()), cancel);// : null;
+            Set<TreePath> duplicatesForVariable = isVariable ? CopyFinder.computeDuplicates(info, resolved, method, cancel, null).keySet() : null;
+            Set<TreePath> duplicatesForConstant = /*isConstant ? */CopyFinder.computeDuplicates(info, resolved, new TreePath(info.getCompilationUnit()), cancel, null).keySet();// : null;
             Scope scope = info.getTrees().getScope(resolved);
             boolean statik = scope != null ? info.getTreeUtilities().isStaticContext(scope) : false;
             String guessedName = Utilities.guessName(info, resolved);
@@ -746,7 +746,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return true;
     }
 
-    private static BlockTree findAddPosition(CompilationInfo info, TreePath original, List<? extends TreePath> candidates, int[] outPosition) {
+    private static BlockTree findAddPosition(CompilationInfo info, TreePath original, Set<? extends TreePath> candidates, int[] outPosition) {
         //find least common block holding all the candidates:
         TreePath statement = original;
 
@@ -799,7 +799,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return statements;
     }
 
-    private static int[] computeInitializeIn(final CompilationInfo info, TreePath firstOccurrence, List<TreePath> occurrences) {
+    private static int[] computeInitializeIn(final CompilationInfo info, TreePath firstOccurrence, Set<TreePath> occurrences) {
         int[] result = new int[] {7, 7};
         boolean inOneMethod = true;
         Tree currentMethod = findMethod(firstOccurrence).getLeaf();
@@ -1186,9 +1186,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             returnValueComputed = true;
                         } else {
                             if (returnValue != null && currentReturnValue != null) {
-                                List<TreePath> candidates = CopyFinder.computeDuplicates(info, returnValue, currentReturnValue, cancel);
+                                Set<TreePath> candidates = CopyFinder.computeDuplicates(info, returnValue, currentReturnValue, cancel, null).keySet();
 
-                                if (candidates.size() != 1 || candidates.get(0).getLeaf() != rt.getExpression()) {
+                                if (candidates.size() != 1 || candidates.iterator().next().getLeaf() != rt.getExpression()) {
                                     return "ERR_Different_Return_Values"; // NOI18N
                                 }
                             } else {
@@ -1350,7 +1350,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             parameter.rewrite(pathToClass.getLeaf(), nueClass);
 
                             if (replaceAll) {
-                                for (TreePath p : CopyFinder.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()), new AtomicBoolean())) {
+                                for (TreePath p : CopyFinder.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()), new AtomicBoolean(), null).keySet()) {
                                     parameter.rewrite(p.getLeaf(), make.Identifier(name));
                                 }
                             }
@@ -1366,7 +1366,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             int       index;
 
                             if (replaceAll) {
-                                List<TreePath> candidates = CopyFinder.computeDuplicates(parameter, resolved, method, new AtomicBoolean());
+                                Set<TreePath> candidates = CopyFinder.computeDuplicates(parameter, resolved, method, new AtomicBoolean(), null).keySet();
                                 for (TreePath p : candidates) {
                                     Tree leaf = p.getLeaf();
 
@@ -1383,7 +1383,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 index = out[0];
                             } else {
                                 int[] out = new int[1];
-                                statements = findAddPosition(parameter, resolved, Collections.<TreePath>emptyList(), out);
+                                statements = findAddPosition(parameter, resolved, Collections.<TreePath>emptySet(), out);
 
                                 if (statements == null) {
                                     return;
@@ -1497,7 +1497,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     boolean isAnyOccurenceStatic = false;
 
                     if (replaceAll) {
-                        for (TreePath p : CopyFinder.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()), new AtomicBoolean())) {
+                        for (TreePath p : CopyFinder.computeDuplicates(parameter, resolved, new TreePath(parameter.getCompilationUnit()), new AtomicBoolean(), null).keySet()) {
                             parameter.rewrite(p.getLeaf(), make.Identifier(name));
                             Scope occurenceScope = parameter.getTrees().getScope(p);
                             if(parameter.getTreeUtilities().isStaticContext(occurenceScope))

@@ -1,0 +1,5 @@
+<?
+import java.util.LinkedList;
+import java.util.ArrayList;
+?>
+LinkedList $0; => ArrayList $0; ;;
