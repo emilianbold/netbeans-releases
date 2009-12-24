@@ -50,7 +50,6 @@ import javax.swing.text.Element;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.AttributeSet;
 import javax.swing.undo.UndoableEdit;
-import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CannotRedoException;
 
@@ -238,26 +237,6 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         return getFixLineSyntaxState().getSyntaxUpdateTokenList();
     }
     
-    public String getDrawLayerName() {
-        if (getType() != DocumentEvent.EventType.CHANGE) {
-            throw new IllegalStateException("Can be called for CHANGE events only."); // NOI18N
-        }
-
-        DrawLayerChange dlc = (DrawLayerChange)findEdit(DrawLayerChange.class);
-
-        return (dlc != null) ? dlc.getDrawLayerName() : null;
-    }
-
-    public int getDrawLayerVisibility() {
-        if (getType() != DocumentEvent.EventType.CHANGE) {
-            throw new IllegalStateException("Can be called for CHANGE events only."); // NOI18N
-        }
-
-        DrawLayerChange dlc = (DrawLayerChange)findEdit(DrawLayerChange.class);
-
-        return (dlc != null) ? dlc.getDrawLayerVisibility() : -1;
-    }
-
     /** Whether this event is being fired because it's being undone. */
     public boolean isInUndo() {
         return inUndo;
@@ -268,7 +247,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         return inRedo;
     }
 
-    public void undo() throws CannotUndoException {
+    public @Override void undo() throws CannotUndoException {
         BaseDocument doc = (BaseDocument)getDocument();
         doc.incrementDocVersion();
 
@@ -328,7 +307,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         inUndo = false;
     }
 
-    public void redo() throws CannotRedoException {
+    public @Override void redo() throws CannotRedoException {
         BaseDocument doc = (BaseDocument)getDocument();
         doc.incrementDocVersion();
         
@@ -386,7 +365,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         inRedo = false;
     }
 
-    public boolean addEdit(UndoableEdit anEdit) {
+    public @Override boolean addEdit(UndoableEdit anEdit) {
         // Super of addEdit()
 
         // if the number of changes gets too great, start using
@@ -458,7 +437,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         }
     }
 
-    public boolean canUndo() {
+    public @Override boolean canUndo() {
         // Super of canUndo
 	return !inProgress2 && alive2 && hasBeenDone2
         // End super of canUndo
@@ -470,24 +449,24 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
      * 
      * @see	#isInProgress
      */
-    public boolean canRedo() {
+    public @Override boolean canRedo() {
         // Super of canRedo
 	return !inProgress2 && alive2 && !hasBeenDone2;
         // End super of canRedo
     }
 
-    public boolean isInProgress() {
+    public @Override boolean isInProgress() {
         // Super of isInProgress()
         return inProgress2;
         // End super of isInProgress()
     }
 
-    public String getUndoPresentationName() {
-        return "";
+    public @Override String getUndoPresentationName() {
+        return ""; //NOI18N
     }
 
-    public String getRedoPresentationName() {
-        return "";
+    public @Override String getRedoPresentationName() {
+        return ""; //NOI18N
     }
 
     /** Returns true if this event can be merged by the previous
@@ -532,7 +511,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
     * parts (words) and undoing/redoing them at once.
     * This method returns true whether 
     */
-    public boolean replaceEdit(UndoableEdit anEdit) {
+    public @Override boolean replaceEdit(UndoableEdit anEdit) {
         BaseDocument doc = (BaseDocument)getDocument();
         if (anEdit instanceof BaseDocument.AtomicCompoundEdit) {
             BaseDocument.AtomicCompoundEdit compEdit
@@ -557,7 +536,7 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         return false;
     }
 
-    public void die() {
+    public @Override void die() {
         // Super of die()
 	int size = edits.size();
 	for (int i = size-1; i >= 0; i--)
@@ -575,13 +554,13 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
         }
     }
 
-    public void end() {
+    public @Override void end() {
         // Super of end()
 	inProgress2 = false;
         // End super of end()
     }
 
-    public DocumentEvent.ElementChange getChange(Element elem) {
+    public @Override DocumentEvent.ElementChange getChange(Element elem) {
         // Super of getChange()
         if (changeLookup2 != null) {
             return (DocumentEvent.ElementChange) changeLookup2.get(elem);
@@ -601,33 +580,11 @@ public class BaseDocumentEvent extends AbstractDocument.DefaultDocumentEvent {
     }
 
 
-    public String toString() {
+    public @Override String toString() {
         return System.identityHashCode(this) + " " + super.toString() // NOI18N
                + ", type=" + getType() // NOI18N
                + ((getType() != DocumentEvent.EventType.CHANGE)
                   ? ("text='" + getText() + "'") : ""); // NOI18N
     }
 
-    /** Edit describing the change of the document draw-layers */
-    static class DrawLayerChange extends AbstractUndoableEdit {
-
-        String drawLayerName;
-
-        int drawLayerVisibility;
-
-        DrawLayerChange(String drawLayerName, int drawLayerVisibility) {
-            this.drawLayerName = drawLayerName;
-            this.drawLayerVisibility = drawLayerVisibility;
-        }
-
-        public String getDrawLayerName() {
-            return drawLayerName;
-        }
-
-        public int getDrawLayerVisibility() {
-            return drawLayerVisibility;
-        }
-
-    }
-    
 }

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.drawing;
 
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -59,6 +59,8 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
+import org.netbeans.editor.BaseTextUI;
+import org.netbeans.editor.EditorUI;
 import org.netbeans.lib.editor.view.GapDocumentView;
 import org.netbeans.editor.view.spi.LockView;
 
@@ -67,7 +69,7 @@ import org.netbeans.editor.view.spi.LockView;
  *
  * @author Miloslav Metelka
  */
-/* package */ class DrawEngineDocView extends GapDocumentView
+public class DrawEngineDocView extends GapDocumentView
 implements FoldHierarchyListener, PropertyChangeListener {
     
     private static final boolean debugRebuild
@@ -86,17 +88,17 @@ implements FoldHierarchyListener, PropertyChangeListener {
     
     private boolean estimatedSpanResetInitiated;
     
-    DrawEngineDocView(Element elem) {
+    public DrawEngineDocView(Element elem) {
         this(elem, false);
     }
     
-    DrawEngineDocView(Element elem, boolean hideBottomPadding) {
+    public DrawEngineDocView(Element elem, boolean hideBottomPadding) {
         super(elem, hideBottomPadding);
         
         setEstimatedSpan(true);
     }
     
-    public void setParent(View parent) {
+    public @Override void setParent(View parent) {
         if (parent != null) { // start listening
             JTextComponent component = (JTextComponent)parent.getContainer();
             foldHierarchy = FoldHierarchy.get(component);
@@ -131,7 +133,7 @@ implements FoldHierarchyListener, PropertyChangeListener {
         return foldHierarchy;
     }
     
-    protected boolean useCustomReloadChildren() {
+    protected @Override boolean useCustomReloadChildren() {
         return true;
     }
 
@@ -205,7 +207,7 @@ implements FoldHierarchyListener, PropertyChangeListener {
         collapsedFold = null;
     }
 
-    protected void customReloadChildren(int index, int removeLength, int startOffset, int endOffset) {
+    protected @Override void customReloadChildren(int index, int removeLength, int startOffset, int endOffset) {
         // if removing all the views reset the flag
         if (index == 0 && removeLength == getViewCount()) {
             collapsedFoldsInPresentViews = false; // suppose there will be no folds in line views
@@ -228,7 +230,7 @@ implements FoldHierarchyListener, PropertyChangeListener {
         }
     }
         
-    protected View createCustomView(ViewFactory f,
+    protected @Override View createCustomView(ViewFactory f,
     int startOffset, int maxEndOffset, int elementIndex) {
         if (elementIndex == -1) {
             throw new IllegalStateException("Need underlying line element structure"); // NOI18N
@@ -248,9 +250,9 @@ implements FoldHierarchyListener, PropertyChangeListener {
                 List foldAndEndLineElemList = new ArrayList();
 
                 while (true) {
-                    int collapsedFoldEndOffset = collapsedFold.getEndOffset();
+                    int _collapsedFoldEndOffset = collapsedFold.getEndOffset();
                     // Find line element index of the line in which the collapsed fold ends
-                    while (collapsedFoldEndOffset > lineElemEndOffset) {
+                    while (_collapsedFoldEndOffset > lineElemEndOffset) {
                         elementIndex++;
                         lineElem = elem.getElement(elementIndex);
                         lineElemEndOffset = lineElem.getEndOffset();
@@ -326,12 +328,12 @@ implements FoldHierarchyListener, PropertyChangeListener {
         }
     }
 
-    public void paint(Graphics g, Shape allocation) {
+    public @Override void paint(Graphics g, Shape allocation) {
         java.awt.Component c = getContainer();
         if (c instanceof javax.swing.text.JTextComponent){
             TextUI textUI = ((javax.swing.text.JTextComponent)c).getUI();
             if (textUI instanceof BaseTextUI){
-                ((BaseTextUI) textUI).getEditorUI().paint(g);
+                EditorUiAccessor.get().paint(((BaseTextUI) textUI).getEditorUI(), g);
             }
         }
 
@@ -344,7 +346,7 @@ implements FoldHierarchyListener, PropertyChangeListener {
         }
     }
     
-    public void setSize(float width, float height) {
+    public @Override void setSize(float width, float height) {
         super.setSize(width, height);
 
         /* #69446 - disabled estimated span reset
@@ -379,7 +381,7 @@ implements FoldHierarchyListener, PropertyChangeListener {
          */
     }
 
-    protected boolean isChildrenResizeDisabled() {
+    protected @Override boolean isChildrenResizeDisabled() {
         return true;
     }
     

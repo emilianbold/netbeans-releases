@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.drawing;
 
 /** Draw layer applies changes to draw context during painting process.
 * Each extended UI has its own set of layers.
@@ -61,7 +61,7 @@ package org.netbeans.editor;
 */
 
 
-public interface DrawLayer {
+/* package */ interface DrawLayer {
 
     /**
      * Start of the next region with the frame.
@@ -122,7 +122,7 @@ public interface DrawLayer {
     * @param mark draw-mark at the fragment-offset or null if called
     * because of the next-activity-change-offset.
     */
-    public boolean isActive(DrawContext ctx, MarkFactory.DrawMark mark);
+    public boolean isActive(DrawContext ctx, DrawMark mark);
 
     /** Update draw context by setting colors, fonts and possibly other draw
     * properties.
@@ -200,7 +200,7 @@ public interface DrawLayer {
             return lineNumber;
         }
 
-        public String toString() {
+        public @Override String toString() {
             return "Layer " + getClass() + ", name='" + name; // NOI18N
         }
 

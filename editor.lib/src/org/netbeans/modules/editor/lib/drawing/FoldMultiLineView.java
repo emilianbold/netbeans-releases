@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.drawing;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +50,7 @@ import javax.swing.text.Position;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 import org.netbeans.api.editor.fold.Fold;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.view.GapMultiLineView;
 
 /**
@@ -84,11 +85,11 @@ import org.netbeans.lib.editor.view.GapMultiLineView;
         return (JTextComponent)getContainer();
     }
     
-    protected boolean useCustomReloadChildren() {
+    protected @Override boolean useCustomReloadChildren() {
         return true;
     }
     
-    protected void reloadChildren(int index, int removeLength, int startOffset, int endOffset) {
+    protected @Override void reloadChildren(int index, int removeLength, int startOffset, int endOffset) {
         // TODO uncomment assert (index == 0 && removeLength == 0
             // && startOffset == getStartOffset() && endOffset == getEndOffset());
 

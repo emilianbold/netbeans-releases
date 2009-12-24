@@ -85,6 +85,7 @@ import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.lib.editor.view.GapBoxView;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
@@ -2281,7 +2282,7 @@ public class ActionFactory {
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            DrawEngineDocView rootView = (DrawEngineDocView)Utilities.getDocumentView(target);
+            GapBoxView rootView = (GapBoxView)Utilities.getDocumentView(target);
             AbstractDocument adoc = (AbstractDocument)target.getDocument();
 
             // Dump fold hierarchy
