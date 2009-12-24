@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.impl;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
@@ -55,12 +55,12 @@ import javax.swing.text.Position;
 * @version 1.00
 */
 
-class BasePosition implements Position {
+public final class BasePosition implements Position {
 
     /** The mark that serves this position */
     private MultiMark mark;
 
-    BasePosition() throws BadLocationException {
+    public BasePosition() throws BadLocationException {
     }
 
     /** Get offset in document for this position */

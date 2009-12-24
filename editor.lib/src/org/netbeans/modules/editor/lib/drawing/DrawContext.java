@@ -39,10 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.drawing;
 
 import java.awt.Color;
 import java.awt.Font;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.TokenContextPath;
+import org.netbeans.editor.TokenID;
 
 /** This interface provides methods for
 * getting and setting various drawing attributes.

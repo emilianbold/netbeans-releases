@@ -48,6 +48,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
+import org.netbeans.modules.editor.lib.impl.MultiMark;
 
 /**
 * Marks hold the relative position in the document.

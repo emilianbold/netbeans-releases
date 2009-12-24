@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.drawing;
 
 import java.awt.Container;
 import java.awt.FontMetrics;
@@ -63,6 +63,14 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.BaseTextUI;
+import org.netbeans.editor.Coloring;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.FoldingToolTip;
+import org.netbeans.editor.FontMetricsCache;
+import org.netbeans.editor.PopupManager;
+import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.editor.view.spi.LockView;
 import org.openide.util.Lookup;

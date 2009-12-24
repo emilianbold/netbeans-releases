@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.drawing;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -50,6 +50,7 @@ import java.awt.Rectangle;
 import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -59,6 +60,20 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Segment;
 import javax.swing.text.View;
 import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.editor.Analyzer;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Coloring;
+import org.netbeans.editor.EditorDebug;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.FontMetricsCache;
+import org.netbeans.editor.InvalidMarkException;
+import org.netbeans.editor.Mark;
+import org.netbeans.editor.TokenContextPath;
+import org.netbeans.editor.TokenID;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.lib.EditorPackageAccessor;
+import org.netbeans.modules.editor.lib.impl.MarkVector;
+import org.netbeans.modules.editor.lib.impl.MultiMark;
 
 /**
  * This class is responsible for drawing editor components. It's a singleton.
@@ -67,7 +82,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
  * 
  * @author Miloslav Metelka
  */
-/* package */ final class DrawEngine {
+public final class DrawEngine {
 
     private static final Logger LOG = Logger.getLogger(DrawEngine.class.getName());
     
@@ -92,9 +107,10 @@ import org.netbeans.api.editor.settings.FontColorNames;
         return drawEngine;
     }
     
-    private void initLineNumbering(DrawInfo ctx) {
+    private void initLineNumbering(DrawInfo ctx, EditorUI eui) {
+        EditorUiAccessor accessor = EditorUiAccessor.get();
         // Resolve whether line numbers will be painted
-        ctx.lineNumbering = ctx.editorUI.lineNumberVisible
+        ctx.lineNumbering = accessor.isLineNumberVisible(eui)
                             && ctx.drawGraphics.supportsLineNumbers();
 
         // create buffer for showing line numbers
@@ -105,7 +121,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
                 LOG.log(Level.WARNING, null, e);
             }
 
-            ctx.lineNumberColoring = ctx.editorUI.getColoring(FontColorNames.LINE_NUMBER_COLORING);
+            ctx.lineNumberColoring = accessor.getColoring(eui, FontColorNames.LINE_NUMBER_COLORING);
             if (ctx.lineNumberColoring == null) {
                 ctx.lineNumberColoring = ctx.defaultColoring; // no number coloring found
 
@@ -128,7 +144,10 @@ import org.netbeans.api.editor.settings.FontColorNames;
                 lnForeColor = ctx.defaultColoring.getForeColor();
             }
 
-            ctx.lineNumberChars = new char[Math.max(ctx.editorUI.lineNumberMaxDigitCount, 1)];
+            ctx.lineNumberChars = new char[Math.max(accessor.getLineNumberMaxDigitCount(eui), 1)];
+            ctx.lineNumberWidth = accessor.getLineNumberWidth(eui);
+            ctx.lineNumberDigitWidth = accessor.getLineNumberDigitWidth(eui);
+            ctx.lineNumberMargin = accessor.getLineNumberMargin(eui);
             if (ctx.graphics == null) {
                 ctx.syncedLineNumbering = true;
 
@@ -143,29 +162,39 @@ import org.netbeans.api.editor.settings.FontColorNames;
         }
     }
 
-    private void initInfo(DrawInfo ctx) throws BadLocationException {
+    private void initInfo(DrawInfo ctx, EditorUI eui) throws BadLocationException {
         if (ctx.startOffset < ctx.lineStartOffset) {
             throw new BadLocationException("Invalid startOffset: " + ctx.startOffset + " < line start offset = " + ctx.lineStartOffset, ctx.startOffset); //NOI18N
         }
         if (ctx.endOffset > ctx.lineEndOffset) {
             throw new BadLocationException("Invalid endOffset: " + ctx.endOffset + " > line end offset = " + ctx.lineEndOffset, ctx.endOffset); //NOI18N
         }
-        
+
+        EditorUiAccessor accessor = EditorUiAccessor.get();
+
         ctx.x = ctx.startX;
         ctx.y = ctx.startY;
-        ctx.lineHeight = ctx.editorUI.getLineHeight();
-        ctx.defaultColoring = ctx.editorUI.getDefaultColoring();
+        ctx.lineHeight = accessor.getLineHeight(eui);
+        ctx.defaultColoring = accessor.getDefaultColoring(eui);
         ctx.tabSize = ctx.doc.getTabSize();
+        ctx.defaultSpaceWidth = accessor.getDefaultSpaceWidth(eui);
         ctx.fragmentOffset = ctx.startOffset; // actual painting position
         ctx.graphics = ctx.drawGraphics.getGraphics();
 
         if (ctx.graphics != null) {
-            if (ctx.editorUI.renderingHints != null) {
-                ((Graphics2D)ctx.graphics).setRenderingHints(ctx.editorUI.renderingHints);
+            Map<?, ?> hints = accessor.getRenderingHints(eui);
+            if (hints != null) {
+                ((Graphics2D)ctx.graphics).setRenderingHints(hints);
             }
         }
 
-        initLineNumbering(ctx);
+        ctx.extentBounds = accessor.getExtentBounds(eui);
+        ctx.textMargin = accessor.getTextMargin(eui);
+        ctx.textLeftMarginWidth = accessor.getTextLeftMarginWidth(eui);
+        ctx.textLimitLineVisible = accessor.getTextLimitLineVisible(eui);
+        ctx.textLimitLineColor = accessor.getTextLimitLineColor(eui);
+        ctx.textLimitWidth = accessor.getTextLimitWidth(eui);
+        initLineNumbering(ctx, eui);
 
         // Initialize draw context
         ctx.foreColor = ctx.defaultColoring.getForeColor();
@@ -177,12 +206,12 @@ import org.netbeans.api.editor.settings.FontColorNames;
         ctx.drawGraphics.init(ctx);
         ctx.drawGraphics.setDefaultBackColor(ctx.defaultColoring.getBackColor());
         ctx.drawGraphics.setLineHeight(ctx.lineHeight);
-        ctx.drawGraphics.setLineAscent(ctx.editorUI.getLineAscent());
+        ctx.drawGraphics.setLineAscent(accessor.getLineAscent(eui));
         ctx.drawGraphics.setX(ctx.x);
         ctx.drawGraphics.setY(ctx.y);
 
         // Init all draw-layers
-        ctx.layers = ctx.editorUI.getDrawLayerList().currentLayers();
+        ctx.layers = DrawLayerList.forComponent(ctx.component).currentLayers();
         int layersLength = ctx.layers.length;
         ctx.layerActives = new boolean[layersLength];
         ctx.layerActivityChangeOffsets = new int[layersLength];
@@ -191,8 +220,8 @@ import org.netbeans.api.editor.settings.FontColorNames;
             ctx.layers[i].init(ctx); // init all layers
         }
 
-        ctx.drawMarkList = new ArrayList<MarkFactory.DrawMark>();
-        MarkVector docMarksStorage = ctx.doc.marksStorage;
+        ctx.drawMarkList = new ArrayList<DrawMark>();
+        MarkVector docMarksStorage = EditorPackageAccessor.get().BaseDocument_getMarksStorage(ctx.doc);
         synchronized (docMarksStorage) {
             int offset = ctx.startOffset;
             int low = 0;
@@ -226,12 +255,12 @@ import org.netbeans.api.editor.settings.FontColorNames;
                         break;
                     }
 
-                    Mark mark = ctx.doc.marks.get(m);
+                    Mark mark = EditorPackageAccessor.get().BaseDocument_getMark(ctx.doc, m);
                     if (mark == null) {
                         throw new IllegalStateException("No mark for m=" + m); // NOI18N
                     }
-                    if (mark instanceof MarkFactory.DrawMark) {
-                        ctx.drawMarkList.add((MarkFactory.DrawMark)mark);
+                    if (mark instanceof DrawMark) {
+                        ctx.drawMarkList.add((DrawMark)mark);
                     }
                 }
 
@@ -326,9 +355,9 @@ import org.netbeans.api.editor.settings.FontColorNames;
                 }
 
                 // Fill the DG's attributes and draw
-                int numX = ctx.x - ctx.editorUI.lineNumberWidth;
-                if (ctx.editorUI.getLineNumberMargin() != null) {
-                    numX += ctx.editorUI.getLineNumberMargin().left;
+                int numX = ctx.x - ctx.lineNumberWidth;
+                if (ctx.lineNumberMargin != null) {
+                    numX += ctx.lineNumberMargin.left;
                 }
                 ctx.drawGraphics.setX(numX);
 
@@ -343,15 +372,13 @@ import org.netbeans.api.editor.settings.FontColorNames;
                 ctx.drawGraphics.setBottomBorderLineColor(ctx.bottomBorderLineColor);
                 ctx.drawGraphics.setLeftBorderLineColor(ctx.leftBorderLineColor);
                 ctx.drawGraphics.setFont(ctx.font);
-                ctx.drawGraphics.drawChars(0, ctx.lineNumberChars.length,
-                    ctx.editorUI.lineNumberWidth);
+                ctx.drawGraphics.drawChars(0, ctx.lineNumberChars.length, ctx.lineNumberWidth);
 
                 // When printing there should be an additional space between
                 // line number and the text
                 if (ctx.drawGraphics.getGraphics() == null) {
                     ctx.drawGraphics.setBuffer(SPACE);
-                    ctx.drawGraphics.drawChars(0, 1,
-                        ctx.editorUI.lineNumberDigitWidth);
+                    ctx.drawGraphics.drawChars(0, 1, ctx.lineNumberDigitWidth);
                 }
 
                 ctx.drawGraphics.setX(ctx.x);
@@ -507,7 +534,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
         // Handle possible white space expansion and compute display width
         FontMetricsCache.Info fmcInfo = FontMetricsCache.getInfo(ctx.font);
         ctx.spaceWidth = (ctx.component != null)
-            ? fmcInfo.getSpaceWidth(ctx.component) : ctx.editorUI.defaultSpaceWidth;
+            ? fmcInfo.getSpaceWidth(ctx.component) : ctx.defaultSpaceWidth;
 
         // Compute real count of chars in fragment - can differ if tabs
         ctx.fragmentCharCount = ctx.fragmentLength;
@@ -615,7 +642,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
                     
                     ctx.drawGraphics.setBackColor(ctx.backColor);
                     ctx.drawGraphics.fillRect(blankWidth);
-                    if (emptyLine && ctx.x <= ctx.editorUI.getTextMargin().left) { //#58652
+                    if (emptyLine && ctx.x <= ctx.textMargin.left) { //#58652
                         ctx.x += blankWidth;
                     }
                 }
@@ -912,12 +939,12 @@ import org.netbeans.api.editor.settings.FontColorNames;
     private void drawTheRestOfTextLine(DrawInfo ctx) {
         handleEOL(ctx);
 
-        if (ctx.editorUI.textLimitLineVisible) { // draw limit line
-            int lineX = ctx.editorUI.getTextMargin().left + ctx.getEditorUI().textLimitWidth() * ctx.editorUI.defaultSpaceWidth;
+        if (ctx.textLimitLineVisible) { // draw limit line
+            int lineX = ctx.textMargin.left + ctx.textLimitWidth * ctx.defaultSpaceWidth;
             if (ctx.graphics !=null){
-                ctx.graphics.setColor(ctx.editorUI.getTextLimitLineColor());
+                ctx.graphics.setColor(ctx.textLimitLineColor);
                 Rectangle clip = ctx.graphics.getClipBounds();
-                if (clip.height>ctx.editorUI.getLineHeight()){
+                if (clip.height>ctx.lineHeight){
                     ctx.graphics.drawLine(lineX, ctx.y, lineX, ctx.y+clip.height);
                 }
             }
@@ -925,11 +952,10 @@ import org.netbeans.api.editor.settings.FontColorNames;
     }
     
     private void graphicsSpecificUpdates(DrawInfo ctx) {
-        Rectangle bounds = ctx.editorUI.getExtentBounds();
+        Rectangle bounds = ctx.extentBounds;
         Rectangle clip = ctx.graphics.getClipBounds();
-        Insets textMargin = ctx.editorUI.getTextMargin();
-        int leftMarginWidth = textMargin.left - ctx.editorUI.lineNumberWidth
-                              - ctx.editorUI.textLeftMarginWidth;
+        Insets textMargin = ctx.textMargin;
+        int leftMarginWidth = textMargin.left - ctx.lineNumberWidth - ctx.textLeftMarginWidth;
 
         // Draw line numbers bar and all the line nummbers
         if (ctx.lineNumbering && !ctx.syncedLineNumbering) {
@@ -938,7 +964,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
             int lnBarX = bounds.x + leftMarginWidth;
             if (!lnBackColor.equals(ctx.defaultColoring.getBackColor()) || bounds.x > 0) {
                 ctx.graphics.setColor(lnBackColor);
-                ctx.graphics.fillRect(lnBarX, numY, ctx.editorUI.lineNumberWidth,
+                ctx.graphics.fillRect(lnBarX, numY, ctx.lineNumberWidth,
                                       ctx.lineIndex * ctx.lineHeight); // can't use dg because of height
             }
 
@@ -946,8 +972,8 @@ import org.netbeans.api.editor.settings.FontColorNames;
 
             int lastDigitInd = Math.max(ctx.lineNumberChars.length - 1, 0);
             int numX = lnBarX;
-            if (ctx.editorUI.getLineNumberMargin() != null) {
-                numX += ctx.editorUI.getLineNumberMargin().left;
+            if (ctx.lineNumberMargin != null) {
+                numX += ctx.lineNumberMargin.left;
             }
 
             ctx.bol = true; //
@@ -998,11 +1024,11 @@ import org.netbeans.api.editor.settings.FontColorNames;
                 ctx.drawGraphics.setFont(ctx.font);
 
                 ctx.drawGraphics.setX(lnBarX);
-                ctx.drawGraphics.fillRect(ctx.editorUI.lineNumberWidth);
+                ctx.drawGraphics.fillRect(ctx.lineNumberWidth);
                 ctx.drawGraphics.setX(numX);
 
                 ctx.drawGraphics.drawChars(0, ctx.lineNumberChars.length,
-                    ctx.lineNumberChars.length * ctx.editorUI.lineNumberDigitWidth);
+                    ctx.lineNumberChars.length * ctx.lineNumberDigitWidth);
                 
                 ctx.drawGraphics.setBuffer(null); // will do changes in buffer
 
@@ -1162,7 +1188,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
                 }
 
                 // Initialize the draw-info
-                initInfo(ctx);
+                initInfo(ctx, editorUI);
 
                 // Draw the area
                 drawArea(ctx);
@@ -1323,6 +1349,10 @@ import org.netbeans.api.editor.settings.FontColorNames;
         /** Coloring for the line-number. */
         Coloring lineNumberColoring;
 
+        int lineNumberWidth;
+        int lineNumberDigitWidth;
+        Insets lineNumberMargin;
+
         /** Graphics object. It can be null when not drawing to the component. */
         Graphics graphics;
 
@@ -1361,13 +1391,13 @@ import org.netbeans.api.editor.settings.FontColorNames;
         boolean drawMarkUpdate;
 
         /** List of draw marks in the painted area. */
-        List<MarkFactory.DrawMark> drawMarkList;
+        List<DrawMark> drawMarkList;
         
         /** Current index in the drawMarkList */
         int drawMarkIndex;
 
         /** Current draw-mark */
-        MarkFactory.DrawMark drawMark;
+        DrawMark drawMark;
 
         /** Position of the current draw-mark */
         int drawMarkOffset;
@@ -1383,6 +1413,7 @@ import org.netbeans.api.editor.settings.FontColorNames;
 
         /** Width of one space character for the current context font. */
         int spaceWidth;
+        int defaultSpaceWidth;
 
         /** Display width of the fragment */
         int fragmentWidth;
@@ -1392,6 +1423,14 @@ import org.netbeans.api.editor.settings.FontColorNames;
         */
         int fragmentCharCount;
 
+        Rectangle extentBounds;
+        Insets textMargin;
+        int textLeftMarginWidth;
+
+        boolean textLimitLineVisible;
+        Color textLimitLineColor;
+        int textLimitWidth;
+        
         public Color getForeColor() {
             return foreColor;
         }
@@ -1525,4 +1564,5 @@ import org.netbeans.api.editor.settings.FontColorNames;
         }
 
     } // End of DrawInfo class
+    
 }

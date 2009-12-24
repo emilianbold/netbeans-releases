@@ -43,7 +43,6 @@ package org.netbeans.editor;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.beans.Customizer;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
@@ -67,9 +66,12 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.lib2.EditorApiPackageAccessor;
 import org.netbeans.editor.view.spi.LockView;
+import org.netbeans.lib.editor.view.GapDocumentView;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib.drawing.DrawEngineDocView;
+import org.netbeans.modules.editor.lib.drawing.DrawEngineLineView;
 import org.openide.util.WeakListeners;
 
 /**
@@ -341,7 +343,7 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
                 LockView lockView = (LockView) view;
                 lockView.lock();
                 try {
-                    DrawEngineDocView docView = (DrawEngineDocView)view.getView(0);
+                    GapDocumentView docView = (GapDocumentView)view.getView(0);
                     doDamageRange = docView.checkDamageRange(p0, p1, p0Bias, p1Bias);
                 } finally {
                     lockView.unlock();
@@ -472,21 +474,13 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
     */
     public void changedUpdate(DocumentEvent evt) {
         if (evt instanceof BaseDocumentEvent) {
-            BaseDocumentEvent bdevt = (BaseDocumentEvent)evt;
-            BaseDocument doc = (BaseDocument)bdevt.getDocument();
-            String layerName = bdevt.getDrawLayerName();
-            if (layerName != null) {
-                getEditorUI().addLayer(doc.findLayer(layerName),
-                        bdevt.getDrawLayerVisibility());
-            }else{ //temp
-                try {
-                    JTextComponent comp = getComponent();
-                    if (comp!=null && comp.isShowing()) {
-                        getEditorUI().repaintBlock(evt.getOffset(), evt.getOffset() + evt.getLength());
-                    }
-                } catch (BadLocationException ex) {
-                    Utilities.annotateLoggable(ex);
+            try {
+                JTextComponent comp = getComponent();
+                if (comp!=null && comp.isShowing()) {
+                    getEditorUI().repaintBlock(evt.getOffset(), evt.getOffset() + evt.getLength());
                 }
+            } catch (BadLocationException ex) {
+                Utilities.annotateLoggable(ex);
             }
         }
     }

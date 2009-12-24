@@ -41,8 +41,13 @@
 
 package org.netbeans.modules.editor.lib;
 
+import javax.swing.text.BadLocationException;
 import javax.swing.undo.CompoundEdit;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.InvalidMarkException;
+import org.netbeans.editor.Mark;
+import org.netbeans.modules.editor.lib.impl.MarkVector;
+import org.netbeans.modules.editor.lib.impl.MultiMark;
 
 
 /**
@@ -54,24 +59,31 @@ import org.netbeans.editor.BaseDocument;
 
 public abstract class EditorPackageAccessor {
 
-    private static EditorPackageAccessor INSTANCE;
+    private static EditorPackageAccessor ACCESSOR = null;
 
-    public static EditorPackageAccessor get() {
-        if (INSTANCE == null) {
-            // Cause api accessor impl to get initialized
-            try {
-                Class.forName(BaseDocument.class.getName(), true, EditorPackageAccessor.class.getClassLoader());
-            } catch (ClassNotFoundException e) {
-                // Should never happen
-            }
+    public static synchronized void register(EditorPackageAccessor accessor) {
+        assert ACCESSOR == null : "Can't register two package accessors!"; //NOI18N
+        ACCESSOR = accessor;
+    }
+
+    public static synchronized EditorPackageAccessor get() {
+        // Trying to wake up BaseDocument ...
+        try {
+            Class clazz = Class.forName(BaseDocument.class.getName());
+        } catch (ClassNotFoundException e) {
+            // ignore
         }
-        return INSTANCE;
+
+        assert ACCESSOR != null : "There is no package accessor available!"; //NOI18N
+        return ACCESSOR;
     }
 
-    public static void register(EditorPackageAccessor accessor) {
-        INSTANCE = accessor;
+    protected EditorPackageAccessor() {
     }
 
-    public abstract CompoundEdit markAtomicEditsNonSignificant(BaseDocument doc);
+    public abstract CompoundEdit BaseDocument_markAtomicEditsNonSignificant(BaseDocument doc);
+    public abstract MarkVector BaseDocument_getMarksStorage(BaseDocument doc);
+    public abstract Mark BaseDocument_getMark(BaseDocument doc, MultiMark multiMark);
+    public abstract void Mark_insert(Mark mark, BaseDocument doc, int pos) throws InvalidMarkException, BadLocationException;
 
 }

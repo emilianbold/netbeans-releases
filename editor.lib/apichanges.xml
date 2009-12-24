@@ -104,6 +104,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="removing-DrawLayer">
+            <summary>Removing DrawLayer and related API</summary>
+            <version major="2" minor="1"/>
+            <date day="21" month="12" year="2009"/>
+            <author login="vstejskal"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="no" deprecation="no" deletion="yes" modification="no" />
+            <description>
+                <p>
+                Removing DrawLayer and related classes and methods. This part of the API has been long time deprecated
+                and replaced by Highlighting SPI on <code>editor.lib2</code> module.
+                </p>
+            </description>
+            <issue number="97517"/>
+        </change>
+
         <change id="GapDocumentView.hideBottomPadding">
             <summary>Add flag hideBottomPadding to GapDocumentView constructor to be able to control adding bottom padding.</summary>
             <version major="1" minor="46"/>
