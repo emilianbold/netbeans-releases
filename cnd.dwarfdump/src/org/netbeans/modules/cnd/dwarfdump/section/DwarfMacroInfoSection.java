@@ -56,7 +56,9 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.MACINFO;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Stack;
 
 /**
@@ -145,7 +147,48 @@ public class DwarfMacroInfoSection extends ElfSection {
 
         return readBytes;
     }
-    
+
+    public List<Integer> getCommandIncudedFiles(DwarfMacinfoTable table, long offset) throws IOException{
+        List<Integer> res = new ArrayList<Integer>();
+        long currPos = reader.getFilePointer();
+        reader.seek(header.getSectionOffset() + offset);
+        int level = 0;
+        int lineNum;
+        int  fileIdx;
+        loop:while (true) {
+            MACINFO type = MACINFO.get(reader.readByte());
+            if (type == null) {
+                break;
+            }
+            switch (type) {
+                case DW_MACINFO_start_file:
+                    level++;
+                    lineNum = reader.readUnsignedLEB128();
+                    fileIdx = reader.readUnsignedLEB128();
+                    if (level == 1) {
+                        if (lineNum == 0) {
+                            res.add(fileIdx);
+                        } else {
+                            break loop;
+                        }
+                    }
+                    break;
+                case DW_MACINFO_end_file:
+                    level--;
+                    break;
+                case DW_MACINFO_vendor_ext:
+                    reader.readUnsignedLEB128();
+                    reader.readString();
+                    break;
+                case DW_MACINFO_define:
+                case DW_MACINFO_undef:
+                    lineNum = reader.readUnsignedLEB128();
+                    reader.readString();
+            }
+        }
+        return res;
+    }
+
     @Override
     public void dump(PrintStream out) {
         super.dump(out);
