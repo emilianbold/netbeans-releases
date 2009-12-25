@@ -1,0 +1,165 @@
+<html>
+<head>
+<title>Hudson build report</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style type="text/css">
+* { font-family: "Verdana", sans-serif; }
+h1 { font-size: 14pt; }
+h2 { font-size: 14pt; }
+h3 { font-size: 12pt; }
+p, ul, li { font-size: 12pt; }
+pre { font-family: "Courier New", monospace; font-size: 10pt; }
+.changeset { font-size: 9pt; }
+.SUCCESS { color: green; }
+.UNSTABLE { color: orange; }
+.FAILURE { color: red; }
+</style>
+</head>
+<body>
+
+<h1 class="${build.result}">Build Result &mdash; $BUILD_STATUS</h1>
+
+<h2>Build Information</h2>
+<ul>
+<li>Build <a href="$PROJECT_URL">$PROJECT_NAME</a> <a href="$BUILD_URL">#$BUILD_NUMBER</a></li>
+<li>Build started at ${build.timestampString2}</li>
+<li>Build took ${build.durationString}</li>
+</ul>
+
+<%
+def currBuild = build
+def prevBuild = build.previousNotFailedBuild
+
+def buildsSincePrev = []
+def changesSincePrev = []
+
+if (prevBuild) {
+    def it = prevBuild
+    while (it != currBuild) {
+        buildsSincePrev << it
+        it = it.nextBuild
+        changesSincePrev += it.changeSet.items as List
+    }
+} else {
+    def it = currBuild
+    while (it) {
+        buildsSincePrev << it
+        changesSincePrev += it.changeSet.items.reverse() as List
+        it = it.prevBuild
+    }
+    buildsSincePrev = buildsSincePrev.reverse()
+    changesSincePrev = changesSincePrev.reverse()
+}
+
+def currTestResult = currBuild.getAction(hudson.tasks.junit.TestResultAction.class)
+if (currTestResult) {
+
+    def rootUrl = hudson.model.Hudson.instance.rootUrl
+    def jobName = build.parent.name
+
+    def stoppedFailing = []
+    def startedFailing = []
+    def stillFailing = []
+
+    def currFailedTests = new HashSet()
+    currTestResult.failedTests.each {
+          def displayName = it.className + "." + it.displayName
+          currFailedTests << displayName
+
+          def url = "${rootUrl}job/$jobName/${build.number}/testReport/${it.packageName}/${it.simpleName}/${it.safeName}"
+          if (it.age == 1) {
+              startedFailing << [displayName: displayName, url: url, age: 1]
+          } else {
+              stillFailing << [displayName: displayName, url: url, age: it.age]
+          }
+    }
+
+    def prevFailedTests = new HashSet()
+    prevTestResult = prevBuild?.getAction(hudson.tasks.junit.TestResultAction.class)
+    if (prevTestResult){
+        prevTestResult.failedTests.each {
+            prevFailedTests << it.className + "." + it.displayName
+        }
+    }
+
+    stoppedFailing = (prevFailedTests - currFailedTests).sort()
+    startedFailing = startedFailing.sort { it.displayName }
+    stillFailing = stillFailing.sort { it.displayName }
+
+    def testCountDiff = currTestResult.totalCount - (prevTestResult?.totalCount ?: 0)
+    def testCountDiffString = (0 < testCountDiff)? "+" + testCountDiff : String.valueOf(testCountDiff)
+
+    def testFailDiff = currTestResult.failCount - (prevTestResult?.failCount ?: 0)
+    def testFailDiffString = (0 < testFailDiff)? "+" + testFailDiff : String.valueOf(testFailDiff)
+
+    def successRate = String.format("%.2f", (currTestResult.totalCount - currTestResult.result.failCount) * 100f / currTestResult.totalCount)
+%>
+
+<h2>Test Results</h2>
+
+<ul>
+<li>Total test count and delta: ${currTestResult.totalCount} / ${testCountDiffString}</li>
+<li>Failure count and delta: ${currTestResult.failCount} / ${testFailDiffString}</li>
+<li>Success rate: ${successRate}%</li>
+</ul>
+
+<% if (stoppedFailing) { %>
+<h3>The Good</h3>
+<p class="SUCCESS">The following tests are no longer failing. Good work!</p>
+<ul>
+<% stoppedFailing.each { %>
+    <li class="SUCCESS">$it</li>
+<% } %>
+</ul>
+<% } %>
+
+<% if (startedFailing) { %>
+<h3>The Bad</h3>
+<p class="FAILURE">The following tests started FAILING. Did last changes cause it?</p>
+<ul>
+<% startedFailing.each { %>
+    <li><a href="${it.url}" class="FAILURE">${it.displayName}</a></li>
+<% } %>
+</ul>
+<% } %>
+
+<% if (stillFailing) { %>
+<h3>The Ugly</h3>
+<p class="FAILURE">The following tests are continuously failing. Someone should look into it!</p>
+<ul>
+<% stillFailing.each { %>
+    <li><a href="${it.url}" class="FAILURE">${it.displayName}</a> (failing for ${it.age} builds)</li>
+<% } %>
+</ul>
+<% } %>
+
+<% } %>
+
+
+<% if (changesSincePrev) { %>
+<h2>Changes since last successful build (${changesSincePrev.size()})</h2>
+<ul>
+<% changesSincePrev.each { change -> %>
+<li>
+<p><a href="http://hg.netbeans.org/cnd-main/rev/${change.shortNode}">${change.shortNode}</a> by ${change.author}</p>
+<pre>${change.msg}</pre>
+<ul class="changeset">
+<% change.affectedFiles.eachWithIndex { file, idx -> if (idx < 20) { %>
+    <li class="changeset">${file.editType.name} ${file.path}</li>
+<% } } %>
+<% if (20 < change.affectedFiles.size) { %>
+    <li class="changeset">${change.affectedFiles.size - 20} more ...</li>
+<% } %>
+</ul>
+</li>
+<% } %>
+</ul>
+<% } %>
+
+<% if (currBuild.result != hudson.model.Result.SUCCESS) { %>
+<h2>Build Log</h2>
+<pre>${currBuild.getLog(100).join("\n")}</pre>
+<% } %>
+
+</body>
+</html>
