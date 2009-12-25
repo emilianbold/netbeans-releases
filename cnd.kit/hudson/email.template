@@ -55,36 +55,20 @@ def currTestResult = currBuild.getAction(hudson.tasks.junit.TestResultAction.cla
 if (currTestResult) {
 
     def rootUrl = hudson.model.Hudson.instance.rootUrl
-    def jobName = build.parent.name
 
-    def stoppedFailing = []
-    def startedFailing = []
-    def stillFailing = []
-
-    def currFailedTests = new HashSet()
-    currTestResult.failedTests.each {
-          def displayName = it.className + "." + it.displayName
-          currFailedTests << displayName
-
-          def url = "${rootUrl}job/$jobName/${build.number}/testReport/${it.packageName}/${it.simpleName}/${it.safeName}"
-          if (it.age == 1) {
-              startedFailing << [displayName: displayName, url: url, age: 1]
-          } else {
-              stillFailing << [displayName: displayName, url: url, age: it.age]
-          }
+    def currFailedTests = currTestResult.failedTests.collect {
+        [displayName: "${it.className}.${it.displayName}",
+            url: "${rootUrl}${build.url}${currTestResult.urlName}${it.url}",
+            age: it.age]
     }
+    currFailedTests = currFailedTests.sort { String.format("%06d-", it.age) + it.displayName }
+    def currFailedTestNames = new HashSet(currFailedTests.collect { it.displayName })
 
-    def prevFailedTests = new HashSet()
-    prevTestResult = prevBuild?.getAction(hudson.tasks.junit.TestResultAction.class)
-    if (prevTestResult){
-        prevTestResult.failedTests.each {
-            prevFailedTests << it.className + "." + it.displayName
-        }
-    }
+    def prevTestResult = prevBuild?.getAction(hudson.tasks.junit.TestResultAction.class)
+    def prevFailedTestNames = new HashSet(
+        prevTestResult?.failedTests.collect { "${it.className}.${it.displayName}" } ?: [])
 
-    stoppedFailing = (prevFailedTests - currFailedTests).sort()
-    startedFailing = startedFailing.sort { it.displayName }
-    stillFailing = stillFailing.sort { it.displayName }
+    def fixedTestNames = (prevFailedTestNames - currFailedTestNames).sort()
 
     def testCountDiff = currTestResult.totalCount - (prevTestResult?.totalCount ?: 0)
     def testCountDiffString = (0 < testCountDiff)? "+" + testCountDiff : String.valueOf(testCountDiff)
@@ -103,32 +87,22 @@ if (currTestResult) {
 <li>Success rate: ${successRate}%</li>
 </ul>
 
-<% if (stoppedFailing) { %>
-<h3>The Good</h3>
+<% if (currFailedTests) { %>
+<h3>Failing Tests</h3>
+<p class="FAILURE">The following tests are failing. Age &lt; 5 means recent regression.</p>
+<ul>
+<% currFailedTests.each { %>
+    <li><a href="${it.url}" class="FAILURE">${it.displayName}</a> (failing for ${it.age} builds)</li>
+<% } %>
+</ul>
+<% } %>
+
+<% if (fixedTestNames) { %>
+<h3>Fixed Tests</h3>
 <p class="SUCCESS">The following tests are no longer failing. Good work!</p>
 <ul>
-<% stoppedFailing.each { %>
+<% fixedTestNames.each { %>
     <li class="SUCCESS">$it</li>
-<% } %>
-</ul>
-<% } %>
-
-<% if (startedFailing) { %>
-<h3>The Bad</h3>
-<p class="FAILURE">The following tests started FAILING. Did last changes cause it?</p>
-<ul>
-<% startedFailing.each { %>
-    <li><a href="${it.url}" class="FAILURE">${it.displayName}</a></li>
-<% } %>
-</ul>
-<% } %>
-
-<% if (stillFailing) { %>
-<h3>The Ugly</h3>
-<p class="FAILURE">The following tests are continuously failing. Someone should look into it!</p>
-<ul>
-<% stillFailing.each { %>
-    <li><a href="${it.url}" class="FAILURE">${it.displayName}</a> (failing for ${it.age} builds)</li>
 <% } %>
 </ul>
 <% } %>
