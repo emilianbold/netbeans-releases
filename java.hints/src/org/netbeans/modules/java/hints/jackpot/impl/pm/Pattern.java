@@ -76,7 +76,7 @@ public class Pattern {
         this.constraintsHack = constraintsHack;
     }
 
-    static Pattern compile(CompilationInfo info, String pattern) {
+    public static Pattern compile(CompilationInfo info, String pattern) {
         Map<String, TypeMirror> constraints = new HashMap<String, TypeMirror>();
         pattern = parseOutTypesFromPattern(info, pattern, constraints);
 
