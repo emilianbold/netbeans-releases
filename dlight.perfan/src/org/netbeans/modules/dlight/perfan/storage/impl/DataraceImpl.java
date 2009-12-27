@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.module.dlight.threads.api.Datarace;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
 import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot;
@@ -52,6 +51,7 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadSnapshot.MemoryAccessTyp
 import org.netbeans.modules.dlight.core.stack.api.ThreadInfo;
 import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
+import org.netbeans.modules.dlight.threads.api.Datarace;
 
 /**
  * @author Alexey Vladykin

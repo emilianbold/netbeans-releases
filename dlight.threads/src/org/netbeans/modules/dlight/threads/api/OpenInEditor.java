@@ -36,32 +36,59 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.module.dlight.threads.api;
 
-import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
-import java.util.List;
+package org.netbeans.modules.dlight.threads.api;
+
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.api.Function;
+import org.openide.util.Lookup;
 
 /**
- * Describes a datarace - condition when several threads concurrently read
- * and write the same address in memory.
- *
- * @author Alexey Vladykin
+ * Default implementation of Open In Editor Provider
+ * @author Alexander Simon
  */
-public interface Datarace {
+public final class OpenInEditor {
 
-    /**
-     * @return memory address if available, <code>-1</code> otherwise
-     */
-    long getAddress();
+    private static OpenInEditorProvider DEFAULT = new Default();
 
-    /**
-     * 
-     * @return returns string representation, can return Multiple Address
-     */
-    String stringAddress();
+    public static boolean open(Function function) {
+        return getDefault().open(function);
+    }
 
-    /**
-     * @return list of unique thread dumps related to this datarace
-     */
-    List<ThreadDump> getThreadDumps();
+    public static boolean open(FunctionCall call) {
+        return getDefault().open(call);
+    }
+
+    private OpenInEditor() {
+    }
+
+    private static OpenInEditorProvider getDefault() {
+        return DEFAULT;
+    }
+
+    private static final class Default implements OpenInEditorProvider {
+        private final Lookup.Result<OpenInEditorProvider> res;
+
+        Default() {
+            res = Lookup.getDefault().lookupResult(OpenInEditorProvider.class);
+        }
+
+        public boolean open(Function function) {
+            for (OpenInEditorProvider selector : res.allInstances()) {
+                if (selector.open(function)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public boolean open(FunctionCall call) {
+            for (OpenInEditorProvider selector : res.allInstances()) {
+                if (selector.open(call)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 }

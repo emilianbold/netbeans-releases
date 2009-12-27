@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.module.dlight.threads.api;
+package org.netbeans.modules.dlight.threads.api;
 
 import java.util.List;
 

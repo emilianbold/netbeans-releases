@@ -36,59 +36,19 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.threads.dataprovider;
 
-package org.netbeans.module.dlight.threads.api;
-
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.api.Function;
-import org.openide.util.Lookup;
+import java.util.List;
+import org.netbeans.modules.dlight.threads.api.Datarace;
+import org.netbeans.modules.dlight.threads.api.Deadlock;
+import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 
 /**
- * Default implementation of Open In Editor Provider
- * @author Alexander Simon
+ * @author Alexey Vladykin
  */
-public final class OpenInEditor {
+public interface ThreadAnalyzerDataProvider extends SourceFileInfoDataProvider {
 
-    private static OpenInEditorProvider DEFAULT = new Default();
+    List<? extends Datarace> getDataraces();
 
-    public static boolean open(Function function) {
-        return getDefault().open(function);
-    }
-
-    public static boolean open(FunctionCall call) {
-        return getDefault().open(call);
-    }
-
-    private OpenInEditor() {
-    }
-
-    private static OpenInEditorProvider getDefault() {
-        return DEFAULT;
-    }
-
-    private static final class Default implements OpenInEditorProvider {
-        private final Lookup.Result<OpenInEditorProvider> res;
-
-        Default() {
-            res = Lookup.getDefault().lookupResult(OpenInEditorProvider.class);
-        }
-
-        public boolean open(Function function) {
-            for (OpenInEditorProvider selector : res.allInstances()) {
-                if (selector.open(function)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public boolean open(FunctionCall call) {
-            for (OpenInEditorProvider selector : res.allInstances()) {
-                if (selector.open(call)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
+    List<? extends Deadlock> getDeadlocks();
 }

@@ -41,8 +41,8 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.util.List;
 import org.junit.Test;
-import org.netbeans.module.dlight.threads.api.DeadlockThreadSnapshot;
 import org.netbeans.modules.dlight.perfan.stack.impl.FunctionCallImpl;
+import org.netbeans.modules.dlight.threads.api.DeadlockThreadSnapshot;
 import static org.junit.Assert.*;
 
 /**

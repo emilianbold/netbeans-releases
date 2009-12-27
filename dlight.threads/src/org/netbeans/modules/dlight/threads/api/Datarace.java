@@ -36,27 +36,32 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.threads.api;
 
-package org.netbeans.module.dlight.threads.api;
-
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.api.Function;
+import org.netbeans.modules.dlight.core.stack.api.ThreadDump;
+import java.util.List;
 
 /**
- * Open in editor provider.
- * @author Alexander Simon
+ * Describes a datarace - condition when several threads concurrently read
+ * and write the same address in memory.
+ *
+ * @author Alexey Vladykin
  */
-public interface OpenInEditorProvider {
+public interface Datarace {
 
     /**
-     * @param function
-     * @return true if provider is going to open function in text editor
+     * @return memory address if available, <code>-1</code> otherwise
      */
-    boolean open(Function function);
+    long getAddress();
 
     /**
-     * @param call
-     * @return true if provider is going to open function call in text editor
+     * 
+     * @return returns string representation, can return Multiple Address
      */
-    boolean open(FunctionCall call);
+    String stringAddress();
+
+    /**
+     * @return list of unique thread dumps related to this datarace
+     */
+    List<ThreadDump> getThreadDumps();
 }

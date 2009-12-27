@@ -36,35 +36,27 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.module.dlight.threads.api;
+
+package org.netbeans.modules.dlight.threads.api;
 
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import java.util.List;
+import org.netbeans.modules.dlight.core.stack.api.Function;
 
 /**
- * Describes state of a thread that is about to deadlock.
- *
- * @author Alexey Vladykin
+ * Open in editor provider.
+ * @author Alexander Simon
  */
-public interface DeadlockThreadSnapshot {
+public interface OpenInEditorProvider {
 
     /**
-     * @return address of lock already held by the thread
+     * @param function
+     * @return true if provider is going to open function in text editor
      */
-    long getHeldLockAddress();
+    boolean open(Function function);
 
     /**
-     * @return call stack where the lock has been acquired
+     * @param call
+     * @return true if provider is going to open function call in text editor
      */
-    List<FunctionCall> getHeldLockCallStack();
-
-    /**
-     * @return address of new lock being requested
-     */
-    long getRequestedLockAddress();
-
-    /**
-     * @return call stack where the new lock is being requested
-     */
-    List<FunctionCall> getRequestedLockCallStack();
+    boolean open(FunctionCall call);
 }

@@ -36,19 +36,35 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.module.dlight.threads.dataprovider;
+package org.netbeans.modules.dlight.threads.api;
 
+import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import java.util.List;
-import org.netbeans.module.dlight.threads.api.Datarace;
-import org.netbeans.module.dlight.threads.api.Deadlock;
-import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 
 /**
+ * Describes state of a thread that is about to deadlock.
+ *
  * @author Alexey Vladykin
  */
-public interface ThreadAnalyzerDataProvider extends SourceFileInfoDataProvider {
+public interface DeadlockThreadSnapshot {
 
-    List<? extends Datarace> getDataraces();
+    /**
+     * @return address of lock already held by the thread
+     */
+    long getHeldLockAddress();
 
-    List<? extends Deadlock> getDeadlocks();
+    /**
+     * @return call stack where the lock has been acquired
+     */
+    List<FunctionCall> getHeldLockCallStack();
+
+    /**
+     * @return address of new lock being requested
+     */
+    long getRequestedLockAddress();
+
+    /**
+     * @return call stack where the new lock is being requested
+     */
+    List<FunctionCall> getRequestedLockCallStack();
 }
