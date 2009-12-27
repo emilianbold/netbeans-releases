@@ -188,7 +188,6 @@ public final class DrawEngine {
             }
         }
 
-        ctx.extentBounds = accessor.getExtentBounds(eui);
         ctx.textMargin = accessor.getTextMargin(eui);
         ctx.textLeftMarginWidth = accessor.getTextLeftMarginWidth(eui);
         ctx.textLimitLineVisible = accessor.getTextLimitLineVisible(eui);
@@ -951,8 +950,9 @@ public final class DrawEngine {
         }
     }
     
-    private void graphicsSpecificUpdates(DrawInfo ctx) {
-        Rectangle bounds = ctx.extentBounds;
+    private void graphicsSpecificUpdates(DrawInfo ctx, EditorUI eui) {
+        EditorUiAccessor accessor = EditorUiAccessor.get();
+        Rectangle bounds = accessor.getExtentBounds(eui);
         Rectangle clip = ctx.graphics.getClipBounds();
         Insets textMargin = ctx.textMargin;
         int leftMarginWidth = textMargin.left - ctx.lineNumberWidth - ctx.textLeftMarginWidth;
@@ -1200,7 +1200,7 @@ public final class DrawEngine {
 
                 // When drawing to graphics, the line numbers and insets will be drawn now
                 if (ctx.graphics != null) {
-                    graphicsSpecificUpdates(ctx);
+                    graphicsSpecificUpdates(ctx, editorUI);
                 }
             } finally {
                 ctx.doc.readUnlock();
