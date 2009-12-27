@@ -48,6 +48,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -83,6 +84,7 @@ import org.netbeans.spi.editor.hints.Severity;
 
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import static org.netbeans.modules.java.hints.jackpot.file.DeclarativeHintTokenId.*;
 
@@ -397,7 +399,11 @@ public class DeclarativeHintsParser {
     private static MethodInvocation resolve(MethodInvocationContext mic, final String invocation, final boolean not) throws IOException {
         final String[] methodName = new String[1];
         final Map<String, ParameterKind> params = new LinkedHashMap<String, ParameterKind>();
-        ClassPath cp = ClassPathSupport.createProxyClassPath(ClassPathSupport.createClassPath(Modifier.class.getProtectionDomain().getCodeSource().getLocation()), JavaPlatform.getDefault().getBootstrapLibraries());
+        URL javacApiJar = Modifier.class.getProtectionDomain().getCodeSource().getLocation();
+        if (FileUtil.isArchiveFile(javacApiJar)) {
+            javacApiJar = FileUtil.getArchiveRoot(javacApiJar);
+        }
+        ClassPath cp = ClassPathSupport.createProxyClassPath(ClassPathSupport.createClassPath(javacApiJar), JavaPlatform.getDefault().getBootstrapLibraries());
         JavaSource.create(ClasspathInfo.create(cp, EMPTY, EMPTY)).runUserActionTask(new Task<CompilationController>() {
             @SuppressWarnings("fallthrough")
             public void run(CompilationController parameter) throws Exception {

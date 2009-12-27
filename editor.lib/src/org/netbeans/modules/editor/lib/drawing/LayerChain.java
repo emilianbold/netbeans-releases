@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,55 +31,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.editor;
-
-import javax.swing.text.Element;
-import org.netbeans.api.editor.fold.Fold;
-
-/**
- *  Fake view of the whole document supporting the code folding, operating from given startOffset
- *  to endOffset
  *
- * @author Martin Roskanin
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-class DrawEngineFakeDocView extends DrawEngineDocView{
 
-        private boolean useCollapsing = true;
-        private int fakeStartOffset;
-        private int fakeEndOffset;
-        
-        DrawEngineFakeDocView(Element elem, int startOffset, int endOffset, boolean useCollapsing){
-            this(elem, startOffset, endOffset, useCollapsing, false);
-        }
+package org.netbeans.modules.editor.lib.drawing;
 
-        DrawEngineFakeDocView(Element elem, int startOffset, int endOffset, boolean useCollapsing, boolean hideBottomPadding){
-            super(elem, hideBottomPadding);
+import javax.swing.text.Position;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Mark;
+import org.netbeans.editor.MarkBlockChain;
 
-            this.useCollapsing = useCollapsing;
-            this.fakeStartOffset = startOffset;
-            this.fakeEndOffset = endOffset;
-            setEstimatedSpan(false);
-        }
-        
-        @Override
-        public int getStartOffset(){
-            return fakeStartOffset;
-        }
-        
-        @Override
-        public int getEndOffset(){
-            return fakeEndOffset;
-        }
-        
-        @Override
-        protected Fold nextCollapsedFold() {
-            return null; // simulate no collapsed folds
-        }
-        
-        @Override
-        protected void attachListeners(){
-        }
-    
+/* package */ class LayerChain extends MarkBlockChain {
+
+    private String layerName;
+
+    public LayerChain(BaseDocument doc, String layerName) {
+        super(doc);
+        this.layerName = layerName;
+    }
+
+    public final String getLayerName() {
+        return layerName;
+    }
+
+    protected @Override Mark createBlockStartMark() {
+        DrawMark startMark = new DrawMark(layerName, null);
+        startMark.activateLayer = true;
+        return startMark;
+    }
+
+    protected @Override Mark createBlockEndMark() {
+        DrawMark endMark = new DrawMark(layerName, null, Position.Bias.Backward);
+        return endMark;
+    }
+
 }

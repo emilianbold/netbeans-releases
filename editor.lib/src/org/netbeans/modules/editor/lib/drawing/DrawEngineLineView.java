@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.drawing;
 
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -55,6 +55,9 @@ import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseTextUI;
+import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
 import org.netbeans.editor.view.spi.ViewLayoutState;
@@ -67,7 +70,7 @@ import org.netbeans.lib.editor.view.GapDocumentView;
  *
  * @author  Martin Roskanin
  */
-/* package */ class DrawEngineLineView extends View implements ViewLayoutState, EstimatedSpanView {
+public class DrawEngineLineView extends View implements ViewLayoutState, EstimatedSpanView {
 
     private static final Logger LOG = Logger.getLogger(DrawEngineLineView.class.getName());
     private static final boolean loggable = LOG.isLoggable(Level.FINEST);

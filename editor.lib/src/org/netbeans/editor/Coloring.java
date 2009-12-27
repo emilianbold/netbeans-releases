@@ -49,6 +49,8 @@ import javax.swing.JComponent;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.modules.editor.lib.drawing.ColoringAccessor;
+import org.netbeans.modules.editor.lib.drawing.DrawContext;
 
 /**
 * Immutable class that stores font and foreground and background colors.
@@ -137,7 +139,9 @@ public final class Coloring implements java.io.Serializable {
     private Color rightBorderLineColor;
     private Color bottomBorderLineColor;
     private Color leftBorderLineColor;
-    
+
+    private final String cacheLock = new String("Coloring.cacheLock"); //NOI18N
+
     /** Cache holding the [original-font, derived-font] pairs
     * and also original [fore-color, derived-fore-color] pairs.
     * This helps to avoid the repetitive computations of the
@@ -334,7 +338,7 @@ public final class Coloring implements java.io.Serializable {
     }
 
     /** Apply this coloring to draw context. */
-    public void apply(DrawContext ctx) {
+    private void apply(DrawContext ctx) {
         // Possibly change font
         if (font != null) {
             if (fontMode == FONT_MODE_DEFAULT) {
@@ -343,7 +347,7 @@ public final class Coloring implements java.io.Serializable {
             } else { // non-default font-mode
                 Font origFont = ctx.getFont();
                 if (origFont != null) {
-                    synchronized (fontAndForeColorCache) {
+                    synchronized (cacheLock) {
                         Font f = (Font)fontAndForeColorCache.get(origFont);
                         if (f == null) {
                             f = modifyFont(origFont);
@@ -363,7 +367,7 @@ public final class Coloring implements java.io.Serializable {
             } else { // has alpha
                 Color origForeColor = ctx.getForeColor();
                 if (origForeColor != null) {
-                    synchronized (fontAndForeColorCache) {
+                    synchronized (cacheLock) {
                         Color fc = (Color)fontAndForeColorCache.get(origForeColor);
                         if (fc == null) {
                             fc = modifyForeColor(origForeColor);
@@ -383,7 +387,7 @@ public final class Coloring implements java.io.Serializable {
             } else { // non-default back color-mode
                 Color origBackColor = ctx.getBackColor();
                 if (origBackColor != null) {
-                    synchronized (backColorCache) {
+                    synchronized (cacheLock) {
                         Color bc = (Color)backColorCache.get(origBackColor);
                         if (bc == null) {
                             bc = modifyBackColor(origBackColor);
@@ -436,7 +440,7 @@ public final class Coloring implements java.io.Serializable {
             } else { // non-default font-mode
                 Font origFont = c.getFont();
                 if (origFont != null) {
-                    synchronized (fontAndForeColorCache) {
+                    synchronized (cacheLock) {
                         Font f = (Font)fontAndForeColorCache.get(origFont);
                         if (f == null) {
                             f = modifyFont(origFont);
@@ -456,7 +460,7 @@ public final class Coloring implements java.io.Serializable {
             } else { // non-default fore color-mode
                 Color origForeColor = c.getForeground();
                 if (origForeColor != null) {
-                    synchronized (fontAndForeColorCache) {
+                    synchronized (cacheLock) {
                         Color fc = (Color)fontAndForeColorCache.get(origForeColor);
                         if (fc == null) {
                             fc = modifyForeColor(origForeColor);
@@ -476,7 +480,7 @@ public final class Coloring implements java.io.Serializable {
             } else { // non-default back color-mode
                 Color origBackColor = c.getBackground();
                 if (origBackColor != null) {
-                    synchronized (backColorCache) {
+                    synchronized (cacheLock) {
                         Color bc = (Color)backColorCache.get(origBackColor);
                         if (bc == null) {
                             bc = modifyBackColor(origBackColor);
@@ -518,7 +522,7 @@ public final class Coloring implements java.io.Serializable {
 
             } else { // non-default font-mode
                 if (newFont != null) {
-                    synchronized (fontAndForeColorCache) {
+                    synchronized (cacheLock) {
                         Font f = (Font)fontAndForeColorCache.get(newFont);
                         if (f == null) {
                             f = modifyFont(newFont);
@@ -541,7 +545,7 @@ public final class Coloring implements java.io.Serializable {
 
             } else { // non-default fore color-mode
                 if (newForeColor != null) {
-                    synchronized (fontAndForeColorCache) {
+                    synchronized (cacheLock) {
                         Color fc = (Color)fontAndForeColorCache.get(newForeColor);
                         if (fc == null) {
                             fc = modifyForeColor(newForeColor);
@@ -561,7 +565,7 @@ public final class Coloring implements java.io.Serializable {
             } else { // non-default back color-mode
                 newBackColor = backColor;
                 if (newBackColor != null) {
-                    synchronized (backColorCache) {
+                    synchronized (cacheLock) {
                         Color bc = (Color)backColorCache.get(newBackColor);
                         if (bc == null) {
                             bc = modifyBackColor(newBackColor);
@@ -851,5 +855,15 @@ public final class Coloring implements java.io.Serializable {
             new Integer(applyMode)
         };
     }
-    
+
+    static {
+        ColoringAccessor.register(new Accessor());
+    }
+
+    private static final class Accessor extends ColoringAccessor {
+        @Override
+        public void apply(Coloring c, DrawContext ctx) {
+            c.apply(ctx);
+        }
+    } // End of Accessor class
 }

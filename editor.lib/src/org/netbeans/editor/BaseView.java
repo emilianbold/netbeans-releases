@@ -49,6 +49,7 @@ import javax.swing.text.View;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.editor.lib.drawing.DrawGraphics;
 
 /**
 * Base abstract view serves as parent for both
@@ -105,12 +106,11 @@ public abstract class BaseView extends View {
     }
 
     /** Get aligment along an X_AXIS or Y_AXIS */
-    public float getAlignment(int axis) {
+    public @Override float getAlignment(int axis) {
         return 0f;
     }
 
-    abstract void modelToViewDG(int pos, DrawGraphics dg)
-    throws BadLocationException;
+    /* package */ abstract void modelToViewDG(int pos, DrawGraphics dg) throws BadLocationException;
 
     /** Get y-coord value from position */
     protected abstract int getYFromPos(int pos) throws BadLocationException;
@@ -267,7 +267,7 @@ public abstract class BaseView extends View {
 
     }
 
-    public String toString() {
+    public @Override String toString() {
         return "BaseView=" + System.identityHashCode(this) // NOI18N
                + ", elem=" + getElement() + ", parent=" // NOI18N
                + System.identityHashCode(getParent());

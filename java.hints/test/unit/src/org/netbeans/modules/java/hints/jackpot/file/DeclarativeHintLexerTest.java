@@ -312,4 +312,16 @@ public class DeclarativeHintLexerTest {
         assertFalse(ts.moveNext());
     }
 
+    @Test
+    public void testRegressionLeadsToAndSemicolon() {
+        String text = "()=>!";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        TestUtils.assertNextTokenEquals(ts, JAVA_SNIPPET, "()");
+        TestUtils.assertNextTokenEquals(ts, LEADS_TO, "=>");
+        TestUtils.assertNextTokenEquals(ts, NOT, "!");
+
+        assertFalse(ts.moveNext());
+    }
+
 }

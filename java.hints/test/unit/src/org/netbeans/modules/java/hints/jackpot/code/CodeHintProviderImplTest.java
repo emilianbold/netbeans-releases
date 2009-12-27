@@ -40,8 +40,10 @@
 package org.netbeans.modules.java.hints.jackpot.code;
 
 import com.sun.source.tree.Tree.Kind;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.HashSet;
+import java.util.Set;
 import org.junit.Test;
 import org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImpl.WorkerImpl;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
@@ -67,12 +69,16 @@ public class CodeHintProviderImplTest {
     public void testComputeHints() {
         Collection<? extends HintDescription> hints = new CodeHintProviderImpl().computeHints();
 
-        assertEquals(2, hints.size());
+        Set<String> golden = new HashSet<String>(Arrays.asList(
+            "null:$1.toURL():public static org.netbeans.spi.editor.hints.ErrorDescription org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImplTest.hintPattern1(org.netbeans.modules.java.hints.jackpot.spi.HintContext)",
+            "METHOD_INVOCATION:null:public static org.netbeans.spi.editor.hints.ErrorDescription org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImplTest.hintPattern2(org.netbeans.modules.java.hints.jackpot.spi.HintContext)"
+        ));
 
-        Iterator<? extends HintDescription> it = hints.iterator();
+        for (HintDescription d : hints) {
+            golden.remove(toString(d));
+        }
 
-        assertEquals("null:$1.toURL():public static org.netbeans.spi.editor.hints.ErrorDescription org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImplTest.hintPattern1(org.netbeans.modules.java.hints.jackpot.spi.HintContext)", toString(it.next()));
-        assertEquals("METHOD_INVOCATION:null:public static org.netbeans.spi.editor.hints.ErrorDescription org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImplTest.hintPattern2(org.netbeans.modules.java.hints.jackpot.spi.HintContext)", toString(it.next()));
+        assertTrue(golden.toString(), golden.isEmpty());
     }
 
     private static String toString(HintDescription hd) {

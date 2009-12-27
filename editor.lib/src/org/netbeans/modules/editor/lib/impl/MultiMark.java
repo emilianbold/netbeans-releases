@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.impl;
 
 import java.lang.ref.WeakReference;
 import javax.swing.text.Position;
@@ -54,7 +54,7 @@ import javax.swing.text.Position;
  * @version 1.00
  */
 
-final class MultiMark extends WeakReference<BasePosition> implements Runnable {
+public final class MultiMark extends WeakReference<BasePosition> implements Runnable {
 
     /** Whether mark has a backward (or forward) bias */
     static final int BACKWARD_BIAS = 1;

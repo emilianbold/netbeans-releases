@@ -50,6 +50,9 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.UndoableEdit;
 import org.netbeans.lib.editor.util.AbstractCharSequence;
+import org.netbeans.modules.editor.lib.impl.BasePosition;
+import org.netbeans.modules.editor.lib.impl.MarkVector;
+import org.netbeans.modules.editor.lib.impl.MultiMark;
 
 /**
  * Content of the document.

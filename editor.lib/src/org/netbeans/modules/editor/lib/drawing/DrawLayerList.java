@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.drawing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,6 +48,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.JTextComponent;
+import org.netbeans.editor.EditorDebug;
 
 /** Draw layer list stores multiple draw-layers sorted
 * according to their visibility which is the integer giving the z-order
@@ -59,7 +61,7 @@ import java.util.logging.Logger;
 */
 
 
-class DrawLayerList {
+/* package */ class DrawLayerList {
 
     private static final Logger LOG = Logger.getLogger(DrawLayerList.class.getName());
 
@@ -70,6 +72,15 @@ class DrawLayerList {
     private static final Set<String> ISSUED_WARNINGS = Collections.synchronizedSet(new HashSet<String>());
     
     private final ArrayList visibilityList = new ArrayList();
+
+    public static synchronized DrawLayerList forComponent(JTextComponent jtc) {
+        DrawLayerList dll = (DrawLayerList) jtc.getClientProperty(DrawLayerList.class);
+        if (dll == null) {
+            dll = new DrawLayerList();
+            jtc.putClientProperty(DrawLayerList.class, dll);
+        }
+        return dll;
+    }
 
     /** Add the new layer to the list depending on visibility.
     * @param layer layer to add to the layer list
@@ -168,7 +179,7 @@ class DrawLayerList {
         return -1;
     }
 
-    public String toString() {
+    public @Override String toString() {
         switch (layers.length) {
         case 0:
             return "No layers"; // NOI18N

@@ -39,10 +39,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.drawing;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.InvalidMarkException;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 
 /**
 * Support class for chain of MarkBlocks
@@ -51,13 +55,13 @@ import javax.swing.text.Position;
 * @version 1.00
 */
 
-public class MarkChain {
+public final class MarkChain {
 
     /** Chain of all marks */
-    protected MarkFactory.ChainDrawMark chain;
+    protected ChainDrawMark chain;
 
     /** Current mark to make checks faster */
-    protected MarkFactory.ChainDrawMark curMark;
+    protected ChainDrawMark curMark;
 
     /** Document for this mark */
     protected BaseDocument doc;
@@ -70,7 +74,7 @@ public class MarkChain {
     /** The mark created by addMark() method is stored in this variable. In case
      * the mark was not created, because there already was some on this position,
      * the already existing mark is returned. */
-    private MarkFactory.ChainDrawMark recentlyAddedMark;
+    private ChainDrawMark recentlyAddedMark;
     
     /** Construct chain using draw marks */
     public MarkChain(BaseDocument doc, String layerName) {
@@ -78,11 +82,11 @@ public class MarkChain {
         this.layerName = layerName;
     }
 
-    public final MarkFactory.ChainDrawMark getChain() {
+    public final ChainDrawMark getChain() {
         return chain;
     }
 
-    public final MarkFactory.ChainDrawMark getCurMark() {
+    public final ChainDrawMark getCurMark() {
         return curMark;
     }
 
@@ -133,19 +137,19 @@ public class MarkChain {
         }
     }
 
-    protected MarkFactory.ChainDrawMark createAndInsertNewMark(int pos)
+    protected ChainDrawMark createAndInsertNewMark(int pos)
     throws BadLocationException {
-        MarkFactory.ChainDrawMark mark = createMark();
+        ChainDrawMark mark = createMark();
         try {
-            mark.insert(doc, pos);
+            EditorPackageAccessor.get().Mark_insert(mark, doc, pos);
         } catch (InvalidMarkException e) {
             Utilities.annotateLoggable(e);
         }
         return mark;
     }
 
-    protected MarkFactory.ChainDrawMark createMark() {
-        MarkFactory.ChainDrawMark mark = new MarkFactory.ChainDrawMark(layerName, null, Position.Bias.Backward);
+    protected ChainDrawMark createMark() {
+        ChainDrawMark mark = new ChainDrawMark(layerName, null, Position.Bias.Backward);
         mark.activateLayer = true;
         return mark;
     }
@@ -165,7 +169,7 @@ public class MarkChain {
         int rel = compareMark(pos);
         if (rel == 0) {
             if (forceAdd) { // create fresh
-                MarkFactory.ChainDrawMark mark = createAndInsertNewMark(pos);
+                ChainDrawMark mark = createAndInsertNewMark(pos);
                 recentlyAddedMark = mark;
                 if (curMark == chain) { // curMark is first mark
                     chain = curMark.insertChain(mark);
@@ -179,7 +183,7 @@ public class MarkChain {
             }
 
         } else if (rel > 0) { // curMark after pos
-            MarkFactory.ChainDrawMark mark = createAndInsertNewMark(pos);
+            ChainDrawMark mark = createAndInsertNewMark(pos);
             recentlyAddedMark = mark;
             if (curMark != null) {
                 if (curMark == chain) { // curMark is first mark
@@ -191,7 +195,7 @@ public class MarkChain {
                 chain = mark;
             }
         } else { // curMark before pos
-            MarkFactory.ChainDrawMark mark = createAndInsertNewMark(pos);
+            ChainDrawMark mark = createAndInsertNewMark(pos);
             recentlyAddedMark = mark;
             if (curMark != null) {
                 if (curMark.next != null) {
@@ -209,7 +213,7 @@ public class MarkChain {
     /** The mark created by addMark() method is returned by this method. In case
      * the mark was not created, because there already was some on requested position,
      * the already existing mark is returned. */
-    public MarkFactory.ChainDrawMark getAddedMark() {
+    public ChainDrawMark getAddedMark() {
         return recentlyAddedMark;
     }
     
@@ -228,7 +232,7 @@ public class MarkChain {
         }
     }
     
-    public boolean removeMark(MarkFactory.ChainDrawMark mark) {
+    public boolean removeMark(ChainDrawMark mark) {
         if (mark == null) {
             throw new NullPointerException();
         }

@@ -64,6 +64,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.editor.lib.drawing.ChainDrawMark;
+import org.netbeans.modules.editor.lib.drawing.MarkChain;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.ContextAwareAction;
@@ -178,15 +180,6 @@ public class Annotations implements DocumentListener {
         
     }
 
-    /** Finds the drawing layer for annotations.
-     * @return <code>null</code>
-     * @deprecated Please use Highlighting SPI instead, for details see
-     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
-     */
-    public DrawLayerFactory.AnnotationLayer getLayer() {
-        return null;
-    }
-
     /** Add annotation */
     public void addAnnotation(AnnotationDesc anno) {
 
@@ -241,7 +234,7 @@ public class Annotations implements DocumentListener {
                     + ", docLen=" + doc.getLength()); // NOI18N
             }
             // attach created mark to annotation
-            MarkFactory.ChainDrawMark annoMark = chain.getAddedMark();
+            ChainDrawMark annoMark = chain.getAddedMark();
             if (annoMark == null) {
                 throw new NullPointerException();
             }
@@ -320,7 +313,7 @@ public class Annotations implements DocumentListener {
         int line;
         synchronized (lineAnnotationsArray) {
             // find LineAnnotations for the mark
-            MarkFactory.ChainDrawMark annoMark = (MarkFactory.ChainDrawMark)anno.getMark();
+            ChainDrawMark annoMark = (ChainDrawMark)anno.getMark();
             if (annoMark == null) {
                 // Already removed? See #116955
                 return;

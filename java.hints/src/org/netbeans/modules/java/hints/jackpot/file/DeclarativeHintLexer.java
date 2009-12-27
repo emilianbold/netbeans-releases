@@ -165,15 +165,19 @@ class DeclarativeHintLexer implements Lexer<DeclarativeHintTokenId> {
         if (toTest.length() < 2 && !eof) return null;
 
         DeclarativeHintTokenId id = null;
+        boolean exact = false;
         int backup = (-1);
         int add = eof ? 0 : 1;
         String snip = toTest.substring(0, toTest.length() - add);
+        String lastImage = "";
         
         for (Entry<String, DeclarativeHintTokenId> e : TOKENS.entrySet()) {
-            if (snip.endsWith(e.getKey()) && backup < e.getKey().length() + 1) {
+            int i = snip.indexOf(e.getKey());
+            if (i != (-1) && (snip.length() - i + 1 > backup || e.getKey().startsWith(lastImage))) {
                 id = e.getValue();
-                backup = e.getKey().length() + 1;
-                continue;
+                backup = snip.length() - i + 1;
+                exact = i == 0;
+                lastImage = e.getKey();
             }
 
             if (!eof) {
@@ -189,6 +193,12 @@ class DeclarativeHintLexer implements Lexer<DeclarativeHintTokenId> {
             return null;
         }
 
+        if (exact) {
+            if (input.readLength() - lastImage.length() + (eof ? 1 : 0) > 0)
+                input.backup(input.readLength() - lastImage.length() + (eof ? 1 : 0));
+            return fact.createToken(id);
+        }
+        
         Token<DeclarativeHintTokenId> t = resolvePrereadText(backup, whitespaceLength);
 
         if (t != null) {

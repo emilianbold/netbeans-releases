@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.editor;
+package org.netbeans.modules.editor.lib.impl;
 
 import java.util.List;
 import javax.swing.text.Position;
@@ -53,7 +53,7 @@ import javax.swing.text.Position;
  * @version 1.00
  */
 
-final class MarkVector {
+public final class MarkVector {
 
     /** Empty array of marks used initially as markArray. */
     private static final MultiMark[] EMPTY = new MultiMark[0];
@@ -83,7 +83,7 @@ final class MarkVector {
      */
     private int disposedMarkCount;
     
-    MarkVector() {
+    public MarkVector() {
         markArray = EMPTY;
         offsetGapLength = INITIAL_OFFSET_GAP_SIZE;
     }
@@ -93,7 +93,7 @@ final class MarkVector {
      * @param offset offset of the mark.
      * @param bias bias of the mark.
      */
-    MultiMark createBiasMark(int offset, Position.Bias bias) {
+    public MultiMark createBiasMark(int offset, Position.Bias bias) {
         return new MultiMark(null, this, offset, bias);
     }
     
@@ -103,7 +103,7 @@ final class MarkVector {
      * @param offset offset of the mark.
      * @param bias bias of the mark.
      */
-    MultiMark createBiasMark(BasePosition pos, int offset, Position.Bias bias) {
+    public MultiMark createBiasMark(BasePosition pos, int offset, Position.Bias bias) {
         return new MultiMark(pos, this, offset, bias);
     }
     
@@ -111,7 +111,7 @@ final class MarkVector {
      * inserted into the vector.
      * @param offset offset of the mark.
      */
-    MultiMark createMark(int offset) {
+    public MultiMark createMark(int offset) {
         return new MultiMark(null, this, offset);
     }
     
@@ -120,21 +120,21 @@ final class MarkVector {
      * @param pos position that will delegate to this mark.
      * @param offset offset of the mark.
      */
-    MultiMark createMark(BasePosition pos, int offset) {
+    public MultiMark createMark(BasePosition pos, int offset) {
         return new MultiMark(pos, this, offset);
     }
     
     /** @return total count of marks in the vector.
      */
-    synchronized int getMarkCount() {
+    public synchronized int getMarkCount() {
         return markArray.length - gapLength;
     }
     
-    synchronized MultiMark getMark(int index) {
+    public synchronized MultiMark getMark(int index) {
         return markArray[getRawIndex(index)];
     }
     
-    synchronized int getMarkOffsetInternal(int index) {
+    public synchronized int getMarkOffsetInternal(int index) {
         return getOffset(getMark(index).rawOffset);
     }
 
@@ -143,7 +143,7 @@ final class MarkVector {
      * @param mark mark to insert. The mark must have the valid
      *  offset and flags filled in.
      */
-    synchronized MultiMark insert(MultiMark mark) {
+    public synchronized MultiMark insert(MultiMark mark) {
         int flags = mark.flags;
         if ((flags & MultiMark.VALID) != 0) { // trying to re-insert valid mark
             throw new IllegalStateException();
@@ -245,7 +245,7 @@ final class MarkVector {
         }
     }
 
-    synchronized void compact() {
+    public synchronized void compact() {
         if (gapLength > 0) {
             int newLength = markArray.length - gapLength;
             MultiMark[] newMarkArray = new MultiMark[newLength];
@@ -272,7 +272,7 @@ final class MarkVector {
      * @return non-null undo record or null in case an insert was done
      *  or there are no marks to be undone.
      */
-    synchronized Undo update(int offset, int length, Undo undo) {
+    public synchronized Undo update(int offset, int length, Undo undo) {
         if (length < 0) { // removal occured - temporarily increase offset var
             offset -= length; // move offset after end of removal (length < 0)
         }
@@ -754,7 +754,7 @@ final class MarkVector {
     
     /** Undo record holding the info about undo items.
      */
-    static final class Undo {
+    public static final class Undo {
         
         Undo(UndoItem firstItem, UndoItem fbItem, UndoItem bbItem,
         ZeroUndoItem zeroItem) {
