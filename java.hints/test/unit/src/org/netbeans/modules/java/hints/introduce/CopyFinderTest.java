@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -767,7 +768,7 @@ public class CopyFinderTest extends NbTestCase {
 
             for (Entry<String, Collection<TreePath>> e : BulkSearch.getDefault().match(info, info.getCompilationUnit(), bulkPattern).entrySet()) {
                 for (TreePath tp : e.getValue()) {
-                    VariableAssignments vars = CopyFinder.computeVariables(info, patternPath, tp, new AtomicBoolean(), patternObj.getConstraints());
+                    VariableAssignments vars = computeVariables(info, patternPath, tp, new AtomicBoolean(), patternObj.getConstraints());
 
                     if (vars != null) {
                         result.put(tp, vars);
@@ -775,7 +776,7 @@ public class CopyFinderTest extends NbTestCase {
                 }
             }
         } else {
-            result = CopyFinder.computeDuplicates(info, patternPath, new TreePath( info.getCompilationUnit()), new AtomicBoolean(), patternObj.getConstraints());
+            result = computeDuplicates(info, patternPath, new TreePath( info.getCompilationUnit()), new AtomicBoolean(), patternObj.getConstraints());
         }
 
         if (noOccurrences) {
@@ -837,8 +838,16 @@ public class CopyFinderTest extends NbTestCase {
         assertEquals(golden, result.values().iterator().next().variables2Names);
     }
 
+    protected VariableAssignments computeVariables(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel, Map<String, TypeMirror> designedTypeHack) {
+        return CopyFinder.computeVariables(info, searchingFor, scope, cancel, designedTypeHack);
+    }
+
+    protected Map<TreePath, VariableAssignments> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel, Map<String, TypeMirror> designedTypeHack) {
+        return CopyFinder.computeDuplicates(info, searchingFor, scope, cancel, designedTypeHack);
+    }
+
     protected Collection<TreePath> computeDuplicates(TreePath path) {
-        return CopyFinder.computeDuplicates(info, path, new TreePath(info.getCompilationUnit()), new AtomicBoolean(), null).keySet();
+        return computeDuplicates(info, path, new TreePath(info.getCompilationUnit()), new AtomicBoolean(), null).keySet();
     }
 
     public static final class Pair<A, B> {
