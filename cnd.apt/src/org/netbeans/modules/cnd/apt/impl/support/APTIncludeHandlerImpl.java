@@ -141,6 +141,14 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     protected StateImpl createStateImpl() {
         return new StateImpl(this);
     }
+
+    /*package*/List<IncludeDirEntry> getUserIncludePaths() {
+        return userIncludePaths;
+    }
+
+    /*package*/boolean isFirstLevel() {
+        return inclStack == null || inclStack.isEmpty();
+    }
     
     /** immutable state object of include handler */ 
     public final static class StateImpl implements State, Persistent, SelfPersistent {
