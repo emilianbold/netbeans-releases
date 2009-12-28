@@ -56,6 +56,38 @@ public class AutoUpdateTest extends NbTestCase {
         super(name);
     }
 
+    public void testDirectlySpecifiedNBMs() throws Exception {
+        clearWorkDir();
+
+        File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
+            "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
+            "netbeans/modules/org-netbeans-api-annotations-common.jar");
+
+        File target = new File(getWorkDir(), "target");
+        target.mkdirs();
+
+        PublicPackagesInProjectizedXMLTest.execute(
+            "autoupdate.xml", "-verbose", "-Ddir=" + nbm.getParent(),
+            "-Dincludes=org.netbeans.api.annotations.common",
+            "-Dtarget=" + target,
+            "all-nbms"
+        );
+
+        File xml = new File(
+            new File(target, "update_tracking"),
+            "org-netbeans-api-annotations-common.xml"
+        );
+        assertTrue("xml file created", xml.exists());
+
+        File jar = new File(
+            new File(target, "modules"),
+            "org-netbeans-api-annotations-common.jar"
+        );
+        assertTrue("jar file created", jar.exists());
+
+        File lastM = new File(target, ".lastModified");
+        assertTrue("Last modified file created", lastM.exists());
+    }
     public void testDownloadAndExtractModule() throws Exception {
         clearWorkDir();
 
@@ -408,14 +440,27 @@ public class AutoUpdateTest extends NbTestCase {
         File f = new File (getWorkDir (), name);
 
         ZipOutputStream os = new ZipOutputStream (new FileOutputStream (f));
-        os.putNextEntry (new ZipEntry ("Info/info.xml"));
-        os.write ("nothing".getBytes ());
-        os.closeEntry ();
         for (String n : files) {
             os.putNextEntry(new ZipEntry(n));
             os.write("empty".getBytes());
             os.closeEntry();
         }
+        os.putNextEntry(new ZipEntry("Info/info.xml"));
+        String codeName = name.replaceAll("\\.nbm$", "").replace('-', '.');
+        os.write(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                "<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Info 2.5//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_5.dtd\">\n").getBytes());
+        String res = "<module codenamebase=\"" + codeName + "\" " +
+                "homepage=\"http://au.netbeans.org/\" distribution=\"wrong-path.hbm\" " +
+                "license=\"standard-nbm-license.txt\" downloadsize=\"98765\" " +
+                "needsrestart=\"false\" moduleauthor=\"\" " +
+                "eager=\"false\" " +
+                "releasedate=\"2006/02/23\">";
+        res +=  "<manifest OpenIDE-Module=\"" + codeName + "\" " +
+                "OpenIDE-Module-Name=\"" + codeName + "\" " +
+                "OpenIDE-Module-Specification-Version=\"333.3\"/>";
+        res += "</module>";
+        os.write(res.getBytes());
+        os.closeEntry();
         os.close();
 
         return f;
