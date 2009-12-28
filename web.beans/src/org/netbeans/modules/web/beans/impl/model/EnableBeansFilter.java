@@ -93,7 +93,7 @@ class EnableBeansFilter {
         for (Element element : productions) {
             TypeElement enclosingTypeElement = myHelper.getCompilationController().
                 getElementUtilities().enclosingTypeElement(element);
-            if ( getResult().isAlternative(enclosingTypeElement)){
+            if ( getResult().isAlternative(element)){
                 myAlternatives.add( element );
                 addEnabledAlternative( enclosingTypeElement , element );
             }
@@ -284,10 +284,20 @@ class EnableBeansFilter {
     private void addEnabledAlternative( TypeElement typeElement , Element element) {
         String name = typeElement.getQualifiedName().toString();
         if ( getResult().hasAlternative(element) ){
-            if ( getModel().getAlternativeClasses().contains( name ) ){
-                myEnabledAlternatives.add( element );
+            if ( !getModel().getAlternativeClasses().contains( name ) ){
+                return;
             }
-            return;
+            /*
+             * I have commented the code below but I'm not sure is it 
+             * correct. Specification doesn't mention the case 
+             * when @Alternative annotation presents along with 
+             * alternative Stereotypes.
+             * 
+             * if ( getModel().getAlternativeClasses().contains( name ) ){
+             *  myEnabledAlternatives.add( element );
+                return;
+            }
+             */
         }
         if ( alternativeStereotypesEnabled(element)){
             myEnabledAlternatives.add( element );

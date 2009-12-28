@@ -40,6 +40,24 @@
  */
 package org.netbeans.modules.web.beans.model;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
+
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
+import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+
 
 /**
  * @author ads
@@ -51,6 +69,182 @@ public class DisabledBeansTest extends CommonTestCase {
         super(testName);
     }
     
-    public void testA(){};
+    public void testSingeAlternative() throws IOException{
+        TestUtilities.copyStringToFileObject(srcFO, "beans.xml", 
+                "<?xml  version='1.0' encoding='UTF-8'?> " +
+                "<beans xmlns=\"http://java.sun.com/xml/ns/javaee\">" +
+                "<alternatives>" +
+                    "<class>foo.One</class> "+
+                    "<class>foo.One1</class> "+
+                    "<stereotype>foo.Stereotype1</stereotype> "+
+                "</alternatives> " +
+                "</beans>");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Binding1.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@Qualifier " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface Binding1  {}");
+        
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "@Alternative "+
+                "public class One {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
+                "package foo; " +
+                "@Binding1 "+
+                "public class Two extends One {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Alternative "+
+                "@Binding1 "+
+                "public class One1 {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two1.java",
+                "package foo; " +
+                "@Binding1 "+
+                "public class Two1 extends One1 {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Three.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                " @Stereotype1 "+
+                "public class Three extends One1 {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Stereotype1.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "@Target({METHOD, FIELD, TYPE}) "+  
+                "@Retention(RUNTIME) "+
+                "@Alternative "+
+                "@Stereotype "+
+                "public @interface Stereotype1 {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "public class TestClass  {" +
+                " @Inject @Binding1 One myField1; "+
+                " @Inject @Binding1 One1 myField2; "+
+                "}" );
+        
+        TestWebBeansModelImpl modelImpl = createModelImpl(true );
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType( "foo.TestClass" );
+                Element clazz = ((DeclaredType)mirror).asElement();
+                List<? extends Element> children = clazz.getEnclosedElements();
+                List<VariableElement> injectionPoints = 
+                    new ArrayList<VariableElement>( children.size());
+                for (Element element : children) {
+                    if ( element instanceof VariableElement ){
+                        injectionPoints.add( (VariableElement)element);
+                    }
+                }
+                Set<String> names = new HashSet<String>(); 
+                for( VariableElement element : injectionPoints ){
+                    names.add( element.getSimpleName().toString() );
+                    if ( element.getSimpleName().contentEquals("myField1")){
+                        checkAlternative1( element , model );
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField2")){
+                        checkAlternative2( element , model);
+                    }
+                }
+                
+                assert names.contains("myField1");
+                assert names.contains("myField2");
+                return null;
+            }
+        });
+    }
+
+    private void checkAlternative2( VariableElement element,
+            WebBeansModel model )
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    private void checkAlternative1( VariableElement element,
+            WebBeansModel model )
+    {
+        Result result = model.getInjectable(element, null);
+        
+        assertNotNull( result );
+        
+        assertEquals( Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());
+        
+        assertTrue( result instanceof Result.InjectableResult );
+        assertTrue( result instanceof Result.ApplicableResult );
+        assertTrue( result instanceof Result.ResolutionResult );
+        
+        Element injectable = ((Result.InjectableResult)result).getElement();
+        
+        assertTrue( injectable instanceof TypeElement );
+        String name = ((TypeElement) injectable).getQualifiedName().toString();
+        
+        assertEquals( "foo.One", name );
+        
+        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        
+        assertEquals( 0 , productions.size());
+        assertEquals( 2 , typeElements.size());
+        
+        boolean twoFound = false;
+        boolean oneFound = false;
+        TypeElement two = null;
+        TypeElement one = null;
+        for( TypeElement typeElement : typeElements ){
+            String typeName = typeElement.getQualifiedName().toString();
+            if ( "foo.Two".equals(typeName)){
+                twoFound = true;
+                two = typeElement;
+            }
+            if ( "foo.One".equals( typeName)){
+                oneFound = true;
+                one = typeElement;
+            }
+        }
+        assertTrue( "foo.Two should be available via ApplicableResult interface", 
+                twoFound );
+        assertTrue( "foo.One should be available via ApplicableResult interface", 
+                oneFound );
+        
+        assertFalse( "foo.Two should be enabled", 
+                ((Result.ApplicableResult)result).isDisabled(two));
+        assertFalse( "foo.One should be disabled", 
+                ((Result.ApplicableResult)result).isDisabled(one));
+        
+        assertFalse ( "foo.Two is not an Alternative", 
+                ((Result.ResolutionResult)result).isAlternative( two ));
+        assertTrue ( "foo.One is an Alternative", 
+                ((Result.ResolutionResult)result).isAlternative( one ));        
+    }
 
 }
