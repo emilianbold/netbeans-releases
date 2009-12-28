@@ -40,12 +40,14 @@
  */
 package org.netbeans.modules.web.beans.model;
 
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
+import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation;
-import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -55,12 +57,28 @@ import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 public class TestWebBeansModelImpl extends WebBeansModelImplementation {
     
     TestWebBeansModelImpl(ModelUnit unit){
+        this(unit, false);
+        myProvider = new TestWebBeansModelProviderImpl( this );
+    }
+    
+    TestWebBeansModelImpl(ModelUnit unit, boolean fullModel ){
         super(unit);
         myProvider = new TestWebBeansModelProviderImpl( this );
+        isFullModel = fullModel;
+        if ( fullModel){
+            ClassPath path = getModelUnit().getSourcePath();
+            FileObject[] roots = path.getRoots();
+            assert roots.length == 1;
+            myBeansModel=  new TestBeansModelImpl( roots[0]);
+        }
     }
     
     public MetadataModel<WebBeansModel> createTestModel( ){
         return MetadataModelFactory.createMetadataModel( this );
+    }
+    
+    protected BeansModel getBeansModel() {
+        return myBeansModel;
     }
 
    /* (non-Javadoc)
@@ -71,5 +89,11 @@ public class TestWebBeansModelImpl extends WebBeansModelImplementation {
         return myProvider;
     }
     
+    protected boolean isFull(){
+        return isFullModel;
+    }
+    
     private TestWebBeansModelProviderImpl myProvider; 
+    private boolean isFullModel;
+    private TestBeansModelImpl myBeansModel;
 }

@@ -80,12 +80,16 @@ public class CommonTestCase extends JavaSourceTestCase {
     }
     
     public TestWebBeansModelImpl createModelImpl() throws IOException {
+        return createModelImpl(false);
+    }
+    
+    public TestWebBeansModelImpl createModelImpl(boolean fullModel) throws IOException {
         IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         ModelUnit modelUnit = ModelUnit.create(
                 ClassPath.getClassPath(srcFO, ClassPath.BOOT),
                 ClassPath.getClassPath(srcFO, ClassPath.COMPILE),
                 ClassPath.getClassPath(srcFO, ClassPath.SOURCE));
-        return new TestWebBeansModelImpl(modelUnit);
+        return new TestWebBeansModelImpl(modelUnit, fullModel);
     }
     
     protected void inform( String message ){
@@ -226,6 +230,28 @@ public class CommonTestCase extends JavaSourceTestCase {
                 "@Retention(RUNTIME) "+
                 "@Target({TYPE,METHOD }) "+          
                 "public @interface Specializes  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Alternative.java",
+                "package javax.enterprise.inject; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, TYPE}) "+          
+                "public @interface Alternative  {}");
+        
+        TestUtilities.copyStringToFileObject(srcFO, "javax/enterprise/inject/Stereotype.java",
+                "package javax.enterprise.inject; " +
+                "import static java.lang.annotation.ElementType.ANNOTATION_TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import java.lang.annotation.*; "+
+                "import java.lang.annotation.RetentionPolicy; "+
+                "@Retention(RUNTIME) "+
+                "@Target({ANNOTATION_TYPE}) "+          
+                "public @interface Stereotype  {}");
     }
 
 }

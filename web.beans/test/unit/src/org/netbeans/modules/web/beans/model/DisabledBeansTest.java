@@ -40,55 +40,17 @@
  */
 package org.netbeans.modules.web.beans.model;
 
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
-
-import org.netbeans.modules.web.beans.api.model.Result;
-import org.netbeans.modules.web.beans.impl.model.WebBeansModelImplementation;
-import org.netbeans.modules.web.beans.impl.model.WebBeansModelProviderImpl;
-
-
 
 /**
  * @author ads
  *
  */
-public class TestWebBeansModelProviderImpl extends WebBeansModelProviderImpl {
+public class DisabledBeansTest extends CommonTestCase {
 
-    TestWebBeansModelProviderImpl(TestWebBeansModelImpl testWebBeansModelImpl )
-    {
-        myModelImpl = testWebBeansModelImpl;
-    }
-
-    protected Result findParameterInjectable( VariableElement element,
-            DeclaredType parentType)
-    {
-        return super.findParameterInjectable(element, parentType, myModelImpl);
-    }
-
-    protected Result doFindVariableInjectable( VariableElement element,
-            TypeMirror elementType, boolean injectRequired )
-    {
-        return super.doFindVariableInjectable(element, elementType, myModelImpl,
-                injectRequired);
-    }
-
-    protected Result findVariableInjectable( VariableElement element,
-            DeclaredType parentType)
-    {
-        return super.findVariableInjectable(element, parentType, myModelImpl);
+    public DisabledBeansTest( String testName ) {
+        super(testName);
     }
     
-    protected Result getResult( Result result ,WebBeansModelImplementation model ){
-        if ( myModelImpl.isFull() ){
-            return super.getResult(result, model);
-        }
-        else {
-            filterBeans(result);
-            return result;
-        }
-    }
+    public void testA(){};
 
-    private TestWebBeansModelImpl myModelImpl;
 }

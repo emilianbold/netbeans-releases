@@ -57,7 +57,6 @@ import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.api.model.BeansModel;
-import org.netbeans.modules.web.beans.api.model.BeansModelFactory;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.impl.model.results.ErrorImpl;
 import org.netbeans.modules.web.beans.impl.model.results.InjectableResultImpl;
@@ -76,7 +75,7 @@ class EnableBeansFilter {
     {
         myResult = result;
         myHelper = model.getHelper();
-        myBeansModel = BeansModelFactory.getModel(model.getModelUnit());
+        myBeansModel = model.getBeansModel();
     }
     
     Result filter(){

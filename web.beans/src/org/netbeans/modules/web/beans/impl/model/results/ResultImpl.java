@@ -178,14 +178,14 @@ public class ResultImpl extends BaseResult implements Result.ResolutionResult {
     private void doGetStereotypes( Element element , List<AnnotationMirror> result ,
             Set<Element>  foundStereotypesElement , StereotypeChecker checker ) 
     {
-        if ( foundStereotypesElement.contains( element)){
-            return;
-        }
         List<? extends AnnotationMirror> annotationMirrors = 
             getController().getElements().getAllAnnotationMirrors( element );
         for (AnnotationMirror annotationMirror : annotationMirrors) {
             TypeElement annotationElement = (TypeElement)annotationMirror.
                 getAnnotationType().asElement();
+            if ( foundStereotypesElement.contains( annotationElement)){
+                continue;
+            }
             if ( isStereotype( annotationElement, checker ) ){
                 foundStereotypesElement.add( annotationElement );
                 result.add(annotationMirror);

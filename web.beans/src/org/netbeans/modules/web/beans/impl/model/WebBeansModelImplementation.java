@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
 import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
+import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 
@@ -123,6 +124,13 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
     @Override
     protected WebBeansModel getModel() {
         return super.getModel();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.api.model.AbstractModelImplementation#getBeansModel()
+     */
+    protected BeansModel getBeansModel() {
+        return super.getBeansModel();
     }
     
     Map<String,PersistentObjectManager<BindingQualifier>> getManagers(){
