@@ -46,6 +46,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -59,9 +60,11 @@ import java.util.zip.ZipFile;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Get;
+import org.apache.tools.ant.types.FileSet;
 import org.netbeans.nbbuild.AutoUpdateCatalogParser.ModuleItem;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -74,6 +77,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class AutoUpdate extends Task {
     private List<Modules> modules = new ArrayList<Modules>();
+    private FileSet nbmSet;
     private File dir;
     private File cluster;
     private URL catalog;
@@ -81,6 +85,14 @@ public class AutoUpdate extends Task {
 
     public void setUpdateCenter(URL u) {
         catalog = u;
+    }
+
+    public FileSet createNbms() {
+        if (nbmSet != null) {
+            throw new BuildException("Just one nbms set allowed");
+        }
+        nbmSet = new FileSet();
+        return nbmSet;
     }
 
     public void setInstallDir(File dir) {
@@ -107,8 +119,34 @@ public class AutoUpdate extends Task {
         if ((dir != null) == (cluster != null)) {
             throw new BuildException("Specify either todir or installdir");
         }
-        if (catalog == null) {
-            throw new BuildException("Specify updatecenter");
+        Map<String, ModuleItem> units;
+        if (catalog != null) {
+            try {
+                units = AutoUpdateCatalogParser.getUpdateItems(catalog, catalog, this);
+            } catch (IOException ex) {
+                throw new BuildException(ex.getMessage(), ex);
+            }
+        } else {
+            if (nbmSet == null) {
+                throw new BuildException("Specify updatecenter or list of NBMs");
+            }
+            DirectoryScanner s = nbmSet.getDirectoryScanner(getProject());
+            File basedir = s.getBasedir();
+            units = new HashMap<String, ModuleItem>();
+            for (String incl : s.getIncludedFiles()) {
+                File nbm = new File(basedir, incl);
+                try {
+                    URL u = new URL("jar:" + nbm.toURI() + "!/Info/info.xml");
+                    Map<String, ModuleItem> map;
+                    final URL url = nbm.toURI().toURL();
+                    map = AutoUpdateCatalogParser.getUpdateItems(u, url, this);
+                    assert map.size() == 1;
+                    Map.Entry<String,ModuleItem> entry = map.entrySet().iterator().next();
+                    units.put(entry.getKey(), entry.getValue().changeDistribution(url));
+                } catch (IOException ex) {
+                    throw new BuildException(ex);
+                }
+            }
         }
 
         Map<String,List<String>> installed;
@@ -123,13 +161,6 @@ public class AutoUpdate extends Task {
         }
 
 
-        // no userdir
-        Map<String, ModuleItem> units;
-        try {
-            units = AutoUpdateCatalogParser.getUpdateItems(catalog, catalog, this);
-        } catch (IOException ex) {
-            throw new BuildException(ex.getMessage(), ex);
-        }
         for (ModuleItem uu : units.values()) {
             if (!matches(uu.getCodeName(), uu.targetcluster)) {
                 continue;
@@ -152,16 +183,28 @@ public class AutoUpdate extends Task {
             File tmp = null;
             File lastM = null;
             try {
+                if (uu.getURL().getProtocol().equals("file")) {
+                    try {
+                        tmp = new File(uu.getURL().toURI());
+                    } catch (URISyntaxException ex) {
+                        tmp = null;
+                    }
+                    if (!tmp.exists()) {
+                        tmp = null;
+                    }
+                }
                 final String dash = uu.getCodeName().replace('.', '-');
-                tmp = File.createTempFile(dash, ".nbm");
-                tmp.deleteOnExit();
-                Get get = new Get();
-                get.setProject(getProject());
-                get.setTaskName("get:" + uu.getCodeName());
-                get.setSrc(uu.getURL());
-                get.setDest(tmp);
-                get.setVerbose(true);
-                get.execute();
+                if (tmp == null) {
+                    tmp = File.createTempFile(dash, ".nbm");
+                    tmp.deleteOnExit();
+                    Get get = new Get();
+                    get.setProject(getProject());
+                    get.setTaskName("get:" + uu.getCodeName());
+                    get.setSrc(uu.getURL());
+                    get.setDest(tmp);
+                    get.setVerbose(true);
+                    get.execute();
+                }
 
                 File whereTo = dir != null ? new File(dir, uu.targetcluster) : cluster;
                 whereTo.mkdirs();
