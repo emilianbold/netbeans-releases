@@ -42,6 +42,7 @@ package org.netbeans.modules.web.beans.impl.model;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -195,21 +196,22 @@ class EnableBeansFilter {
     }
 
     private Set<Element> findEnabledTypes(Set<Element> elements) {
-        Set<Element> enabledTypes = new HashSet<Element>( elements );
-        for (Element element : elements) {
-            TypeElement typeElement = (TypeElement)element;
+        LinkedList<Element> enabledTypes = new LinkedList<Element>( elements );
+        Set<Element> result = new HashSet<Element>( elements );
+        while( enabledTypes.size() != 0 ) {
+            TypeElement typeElement = (TypeElement)enabledTypes.remove();
             if ( typeElement.getKind() != ElementKind.CLASS){
-                enabledTypes.remove( typeElement );
+                result.remove( typeElement );
                 continue;
             }
-            checkProxyability( typeElement , enabledTypes );
-            checkSpecializes(typeElement, enabledTypes);
+            checkProxyability( typeElement , enabledTypes, result );
+            checkSpecializes(typeElement, enabledTypes, result ,  elements );
         }
-        return enabledTypes;
+        return result;
     }
     
     private void checkProxyability( TypeElement typeElement,
-            Set<Element> enabledTypes )
+            LinkedList<Element> enabledTypes , Set<Element> result)
     {
         /*
          * Certain legal bean types cannot be proxied by the container:
@@ -220,6 +222,7 @@ class EnableBeansFilter {
          */
         if ( hasModifier(typeElement, Modifier.FINAL)){
             enabledTypes.remove(typeElement);
+            result.remove( typeElement );
             return;
         }
         List<ExecutableElement> methods = ElementFilter.methodsIn(
@@ -227,6 +230,7 @@ class EnableBeansFilter {
         for (ExecutableElement executableElement : methods) {
             if ( hasModifier(executableElement, Modifier.FINAL)){
                 enabledTypes.remove(typeElement);
+                result.remove( typeElement );
                 return;
             }
         }
@@ -246,6 +250,7 @@ class EnableBeansFilter {
         
         if ( !appropriateCtor){
             enabledTypes.remove(typeElement);
+            result.remove( typeElement );
         }
     }
     
@@ -260,24 +265,28 @@ class EnableBeansFilter {
     }
 
     private void checkSpecializes( TypeElement typeElement, 
-            Set<Element> enabledBeans)
+            LinkedList<Element> enabledBeans, Set<Element> resultSet, 
+            Set<Element> originalElements)
     {
-        if (AnnotationObjectProvider.hasSpecializes(typeElement, getHelper())) {
-            TypeMirror superClass = typeElement.getSuperclass();
-            if (superClass instanceof DeclaredType) {
-                TypeElement superElement = (TypeElement) ((DeclaredType) superClass)
-                        .asElement();
-                if (enabledBeans.contains(superElement)) {
-                    enabledBeans.remove(typeElement);
-                    checkSpecializes(superElement, enabledBeans);
-                }
-                else {
-                    return;
-                }
-            }
-            else {
+        TypeElement current = typeElement;
+        Set<TypeElement> remove = new HashSet<TypeElement>();
+        while( current != null ){
+            TypeMirror superClass = current.getSuperclass(); 
+            if (!(superClass instanceof DeclaredType)) {
                 return;
             }
+            if (!AnnotationObjectProvider.hasSpecializes(current, getHelper())) {
+                return;
+            }
+            remove.add(current);
+            TypeElement superElement = (TypeElement) ((DeclaredType) superClass)
+                .asElement();
+            if (originalElements.contains(superElement)) {
+                enabledBeans.removeAll(remove);
+                resultSet.removeAll(remove);
+                remove.clear();
+            }
+            current = superElement;
         }
     }
 

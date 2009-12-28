@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.web.beans.model;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -67,8 +68,11 @@ class TestBeansModelImpl implements BeansModel {
     
     TestBeansModelImpl(FileObject sourceRoot ) 
     {
-        myModel = WebBeansModelFactory.getInstance().getModel(getModelSource(
-                sourceRoot.getFileObject("beans.xml")));
+        FileObject fileObject = sourceRoot.getFileObject("beans.xml");
+        if ( fileObject != null ) {
+            myModel = WebBeansModelFactory.getInstance().getModel(
+                    getModelSource(fileObject));
+        }
     }
 
     /* (non-Javadoc)
@@ -96,6 +100,9 @@ class TestBeansModelImpl implements BeansModel {
     private <T extends AlternativeElement> List<T> getAlternativeElement( 
             Class<T> clazz)
     {
+        if ( myModel == null ){
+            return Collections.emptyList();
+        }
         List<Alternatives> children = 
             myModel.getBeans().getChildren( Alternatives.class);
         List<T> result = new LinkedList<T>();
