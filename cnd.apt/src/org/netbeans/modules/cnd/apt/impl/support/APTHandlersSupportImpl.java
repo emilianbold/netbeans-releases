@@ -81,7 +81,17 @@ public class APTHandlersSupportImpl {
     }
     
     public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths) {
-        return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths);
+        // user paths could contain "-include file" elements
+        List<IncludeDirEntry> fileEntries = new ArrayList<IncludeDirEntry>(0);
+        for (IncludeDirEntry includeDirEntry : userIncludePaths) {
+            if (!includeDirEntry.isExistingDirectory()) {
+                // check if this is file
+                if (CndFileUtils.isExistingFile(includeDirEntry.getFile(), includeDirEntry.getAsSharedCharSequence().toString())) {
+                    fileEntries.add(includeDirEntry);
+                }
+            }
+        }
+        return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries);
     }
 
     public static APTMacroMap createMacroMap(APTMacroMap sysMap, List<String> userMacros) {
@@ -108,15 +118,7 @@ public class APTHandlersSupportImpl {
     public static Collection<IncludeDirEntry> extractIncludeFileEntries(APTIncludeHandler includeHandler) {
         Collection<IncludeDirEntry> out = new ArrayList<IncludeDirEntry>(0);
         if (includeHandler != null) {
-            List<IncludeDirEntry> paths = ((APTIncludeHandlerImpl) includeHandler).getUserIncludePaths();
-            for (IncludeDirEntry includeDirEntry : paths) {
-                if (!includeDirEntry.isExistingDirectory()) {
-                    // check if this is file
-                    if (CndFileUtils.isExistingFile(includeDirEntry.getFile(), includeDirEntry.getAsSharedCharSequence().toString())) {
-                        out.add(includeDirEntry);
-                    }
-                }
-            }
+            return ((APTIncludeHandlerImpl) includeHandler).getUserIncludeFilePaths();
         }
         return out;
     }
