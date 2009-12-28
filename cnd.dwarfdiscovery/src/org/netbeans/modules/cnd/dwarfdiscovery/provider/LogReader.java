@@ -584,9 +584,6 @@ public class LogReader {
     private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP) {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
-        if (line.indexOf("authcert.c")>0){
-            System.err.println("");
-        }
         String what = DiscoveryUtils.gatherCompilerLine(line, true/*isScriptOutput*/, userIncludes, userMacros,null);
         if (what == null){
             return false;
