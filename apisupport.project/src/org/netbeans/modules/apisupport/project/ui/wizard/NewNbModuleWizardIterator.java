@@ -45,8 +45,10 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -109,13 +111,17 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     private NewNbModuleWizardIterator(NewNbModuleWizardIterator.Type type) {
         data = new NewModuleProjectData(type);
     }
+    private NewNbModuleWizardIterator(Type type, boolean osgi) {
+        data = new NewModuleProjectData(type, osgi);
+    }
+
     
     /**
      * Returns wizard for creating NetBeans module in general - i.e. either
      * standalone module, suite component or NB.org module.
      */
-    public static NewNbModuleWizardIterator createModuleIterator() {
-        return new NewNbModuleWizardIterator(Type.MODULE);
+    public static NewNbModuleWizardIterator createModuleIterator(Map m) {
+        return new NewNbModuleWizardIterator(Type.MODULE, "bundle".equals(m.get("type"))); // NOI18N
     }
     
     /**
@@ -190,17 +196,17 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
                     // create module within the netbeans.org source tree
                     NbModuleProjectGenerator.createNetBeansOrgModule(projectFolder,
                             data.getCodeNameBase(), data.getProjectDisplayName(),
-                            data.getBundle(), data.getLayer());
+                            data.getBundle(), data.getLayer(), data.isOSGi());
                 } else if (data.isStandalone()) {
                     // create standalone module
                     NbModuleProjectGenerator.createStandAloneModule(projectFolder,
                             data.getCodeNameBase(), data.getProjectDisplayName(),
-                            data.getBundle(), data.getLayer(), data.getPlatformID());
+                            data.getBundle(), data.getLayer(), data.getPlatformID(), data.isOSGi());
                 } else {
                     // create suite-component module
                     NbModuleProjectGenerator.createSuiteComponentModule(projectFolder,
                             data.getCodeNameBase(), data.getProjectDisplayName(),
-                            data.getBundle(), data.getLayer(), new File(data.getSuiteRoot()));
+                            data.getBundle(), data.getLayer(), new File(data.getSuiteRoot()), data.isOSGi());
                 }
                 break;
             case LIBRARY_MODULE:
@@ -251,8 +257,6 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
         String[] steps = null;
         switch (data.getWizardType()) {
             case MODULE:
-                steps = initModuleWizard();
-                break;
             case SUITE_COMPONENT:
                 steps = initModuleWizard();
                 break;
