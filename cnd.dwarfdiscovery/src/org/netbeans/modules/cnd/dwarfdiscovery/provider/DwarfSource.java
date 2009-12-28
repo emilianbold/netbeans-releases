@@ -377,6 +377,27 @@ public class DwarfSource implements SourceFileProperties{
                     String include = PathCache.getString(defaultSearchPath);
                     addUserIncludePath(include);
                 }
+            } else if (option.startsWith("-isystem")){ // NOI18N
+                String path = option.substring(8);
+                if (path.length()==0 && st.hasNext()){
+                    path = st.next();
+                }
+                String include = PathCache.getString(path);
+                addUserIncludePath(include);
+            } else if (option.startsWith("-include")){ // NOI18N
+                String path = option.substring(8);
+                if (path.length()==0 && st.hasNext()){
+                    path = st.next();
+                }
+                String include = PathCache.getString(path);
+                addUserIncludePath(include);
+            } else if (option.startsWith("-imacros")){ // NOI18N
+                String path = option.substring(8);
+                if (path.length()==0 && st.hasNext()){
+                    path = st.next();
+                }
+                String include = PathCache.getString(path);
+                addUserIncludePath(include);
             } else if (option.equals("-fopenmp")){ // NOI18N
                 userMacros.put("_OPENMP", "200505"); // NOI18N
             } else if (option.equals("-xopenmp") || option.equals("-xopenmp=parallel") || option.equals("-xopenmp=noopt")){ // NOI18N

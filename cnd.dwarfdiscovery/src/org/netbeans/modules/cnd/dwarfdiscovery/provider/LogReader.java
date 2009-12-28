@@ -213,8 +213,73 @@ public class LogReader {
         return result;
     }
 
+    private final ArrayList<List<String>> makeStack = new ArrayList<List<String>>();
+
+    private int getMakeLevel(String line){
+        int i1 = line.indexOf('[');
+        if (i1 > 0){
+            int i2 = line.indexOf(']');
+            if (i2 > i1) {
+                String s = line.substring(i1+1, i2);
+                try {
+                    int res = Integer.parseInt(s);
+                    return res;
+                } catch (NumberFormatException ex) {
+
+                }
+            }
+        }
+        return -1;
+    }
+
+    private void enterMakeStack(String dir, int level){
+        if (level < 0) {
+            return;
+        }
+        for(int i = makeStack.size(); i <= level; i++) {
+            makeStack.add(new ArrayList<String>());
+        }
+        List<String> list = makeStack.get(level);
+        list.add(dir);
+    }
+
+    private boolean leaveMakeStack(String dir, int level) {
+        if (level < 0) {
+            return false;
+        }
+        if (makeStack.size() <= level) {
+            return false;
+        }
+        List<String> list = makeStack.get(level);
+        for(String s : list) {
+            if (s.equals(dir)) {
+                list.remove(s);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<String> getMakeTop(int level){
+        ArrayList<String> res = new ArrayList<String>();
+        for(int i = Math.min(makeStack.size(), level-1); i >=0; i--){
+            List<String> list = makeStack.get(i);
+            if (list.size() > 0) {
+                if (res.size() == 0) {
+                    res.addAll(list);
+                } else {
+                    if (list.size() > 1) {
+                        res.addAll(list);
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
     private static final String CURRENT_DIRECTORY = "Current working directory"; //NOI18N
     private static final String ENTERING_DIRECTORY = "Entering directory"; //NOI18N
+    private static final String LEAVING_DIRECTORY = "Leaving directory"; //NOI18N
 
     private boolean checkDirectoryChange(String line) {
         String workDir = null, message = null;
@@ -227,6 +292,25 @@ public class LogReader {
             workDir = convertPath(dirMessage.replaceAll("`|'|\"", "")); //NOI18N
             if (TRACE) {message = "**>> by [" + ENTERING_DIRECTORY + "] ";} //NOI18N
             baseWorkingDir = workDir;
+            enterMakeStack(workDir, getMakeLevel(line));
+        } else if (line.indexOf(LEAVING_DIRECTORY) >= 0) {
+            String dirMessage = line.substring(line.indexOf(LEAVING_DIRECTORY) + LEAVING_DIRECTORY.length() + 1).trim();
+            workDir = convertPath(dirMessage.replaceAll("`|'|\"", "")); //NOI18N
+            if (TRACE) {message = "**>> by [" + LEAVING_DIRECTORY + "] ";} //NOI18N
+            int level = getMakeLevel(line);
+            if (leaveMakeStack(workDir, level)){
+                List<String> paths = getMakeTop(level);
+                if (paths.size()== 1) {
+                    baseWorkingDir = paths.get(0);
+                } else {
+                    // TODO: make is performed in several threads
+                    // algorithm should have guessing to select needed top of stack
+                    //System.err.println("");
+                }
+            } else {
+                // This is root or error
+                //System.err.println("");
+            }
         } else if (line.startsWith(LABEL_CD)) {
             int end = line.indexOf(MAKE_DELIMITER);
             workDir = convertPath((end == -1 ? line : line.substring(0, end)).substring(LABEL_CD.length()).trim());
@@ -500,7 +584,10 @@ public class LogReader {
     private boolean gatherLine(String line, boolean isScriptOutput, boolean isCPP) {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
-        String what = DiscoveryUtils.gatherCompilerLine(line, isScriptOutput, userIncludes, userMacros,null);
+        if (line.indexOf("authcert.c")>0){
+            System.err.println("");
+        }
+        String what = DiscoveryUtils.gatherCompilerLine(line, true/*isScriptOutput*/, userIncludes, userMacros,null);
         if (what == null){
             return false;
         }
@@ -679,7 +766,7 @@ public class LogReader {
     private final static FileFilter dirFilter = new FileFilter() {
 
             public boolean accept(File pathname) {
-                return pathname.isDirectory();
+                return pathname.isDirectory() && !DiscoveryUtils.ignoreFolder(pathname);
             }
         };
 }
