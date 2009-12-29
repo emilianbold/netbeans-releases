@@ -57,6 +57,20 @@
             </nbms>
             <modules includes="${includes}"/>
         </autoupdate>
+    </target>
+
+    <target name="single-nbms">
+        <echo message="${root}"/>
+
+        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+
+        <autoupdate
+            todir="${target}"
+            force="${force}"
+            nbm="${nbm}"
+        >
+            <modules includes="${includes}"/>
+        </autoupdate>
 
     </target>
 </project>

@@ -95,6 +95,15 @@ public class AutoUpdate extends Task {
         return nbmSet;
     }
 
+    public void setNBM(File nbm) {
+        if (nbmSet != null) {
+            throw new BuildException("Just one nbms set allowed");
+        }
+        nbmSet = new FileSet();
+        nbmSet.setDir(nbm.getParentFile());
+        nbmSet.setIncludes(nbm.getName());
+    }
+
     public void setInstallDir(File dir) {
         this.dir = dir;
     }
@@ -181,6 +190,7 @@ public class AutoUpdate extends Task {
 
             byte[] bytes = new byte[4096];
             File tmp = null;
+            boolean delete = false;
             File lastM = null;
             try {
                 if (uu.getURL().getProtocol().equals("file")) {
@@ -197,6 +207,7 @@ public class AutoUpdate extends Task {
                 if (tmp == null) {
                     tmp = File.createTempFile(dash, ".nbm");
                     tmp.deleteOnExit();
+                    delete = true;
                     Get get = new Get();
                     get.setProject(getProject());
                     get.setTaskName("get:" + uu.getCodeName());
@@ -219,6 +230,7 @@ public class AutoUpdate extends Task {
                 }
 
                 File tracking = new File(new File(whereTo, "update_tracking"), dash + ".xml");
+                log("Writing tracking file " + tracking, Project.MSG_VERBOSE);
                 tracking.getParentFile().mkdirs();
                 OutputStream config = new BufferedOutputStream(new FileOutputStream(tracking));
                 config.write(("<?xml version='1.0' encoding='UTF-8'?>\n" +
@@ -254,14 +266,14 @@ public class AutoUpdate extends Task {
                     }
                     is.close();
                     os.close();
-                    config.write(("<file crc='" + crc.getValue() + "' name='" + relName + "'/>\n").getBytes("UTF-8"));
+                    config.write(("    <file crc='" + crc.getValue() + "' name='" + relName + "'/>\n").getBytes("UTF-8"));
                 }
                 config.write("  </module_version>\n</module>\n".getBytes("UTF-8"));
                 config.close();
             } catch (IOException ex) {
                 throw new BuildException(ex);
             } finally {
-                if (tmp != null) {
+                if (delete && tmp != null) {
                     tmp.delete();
                 }
                 if (lastM != null) {
