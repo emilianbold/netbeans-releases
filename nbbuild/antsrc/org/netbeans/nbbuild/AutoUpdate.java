@@ -230,6 +230,7 @@ public class AutoUpdate extends Task {
                 }
 
                 File tracking = new File(new File(whereTo, "update_tracking"), dash + ".xml");
+                log("Writing tracking file " + tracking, Project.MSG_VERBOSE);
                 tracking.getParentFile().mkdirs();
                 OutputStream config = new BufferedOutputStream(new FileOutputStream(tracking));
                 config.write(("<?xml version='1.0' encoding='UTF-8'?>\n" +
@@ -265,7 +266,7 @@ public class AutoUpdate extends Task {
                     }
                     is.close();
                     os.close();
-                    config.write(("<file crc='" + crc.getValue() + "' name='" + relName + "'/>\n").getBytes("UTF-8"));
+                    config.write(("    <file crc='" + crc.getValue() + "' name='" + relName + "'/>\n").getBytes("UTF-8"));
                 }
                 config.write("  </module_version>\n</module>\n".getBytes("UTF-8"));
                 config.close();
