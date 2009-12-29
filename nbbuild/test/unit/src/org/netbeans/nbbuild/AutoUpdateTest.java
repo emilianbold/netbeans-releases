@@ -90,6 +90,40 @@ public class AutoUpdateTest extends NbTestCase {
         assertTrue("Last modified file created", lastM.exists());
         assertTrue("NBM file left untouched", nbm.isFile());
     }
+    public void testDirectlySpecifiedSingleNBM() throws Exception {
+        clearWorkDir();
+
+        File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
+            "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
+            "netbeans/modules/org-netbeans-api-annotations-common.jar");
+        assertTrue("NBM file created", nbm.isFile());
+
+        File target = new File(getWorkDir(), "target");
+        target.mkdirs();
+
+        PublicPackagesInProjectizedXMLTest.execute(
+            "autoupdate.xml", "-verbose", "-Dnbm=" + nbm.getPath(),
+            "-Dincludes=org.netbeans.api.annotations.common",
+            "-Dtarget=" + target,
+            "single-nbms"
+        );
+
+        File xml = new File(
+            new File(target, "update_tracking"),
+            "org-netbeans-api-annotations-common.xml"
+        );
+        assertTrue("xml file created", xml.exists());
+
+        File jar = new File(
+            new File(target, "modules"),
+            "org-netbeans-api-annotations-common.jar"
+        );
+        assertTrue("jar file created", jar.exists());
+
+        File lastM = new File(target, ".lastModified");
+        assertTrue("Last modified file created", lastM.exists());
+        assertTrue("NBM file left untouched", nbm.isFile());
+    }
     public void testDownloadAndExtractModule() throws Exception {
         clearWorkDir();
 
