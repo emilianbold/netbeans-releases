@@ -241,7 +241,7 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         lbCCommand.setVisible(!isUrl);
         lbCMakePath.setVisible(!isUrl);
         lbCppCommand.setVisible(!isUrl);
-        lbDebuggerCommand.setVisible(!isUrl);
+        lbDebuggerCommand.setVisible(!isUrl && manager.isCustomizableDebugger());
         lbFortranCommand.setVisible(!isUrl);
         lbMakeCommand.setVisible(!isUrl);
         lbQMakePath.setVisible(!isUrl);
@@ -251,7 +251,7 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         tfCMakePath.setVisible(!isUrl);
         tfCPath.setVisible(!isUrl);
         tfCppPath.setVisible(!isUrl);
-        tfDebuggerPath.setVisible(!isUrl);
+        tfDebuggerPath.setVisible(!isUrl && manager.isCustomizableDebugger());
         tfFortranPath.setVisible(!isUrl);
         tfMakePath.setVisible(!isUrl);
         tfQMakePath.setVisible(!isUrl);
@@ -260,7 +260,7 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
         btCBrowse.setVisible(!isUrl);
         btCMakeBrowse.setVisible(!isUrl);
         btCppBrowse.setVisible(!isUrl);
-        btDebuggerBrowse.setVisible(!isUrl);
+        btDebuggerBrowse.setVisible(!isUrl && manager.isCustomizableDebugger());
         btFortranBrowse.setVisible(!isUrl);
         btMakeBrowse.setVisible(!isUrl);
         btQMakeBrowse.setVisible(!isUrl);
