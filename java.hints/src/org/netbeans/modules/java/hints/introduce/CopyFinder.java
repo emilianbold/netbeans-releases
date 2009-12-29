@@ -1151,7 +1151,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         public final Map<String, Collection<? extends TreePath>> multiVariables;
         public final Map<String, String> variables2Names;
 
-        VariableAssignments(Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variables2Names) {
+        public VariableAssignments(Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variables2Names) {
             this.variables = variables;
             this.multiVariables = multiVariables;
             this.variables2Names = variables2Names;
