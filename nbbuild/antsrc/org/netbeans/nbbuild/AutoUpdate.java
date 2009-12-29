@@ -181,6 +181,7 @@ public class AutoUpdate extends Task {
 
             byte[] bytes = new byte[4096];
             File tmp = null;
+            boolean delete = false;
             File lastM = null;
             try {
                 if (uu.getURL().getProtocol().equals("file")) {
@@ -197,6 +198,7 @@ public class AutoUpdate extends Task {
                 if (tmp == null) {
                     tmp = File.createTempFile(dash, ".nbm");
                     tmp.deleteOnExit();
+                    delete = true;
                     Get get = new Get();
                     get.setProject(getProject());
                     get.setTaskName("get:" + uu.getCodeName());
@@ -261,7 +263,7 @@ public class AutoUpdate extends Task {
             } catch (IOException ex) {
                 throw new BuildException(ex);
             } finally {
-                if (tmp != null) {
+                if (delete && tmp != null) {
                     tmp.delete();
                 }
                 if (lastM != null) {
