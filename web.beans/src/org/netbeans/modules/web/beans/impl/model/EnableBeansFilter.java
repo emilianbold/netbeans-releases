@@ -181,15 +181,13 @@ class EnableBeansFilter {
                 enclosingTypeElement(element);
             if ( getResult().isAlternative(enclosingTypeElement)){
                 String name = enclosingTypeElement.getQualifiedName().toString();
-                if ( getResult().hasAlternative(element) ){
+                if ( getResult().hasAlternative(enclosingTypeElement) ){
                     if ( !getModel().getAlternativeClasses().contains( name ) ){
                         iterator.remove();
                     }
                 }
-                else {
-                    if ( !alternativeStereotypesEnabled(enclosingTypeElement) ){
-                        iterator.remove();
-                    }
+                if ( !alternativeStereotypesEnabled(enclosingTypeElement) ){
+                    iterator.remove();
                 }
             }
         }
@@ -273,10 +271,10 @@ class EnableBeansFilter {
         while( current != null ){
             TypeMirror superClass = current.getSuperclass(); 
             if (!(superClass instanceof DeclaredType)) {
-                return;
+                break;
             }
             if (!AnnotationObjectProvider.hasSpecializes(current, getHelper())) {
-                return;
+                break;
             }
             remove.add(current);
             TypeElement superElement = (TypeElement) ((DeclaredType) superClass)
@@ -286,8 +284,12 @@ class EnableBeansFilter {
                 resultSet.removeAll(remove);
                 remove.clear();
             }
+            if ( !getResult().getTypeElements().contains( superElement)){
+                break;
+            }
             current = superElement;
         }
+        enabledBeans.removeAll(remove);
     }
 
     private void addEnabledAlternative( TypeElement typeElement , Element element) {

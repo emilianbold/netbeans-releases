@@ -299,6 +299,195 @@ public class DisabledBeansTest extends CommonTestCase {
         });
     }
     
+    public void testVariousDisableConditions() throws IOException{
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Binding1.java",
+                "package foo; " +
+                "import static java.lang.annotation.ElementType.METHOD; "+
+                "import static java.lang.annotation.ElementType.FIELD; "+
+                "import static java.lang.annotation.ElementType.PARAMETER; "+
+                "import static java.lang.annotation.ElementType.TYPE; "+
+                "import static java.lang.annotation.RetentionPolicy.RUNTIME; "+
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "import java.lang.annotation.*; "+
+                "@Qualifier " +
+                "@Retention(RUNTIME) "+
+                "@Target({METHOD, FIELD, PARAMETER, TYPE}) "+
+                "public @interface Binding1  {}");
+        
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/One.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Alternative "+
+                "public class One {" +
+                " @Produces @Binding1 int myField; "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "public final class Two implements Iface {}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Iface.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "public interface Iface {}" );
+        
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/Three.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "@Binding1 "+
+                "public class Three extends Two {" +
+                " private Three(){} "+
+                "}" );
+        
+        TestUtilities.copyStringToFileObject(srcFO, "foo/TestClass.java",
+                "package foo; " +
+                "import javax.enterprise.inject.*; "+
+                "import javax.inject.*; "+
+                "public class TestClass  {" +
+                " @Inject @Binding1 int myField1; "+
+                " @Inject @Binding1 Iface myField2; "+
+                "}" );
+        
+        TestWebBeansModelImpl modelImpl = createModelImpl(true );
+        MetadataModel<WebBeansModel> testModel = modelImpl.createTestModel();
+        testModel.runReadAction( new MetadataModelAction<WebBeansModel,Void>(){
+
+            public Void run( WebBeansModel model ) throws Exception {
+                TypeMirror mirror = model.resolveType( "foo.TestClass" );
+                Element clazz = ((DeclaredType)mirror).asElement();
+                List<? extends Element> children = clazz.getEnclosedElements();
+                List<VariableElement> injectionPoints = 
+                    new ArrayList<VariableElement>( children.size());
+                for (Element element : children) {
+                    if ( element instanceof VariableElement ){
+                        injectionPoints.add( (VariableElement)element);
+                    }
+                }
+                Set<String> names = new HashSet<String>(); 
+                for( VariableElement element : injectionPoints ){
+                    names.add( element.getSimpleName().toString() );
+                    if ( element.getSimpleName().contentEquals("myField1")){
+                        checkVarious1( element , model );
+                    }
+                    else if ( element.getSimpleName().contentEquals("myField2")){
+                        checkVarious2( element , model);
+                    }
+                }
+                
+                assert names.contains("myField1");
+                assert names.contains("myField2");
+                return null;
+            }
+        });
+    }
+    
+    /*
+     * myField is disabled because it is inside disabled alternative bean. 
+     */
+    private void checkVarious1( VariableElement element, WebBeansModel model )
+    {
+        Result result = model.getInjectable(element, null);
+        
+        assertNotNull( result );
+        
+        assertEquals( Result.ResultKind.RESOLUTION_ERROR, result.getKind());
+        
+        assertTrue( result instanceof Result.ApplicableResult );
+        assertTrue( result instanceof Result.ResolutionResult );  
+        
+        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        
+        assertEquals( 1 , productions.size());
+        assertEquals( 0 , typeElements.size());
+        
+        Element production = productions.iterator().next();
+        
+        assertTrue( production instanceof VariableElement );
+        
+        assertEquals("myField", production.getSimpleName().toString());
+        
+        assertFalse ( "production field myField is not an Alternative", 
+                ((Result.ResolutionResult)result).isAlternative( production ));
+        
+        assertTrue( "production field myField should be disabled", 
+                ((Result.ApplicableResult)result).isDisabled(production));
+    }
+    
+    /*
+     * All three types are disabled here.
+     * - Iface is not a bean . It is interface . So it can't be available as 
+     * result of typesafe resolution
+     * - Two is final. So it is unproxyable.
+     * - Three has private CTOR . It is also unrpoxyable.
+     */
+    private void checkVarious2( VariableElement element, WebBeansModel model )
+    {
+        Result result = model.getInjectable(element, null);
+        
+        assertNotNull( result );
+        
+        assertEquals( Result.ResultKind.RESOLUTION_ERROR, result.getKind());
+        
+        assertTrue( result instanceof Result.ApplicableResult );
+        assertTrue( result instanceof Result.ResolutionResult );  
+        
+        Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
+        Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
+        
+        assertEquals( 0 , productions.size());
+        assertEquals( 3 , typeElements.size());
+        
+        boolean twoFound = false;
+        boolean ifaceFound = false;
+        boolean threeFound = false;
+        TypeElement two = null;
+        TypeElement iface = null;
+        TypeElement three = null;
+        for( TypeElement typeElement : typeElements ){
+            String typeName = typeElement.getQualifiedName().toString();
+            if ( "foo.Two".equals(typeName)){
+                twoFound = true;
+                two = typeElement;
+            }
+            if ( "foo.Iface".equals( typeName)){
+                ifaceFound = true;
+                iface = typeElement;
+            }
+            if ( "foo.Three".equals( typeName)){
+                threeFound = true;
+                three = typeElement;
+            }
+        }
+        
+        assertTrue( "foo.Two should be available via ApplicableResult interface", 
+                twoFound );
+        assertTrue( "foo.Iface should be available via ApplicableResult interface", 
+                ifaceFound );
+        assertTrue( "foo.Three should be available via ApplicableResult interface", 
+                threeFound );
+        
+        assertFalse ( "foo.Two is not an Alternative", 
+                ((Result.ResolutionResult)result).isAlternative( two ));
+        assertFalse ( "foo.One2 is not an Alternative", 
+                ((Result.ResolutionResult)result).isAlternative( iface ));
+        assertFalse ( "foo.Three2 is not an Alternative", 
+                ((Result.ResolutionResult)result).isAlternative( three ));
+        
+        assertTrue( "foo.Two2 should be disabled", 
+                ((Result.ApplicableResult)result).isDisabled(two));
+        assertTrue( "foo.One2 should be disabled", 
+                ((Result.ApplicableResult)result).isDisabled(iface));
+        assertTrue( "foo.Three2 should be disabled", 
+                ((Result.ApplicableResult)result).isDisabled(three));   
+    }
+
     private void checkSpecializes3( VariableElement element,
             WebBeansModel model )
     {
@@ -306,10 +495,18 @@ public class DisabledBeansTest extends CommonTestCase {
         
         assertNotNull( result );
         
-        //assertEquals( Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());
+        assertEquals( Result.ResultKind.INJECTABLE_RESOLVED, result.getKind());
         
+        assertTrue( result instanceof Result.InjectableResult );
         assertTrue( result instanceof Result.ApplicableResult );
         assertTrue( result instanceof Result.ResolutionResult );
+        
+        Element injectable = ((Result.InjectableResult)result).getElement();
+        
+        assertTrue( injectable instanceof TypeElement );
+        String name = ((TypeElement) injectable).getQualifiedName().toString();
+        
+        assertEquals( "foo.One2", name );
         
         Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
         Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
