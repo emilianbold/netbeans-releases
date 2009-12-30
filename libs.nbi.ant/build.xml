@@ -7,15 +7,20 @@
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="build-nbi-ant-tasks" depends="init">
-
-         <ant dir="${basedir}/../nbi/infra/lib/registries-management" target="jar" inheritAll="false">
-            <!--<property name="platforms.JDK_1.5.home" value="${jdk.home}"/>-->
+         <ant dir="${basedir}/../nbi/engine" target="jar" inheritAll="false">
+            <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
             <property name="no.dependencies" value="true"/>
+         </ant>
+         <ant dir="${basedir}/../nbi/infra/lib/registries-management" target="jar" inheritAll="false">
+            <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
+            <property name="no.dependencies" value="true"/>
+            <property name="libs.Ant1.6.5.classpath" value="${ant.core.lib}"/>
          </ant>
 
          <ant dir="${basedir}/../nbi/infra/build/.ant-lib" target="jar" inheritAll="false">
-            <!--<property name="platforms.JDK_1.5.home" value="${jdk.home}"/>-->
+            <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
             <property name="no.dependencies" value="true"/>
+            <property name="libs.Ant1.6.5.classpath" value="${ant.core.lib}"/>
          </ant>
     </target>
 
@@ -37,9 +42,10 @@
 	 
          <ant dir="${basedir}/../nbi/infra/build/.ant-lib" target="clean" inheritAll="false">
              <property name="no.dependencies" value="true"/>
+             <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
          </ant>
          <ant dir="${basedir}/../nbi/infra/lib/registries-management" target="clean" inheritAll="false">
-                <!--<property name="platforms.JDK_1.5.home" value="${jdk.home}"/>-->
+                <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
                 <property name="no.dependencies" value="true"/>
          </ant>
 	 
