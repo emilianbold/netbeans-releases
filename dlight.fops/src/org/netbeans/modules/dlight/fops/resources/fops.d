@@ -68,7 +68,7 @@ syscall::creat*:return
 syscall::*read*:entry,
 syscall::*write*:entry,
 syscall::close*:entry
-/pid == $1 && !fd2ioinfo[arg0].sid/
+/pid == $1 && !fd2ioinfo[arg0].sid && fds[arg0].fi_pathname != "<none>"/
 {
     fd2ioinfo[arg0].sid = -arg0 - 1;
     fd2ioinfo[arg0].dest = fds[arg0].fi_fs == "sockfs"? "<socket>" : fds[arg0].fi_pathname;
@@ -86,7 +86,7 @@ syscall::close*:entry
 syscall::*read*:return
 /pid == $1 && self->sid/
 {
-    @transfer[fops_key_timestamp, "read", self->sid, fd2ioinfo[self->fd].dest, ustack()] = sum(arg1);
+    @transfer[fops_key_timestamp, "read", self->sid, fd2ioinfo[self->fd].dest, ustack()] = sum(0 < arg0? arg0 : 0);
 
     self->fd = 0;
     self->sid = 0;
@@ -95,7 +95,7 @@ syscall::*read*:return
 syscall::*write*:return
 /pid == $1 && self->sid/
 {
-    @transfer[fops_key_timestamp, "write", self->sid, fd2ioinfo[self->fd].dest, ustack()] = sum(arg1);
+    @transfer[fops_key_timestamp, "write", self->sid, fd2ioinfo[self->fd].dest, ustack()] = sum(0 < arg0? arg0 : 0);
 
     self->fd = 0;
     self->sid = 0;
