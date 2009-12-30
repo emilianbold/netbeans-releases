@@ -252,6 +252,13 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                 output.writeUTF(userIncludePaths.get(i).getAsString());
             }
             
+            size = userIncludeFilePaths.size();
+            output.writeInt(size);
+            
+            for (int i = 0; i < size; i++) {
+                output.writeUTF(userIncludeFilePaths.get(i).getAsString());
+            }
+
             if (recurseIncludes == null) {
                 output.writeInt(-1);
             } else {
