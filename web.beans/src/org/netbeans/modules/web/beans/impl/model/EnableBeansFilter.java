@@ -194,22 +194,22 @@ class EnableBeansFilter {
     }
 
     private Set<Element> findEnabledTypes(Set<Element> elements) {
-        LinkedList<Element> enabledTypes = new LinkedList<Element>( elements );
+        LinkedList<Element> types = new LinkedList<Element>( elements );
         Set<Element> result = new HashSet<Element>( elements );
-        while( enabledTypes.size() != 0 ) {
-            TypeElement typeElement = (TypeElement)enabledTypes.remove();
+        while( types.size() != 0 ) {
+            TypeElement typeElement = (TypeElement)types.remove();
             if ( typeElement.getKind() != ElementKind.CLASS){
                 result.remove( typeElement );
                 continue;
             }
-            checkProxyability( typeElement , enabledTypes, result );
-            checkSpecializes(typeElement, enabledTypes, result ,  elements );
+            checkProxyability( typeElement , types, result );
+            checkSpecializes(typeElement, types, result ,  elements );
         }
         return result;
     }
     
     private void checkProxyability( TypeElement typeElement,
-            LinkedList<Element> enabledTypes , Set<Element> result)
+            LinkedList<Element> types , Set<Element> result)
     {
         /*
          * Certain legal bean types cannot be proxied by the container:
@@ -219,7 +219,7 @@ class EnableBeansFilter {
          * -  and array types.
          */
         if ( hasModifier(typeElement, Modifier.FINAL)){
-            enabledTypes.remove(typeElement);
+            types.remove(typeElement);
             result.remove( typeElement );
             return;
         }
@@ -227,7 +227,7 @@ class EnableBeansFilter {
                 typeElement.getEnclosedElements()) ;
         for (ExecutableElement executableElement : methods) {
             if ( hasModifier(executableElement, Modifier.FINAL)){
-                enabledTypes.remove(typeElement);
+                types.remove(typeElement);
                 result.remove( typeElement );
                 return;
             }
@@ -247,7 +247,7 @@ class EnableBeansFilter {
         }
         
         if ( !appropriateCtor){
-            enabledTypes.remove(typeElement);
+            types.remove(typeElement);
             result.remove( typeElement );
         }
     }
@@ -263,11 +263,10 @@ class EnableBeansFilter {
     }
 
     private void checkSpecializes( TypeElement typeElement, 
-            LinkedList<Element> enabledBeans, Set<Element> resultSet, 
+            LinkedList<Element> beans, Set<Element> resultSet, 
             Set<Element> originalElements)
     {
         TypeElement current = typeElement;
-        Set<TypeElement> remove = new HashSet<TypeElement>();
         while( current != null ){
             TypeMirror superClass = current.getSuperclass(); 
             if (!(superClass instanceof DeclaredType)) {
@@ -276,20 +275,17 @@ class EnableBeansFilter {
             if (!AnnotationObjectProvider.hasSpecializes(current, getHelper())) {
                 break;
             }
-            remove.add(current);
             TypeElement superElement = (TypeElement) ((DeclaredType) superClass)
                 .asElement();
             if (originalElements.contains(superElement)) {
-                enabledBeans.removeAll(remove);
-                resultSet.removeAll(remove);
-                remove.clear();
+                resultSet.remove(superElement);
             }
+            beans.remove( superElement );
             if ( !getResult().getTypeElements().contains( superElement)){
                 break;
             }
             current = superElement;
         }
-        enabledBeans.removeAll(remove);
     }
 
     private void addEnabledAlternative( TypeElement typeElement , Element element) {

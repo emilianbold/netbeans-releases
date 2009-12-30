@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.impl.model.results;
+package org.netbeans.modules.web.beans.impl.model;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
@@ -56,20 +56,28 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ArrayValueHandler;
-import org.netbeans.modules.web.beans.impl.model.RuntimeAnnotationChecker;
 
 
 /**
  * @author ads
  *
  */
-class StereotypeChecker extends RuntimeAnnotationChecker {
+public class StereotypeChecker extends RuntimeAnnotationChecker {
     
-    private static final String STEREOTYPE = 
-        "javax.enterprise.inject.Stereotype";               //NOI18N
+    static final String STEREOTYPE = "javax.enterprise.inject.Stereotype";  //NOI18N
     
-    StereotypeChecker(AnnotationModelHelper helper ){
+    public StereotypeChecker(AnnotationModelHelper helper ){
         init(null, helper);
+    }
+    
+    public void init( TypeElement element) {
+        assert getElement() == null;
+        super.init(element, getHelper());
+    }
+
+
+    public void clean(){
+        init( null , getHelper() );
     }
     
     /* (non-Javadoc)
@@ -140,13 +148,4 @@ class StereotypeChecker extends RuntimeAnnotationChecker {
         return Logger.getLogger(StereotypeChecker.class.getName());
     }
     
-    void init( TypeElement element) {
-        assert getElement() == null;
-        super.init(element, getHelper());
-    }
-
-
-    void clean(){
-        init( null , getHelper() );
-    }
 }

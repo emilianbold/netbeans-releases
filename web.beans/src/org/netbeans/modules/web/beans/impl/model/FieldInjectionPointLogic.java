@@ -290,6 +290,23 @@ abstract class FieldInjectionPointLogic {
         return checker.check();
     }
     
+    protected Set<Element> getChildSpecializes( Element productionElement,
+            WebBeansModelImplementation model )
+    {
+        TypeElement typeElement = model.getHelper().getCompilationController()
+                .getElementUtilities().enclosingTypeElement(productionElement);
+        Set<TypeElement> implementors = getImplementors(model, typeElement);
+        implementors.remove( productionElement.getEnclosingElement());
+        Set<Element> specializeElements = new HashSet<Element>();
+        specializeElements.add(productionElement);
+        for (TypeElement implementor : implementors) {
+            inspectHierarchy(productionElement, implementor,
+                    specializeElements, model);
+        }
+        specializeElements.remove(productionElement);
+        return specializeElements;
+    }
+    
     static Set<TypeElement> getImplementors( WebBeansModelImplementation modelImpl,
             Element typeElement )
     {
@@ -423,23 +440,6 @@ abstract class FieldInjectionPointLogic {
                             "ERR_NoInjectPoint" , element.getSimpleName() ));
         }
         return anyQualifier;
-    }
-    
-    private Set<Element> getChildSpecializes( Element productionElement,
-            WebBeansModelImplementation model )
-    {
-        TypeElement typeElement = model.getHelper().getCompilationController()
-                .getElementUtilities().enclosingTypeElement(productionElement);
-        Set<TypeElement> implementors = getImplementors(model, typeElement);
-        implementors.remove( productionElement.getEnclosingElement());
-        Set<Element> specializeElements = new HashSet<Element>();
-        specializeElements.add(productionElement);
-        for (TypeElement implementor : implementors) {
-            inspectHierarchy(productionElement, implementor,
-                    specializeElements, model);
-        }
-        specializeElements.remove(productionElement);
-        return specializeElements;
     }
     
     private void inspectHierarchy( Element productionElement,

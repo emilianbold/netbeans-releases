@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.web.beans.api.model;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -157,6 +158,31 @@ public final class WebBeansModel {
         }
         return getProvider().isDynamicInjectionPoint(element, 
                 getModelImplementation());
+    }
+    
+    /**
+     * Access to @Named elements. Method {@link #getName(Element)} 
+     * should be used for getting name of element. 
+     * @return list of elements annotated with @Named
+     */
+    public List<Element> getNamedElements(){
+        if ( getProvider() == null ){
+            return Collections.emptyList();
+        }
+        return getProvider().getNamedElements( getModelImplementation() );
+    }
+    
+    /**
+     * Returns name of element if it annotated with @Named.
+     * Otherwise returns null.
+     * @param element @Named element
+     * @return name of element
+     */
+    public String getName( Element element ){
+        if ( getProvider() == null ){
+            return null;
+        }
+        return getProvider().getName( element, getModelImplementation() );
     }
     
     /**

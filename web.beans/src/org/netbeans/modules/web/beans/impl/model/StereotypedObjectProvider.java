@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,48 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.model.spi;
+package org.netbeans.modules.web.beans.impl.model;
 
-import java.util.List;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
-import org.netbeans.modules.web.beans.api.model.Result;
 
 
 /**
+ * Provider for type elements which are annotated with some stereotype.
+ * 
  * @author ads
  *
  */
-public interface WebBeansModelProvider {
-
-    Result getInjectable( VariableElement element , DeclaredType parentType,
-            AbstractModelImplementation modelImpl );
+class StereotypedObjectProvider extends AbstractObjectProvider<StereotypedObject>
+{
     
-    Result lookupInjectables( VariableElement element , DeclaredType parentType,
-            AbstractModelImplementation modelImpl  );
-    
-    boolean isDynamicInjectionPoint( VariableElement element ,
-            AbstractModelImplementation impl );
-    
-    boolean isInjectionPoint( VariableElement element , 
-            AbstractModelImplementation impl ) throws InjectionPointDefinitionError;
-    
-    TypeMirror resolveType(String fqn, AnnotationModelHelper helper ) ;
+    StereotypedObjectProvider( String stereotypeAnnotation , 
+            AnnotationModelHelper helper )
+    {
+        super( stereotypeAnnotation, helper);
+    }
 
-    List<AnnotationMirror> getQualifiers( Element element , 
-            AbstractModelImplementation impl );
-
-    List<Element> getNamedElements( AbstractModelImplementation impl );
-
-    String getName( Element element,
-            AbstractModelImplementation modelImplementation );
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.AbstractObjectProvider#createTypeElement(javax.lang.model.element.TypeElement)
+     */
+    @Override
+    protected StereotypedObject createTypeElement( TypeElement element ) {
+        return new StereotypedObject( getAnnotation(), getHelper() , element );
+    }
 
 }

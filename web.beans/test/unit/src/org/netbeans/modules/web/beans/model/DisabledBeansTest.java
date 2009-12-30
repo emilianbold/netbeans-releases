@@ -222,13 +222,13 @@ public class DisabledBeansTest extends CommonTestCase {
         TestUtilities.copyStringToFileObject(srcFO, "foo/One1.java",
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
-                "@Alternative "+
                 "@Binding1 "+
                 "public class One1 {}" );
         
         TestUtilities.copyStringToFileObject(srcFO, "foo/Two1.java",
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
+                "@Alternative "+
                 "@Specializes "+
                 "public class Two1 extends One1 {}" );
         
@@ -506,7 +506,7 @@ public class DisabledBeansTest extends CommonTestCase {
         assertTrue( injectable instanceof TypeElement );
         String name = ((TypeElement) injectable).getQualifiedName().toString();
         
-        assertEquals( "foo.One2", name );
+        assertEquals( "foo.Three2", name );
         
         Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
         Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
@@ -552,9 +552,9 @@ public class DisabledBeansTest extends CommonTestCase {
         
         assertTrue( "foo.Two2 should be disabled", 
                 ((Result.ApplicableResult)result).isDisabled(two));
-        assertFalse( "foo.One2 should be enabled", 
+        assertTrue( "foo.One2 should be enabled", 
                 ((Result.ApplicableResult)result).isDisabled(one));
-        assertTrue( "foo.Three2 should be disabled", 
+        assertFalse( "foo.Three2 should be disabled", 
                 ((Result.ApplicableResult)result).isDisabled(three));   
     }
     
@@ -576,7 +576,7 @@ public class DisabledBeansTest extends CommonTestCase {
         assertTrue( injectable instanceof TypeElement );
         String name = ((TypeElement) injectable).getQualifiedName().toString();
         
-        assertEquals( "foo.Two1", name );
+        assertEquals( "foo.One1", name );
         
         Set<Element> productions = ((Result.ApplicableResult)result).getProductions();
         Set<TypeElement> typeElements = ((Result.ApplicableResult)result).getTypeElements();
@@ -604,14 +604,14 @@ public class DisabledBeansTest extends CommonTestCase {
         assertTrue( "foo.One1 should be available via ApplicableResult interface", 
                 oneFound );
         
-        assertFalse( "foo.Two1 should be enabled", 
+        assertTrue( "foo.Two1 should be disnabled", 
                 ((Result.ApplicableResult)result).isDisabled(two));
-        assertTrue( "foo.One1 should be disabled", 
+        assertFalse( "foo.One1 should be enabled", 
                 ((Result.ApplicableResult)result).isDisabled(one));
         
-        assertFalse ( "foo.Two1 is not an Alternative", 
+        assertTrue ( "foo.Two1 is an Alternative", 
                 ((Result.ResolutionResult)result).isAlternative( two ));
-        assertTrue ( "foo.One1 is an Alternative", 
+        assertFalse( "foo.One1 is not an Alternative", 
                 ((Result.ResolutionResult)result).isAlternative( one ));        
     }
 
@@ -632,7 +632,7 @@ public class DisabledBeansTest extends CommonTestCase {
         assertTrue(injectable instanceof TypeElement);
         String name = ((TypeElement) injectable).getQualifiedName().toString();
 
-        assertEquals("foo.One", name);
+        assertEquals("foo.Three", name);
 
         Set<Element> productions = ((Result.ApplicableResult) result)
                 .getProductions();
@@ -670,11 +670,11 @@ public class DisabledBeansTest extends CommonTestCase {
         assertTrue("foo.Three should be available via ApplicableResult interface",
                 threeFound);
 
-        assertFalse("foo.One should be enabled",
+        assertTrue("foo.One should be disabled",
                 ((Result.ApplicableResult) result).isDisabled(one));
         assertTrue("foo.Two should be disabled",
                 ((Result.ApplicableResult) result).isDisabled(two));
-        assertTrue("foo.Three should be disabled",
+        assertFalse("foo.Three should be enabled",
                 ((Result.ApplicableResult) result).isDisabled(three));
     }
 

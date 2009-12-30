@@ -544,7 +544,6 @@ public class AlternativeTest extends CommonTestCase {
         TestUtilities.copyStringToFileObject(srcFO, "foo/Two.java",
                 "package foo; " +
                 "import javax.enterprise.inject.*; "+
-                " @Alternative "+
                 "public class Two {" +
                 " @Stereotype1 @Produces @Binding1 String myField1; "+
                 " @Stereotype2 @Produces @Binding1 One myField2; "+

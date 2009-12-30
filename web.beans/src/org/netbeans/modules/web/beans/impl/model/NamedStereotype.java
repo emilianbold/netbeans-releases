@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,48 +38,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.model.spi;
+package org.netbeans.modules.web.beans.impl.model;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
+import javax.lang.model.element.TypeElement;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
-import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.web.beans.impl.model.AbstractObjectProvider.Refreshable;
 
 
 /**
  * @author ads
  *
  */
-public interface WebBeansModelProvider {
+class NamedStereotype extends PersistentObject implements Refreshable{
 
-    Result getInjectable( VariableElement element , DeclaredType parentType,
-            AbstractModelImplementation modelImpl );
+    public NamedStereotype( AnnotationModelHelper helper,
+            TypeElement typeElement )
+    {
+        super(helper, typeElement);
+        boolean valid = refresh( typeElement);
+        assert valid;
+    }
     
-    Result lookupInjectables( VariableElement element , DeclaredType parentType,
-            AbstractModelImplementation modelImpl  );
-    
-    boolean isDynamicInjectionPoint( VariableElement element ,
-            AbstractModelImplementation impl );
-    
-    boolean isInjectionPoint( VariableElement element , 
-            AbstractModelImplementation impl ) throws InjectionPointDefinitionError;
-    
-    TypeMirror resolveType(String fqn, AnnotationModelHelper helper ) ;
-
-    List<AnnotationMirror> getQualifiers( Element element , 
-            AbstractModelImplementation impl );
-
-    List<Element> getNamedElements( AbstractModelImplementation impl );
-
-    String getName( Element element,
-            AbstractModelImplementation modelImplementation );
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.AbstractObjectProvider.Refreshable#refresh(javax.lang.model.element.TypeElement)
+     */
+    @Override
+    public boolean refresh( TypeElement type ) {
+        List<? extends AnnotationMirror> allAnnotationMirrors = 
+            getHelper().getCompilationController().getElements().
+                getAllAnnotationMirrors(type);
+        Map<String, ? extends AnnotationMirror> annotationsByType = 
+                getHelper().getAnnotationsByType( allAnnotationMirrors );
+        boolean isStereotype = annotationsByType.get( 
+                StereotypeChecker.STEREOTYPE) != null ;
+        if ( !isStereotype ){
+            return false;
+        }
+        boolean hasNamed = NamedStereotypeObjectProvider.hasNamed(type, 
+                getHelper());
+        return hasNamed;
+    }
 
 }

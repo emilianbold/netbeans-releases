@@ -41,7 +41,6 @@
 package org.netbeans.modules.web.beans.impl.model.results;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +56,8 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.api.model.Result;
+import org.netbeans.modules.web.beans.impl.model.StereotypeChecker;
+import org.netbeans.modules.web.beans.impl.model.WebBeansModelProviderImpl;
 
 
 /**
@@ -120,11 +121,7 @@ public class ResultImpl extends BaseResult implements Result.ResolutionResult {
      * @see org.netbeans.modules.web.beans.api.model.Result.InjectableResult#getStereotypes(javax.lang.model.element.Element)
      */
     public List<AnnotationMirror> getAllStereotypes( Element element ) {
-        List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
-        Set<Element> foundStereotypesElement = new HashSet<Element>(); 
-        StereotypeChecker checker = new StereotypeChecker( getHelper());
-        doGetStereotypes(element, result, foundStereotypesElement, checker);
-        return result;
+        return WebBeansModelProviderImpl.getAllStereotypes(element, getHelper());
     }
     
     /* (non-Javadoc)
@@ -138,7 +135,9 @@ public class ResultImpl extends BaseResult implements Result.ResolutionResult {
         for (AnnotationMirror annotationMirror : annotationMirrors) {
             TypeElement annotationElement = (TypeElement)annotationMirror.
                 getAnnotationType().asElement();
-            if ( isStereotype( annotationElement, checker ) ){
+            if ( WebBeansModelProviderImpl.isStereotype( annotationElement, 
+                    checker ) )
+            {
                 result.add( annotationMirror );
             }
         }
@@ -173,35 +172,6 @@ public class ResultImpl extends BaseResult implements Result.ResolutionResult {
     
     private CompilationController getController(){
         return getHelper().getCompilationController();
-    }
-    
-    private void doGetStereotypes( Element element , List<AnnotationMirror> result ,
-            Set<Element>  foundStereotypesElement , StereotypeChecker checker ) 
-    {
-        List<? extends AnnotationMirror> annotationMirrors = 
-            getController().getElements().getAllAnnotationMirrors( element );
-        for (AnnotationMirror annotationMirror : annotationMirrors) {
-            TypeElement annotationElement = (TypeElement)annotationMirror.
-                getAnnotationType().asElement();
-            if ( foundStereotypesElement.contains( annotationElement)){
-                continue;
-            }
-            if ( isStereotype( annotationElement, checker ) ){
-                foundStereotypesElement.add( annotationElement );
-                result.add(annotationMirror);
-                doGetStereotypes(annotationElement, result, 
-                        foundStereotypesElement, checker );
-            }
-        }
-    }
-    
-    private boolean isStereotype( TypeElement annotationElement,
-            StereotypeChecker checker ) 
-    {
-        checker.init(annotationElement);
-        boolean result = checker.check();
-        checker.clean();
-        return result;
     }
     
     private Set<TypeElement> myDeclaredTypes;
