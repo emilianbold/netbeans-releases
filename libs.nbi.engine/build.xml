@@ -8,7 +8,7 @@
 
     <target name="build-nbi-engine" depends="init">
          <ant dir="${basedir}/../nbi/engine" target="jar" inheritAll="false">
-            <property name="platforms.JDK_1.5.home" value="${jdk.home}"/>
+            <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
          </ant>
     </target>
 
@@ -23,7 +23,7 @@
 
     <target name="clean" depends="projectized-common.clean">
        <ant dir="${basedir}/../nbi/engine" target="clean" inheritAll="false">
-            <property name="platforms.JDK_1.5.home" value="${jdk.home}"/>
+            <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
        </ant>
     </target>
 </project>
