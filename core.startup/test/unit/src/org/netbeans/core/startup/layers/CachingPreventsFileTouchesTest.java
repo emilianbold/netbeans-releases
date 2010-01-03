@@ -48,6 +48,8 @@ import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -90,6 +92,8 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
     public void testInitUserDir() throws Exception {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         Class<?> c = Class.forName("javax.help.HelpSet", true, l);
+        FileObject fo = FileUtil.getConfigFile("Services/Browsers");
+        fo.delete();
         // will be reset next time the system starts
         System.getProperties().remove("netbeans.dirs");
         // initializes counting, but waits till netbeans.dirs are provided
