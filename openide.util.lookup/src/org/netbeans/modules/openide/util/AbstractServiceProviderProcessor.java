@@ -165,6 +165,13 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
                     processingEnv.getMessager().printMessage(Kind.ERROR,
                             "Cannot generate " + rsrc + " because it already exists in sources: " + in.toUri());
                     return;
+                } catch (NullPointerException ex) {
+                    // trying to prevent java.lang.NullPointerException
+                    // at com.sun.tools.javac.util.DefaultFileManager.getFileForOutput(DefaultFileManager.java:1078)
+                    // at com.sun.tools.javac.util.DefaultFileManager.getFileForOutput(DefaultFileManager.java:1054)
+                    // at com.sun.tools.javac.processing.JavacFiler.getResource(JavacFiler.java:434)
+                    // at org.netbeans.modules.openide.util.AbstractServiceProviderProcessor.register(AbstractServiceProviderProcessor.java:163)
+                    // at org.netbeans.modules.openide.util.ServiceProviderProcessor.register(ServiceProviderProcessor.java:99)
                 } catch (FileNotFoundException x) {
                     // Good.
                 }
