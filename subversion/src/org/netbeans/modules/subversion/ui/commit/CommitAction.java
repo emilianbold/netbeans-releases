@@ -113,6 +113,10 @@ public class CommitAction extends ContextAction {
         if(!Subversion.getInstance().checkClientAvailable()) {
             return;
         }
+        if (ctx.getRoots().size() < 1) {
+            Subversion.LOG.info("Svn context contains no files");       //NOI18N
+            return;
+        }
         commitChanges(contentTitle, ctx);
     }
 
