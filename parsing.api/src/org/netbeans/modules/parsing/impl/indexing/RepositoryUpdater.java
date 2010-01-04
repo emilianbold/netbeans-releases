@@ -1669,6 +1669,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     return true;
                 } finally {
                     for(Context ctx : transactionContexts) {
+                        if (getShuttdownRequest().isRaised()) {
+                            return false;
+                        }
                         IndexImpl index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
                         if (index != null) {
                             index.store(isSteady(), new ProxyIterable<Indexable>(allIndexblesSentToIndexers, false));
