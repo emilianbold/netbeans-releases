@@ -356,6 +356,8 @@ made subject to such option by the copyright holder.
             <file name="double-checked-locking.hint" url="../jackpot/hintsimpl/double-checked-locking.hint" />
             <file name="sync-on-non-final.hint" url="../jackpot/hintsimpl/sync-on-non-final.hint" />
             <file name="abstract-document.hint" url="../jackpot/hintsimpl/abstract-document.hint" />
+            <file name="array.hint" url="../perf/array.hint" />
+            <file name="Bundle.properties" url="../perf/Bundle.properties" /> <!--XXX-->
         </folder>
     </folder>
     
