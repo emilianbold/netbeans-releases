@@ -247,6 +247,7 @@
                 <package>org.netbeans.modules.turbo</package>
                 <package>org.netbeans.modules.versioning.annotate</package>
                 <package>org.netbeans.modules.versioning.diff</package>
+                <package>org.netbeans.modules.versioning.hooks</package>
                 <package>org.netbeans.modules.versioning.util</package>
             </friend-packages>
         </data>

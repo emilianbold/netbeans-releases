@@ -118,7 +118,6 @@ public class Subversion {
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion");
 
-    private Result<? extends SvnHook> hooksResult;
     private Result<? extends HyperlinkProvider> hpResult; 
 
     public static synchronized Subversion getInstance() {
@@ -577,23 +576,6 @@ public class Subversion {
         }
     }
     
-    public List<SvnHook> getHooks() {
-        if (hooksResult == null) {
-            hooksResult = (Result<? extends SvnHook>) Lookup.getDefault().lookupResult(SvnHook.class);
-        }
-        if(hooksResult == null) {
-            return Collections.EMPTY_LIST;
-        }
-        List<SvnHook> ret = new ArrayList<SvnHook>();
-        Collection<? extends SvnHook> hooks = hooksResult.allInstances();
-        if (hooks.size() > 0) {
-            for (SvnHook hook : hooks) {
-                ret.add(hook);
-            }
-        }
-        return ret;
-    }
-
     /**
      *
      * @return registered hyperlink providers

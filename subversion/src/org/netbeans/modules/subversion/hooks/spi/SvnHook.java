@@ -40,13 +40,13 @@
 package org.netbeans.modules.subversion.hooks.spi;
 
 import java.io.IOException;
-import javax.swing.JPanel;
+import org.netbeans.modules.versioning.hooks.VCSHook;
 
 /**
  *
  * @author Tomas Stupka
  */
-public abstract class SvnHook {
+public abstract class SvnHook extends VCSHook<SvnHookContext> {
 
     public SvnHookContext beforeCommit(SvnHookContext context) throws IOException {
         return null;
@@ -55,9 +55,5 @@ public abstract class SvnHook {
     public void afterCommit(SvnHookContext context) {
 
     }
-
-    public abstract JPanel createComponent(SvnHookContext context);
-
-    public abstract String getDisplayName();
 
 }

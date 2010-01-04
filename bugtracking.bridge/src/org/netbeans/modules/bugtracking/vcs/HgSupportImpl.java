@@ -47,7 +47,6 @@ import org.netbeans.modules.mercurial.api.Mercurial;
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.VCSSupport.class)
 public class HgSupportImpl extends VCSSupport {
 
     @Override
