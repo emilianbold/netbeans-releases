@@ -15,6 +15,18 @@
                 </file>
             </folder>
             <folder name="xhtml">
+		<folder name="Popup">
+		    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+			<attr name="position" intvalue="1350"/>
+		    </file>
+		</folder>
+		<folder name="RefactoringActions">
+		    <file name="org-netbeans-modules-web-jsf-editor-refactoring-actions-ConvertToCCAction.shadow">
+			<attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-web-jsf-editor-refactoring-actions-ConvertToCCAction.instance"/>
+			<attr name="position" intvalue="430"/>
+		    </file>
+		</folder>
                 <folder name="text">
                     <folder name="html">
                         <folder name="CodeGenerators">
@@ -49,6 +61,14 @@
             </folder>
 
         </folder>
+    </folder>
+
+    <folder name="Actions">
+        <folder name="Refactoring">
+            <file name="org-netbeans-modules-web-jsf-editor-refactoring-actions-ConvertToCCAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.jsf.editor.refactoring.actions.JsfRefactoringActionsFactory.convertToCCAction"/>
+            </file>
+	</folder>
     </folder>
 
     <folder name="XHTMLPalette">
