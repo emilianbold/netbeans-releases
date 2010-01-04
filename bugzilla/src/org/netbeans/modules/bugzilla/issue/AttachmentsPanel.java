@@ -47,39 +47,24 @@ import java.awt.event.MouseAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.DateFormat;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
-import org.netbeans.api.diff.PatchUtils;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
-import org.openide.awt.HtmlBrowser;
-import org.openide.cookies.OpenCookie;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.filesystems.FileChooserBuilder;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -87,7 +72,7 @@ import org.openide.util.RequestProcessor;
  */
 public class AttachmentsPanel extends JPanel {
     private static final Color BG_COLOR = new Color(220, 220, 220);
-    private BugzillaIssue issue;
+    private boolean hadNoAttachments = true;
     private List<AttachmentPanel> newAttachments;
     private JLabel noneLabel;
     private LinkButton createNewButton;
@@ -108,8 +93,8 @@ public class AttachmentsPanel extends JPanel {
         }
     }
 
-    public void setIssue(BugzillaIssue issue) {
-        this.issue = issue;
+    void setAttachments(List<Attachment> attachments) {
+        hadNoAttachments = attachments.isEmpty();
         newAttachments = new LinkedList<AttachmentPanel>();
         removeAll();
 
@@ -119,8 +104,7 @@ public class AttachmentsPanel extends JPanel {
         ResourceBundle bundle = NbBundle.getBundle(AttachmentsPanel.class);
         GroupLayout.SequentialGroup newVerticalGroup = layout.createSequentialGroup();
 
-        BugzillaIssue.Attachment[] attachments = issue.getAttachments();
-        boolean noAttachments = (attachments.length == 0);
+        boolean noAttachments = hadNoAttachments;
         horizontalGroup.add(layout.createSequentialGroup()
             .add(noneLabel)
             .addPreferredGap(LayoutStyle.RELATED)
@@ -194,7 +178,7 @@ public class AttachmentsPanel extends JPanel {
                             .add(rBrace);
                 }
                 JPopupMenu menu = menuFor(attachment, patchButton);
-                filenameButton.setAction(new DefaultAttachmentAction(attachment));
+                filenameButton.setAction(attachment.new DefaultAttachmentAction());
                 filenameButton.setText(filename);
                 filenameButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AttachmentsPanel.class, "AttachmentPanels.filenameButton.AccessibleContext.accessibleDescription")); // NOI18N
                 dateLabel = new JLabel(date != null ? DateFormat.getDateInstance().format(date) : ""); // NOI18N
@@ -266,10 +250,10 @@ public class AttachmentsPanel extends JPanel {
 
     private JPopupMenu menuFor(Attachment attachment, LinkButton patchButton) {
         JPopupMenu menu = new JPopupMenu();
-        menu.add(new DefaultAttachmentAction(attachment));
-        menu.add(new SaveAttachmentAction(attachment));
+        menu.add(attachment.new DefaultAttachmentAction());
+        menu.add(attachment.new SaveAttachmentAction());
         if ("1".equals(attachment.getIsPatch())) { // NOI18N
-            AbstractAction action = new ApplyPatchAction(attachment);
+            AbstractAction action = attachment.new ApplyPatchAction();
             menu.add(action);
             patchButton.setAction(action);
             // Lower the first letter
@@ -343,19 +327,6 @@ public class AttachmentsPanel extends JPanel {
         return infos;
     }
 
-    static File saveToTempFile(Attachment attachment) throws IOException {
-        String filename = attachment.getFilename();
-        int index = filename.lastIndexOf('.'); // NOI18N
-        String prefix = (index == -1) ? filename : filename.substring(0, index);
-        String suffix = (index == -1) ? null : filename.substring(index);
-        if (prefix.length()<3) {
-            prefix = prefix+"tmp"; // NOI18N
-        }
-        File file = File.createTempFile(prefix, suffix);
-        attachment.getAttachementData(new FileOutputStream(file));
-        return file;
-    }
-
     class AttachmentInfo {
         File file;
         String description;
@@ -384,7 +355,7 @@ public class AttachmentsPanel extends JPanel {
                 switchHelper();
                 updateCreateNewButton(false);
             }
-            if (issue.getAttachments().length == 0) {
+            if (hadNoAttachments) {
                 attachment.addPropertyChangeListener(getDeletedListener());
             }
             newAttachments.add(attachment);
@@ -392,116 +363,6 @@ public class AttachmentsPanel extends JPanel {
             revalidate();
         }
 
-    }
-
-    static class DefaultAttachmentAction extends AbstractAction {
-        private Attachment attachment;
-
-        public DefaultAttachmentAction(Attachment attachment) {
-            this.attachment = attachment;
-            putValue(Action.NAME, NbBundle.getMessage(DefaultAttachmentAction.class, "AttachmentsPanel.DefaultAttachmentAction.name")); // NOI18N
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            String progressFormat = NbBundle.getMessage(DefaultAttachmentAction.class, "AttachmentsPanel.DefaultAttachmentAction.progress"); // NOI18N
-            String progressMessage = MessageFormat.format(progressFormat, attachment.getFilename());
-            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
-            handle.start();
-            handle.switchToIndeterminate();
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        File file = saveToTempFile(attachment);
-                        String contentType = attachment.getContentType();
-                        if ("image/png".equals(contentType) // NOI18N
-                                || "image/gif".equals(contentType) // NOI18N
-                                || "image/jpeg".equals(contentType)) { // NOI18N
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURI().toURL());
-                        } else {
-                            file = FileUtil.normalizeFile(file);
-                            FileObject fob = FileUtil.toFileObject(file);
-                            DataObject dob = DataObject.find(fob);
-                            OpenCookie open = dob.getCookie(OpenCookie.class);
-                            if (open != null) {
-                                open.open();
-                            } else {
-                                // PENDING
-                            }
-                        }
-                    } catch (DataObjectNotFoundException dnfex) {
-                        dnfex.printStackTrace();
-                    } catch (IOException ioex) {
-                        ioex.printStackTrace();
-                    } finally {
-                        handle.finish();
-                    }
-                }
-            });
-        }
-    }
-
-    static class SaveAttachmentAction extends AbstractAction {
-        private Attachment attachment;
-
-        public SaveAttachmentAction(Attachment attachment) {
-            this.attachment = attachment;
-            putValue(Action.NAME, NbBundle.getMessage(SaveAttachmentAction.class, "AttachmentsPanel.SaveAttachmentAction.name")); // NOI18N
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            final File file = new FileChooserBuilder(AttachmentsPanel.class)
-                    .setFilesOnly(true).showSaveDialog();
-            if (file != null) {
-                String progressFormat = NbBundle.getMessage(SaveAttachmentAction.class, "AttachmentsPanel.SaveAttachmentAction.progress"); // NOI18N
-                String progressMessage = MessageFormat.format(progressFormat, attachment.getFilename());
-                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
-                handle.start();
-                handle.switchToIndeterminate();
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        try {
-                            attachment.getAttachementData(new FileOutputStream(file));
-                        } catch (IOException ioex) {
-                            ioex.printStackTrace();
-                        } finally {
-                            handle.finish();
-                        }
-                    }
-                });
-            }
-        }
-    }
-
-    static class ApplyPatchAction extends AbstractAction {
-        private Attachment attachment;
-
-        public ApplyPatchAction(Attachment attachment) {
-            this.attachment = attachment;
-            putValue(Action.NAME, NbBundle.getMessage(ApplyPatchAction.class, "AttachmentsPanel.ApplyPatchAction.name")); // NOI18N
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            final File context = BugtrackingUtil.selectPatchContext();
-            if (context != null) {
-                String progressFormat = NbBundle.getMessage(ApplyPatchAction.class, "AttachmentsPanel.ApplyPatchAction.progress"); // NOI18N
-                String progressMessage = MessageFormat.format(progressFormat, attachment.getFilename());
-                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
-                handle.start();
-                handle.switchToIndeterminate();
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        try {
-                            File file = saveToTempFile(attachment);
-                            PatchUtils.applyPatch(file, context);
-                        } catch (IOException ioex) {
-                            ioex.printStackTrace();
-                        } finally {
-                            handle.finish();
-                        }
-                    }
-                });
-            }
-        }
     }
 
 }
