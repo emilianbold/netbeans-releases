@@ -63,6 +63,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
+import java.util.Collection;
 import java.util.Collections;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -118,7 +119,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     final PlaceholderPanel progressPanel = new PlaceholderPanel();
 
     private CommitTable commitTable;
-    private List<SvnHook> hooks = Collections.emptyList();
+    private Collection<SvnHook> hooks = Collections.emptyList();
     private SvnHookContext hookContext;
     private boolean hooksPanelInitialized;
 
@@ -128,7 +129,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         initInteraction();
     }
 
-    void setHooks(List<SvnHook> hooks, SvnHookContext context) {
+    void setHooks(Collection<SvnHook> hooks, SvnHookContext context) {
         if (hooks == null) {
             hooks = Collections.emptyList();
         }
@@ -183,7 +184,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                           DEFAULT_DISPLAY_FILES);
         if(!hooks.isEmpty()) {
             hooksSectionButton.setText((hooks.size() == 1)
-                                       ? hooks.get(0).getDisplayName()
+                                        ? hooks.iterator().next().getDisplayName()
                                        : getMessage("LBL_Advanced"));   //NOI18N
             initSectionButton(hooksSectionButton, hooksSectionPanel,
                               "initHooksPanel",                         //NOI18N
@@ -270,7 +271,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         assert !hooks.isEmpty();
 
         if (hooks.size() == 1) {
-            hooksSectionPanel.add(hooks.get(0).createComponent(hookContext));
+            hooksSectionPanel.add(hooks.iterator().next().createComponent(hookContext));
         } else {
             JTabbedPane hooksTabbedPane = new JTabbedPane();
             for (SvnHook hook : hooks) {

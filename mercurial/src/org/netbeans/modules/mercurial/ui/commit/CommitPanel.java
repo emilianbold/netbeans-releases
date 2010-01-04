@@ -64,6 +64,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.BoxLayout;
@@ -119,7 +120,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private Icon expandedIcon, collapsedIcon;
     
     private CommitTable commitTable;
-    private List<HgHook> hooks = Collections.emptyList();
+    private Collection<HgHook> hooks = Collections.emptyList();
     private HgHookContext hookContext;
     private boolean hooksPanelInitialized;
 
@@ -169,7 +170,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                           DEFAULT_DISPLAY_FILES);
         if (!hooks.isEmpty()) {
             hooksSectionButton.setText((hooks.size() == 1)
-                                       ? hooks.get(0).getDisplayName()
+                                       ? hooks.iterator().next().getDisplayName()
                                        : getMessage("LBL_Advanced"));   //NOI18N
             initSectionButton(hooksSectionButton, hookSectionPanel,
                               "initHooksPanel",                         //NOI18N
@@ -248,7 +249,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         assert !hooks.isEmpty();
 
         if (hooks.size() == 1) {
-            hookSectionPanel.add(hooks.get(0).createComponent(hookContext));
+            hookSectionPanel.add(hooks.iterator().next().createComponent(hookContext));
         } else {
             JTabbedPane hooksTabbedPane = new JTabbedPane();
             for (HgHook hook : hooks) {
@@ -271,7 +272,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         super.removeNotify();
     }
 
-    void setHooks(List<HgHook> hooks, HgHookContext context) {
+    void setHooks(Collection<HgHook> hooks, HgHookContext context) {
         if (hooks == null) {
             hooks = Collections.emptyList();
         }

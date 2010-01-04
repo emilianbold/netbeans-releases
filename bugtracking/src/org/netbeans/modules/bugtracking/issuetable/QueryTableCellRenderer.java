@@ -38,6 +38,14 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     private static final MessageFormat issueObsoleteFormat  = getFormat("issueObsoleteFormat"); // NOI18N
     private static final MessageFormat issueModifiedFormat  = getFormat("issueModifiedFormat"); // NOI18N
 
+    private static final String labelNew = NbBundle.getMessage(QueryTableCellRenderer.class, "LBL_IssueStatusNew");             // NOI18N
+    private static final String labelModified = NbBundle.getMessage(QueryTableCellRenderer.class, "LBL_IssueStatusModified");   // NOI18N
+    private static final String labelObsolete = NbBundle.getMessage(QueryTableCellRenderer.class, "LBL_IssueStatusObsolete");   // NOI18N
+
+    private static final String msgNew = NbBundle.getMessage(QueryTableCellRenderer.class, "MSG_IssueStatusNew");             // NOI18N
+    private static final String msgModified = NbBundle.getMessage(QueryTableCellRenderer.class, "MSG_IssueStatusModified");   // NOI18N
+    private static final String msgObsolete = NbBundle.getMessage(QueryTableCellRenderer.class, "MSG_IssueStatusObsolete");   // NOI18N
+
     private static final Color unevenLineColor              = new Color(0xf3f6fd);
     private static final Color newHighlightColor            = new Color(0x00b400);
     private static final Color modifiedHighlightColor       = new Color(0x0000ff);
@@ -201,13 +209,14 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         TableCellStyle style = getDefaultCellStyle(table, isSelected, row);
         try {
             // set text format and background depending on selection and issue status
+            int status = -2;
             Issue issue = p.getIssue();
             if(!query.contains(issue)) {
                 // archived issues
                 style.format     = isSelected ? style.format           : issueObsoleteFormat;
                 style.background = isSelected ? obsoleteHighlightColor : style.background;
             } else {
-                int status = query.getIssueStatus(issue);
+                status = query.getIssueStatus(issue);
                 if(!IssueCacheUtils.wasSeen(issue)) {
                     switch(status) {
                         case IssueCache.ISSUE_STATUS_NEW :
@@ -223,7 +232,32 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
             }
             Object o = p.getValue();
             if(o instanceof String) {
-                style.tooltip = (String) o;
+                String s = (String) o;
+                s = TextUtils.escapeForHTMLLabel(s);
+                StringBuffer sb = new StringBuffer();
+                sb.append("<html>");                                                // NOI18N
+                sb.append(s);
+                if(!query.contains(issue)) {
+                    sb.append("<br>").append(issueObsoleteFormat.format(new Object[] { labelObsolete }, new StringBuffer(), null)); // NOI18N
+                    sb.append(msgObsolete);
+                } else {
+                    if(status == -2) {
+                        status = query.getIssueStatus(issue);
+                    }
+                    switch(status) {
+                        case IssueCache.ISSUE_STATUS_NEW :
+                            sb.append("<br>").append(issueNewFormat.format(new Object[] { labelNew }, new StringBuffer(), null)); // NOI18N
+                            sb.append(msgNew);
+                            break;
+                        case IssueCache.ISSUE_STATUS_MODIFIED :
+                            sb.append("<br>").append(issueModifiedFormat.format(new Object[] { labelModified }, new StringBuffer(), null)); // NOI18N
+                            sb.append(msgModified);
+                            sb.append(IssueCacheUtils.getRecentChanges(issue));
+                            break;                        
+                    }
+                }
+                sb.append("</html>"); // NOI18N
+                style.tooltip = sb.toString();
             }
         } catch (Exception ex) {
             BugtrackingManager.LOG.log(Level.WARNING, null, ex);
