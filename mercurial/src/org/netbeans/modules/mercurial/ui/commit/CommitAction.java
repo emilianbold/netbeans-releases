@@ -68,6 +68,7 @@ import java.util.Map;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.ResourceBundle;
@@ -82,6 +83,7 @@ import org.netbeans.modules.mercurial.hooks.spi.HgHook;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -144,7 +146,7 @@ public class CommitAction extends ContextAction {
 
         // show commit dialog
         final CommitPanel panel = new CommitPanel();
-        final List<HgHook> hooks = Mercurial.getInstance().getHooks();
+        final Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);
 
         panel.setHooks(hooks, new HgHookContext(ctx.getRootFiles().toArray( new File[ctx.getRootFiles().size()]), null, new HgHookContext.LogEntry[] {}));
         final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] {CommitTableModel.COLUMN_NAME_PATH });
@@ -358,7 +360,7 @@ public class CommitAction extends ContextAction {
     }
 
     public static void performCommit(String message, Map<HgFileNode, CommitOptions> commitFiles,
-            Map<File, Set<File>> rootFiles, HgProgressSupport support, OutputLogger logger, List<HgHook> hooks) {
+            Map<File, Set<File>> rootFiles, HgProgressSupport support, OutputLogger logger, Collection<HgHook> hooks) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         Map<File, List<File>> addCandidates = new HashMap<File, List<File>>();
         Map<File, List<File>> deleteCandidates = new HashMap<File, List<File>>();
@@ -530,7 +532,7 @@ public class CommitAction extends ContextAction {
         }
         static class CommitCmd extends Cmd {
             private HgHookContext context;
-            private List<HgHook> hooks;
+            private Collection<HgHook> hooks;
             private final HgProgressSupport support;
             private File[] hookFiles;
             private final Map<File, Set<File>> rootFilesPerRepository;
@@ -544,7 +546,7 @@ public class CommitAction extends ContextAction {
                 this.locallyModifiedExcluded = locallyModifiedExcluded;
             }
 
-            public void setCommitHooks (HgHookContext context, List<HgHook> hooks, File[] hookFiles) {
+            public void setCommitHooks (HgHookContext context, Collection<HgHook> hooks, File[] hookFiles) {
                 this.context = context;
                 this.hooks = hooks;
                 this.hookFiles = hookFiles;

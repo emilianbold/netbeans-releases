@@ -70,6 +70,7 @@ import org.netbeans.modules.subversion.client.PanelProgressSupport;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.hooks.spi.SvnHookContext;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.Utils;
@@ -131,7 +132,7 @@ public class CommitAction extends ContextAction {
      */
     public static void commitChanges(String contentTitle, final Context ctx) {
         final CommitPanel panel = new CommitPanel();
-        List<SvnHook> hooks = Subversion.getInstance().getHooks();
+        Collection<SvnHook> hooks = VCSHooks.getInstance().getHooks(SvnHook.class);
         File file = ctx.getRootFiles()[0];
         panel.setHooks(hooks, new SvnHookContext(new File[] { file }, null, null));
 
@@ -268,7 +269,7 @@ public class CommitAction extends ContextAction {
         return dd.getValue();
     }
 
-    private static void startCommitTask(final CommitPanel panel, final CommitTable data, final Context ctx, final List<SvnHook> hooks) {
+    private static void startCommitTask(final CommitPanel panel, final CommitTable data, final Context ctx, final Collection<SvnHook> hooks) {
         final Map<SvnFileNode, CommitOptions> commitFiles = data.getCommitFiles();
         final String message = panel.getCommitMessage();
         if (!panel.isHooksPanelInitialized()) {
@@ -456,7 +457,7 @@ public class CommitAction extends ContextAction {
         commit(getContextDisplayName(nodes), ctx);
     }
 
-    private static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, List<SvnHook> hooks) {
+    private static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, Collection<SvnHook> hooks) {
         SvnClient client = getClient(ctx, support);
         if(client == null) {
             return;
@@ -472,7 +473,7 @@ public class CommitAction extends ContextAction {
         performCommit(client, message, commitFiles, ctx, support, rootUpdate, new ArrayList<SvnHook>(0));
     }
 
-    public static void performCommit(SvnClient client, String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, boolean rootUpdate, List<SvnHook> hooks) {
+    public static void performCommit(SvnClient client, String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, boolean rootUpdate, Collection<SvnHook> hooks) {
         try {
             support.setCancellableDelegate(client);
             support.setDisplayName(org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
@@ -680,7 +681,7 @@ public class CommitAction extends ContextAction {
         }
     }
 
-    private static void afterCommit(List<SvnHook> hooks, List<File> files, String message, List<ISVNLogMessage> logs) {
+    private static void afterCommit(Collection<SvnHook> hooks, List<File> files, String message, List<ISVNLogMessage> logs) {
         if(hooks.size() == 0) {
             return;
         }

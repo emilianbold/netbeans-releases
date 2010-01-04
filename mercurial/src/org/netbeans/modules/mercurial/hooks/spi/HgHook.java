@@ -41,14 +41,13 @@ package org.netbeans.modules.mercurial.hooks.spi;
 
 import java.io.IOException;
 import javax.swing.JPanel;
+import org.netbeans.modules.versioning.hooks.VCSHook;
 
 /**
  *
  * @author Tomas Stupka
  */
-public abstract class HgHook {
-
-
+public abstract class HgHook extends VCSHook<HgHookContext>{
 
     public HgHookContext beforeCommit(HgHookContext context) throws IOException {
         return null;
@@ -65,9 +64,5 @@ public abstract class HgHook {
     public void afterPush(HgHookContext context) {
 
     }
-
-    public abstract JPanel createComponent(HgHookContext context);
-
-    public abstract String getDisplayName();
 
 }
