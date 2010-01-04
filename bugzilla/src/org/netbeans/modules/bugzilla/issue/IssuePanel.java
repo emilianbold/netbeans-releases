@@ -102,6 +102,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -484,10 +485,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         oldCommentCount = newCommentCount;
+        List<Attachment> attachments = issue.getAttachments();
         if (!isNew) {
-            commentsPanel.setIssue(issue);
+            commentsPanel.setIssue(issue, attachments);
         }
-        attachmentsPanel.setIssue(issue);
+        attachmentsPanel.setAttachments(attachments);
         BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
         BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
         if (force) {

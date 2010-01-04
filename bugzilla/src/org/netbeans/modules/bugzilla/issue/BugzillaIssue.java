@@ -39,10 +39,13 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
@@ -68,6 +72,9 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
+import org.netbeans.api.diff.PatchUtils;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
@@ -83,8 +90,15 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.openide.awt.HtmlBrowser;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -738,16 +752,16 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         ta.setValue(operation.name());
     }
 
-    Attachment[] getAttachments() {
+    List<Attachment> getAttachments() {
         List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);
         if (attrs == null) {
-            return new Attachment[0];
+            return Collections.emptyList();
         }
         List<Attachment> attachments = new ArrayList<Attachment>(attrs.size());
         for (TaskAttribute taskAttribute : attrs) {
             attachments.add(new Attachment(taskAttribute));
         }
-        return attachments.toArray(new Attachment[attachments.size()]);
+        return attachments;
     }
 
     void addAttachment(File file, final String comment, final String desc, String contentType, final boolean patch) {
@@ -1130,6 +1144,147 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
             };
             repository.getExecutor().execute(cmd);
         }
+
+        void open() {
+            String progressFormat = NbBundle.getMessage(
+                                        DefaultAttachmentAction.class,
+                                        "Attachment.open.progress");    //NOI18N
+            String progressMessage = MessageFormat.format(progressFormat, getFilename());
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+            handle.start();
+            handle.switchToIndeterminate();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        File file = saveToTempFile();
+                        String contentType = getContentType();
+                        if ("image/png".equals(contentType)             //NOI18N
+                                || "image/gif".equals(contentType)      //NOI18N
+                                || "image/jpeg".equals(contentType)) {  //NOI18N
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURI().toURL());
+                        } else {
+                            file = FileUtil.normalizeFile(file);
+                            FileObject fob = FileUtil.toFileObject(file);
+                            DataObject dob = DataObject.find(fob);
+                            OpenCookie open = dob.getCookie(OpenCookie.class);
+                            if (open != null) {
+                                open.open();
+                            } else {
+                                // PENDING
+                            }
+                        }
+                    } catch (DataObjectNotFoundException dnfex) {
+                        dnfex.printStackTrace();
+                    } catch (IOException ioex) {
+                        ioex.printStackTrace();
+                    } finally {
+                        handle.finish();
+                    }
+                }
+            });
+        }
+
+        void saveToFile() {
+            final File file = new FileChooserBuilder(AttachmentsPanel.class)
+                    .setFilesOnly(true).showSaveDialog();
+            if (file != null) {
+                String progressFormat = NbBundle.getMessage(
+                                            SaveAttachmentAction.class,
+                                            "Attachment.saveToFile.progress"); //NOI18N
+                String progressMessage = MessageFormat.format(progressFormat, getFilename());
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+                handle.start();
+                handle.switchToIndeterminate();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            getAttachementData(new FileOutputStream(file));
+                        } catch (IOException ioex) {
+                            ioex.printStackTrace();
+                        } finally {
+                            handle.finish();
+                        }
+                    }
+                });
+            }
+        }
+
+        void applyPatch() {
+            final File context = BugtrackingUtil.selectPatchContext();
+            if (context != null) {
+                String progressFormat = NbBundle.getMessage(
+                                            ApplyPatchAction.class,
+                                            "Attachment.applyPatch.progress"); //NOI18N
+                String progressMessage = MessageFormat.format(progressFormat, getFilename());
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+                handle.start();
+                handle.switchToIndeterminate();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            File file = saveToTempFile();
+                            PatchUtils.applyPatch(file, context);
+                        } catch (IOException ioex) {
+                            ioex.printStackTrace();
+                        } finally {
+                            handle.finish();
+                        }
+                    }
+                });
+            }
+        }
+
+        private File saveToTempFile() throws IOException {
+            int index = filename.lastIndexOf('.'); // NOI18N
+            String prefix = (index == -1) ? filename : filename.substring(0, index);
+            String suffix = (index == -1) ? null : filename.substring(index);
+            if (prefix.length()<3) {
+                prefix = prefix + "tmp";                                //NOI18N
+            }
+            File file = File.createTempFile(prefix, suffix);
+            getAttachementData(new FileOutputStream(file));
+            return file;
+        }
+
+        class DefaultAttachmentAction extends AbstractAction {
+
+            public DefaultAttachmentAction() {
+                putValue(NAME, NbBundle.getMessage(
+                                   DefaultAttachmentAction.class,
+                                   "Attachment.DefaultAction.name"));   //NOI18N
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                Attachment.this.open();
+            }
+        }
+
+        class SaveAttachmentAction extends AbstractAction {
+
+            public SaveAttachmentAction() {
+                putValue(NAME, NbBundle.getMessage(
+                                   SaveAttachmentAction.class,
+                                   "Attachment.SaveAction.name"));      //NOI18N
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                Attachment.this.saveToFile();
+            }
+        }
+
+        class ApplyPatchAction extends AbstractAction {
+
+            public ApplyPatchAction() {
+                putValue(NAME, NbBundle.getMessage(
+                                   ApplyPatchAction.class,
+                                   "Attachment.ApplyPatchAction.name"));//NOI18N
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                Attachment.this.applyPatch();
+            }
+        }
+
     }
 
 }
