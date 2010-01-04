@@ -42,26 +42,22 @@ package org.netbeans.modules.mercurial.hooks.spi;
 import java.io.File;
 import java.util.Date;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.versioning.hooks.VCSHookContext;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class HgHookContext {
+public class HgHookContext extends VCSHookContext {
 
-    private final File[] files;
     private final String msg;
     private final LogEntry[] logEntry;
     private String warning;
 
     public HgHookContext(File[] files, String msg, LogEntry... logEntry) {
-        this.files = files;
+        super(files);
         this.msg = msg;
         this.logEntry = logEntry;
-    }
-
-    public File[] getFiles() {
-        return files;
     }
 
     public String getMessage() {

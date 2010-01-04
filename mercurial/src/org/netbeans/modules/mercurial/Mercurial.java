@@ -132,7 +132,6 @@ public class Mercurial {
      */
     private boolean gotVersion;
 
-    private Result<? extends HgHook> hooksResult;
     private Result<? extends HyperlinkProvider> hpResult;
 
     private Mercurial() {
@@ -517,23 +516,6 @@ public class Mercurial {
 
     public Boolean isRefreshScheduled(File file) {
         return mercurialInterceptor.isRefreshScheduled(file);
-    }
-
-    public List<HgHook> getHooks() {
-        if (hooksResult == null) {
-            hooksResult = (Result<? extends HgHook>) Lookup.getDefault().lookupResult(HgHook.class);
-        }
-        if(hooksResult == null) {
-            return Collections.EMPTY_LIST;
-        }
-        List<HgHook> ret = new ArrayList<HgHook>();
-        Collection<? extends HgHook> hooks = hooksResult.allInstances();
-        if (hooks.size() > 0) {
-            for (HgHook hook : hooks) {
-                ret.add(hook);
-            }
-        }
-        return ret;
     }
 
     /**

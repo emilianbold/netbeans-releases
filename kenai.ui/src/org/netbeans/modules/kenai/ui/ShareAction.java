@@ -162,7 +162,9 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
                         continue;
                     }
                     for (NbProjectHandle nbProjectHandle : sourceHandle.getRecentProjects()) {
-                        if (((NbProjectHandleImpl) nbProjectHandle).getProject().equals(proj)) {
+                        if (nbProjectHandle == null) continue;
+                        Project p = ((NbProjectHandleImpl) nbProjectHandle).getProject();
+                        if (p != null && p.equals(proj)) {
                             return true;
                         }
                     }

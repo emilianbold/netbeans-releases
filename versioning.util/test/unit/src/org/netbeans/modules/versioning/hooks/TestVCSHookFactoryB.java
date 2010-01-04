@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,65 +34,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.hooks.spi;
+package org.netbeans.modules.versioning.hooks;
 
 import java.io.File;
-import java.util.Date;
-import java.util.List;
-import org.netbeans.modules.versioning.hooks.VCSHookContext;
-import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
+import javax.swing.JPanel;
+import org.netbeans.modules.versioning.hooks.VCSHookTest.TestVCSHook;
 
 /**
  *
- * @author Tomas Stupka
+ * @author tomas
  */
-public class SvnHookContext extends VCSHookContext {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.hooks.VCSHookFactory.class)
+public class TestVCSHookFactoryB extends VCSHookFactory<TestVCSHook> {
 
-    private final String msg;
-    private final List<LogEntry> logEntries;
-    private String warning;
-
-    public SvnHookContext(File[] files, String msg, List<LogEntry> logEntries) {
-        super(files);
-        this.msg = msg;
-        this.logEntries = logEntries;
+    @Override
+    public TestVCSHook createHook() {
+        return new TestVCSHookImplB();
     }
 
-    public String getMessage() {
-        return msg;
+    @Override
+    public Class<TestVCSHook> getHookType() {
+        return TestVCSHook.class;
     }
 
-    public List<LogEntry> getLogEntries() {
-        return logEntries;
-    }
-
-    public String getWarning() {
-        return warning;                                                              // NOI18N
-    }
-
-    public void setWarning(String warning) {
-        this.warning = warning;
-    }
-
-    public static class LogEntry {
-        private final ISVNLogMessage logEntry;
-        public LogEntry(ISVNLogMessage logEntry) {
-            this.logEntry = logEntry;
+    public class TestVCSHookImplB<TestVCSHookContextImplB> extends TestVCSHook {
+        @Override
+        public JPanel createComponent(VCSHookContext t) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
-        public String getAuthor() {
-            return logEntry.getAuthor();
+        @Override
+        public String getDisplayName() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
-        public long getRevision() {
-            return logEntry.getRevision().getNumber();
-        }
-        public Date getDate() {
-            return logEntry.getDate();
-        }
-        public String getMessage() {
-            return logEntry.getMessage();
+    }
+
+    public class TestVCSHookContextImplB extends VCSHookContext {
+        public TestVCSHookContextImplB(File[] files) {
+            super(files);
         }
     }
 }

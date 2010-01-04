@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,65 +34,61 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.subversion.hooks.spi;
+package org.netbeans.modules.versioning.hooks;
 
-import java.io.File;
-import java.util.Date;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.versioning.hooks.VCSHookContext;
-import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class SvnHookContext extends VCSHookContext {
+public class VCSHooks {
 
-    private final String msg;
-    private final List<LogEntry> logEntries;
-    private String warning;
+    private static VCSHooks instance;
+    private Result<? extends VCSHookFactory> hooksResult;
 
-    public SvnHookContext(File[] files, String msg, List<LogEntry> logEntries) {
-        super(files);
-        this.msg = msg;
-        this.logEntries = logEntries;
+    private VCSHooks() {
     }
 
-    public String getMessage() {
-        return msg;
-    }
-
-    public List<LogEntry> getLogEntries() {
-        return logEntries;
-    }
-
-    public String getWarning() {
-        return warning;                                                              // NOI18N
-    }
-
-    public void setWarning(String warning) {
-        this.warning = warning;
-    }
-
-    public static class LogEntry {
-        private final ISVNLogMessage logEntry;
-        public LogEntry(ISVNLogMessage logEntry) {
-            this.logEntry = logEntry;
+    public static VCSHooks getInstance() {
+        if (instance == null) {
+            instance = new VCSHooks();
         }
-        public String getAuthor() {
-            return logEntry.getAuthor();
-        }
-        public long getRevision() {
-            return logEntry.getRevision().getNumber();
-        }
-        public Date getDate() {
-            return logEntry.getDate();
-        }
-        public String getMessage() {
-            return logEntry.getMessage();
-        }
+        return instance;
     }
+    
+    public <T extends VCSHook> Collection<T> getHooks(Class<T> clazz) {
+        List<T> ret = new LinkedList<T>();
+        Collection<? extends VCSHookFactory> c = getFactories();
+        for (VCSHookFactory f : c) {
+            if(f.getHookType() == clazz) {
+                VCSHook hook = f.createHook();
+                ret.add((T) hook);
+                continue;
+            }
+        }
+        return ret;
+    }
+
+    private Collection<? extends VCSHookFactory> getFactories() {
+        if(hooksResult == null) {
+            hooksResult = Lookup.getDefault().lookupResult(VCSHookFactory.class);
+        }
+        if(hooksResult == null) {
+            return Collections.EMPTY_LIST;
+        }
+        Collection<VCSHookFactory> c = (Collection<VCSHookFactory>) Lookup.getDefault().lookupAll(VCSHookFactory.class);
+        return hooksResult.allInstances();
+    }
+
 }
