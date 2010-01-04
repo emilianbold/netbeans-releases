@@ -120,7 +120,7 @@ public class DefaultFaceletLibraries {
 
             LIBRARY_INFOS.put("http://java.sun.com/jsf/facelets", new LibraryInfo("Facelets", "ui")); //NOI18N
             LIBRARY_INFOS.put("http://mojarra.dev.java.net/mojarra_ext", new LibraryInfo("Mojarra Extensions", "mj")); //NOI18N
-            LIBRARY_INFOS.put("http://java.sun.com/jsf/composite", new LibraryInfo("Composite Components", "composite")); //NOI18N
+            LIBRARY_INFOS.put("http://java.sun.com/jsf/composite", new LibraryInfo("Composite Components", "cc")); //NOI18N
             LIBRARY_INFOS.put("http://java.sun.com/jsf/html", new LibraryInfo("Html Basic", "h")); //NOI18N
             LIBRARY_INFOS.put("http://java.sun.com/jsf/core", new LibraryInfo("Jsf Core", "f")); //NOI18N
             LIBRARY_INFOS.put("http://java.sun.com/jsp/jstl/core", new LibraryInfo("Jstl Core", "c")); //NOI18N
