@@ -134,7 +134,11 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
             cls = null;
             CsmClassForwardDeclaration cfd = UIDCsmConverter.UIDtoCsmObject(classForwardUID);
             if(CsmBaseUtilities.isValid(cfd)) {
-                cls = cfd.getCsmClass();
+                if (cfd instanceof ClassForwardDeclarationImpl) {
+                    cls = ((ClassForwardDeclarationImpl)cfd).getCsmClass(resolver);
+                } else {
+                    cls = cfd.getCsmClass();
+                }
             }
             friendUID = UIDCsmConverter.declarationToUID(cls);
         }
