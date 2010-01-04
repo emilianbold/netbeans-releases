@@ -121,6 +121,22 @@ is the proper place.
             <issue number="138345"/>
         </change>                
 
+        <change id="(Provider.Result.pendingResult">
+            <api name="general"/>
+            <summary>Added method (Type|Symbol)Provider.Result.pendingResult()</summary>
+            <version major="1" minor="14"/>
+            <date day="4" month="11" year="2009"/>
+            <author login="pflaska"/>
+            <compatibility addition="yes"/>
+            <description>
+                Added method TypeProvider.Result.pendingResult() and
+                SymbolProvider.Result.pendingResult()  to notify 
+                provider's caller that the provider should be called again.
+            </description>
+            <issue number="175998"/>
+        </change>
+        
+    </changes>
     <!-- Now the surrounding HTML text and document structure: -->
 
     <htmlcontents>

@@ -397,45 +397,59 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
 
         public void run() {
-            Profile profile = initializeProfiling();
-            try {
-                LOGGER.fine( "Worker for " + text + " - started " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+            for (;;) {
+                final int[] retry = new int[1];
 
-                final List<? extends TypeDescriptor> types = getTypeNames( text );
-                if ( isCanceled ) {
-                    LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
-                    return;
-                }
-                ListModel model = Models.fromList(types);
-                if (typeFilter != null) {
-                    model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");
-                }
-                final ListModel fmodel = model;
-                if ( isCanceled ) {
-                    LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
-                    return;
-                }
+                Profile profile = initializeProfiling();
+                try {
+                    LOGGER.fine( "Worker for " + text + " - started " + ( System.currentTimeMillis() - createTime ) + " ms."  );
 
-                if ( !isCanceled && fmodel != null ) {
-                    LOGGER.fine( "Worker for text " + text + " finished after " + ( System.currentTimeMillis() - createTime ) + " ms."  );
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            panel.setModel(fmodel);
-                            if (okButton != null && !types.isEmpty()) {
-                                okButton.setEnabled (true);
+                    final List<? extends TypeDescriptor> types = getTypeNames(text, retry);
+                    if ( isCanceled ) {
+                        LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                        return;
+                    }
+                    ListModel model = Models.fromList(types);
+                    if (typeFilter != null) {
+                        model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");
+                    }
+                    final ListModel fmodel = model;
+                    if ( isCanceled ) {
+                        LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                        return;
+                    }
+
+                    if ( !isCanceled && fmodel != null ) {
+                        LOGGER.fine( "Worker for text " + text + " finished after " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                panel.setModel(fmodel);
+                                if (okButton != null && !types.isEmpty()) {
+                                    okButton.setEnabled (true);
+                                }
                             }
+                        });
+                    }
+                } finally {
+                    if (profile != null) {
+                        try {
+                            profile.stop();
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.INFO, "Cannot stop profiling", ex);
                         }
-                    });
-                }
-            } finally {
-                if (profile != null) {
-                    try {
-                        profile.stop();
-                    } catch (Exception ex) {
-                        LOGGER.log(Level.INFO, "Cannot stop profiling", ex);
                     }
                 }
-            }
+
+                if (retry[0] > 0) {
+                    try {
+                        Thread.sleep(retry[0]);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                } else {
+                    return;
+                }
+            } // for
         }
         
         public void cancel() {
@@ -453,7 +467,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
 
         @SuppressWarnings("unchecked")
-        private List<? extends TypeDescriptor> getTypeNames(String text) {
+        private List<? extends TypeDescriptor> getTypeNames(String text, int[] retry) {
             // TODO: Search twice, first for current project, then for all projects
             List<TypeDescriptor> items;
             // Multiple providers: merge results
@@ -478,8 +492,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 }
                 long delta = System.currentTimeMillis() - start;
                 LOGGER.fine("Provider '" + provider.getDisplayName() + "' took " + delta + " ms.");
-                
             }
+            retry[0] = TypeProviderAccessor.DEFAULT.getRetry(result);
             if ( !isCanceled ) {   
                 //time = System.currentTimeMillis();
                 Collections.sort(items, new TypeComparator());
@@ -526,7 +540,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     final void waitSearchFinished() {
         task.waitFinished();
     }
-    
+
     private static class Renderer extends DefaultListCellRenderer implements ChangeListener {
          
         private MyPanel rendererComponent;

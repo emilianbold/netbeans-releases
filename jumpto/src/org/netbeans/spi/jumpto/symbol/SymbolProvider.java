@@ -135,7 +135,14 @@ public interface SymbolProvider {
                 @Override
                 public Result createResult(List<? super SymbolDescriptor> result, String[] message) {
                     return new Result(result, message);
-                }            
+                }
+
+                @Override
+                public int getRetry(Result result) {
+                    return result.retry;
+                }
+
+
             };
         }
         
@@ -179,6 +186,7 @@ public interface SymbolProvider {
         
         private List<? super SymbolDescriptor> result;
         private String[] message;
+        private int retry;
 
         Result(List<? super SymbolDescriptor> result, String[] message) {
             this.result = result;
@@ -212,6 +220,19 @@ public interface SymbolProvider {
         @SuppressWarnings("unchecked")
         public void addResult(List<? extends SymbolDescriptor> symbolDescriptor) {
             ((List)result).addAll(symbolDescriptor);    //workaround javac issue http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6507334 
+        }
+
+        /**
+         * Notify caller that a provider should be called again because
+         * of incomplete or inaccurate results.
+         *
+         * Method can be used when long running task blocks the provider
+         * to complete the data.
+         *
+         * @since 1.14
+         */
+        public void pendingResult() {
+            retry = 2000;
         }
     }
 

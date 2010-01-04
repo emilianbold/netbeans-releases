@@ -347,13 +347,8 @@ public class JavaTypeProvider implements TypeProvider {
                 }
 
                 if (types.isEmpty() && scanInProgress) {
-                    try {
-                        synchronized (JavaTypeProvider.this) {
-                            this.wait(2000);
-                        }
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    res.pendingResult();
+                    return;
                 }
 
                 if ( isCanceled ) {
