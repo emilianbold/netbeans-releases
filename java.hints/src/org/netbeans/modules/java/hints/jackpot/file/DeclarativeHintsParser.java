@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.java.hints.jackpot.file;
 
+import java.security.CodeSource;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
@@ -399,11 +400,18 @@ public class DeclarativeHintsParser {
     private static MethodInvocation resolve(MethodInvocationContext mic, final String invocation, final boolean not) throws IOException {
         final String[] methodName = new String[1];
         final Map<String, ParameterKind> params = new LinkedHashMap<String, ParameterKind>();
-        URL javacApiJar = Modifier.class.getProtectionDomain().getCodeSource().getLocation();
-        if (FileUtil.isArchiveFile(javacApiJar)) {
-            javacApiJar = FileUtil.getArchiveRoot(javacApiJar);
+        CodeSource codeSource = Modifier.class.getProtectionDomain().getCodeSource();
+        URL javacApiJar = codeSource != null ? codeSource.getLocation() : null;
+        ClassPath cp;
+        if (javacApiJar != null) {
+            if (FileUtil.isArchiveFile(javacApiJar)) {
+                javacApiJar = FileUtil.getArchiveRoot(javacApiJar);
+            }
+            cp = ClassPathSupport.createProxyClassPath(ClassPathSupport.createClassPath(javacApiJar), JavaPlatform.getDefault().getBootstrapLibraries());
+        } else {
+            cp = ClassPathSupport.createProxyClassPath(JavaPlatform.getDefault().getBootstrapLibraries());
         }
-        ClassPath cp = ClassPathSupport.createProxyClassPath(ClassPathSupport.createClassPath(javacApiJar), JavaPlatform.getDefault().getBootstrapLibraries());
+
         JavaSource.create(ClasspathInfo.create(cp, EMPTY, EMPTY)).runUserActionTask(new Task<CompilationController>() {
             @SuppressWarnings("fallthrough")
             public void run(CompilationController parameter) throws Exception {
