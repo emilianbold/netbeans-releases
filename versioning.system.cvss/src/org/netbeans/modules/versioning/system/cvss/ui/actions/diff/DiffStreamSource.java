@@ -122,6 +122,7 @@ public class DiffStreamSource extends StreamSource {
         throw new IOException("Operation not supported"); // NOI18N
     }
 
+    @Override
     public synchronized boolean isEditable() {
         return !binary && VersionsCache.REVISION_CURRENT.equals(revision) && isPrimary();
     }
@@ -139,6 +140,7 @@ public class DiffStreamSource extends StreamSource {
         return true;
     }
 
+    @Override
     public synchronized Lookup getLookup() {
         try {
             init(null);
