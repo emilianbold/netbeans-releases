@@ -69,8 +69,10 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import java.awt.Color;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -86,6 +88,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -94,8 +97,11 @@ import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JButton;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Task;
@@ -112,6 +118,11 @@ import org.netbeans.api.java.source.support.SelectionAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.hints.errors.Utilities;
+import org.netbeans.modules.java.hints.introduce.CopyFinder.MethodDuplicateDescription;
+import org.netbeans.spi.editor.highlighting.HighlightsLayer;
+import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
+import org.netbeans.spi.editor.highlighting.ZOrder;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -120,8 +131,10 @@ import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Union2;
 
 /**
  *
@@ -407,16 +420,10 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                 scanner.scan(method, null);
 
-                List<TypeMirrorHandle> paramTypes = new LinkedList<TypeMirrorHandle>();
-                List<String> paramNames = new LinkedList<String>();
+                List<TreePathHandle> params = new LinkedList<TreePathHandle>();
 
                 for (VariableElement ve : scanner.usedLocalVariables) {
-                    paramTypes.add(TypeMirrorHandle.create(ve.asType()));
-                    if (ve.getModifiers().contains(Modifier.FINAL)) {
-                        paramNames.add("!" + ve.getSimpleName().toString());
-                    } else {
-                        paramNames.add(ve.getSimpleName().toString());
-                    }
+                    params.add(TreePathHandle.create(info.getTrees().getPath(ve), info));
                 }
 
                 Set<TypeMirror> exceptions = new HashSet<TypeMirror>(info.getTreeUtilities().getUncaughtExceptions(resolved));
@@ -427,7 +434,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     exceptionHandles.add(TypeMirrorHandle.create(tm));
                 }
 
-                methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, paramTypes, paramNames, exceptionHandles);
+                methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles);
             }
 
             if (fixesMap != null) {
@@ -503,11 +510,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         scanner.scan(method, null);
 
+        List<TreePath> pathsOfStatementsToWrap = new LinkedList<TreePath>();
+
         for (StatementTree s : bt.getStatements()) {
             TreePath path = new TreePath(block, s);
 
             if (index >= statements[0] && index <= statements[1]) {
                 exceptions.addAll(info.getTreeUtilities().getUncaughtExceptions(path));
+                pathsOfStatementsToWrap.add(path);
             }
 
             index++;
@@ -524,15 +534,10 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             return null;
         }
 
-        List<TypeMirrorHandle> paramTypes = new LinkedList<TypeMirrorHandle>();
-        List<String> paramNames = new LinkedList<String>();
+        List<TreePathHandle> params = new LinkedList<TreePathHandle>();
 
         for (VariableElement ve : scanner.usedLocalVariables) {
-            paramTypes.add(TypeMirrorHandle.create(ve.asType()));
-            if (ve.getModifiers().contains(Modifier.FINAL))
-                paramNames.add("!" + ve.getSimpleName().toString());
-            else
-                paramNames.add(ve.getSimpleName().toString());
+            params.add(TreePathHandle.create(info.getTrees().getPath(ve), info));
         }
 
         List<VariableElement> additionalLocalVariables = new LinkedList<VariableElement>(scanner.selectionWrittenLocalVariables);
@@ -556,28 +561,30 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         TypeMirror returnType;
-        String returnName;
+        TreePathHandle returnAssignTo;
         boolean declareVariableForReturnValue;
+
+        int duplicatesCount = CopyFinder.computeDuplicatesAndRemap(info, pathsOfStatementsToWrap, new TreePath(info.getCompilationUnit()), scanner.usedLocalVariables, cancel).size();
 
         if (!scanner.usedSelectionLocalVariables.isEmpty()) {
             VariableElement result = scanner.usedSelectionLocalVariables.iterator().next();
 
             returnType = result.asType();
-            returnName = result.getSimpleName().toString();
+            returnAssignTo = TreePathHandle.create(info.getTrees().getPath(result), info);
             declareVariableForReturnValue = scanner.selectionLocalVariables.contains(result);
         } else {
             if (!exits.isEmpty() && !exitsFromAllBranches) {
                 returnType = info.getTypes().getPrimitiveType(TypeKind.BOOLEAN);
-                returnName = null;
+                returnAssignTo = null;
                 declareVariableForReturnValue = false;
             } else {
                 if (exitsFromAllBranches && scanner.hasReturns) {
                     returnType = methodReturnType;
-                    returnName = null;
+                    returnAssignTo = null;
                     declareVariableForReturnValue = false;
                 } else {
                     returnType = info.getTypes().getNoType(TypeKind.VOID);
-                    returnName = null;
+                    returnAssignTo = null;
                     declareVariableForReturnValue = false;
                 }
             }
@@ -589,7 +596,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             exceptionHandles.add(TypeMirrorHandle.create(tm));
         }
 
-        return new IntroduceMethodFix(info.getJavaSource(), h, paramTypes, paramNames, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnName, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1]);
+        return new IntroduceMethodFix(info.getJavaSource(), h, params, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnAssignTo, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1], duplicatesCount);
     }
 
     private static boolean isInsideSameClass(TreePath one, TreePath two) {
@@ -870,36 +877,41 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return text;
     }
 
-    private static List<ExpressionTree> realArguments(final TreeMaker make, List<String> parameterNames) {
+    private static List<ExpressionTree> realArguments(final TreeMaker make, List<VariableElement> parameters) {
         List<ExpressionTree> realArguments = new LinkedList<ExpressionTree>();
 
-        for (String name : parameterNames) {
-            name = name.startsWith("!") ? name.substring(1) : name;
-            realArguments.add(make.Identifier(name));
+        for (VariableElement p : parameters) {
+            realArguments.add(make.Identifier(p.getSimpleName()));
         }
 
         return realArguments;
     }
 
-    private static List<VariableTree> createVariables(WorkingCopy copy, List<TypeMirrorHandle> parameterTypes, List<String> parameterNames) {
+    private static List<ExpressionTree> realArgumentsForTrees(final TreeMaker make, List<Union2<VariableElement, TreePath>> parameters) {
+        List<ExpressionTree> realArguments = new LinkedList<ExpressionTree>();
+
+        for (Union2<VariableElement, TreePath> p : parameters) {
+            if (p.hasFirst()) {
+                realArguments.add(make.Identifier(p.first().getSimpleName()));
+            } else {
+                realArguments.add((ExpressionTree) p.second().getLeaf());
+            }
+        }
+
+        return realArguments;
+    }
+
+    private static List<VariableTree> createVariables(WorkingCopy copy, List<VariableElement> parameters) {
         final TreeMaker make = copy.getTreeMaker();
         List<VariableTree> formalArguments = new LinkedList<VariableTree>();
-        Iterator<TypeMirrorHandle> argType = parameterTypes.iterator();
-        Iterator<String> argName = parameterNames.iterator();
 
-        while (argType.hasNext() && argName.hasNext()) {
-            TypeMirror tm = argType.next().resolve(copy);
-
-            if (tm == null) {
-                return null;
-            }
-
+        for (VariableElement p : parameters) {
+            TypeMirror tm = p.asType();
             Tree type = make.Type(tm);
-            String formalArgName = argName.next();
+            Name formalArgName = p.getSimpleName();
             Set<Modifier> formalArgMods = EnumSet.noneOf(Modifier.class);
 
-            if (formalArgName.startsWith("!")) {
-                formalArgName = formalArgName.substring(1);
+            if (p.getModifiers().contains(Modifier.FINAL)) {
                 formalArgMods.add(Modifier.FINAL);
             }
 
@@ -924,6 +936,26 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         return thrown;
+    }
+
+    private static final OffsetsBag introduceBag(Document doc) {
+        OffsetsBag bag = (OffsetsBag) doc.getProperty(IntroduceHint.class);
+
+        if (bag == null) {
+            doc.putProperty(IntroduceHint.class, bag = new OffsetsBag(doc));
+        }
+
+        return bag;
+    }
+
+    private static List<VariableElement> resolveVariables(CompilationInfo info, Collection<? extends TreePathHandle> handles) {
+        List<VariableElement> vars = new LinkedList<VariableElement>();
+
+        for (TreePathHandle tph : handles) {
+            vars.add((VariableElement) tph.resolveElement(info));
+        }
+
+        return vars;
     }
 
     private static final class ScanStatement extends TreePathScanner<Void, Void> {
@@ -1612,39 +1644,41 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
     }
 
+    private static final AttributeSet DUPE = AttributesUtilities.createImmutable(StyleConstants.Background, Color.GRAY);
+    
     private static final class IntroduceMethodFix implements Fix {
 
         private JavaSource js;
 
         private TreePathHandle parentBlock;
-        private List<TypeMirrorHandle> parameterTypes;
-        private List<String> parameterNames;
+        private List<TreePathHandle> parameters;
         private List<TypeMirrorHandle> additionalLocalTypes;
         private List<String> additionalLocalNames;
         private TypeMirrorHandle returnType;
-        private String returnName;
+        private TreePathHandle returnAssignTo;
         private boolean declareVariableForReturnValue;
         private Set<TypeMirrorHandle> thrownTypes;
         private List<TreePathHandle> exists;
         private boolean exitsFromAllBranches;
         private int from;
         private int to;
+        private final int duplicatesCount;
 
-        public IntroduceMethodFix(JavaSource js, TreePathHandle parentBlock, List<TypeMirrorHandle> parameterTypes, List<String> parameterNames, List<TypeMirrorHandle> additionalLocalTypes, List<String> additionalLocalNames, TypeMirrorHandle returnType, String returnName, boolean declareVariableForReturnValue, Set<TypeMirrorHandle> thrownTypes, List<TreePathHandle> exists, boolean exitsFromAllBranches, int from, int to) {
+        public IntroduceMethodFix(JavaSource js, TreePathHandle parentBlock, List<TreePathHandle> parameters, List<TypeMirrorHandle> additionalLocalTypes, List<String> additionalLocalNames, TypeMirrorHandle returnType, TreePathHandle returnAssignTo, boolean declareVariableForReturnValue, Set<TypeMirrorHandle> thrownTypes, List<TreePathHandle> exists, boolean exitsFromAllBranches, int from, int to, int duplicatesCount) {
             this.js = js;
             this.parentBlock = parentBlock;
-            this.parameterTypes = parameterTypes;
-            this.parameterNames = parameterNames;
+            this.parameters = parameters;
             this.additionalLocalTypes = additionalLocalTypes;
             this.additionalLocalNames = additionalLocalNames;
             this.returnType = returnType;
-            this.returnName = returnName;
+            this.returnAssignTo = returnAssignTo;
             this.declareVariableForReturnValue = declareVariableForReturnValue;
             this.thrownTypes = thrownTypes;
             this.exists = exists;
             this.exitsFromAllBranches = exitsFromAllBranches;
             this.from = from;
             this.to = to;
+            this.duplicatesCount = duplicatesCount;
         }
 
         public String getText() {
@@ -1658,7 +1692,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         public ChangeInfo implement() throws Exception {
             JButton btnOk = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Ok" ) );
             JButton btnCancel = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Cancel" ) );
-            IntroduceMethodPanel panel = new IntroduceMethodPanel(""); //NOI18N
+            IntroduceMethodPanel panel = new IntroduceMethodPanel("", duplicatesCount); //NOI18N
             panel.setOkButton( btnOk );
             String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceMethod");
             DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[] {btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -1667,6 +1701,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             }
             final String name = panel.getMethodName();
             final Set<Modifier> access = panel.getAccess();
+            final boolean replaceOther = panel.getReplaceOther();
 
             js.runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy copy) throws Exception {
@@ -1689,7 +1724,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     nueStatements.addAll(statements.getStatements().subList(0, from));
 
                     final TreeMaker make = copy.getTreeMaker();
-                    List<ExpressionTree> realArguments = realArguments(make, parameterNames);
+                    List<VariableElement> parameters = resolveVariables(copy, IntroduceMethodFix.this.parameters);
+                    List<ExpressionTree> realArguments = realArguments(make, parameters);
 
                     List<StatementTree> methodStatements = new LinkedList<StatementTree>();
 
@@ -1715,14 +1751,23 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     ExpressionTree invocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), realArguments);
 
                     ReturnTree ret = null;
+                    VariableElement returnAssignTo = null;
 
-                    if (returnName != null) {
-                        ret = make.Return(make.Identifier(returnName));
+                    if (IntroduceMethodFix.this.returnAssignTo != null) {
+                        returnAssignTo = (VariableElement) IntroduceMethodFix.this.returnAssignTo.resolveElement(copy);
+
+                        if (returnAssignTo == null) {
+                            return; //TODO...
+                        }
+                    }
+
+                    if (returnAssignTo != null) {
+                        ret = make.Return(make.Identifier(returnAssignTo.getSimpleName()));
                         if (declareVariableForReturnValue) {
-                            nueStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), returnName, returnTypeTree, invocation));
+                            nueStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), returnAssignTo.getSimpleName(), returnTypeTree, invocation));
                             invocation = null;
                         } else {
-                            invocation = make.Assignment(make.Identifier(returnName), invocation);
+                            invocation = make.Assignment(make.Identifier(returnAssignTo.getSimpleName()), invocation);
                         }
                     }
 
@@ -1772,7 +1817,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                     break;
                             }
 
-                            if (returnName != null || exitsFromAllBranches) {
+                            if (returnAssignTo != null || exitsFromAllBranches) {
                                 nueStatements.add(make.ExpressionStatement(invocation));
                                 nueStatements.add(branch);
                             } else {
@@ -1793,6 +1838,78 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     nueStatements.addAll(statements.getStatements().subList(to + 1, statements.getStatements().size()));
 
+                    if (replaceOther) {
+                        //handle duplicates
+                        Document doc = copy.getDocument();
+                        List<TreePath> statementsPaths = new LinkedList<TreePath>();
+
+                        for (StatementTree t : statements.getStatements().subList(from, to + 1)) {
+                            statementsPaths.add(new TreePath(block, t));
+                        }
+
+                        for (MethodDuplicateDescription mdd : CopyFinder.computeDuplicatesAndRemap(copy, statementsPaths, new TreePath(copy.getCompilationUnit()), parameters, new AtomicBoolean())) {
+                            int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), mdd.block.getStatements().get(mdd.dupeStart));
+                            int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), mdd.block.getStatements().get(mdd.dupeEnd));
+
+                            introduceBag(doc).clear();
+                            introduceBag(doc).addHighlight(startOff, endOff, DUPE);
+
+                            String title = NbBundle.getMessage(IntroduceHint.class, "TTL_DuplicateMethodPiece");
+                            String message = NbBundle.getMessage(IntroduceHint.class, "MSG_DuplicateMethodPiece");
+
+                            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);
+
+                            if (DialogDisplayer.getDefault().notify(nd) != NotifyDescriptor.YES_OPTION) {
+                                continue;
+                            }
+
+                            List<StatementTree> newStatements = new LinkedList<StatementTree>();
+
+                            newStatements.addAll(mdd.block.getStatements().subList(0, mdd.dupeStart));
+
+                            //XXX:
+                            List<Union2<VariableElement, TreePath>> dupeParameters = new LinkedList<Union2<VariableElement, TreePath>>();
+
+                            for (VariableElement ve : parameters) {
+                                if (mdd.variablesRemapToTrees.containsKey(ve)) {
+                                    dupeParameters.add(Union2.<VariableElement, TreePath>createSecond(mdd.variablesRemapToTrees.get(ve)));
+                                } else {
+                                    dupeParameters.add(Union2.<VariableElement, TreePath>createFirst(ve));
+                                }
+                            }
+
+                            List<ExpressionTree> dupeRealArguments = realArgumentsForTrees(make, dupeParameters);
+                            ExpressionTree dupeInvocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), dupeRealArguments);
+
+                            if (returnAssignTo != null) {
+                                TreePath remappedTree = mdd.variablesRemapToTrees.containsKey(returnAssignTo) ? mdd.variablesRemapToTrees.get(returnAssignTo) : null;
+                                VariableElement remappedElement = mdd.variablesRemapToElement.containsKey(returnAssignTo) ? (VariableElement) mdd.variablesRemapToElement.get(returnAssignTo) : null;
+//                                VariableElement dupeReturnAssignTo = mdd.variablesRemapToTrees.containsKey(returnAssignTo) ? (VariableElement) mdd.variablesRemapToTrees.get(returnAssignTo) : returnAssignTo;
+                                if (declareVariableForReturnValue) {
+                                    assert remappedElement != null || remappedTree == null;
+                                    Name name = remappedElement != null ? remappedElement.getSimpleName() : returnAssignTo.getSimpleName();
+                                    newStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, returnTypeTree/*???: more specific type?*/, invocation));
+                                    dupeInvocation = null;
+                                } else {
+                                    ExpressionTree sel = remappedTree != null ? (ExpressionTree) remappedTree.getLeaf()
+                                                                              : remappedElement != null ? make.Identifier(remappedElement.getSimpleName())
+                                                                                                        : make.Identifier(returnAssignTo.getSimpleName());
+                                    dupeInvocation = make.Assignment(sel, dupeInvocation);
+                                }
+                            }
+
+                            if (dupeInvocation != null)
+                                newStatements.add(make.ExpressionStatement(dupeInvocation));
+
+                            newStatements.addAll(mdd.block.getStatements().subList(mdd.dupeEnd + 1, mdd.block.getStatements().size()));
+
+                            copy.rewrite(mdd.block, make.Block(newStatements, false));
+                        }
+
+                        introduceBag(doc).clear();
+                        //handle duplicates end
+                    }
+
                     Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
 
                     if (isStatic) {
@@ -1802,7 +1919,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     modifiers.addAll(access);
 
                     ModifiersTree mods = make.Modifiers(modifiers);
-                    List<VariableTree> formalArguments = createVariables(copy, parameterTypes, parameterNames);
+                    List<VariableTree> formalArguments = createVariables(copy, parameters);
 
                     if (formalArguments == null) {
                         return ; //XXX
@@ -1843,15 +1960,13 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         private JavaSource js;
 
         private TreePathHandle expression;
-        private List<TypeMirrorHandle> parameterTypes;
-        private List<String> parameterNames;
+        private List<TreePathHandle> parameters;
         private Set<TypeMirrorHandle> thrownTypes;
 
-        public IntroduceExpressionBasedMethodFix(JavaSource js, TreePathHandle expression, List<TypeMirrorHandle> parameterTypes, List<String> parameterNames, Set<TypeMirrorHandle> thrownTypes) {
+        public IntroduceExpressionBasedMethodFix(JavaSource js, TreePathHandle expression, List<TreePathHandle> parameters, Set<TypeMirrorHandle> thrownTypes) {
             this.js = js;
             this.expression = expression;
-            this.parameterTypes = parameterTypes;
-            this.parameterNames = parameterNames;
+            this.parameters = parameters;
             this.thrownTypes = thrownTypes;
         }
 
@@ -1866,7 +1981,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         public ChangeInfo implement() throws Exception {
             JButton btnOk = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Ok" ) );
             JButton btnCancel = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Cancel" ) );
-            IntroduceMethodPanel panel = new IntroduceMethodPanel(""); //NOI18N
+            IntroduceMethodPanel panel = new IntroduceMethodPanel("", 0); //NOI18N
             panel.setOkButton( btnOk );
             String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceMethod");
             DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[] {btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -1893,7 +2008,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     final TreeMaker make = copy.getTreeMaker();
                     Tree returnTypeTree = make.Type(returnType);
-                    List<ExpressionTree> realArguments = realArguments(make, parameterNames);
+                    List<VariableElement> parameters = resolveVariables(copy, IntroduceExpressionBasedMethodFix.this.parameters);
+                    List<ExpressionTree> realArguments = realArguments(make, parameters);
 
                     ExpressionTree invocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), realArguments);
 
@@ -1909,7 +2025,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     modifiers.addAll(access);
 
                     ModifiersTree mods = make.Modifiers(modifiers);
-                    List<VariableTree> formalArguments = createVariables(copy, parameterTypes, parameterNames);
+                    List<VariableTree> formalArguments = createVariables(copy, parameters);
 
                     if (formalArguments == null) {
                         return ; //XXX
@@ -1948,4 +2064,13 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
     }
 
+    public static final class HLFImpl implements HighlightsLayerFactory {
+
+        public HighlightsLayer[] createLayers(Context context) {
+            return new HighlightsLayer[] {
+                HighlightsLayer.create(IntroduceHint.class.getName(), ZOrder.CARET_RACK, true, introduceBag(context.getDocument())),
+            };
+        }
+
+    }
 }

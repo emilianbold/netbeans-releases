@@ -27,18 +27,25 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -47,8 +54,10 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.introduce.CopyFinder.MethodDuplicateDescription;
 import org.netbeans.modules.java.hints.introduce.CopyFinder.VariableAssignments;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.BulkSearch;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.BulkSearch.BulkPattern;
@@ -63,7 +72,7 @@ import org.openide.loaders.DataObject;
  * @author Jan Lahoda
  */
 public class CopyFinderTest extends NbTestCase {
-    
+
     public CopyFinderTest(String testName) {
         super(testName);
     }
@@ -595,6 +604,73 @@ public class CopyFinderTest extends NbTestCase {
                              true);
     }
     
+    public void testSimpleRemapping1() throws Exception {
+        performRemappingTest("package test;\n" +
+                             "public class Test {\n" +
+                             "    void t1() {\n" +
+                             "        int i = 0;\n" +
+                             "        |System.err.println(i);|\n" +
+                             "    }\n" +
+                             "    void t2() {\n" +
+                             "        int a = 0;\n" +
+                             "        |System.err.println(a);|\n" +
+                             "    }\n" +
+                             "}\n",
+                             "i");
+    }
+
+    public void testSimpleRemapping2() throws Exception {
+        performRemappingTest("package test;\n" +
+                             "public class Test {\n" +
+                             "    void t1() {\n" +
+                             "        int i = 0;\n" +
+                             "        |System.err.println(i);\n" +
+                             "         int i2 = 0;\n" +
+                             "         System.err.println(i2);|\n" +
+                             "    }\n" +
+                             "    void t2() {\n" +
+                             "        int a = 0;\n" +
+                             "        |System.err.println(a);\n" +
+                             "         int a2 = 0;\n" +
+                             "         System.err.println(a2);|\n" +
+                             "    }\n" +
+                             "}\n",
+                             "i");
+    }
+
+    public void testSimpleRemapping3() throws Exception {
+        performRemappingTest("package test;\n" +
+                             "public class Test {\n" +
+                             "    void t1() {\n" +
+                             "        |int i = 0;\n" +
+                             "         System.err.println(i);\n" +
+                             "         int i2 = 0;\n" +
+                             "         System.err.println(i2);|\n" +
+                             "    }\n" +
+                             "    void t2() {\n" +
+                             "        |int a = 0;\n" +
+                             "         System.err.println(a);\n" +
+                             "         int a2 = 0;\n" +
+                             "         System.err.println(a2);|\n" +
+                             "    }\n" +
+                             "}\n");
+    }
+
+    public void testSimpleRemapping4() throws Exception {
+        performRemappingTest("package test;\n" +
+                             "public class Test {\n" +
+                             "    void t1() {\n" +
+                             "        int i = 0;\n" +
+                             "        |System.err.println(i);|\n" +
+                             "    }\n" +
+                             "    void t2() {\n" +
+                             "        int[] a = {0};\n" +
+                             "        |System.err.println(a[0]);|\n" +
+                             "    }\n" +
+                             "}\n",
+                             "i");
+    }
+    
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }
@@ -844,6 +920,81 @@ public class CopyFinderTest extends NbTestCase {
 
     protected Map<TreePath, VariableAssignments> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel, Map<String, TypeMirror> designedTypeHack) {
         return CopyFinder.computeDuplicates(info, searchingFor, scope, cancel, designedTypeHack);
+    }
+
+    private void performRemappingTest(String code, String... remappableVariables) throws Exception {
+        List<int[]> regions = new LinkedList<int[]>();
+
+        code = findRegions(code, regions);
+
+        prepareTest(code, -1);
+
+        int[] statements = new int[2];
+
+        int[] currentRegion = regions.get(0);
+        TreePathHandle tph = IntroduceHint.validateSelectionForIntroduceMethod(info, currentRegion[0], currentRegion[1], statements);
+
+        assertNotNull(tph);
+
+        TreePath tp = tph.resolve(info);
+
+        assertNotNull(tp);
+
+        BlockTree bt = (BlockTree) tp.getLeaf();
+        List<TreePath> searchFor = new LinkedList<TreePath>();
+
+        for (StatementTree t : bt.getStatements().subList(statements[0], statements[1] + 1)) {
+            searchFor.add(new TreePath(tp, t));
+        }
+
+        final Set<VariableElement> vars = new HashSet<VariableElement>();
+
+        for (final String name : remappableVariables) {
+            new TreePathScanner<Object, Object>() {
+                @Override
+                public Object visitVariable(VariableTree node, Object p) {
+                    if (node.getName().contentEquals(name)) {
+                        vars.add((VariableElement) info.getTrees().getElement(getCurrentPath()));
+                    }
+
+                    return super.visitVariable(node, p);
+                }
+            }.scan(info.getCompilationUnit(), null);
+        }
+
+        Collection<? extends MethodDuplicateDescription> result = CopyFinder.computeDuplicatesAndRemap(info, searchFor, new TreePath(info.getCompilationUnit()), vars, new AtomicBoolean());
+        Set<List<Integer>> realSpans = new HashSet<List<Integer>>();
+
+        for (MethodDuplicateDescription mdd : result) {
+            int startPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), mdd.block.getStatements().get(mdd.dupeStart));
+            int endPos = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), mdd.block.getStatements().get(mdd.dupeEnd));
+
+            realSpans.add(Arrays.asList(startPos, endPos));
+        }
+
+        Set<List<Integer>> goldenSpans = new HashSet<List<Integer>>();
+
+        for (int[] region : regions) {
+            if (region == currentRegion) continue;
+
+            int[] stmts = new int[2];
+            TreePathHandle gtph = IntroduceHint.validateSelectionForIntroduceMethod(info, region[0], region[1], stmts);
+
+            assertNotNull(gtph);
+
+            TreePath gtp = gtph.resolve(info);
+
+            assertNotNull(gtp);
+
+            BlockTree b = (BlockTree) gtp.getLeaf();
+
+            int startPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), b.getStatements().get(stmts[0]));
+            int endPos = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), b.getStatements().get(stmts[1]));
+
+            goldenSpans.add(Arrays.asList(startPos, endPos));
+        }
+
+        assertEquals(goldenSpans, realSpans);
     }
 
     protected Collection<TreePath> computeDuplicates(TreePath path) {
