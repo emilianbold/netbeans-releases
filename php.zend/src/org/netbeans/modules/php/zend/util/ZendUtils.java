@@ -128,7 +128,7 @@ public final class ZendUtils {
         return null;
     }
 
-    private static String getControllerName(String name) {
+    static String getControllerName(String name) {
         return name.substring(0, 1).toUpperCase() + name.substring(1);
     }
 
