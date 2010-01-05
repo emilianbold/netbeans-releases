@@ -273,7 +273,7 @@ public abstract class FrameworkCommandSupport {
      * @see #createCommand(String, String[])
      */
     public ExternalProcessBuilder createSilentCommand(final String command, final String... arguments) {
-        return createCommand(new String[] {command}, arguments);
+        return createSilentCommand(new String[] {command}, arguments);
     }
 
     /**
