@@ -62,32 +62,32 @@ public class AttachmentHyperlinkSupportTest {
         checkBoundaries("Created an attachment (id=12", null, null);
         checkBoundaries("Created an attachment (id=123", null, null);
         checkBoundaries("Created an attachment (id=)", null, null);
-        checkBoundaries("Created an attachment (id=1)", "1", "1");
-        checkBoundaries("Created an attachment (id=12)", "12", "12");
-        checkBoundaries("Created an attachment (id=123)", "123", "123");
+        checkBoundaries("Created an attachment (id=1)", "attachment (id=1)", "1");
+        checkBoundaries("Created an attachment (id=12)", "attachment (id=12)", "12");
+        checkBoundaries("Created an attachment (id=123)", "attachment (id=123)", "123");
         checkBoundaries("Created an atmachment (id=123)", null, null);
         checkBoundaries("Created an attachment (id=1a5)", null, null);
-        checkBoundaries("Created an attachment (id=123) [details]", "123", "123");
-        checkBoundaries("Created an attachment (id=123)  [details]", "123", "123");
-        checkBoundaries("Created an attachment (id=123)\t[details]", "123", "123");
-        checkBoundaries("Created an attachment (id=123)\t\t[details]", "123", "123");
-        checkBoundaries("Created an attachment (id=123)\t [details]", "123", "123");
-        checkBoundaries("Created an attachment (id=123) \t[details]", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details] ", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]  ", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t\t", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t ", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details] \t", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\n", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details] \n", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]  \n", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t\n", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t\t\n", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t \n", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details] \t\n", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details] \n ", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t\n ", "123", "123");
+        checkBoundaries("Created an attachment (id=123) [details]", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123)  [details]", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123)\t[details]", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123)\t\t[details]", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123)\t [details]", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) \t[details]", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details] ", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]  ", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t\t", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t ", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details] \t", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\n", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details] \n", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]  \n", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t\n", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t\t\n", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t \n", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details] \t\n", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details] \n ", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t\n ", "attachment (id=123)", "123");
         checkBoundaries("Created an attachment (id=123)\nfoo", "foo", "123");
         checkBoundaries("Created an attachment (id=123)\n\tfoo", "foo", "123");
         checkBoundaries("Created an attachment (id=123)\n \tfoo", "foo", "123");
@@ -112,9 +112,9 @@ public class AttachmentHyperlinkSupportTest {
         checkBoundaries("Created an attachment (id=123) [details]\t  \n  \tfoo bar\nbaz", "foo bar", "123");
 
         checkBoundaries("Created an attachment (id=123)\nScreenshot", "Screenshot", "123");
-        checkBoundaries("Created an attachment (id=123)\n\nScreenshot", "123", "123");
+        checkBoundaries("Created an attachment (id=123)\n\nScreenshot", "attachment (id=123)", "123");
         checkBoundaries("Created an attachment (id=123) [details]\nScreenshot", "Screenshot", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\n\nScreenshot", "123", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\n\nScreenshot", "attachment (id=123)", "123");
 
         checkBoundaries("Created an attachment (id=92562)\n"
                             + "Screenshot\n"

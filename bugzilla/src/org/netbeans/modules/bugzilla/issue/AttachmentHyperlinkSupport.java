@@ -51,6 +51,8 @@ class AttachmentHyperlinkSupport {
 
     private static final String PREFIX = "Created an attachment (id=";  //NOI18N
     private static final int EQUAL_SIGN_POSITION = PREFIX.lastIndexOf('=');
+    private static final int ATTACHMENT_HYPERLINK_START_FALLBACK
+                             = PREFIX.indexOf("attachment");            //NOI18N
     //private static final Pattern pattern = Pattern.compile(
     //                 "([0-9]++)\\)[^\\r\\n]*+(?:[\\r\\n]++(.*+))?+"); //NOI18N
 
@@ -104,7 +106,8 @@ class AttachmentHyperlinkSupport {
                                 return new int[] {descriptionStart, index};
                             }
                         }
-                        return new int[] {idStartIndex, idEndIndex};
+                        return new int[] {ATTACHMENT_HYPERLINK_START_FALLBACK,
+                                          idEndIndex + 1};
                     }
                 }
             }
