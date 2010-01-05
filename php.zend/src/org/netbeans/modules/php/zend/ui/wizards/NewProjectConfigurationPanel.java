@@ -108,11 +108,11 @@ public class NewProjectConfigurationPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
         generateProjectLabel = new JLabel();
         optionsLabel = new JLabel();
 
-        generateProjectLabel.setText(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.generateProjectLabel.text")); // NOI18N
+        generateProjectLabel.setText(" "); // NOI18N
+
         optionsLabel.setText(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.optionsLabel.text")); // NOI18N
         optionsLabel.setToolTipText(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.optionsLabel.toolTipText")); // NOI18N
         optionsLabel.addMouseListener(new MouseAdapter() {
@@ -130,7 +130,7 @@ public class NewProjectConfigurationPanel extends JPanel {
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(generateProjectLabel)
-                .addPreferredGap(LayoutStyle.RELATED, 236, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.RELATED, 240, Short.MAX_VALUE)
                 .add(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
@@ -139,7 +139,7 @@ public class NewProjectConfigurationPanel extends JPanel {
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(generateProjectLabel)
                     .add(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(285, Short.MAX_VALUE))
+                .addContainerGap(119, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
