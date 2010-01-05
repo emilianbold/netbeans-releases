@@ -331,6 +331,7 @@ public class BugzillaQuery extends Query {
         public IssuesCollector() {}
         public void accept(TaskData taskData) {
             String id = BugzillaIssue.getID(taskData);
+            getController().addProgressUnit(BugzillaIssue.getDisplayName(taskData));
             BugzillaIssue issue;
             try {
                 IssueCache<TaskData> cache = repository.getIssueCache();
@@ -340,7 +341,6 @@ public class BugzillaQuery extends Query {
                 return;
             }
             fireNotifyData(issue); // XXX - !!! triggers getIssues()
-            getController().addProgressUnit();
         }
     };
 }

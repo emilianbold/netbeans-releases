@@ -953,9 +953,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
-    void addProgressUnit() {
+    void addProgressUnit(String issueDesc) {
         if(refreshTask != null) {
-            refreshTask.addProgressUnit();
+            refreshTask.addProgressUnit(issueDesc);
         }
     }
 
@@ -1010,9 +1010,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
-        private synchronized void addProgressUnit() {
+        synchronized void addProgressUnit(String issueDesc) {
             if(handle != null && progressWorkunits < progressMaxWorkunits) {
-                handle.progress(++progressWorkunits);
+                handle.progress(
+                    NbBundle.getMessage(
+                        QueryController.class, "LBL_RetrievingIssue", new Object[] {issueDesc}),
+                    ++progressWorkunits);
             }
         }
 
