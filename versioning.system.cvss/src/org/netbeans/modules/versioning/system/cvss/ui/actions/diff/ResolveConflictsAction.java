@@ -72,6 +72,7 @@ public class ResolveConflictsAction extends AbstractSystemAction {
         return "CTL_MenuItem_ResolveConflicts"; // NOI18N
     }
 
+    @Override
     protected boolean enable(Node[] nodes) {
         return CvsVersioningSystem.getInstance().getFileTableModel(Utils.getCurrentContext(nodes), FileInformation.STATUS_VERSIONED_CONFLICT).getNodes().length > 0;
     }
@@ -102,6 +103,7 @@ public class ResolveConflictsAction extends AbstractSystemAction {
         }
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

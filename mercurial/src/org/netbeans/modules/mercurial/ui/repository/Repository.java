@@ -56,7 +56,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.ComboBoxEditor;
@@ -477,11 +476,8 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         return repositoryPanel.userTextField.getText().trim();
     }
 
-    private String getPassword() {
-        char[] password = repositoryPanel.userPasswordField.getPassword();
-        String result = new String(password);
-        Arrays.fill(password, (char) 0);
-        return result;
+    private char[] getPassword() {
+        return repositoryPanel.userPasswordField.getPassword();
     }
 
     private String getExternalCommand() {
@@ -652,7 +648,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
     
     private void repositoryConnectionSelected(RepositoryConnection rc) {
         repositoryPanel.userTextField.setText(rc.getUsername());
-        repositoryPanel.userPasswordField.setText(rc.getPassword());        
+        repositoryPanel.userPasswordField.setText(null);
         repositoryPanel.tunnelCommandTextField.setText(rc.getExternalCommand());           
         repositoryPanel.savePasswordCheckBox.setSelected(rc.isSavePassword());
 

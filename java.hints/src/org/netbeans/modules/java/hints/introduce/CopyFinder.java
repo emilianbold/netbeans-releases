@@ -69,11 +69,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
@@ -81,6 +83,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -97,9 +100,9 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
     private final CompilationInfo info;
     private final Map<TreePath, VariableAssignments> result = new LinkedHashMap<TreePath, VariableAssignments>();
     private boolean allowGoDeeper = true;
-    private Map<String, TreePath> variables = new HashMap<String, TreePath>(); //XXX
-    private Map<String, Collection<? extends TreePath>> multiVariables = new HashMap<String, Collection<? extends TreePath>>(); //XXX
-    private Map<String, String> variables2Names = new HashMap<String, String>(); //XXX
+    private Set<VariableElement> variablesWithAllowedRemap = Collections.emptySet();
+    private State bindState = State.empty();
+    private boolean allowVariablesRemap = false;
     private AtomicBoolean cancel;
 
 
@@ -145,7 +148,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         f.designedTypeHack = designedTypeHack;
 
         if (f.scan(scope, searchingFor)) {
-            return new VariableAssignments(f.variables, f.multiVariables, f.variables2Names);
+            return new VariableAssignments(f.bindState);
         }
 
         return null;
@@ -175,19 +178,69 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
         if (inVariables != null) {
             if (fillInVariables) {
-                f.variables = inVariables.getVariables();
-                f.variables2Names = inVariables.getVariableNames();
-                f.multiVariables = inVariables.getMultiVariables();
+                f.bindState = State.from(inVariables.getVariables(), inVariables.getMultiVariables(), inVariables.getVariableNames());
             } else {
-                f.variables.putAll(inVariables.getVariables());
-                f.variables2Names.putAll(inVariables.getVariableNames());
-                f.multiVariables.putAll(inVariables.getMultiVariables());
+                f.bindState.variables.putAll(inVariables.getVariables());
+                f.bindState.variables2Names.putAll(inVariables.getVariableNames());
+                f.bindState.multiVariables.putAll(inVariables.getMultiVariables());
             }
         }
 
         f.allowGoDeeper = false;
 
         return f.scan(second, one);
+    }
+
+    //TODO: does not currently support variables:
+    public static Collection<? extends MethodDuplicateDescription> computeDuplicatesAndRemap(CompilationInfo info, Collection<? extends TreePath> searchingFor, TreePath scope, Collection<VariableElement> variablesWithAllowedRemap, AtomicBoolean cancel) {
+        TreePath first = searchingFor.iterator().next();
+        List<MethodDuplicateDescription> result = new LinkedList<MethodDuplicateDescription>();
+
+        CopyFinder firstStatementSearcher = new CopyFinder(first, info, cancel);
+
+        firstStatementSearcher.designedTypeHack = Collections.<String, TypeMirror>emptyMap();
+        firstStatementSearcher.variablesWithAllowedRemap = new HashSet<VariableElement>(variablesWithAllowedRemap);
+        firstStatementSearcher.allowVariablesRemap = true;
+
+        firstStatementSearcher.scan(scope, null);
+
+        OUTER: for (Entry<TreePath, VariableAssignments> e : firstStatementSearcher.result.entrySet()) {
+            TreePath firstOccurrence = e.getKey();
+            BlockTree occurrenceBlock = (BlockTree) firstOccurrence.getParentPath().getLeaf();
+            int occurrenceIndex = occurrenceBlock.getStatements().indexOf(firstOccurrence.getLeaf());
+
+            if (occurrenceIndex + searchingFor.size() > occurrenceBlock.getStatements().size()) {
+                continue;
+            }
+
+            int currentIndex = occurrenceIndex;
+            Iterator<? extends TreePath> toProcess = searchingFor.iterator();
+            Map<Element, Element> remapElements = new HashMap<Element, Element>(e.getValue().variablesRemapToElement);
+            Map<Element, TreePath> remapTrees = new HashMap<Element, TreePath>(e.getValue().variablesRemapToTrees);
+
+            toProcess.next();
+
+            while (toProcess.hasNext()) {
+                currentIndex++;
+
+                TreePath currentToProcess = toProcess.next();
+                CopyFinder ver = new CopyFinder(currentToProcess, info, cancel);
+
+                ver.designedTypeHack = Collections.<String, TypeMirror>emptyMap();
+                ver.allowGoDeeper = false;
+                ver.variablesWithAllowedRemap = new HashSet<VariableElement>(variablesWithAllowedRemap);
+                ver.bindState = State.from(remapElements, remapTrees);
+                ver.allowVariablesRemap = true;
+
+                if (!ver.scan(new TreePath(firstOccurrence.getParentPath(), occurrenceBlock.getStatements().get(currentIndex)), currentToProcess)) {
+                    continue OUTER;
+                }
+            }
+
+            result.add(new MethodDuplicateDescription(occurrenceBlock, occurrenceIndex, currentIndex, e.getValue().variablesRemapToElement, e.getValue().variablesRemapToTrees));
+        }
+
+        return result;
     }
 
     private static boolean sameKind(Tree t1, Tree t2) {
@@ -272,9 +325,9 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             String ident = ((IdentifierTree) p.getLeaf()).getName().toString();
 
             if (ident.startsWith("$")) {
-                if (variables2Names.containsKey(ident)) {
+                if (bindState.variables2Names.containsKey(ident)) {
                     if (node.getKind() == Kind.IDENTIFIER)
-                        return ((IdentifierTree) node).getName().toString().equals(variables2Names.get(ident));
+                        return ((IdentifierTree) node).getName().toString().equals(bindState.variables2Names.get(ident));
                     else
                         return false; //correct?
                 }
@@ -294,10 +347,10 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 }
 
                 if (bind) {
-                    TreePath original = variables.get(ident);
+                    TreePath original = bindState.variables.get(ident);
 
                     if (original == null) {
-                        variables.put(ident, currentPath);
+                        bindState.variables.put(ident, currentPath);
                         return true;
                     } else {
                         boolean oldAllowGoDeeper = allowGoDeeper;
@@ -312,18 +365,47 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                     return false;
                 }
             }
+
+            //TODO: remap with qualified name?
+            Element remappable = info.getTrees().getElement(p);
+
+            if (variablesWithAllowedRemap.contains(remappable)) {
+                TreePath existing = bindState.variablesRemapToTrees.get(remappable);
+
+                if (existing != null) {
+                    boolean oldAllowGoDeeper = allowGoDeeper;
+
+                    try {
+                        allowGoDeeper = false;
+                        return superScan(node, existing);
+                    } finally {
+                        allowGoDeeper = oldAllowGoDeeper;
+                   }
+                }
+
+                TreePath currPath = new TreePath(getCurrentPath(), node);
+                TypeMirror currType = info.getTrees().getTypeMirror(currPath);
+                TypeMirror pType = ((VariableElement) remappable).asType();
+
+                if (isSameTypeForVariableRemap(currType, pType)) {
+                    bindState.variablesRemapToTrees.put(remappable, currPath);
+                    return true;
+                }
+
+                return false;
+            }
         }
 
         if (p != null && Utilities.getWildcardTreeName(p.getLeaf()) != null) {
             String ident = Utilities.getWildcardTreeName(p.getLeaf()).toString();
 
             if (ident.startsWith("$") && StatementTree.class.isAssignableFrom(node.getKind().asInterface())) {
-                TreePath original = variables.get(ident);
+                TreePath original = bindState.variables.get(ident);
 
                 if (original == null) {
                     TreePath currentPath = new TreePath(getCurrentPath(), node);
 
-                    variables.put(ident, currentPath);
+                    bindState.variables.put(ident, currentPath);
                     return true;
                 } else {
                     boolean oldAllowGoDeeper = allowGoDeeper;
@@ -343,10 +425,8 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
             if (result) {
                 if (p == searchingFor && node != searchingFor && allowGoDeeper) {
-                    this.result.put(new TreePath(getCurrentPath(), node), new VariableAssignments(variables, multiVariables, variables2Names));
-                    variables = new HashMap<String, TreePath>();
-                    multiVariables = new HashMap<String, Collection<? extends TreePath>>();
-                    variables2Names = new HashMap<String, String>();
+                    this.result.put(new TreePath(getCurrentPath(), node), new VariableAssignments(bindState));
+                    bindState = State.empty();
                 }
 
                 return true;
@@ -357,6 +437,13 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             return false;
 
         if ((p != null && p.getLeaf() == searchingFor.getLeaf()) || !sameKind(node, searchingFor.getLeaf())) {
+            if (    bindState.multiVariables.isEmpty()
+                 || bindState.variables.isEmpty()
+                 || bindState.variables2Names.isEmpty()
+                 || bindState.variablesRemapToElement.isEmpty()
+                 || bindState.variablesRemapToTrees.isEmpty()) {
+                bindState = State.empty();
+            }
             superScan(node, null);
             return false;
         } else {
@@ -369,10 +456,8 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
             if (result) {
                 if (node != searchingFor.getLeaf()) {
-                    this.result.put(new TreePath(getCurrentPath(), node), new VariableAssignments(variables, multiVariables, variables2Names));
-                    variables = new HashMap<String, TreePath>();
-                    multiVariables = new HashMap<String, Collection<? extends TreePath>>();
-                    variables2Names = new HashMap<String, String>();
+                    this.result.put(new TreePath(getCurrentPath(), node), new VariableAssignments(bindState));
+                    bindState = State.empty();
                 }
 
                 return true;
@@ -553,10 +638,10 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
     private boolean validateMultiVariable(Tree t, List<? extends TreePath> tps) {
         String name = Utilities.getWildcardTreeName(t).toString();
-        Collection<? extends TreePath> original = this.multiVariables.get(name);
+        Collection<? extends TreePath> original = this.bindState.multiVariables.get(name);
 
         if (original == null) {
-            this.multiVariables.put(name, tps);
+            this.bindState.multiVariables.put(name, tps);
             return true;
         } else {
             if (tps.size() != original.size()) {
@@ -605,21 +690,13 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             List<TreePath> tps = new LinkedList<TreePath>();
 
             while (realOffset < real.size()) {
-                Map<String, TreePath> variables = this.variables;
-                Map<String, Collection<? extends TreePath>> multiVariables = this.multiVariables;
-                Map<String, String> variables2Names = this.variables2Names;
-
-                this.variables = new HashMap<String, TreePath>(variables);
-                this.multiVariables = new HashMap<String, Collection<? extends TreePath>>(multiVariables);
-                this.variables2Names = new HashMap<String, String>(variables2Names);
+                State backup = State.copyOf(bindState);
 
                 if (checkListsWithMultistatementTrees(real, realOffset, pattern, patternOffset + 1, p)) {
                     return validateMultiVariable(pattern.get(patternOffset), tps);
                 }
 
-                this.variables = variables;
-                this.multiVariables = multiVariables;
-                this.variables2Names = variables2Names;
+                bindState = backup;
 
                 tps.add(new TreePath(getCurrentPath(), real.get(realOffset)));
 
@@ -1074,7 +1151,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         String name = t.getName().toString();
 
         if (name.startsWith("$")) { //XXX: there should be a utility method for this check
-            String existingName = variables2Names.get(name);
+            String existingName = bindState.variables2Names.get(name);
             String currentName = node.getName().toString();
 
             if (existingName != null) {
@@ -1086,8 +1163,17 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 //variables is needed by the declarative hints to support conditions like
                 //referencedIn($variable, $statements$):
                 //causes problems in JavaFix, see visitIdentifier there.
-                variables.put(name, getCurrentPath());
-                variables2Names.put(name, currentName);
+                bindState.variables.put(name, getCurrentPath());
+                bindState.variables2Names.put(name, currentName);
+            }
+        }
+
+        if (allowVariablesRemap) {
+            VariableElement nodeEl = (VariableElement) info.getTrees().getElement(getCurrentPath());
+            VariableElement pEl = (VariableElement) info.getTrees().getElement(p);
+
+            if (nodeEl != null && pEl != null && isSameTypeForVariableRemap(nodeEl.asType(), pEl.asType())) {
+                bindState.variablesRemapToElement.put(pEl, nodeEl);
             }
         }
 
@@ -1132,7 +1218,20 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             }
         }
 
-        return nodeEl.equals(pEl);
+        if (nodeEl.equals(pEl)) {
+            return true;
+        }
+
+        if (nodeEl.equals(bindState.variablesRemapToElement.get(pEl))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isSameTypeForVariableRemap(TypeMirror nodeType, TypeMirror pType) {
+        //TODO: subtypes could be OK for remap?
+        return info.getTypes().isSameType(nodeType, pType);
     }
 
     private static Name getSimpleName(Tree t) {
@@ -1150,12 +1249,69 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         public final Map<String, TreePath> variables;
         public final Map<String, Collection<? extends TreePath>> multiVariables;
         public final Map<String, String> variables2Names;
+               final Map<Element, Element> variablesRemapToElement;
+               final Map<Element, TreePath> variablesRemapToTrees;
 
         public VariableAssignments(Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variables2Names) {
             this.variables = variables;
             this.multiVariables = multiVariables;
             this.variables2Names = variables2Names;
+            this.variablesRemapToElement = null;
+            this.variablesRemapToTrees = null;
         }
 
+        VariableAssignments(State state) {
+            this.variables = state.variables;
+            this.multiVariables = state.multiVariables;
+            this.variables2Names = state.variables2Names;
+            this.variablesRemapToElement = state.variablesRemapToElement;
+            this.variablesRemapToTrees = state.variablesRemapToTrees;
+        }
+    }
+
+    public static final class MethodDuplicateDescription {
+        public final BlockTree block; //XXX: should not require the duplicate to be in a block!
+        public final int dupeStart;
+        public final int dupeEnd;
+        public final Map<Element, Element> variablesRemapToElement;
+        public final Map<Element, TreePath> variablesRemapToTrees;
+        public MethodDuplicateDescription(BlockTree block, int dupeStart, int dupeEnd, Map<Element, Element> variablesRemapToElement, Map<Element, TreePath> variablesRemapToTrees) {
+            this.block = block;
+            this.dupeStart = dupeStart;
+            this.dupeEnd = dupeEnd;
+            this.variablesRemapToElement = variablesRemapToElement;
+            this.variablesRemapToTrees = variablesRemapToTrees;
+        }
+    }
+
+    private static final class State {
+        final Map<String, TreePath> variables;
+        final Map<String, Collection<? extends TreePath>> multiVariables;
+        final Map<String, String> variables2Names;
+        final Map<Element, Element> variablesRemapToElement;
+        final Map<Element, TreePath> variablesRemapToTrees;
+
+        private State(Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variables2Names, Map<Element, Element> variablesRemapToElement, Map<Element, TreePath> variablesRemapToTrees) {
+            this.variables = variables;
+            this.multiVariables = multiVariables;
+            this.variables2Names = variables2Names;
+            this.variablesRemapToElement = variablesRemapToElement;
+            this.variablesRemapToTrees = variablesRemapToTrees;
+        }
+        public static State empty() {
+            return new State(new HashMap<String, TreePath>(), new HashMap<String, Collection<? extends TreePath>>(), new HashMap<String, String>(), new HashMap<Element, Element>(), new HashMap<Element, TreePath>());
+        }
+
+        public static State copyOf(State original) {
+            return new State(new HashMap<String, TreePath>(original.variables), new HashMap<String, Collection<? extends TreePath>>(original.multiVariables), new HashMap<String, String>(original.variables2Names), new HashMap<Element, Element>(original.variablesRemapToElement), new HashMap<Element, TreePath>(original.variablesRemapToTrees));
+        }
+
+        public static State from(Map<Element, Element> variablesRemapToElement, Map<Element, TreePath> variablesRemapToTrees) {
+            return new State(new HashMap<String, TreePath>(), new HashMap<String, Collection<? extends TreePath>>(), new HashMap<String, String>(), variablesRemapToElement, variablesRemapToTrees);
+        }
+
+        public static State from(Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variables2Names) {
+            return new State(variables, multiVariables, variables2Names, null, null);
+        }
     }
 }

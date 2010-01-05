@@ -42,6 +42,7 @@ package org.netbeans.modules.mercurial.ui.clone;
 
 import java.io.IOException;
 import java.net.PasswordAuthentication;
+import java.net.URISyntaxException;
 import java.util.MissingResourceException;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
@@ -137,6 +138,17 @@ public class CloneAction extends ContextAction {
         performClone(new HgURL(root), clone.getTargetDir(), projIsRepos, projFile, true, null, null, true);
     }
 
+    /**
+     * 
+     * @param source password is nulled
+     * @param target
+     * @param projIsRepos
+     * @param projFile
+     * @param pullPath password is nulled
+     * @param pushPath password is nulled
+     * @param scanForProjects
+     * @return
+     */
     public static RequestProcessor.Task performClone(final HgURL source, final File target, boolean projIsRepos,
             File projFile, final HgURL pullPath, final HgURL pushPath, boolean scanForProjects) {
         return performClone(source, target, projIsRepos, projFile, false, pullPath, pushPath, scanForProjects);
@@ -232,6 +244,13 @@ public class CloneAction extends ContextAction {
                         logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
                         logger.output(""); // NOI18N
                     }
+                    source.clearPassword();
+                    if (pullPath != null) {
+                        pullPath.clearPassword();
+                    }
+                    if (pushPath != null) {
+                        pushPath.clearPassword();
+                    }
                 }
             }
 
@@ -242,24 +261,31 @@ public class CloneAction extends ContextAction {
                  * bug #125835 ("default-push should be set
                  * automatically").
                  */
-                if ((pullPath == null) && (pushPath == null)) {
-                    String defaultPull = hgConfigFiles.getDefaultPull(false);
-                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
-
-                } else if ((pullPath != null) && (pushPath == null)) {
-                    String defaultPull = pullPath.toHgCommandUrlString();
-                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
-                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
-
-                } else if ((pullPath == null) && (pushPath != null)) {
-                    String defaultPush = pushPath.toHgCommandUrlString();
-                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
-
-                } else if ((pullPath != null) && (pushPath != null)) {
-                    String defaultPull = pullPath.toHgCommandUrlString();
-                    String defaultPush = pushPath.toHgCommandUrlString();
-                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
-                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
+                String defaultPull = hgConfigFiles.getDefaultPull(false);
+                HgURL defaultPullURL;
+                try {
+                    defaultPullURL = new HgURL(defaultPull);
+                    if ((pullPath == null) && (pushPath == null)) {
+                        hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
+                    } else if ((pullPath != null) && (pushPath == null)) {
+                        defaultPull = new HgURL(pullPath.toHgCommandUrlStringWithoutUserInfo(),
+                                defaultPullURL.getUserInfo(), null).toHgCommandUrlString();
+                        hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
+                        hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
+                    } else if ((pullPath == null) && (pushPath != null)) {
+                        String defaultPush = new HgURL(pushPath.toHgCommandUrlStringWithoutUserInfo(),
+                                defaultPullURL.getUserInfo(), null).toHgCommandUrlString();
+                        hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
+                    } else if ((pullPath != null) && (pushPath != null)) {
+                        defaultPull = new HgURL(pullPath.toHgCommandUrlStringWithoutUserInfo(),
+                                defaultPullURL.getUserInfo(), null).toHgCommandUrlString();
+                        String defaultPush = new HgURL(pushPath.toHgCommandUrlStringWithoutUserInfo(),
+                                defaultPullURL.getUserInfo(), null).toHgCommandUrlString();
+                        hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
+                        hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
+                    }
+                } catch (URISyntaxException ex) {
+                    Mercurial.LOG.log(Level.INFO, null, ex);
                 }
             }
 

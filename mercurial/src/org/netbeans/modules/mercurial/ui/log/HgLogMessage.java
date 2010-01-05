@@ -63,6 +63,7 @@ public class HgLogMessage {
     private List<HgLogMessageChangedPath> paths;
     private String rev;
     private String author;
+    private String username;
     private String desc;
     private Date date;
     private String id;
@@ -92,12 +93,13 @@ public class HgLogMessage {
         }
     }
 
-    public HgLogMessage(String rootURL, List<String> filesShortPaths, String rev, String auth, String desc, String date, String id,
+    public HgLogMessage(String rootURL, List<String> filesShortPaths, String rev, String auth, String username, String desc, String date, String id,
             String parents, String fm, String fa, String fd, String fc) {
 
         this.rootURL = rootURL;
         this.rev = rev;
         this.author = auth;
+        this.username = username;
         this.desc = desc;
         this.id = id;
         this.date = new Date(Long.parseLong(date.split(" ")[0]) * 1000); // UTC in miliseconds
@@ -174,6 +176,10 @@ public class HgLogMessage {
 
     public String getAuthor() {
         return author;
+    }
+
+    public String getUsername () {
+        return username;
     }
 
     public String getCSetShortID() {

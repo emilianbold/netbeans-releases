@@ -500,6 +500,7 @@ public class ResolveConflictsExecutor {
          * This method is called when the visual merging process is finished.
          * All possible writting processes are finished before this method is called.
          */
+        @Override
         public void close() {
             tempf1.delete();
             tempf2.delete();
@@ -547,6 +548,7 @@ public class ResolveConflictsExecutor {
             this.fo = fo;
         }
         
+        @Override
         public void write(String str) throws IOException {
             //System.out.println("MergeConflictFileWriter.write("+str+")");
             super.write(str);
@@ -575,6 +577,7 @@ public class ResolveConflictsExecutor {
             return n;
         }
         
+        @Override
         public void close() throws IOException {
             super.close();
             if (fo != null) fo.refresh(true);
