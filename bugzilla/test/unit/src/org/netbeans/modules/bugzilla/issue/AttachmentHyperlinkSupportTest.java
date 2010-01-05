@@ -98,7 +98,7 @@ public class AttachmentHyperlinkSupportTest {
         checkBoundaries("Created an attachment (id=123)\t  \n  \tfoo\tbar", "foo\tbar", "123");
         checkBoundaries("Created an attachment (id=123)\t  \n  \tfoo\tbar baz", "foo\tbar baz", "123");
         checkBoundaries("Created an attachment (id=123)\t  \n  \tfoo\tbar baz", "foo\tbar baz", "123");
-        checkBoundaries("Created an attachment (id=123)\t  \n  \tfoo bar\nbaz", "foo bar\nbaz", "123");
+        checkBoundaries("Created an attachment (id=123)\t  \n  \tfoo bar\nbaz", "foo bar", "123");
         checkBoundaries("Created an attachment (id=123) [details]\nfoo", "foo", "123");
         checkBoundaries("Created an attachment (id=123) [details]\n\tfoo", "foo", "123");
         checkBoundaries("Created an attachment (id=123) [details]\n \tfoo", "foo", "123");
@@ -109,7 +109,23 @@ public class AttachmentHyperlinkSupportTest {
         checkBoundaries("Created an attachment (id=123) [details]\t  \n  \tfoo\tbar", "foo\tbar", "123");
         checkBoundaries("Created an attachment (id=123) [details]\t  \n  \tfoo\tbar baz", "foo\tbar baz", "123");
         checkBoundaries("Created an attachment (id=123) [details]\t  \n  \tfoo\tbar baz", "foo\tbar baz", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t  \n  \tfoo bar\nbaz", "foo bar\nbaz", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t  \n  \tfoo bar\nbaz", "foo bar", "123");
+
+        checkBoundaries("Created an attachment (id=123)\nScreenshot", "Screenshot", "123");
+        checkBoundaries("Created an attachment (id=123)\n\nScreenshot", "123", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\nScreenshot", "Screenshot", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\n\nScreenshot", "123", "123");
+
+        checkBoundaries("Created an attachment (id=92562)\n"
+                            + "Screenshot\n"
+                            + '\n'
+                            + "I used NetBeans without connection to internet and when I tried to generate javadoc for openide.util project, strange dialog appeared. I suspect it is warning from Kenai about inability to connect to network.\n"
+                            + '\n'
+                            + "The dialog is shown when I right-click a node. This is not the right time to display dialogs (from UI point of view) nor to check internet connectivity (from performance point of view).\n"
+                            + '\n'
+                            + "Please eliminate such checks at this time.",
+                        "Screenshot",
+                        "92562");
     }
 
     private void checkBoundaries(String stringToParse,

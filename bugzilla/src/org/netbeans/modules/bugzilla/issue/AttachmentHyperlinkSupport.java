@@ -54,6 +54,9 @@ class AttachmentHyperlinkSupport {
     //private static final Pattern pattern = Pattern.compile(
     //                 "([0-9]++)\\)[^\\r\\n]*+(?:[\\r\\n]++(.*+))?+"); //NOI18N
 
+    private static final char CR = '\r';
+    private static final char LF = '\n';
+
     static int[] findBoundaries(String text) {
         return findBoundaries(text, null);
     }
@@ -81,12 +84,24 @@ class AttachmentHyperlinkSupport {
                         do {
                             index++;
                         } while ((index < length) && isNotNewline(text.charAt(index)));
-                        if (index < length) {
-                            do {
+                        if (index < length) {       //at newline
+
+                            /* skip just one newline */
+                            if (text.charAt(index) == CR) {
                                 index++;
-                            } while ((index < length) && isNewlineOrSpace(text.charAt(index)));
-                            if (index < length) {
-                                return new int[] {index, length};
+                            }
+                            if ((index < length) && (text.charAt(index) == LF)) {
+                                index++;
+                            }
+                            while ((index < length) && isSpace(text.charAt(index))) {
+                                index++;
+                            }
+                            if ((index < length) && isNotNewline(text.charAt(index))) {   //at printable
+                                int descriptionStart = index;
+                                do {
+                                    index++;
+                                } while ((index < length) && isNotNewline(text.charAt(index)));
+                                return new int[] {descriptionStart, index};
                             }
                         }
                         return new int[] {idStartIndex, idEndIndex};
@@ -123,6 +138,10 @@ class AttachmentHyperlinkSupport {
 
     private static boolean isNotNewline(char c) {
         return (c != '\r') && (c != '\n');
+    }
+
+    private static boolean isSpace(char c) {
+        return (c == ' ') || (c == '\t');
     }
 
     private static boolean isNewlineOrSpace(char c) {
