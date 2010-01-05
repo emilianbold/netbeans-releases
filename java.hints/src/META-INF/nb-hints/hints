@@ -1,3 +1,4 @@
 org.netbeans.modules.java.hints.jackpot.hintsimpl.ForbiddenMethod
 org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat
 org.netbeans.modules.java.hints.jackpot.hintsimpl.FileToURL
+org.netbeans.modules.java.hints.bugs.AnnotationsNotRuntime
