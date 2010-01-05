@@ -44,7 +44,6 @@ import java.util.List;
 import org.jrubyparser.ast.AliasNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
-import org.jrubyparser.ast.SymbolNode;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.ruby.AstUtilities;
@@ -60,12 +59,20 @@ public final class AstDynamicMethodElement extends AstMethodElement {
     private List<String> parameters;
 
     public AstDynamicMethodElement(ParserResult info, Node node) {
+        this(info, node, null);
+    }
+
+    public AstDynamicMethodElement(ParserResult info, Node node, String name) {
         super(info, node);
+        this.name = name;
         this.methodNode = node;
     }
 
     @Override
     public String getName() {
+        if (name != null) {
+            return name;
+        }
         if (methodNode.getNodeType() == NodeType.ALIASNODE) {
             return ((AliasNode) methodNode).getNewName();   
         }
