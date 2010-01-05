@@ -294,7 +294,9 @@ public class ContactList extends javax.swing.JPanel {
     private void searchFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchFieldKeyPressed
         if (evt.getKeyCode()==KeyEvent.VK_ENTER) {
             contactJList.requestFocus();
-            ((ContactListItem) contactJList.getSelectedValue()).openChat();
+            final ContactListItem cl = (ContactListItem) contactJList.getSelectedValue();
+            if (cl!=null)
+                cl.openChat();
             searchPanel.setVisible(false);
             searchField.setText("");
         } else if (evt.getKeyCode()==KeyEvent.VK_DOWN) {
