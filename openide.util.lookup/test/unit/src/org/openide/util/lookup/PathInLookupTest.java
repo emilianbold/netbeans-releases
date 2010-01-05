@@ -41,6 +41,7 @@
 
 package org.openide.util.lookup;
 
+import java.lang.reflect.Field;
 import java.util.logging.Level;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -51,12 +52,6 @@ import org.openide.util.Lookup;
  * @author Jaroslav Tulach
  */
 public class PathInLookupTest extends NbTestCase {
-    static {
-        System.setProperty("org.openide.util.Lookup.paths", "MyServices:YourServices");
-        MockServices.setServices(P.class);
-        Lookup.getDefault();
-    }
-
     public PathInLookupTest(String name) {
         super(name);
     }
@@ -64,6 +59,17 @@ public class PathInLookupTest extends NbTestCase {
     @Override
     protected Level logLevel() {
         return Level.FINE;
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        Lookup.getDefault();
+        Field f = Lookup.class.getDeclaredField("defaultLookup");
+        f.setAccessible(true);
+        f.set(null, null);
+        System.setProperty("org.openide.util.Lookup.paths", "MyServices:YourServices");
+        MockServices.setServices(P.class);
+        Lookup.getDefault();
     }
     
     public void testInterfaceFoundInMyServices() throws Exception {
