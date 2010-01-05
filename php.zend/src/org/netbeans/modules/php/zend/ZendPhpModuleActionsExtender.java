@@ -37,37 +37,28 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony.commands;
+package org.netbeans.modules.php.zend;
 
-import java.lang.ref.WeakReference;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.commands.FrameworkCommand;
-import org.netbeans.modules.php.symfony.SymfonyScript;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.Action;
+import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
+import org.netbeans.modules.php.zend.ui.actions.RunCommandAction;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public class SymfonyCommand extends FrameworkCommand {
-    private final WeakReference<PhpModule> phpModule;
+public class ZendPhpModuleActionsExtender extends PhpModuleActionsExtender {
+    private static final List<Action> ACTIONS = Collections.<Action>singletonList(RunCommandAction.getInstance());
 
-    public SymfonyCommand(PhpModule phpModule, String command, String description, String displayName) {
-        super(command, description, displayName);
-        assert phpModule != null;
-
-        this.phpModule = new WeakReference<PhpModule>(phpModule);
+    @Override
+    public String getMenuName() {
+        return NbBundle.getMessage(ZendPhpModuleActionsExtender.class, "LBL_MenuName");
     }
 
     @Override
-    protected String getHelpInternal() {
-        PhpModule module = phpModule.get();
-        if (module == null) {
-            return ""; // NOI18N
-        }
-        return SymfonyScript.getHelp(module, this);
-    }
-
-    @Override
-    public String getPreview() {
-        return SymfonyScript.SCRIPT_NAME + " " + super.getPreview(); // NOI18N
+    public List<? extends Action> getActions() {
+        return ACTIONS;
     }
 }

@@ -37,37 +37,64 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony.commands;
+package org.netbeans.modules.php.zend.ui.options;
 
-import java.lang.ref.WeakReference;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.commands.FrameworkCommand;
-import org.netbeans.modules.php.symfony.SymfonyScript;
+import java.util.List;
+import java.util.prefs.Preferences;
+import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.zend.ZendScript;
+import org.openide.util.NbPreferences;
 
 /**
  * @author Tomas Mysik
  */
-public class SymfonyCommand extends FrameworkCommand {
-    private final WeakReference<PhpModule> phpModule;
+public final class ZendOptions {
+    // Do not change arbitrary - consult with layer's folder OptionsExport
+    // Path to Preferences node for storing these preferences
+    private static final String PREFERENCES_PATH = "zend"; // NOI18N
 
-    public SymfonyCommand(PhpModule phpModule, String command, String description, String displayName) {
-        super(command, description, displayName);
-        assert phpModule != null;
+    private static final ZendOptions INSTANCE = new ZendOptions();
 
-        this.phpModule = new WeakReference<PhpModule>(phpModule);
+    // zend script
+    private static final String ZEND = "zend"; // NOI18N
+    // default params
+    private static final String PARAMS_FOR_PROJECT = "default.params.project"; // NOI18N
+
+    private volatile boolean zendSearched = false;
+
+    private ZendOptions() {
     }
 
-    @Override
-    protected String getHelpInternal() {
-        PhpModule module = phpModule.get();
-        if (module == null) {
-            return ""; // NOI18N
+    public static ZendOptions getInstance() {
+        return INSTANCE;
+    }
+
+    public synchronized String getZend() {
+        String zend = getPreferences().get(ZEND, null);
+        if (zend == null && !zendSearched) {
+            zendSearched = true;
+            List<String> scripts = FileUtils.findFileOnUsersPath(ZendScript.SCRIPT_NAME);
+            if (!scripts.isEmpty()) {
+                zend = scripts.get(0);
+                setZend(zend);
+            }
         }
-        return SymfonyScript.getHelp(module, this);
+        return zend;
     }
 
-    @Override
-    public String getPreview() {
-        return SymfonyScript.SCRIPT_NAME + " " + super.getPreview(); // NOI18N
+    public void setZend(String zend) {
+        getPreferences().put(ZEND, zend);
+    }
+
+    public String getDefaultParamsForProject() {
+        return getPreferences().get(PARAMS_FOR_PROJECT, ""); // NOI18N
+    }
+
+    public void setDefaultParamsForProject(String params) {
+        getPreferences().put(PARAMS_FOR_PROJECT, params);
+    }
+
+    private Preferences getPreferences() {
+        return NbPreferences.forModule(ZendOptions.class).node(PREFERENCES_PATH);
     }
 }

@@ -41,6 +41,7 @@ package org.netbeans.modules.php.spi.commands;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -57,6 +58,7 @@ import org.netbeans.modules.php.api.ui.commands.RefreshPhpModuleRunnable;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.ui.commands.FrameworkCommandChooser;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -237,25 +239,55 @@ public abstract class FrameworkCommandSupport {
     /**
      * Create command which uses {@link #getProcessBuilder(boolean) process builder} and {@link #getDescriptor() descriptor}.
      * Warning should be shown if any error occurs.
+     * This method is useful for commands like "create-project" etc.
      * @param command command to create.
      * @param arguments command's arguments.
      * @return command or <code>null</code> if any error occurs.
      * @see #createSilentCommand(String, String[])
      */
     public ExternalProcessBuilder createCommand(final String command, final String... arguments) {
-        return createCommandInternal(command, arguments, true);
+        return createCommand(new String[] {command}, arguments);
+    }
+
+    /**
+     * Create command which uses {@link #getProcessBuilder(boolean) process builder} and {@link #getDescriptor() descriptor}.
+     * Warning should be shown if any error occurs.
+     * This method is useful for commands like "create project" etc.
+     * @param commands command to create.
+     * @param arguments command's arguments.
+     * @return command or <code>null</code> if any error occurs.
+     * @see #createSilentCommand(String, String[])
+     * @since 1.24
+     */
+    public ExternalProcessBuilder createCommand(final String[] commands, final String... arguments) {
+        return createCommandInternal(commands, arguments, true);
     }
 
     /**
      * Create command which uses {@link #getProcessBuilder(boolean) process builder} and {@link #getDescriptor() descriptor}.
      * No error dialog is displayed if e.g. framework script is invalid.
+     * This method is useful for commands like "create-project" etc.
      * @param command command to create.
      * @param arguments command's arguments.
      * @return command or <code>null</code> if any error occurs.
      * @see #createCommand(String, String[])
      */
     public ExternalProcessBuilder createSilentCommand(final String command, final String... arguments) {
-        return createCommandInternal(command, arguments, false);
+        return createCommand(new String[] {command}, arguments);
+    }
+
+    /**
+     * Create command which uses {@link #getProcessBuilder(boolean) process builder} and {@link #getDescriptor() descriptor}.
+     * No error dialog is displayed if e.g. framework script is invalid.
+     * This method is useful for commands like "create project" etc.
+     * @param commands command to create.
+     * @param arguments command's arguments.
+     * @return command or <code>null</code> if any error occurs.
+     * @see #createCommand(String, String[])
+     * @since 1.24
+     */
+    public ExternalProcessBuilder createSilentCommand(final String[] commands, final String... arguments) {
+        return createCommandInternal(commands, arguments, false);
     }
 
     /**
@@ -264,7 +296,8 @@ public abstract class FrameworkCommandSupport {
      * @return title for the given command descriptor.
      */
     public String getOutputTitle(CommandDescriptor commandDescriptor) {
-        return getOutputTitle(commandDescriptor.getFrameworkCommand().getCommand(), commandDescriptor.getCommandParams());
+        String command = StringUtils.implode(Arrays.asList(commandDescriptor.getFrameworkCommand().getCommands()), " ");
+        return getOutputTitle(command, commandDescriptor.getCommandParams()); // NOI18N
     }
 
     /**
@@ -295,12 +328,14 @@ public abstract class FrameworkCommandSupport {
         FrameworkCommandChooser.open(this);
     }
 
-    private ExternalProcessBuilder createCommandInternal(final String command, final String[] arguments, boolean warnUser) {
+    private ExternalProcessBuilder createCommandInternal(final String[] commands, final String[] arguments, boolean warnUser) {
         ExternalProcessBuilder processBuilder = getProcessBuilder(warnUser);
         if (processBuilder == null) {
             return null;
         }
-        processBuilder = processBuilder.addArgument(command);
+        for (String command : commands) {
+            processBuilder = processBuilder.addArgument(command);
+        }
         for (String arg : arguments) {
             processBuilder = processBuilder.addArgument(arg);
         }

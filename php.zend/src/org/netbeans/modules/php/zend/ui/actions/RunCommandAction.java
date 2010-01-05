@@ -37,67 +37,33 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.zend.ui.actions;
 
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.php.zend.ZendPhpFrameworkProvider;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public class PhpModuleImpl extends PhpModule {
-    private final PhpProject phpProject;
+public final class RunCommandAction extends BaseAction {
+    private static final long serialVersionUID = -2278946423132142L;
+    private static final RunCommandAction INSTANCE = new RunCommandAction();
 
-    public PhpModuleImpl(PhpProject phpProject) {
-        assert phpProject != null;
-        this.phpProject = phpProject;
+    private RunCommandAction() {
     }
 
-    public String getName() {
-        return phpProject.getLookup().lookup(ProjectInformation.class).getName();
-    }
-
-    public String getDisplayName() {
-        return phpProject.getLookup().lookup(ProjectInformation.class).getDisplayName();
-    }
-
-    public FileObject getSourceDirectory() {
-        return ProjectPropertiesSupport.getSourcesDirectory(phpProject);
-    }
-
-    public FileObject getTestDirectory() {
-        return ProjectPropertiesSupport.getTestDirectory(phpProject, false);
+    public static RunCommandAction getInstance() {
+        return INSTANCE;
     }
 
     @Override
-    public PhpModuleProperties getProperties() {
-        PhpModuleProperties properties = new PhpModuleProperties()
-                .setWebRoot(ProjectPropertiesSupport.getWebRootDirectory(phpProject));
-        FileObject tests = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
-        if (tests != null) {
-            properties = properties.setTests(tests);
-        }
-        String url = ProjectPropertiesSupport.getUrl(phpProject);
-        if (url != null) {
-            properties = properties.setUrl(url);
-        }
-        String indexFile = ProjectPropertiesSupport.getIndexFile(phpProject);
-        if (indexFile != null) {
-            FileObject index = getSourceDirectory().getFileObject(indexFile);
-            if (index != null
-                    && index.isData()
-                    && index.isValid()) {
-                properties = properties.setIndexFile(index);
-            }
-        }
-        return properties;
+    public void actionPerformed(PhpModule phpModule) {
+        ZendPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
     }
 
     @Override
-    public String toString() {
-        return getDisplayName() + " (" + FileUtil.getFileDisplayName(getSourceDirectory()) + ")"; // NOI18N
+    protected String getPureName() {
+        return NbBundle.getMessage(RunCommandAction.class, "LBL_RunCommand");
     }
 }
