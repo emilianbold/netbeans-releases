@@ -248,11 +248,10 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
                     ((EditorCookie.Observable) editorCookie).removePropertyChangeListener(this);
                 }
             }
-            this.editorCookies = null;
         }
 
-        tableModel.setNodes(nodes = setupsToNodes(setups));
         this.editorCookies = editorCookies;
+        tableModel.setNodes(nodes = setupsToNodes(setups));
 
         for (EditorCookie editorCookie : this.editorCookies) {
             if (editorCookie instanceof EditorCookie.Observable) {
