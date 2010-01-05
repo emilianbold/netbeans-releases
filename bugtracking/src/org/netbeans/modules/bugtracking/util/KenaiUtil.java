@@ -78,12 +78,26 @@ public class KenaiUtil {
 
     /**
      * Returns true if logged into kenai, otherwise false.
-     *
+     * @param url if set to null, any kenai will be tested
      * @return
      */
     public static boolean isLoggedIn(String url) {
-        Kenai kenai = getKenai(url);
-        return (kenai != null) && (kenai.getPasswordAuthentication() != null);
+        boolean loggedIn = false;
+        if (url == null) {
+            // is the user logged into any kenai?
+            // we're just interested if the user works with any kenais
+            for (Kenai kenai : KenaiManager.getDefault().getKenais()) {
+                if (kenai.getPasswordAuthentication() != null) {
+                    loggedIn = true;
+                    break;
+                }
+            }
+        } else {
+            // is the user logged into a concrete kenai instance?
+            Kenai kenai = getKenai(url);
+            loggedIn = (kenai != null) && (kenai.getPasswordAuthentication() != null);
+        }
+        return loggedIn;
     }
 
     /**
