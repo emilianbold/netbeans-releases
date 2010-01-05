@@ -1,0 +1,390 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ */
+
+/*
+ * ZendOptionsPanel.java
+ *
+ * Created on 11.6.2009, 13:02:10
+ */
+
+package org.netbeans.modules.php.zend.ui.options;
+
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.zend.ZendScript;
+import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+
+/**
+ * @author Tomas Mysik
+ */
+public class ZendOptionsPanel extends JPanel {
+    private static final long serialVersionUID = -13564875423210L;
+    private static final String ZEND_LAST_FOLDER_SUFFIX = ".zend";
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    public ZendOptionsPanel() {
+        initComponents();
+
+        // hide default options
+        defaultParametersLabel.setVisible(false);
+        defaultParametersForProjectTextField.setVisible(false);
+
+        // not set in Design because of windows (panel too wide then)
+        zendScriptUsageLabel.setText(NbBundle.getMessage(ZendOptionsPanel.class, "LBL_ZendUsage"));
+        errorLabel.setText(" "); // NOI18N
+
+        zendTextField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            private void processUpdate() {
+                fireChange();
+            }
+        });
+    }
+
+    public String getZend() {
+        return zendTextField.getText();
+    }
+
+    public void setZend(String zend) {
+        zendTextField.setText(zend);
+    }
+
+    public String getDefaultParamsForProject() {
+        return defaultParametersForProjectTextField.getText();
+    }
+
+    public void setDefaultParamsForProject(String params) {
+        defaultParametersForProjectTextField.setText(params);
+    }
+
+    public void setError(String message) {
+        errorLabel.setText(" "); // NOI18N
+        errorLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
+        errorLabel.setText(message);
+    }
+
+    public void setWarning(String message) {
+        errorLabel.setText(" "); // NOI18N
+        errorLabel.setForeground(UIManager.getColor("nb.warningForeground")); // NOI18N
+        errorLabel.setText(message);
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    void fireChange() {
+        changeSupport.fireChange();
+    }
+
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        zendLabel = new JLabel();
+        zendTextField = new JTextField();
+        browseButton = new JButton();
+        searchButton = new JButton();
+        zendScriptUsageLabel = new JLabel();
+        defaultParametersLabel = new JLabel();
+        defaultParametersForProjectTextField = new JTextField();
+        noteLabel = new JLabel();
+        includePathInfoLabel = new JLabel();
+        installationInfoLabel = new JLabel();
+        learnMoreLabel = new JLabel();
+        errorLabel = new JLabel();
+
+        setFocusTraversalPolicy(null);
+
+        zendLabel.setLabelFor(zendTextField);
+
+        org.openide.awt.Mnemonics.setLocalizedText(zendLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.browseButton.text")); // NOI18N
+        browseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                browseButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.searchButton.text")); // NOI18N
+        searchButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                searchButtonActionPerformed(evt);
+            }
+        });
+
+        zendScriptUsageLabel.setLabelFor(this);
+        org.openide.awt.Mnemonics.setLocalizedText(zendScriptUsageLabel, "HINT"); // NOI18N
+
+        defaultParametersLabel.setLabelFor(defaultParametersForProjectTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(defaultParametersLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersLabel.text")); // NOI18N
+
+        noteLabel.setLabelFor(this);
+        org.openide.awt.Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.noteLabel.text")); // NOI18N
+
+        includePathInfoLabel.setLabelFor(this);
+        org.openide.awt.Mnemonics.setLocalizedText(includePathInfoLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.includePathInfoLabel.text")); // NOI18N
+
+        installationInfoLabel.setLabelFor(this);
+        org.openide.awt.Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.installationInfoLabel.text")); // NOI18N
+
+        learnMoreLabel.setLabelFor(this);
+        org.openide.awt.Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.learnMoreLabel.text")); // NOI18N
+        learnMoreLabel.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                learnMoreLabelMouseEntered(evt);
+            }
+            public void mousePressed(MouseEvent evt) {
+                learnMoreLabelMousePressed(evt);
+            }
+        });
+
+        errorLabel.setLabelFor(this);
+        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(includePathInfoLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(138, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(installationInfoLabel)
+                .addContainerGap(229, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(learnMoreLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(509, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(0, 0, 0)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(defaultParametersLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(defaultParametersForProjectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(errorLabel)
+                        .add(447, 447, 447))
+                    .add(layout.createSequentialGroup()
+                        .add(zendLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(zendScriptUsageLabel)
+                                .addContainerGap())
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(zendTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(browseButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(searchButton)
+                                .add(0, 0, 0))))
+                    .add(noteLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+        );
+
+        layout.linkSize(new Component[] {browseButton, searchButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(zendLabel)
+                    .add(zendTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(searchButton)
+                    .add(browseButton))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(zendScriptUsageLabel)
+                .add(18, 18, 18)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(defaultParametersLabel)
+                    .add(defaultParametersForProjectTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(18, 18, 18)
+                .add(noteLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(includePathInfoLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(18, 18, 18)
+                .add(installationInfoLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(learnMoreLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 26, Short.MAX_VALUE)
+                .add(errorLabel)
+                .add(0, 0, 0))
+        );
+
+        zendLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendLabel.AccessibleContext.accessibleName")); // NOI18N
+        zendLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        zendTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendTextField.AccessibleContext.accessibleName")); // NOI18N
+        zendTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.browseButton.AccessibleContext.accessibleName")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.browseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        searchButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.searchButton.AccessibleContext.accessibleName")); // NOI18N
+        searchButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.searchButton.AccessibleContext.accessibleDescription")); // NOI18N
+        zendScriptUsageLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendScriptUsageLabel.AccessibleContext.accessibleName")); // NOI18N
+        zendScriptUsageLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendScriptUsageLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        defaultParametersLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersLabel.AccessibleContext.accessibleName")); // NOI18N
+        defaultParametersLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        defaultParametersForProjectTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersForProjectTextField.AccessibleContext.accessibleName")); // NOI18N
+        defaultParametersForProjectTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersForProjectTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        noteLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.noteLabel.AccessibleContext.accessibleName")); // NOI18N
+        noteLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.noteLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        includePathInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.includePathInfoLabel.AccessibleContext.accessibleName")); // NOI18N
+        includePathInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.includePathInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        installationInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.installationInfoLabel.AccessibleContext.accessibleName")); // NOI18N
+        installationInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.installationInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        learnMoreLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.learnMoreLabel.AccessibleContext.accessibleName")); // NOI18N
+        learnMoreLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.learnMoreLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        errorLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.errorLabel.AccessibleContext.accessibleName")); // NOI18N
+        errorLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.errorLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.AccessibleContext.accessibleDescription")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void browseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+        File zendScript = new FileChooserBuilder(ZendOptionsPanel.class.getName() + ZEND_LAST_FOLDER_SUFFIX)
+                .setTitle(NbBundle.getMessage(ZendOptionsPanel.class, "LBL_SelectZend"))
+                .setFilesOnly(true)
+                .showOpenDialog();
+        if (zendScript != null) {
+            zendScript = FileUtil.normalizeFile(zendScript);
+            zendTextField.setText(zendScript.getAbsolutePath());
+        }
+    }//GEN-LAST:event_browseButtonActionPerformed
+
+    private void searchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
+         String zendScript = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
+            public List<String> detect() {
+                return FileUtils.findFileOnUsersPath(ZendScript.SCRIPT_NAME);
+            }
+
+            public String getWindowTitle() {
+                return NbBundle.getMessage(ZendOptionsPanel.class, "LBL_ZendScriptsTitle");
+            }
+
+            public String getListTitle() {
+                return NbBundle.getMessage(ZendOptionsPanel.class, "LBL_ZendScripts");
+            }
+
+            public String getPleaseWaitPart() {
+                return NbBundle.getMessage(ZendOptionsPanel.class, "LBL_ZendScriptsPleaseWaitPart");
+            }
+
+            public String getNoItemsFound() {
+                return NbBundle.getMessage(ZendOptionsPanel.class, "LBL_NoZendScriptsFound");
+            }
+        });
+        if (zendScript != null) {
+            zendTextField.setText(zendScript);
+        }
+    }//GEN-LAST:event_searchButtonActionPerformed
+
+    private void learnMoreLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_learnMoreLabelMouseEntered
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_learnMoreLabelMouseEntered
+
+    private void learnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_learnMoreLabelMousePressed
+        try {
+            URL url = new URL("http://framework.zend.com/manual/en/introduction.installation.html"); // NOI18N
+            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }//GEN-LAST:event_learnMoreLabelMousePressed
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JButton browseButton;
+    private JTextField defaultParametersForProjectTextField;
+    private JLabel defaultParametersLabel;
+    private JLabel errorLabel;
+    private JLabel includePathInfoLabel;
+    private JLabel installationInfoLabel;
+    private JLabel learnMoreLabel;
+    private JLabel noteLabel;
+    private JButton searchButton;
+    private JLabel zendLabel;
+    private JLabel zendScriptUsageLabel;
+    private JTextField zendTextField;
+    // End of variables declaration//GEN-END:variables
+
+}

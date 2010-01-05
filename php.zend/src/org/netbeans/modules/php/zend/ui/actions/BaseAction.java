@@ -37,67 +37,48 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.zend.ui.actions;
 
-import org.netbeans.api.project.ProjectInformation;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.php.zend.ZendPhpFrameworkProvider;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public class PhpModuleImpl extends PhpModule {
-    private final PhpProject phpProject;
+public abstract class BaseAction extends AbstractAction implements HelpCtx.Provider {
 
-    public PhpModuleImpl(PhpProject phpProject) {
-        assert phpProject != null;
-        this.phpProject = phpProject;
-    }
-
-    public String getName() {
-        return phpProject.getLookup().lookup(ProjectInformation.class).getName();
-    }
-
-    public String getDisplayName() {
-        return phpProject.getLookup().lookup(ProjectInformation.class).getDisplayName();
-    }
-
-    public FileObject getSourceDirectory() {
-        return ProjectPropertiesSupport.getSourcesDirectory(phpProject);
-    }
-
-    public FileObject getTestDirectory() {
-        return ProjectPropertiesSupport.getTestDirectory(phpProject, false);
+    protected BaseAction() {
+        putValue("noIconInMenu", true); // NOI18N
+        putValue(NAME, getFullName());
+        putValue("menuText", getPureName()); // NOI18N
     }
 
     @Override
-    public PhpModuleProperties getProperties() {
-        PhpModuleProperties properties = new PhpModuleProperties()
-                .setWebRoot(ProjectPropertiesSupport.getWebRootDirectory(phpProject));
-        FileObject tests = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
-        if (tests != null) {
-            properties = properties.setTests(tests);
+    public final void actionPerformed(ActionEvent e) {
+        PhpModule phpModule = PhpModule.inferPhpModule();
+
+        if (phpModule == null) {
+            return;
         }
-        String url = ProjectPropertiesSupport.getUrl(phpProject);
-        if (url != null) {
-            properties = properties.setUrl(url);
+        if (!ZendPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
+            return;
         }
-        String indexFile = ProjectPropertiesSupport.getIndexFile(phpProject);
-        if (indexFile != null) {
-            FileObject index = getSourceDirectory().getFileObject(indexFile);
-            if (index != null
-                    && index.isData()
-                    && index.isValid()) {
-                properties = properties.setIndexFile(index);
-            }
-        }
-        return properties;
+
+        actionPerformed(phpModule);
     }
 
-    @Override
-    public String toString() {
-        return getDisplayName() + " (" + FileUtil.getFileDisplayName(getSourceDirectory()) + ")"; // NOI18N
+    protected String getFullName() {
+        return NbBundle.getMessage(BaseAction.class, "LBL_ZendAction", getPureName());
     }
+
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    protected abstract String getPureName();
+    protected abstract void actionPerformed(PhpModule phpModule);
 }

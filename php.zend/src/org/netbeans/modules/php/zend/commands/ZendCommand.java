@@ -37,67 +37,37 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project;
+package org.netbeans.modules.php.zend.commands;
 
-import org.netbeans.api.project.ProjectInformation;
+import java.lang.ref.WeakReference;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.php.spi.commands.FrameworkCommand;
+import org.netbeans.modules.php.zend.ZendScript;
 
 /**
  * @author Tomas Mysik
  */
-public class PhpModuleImpl extends PhpModule {
-    private final PhpProject phpProject;
+public class ZendCommand extends FrameworkCommand {
+    private final WeakReference<PhpModule> phpModule;
 
-    public PhpModuleImpl(PhpProject phpProject) {
-        assert phpProject != null;
-        this.phpProject = phpProject;
-    }
+    public ZendCommand(PhpModule phpModule, String[] commands, String description, String displayName) {
+        super(commands, description, displayName);
+        assert phpModule != null;
 
-    public String getName() {
-        return phpProject.getLookup().lookup(ProjectInformation.class).getName();
-    }
-
-    public String getDisplayName() {
-        return phpProject.getLookup().lookup(ProjectInformation.class).getDisplayName();
-    }
-
-    public FileObject getSourceDirectory() {
-        return ProjectPropertiesSupport.getSourcesDirectory(phpProject);
-    }
-
-    public FileObject getTestDirectory() {
-        return ProjectPropertiesSupport.getTestDirectory(phpProject, false);
+        this.phpModule = new WeakReference<PhpModule>(phpModule);
     }
 
     @Override
-    public PhpModuleProperties getProperties() {
-        PhpModuleProperties properties = new PhpModuleProperties()
-                .setWebRoot(ProjectPropertiesSupport.getWebRootDirectory(phpProject));
-        FileObject tests = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
-        if (tests != null) {
-            properties = properties.setTests(tests);
+    protected String getHelpInternal() {
+        PhpModule module = phpModule.get();
+        if (module == null) {
+            return ""; // NOI18N
         }
-        String url = ProjectPropertiesSupport.getUrl(phpProject);
-        if (url != null) {
-            properties = properties.setUrl(url);
-        }
-        String indexFile = ProjectPropertiesSupport.getIndexFile(phpProject);
-        if (indexFile != null) {
-            FileObject index = getSourceDirectory().getFileObject(indexFile);
-            if (index != null
-                    && index.isData()
-                    && index.isValid()) {
-                properties = properties.setIndexFile(index);
-            }
-        }
-        return properties;
+        return ZendScript.getHelp(module, this);
     }
 
     @Override
-    public String toString() {
-        return getDisplayName() + " (" + FileUtil.getFileDisplayName(getSourceDirectory()) + ")"; // NOI18N
+    public String getPreview() {
+        return ZendScript.SCRIPT_NAME + " " + super.getPreview(); // NOI18N
     }
 }

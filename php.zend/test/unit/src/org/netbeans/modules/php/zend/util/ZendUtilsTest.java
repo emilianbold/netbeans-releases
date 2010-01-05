@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,40 +34,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony.commands;
+package org.netbeans.modules.php.zend.util;
 
-import java.lang.ref.WeakReference;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.commands.FrameworkCommand;
-import org.netbeans.modules.php.symfony.SymfonyScript;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
+import static org.junit.Assert.*;
 
 /**
  * @author Tomas Mysik
  */
-public class SymfonyCommand extends FrameworkCommand {
-    private final WeakReference<PhpModule> phpModule;
+public class ZendUtilsTest extends NbTestCase {
 
-    public SymfonyCommand(PhpModule phpModule, String command, String description, String displayName) {
-        super(command, description, displayName);
-        assert phpModule != null;
-
-        this.phpModule = new WeakReference<PhpModule>(phpModule);
+    public ZendUtilsTest(String name) {
+        super(name);
     }
 
-    @Override
-    protected String getHelpInternal() {
-        PhpModule module = phpModule.get();
-        if (module == null) {
-            return ""; // NOI18N
-        }
-        return SymfonyScript.getHelp(module, this);
+    @Before
+    public void setUp() {
     }
 
-    @Override
-    public String getPreview() {
-        return SymfonyScript.SCRIPT_NAME + " " + super.getPreview(); // NOI18N
+    @After
+    public void tearDown() {
+    }
+
+    @Test
+    public void testControllerName() {
+        assertEquals("Index", ZendUtils.getControllerName("index"));
+        assertEquals("MyIndex", ZendUtils.getControllerName("myIndex"));
     }
 }
