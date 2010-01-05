@@ -80,27 +80,33 @@ public class DiffTopComponent extends TopComponent implements DiffSetupSource {
         return panel.canClose();
     }
 
+    @Override
     public UndoRedo getUndoRedo() {
         return panel.getUndoRedo();
     }
     
+    @Override
     public int getPersistenceType(){
         return TopComponent.PERSISTENCE_NEVER;
     }
 
+    @Override
     protected void componentClosed() {
         panel.componentClosed();
         super.componentClosed();
     }
 
+    @Override
     protected String preferredID(){
         return "PERSISTENCE_NEVER-DiffTopComponent";    // NOI18N       
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass());
     }
 
+    @Override
     protected void componentActivated() {
         super.componentActivated();
         panel.requestActive();
