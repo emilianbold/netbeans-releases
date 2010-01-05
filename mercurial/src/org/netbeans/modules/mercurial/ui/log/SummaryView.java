@@ -144,9 +144,10 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 kenaiUsersMap = new HashMap<String, KenaiUser>();
                 for (RepositoryRevision repositoryRevision : results) {
                     String author = repositoryRevision.getLog().getAuthor();
-                    if(author != null && !author.equals("")) {
+                    String username = repositoryRevision.getLog().getUsername();
+                    if(author != null && !author.equals("") && username != null && !"".equals(username)) {
                         if(!kenaiUsersMap.keySet().contains(author)) {
-                            KenaiUser kenaiUser = HgKenaiSupport.getInstance().forName(author);
+                            KenaiUser kenaiUser = HgKenaiSupport.getInstance().forName(username, url);
                             if(kenaiUser != null) {
                                 kenaiUsersMap.put(author, kenaiUser);
                             }

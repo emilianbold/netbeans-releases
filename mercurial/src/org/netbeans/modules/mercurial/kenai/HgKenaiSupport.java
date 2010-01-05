@@ -104,10 +104,6 @@ public class HgKenaiSupport {
         return kenaiSupport != null ? kenaiSupport.isUserOnline(user) : false;
     }
 
-    public KenaiUser forName(String user) {
-        return kenaiSupport != null ? kenaiSupport.forName(user) : null;
-    }
-
     public KenaiUser forName(String user, String url) {
         return kenaiSupport != null ? kenaiSupport.forName(user, url) : null;
     }

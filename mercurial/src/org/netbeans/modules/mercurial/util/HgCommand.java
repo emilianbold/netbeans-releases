@@ -157,11 +157,12 @@ public class HgCommand {
     private static final String HG_LOG_NO_MERGES_CMD = "-M";
     private static final String HG_LOG_DEBUG_CMD = "--debug";
     private static final String HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD =
-            "--template=rev:{rev}\\nauth:{author}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
+            "--template=rev:{rev}\\nauth:{author}\\nuser:{author|user}\\ndesc:{desc}\\ndate:{date|hgdate}\\nid:{node|short}\\n" + // NOI18N
             "\\nendCS:\\n"; // NOI18N
     private static final String HG_LOG_REV_TIP_RANGE = "tip:0"; // NOI18N
     private static final String HG_LOG_REVISION_OUT = "rev:"; // NOI18N
     private static final String HG_LOG_AUTHOR_OUT = "auth:"; // NOI18N
+    private static final String HG_LOG_USER_OUT = "user:"; // NOI18N
     private static final String HG_LOG_DESCRIPTION_OUT = "desc:"; // NOI18N
     private static final String HG_LOG_DATE_OUT = "date:"; // NOI18N
     private static final String HG_LOG_ID_OUT = "id:"; // NOI18N
@@ -920,7 +921,7 @@ public class HgCommand {
     }
 
     public static List<HgLogMessage> processLogMessages(File root, List<File> files, List<String> list, final List<HgLogMessage> messages, boolean revertOrder) {
-        String rev, author, desc, date, id, parents, fm, fa, fd, fc;
+        String rev, author, username, desc, date, id, parents, fm, fa, fd, fc;
         List<String> filesShortPaths = new ArrayList<String>();
 
         final String rootPath = root.getAbsolutePath();
@@ -939,7 +940,7 @@ public class HgCommand {
                 }
             }
 
-            rev = author = desc = date = id = parents = fm = fa = fd = fc = null;
+            rev = author = username = desc = date = id = parents = fm = fa = fd = fc = null;
             boolean bEnd = false;
             boolean stillInMessage = false; // commit message can have multiple lines !!!
             for (String s : list) {
@@ -948,6 +949,9 @@ public class HgCommand {
                     stillInMessage = false;
                 } else if (s.indexOf(HG_LOG_AUTHOR_OUT) == 0) {
                     author = s.substring(HG_LOG_AUTHOR_OUT.length()).trim();
+                    stillInMessage = false;
+                } else if (s.indexOf(HG_LOG_USER_OUT) == 0) {
+                    username = s.substring(HG_LOG_USER_OUT.length()).trim();
                     stillInMessage = false;
                 } else if (s.indexOf(HG_LOG_DESCRIPTION_OUT) == 0) {
                     desc = s.substring(HG_LOG_DESCRIPTION_OUT.length()).trim();
@@ -984,7 +988,7 @@ public class HgCommand {
                 }
 
                 if (rev != null & bEnd) {
-                    HgLogMessage hgMsg = new HgLogMessage(rootPath, filesShortPaths, rev, author, desc, date, id, parents, fm, fa, fd, fc);
+                    HgLogMessage hgMsg = new HgLogMessage(rootPath, filesShortPaths, rev, author, username, desc, date, id, parents, fm, fa, fd, fc);
                     if (revertOrder) {
                         messages.add(0, hgMsg);
                     } else {
