@@ -67,12 +67,31 @@ public class TypeRedeclaration extends AbstractRule {
         }
         FileScope fileScope = context.fileScope;
         Collection<? extends TypeScope> declaredTypes = ModelUtils.getDeclaredTypes(fileScope);
-        Set<String> notDuplicitTypes = new HashSet<String>();
+        Set<String> typeNames = new HashSet<String>();
         for (TypeScope typeScope : declaredTypes) {
-            if (!notDuplicitTypes.add(typeScope.getName())) {
-                hints.add(new Hint(this, getDescription(),
-                        context.parserResult.getSnapshot().getSource().getFileObject(), 
-                        typeScope.getNameRange(), Collections.<HintFix>emptyList(), 500));
+            final String name = typeScope.getName();
+            if (typeNames.contains(name)) {
+                continue;
+            }
+            typeNames.add(name);
+            List<? extends TypeScope> instances = ModelUtils.filter(declaredTypes, name);
+            if (instances.size() > 1) {
+                TypeScope firstDeclaredInstance = null;
+                for (TypeScope typeInstance : instances) {
+                    if (firstDeclaredInstance == null) {
+                        firstDeclaredInstance = typeInstance;
+                    } else if (firstDeclaredInstance.getOffset() > typeInstance.getOffset()) {
+                        firstDeclaredInstance = typeInstance;
+                    }
+                }
+                for (TypeScope typeInstance : instances) {
+                    if (typeInstance != firstDeclaredInstance) {
+                        hints.add(new Hint(this, getDescription(),
+                                context.parserResult.getSnapshot().getSource().getFileObject(),
+                                typeInstance.getNameRange(), Collections.<HintFix>emptyList(), 500));
+
+                    }
+                }
             }
         }
     }
