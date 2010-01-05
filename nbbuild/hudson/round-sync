@@ -19,7 +19,7 @@ rollback() {
 BASETIP=`hg log -r . --template '{node}'`
 trap rollback EXIT
 
-hg pull -u http://hg.netbeans.org/"$push_repo"
+hg pull -r default -u http://hg.netbeans.org/"$push_repo"
 
 HEADS=`hg heads --template "{node}\n" | wc -l`
 if [ $HEADS = 2 ]; then
