@@ -53,6 +53,28 @@ import org.jrubyparser.ast.StrNode;
  */
 final class TestNameResolver {
 
+    private static final String SHOULDA_METHOD = "should"; //NOI18N
+
+    private static final String[] TEST_METHOD_NAMES = {"test", "describe", 
+            "specify", "context", SHOULDA_METHOD, "it"}; //NOI18N
+
+    /**
+     *@return true if the given name represents a possible name
+     * for a test method.
+     */
+    static boolean isTestMethodName(String name) {
+        for (String each : TEST_METHOD_NAMES) {
+            if (each.equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static boolean isShouldaMethod(String name) {
+        return SHOULDA_METHOD.equals(name);
+    }
+
     /**
      * Gets the test name from the given path. Returns <code>null</code>
      * if no name could be resolved.
