@@ -285,7 +285,9 @@ public class ContactList extends javax.swing.JPanel {
 
     private void contactJListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_contactJListMouseClicked
         if (evt.getClickCount()==2 && !evt.isPopupTrigger()) {
-            ((ContactListItem) contactJList.getSelectedValue()).openChat();
+            final ContactListItem cl = (ContactListItem) contactJList.getSelectedValue();
+            if (cl!=null)
+                cl.openChat();
         }
     }//GEN-LAST:event_contactJListMouseClicked
 
