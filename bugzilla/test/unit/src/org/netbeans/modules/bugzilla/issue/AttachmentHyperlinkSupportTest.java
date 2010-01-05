@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -126,9 +128,24 @@ public class AttachmentHyperlinkSupportTest {
                             + "Please eliminate such checks at this time.",
                         "Screenshot",
                         "92562");
+
+        checkBoundaries("Created an attachment (id=123)", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123)", new int[] {}, null, null);
+        checkBoundaries("Created an attachment (id=123)", new int[] {123}, "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123)", new int[] {123, 789}, "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=789)", new int[] {123, 789}, "attachment (id=789)", "789");
+        checkBoundaries("Created an attachment (id=456)", new int[] {123, 456, 789}, "attachment (id=456)", "456");
+        checkBoundaries("Created an attachment (id=456)", new int[] {123, 473, 789}, null, null);
     }
 
     private void checkBoundaries(String stringToParse,
+                                 String expectedHyperlinkText,
+                                 String expectedId) {
+        checkBoundaries(stringToParse, null, expectedHyperlinkText, expectedId);
+    }
+
+    private void checkBoundaries(String stringToParse,
+                                 int[] knownIds,
                                  String expectedHyperlinkText,
                                  String expectedId) {
         int[] expected;
@@ -137,11 +154,19 @@ public class AttachmentHyperlinkSupportTest {
         } else {
             int index = stringToParse.indexOf(expectedHyperlinkText);
             assert index != -1;
-            expected = new int[] {index,
-                                         index + expectedHyperlinkText.length()};
+            expected = new int[] {index, index + expectedHyperlinkText.length()};
         }
 
-        int[] actual = AttachmentHyperlinkSupport.findBoundaries(stringToParse);
+        Collection<String> knownIdsColl;
+        if (knownIds != null) {
+            knownIdsColl = new ArrayList<String>(knownIds.length);
+            for (int knownId : knownIds) {
+                knownIdsColl.add(Integer.toString(knownId));
+            }
+        } else {
+            knownIdsColl = null;
+        }
+        int[] actual = AttachmentHyperlinkSupport.findBoundaries(stringToParse, knownIdsColl);
 
         assertArrayEquals(expected, actual);
         if (expected != null) {
