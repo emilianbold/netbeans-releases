@@ -192,6 +192,15 @@ public class PushAction extends ContextAction {
                 new DialogDescriptor.Message(msg));
     }
 
+    /**
+     *
+     * @param root
+     * @param pushUrl password is nulled
+     * @param fromPrjName
+     * @param toPrjName
+     * @param logger
+     * @param showSaveCredsOption
+     */
     static void performPush(File root, HgURL pushUrl, String fromPrjName, String toPrjName, OutputLogger logger, boolean showSaveCredsOption) {
         try {
             boolean bLocalPush = pushUrl.isFile();
@@ -375,6 +384,7 @@ public class PushAction extends ContextAction {
         } finally {
             logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_DONE")); // NOI18N
             logger.output(""); // NOI18N
+            pushUrl.clearPassword();
         }
     }
 

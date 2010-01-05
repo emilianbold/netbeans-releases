@@ -68,10 +68,12 @@ public class DiffAction extends AbstractSystemAction {
         return "CTL_MenuItem_Diff";  // NOI18N
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return getDirectoryEnabledStatus();
     }
 
+    @Override
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED; 
     }
@@ -93,6 +95,7 @@ public class DiffAction extends AbstractSystemAction {
         executor.showRemoteDiff(group);
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

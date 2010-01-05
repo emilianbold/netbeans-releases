@@ -131,6 +131,12 @@ public class PullOtherAction extends ContextAction {
         }
     }
 
+    /**
+     *
+     * @param ctx
+     * @param root
+     * @param pullSource password is nulled
+     */
     public static void pull(final VCSContext ctx, final File root, final HgURL pullSource) {
         if (root == null || pullSource == null) return;
         final String fromPrjName = NbBundle.getMessage(PullAction.class, "MSG_EXTERNAL_REPOSITORY"); // NOI18N

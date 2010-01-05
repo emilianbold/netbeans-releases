@@ -45,8 +45,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import javax.swing.*;
@@ -59,14 +57,11 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.List;
-import java.util.logging.Level;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.VersionsCache;
-import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
@@ -78,11 +73,6 @@ import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Linker;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -144,9 +134,10 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 kenaiUsersMap = new HashMap<String, KenaiUser>();
                 for (RepositoryRevision repositoryRevision : results) {
                     String author = repositoryRevision.getLog().getAuthor();
-                    if(author != null && !author.equals("")) {
+                    String username = repositoryRevision.getLog().getUsername();
+                    if(author != null && !author.equals("") && username != null && !"".equals(username)) {
                         if(!kenaiUsersMap.keySet().contains(author)) {
-                            KenaiUser kenaiUser = HgKenaiSupport.getInstance().forName(author);
+                            KenaiUser kenaiUser = HgKenaiSupport.getInstance().forName(username, url);
                             if(kenaiUser != null) {
                                 kenaiUsersMap.put(author, kenaiUser);
                             }

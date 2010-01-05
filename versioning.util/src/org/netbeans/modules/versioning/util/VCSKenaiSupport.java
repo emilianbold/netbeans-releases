@@ -133,6 +133,14 @@ public abstract class VCSKenaiSupport {
     public abstract KenaiUser forName(final String userName);
 
     /**
+     * Returns a {@link KenaiUser} with the given name associated with a kenai specified by the given url
+     * @param userName user name
+     * @param url url of the kenai the username is associated with
+     * @return a KenaiUser instance
+     */
+    public abstract KenaiUser forName(final String userName, final String url);
+
+    /**
      * Determines wheter the user with the given name is online or not
      *
      * @param userName user name
