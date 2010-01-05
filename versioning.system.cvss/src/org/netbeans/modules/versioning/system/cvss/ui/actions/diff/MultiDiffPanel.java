@@ -380,6 +380,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         dividerSet = false;
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         if (refreshTask != null) {
@@ -414,6 +415,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         splitPane.setDividerLocation(optimalLocation);
     }
 
+    @Override
     public void removeNotify() {
         CvsVersioningSystem.getInstance().getStatusCache().removeVersioningListener(this);
         super.removeNotify();
@@ -794,6 +796,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             cache = CvsVersioningSystem.getInstance().getStatusCache();
         }
 
+        @Override
         public int compare(Object o1, Object o2) {
             File file1 = ((Setup) o1).getBaseFile();
             File file2 = ((Setup) o2).getBaseFile();
