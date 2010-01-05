@@ -86,6 +86,7 @@ class DiffNode extends AbstractNode {
         fireDisplayNameChange(htmlDisplayName, htmlDisplayName);
     }
 
+    @Override
     public String getHtmlDisplayName() {
         return htmlDisplayName;
     }
@@ -94,6 +95,7 @@ class DiffNode extends AbstractNode {
         return setup;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         if (context) return null;
         return new Action [0];
@@ -117,6 +119,7 @@ class DiffNode extends AbstractNode {
             super(name, type, displayName, shortDescription);
         }
 
+        @Override
         public String toString() {
             try {
                 return getValue().toString();

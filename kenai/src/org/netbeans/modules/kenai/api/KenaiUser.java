@@ -133,13 +133,13 @@ public final class KenaiUser {
         assert name !=null;
         assert name.contains("@"): "username must be FQN";
         assert !name.contains("/"): "username cannot contain '/'";
-        Kenai k = getKenai(name);
-        synchronized (k.users) {
-            Kenai kenai = KenaiManager.getDefault().getKenai("https://" + name.substring(name.indexOf('@')+1));
-            KenaiUser user = k.users.get(name + "@" + kenai.getUrl().getHost());
+        Kenai kenai = getKenai(name);
+        assert kenai!=null: "kenai instance not found for " + name;
+        synchronized (kenai.users) {
+            KenaiUser user = kenai.users.get(name + "@" + kenai.getUrl().getHost());
             if (user==null) {
                 user = new KenaiUser(kenai, name + "@" + kenai.getUrl().getHost());
-                k.users.put(name + "@" + kenai.getUrl().getHost(), user);
+                kenai.users.put(name + "@" + kenai.getUrl().getHost(), user);
             }
             return user;
         }

@@ -330,8 +330,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         doc.runAtomic(new Runnable() {
             public void run() {
                 boolean isKenaiRepository = false;
+                SVNUrl url = null;
                 try {
-                    SVNUrl url = SvnUtils.getRepositoryUrl(file);
+                    url = SvnUtils.getRepositoryUrl(file);
                     isKenaiRepository = url != null && SvnKenaiSupport.getInstance().isKenai(url.toString());
                     if(isKenaiRepository) {
                         kenaiUsersMap = new HashMap<String, KenaiUser>();
@@ -352,7 +353,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                         if(isKenaiRepository) {
                             String author = line.getAuthor();
                             if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
-                                KenaiUser ku = SvnKenaiSupport.getInstance().forName(author);
+                                KenaiUser ku = SvnKenaiSupport.getInstance().forName(author, url.toString());
                                 if(ku != null) {
                                     kenaiUsersMap.put(author, ku);
                                 }
