@@ -410,6 +410,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         dividerSet = false;
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         if (refreshTask != null) {
@@ -444,6 +445,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         splitPane.setDividerLocation(optimalLocation);
     }
     
+    @Override
     public void removeNotify() {
         Subversion.getInstance().getStatusCache().removeVersioningListener(this);
         super.removeNotify();
