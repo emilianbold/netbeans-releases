@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -62,32 +64,32 @@ public class AttachmentHyperlinkSupportTest {
         checkBoundaries("Created an attachment (id=12", null, null);
         checkBoundaries("Created an attachment (id=123", null, null);
         checkBoundaries("Created an attachment (id=)", null, null);
-        checkBoundaries("Created an attachment (id=1)", "1", "1");
-        checkBoundaries("Created an attachment (id=12)", "12", "12");
-        checkBoundaries("Created an attachment (id=123)", "123", "123");
+        checkBoundaries("Created an attachment (id=1)", "attachment (id=1)", "1");
+        checkBoundaries("Created an attachment (id=12)", "attachment (id=12)", "12");
+        checkBoundaries("Created an attachment (id=123)", "attachment (id=123)", "123");
         checkBoundaries("Created an atmachment (id=123)", null, null);
         checkBoundaries("Created an attachment (id=1a5)", null, null);
-        checkBoundaries("Created an attachment (id=123) [details]", "123", "123");
-        checkBoundaries("Created an attachment (id=123)  [details]", "123", "123");
-        checkBoundaries("Created an attachment (id=123)\t[details]", "123", "123");
-        checkBoundaries("Created an attachment (id=123)\t\t[details]", "123", "123");
-        checkBoundaries("Created an attachment (id=123)\t [details]", "123", "123");
-        checkBoundaries("Created an attachment (id=123) \t[details]", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details] ", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]  ", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t\t", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t ", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details] \t", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\n", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details] \n", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]  \n", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t\n", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t\t\n", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t \n", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details] \t\n", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details] \n ", "123", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t\n ", "123", "123");
+        checkBoundaries("Created an attachment (id=123) [details]", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123)  [details]", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123)\t[details]", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123)\t\t[details]", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123)\t [details]", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) \t[details]", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details] ", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]  ", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t\t", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t ", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details] \t", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\n", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details] \n", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]  \n", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t\n", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t\t\n", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t \n", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details] \t\n", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details] \n ", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t\n ", "attachment (id=123)", "123");
         checkBoundaries("Created an attachment (id=123)\nfoo", "foo", "123");
         checkBoundaries("Created an attachment (id=123)\n\tfoo", "foo", "123");
         checkBoundaries("Created an attachment (id=123)\n \tfoo", "foo", "123");
@@ -98,7 +100,7 @@ public class AttachmentHyperlinkSupportTest {
         checkBoundaries("Created an attachment (id=123)\t  \n  \tfoo\tbar", "foo\tbar", "123");
         checkBoundaries("Created an attachment (id=123)\t  \n  \tfoo\tbar baz", "foo\tbar baz", "123");
         checkBoundaries("Created an attachment (id=123)\t  \n  \tfoo\tbar baz", "foo\tbar baz", "123");
-        checkBoundaries("Created an attachment (id=123)\t  \n  \tfoo bar\nbaz", "foo bar\nbaz", "123");
+        checkBoundaries("Created an attachment (id=123)\t  \n  \tfoo bar\nbaz", "foo bar", "123");
         checkBoundaries("Created an attachment (id=123) [details]\nfoo", "foo", "123");
         checkBoundaries("Created an attachment (id=123) [details]\n\tfoo", "foo", "123");
         checkBoundaries("Created an attachment (id=123) [details]\n \tfoo", "foo", "123");
@@ -109,10 +111,41 @@ public class AttachmentHyperlinkSupportTest {
         checkBoundaries("Created an attachment (id=123) [details]\t  \n  \tfoo\tbar", "foo\tbar", "123");
         checkBoundaries("Created an attachment (id=123) [details]\t  \n  \tfoo\tbar baz", "foo\tbar baz", "123");
         checkBoundaries("Created an attachment (id=123) [details]\t  \n  \tfoo\tbar baz", "foo\tbar baz", "123");
-        checkBoundaries("Created an attachment (id=123) [details]\t  \n  \tfoo bar\nbaz", "foo bar\nbaz", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\t  \n  \tfoo bar\nbaz", "foo bar", "123");
+
+        checkBoundaries("Created an attachment (id=123)\nScreenshot", "Screenshot", "123");
+        checkBoundaries("Created an attachment (id=123)\n\nScreenshot", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\nScreenshot", "Screenshot", "123");
+        checkBoundaries("Created an attachment (id=123) [details]\n\nScreenshot", "attachment (id=123)", "123");
+
+        checkBoundaries("Created an attachment (id=92562)\n"
+                            + "Screenshot\n"
+                            + '\n'
+                            + "I used NetBeans without connection to internet and when I tried to generate javadoc for openide.util project, strange dialog appeared. I suspect it is warning from Kenai about inability to connect to network.\n"
+                            + '\n'
+                            + "The dialog is shown when I right-click a node. This is not the right time to display dialogs (from UI point of view) nor to check internet connectivity (from performance point of view).\n"
+                            + '\n'
+                            + "Please eliminate such checks at this time.",
+                        "Screenshot",
+                        "92562");
+
+        checkBoundaries("Created an attachment (id=123)", "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123)", new int[] {}, null, null);
+        checkBoundaries("Created an attachment (id=123)", new int[] {123}, "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=123)", new int[] {123, 789}, "attachment (id=123)", "123");
+        checkBoundaries("Created an attachment (id=789)", new int[] {123, 789}, "attachment (id=789)", "789");
+        checkBoundaries("Created an attachment (id=456)", new int[] {123, 456, 789}, "attachment (id=456)", "456");
+        checkBoundaries("Created an attachment (id=456)", new int[] {123, 473, 789}, null, null);
     }
 
     private void checkBoundaries(String stringToParse,
+                                 String expectedHyperlinkText,
+                                 String expectedId) {
+        checkBoundaries(stringToParse, null, expectedHyperlinkText, expectedId);
+    }
+
+    private void checkBoundaries(String stringToParse,
+                                 int[] knownIds,
                                  String expectedHyperlinkText,
                                  String expectedId) {
         int[] expected;
@@ -121,11 +154,19 @@ public class AttachmentHyperlinkSupportTest {
         } else {
             int index = stringToParse.indexOf(expectedHyperlinkText);
             assert index != -1;
-            expected = new int[] {index,
-                                         index + expectedHyperlinkText.length()};
+            expected = new int[] {index, index + expectedHyperlinkText.length()};
         }
 
-        int[] actual = AttachmentHyperlinkSupport.findBoundaries(stringToParse);
+        Collection<String> knownIdsColl;
+        if (knownIds != null) {
+            knownIdsColl = new ArrayList<String>(knownIds.length);
+            for (int knownId : knownIds) {
+                knownIdsColl.add(Integer.toString(knownId));
+            }
+        } else {
+            knownIdsColl = null;
+        }
+        int[] actual = AttachmentHyperlinkSupport.findBoundaries(stringToParse, knownIdsColl);
 
         assertArrayEquals(expected, actual);
         if (expected != null) {

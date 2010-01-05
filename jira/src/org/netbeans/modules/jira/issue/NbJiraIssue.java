@@ -275,7 +275,11 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     }
 
     public String getSummary() {
-        return getFieldValue(IssueField.SUMMARY);
+        return getSummary(taskData);
+    }
+
+    private static String getSummary(TaskData taskData) {
+        return getFieldValue(taskData, IssueField.SUMMARY);
     }
     
     String getDescription() {
@@ -710,9 +714,13 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
 
     @Override
     public String getDisplayName() {
+        return getDisplayName(taskData);
+    }
+
+    public static String getDisplayName(TaskData taskData) {
         return taskData.isNew() ?
             NbBundle.getMessage(NbJiraIssue.class, "CTL_NewIssue") : // NOI18N
-            NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue", new Object[] {getID(), getSummary()}); // NOI18N
+            NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue", new Object[] {getID(taskData), getSummary(taskData)}); // NOI18N
     }
 
     @Override

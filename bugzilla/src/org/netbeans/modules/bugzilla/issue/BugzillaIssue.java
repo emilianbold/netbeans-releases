@@ -254,9 +254,13 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
 
     @Override
     public String getDisplayName() {
-        return data.isNew() ?
+        return getDisplayName(data);
+    }
+
+    public static String getDisplayName(TaskData taskData) {
+        return taskData.isNew() ?
                 NbBundle.getMessage(BugzillaIssue.class, "CTL_NewIssue") : // NOI18N
-                NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(), getSummary()}); // NOI18N
+                NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(taskData), getSummary(taskData)}); // NOI18N
     }
 
     @Override
@@ -544,6 +548,18 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         return taskData.getTaskId();
     }
 
+    /**
+     * Returns the id from the given taskData or null if taskData.isNew()
+     * @param taskData
+     * @return id or null
+     */
+    public static String getSummary(TaskData taskData) {
+        if(taskData.isNew()) {
+            return null;
+        }
+        return getFieldValue(IssueField.SUMMARY, taskData);
+    }
+
     TaskRepository getTaskRepository() {
         return repository.getTaskRepository();
     }
@@ -584,14 +600,18 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
      * @return
      */
     String getFieldValue(IssueField f) {
+        return getFieldValue(f, data);
+    }
+
+    private static String getFieldValue(IssueField f, TaskData taskData) {
         if(f.isSingleAttribute()) {
-            TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+            TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
             if(a != null && a.getValues().size() > 1) {
                 return listValues(a);
             }
             return a != null ? a.getValue() : ""; // NOI18N
         } else {
-            List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, f.key);
+            List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, f.key);
             // returning 0 would set status MODIFIED instead of NEW
             return "" + ( attrs != null && attrs.size() > 0 ?  attrs.size() : ""); // NOI18N
         }
@@ -604,7 +624,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
      * @param a
      * @return
      */
-    private String listValues(TaskAttribute a) {
+    private static String listValues(TaskAttribute a) {
         if(a == null) {
             return "";                                                          // NOI18N
         }

@@ -196,10 +196,6 @@ public class CommitAction extends ContextAction {
 
             final Map<HgFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final String message = panel.getCommitMessage();
-            if (!panel.isHooksPanelInitialized()) {
-                // pass hooks only if the hooks panel was displayed and initialized
-                hooks.clear();
-            }
             final Map<File, Set<File>> rootFiles = HgUtils.sortUnderRepository(ctx, true);
             org.netbeans.modules.versioning.util.Utils.insert(HgModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);

@@ -947,17 +947,31 @@ public class QueryController extends BugtrackingController implements DocumentLi
         return panel.urlPanel.isVisible();
     }
 
+    void switchToDeterminateProgress(long issuesCount) {
+        if(refreshTask != null) {
+            refreshTask.switchToDeterminateProgress(issuesCount);
+        }
+    }
+
+    void addProgressUnit(String issueDesc) {
+        if(refreshTask != null) {
+            refreshTask.addProgressUnit(issueDesc);
+        }
+    }
+
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private Task task;
         private int counter;
         private boolean autoRefresh;
+        private long progressMaxWorkunits;
+        private int progressWorkunits;
 
         public QueryTask() {
             query.addNotifyListener(this);
         }
 
-        private void startQuery() {
+        private synchronized void startQuery() {
             enableFields(false);
             handle = ProgressHandleFactory.createHandle(
                     NbBundle.getMessage(
@@ -972,7 +986,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             handle.start();
         }
 
-        private void finnishQuery() {
+        private synchronized void finnishQuery() {
             task = null;
             if(handle != null) {
                 handle.finish();
@@ -986,6 +1000,23 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     enableFields(true);
                 }
             });
+        }
+
+        synchronized void switchToDeterminateProgress(long progressMaxWorkunits) {
+            if(handle != null) {
+                handle.switchToDeterminate((int) progressMaxWorkunits);
+                this.progressMaxWorkunits = progressMaxWorkunits;
+                this.progressWorkunits = 0;
+            }
+        }
+
+        synchronized void addProgressUnit(String issueDesc) {
+            if(handle != null && progressWorkunits < progressMaxWorkunits) {
+                handle.progress(
+                    NbBundle.getMessage(
+                        QueryController.class, "LBL_RetrievingIssue", new Object[] {issueDesc}),
+                    ++progressWorkunits);
+            }
         }
 
         public void executeQuery() {
@@ -1038,6 +1069,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
         public void notifyData(final Issue issue) {
             setIssueCount(++counter);
+            if(counter == 1) {
+                panel.showNoContentPanel(false);
+            }
         }
 
         public void started() {

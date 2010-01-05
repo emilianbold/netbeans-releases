@@ -199,6 +199,8 @@ public class BugzillaQuery extends Query {
                     // - and issues which were returned by some previous run and are archived now
                     queryIssues.addAll(issues);
 
+                    getController().switchToDeterminateProgress(queryIssues.size());
+
                     GetMultiTaskDataCommand dataCmd = new GetMultiTaskDataCommand(repository, queryIssues, new IssuesCollector());
                     repository.getExecutor().execute(dataCmd, !autoRefresh);
                     ret[0] = dataCmd.hasFailed();
@@ -329,6 +331,7 @@ public class BugzillaQuery extends Query {
         public IssuesCollector() {}
         public void accept(TaskData taskData) {
             String id = BugzillaIssue.getID(taskData);
+            getController().addProgressUnit(BugzillaIssue.getDisplayName(taskData));
             BugzillaIssue issue;
             try {
                 IssueCache<TaskData> cache = repository.getIssueCache();
