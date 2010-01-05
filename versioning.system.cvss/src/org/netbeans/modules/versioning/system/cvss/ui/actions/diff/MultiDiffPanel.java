@@ -204,6 +204,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     }
 
     private void setSetups(Setup... setups) {
+        assert EventQueue.isDispatchThread();
         this.setups = setups;
         this.editorCookies = (setups != null)
                              ? DiffUtils.setupsToEditorCookies(setups)
@@ -452,6 +453,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     }
     
     private void setDiffIndex(int idx, int location) {
+        assert EventQueue.isDispatchThread();
         currentIndex = idx;
         DiffController view = null;
         
@@ -545,6 +547,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     }
     
     private void onCommitButton() {
+        assert EventQueue.isDispatchThread();
         EditorCookie[] editorCookiesCopy = copyArray(editorCookies);
         DiffUtils.cleanThoseUnmodified(editorCookiesCopy);
         SaveCookie[] saveCookies = getSaveCookies(setups, editorCookiesCopy);
@@ -644,6 +647,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
 
 
     private void refreshSetups() {
+        assert EventQueue.isDispatchThread();
         if (dpt != null) {
             prepareTask.cancel();
         }
