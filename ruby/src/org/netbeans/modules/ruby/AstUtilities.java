@@ -978,7 +978,7 @@ public class AstUtilities {
         String name = getNextSigComponent(signature, lookingForMethod);
         signature = signature.substring(name.length());
 
-        Node node = findBySignature(root, signature, name, lookingForMethod);
+        Node node = findBySignature(root, root, signature, name, lookingForMethod);
         
         // Handle top level methods
         if (node == null && originalSig.startsWith("Object#")) {
@@ -988,7 +988,7 @@ public class AstUtilities {
             signature = originalSig.substring(name.length());
             lookingForMethod[0] = true;
             
-            node = findBySignature(root, signature, name, lookingForMethod);
+            node = findBySignature(root, root, signature, name, lookingForMethod);
         }
 
         return node;
@@ -1030,7 +1030,7 @@ public class AstUtilities {
         return sb.toString();
     }
 
-    private static Node findBySignature(Node node, String signature, String name, boolean[] lookingForMethod) {
+    private static Node findBySignature(Node root, Node node, String signature, String name, boolean[] lookingForMethod) {
         switch (node.getNodeType()) {
         case INSTASGNNODE:
             if (name.charAt(0) == '@') {
@@ -1105,7 +1105,13 @@ public class AstUtilities {
                         return each;
                     }
                 }
+            } else if (TestNameResolver.isShouldaMethod(getName(node))) {
+                String shoulda = TestNameResolver.getTestName(new AstPath(root, node));
+                if (name.equals(shoulda)) {
+                    return node;
+                }
             }
+
             break;
         case ALIASNODE:
             AliasNode aliasNode = (AliasNode) node;
@@ -1187,7 +1193,7 @@ public class AstUtilities {
             if (child.isInvisible()) {
                 continue;
             }
-            Node match = findBySignature(child, signature, name, lookingForMethod);
+            Node match = findBySignature(root, child, signature, name, lookingForMethod);
 
             if (match != null) {
                 return match;

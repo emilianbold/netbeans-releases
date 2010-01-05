@@ -310,7 +310,6 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         private final KenaiNotification kn;
         private final File projectDir;
         private final KenaiProject kp;
-        private String serviceName;
 
         public VCSKenaiNotificationImpl(KenaiNotification kn, KenaiProject kp, File projectDir) {
             assert kp != null;
@@ -330,26 +329,7 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         }
 
         public Service getService() {
-            if(serviceName == null) {
-                KenaiFeature[] features = null;
-                try {
-                    features = kp.getFeatures(KenaiService.Type.SOURCE);
-                    for (KenaiFeature kf : features) {
-                        if(kf.getName().equals(kn.getServiceName())) {
-                            serviceName = kf.getService();
-                            break;
-                        }
-                    }
-                } catch (KenaiException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                }
-                if(serviceName == null) {
-                    // fallback
-                    serviceName = kn.getServiceName();
-                }
-
-            }
-
+            String serviceName = kn.getServiceName();
             if(serviceName.equals(KenaiService.Names.SUBVERSION)) {
                 return Service.VCS_SVN;
             } else if (serviceName.equals(KenaiService.Names.MERCURIAL)) {

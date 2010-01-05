@@ -88,6 +88,8 @@ final class ButtonPopupSwitcher
     
     /** Indicating whether a popup is shown? */
     private static boolean shown;
+    /** Current switcher instance. */
+    private static ButtonPopupSwitcher currentSwitcher;
     
     private SwitcherTable pTable;
     
@@ -108,6 +110,7 @@ final class ButtonPopupSwitcher
         ButtonPopupSwitcher switcher
                 = new ButtonPopupSwitcher(items, x, y);
         switcher.doSelect(owner);
+        currentSwitcher = switcher;
     }
     
     /** Creates a new instance of TabListPanel */
@@ -144,7 +147,14 @@ final class ButtonPopupSwitcher
     public static boolean isShown() {
         return shown;
     }
-    
+
+    /** Hides current popup if it is shown. */
+    static void hidePopup() {
+        if (isShown()) {
+            currentSwitcher.hideCurrentPopup();
+        }
+    }
+
     /**
      * Clean up listners and hide popup.
      */
@@ -164,6 +174,7 @@ final class ButtonPopupSwitcher
             SwingUtilities.invokeLater(new PopupHider(popup));
             popup = null;
             shown = false;
+            currentSwitcher = null;
         }
     }
     
