@@ -92,12 +92,11 @@ public class TabListPopupAction extends AbstractAction {
     }
 
     // #179146 - listen on changes in list of items and close popup when changed
-    private static final ComplexListDataListener listListener = new ComplexListDataListener() {
+    private final ComplexListDataListener listListener = new ComplexListDataListener() {
 
         private void changed() {
-            if (ButtonPopupSwitcher.isShown()) {
-                ButtonPopupSwitcher.hidePopup();
-            }
+            displayer.getModel().removeComplexListDataListener(this);
+            ButtonPopupSwitcher.hidePopup();
         }
 
         public void indicesAdded(ComplexListDataEvent e) {
