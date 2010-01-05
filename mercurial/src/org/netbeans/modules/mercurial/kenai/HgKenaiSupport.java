@@ -108,6 +108,10 @@ public class HgKenaiSupport {
         return kenaiSupport != null ? kenaiSupport.forName(user) : null;
     }
 
+    public KenaiUser forName(String user, String url) {
+        return kenaiSupport != null ? kenaiSupport.forName(user, url) : null;
+    }
+
     public String getRevisionUrl(String repositoryUrl, String revision) {
         return kenaiSupport == null ? null : kenaiSupport.getRevisionUrl(repositoryUrl, revision);
     }
