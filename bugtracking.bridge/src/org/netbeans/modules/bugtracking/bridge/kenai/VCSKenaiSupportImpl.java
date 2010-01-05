@@ -129,6 +129,13 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         return new KenaiUserImpl(new org.netbeans.modules.kenai.ui.spi.KenaiUserUI(user));
     }
 
+    @Override
+    public KenaiUser forName(String user, String url) {
+        assert url != null;
+        Kenai kenai = KenaiUtil.getKenai(url);
+        return new KenaiUserImpl(new org.netbeans.modules.kenai.ui.spi.KenaiUserUI(kenai != null ? user + "@" + kenai.getUrl().getHost() : user)); //NOI18N
+    }
+
     public void addVCSNoficationListener(PropertyChangeListener l) {
         PropertyChangeListener[] ls = support.getPropertyChangeListeners(PROP_KENAI_VCS_NOTIFICATION);
         if(ls == null || ls.length == 0) {

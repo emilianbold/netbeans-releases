@@ -55,6 +55,8 @@ import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.repository.RepositoryConnection;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.versioning.util.Utils;
@@ -449,9 +451,9 @@ public class HgModuleConfig {
         getPreferences().putBoolean(SET_MAIN_PROJECT, bl);
     }
     
-    public void insertRecentUrl(RepositoryConnection rc) {        
+    public void insertRecentUrl(final RepositoryConnection rc) {
         Preferences prefs = getPreferences();
-        
+
         for (String rcOldString : Utils.getStringList(prefs, RECENT_URL)) {
             RepositoryConnection rcOld;
             try {
@@ -465,22 +467,51 @@ public class HgModuleConfig {
             if(rcOld.equals(rc)) {
                 Utils.removeFromArray(prefs, RECENT_URL, rcOldString);
             }
-        }        
-        Utils.insert(prefs, RECENT_URL, RepositoryConnection.getString(rc), -1);                
+        }
+        final char[] password = rc.getUrl().getPassword();
+        if (password != null) {
+            Runnable outOfAWT = new Runnable() {
+                public void run() {
+                    KeyringSupport.save(HgUtils.PREFIX_VERSIONING_MERCURIAL_URL, rc.getUrl().toHgCommandStringWithNoPassword(), password.clone(), null);
+                }
+            };
+            // keyring should be called only in a background thread
+            if (EventQueue.isDispatchThread()) {
+                Mercurial.getInstance().getRequestProcessor().post(outOfAWT);
+            } else {
+                outOfAWT.run();
+            }
+        }
+        Utils.insert(prefs, RECENT_URL, RepositoryConnection.getString(rc), -1);
     }    
 
     public List<RepositoryConnection> getRecentUrls() {
         Preferences prefs = getPreferences();
         List<String> urls = Utils.getStringList(prefs, RECENT_URL);
         List<RepositoryConnection> ret = new ArrayList<RepositoryConnection>(urls.size());
+        List<RepositoryConnection> withPassword = new LinkedList<RepositoryConnection>();
         for (String urlString : urls) {
             try {
-                ret.add(RepositoryConnection.parse(urlString));
+                RepositoryConnection conn = RepositoryConnection.parse(urlString);
+                char[] password = conn.getUrl().getPassword();
+                if (password != null) {
+                    withPassword.add(conn);
+                } else {
+                    ret.add(conn);
+                }
             } catch (URISyntaxException ex) {
                 Logger.global.throwing(getClass().getName(),
                                        "getRecentUrls",                 //NOI18N
                                        ex);
             }
+        }
+        // there's an old-style connection with password set
+        // rewrite these connections with the new version with no password included
+        if (withPassword.size() > 0) {
+            for (RepositoryConnection conn : withPassword) {
+                insertRecentUrl(conn);
+            }
+            return getRecentUrls();
         }
         return ret;
     }

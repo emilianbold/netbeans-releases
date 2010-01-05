@@ -204,6 +204,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     }
 
     private void setSetups(Setup... setups) {
+        assert EventQueue.isDispatchThread();
         this.setups = setups;
         this.editorCookies = (setups != null)
                              ? DiffUtils.setupsToEditorCookies(setups)
@@ -380,6 +381,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         dividerSet = false;
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         if (refreshTask != null) {
@@ -414,6 +416,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         splitPane.setDividerLocation(optimalLocation);
     }
 
+    @Override
     public void removeNotify() {
         CvsVersioningSystem.getInstance().getStatusCache().removeVersioningListener(this);
         super.removeNotify();
@@ -450,6 +453,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     }
     
     private void setDiffIndex(int idx, int location) {
+        assert EventQueue.isDispatchThread();
         currentIndex = idx;
         DiffController view = null;
         
@@ -543,6 +547,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
     }
     
     private void onCommitButton() {
+        assert EventQueue.isDispatchThread();
         EditorCookie[] editorCookiesCopy = copyArray(editorCookies);
         DiffUtils.cleanThoseUnmodified(editorCookiesCopy);
         SaveCookie[] saveCookies = getSaveCookies(setups, editorCookiesCopy);
@@ -642,6 +647,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
 
 
     private void refreshSetups() {
+        assert EventQueue.isDispatchThread();
         if (dpt != null) {
             prepareTask.cancel();
         }
@@ -794,6 +800,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             cache = CvsVersioningSystem.getInstance().getStatusCache();
         }
 
+        @Override
         public int compare(Object o1, Object o2) {
             File file1 = ((Setup) o1).getBaseFile();
             File file2 = ((Setup) o2).getBaseFile();

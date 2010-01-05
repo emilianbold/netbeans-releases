@@ -247,11 +247,10 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
                     ((EditorCookie.Observable) editorCookie).removePropertyChangeListener(this);
                 }
             }
-            this.editorCookies = null;
         }
 
-        tableModel.setNodes(nodes = setupsToNodes(setups));
         this.editorCookies = editorCookies;
+        tableModel.setNodes(nodes = setupsToNodes(setups));
 
         for (EditorCookie editorCookie : this.editorCookies) {
             if (editorCookie instanceof EditorCookie.Observable) {
@@ -410,6 +409,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         
         private FilePathCellRenderer pathRenderer = new FilePathCellRenderer();
         
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component renderer;
             int modelColumnIndex = table.convertColumnIndexToModel(column);
