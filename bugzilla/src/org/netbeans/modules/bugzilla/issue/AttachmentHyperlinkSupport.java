@@ -147,8 +147,4 @@ class AttachmentHyperlinkSupport {
         return (c == ' ') || (c == '\t');
     }
 
-    private static boolean isNewlineOrSpace(char c) {
-        return "\f\n\r\t ".indexOf(c) != -1;                            //NOI18N
-    }
-
 }
