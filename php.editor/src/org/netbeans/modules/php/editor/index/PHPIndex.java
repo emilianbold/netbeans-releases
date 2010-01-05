@@ -227,7 +227,8 @@ public class PHPIndex {
                 if (sig.string(5) != null && sig.string(5).trim().length() > 0) {
                     ifaces = Arrays.asList(sig.string(5).split(","));//NOI18N
                 }
-                IndexedClass clazz = new IndexedClass(className, useNamespaceName ? namespaceName : null, this, map.getUrl().toString(), superClass, ifaces, offset, 0);
+                int flags = sig.integer(6);
+                IndexedClass clazz = new IndexedClass(className, useNamespaceName ? namespaceName : null, this, map.getUrl().toString(), superClass, ifaces, offset, flags);
                 //clazz.setResolved(context != null && isReachable(context, map.getPersistentUrl()));
                 classes.add(clazz);
             }

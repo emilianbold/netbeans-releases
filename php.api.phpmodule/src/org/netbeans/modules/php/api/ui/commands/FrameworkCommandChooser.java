@@ -50,6 +50,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -97,7 +98,7 @@ public final class FrameworkCommandChooser extends JPanel {
     private static boolean debug;
 
     /** Preselect lastly used task for more convenience. */
-    private static String lastTask;
+    private static FrameworkCommand lastTask;
 
     private static boolean keepOpened = false;
 
@@ -215,7 +216,7 @@ public final class FrameworkCommandChooser extends JPanel {
                 }
                 FrameworkCommand task = chooserPanel.getSelectedTask();
                 FrameworkCommandChooser.debug = chooserPanel.debugCheckbox.isSelected();
-                FrameworkCommandChooser.lastTask = task.getCommand();
+                FrameworkCommandChooser.lastTask = task;
                 chooserPanel.storeParameters();
 
                 frameworkCommandSupport.runCommand(new CommandDescriptor(task, chooserPanel.getParameters(), FrameworkCommandChooser.debug));
@@ -374,7 +375,7 @@ public final class FrameworkCommandChooser extends JPanel {
             return;
         }
         for (FrameworkCommand task : allTasks) {
-            if (lastTask.equals(task.getCommand())) {
+            if (lastTask.equals(task)) {
                 matchingTaskList.setSelectedValue(task, true);
                 break;
             }
@@ -810,7 +811,8 @@ public final class FrameworkCommandChooser extends JPanel {
             Pattern pattern = StringUtils.getPattern(filter);
             if (pattern != null) {
                 for (FrameworkCommand task : tasks) {
-                    Matcher m = pattern.matcher(task.getCommand());
+                    String command = StringUtils.implode(Arrays.asList(task.getCommands()), " "); // NOI18N
+                    Matcher m = pattern.matcher(command);
                     if (m.matches()) {
                         matching.add(task);
                     }
@@ -818,7 +820,8 @@ public final class FrameworkCommandChooser extends JPanel {
             } else {
                 List<FrameworkCommand> exact = new ArrayList<FrameworkCommand>();
                 for (FrameworkCommand task : tasks) {
-                    String taskLC = task.getCommand().toLowerCase(Locale.ENGLISH);
+                    String command = StringUtils.implode(Arrays.asList(task.getCommands()), " "); // NOI18N
+                    String taskLC = command.toLowerCase(Locale.ENGLISH);
                     String filterLC = filter.toLowerCase(Locale.ENGLISH);
                     if (taskLC.startsWith(filterLC)) {
                         // show tasks which start with the filter first
