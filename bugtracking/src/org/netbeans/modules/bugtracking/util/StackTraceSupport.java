@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.util;
@@ -468,9 +468,9 @@ public class StackTraceSupport {
             } catch (BadLocationException ex) {
                 BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
             }
+            textPane.addMouseListener(getHyperlinkListener());
+            textPane.addMouseMotionListener(getHyperlinkListener());
         }
-        textPane.addMouseListener(getHyperlinkListener());
-        textPane.addMouseMotionListener(getHyperlinkListener());
     }
 
     private static MouseInputAdapter hyperlinkListener;
@@ -525,11 +525,13 @@ public class StackTraceSupport {
                     if (e.isPopupTrigger()) {
                         try {
                             Element elem = element(e);
-                            String stackFrame = elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset());
-                            JPopupMenu menu = new JPopupMenu();
-                            menu.add(new StackTraceAction(stackFrame, false));
-                            menu.add(new StackTraceAction(stackFrame, true));
-                            menu.show((JTextPane)e.getSource(), e.getX(), e.getY());
+                            if (elem.getAttributes().getAttribute(STACKTRACE_ATTRIBUTE) != null) {
+                                String stackFrame = elem.getDocument().getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset());
+                                JPopupMenu menu = new JPopupMenu();
+                                menu.add(new StackTraceAction(stackFrame, false));
+                                menu.add(new StackTraceAction(stackFrame, true));
+                                menu.show((JTextPane)e.getSource(), e.getX(), e.getY());
+                            }
                         } catch(Exception ex) {
                             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
                         }

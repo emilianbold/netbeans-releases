@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,58 +34,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.web.jsf.editor.refactoring.actions;
 
-import java.awt.Component;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.openide.util.ImageUtilities;
+import javax.swing.Action;
 
 /**
  *
- * @author Jan Becicka
+ * @author marekfukala
  */
-public class KenaiListRenderer extends JLabel
-                       implements ListCellRenderer {
+public class JsfRefactoringActionsFactory {
 
-    public KenaiListRenderer() {
-        setOpaque(true);
+    public static Action convertToCCAction() {
+	 return ConvertToCCAction.findObject(ConvertToCCAction.class, true);
     }
-
-    /*
-     * This method finds the image and text corresponding
-     * to the selected value and returns the label, set up
-     * to display the text and image.
-     */
-    public Component getListCellRendererComponent(
-                                       JList list,
-                                       Object value,
-                                       int index,
-                                       boolean isSelected,
-                                       boolean cellHasFocus) {
-
-        if (value instanceof Kenai) {
-            final Kenai kenai = (Kenai) value;
-            setText("<html><b>" + kenai.getName() + "</b> (" +  kenai.getUrl().getProtocol() + "://" + kenai.getUrl().getHost() + ")</html>");
-            //setIcon(((Kenai)value).getIcon());
-            setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/kenai-small.png", true));
-        } else {
-            setIcon(null);
-            setText(value==null?null:value.toString());
-        }
-
-        if (isSelected) {
-            setBackground(list.getSelectionBackground());
-            setForeground(list.getSelectionForeground());
-        } else {
-            setBackground(list.getBackground());
-            setForeground(list.getForeground());
-        }
-        return this;
-    }
+    
 }

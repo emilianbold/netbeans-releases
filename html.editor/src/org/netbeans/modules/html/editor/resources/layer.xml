@@ -202,10 +202,10 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ViewAction.instance"/>
                         <attr name="position" intvalue="1000"/>
                     </file>
-                    <file name="format">
+                    <file name="generate-code">
                         <attr name="position" intvalue="1333"/>
                     </file>
-                    <file name="generate-code">
+                    <file name="format">
                         <attr name="position" intvalue="1400"/>
                     </file>
                     <file name="SeparatorAfterFormat.instance">

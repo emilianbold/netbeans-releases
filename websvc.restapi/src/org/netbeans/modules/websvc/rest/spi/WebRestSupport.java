@@ -39,10 +39,14 @@
 
 package org.netbeans.modules.websvc.rest.spi;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
@@ -61,6 +65,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -76,6 +82,7 @@ public abstract class WebRestSupport extends RestSupport {
     public static final String CONFIG_TYPE_USER= "user"; //NOI18N
     public static final String CONFIG_TYPE_DD= "dd"; //NOI18N
     public static final String REST_CONFIG_TARGET="generate-rest-config"; //NOI18N
+    protected static final String JERSEY_SPRING_JAR_PATTERN = "jersey-spring.*\\.jar";//NOI18N
 
     /** Creates a new instance of WebProjectRestSupport */
     public WebRestSupport(Project project) {
@@ -375,6 +382,23 @@ public abstract class WebRestSupport extends RestSupport {
             }
         }
         return null;
+    }
+
+    protected void addJerseySpringJar() throws IOException {
+        FileObject srcRoot = findSourceRoot();
+        if (srcRoot != null) {
+            ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
+            if (cp.findResource("com/sun/jersey/api/spring/Autowire.class") == null) { //NOI18N
+                File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, null, false);
+                if (jerseyRoot != null && jerseyRoot.isDirectory()) {
+                    File[] jerseyJars = jerseyRoot.listFiles(new JerseyFilter(JERSEY_SPRING_JAR_PATTERN));
+                    if (jerseyJars != null && jerseyJars.length>0) {
+                        URL url = FileUtil.getArchiveRoot(jerseyJars[0].toURI().toURL());
+                        ProjectClassPathModifier.addRoots(new URL[] {url}, srcRoot, ClassPath.COMPILE);
+                    }
+                }
+            }
+        }
     }
 
 }
