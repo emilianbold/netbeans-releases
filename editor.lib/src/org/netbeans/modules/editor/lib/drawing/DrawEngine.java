@@ -1423,7 +1423,6 @@ public final class DrawEngine {
         */
         int fragmentCharCount;
 
-        Rectangle extentBounds;
         Insets textMargin;
         int textLeftMarginWidth;
 
