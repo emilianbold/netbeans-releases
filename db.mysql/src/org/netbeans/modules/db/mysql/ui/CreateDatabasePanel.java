@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.mysql.ui;
@@ -109,6 +109,15 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                 (comboUsers.getSelectedItem() == null ||
                 Utils.isEmpty(((DatabaseUser)comboUsers.getSelectedItem()).getUser ()))) {
             error = NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatbasePanel.MSG_NoGrantUserSelected");
+        }
+        try {
+            if (server.databaseExists(databaseName)) {
+                error = NbBundle.getMessage(CreateDatabasePanel.class,
+                                            "CreateNewDatabasePanel.MSG_DatabaseAlreadyExists",
+                                            databaseName);
+            }
+        } catch (DatabaseException ex) {
+            // probably not connected server, ignore here
         }
 
         if (error != null) {
@@ -403,6 +412,14 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
             }
 
             public void keyReleased(KeyEvent event) {
+                // Get the actual key.  apparently getItem() doesn't return the current
+                // string typed until *after* this event finishes :(
+                String keyStr = Character.toString(event.getKeyChar()).trim();
+                if ( ! Utils.isEmpty(keyStr)) {
+                    String dbname = comboDatabaseName.getEditor().getItem().toString().trim();
+                    validatePanel(dbname);
+                }
+
             }
         });
                         

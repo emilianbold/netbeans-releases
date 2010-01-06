@@ -674,14 +674,6 @@ public abstract class RestSupport {
         }
         return false;
     }
-    
-    public String getServletAdapterClass() {
-        if (hasSpringSupport()) {
-            return REST_SPRING_SERVLET_ADAPTOR_CLASS;
-        } else {
-            return REST_SERVLET_ADAPTOR_CLASS;
-        }
-    }
 
      public String getServerType() {
         return getProjectProperty(J2EE_SERVER_TYPE);
