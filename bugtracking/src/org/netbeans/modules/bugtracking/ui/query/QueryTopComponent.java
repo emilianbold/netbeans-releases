@@ -115,7 +115,7 @@ public final class QueryTopComponent extends TopComponent
     private final RepoPanel repoPanel;
     private final JPanel jPanel2;
     private final LinkButton newButton;
-    private final JPanel panel;
+    private final PlaceholderPanel panel;
     private final JComboBox repositoryComboBox;
     private final JScrollPane scrollPane;
 
@@ -238,7 +238,7 @@ public final class QueryTopComponent extends TopComponent
         if (query != null) {
             setSaved();
             BugtrackingController c = query.getController();
-            panel.add(c.getComponent());
+            panel.setComponent(c.getComponent());
             this.query.addPropertyChangeListener(this);
             this.query.addNotifyListener(this);
         } else {
@@ -497,8 +497,7 @@ public final class QueryTopComponent extends TopComponent
                     final BugtrackingController addController = query.getController();
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            panel.removeAll();
-                            panel.add(addController.getComponent());
+                            panel.setComponent(addController.getComponent());
 
                             focusFirstEnabledComponent();
 
