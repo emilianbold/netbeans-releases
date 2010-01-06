@@ -55,6 +55,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedClassMember;
@@ -570,6 +571,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 builder.append("::${cursor}"); //NOI18N
                 scheduleShowingCompletion();
                 return builder.toString();
+            } else if (CompletionContext.NEW_CLASS.equals(request.context)) {
+                scheduleShowingCompletion();
             }
             return superTemplate;
         }
@@ -825,9 +828,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getName() {
-            String in = getElement().getIn();
-            return (in != null) ? in : super.getName();
-        }
+                String in = getElement().getIn();
+                return (in != null) ? in : super.getName();
+            }
 
         @Override
         public ElementKind getKind() {
@@ -1013,11 +1016,37 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         protected String getNameAndFunctionBodyForTemplate() {
             StringBuilder template = new StringBuilder();
-            final String functionSignature = getFunction().getFunctionSignature(true);
-            template.append(" ").append(functionSignature);//NOI18N
+            template.append(" ").append(getName()).append("(");//NOI18N
+            template.append(parameters2String());
+            template.append(")");//NOI18N
             template.append(" ").append("{\n");//NOI18N
             template.append(getFunctionBodyForTemplate());//NOI18N
             template.append("}");//NOI18N
+            return template.toString();
+        }
+
+        private String parameters2String() {
+            StringBuilder template = new StringBuilder();
+            List<Parameter> parameterList = getFunction().getParameters();
+            if (parameterList.size() > 0) {
+                for (int i = 0, n = parameterList.size(); i < n; i++) {
+                    if (i > 0) {
+                        template.append(", ");//NOI18N
+                    }
+                    final Parameter param = parameterList.get(i);
+                    List<QualifiedName> types = param.getTypes();
+                    if (param.hasRawType()) {
+                        for (QualifiedName qName : types) {
+                            template.append(qName.toString()).append(' '); //NOI18N
+                        }
+                    }
+                    template.append(param.getName());
+                    String defaultValue = param.getDefaultValue();
+                    if (defaultValue != null) {
+                        template.append(" = ").append(defaultValue); //NOI18N
+                    }
+                }
+            }
             return template.toString();
         }
 
@@ -1064,6 +1093,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         public  ParserResult info;
         public  String prefix;
         public  String currentlyEditedFileURL;
+        public CompletionContext context;
         PHPIndex index;
     }
     private static void scheduleShowingCompletion() {

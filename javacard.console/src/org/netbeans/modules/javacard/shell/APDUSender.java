@@ -54,7 +54,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
-import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.capabilities.PortKind;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
@@ -126,7 +126,7 @@ public class APDUSender {
 
     public String powerupContacted() throws IOException, CadTransportException {
         PortProvider prov = card.getCapability(PortProvider.class);
-        ApduSupport apdu = card.getCapability(ApduSupport.class);
+        UrlCapability apdu = card.getCapability(UrlCapability.class);
         int contactedPort = prov.getPort(PortKind.CONTACTED);
         contactedSocket = new Socket(prov.getHost(), contactedPort);
         contactedSocket.setTcpNoDelay(true);

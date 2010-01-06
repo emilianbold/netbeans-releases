@@ -44,7 +44,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import javax.swing.JButton;
-import static org.netbeans.modules.print.ui.UI.*;
+import static org.netbeans.modules.print.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -63,7 +63,6 @@ public enum Macro {
     PRINTED_TIME; // time of printing
 
     public interface Listener {
-
         void pressed(Macro macro);
     }
 

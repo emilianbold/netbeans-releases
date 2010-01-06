@@ -40,23 +40,32 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URI;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -77,9 +86,12 @@ import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.StackTraceSupport;
 import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
+import org.openide.ErrorManager;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -91,11 +103,15 @@ import org.openide.util.RequestProcessor;
 public class CommentsPanel extends JPanel {
     private static final DateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // NOI18N
     private final static String ISSUE_ATTRIBUTE = "issue"; // NOI18N
+    private final static String URL_ATTRIBUTE = "url hyperlink";        //NOI18N
+    private final static String ATTACHMENT_ATTRIBUTE = "attachment hyperlink"; //NOI18N
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private final static int MAX_COMMENT_HEIGHT = 10000;
     private final BugzillaIssueFinder issueFinder;
     private BugzillaIssue issue;
+    private List<BugzillaIssue.Attachment> attachments;
+    private List<String> attachmentIds;
     private MouseAdapter listener;
     private NewCommentHandler newCommentHandler;
 
@@ -110,6 +126,7 @@ public class CommentsPanel extends JPanel {
                         StyledDocument doc = pane.getStyledDocument();
                         Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
                         AttributeSet as = elem.getAttributes();
+
                         IssueAction issueAction = (IssueAction)as.getAttribute(ISSUE_ATTRIBUTE);
                         if (issueAction != null) {
                             int startOffset = elem.getStartOffset();
@@ -117,6 +134,22 @@ public class CommentsPanel extends JPanel {
                             int length = endOffset - startOffset;
                             String hyperlinkText = doc.getText(startOffset, length);
                             issueAction.openIssue(hyperlinkText);
+                            return;
+                        }
+
+                        UrlAction urlAction = (UrlAction) as.getAttribute(URL_ATTRIBUTE);
+                        if (urlAction != null) {
+                            int startOffset = elem.getStartOffset();
+                            int endOffset = elem.getEndOffset();
+                            int length = endOffset - startOffset;
+                            String hyperlinkText = doc.getText(startOffset, length);
+                            urlAction.openUrlHyperlink(hyperlinkText);
+                            return;
+                        }
+
+                        if (as.getAttribute(ATTACHMENT_ATTRIBUTE) != null) {
+                            CommentsPanel.this.openAttachmentHyperlink(pane);
+                            return;
                         }
                     }
                 } catch(Exception ex) {
@@ -129,9 +162,12 @@ public class CommentsPanel extends JPanel {
         assert issueFinder != null;
     }
 
-    public void setIssue(BugzillaIssue issue) {
+    void setIssue(BugzillaIssue issue,
+                  List<BugzillaIssue.Attachment> attachments) {
         removeAll();
         this.issue = issue;
+        this.attachments = attachments;
+        this.attachmentIds = getAttachmentIds(attachments);
         GroupLayout layout = new GroupLayout(this);
         GroupLayout.ParallelGroup horizontalGroup = layout.createParallelGroup(GroupLayout.LEADING);
         layout.setHorizontalGroup(layout.createSequentialGroup()
@@ -162,6 +198,19 @@ public class CommentsPanel extends JPanel {
         setLayout(layout);
     }
 
+    private static List<String> getAttachmentIds(
+                                   List<BugzillaIssue.Attachment> attachments) {
+        if (attachments.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> result = new ArrayList<String>(attachments.size());
+        for (BugzillaIssue.Attachment attachment : attachments) {
+            result.add(attachment.getId());
+        }
+        return result;
+    }
+
     public void setNewCommentHandler(NewCommentHandler handler) {
         newCommentHandler = handler;
     }
@@ -190,7 +239,8 @@ public class CommentsPanel extends JPanel {
         if (issue.getRepository() instanceof KenaiRepository) {
             int index = author.indexOf('@');
             String userName = (index == -1) ? author : author.substring(0,index);
-            KenaiUserUI ku = new KenaiUserUI(userName);
+            String host = ((KenaiRepository) issue.getRepository()).getHost();
+            KenaiUserUI ku = new KenaiUserUI(userName + "@" + host);
             ku.setMessage(KenaiUtil.getChatLink(issue));
             stateLabel = ku.createUserWidget();
             stateLabel.setText(null);
@@ -236,7 +286,6 @@ public class CommentsPanel extends JPanel {
             vGroup.add(stateLabel);
         }
         verticalGroup.add(vGroup)
-            .addPreferredGap(LayoutStyle.RELATED)
             .add(pane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
     }
 
@@ -271,6 +320,62 @@ public class CommentsPanel extends JPanel {
                 }
             }
         }
+
+        // URL hyperlinks
+        {
+            final int[] boundaries = WebUrlHyperlinkSupport.findBoundaries(comment);
+            if ((boundaries != null) && (boundaries.length != 0)) {
+                Style defStyle = StyleContext.getDefaultStyleContext()
+                                 .getStyle(StyleContext.DEFAULT_STYLE);
+                Style hlStyle = doc.addStyle("regularBlue", defStyle);      //NOI18N
+                hlStyle.addAttribute(URL_ATTRIBUTE, new UrlAction());
+                StyleConstants.setForeground(hlStyle, Color.BLUE);
+                StyleConstants.setUnderline(hlStyle, true);
+
+                for (int i = 0; i < boundaries.length; i+=2) {
+                    int off = boundaries[i];
+                    int length = boundaries[i + 1] - boundaries[i];
+                    try {
+                        doc.remove(off, length);
+                        doc.insertString(off, comment.substring(boundaries[i],
+                                                                boundaries[i + 1]),
+                                                                hlStyle);
+                    } catch (BadLocationException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        // attachments
+        if (!attachmentIds.isEmpty()) {
+            final int[] boundaries = AttachmentHyperlinkSupport
+                                     .findBoundaries(comment, attachmentIds);
+            if ((boundaries != null) && (boundaries.length != 0)) {
+                Style defStyle = StyleContext.getDefaultStyleContext()
+                                 .getStyle(StyleContext.DEFAULT_STYLE);
+                Style hlStyle = doc.addStyle("regularBlue", defStyle);      //NOI18N
+                hlStyle.addAttribute(ATTACHMENT_ATTRIBUTE, new Object());
+                StyleConstants.setForeground(hlStyle, Color.BLUE);
+                StyleConstants.setUnderline(hlStyle, true);
+
+                for (int i = 0; i < boundaries.length; i+=2) {
+                    int off = boundaries[i];
+                    int length = boundaries[i + 1] - boundaries[i];
+                    try {
+                        doc.remove(off, length);
+                        doc.insertString(off, comment.substring(boundaries[i],
+                                                                boundaries[i + 1]),
+                                                                hlStyle);
+                    } catch (BadLocationException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        // pop-ups
+        textPane.setComponentPopupMenu(new PopupMenu());
 
         textPane.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")), // NOI18N
@@ -320,6 +425,91 @@ public class CommentsPanel extends JPanel {
                 }
             });
         }
+    }
+
+    private class UrlAction {
+        void openUrlHyperlink(String hyperlinkText) {
+            try {
+                URL url = new URI(hyperlinkText).toURL();
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+            } catch (Exception ex) {
+                assert false;
+                ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                              "Could not open URL: "    //NOI18N
+                                                      + hyperlinkText);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                                                 ex);
+            }
+        }
+    }
+
+    private void openAttachmentHyperlink(JTextPane textPane) {
+        String attachmentId = null;
+        try {
+            BugzillaIssue.Attachment attachment = getAttachment(textPane);
+            if (attachment != null) {
+                attachment.open();
+            }
+        } catch (Exception ex) {
+            assert false;
+            String errMsg = "Could not open attachment";                //NOI18N
+            if (attachmentId != null) {
+                errMsg += " #" + attachmentId;                          //NOI18N
+            }
+            ErrorManager.getDefault().log(ErrorManager.WARNING, errMsg);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+    }
+
+    private BugzillaIssue.Attachment getAttachment(JTextPane textPane) {
+        String commentText = textPane.getText();
+        String attachmentId = AttachmentHyperlinkSupport
+                              .getAttachmentId(commentText);
+        if (attachmentId != null) {
+            int index = attachmentIds.indexOf(attachmentId);
+            if (index != -1) {
+                return attachments.get(index);
+            }
+        }
+        return null;
+    }
+
+    class PopupMenu extends JPopupMenu {
+
+        /*
+         * Holds the location of where the user invoked the pop-up menu.
+         * It must be remembered before calling super.show(...) because
+         * the method show() may change the location of the pop-up menu,
+         * so the original location might not be available.
+         */
+        private final Point clickPoint = new Point();
+
+        @Override
+        public void show(Component invoker, int x, int y) {
+            clickPoint.setLocation(x, y);
+            super.show(invoker, x, y);
+        }
+
+        @Override
+        public void setVisible(boolean b) {
+            if (b) {
+                JTextPane pane = (JTextPane) getInvoker();
+                StyledDocument doc = pane.getStyledDocument();
+                Element elem = doc.getCharacterElement(pane.viewToModel(clickPoint));
+                if (elem.getAttributes().getAttribute(ATTACHMENT_ATTRIBUTE) != null) {
+                    BugzillaIssue.Attachment attachment = getAttachment(pane);
+                    if (attachment != null) {
+                        add(new JMenuItem(attachment.new DefaultAttachmentAction()));
+                        add(new JMenuItem(attachment.new SaveAttachmentAction()));
+                        super.setVisible(true);
+                    }
+                }
+            } else {
+                super.setVisible(false);
+                removeAll();
+            }
+        }
+
     }
 
     public interface NewCommentHandler {

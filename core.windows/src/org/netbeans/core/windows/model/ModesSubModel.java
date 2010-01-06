@@ -41,6 +41,7 @@
 
 package org.netbeans.core.windows.model;
 
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -384,11 +385,22 @@ final class ModesSubModel {
         Set<ModeStructureSnapshot.SlidingModeSnapshot> result = 
                 new HashSet<ModeStructureSnapshot.SlidingModeSnapshot>();
         for (Map.Entry<ModeImpl, String> curEntry: slidingModes2Sides.entrySet()) {
-            result.add(new ModeStructureSnapshot.SlidingModeSnapshot(
-                    curEntry.getKey(), curEntry.getValue(), 
-                    getSlideInSizes(curEntry.getKey())));
+            final ModeImpl key = curEntry.getKey();
+            AbstractMap<TopComponent, Integer> lazy = new AbstractMap<TopComponent, Integer>() {
+                Map<TopComponent, Integer> delegate;
+                @Override
+                public Set<Entry<TopComponent, Integer>> entrySet() {
+                    if (delegate == null) {
+                        delegate = getSlideInSizes(key);
+                    }
+                    return delegate.entrySet();
+                }
+            };
+
+             result.add(new ModeStructureSnapshot.SlidingModeSnapshot(
+                    curEntry.getKey(), curEntry.getValue(), lazy
+            ));
         }
-        
         return result;
     }
     

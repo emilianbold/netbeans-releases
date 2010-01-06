@@ -482,7 +482,7 @@ public class WorkingCopy extends CompilationController {
             
             CompilationUnitTree nue = (CompilationUnitTree) translator.translate(t, changes);
             
-            VeryPretty printer = new VeryPretty(getContext(), VeryPretty.getCodeStyle(this));
+            VeryPretty printer = new VeryPretty(this, VeryPretty.getCodeStyle(this));
             printer.print((JCTree.JCCompilationUnit) nue);
             result.add(new CreateChange(nue.getSourceFile(), printer.toString()));
         }

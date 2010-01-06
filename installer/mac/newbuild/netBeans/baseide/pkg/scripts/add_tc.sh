@@ -17,8 +17,12 @@ then
   then
     token=`date "+%Y%m%d%H%M%S"`
     echo netbeans.conf found: `pwd`/netbeans.conf
-    cp netbeans.conf netbeans.conf_orig_tc
-    cat netbeans.conf_orig_tc  | sed -e 's|netbeans_default_options=\"|netbeans_default_options=\"-J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome='$tc_dir' -J-Dorg.netbeans.modules.tomcat.autoregister.token='$token' |' > netbeans.conf
+    if  grep -q "J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome=$tc_dir" netbeans.conf
+    then
+       echo Tomcat "$tc_dir" has been already added
+    else
+        cp netbeans.conf netbeans.conf_orig_tc
+        cat netbeans.conf_orig_tc  | sed -e 's|netbeans_default_options=\"|netbeans_default_options=\"-J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome='$tc_dir' -J-Dorg.netbeans.modules.tomcat.autoregister.token='$token' |' > netbeans.conf
   else
     echo No netbeans.conf in: `pwd`
   fi

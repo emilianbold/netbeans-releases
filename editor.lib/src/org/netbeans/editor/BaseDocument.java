@@ -97,6 +97,10 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.FormatterOverride;
 import org.netbeans.modules.editor.lib.TrailingWhitespaceRemove;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib.drawing.DrawEngine;
+import org.netbeans.modules.editor.lib.drawing.DrawGraphics;
+import org.netbeans.modules.editor.lib.impl.MarkVector;
+import org.netbeans.modules.editor.lib.impl.MultiMark;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -256,9 +260,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     protected Element defaultRootElem;
 
     private SyntaxSupport syntaxSupport;
-
-    /** Layer list for document level layers */
-    private DrawLayerList drawLayerList = new DrawLayerList();
 
     /** Reset merging next created undoable edit to the last one. */
     boolean undoMergeReset;
@@ -2014,38 +2015,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return modified;
     }
 
-    /**
-     * Get the layer with the specified name. Using of <code>DrawLayer</code>s
-     * has been deprecated.
-     *
-     * @deprecated Please use Highlighting SPI instead, for details see
-     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
-     */
-    public DrawLayer findLayer(String layerName) {
-        return drawLayerList.findLayer(layerName);
-    }
-
-    /**
-     * Using of <code>DrawLayer</code>s has been deprecated.
-     *
-     * @deprecated Please use Highlighting SPI instead, for details see
-     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
-     */
-    public boolean addLayer(DrawLayer layer, int visibility) {
-        if (drawLayerList.add(layer, visibility)) {
-            BaseDocumentEvent evt = getDocumentEvent(0, 0, DocumentEvent.EventType.CHANGE, null);
-            evt.addEdit(new BaseDocumentEvent.DrawLayerChange(layer.getName(), visibility));
-            fireChangedUpdate(evt);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    final DrawLayerList getDrawLayerList() {
-        return drawLayerList;
-    }
-
     private LineRootElement getLineRootElement() {
         return lineRootElement;
     }
@@ -2445,10 +2414,24 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     private static final class Accessor extends EditorPackageAccessor {
 
         @Override
-        public CompoundEdit markAtomicEditsNonSignificant(BaseDocument doc) {
+        public CompoundEdit BaseDocument_markAtomicEditsNonSignificant(BaseDocument doc) {
             return doc.markAtomicEditsNonSignificant();
         }
 
+        @Override
+        public MarkVector BaseDocument_getMarksStorage(BaseDocument doc) {
+            return doc.marksStorage;
+        }
+
+        @Override
+        public Mark BaseDocument_getMark(BaseDocument doc, MultiMark multiMark) {
+            return doc.marks.get(multiMark);
+        }
+
+        @Override
+        public void Mark_insert(Mark mark, BaseDocument doc, int pos) throws InvalidMarkException, BadLocationException {
+            mark.insert(doc, pos);
+        }
     }
 
     // XXX: the same as the one in CloneableEditorSupport

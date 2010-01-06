@@ -40,7 +40,7 @@
 package org.netbeans.modules.bugtracking.spi;
 
 /**
- * Recognizes references to bugs/issues in text.
+ * Recognizes references to issues in text.
  *
  * @author Tomas Stupka
  * @author Marian Petras

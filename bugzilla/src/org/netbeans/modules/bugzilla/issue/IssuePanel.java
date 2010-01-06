@@ -80,6 +80,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicTextFieldUI;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -101,6 +102,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -135,10 +137,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     public IssuePanel() {
         initComponents();
-        reportedField.setBackground(getBackground());
-        modifiedField.setBackground(getBackground());
-        resolutionField.setBackground(getBackground());
-        productField.setBackground(getBackground());
+        updateReadOnlyField(reportedField);
+        updateReadOnlyField(modifiedField);
+        updateReadOnlyField(resolutionField);
+        updateReadOnlyField(productField);
         messagePanel.setBackground(getBackground());
         Font font = headerLabel.getFont();
         headerLabel.setFont(font.deriveFont((float)(font.getSize()*1.7)));
@@ -169,6 +171,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         BugtrackingUtil.issue163946Hack(scrollPane1);
     }
 
+    private void updateReadOnlyField(JTextField field) {
+        if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
+            field.setUI(new BasicTextFieldUI());
+        }
+        field.setBackground(getBackground());
+    }
+
     void reloadFormInAWT(final boolean force) {
         if (EventQueue.isDispatchThread()) {
             reloadForm(force);
@@ -191,6 +200,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
     };
+
+    BugzillaIssue getIssue() {
+        return issue;
+    }
 
     public void setIssue(BugzillaIssue issue) {
         if (this.issue == null) {
@@ -320,7 +333,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private int oldCommentCount;
-    private void reloadForm(boolean force) {
+    void reloadForm(boolean force) {
         if (skipReload) {
             return;
         }
@@ -421,7 +434,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 if (isKenaiRepository && (reportedStatusLabel.getIcon() == null)) {
                     int index = reporter.indexOf('@');
                     String userName = (index == -1) ? reporter : reporter.substring(0,index);
-                    KenaiUserUI ku = new KenaiUserUI(userName);
+                    String host = ((KenaiRepository) issue.getRepository()).getHost();
+                    KenaiUserUI ku = new KenaiUserUI(userName + "@" + host);
                     ku.setMessage(KenaiUtil.getChatLink(issue));
                     JLabel label = ku.createUserWidget();
                     label.setText(null);
@@ -441,7 +455,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
                 int index = assignee.indexOf('@');
                 String userName = (index == -1) ? assignee : assignee.substring(0,index);
-                KenaiUserUI ku = new KenaiUserUI(userName);
+                String host = ((KenaiRepository) issue.getRepository()).getHost();
+                KenaiUserUI ku = new KenaiUserUI(userName + "@" + host);
                 ku.setMessage(KenaiUtil.getChatLink(issue));
                 JLabel label = ku.createUserWidget();
                 label.setText(null);
@@ -470,10 +485,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         oldCommentCount = newCommentCount;
+        List<Attachment> attachments = issue.getAttachments();
         if (!isNew) {
-            commentsPanel.setIssue(issue);
+            commentsPanel.setIssue(issue, attachments);
         }
-        attachmentsPanel.setIssue(issue);
+        attachmentsPanel.setAttachments(attachments);
         BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
         BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
         if (force) {
@@ -944,26 +960,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         messagePanel.add(messageLabel);
     }
 
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        if (issue != null) {
-            // Hack - reset any previous modifications when the issue window is reopened
-            // XXX any chance to get rid of the hack?
-            reloadForm(true);
-
-            issue.opened();
-        }
-    }
-
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        if(issue != null) {
-            issue.closed();
-        }
-    }
-
     private Map<Component, Boolean> enableMap = new HashMap<Component, Boolean>();
     private void enableComponents(boolean enable) {
         enableComponents(this, enable);
@@ -1314,6 +1310,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         issueTypeCombo.addActionListener(formListener);
 
         scrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+        addCommentArea.setLineWrap(true);
         scrollPane1.setViewportView(addCommentArea);
         addCommentArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentArea.AccessibleContext.accessibleDescription")); // NOI18N
 

@@ -61,14 +61,6 @@ public abstract class HostInfoProvider {
     /** Returns path mapper for the given host */
     protected abstract PathMap getMapper();
 
-    /** Returns PlatformTypes constant representing remote host platform */
-    public static int getPlatform(ExecutionEnvironment execEnv) {
-        return getDefault(execEnv).getPlatform();
-    }
-
-    /** Returns PlatformTypes constant representing remote host platform */
-    protected abstract int getPlatform();
-
     /** Returns system environment for the given host */
     public static Map<String, String> getEnv(ExecutionEnvironment execEnv) {
         return getDefault(execEnv).getEnv();

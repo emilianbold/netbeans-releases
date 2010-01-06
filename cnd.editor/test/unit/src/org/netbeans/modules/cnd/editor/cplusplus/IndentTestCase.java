@@ -1032,6 +1032,21 @@ public class IndentTestCase extends EditorBase {
                   "/*\n" +
                   " * |"
                 );
+    }
 
+    // Bug 176850 -  Impossible to turn off C++ namespace indenting
+    public void testIZ176850() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.indentNamespace, false);
+        setLoadDocumentText(
+                  "namespace maths {|"
+                );
+
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect new-line indent",
+                  "namespace maths {\n" +
+                  "|"
+                );
     }
 }

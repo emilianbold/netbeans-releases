@@ -202,7 +202,7 @@ final class MemoryViewTopComponent extends TopComponent implements PropertyChang
                     taResult.setText(cb.getError());
                 } else if (cb.isOK()) {
                     // parse output
-                    Map<String,String> res = GdbUtils.createMapFromString(cb.getResponse());
+                    Map<String,String> res = GdbUtils.createMapFromString(cb.getResponse(), debugger.getCharSetEncoding());
                     String mem = res.get("memory"); // NOI18N
                     List<String> lines = GdbUtils.createListOfValues(mem);
                     StringBuilder text = new StringBuilder();
@@ -210,7 +210,7 @@ final class MemoryViewTopComponent extends TopComponent implements PropertyChang
                         if (text.length() > 0) {
                             text.append("\n"); // NOI18N
                         }
-                        Map<String,String> fields = GdbUtils.createMapFromString(line);
+                        Map<String,String> fields = GdbUtils.createMapFromString(line, debugger.getCharSetEncoding());
                         text.append(fields.get("addr")); // NOI18N
                         text.append("  "); // NOI18N
                         text.append(prepareHex(fields.get("data"))); // NOI18N

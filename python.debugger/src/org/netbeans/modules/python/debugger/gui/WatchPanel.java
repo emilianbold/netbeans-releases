@@ -72,10 +72,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import javax.naming.event.EventDirContext;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.ext.ExtCaret;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.text.NbDocument;
@@ -180,7 +178,13 @@ public class WatchPanel {
         final Runnable runnable = new Runnable() {
             public void run() {
                 EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
-                eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+                if (eui == null) {
+                    return ;
+                }
+                editorPane.putClientProperty(
+                    "HighlightsLayerExcludes", //NOI18N
+                    "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" //NOI18N
+                );
                 // Do not draw text limit line
                 try {
                     java.lang.reflect.Field textLimitLineField = EditorUI.class.getDeclaredField("textLimitLineVisible"); // NOI18N

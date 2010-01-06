@@ -46,7 +46,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -61,12 +63,16 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  * Miscellaneous utilities for the j2seproject module.
  * @author  Jiri Rechtacek
  */
 public class J2SEProjectUtil {
+
+    private static final Logger LOG = Logger.getLogger(J2SEProjectUtil.class.getName());
+
     private J2SEProjectUtil () {}
     
     /**
@@ -184,14 +190,20 @@ public class J2SEProjectUtil {
     }
 
     public static boolean isCompileOnSaveSupported(final J2SEProject project) {
-        for (Entry<String, String> e :project.evaluator().getProperties().entrySet()) {
-            if (e.getKey().startsWith(J2SEProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX)) {
-                if (e.getValue() != null && Boolean.valueOf(e.getValue())) {
-                    return false;
-                }
-            }
+        Parameters.notNull("project", project);
+        final Map<String,String> props = project.evaluator().getProperties();
+        if (props == null) {
+            LOG.warning("PropertyEvaluator mapping could not be computed (e.g. due to a circular definition)");  //NOI18N
         }
-
+        else {
+            for (Entry<String, String> e : props.entrySet()) {
+                if (e.getKey().startsWith(J2SEProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX)) {
+                    if (e.getValue() != null && Boolean.valueOf(e.getValue())) {
+                        return false;
+                    }
+                }
+            }                    
+        }
         return true;
     }
 

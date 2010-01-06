@@ -233,6 +233,35 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
         
     }
     
+    public static class InvalidProjectPanel extends Panel {
+
+        public InvalidProjectPanel(WizardDescriptor wiz) {
+            super(wiz);
+            setError(NbBundle.getMessage(InvalidProjectPanel.class, "LBL_InvalidProjectMsg"));
+        }
+
+        @Override
+        protected String getPanelName() {
+            return NbBundle.getMessage(InvalidProjectPanel.class, "LBL_InvalidProject");
+        }
+
+        @Override
+        protected HelpCtx getHelp() {
+            return new HelpCtx(InvalidProjectPanel.class);
+        }
+
+        @Override
+        protected void readFromDataModel() {
+            // nothing
+        }
+
+        @Override
+        protected void storeToDataModel() {
+            // nothing
+        }
+        
+    }
+
     public void initialize(WizardDescriptor wiz) {
         // mkleint: copied from the NewJavaFileWizardIterator.. there must be something painfully wrong..
         String[] beforeSteps = null;
@@ -241,7 +270,13 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
             beforeSteps = (String[])prop;
         }
         position = 0;
-        BasicWizardIterator.Panel[] panels = createPanels(wiz);
+
+        // #176828: do not continue with wizard if called on non-NBM project;
+        // can be e.g. LazyProject or project without preferred templates
+        Project tmpProject = Templates.getProject(wiz);
+        boolean isValidPrj = (tmpProject != null && tmpProject.getLookup().lookup(NbModuleProvider.class) != null);
+        Panel[] panels = isValidPrj ? createPanels(wiz)
+                : new Panel[] { new InvalidProjectPanel(wiz) };
         String[] steps = BasicWizardIterator.createSteps(beforeSteps, panels);
         wizardPanels = new BasicWizardIterator.PrivateWizardPanel[panels.length];
         

@@ -47,14 +47,14 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,17 +65,20 @@ import org.openide.util.NbBundle;
  */
 public class UpdateAction extends ContextAction {
     
-    private final VCSContext context;
-    private static String HG_TIP = "tip"; // NOI18N
+    private static final String HG_TIP = "tip"; // NOI18N
 
-    public UpdateAction(String name, VCSContext context) {
-        this.context = context;
-
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
-    
-    public void performAction(ActionEvent e) {
-        update(context);
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Update"; // NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        update(HgUtils.getCurrentContext(nodes));
     }
     
     public static void update(final VCSContext ctx){
@@ -159,8 +162,4 @@ public class UpdateAction extends ContextAction {
         };
         support.start(rp, root, org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
     }
-    
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
-    }     
 }

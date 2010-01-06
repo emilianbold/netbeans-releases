@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -703,7 +704,7 @@ public final class OptionsExportModel {
         if (include) {
             // check excludes
             for (String pattern : excludePatterns) {
-                if (matches(relativePath, pattern)) {
+                if (!pattern.contains("#") && matches(relativePath, pattern)) {
                     return false;
                 }
             }
@@ -799,16 +800,63 @@ public final class OptionsExportModel {
             zipOutputStream.closeEntry();
         } else {  // import to userdir
             OutputStream out = null;
-            try {
-                File targetFile = new File(targetUserdir, relativePath);
-                LOGGER.log(Level.FINE, "Path: {0}", relativePath);  //NOI18N
-                ensureParent(targetFile);
-                out = new FileOutputStream(targetFile);
-                copyFileOrProperties(relativePath, includeKeys, excludeKeys, out);
-            } finally {
-                if (out != null) {
-                    out.close();
+            File targetFile = new File(targetUserdir, relativePath);
+            LOGGER.log(Level.FINE, "Path: {0}", relativePath);  //NOI18N
+            ensureParent(targetFile);
+            if (includeKeys.isEmpty() && excludeKeys.isEmpty()) {
+                // copy entire file
+                try {
+                    out = new FileOutputStream(targetFile);
+                    copyFile(relativePath, out);
+                } finally {
+                    if (out != null) {
+                        out.close();
+                    }
                 }
+            } else {
+                mergeProperties(relativePath, includeKeys, excludeKeys);
+            }
+        }
+    }
+
+    /** Merge source properties to existing target properties.
+     * @param relativePath relative path
+     * @param includeKeys keys to include
+     * @param excludeKeys keys to exclude
+     * @throws IOException if I/O fails
+     */
+    private void mergeProperties(String relativePath, Set<String> includeKeys, Set<String> excludeKeys) throws IOException {
+        if (!includeKeys.isEmpty()) {
+            currentProperties.keySet().retainAll(includeKeys);
+        }
+        currentProperties.keySet().removeAll(excludeKeys);
+        LOGGER.log(Level.FINE, "  Keys merged with existing properties: {0}", currentProperties.keySet());  //NOI18N
+        if (currentProperties.isEmpty()) {
+            return;
+        }
+        EditableProperties targetProperties = new EditableProperties(false);
+        InputStream in = null;
+        File targetFile = new File(targetUserdir, relativePath);
+        try {
+            if (targetFile.exists()) {
+                in = new FileInputStream(targetFile);
+                targetProperties.load(in);
+            }
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+        for (Entry<String, String> entry : currentProperties.entrySet()) {
+            targetProperties.put(entry.getKey(), entry.getValue());
+        }
+        OutputStream out = null;
+        try {
+            out = new FileOutputStream(targetFile);
+            targetProperties.store(out);
+        } finally {
+            if (out != null) {
+                out.close();
             }
         }
     }

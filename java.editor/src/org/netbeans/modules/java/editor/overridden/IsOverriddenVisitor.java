@@ -47,16 +47,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
-import org.netbeans.api.java.source.ClassIndex;
 
 /**
  *
@@ -65,7 +64,6 @@ import org.netbeans.api.java.source.ClassIndex;
 class IsOverriddenVisitor extends CancellableTreePathScanner<Void, Tree> {
     
     private CompilationInfo info;
-    private Document doc;
     
     Map<ElementHandle<TypeElement>, List<ElementHandle<ExecutableElement>>> type2Declaration;
     Map<ElementHandle<ExecutableElement>, MethodTree> declaration2Tree;
@@ -73,8 +71,8 @@ class IsOverriddenVisitor extends CancellableTreePathScanner<Void, Tree> {
     
     private Map<TypeElement, ElementHandle<TypeElement>> type2Handle;
     
-    IsOverriddenVisitor(Document doc, CompilationInfo info) {
-        this.doc = doc;
+    IsOverriddenVisitor(CompilationInfo info, AtomicBoolean cancel) {
+        super(cancel);
         this.info = info;
         
         type2Declaration = new HashMap<ElementHandle<TypeElement>, List<ElementHandle<ExecutableElement>>>();

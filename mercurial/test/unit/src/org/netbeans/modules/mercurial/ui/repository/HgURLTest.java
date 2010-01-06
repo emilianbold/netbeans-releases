@@ -150,7 +150,7 @@ public class HgURLTest {
     private String addAuthenticationData(String urlString,
                                          String username,
                                          String password) throws Exception {
-        return new HgURL(urlString, username, password).toHgCommandUrlString();
+        return new HgURL(urlString, username, password == null ? null : password.toCharArray()).toHgCommandUrlString();
     }
 
     private void testIsWindowsAbsolutePath(String path, boolean expected) throws Exception {

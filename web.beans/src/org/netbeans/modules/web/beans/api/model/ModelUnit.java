@@ -43,6 +43,7 @@ package org.netbeans.modules.web.beans.api.model;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -90,6 +91,14 @@ public class ModelUnit {
             ClassPath sourcePath)
     {
         return new ModelUnit(bootPath, compilePath, sourcePath);
+    }
+    
+    FileObject getSourceFileObject(){
+        FileObject[] roots = mySourcePath.getRoots();
+        if ( roots!= null && roots.length >0 ){
+            return roots[0];
+        }
+        return null;
     }
     
     AnnotationModelHelper getHelper(){

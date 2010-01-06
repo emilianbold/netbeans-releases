@@ -42,7 +42,6 @@ package org.netbeans.modules.parsing.impl.indexing.lucene;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
@@ -222,10 +221,11 @@ public class LuceneIndex implements IndexImpl, Evictable {
     // Public implementation
     // -----------------------------------------------------------------------
 
-    public LuceneIndex(final URL root) throws IOException {
-        assert root != null;
+    public LuceneIndex(final URL indexFolderUrl) throws IOException {
+        assert indexFolderUrl != null;
         try {
-            indexFolder = new File(root.toURI());
+            this.indexFolderUrl = indexFolderUrl;
+            indexFolder = new File(indexFolderUrl.toURI());
             directory = createDirectory(indexFolder);
         } catch (URISyntaxException e) {
             IOException ioe = new IOException();
@@ -321,7 +321,9 @@ public class LuceneIndex implements IndexImpl, Evictable {
                     LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
                         public Void run() throws IOException {
                             _closeReader();
-                            LOGGER.fine("Evicted index: " + indexFolder.getAbsolutePath()); //NOI18N
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine("Evicted index: " + indexFolder.getAbsolutePath()); //NOI18N
+                            }
                             return null;
                         }
                     });
@@ -343,6 +345,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
     /* package */ static final int VERSION = 1;
     private static final String CACHE_LOCK_PREFIX = "nb-lock";  //NOI18N
 
+    private final URL indexFolderUrl;
     private final File indexFolder;
 
     //@GuardedBy (LuceneIndexManager.writeAccess)
@@ -359,12 +362,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
     private final Set<String> staleFiles = new HashSet<String>();
 
     private void _hit() {
-        try {
-            final URL url = this.indexFolder.toURI().toURL();
-            IndexCacheFactory.getDefault().getCache().put(url, this);
-        } catch (MalformedURLException e) {
-            Exceptions.printStackTrace(e);
-        }
+        IndexCacheFactory.getDefault().getCache().put(indexFolderUrl, this);
     }
 
     // called under LuceneIndexManager.writeAccess

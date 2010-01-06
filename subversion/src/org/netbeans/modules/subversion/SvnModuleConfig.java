@@ -47,6 +47,7 @@ import java.util.regex.Pattern;
 import java.util.*;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
+import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.Utils;
@@ -75,6 +76,7 @@ public class SvnModuleConfig {
     
     public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";                               // NOI18N
     private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";                                 // NOI18N
+    private static final String LAST_USED_MODIFICATION_CONTEXT = "lastUsedModificationContext"; //NOI18N
 
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
@@ -281,6 +283,20 @@ public class SvnModuleConfig {
         List<AnnotationExpression> ret = new ArrayList<AnnotationExpression>(1);
         ret.add(new AnnotationExpression(".*/(branches|tags)/(.+?)(/.*)?", "\\2")); //NOI18N
         return ret;
+    }
+
+    public int getLastUsedModificationContext () {
+        int lastUsedContext = getPreferences().getInt(LAST_USED_MODIFICATION_CONTEXT, Setup.DIFFTYPE_LOCAL);
+        if (lastUsedContext != Setup.DIFFTYPE_LOCAL
+                && lastUsedContext != Setup.DIFFTYPE_REMOTE
+                && lastUsedContext != Setup.DIFFTYPE_ALL) {
+            lastUsedContext = Setup.DIFFTYPE_LOCAL;
+        }
+        return lastUsedContext;
+    }
+
+    public void setLastUsedModificationContext (int lastUsedContext) {
+        getPreferences().putInt(LAST_USED_MODIFICATION_CONTEXT, lastUsedContext);
     }
     
     // private methods ~~~~~~~~~~~~~~~~~~

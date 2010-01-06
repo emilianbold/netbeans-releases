@@ -64,9 +64,9 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
     implements MetadataModelImplementation<WebBeansModel>
 {
 
-    private WebBeansModelImplementation( ModelUnit unit ){
+    protected WebBeansModelImplementation( ModelUnit unit ){
         super( unit );
-        myManagers = new HashMap<String, PersistentObjectManager<Binding>>();
+        myManagers = new HashMap<String, PersistentObjectManager<BindingQualifier>>();
     }
     
     public static MetadataModelImplementation<WebBeansModel> createMetaModel( 
@@ -125,12 +125,12 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
         return super.getModel();
     }
     
-    Map<String,PersistentObjectManager<Binding>> getManagers(){
+    Map<String,PersistentObjectManager<BindingQualifier>> getManagers(){
         return myManagers;
     }
     
-    PersistentObjectManager<Binding> getManager( String annotationFQN ){
-        PersistentObjectManager<Binding> result = getManagers().get(annotationFQN);
+    PersistentObjectManager<BindingQualifier> getManager( String annotationFQN ){
+        PersistentObjectManager<BindingQualifier> result = getManagers().get(annotationFQN);
         if ( result == null ) {
             result  = getHelper().createPersistentObjectManager( 
                     new AnnotationObjectProvider( getHelper(), annotationFQN));
@@ -139,6 +139,6 @@ public class WebBeansModelImplementation extends AbstractModelImplementation
         return result;
     }
     
-    private Map<String,PersistentObjectManager<Binding>> myManagers;
+    private Map<String,PersistentObjectManager<BindingQualifier>> myManagers;
     
 }

@@ -84,7 +84,7 @@ public class FakeJiraSupport {
     }
 
     public static synchronized FakeJiraSupport get(ProjectHandle handle) {
-        KenaiProject project = KenaiUtil.getKenaiProject(handle);
+        KenaiProject project = handle.getKenaiProject();
         if(project == null) {
             return null;
         }

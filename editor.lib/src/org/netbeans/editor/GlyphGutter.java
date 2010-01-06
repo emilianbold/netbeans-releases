@@ -352,6 +352,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         setPreferredSize(dim);
 
         revalidate();
+        putDimensionForPrinting();
     }
 
     /** Return number of lines in the document */
@@ -624,7 +625,16 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             getHeightDimension() > dim.height) {
             resize();
         }
-        
+        putDimensionForPrinting();
+    }
+
+    private void putDimensionForPrinting() {
+        // This code doesn't affect on drawning of this component
+        // and doesn't change any functionality. The purpose is to
+        // pass actual width and height of the component to Print
+        // Preview dialog when sources are printed, see issue #178357.
+        // More details of Print API can be found in print module.
+        putClientProperty("print.size", new Dimension(getWidthDimension(), getHeightDimension())); // NOI18N
     }
 
     /** Get tooltip text for the mouse position */

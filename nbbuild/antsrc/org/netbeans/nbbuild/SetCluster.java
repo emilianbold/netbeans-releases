@@ -41,11 +41,12 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.*;
-import java.util.*;
-
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.taskdefs.*;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 

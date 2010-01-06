@@ -212,9 +212,9 @@ public class LibraryItem {
     }
 
     public static class StdLibItem extends LibraryItem {
-	private String name;
-	private String displayName;
-	private String[] libs;
+	private final String name;
+	private final String displayName;
+	private final String[] libs;
 
 	public StdLibItem(String name, String displayName, String[] libs) {
 	    this.name = name;
@@ -227,24 +227,12 @@ public class LibraryItem {
 	    return name;
 	}
 
-	public void setName(String name) {
-	    this.name = name;
-	}
-
 	public String getDisplayName() {
 	    return displayName;
 	}
 
-	public void setDisplayName(String displayName) {
-	    this.displayName = displayName;
-	}
-
 	public String[] getLibs() {
 	    return libs;
-	}
-
-	public void setLibs(String[] libs) {
-	    this.libs = libs;
 	}
 
         @Override

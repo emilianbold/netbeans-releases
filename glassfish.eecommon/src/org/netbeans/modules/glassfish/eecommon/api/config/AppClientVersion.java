@@ -70,6 +70,12 @@ public final class AppClientVersion extends J2EEBaseVersion {
         );
 
 
+    /** Represents application-client version 6.0
+     */
+    public static final AppClientVersion APP_CLIENT_6_0 = new AppClientVersion(
+        "6.0", 6000,	// NOI18N
+        "6.0", 6000	// NOI18N
+        );
     /** -----------------------------------------------------------------------
      *  Implementation
      */
@@ -93,12 +99,14 @@ public final class AppClientVersion extends J2EEBaseVersion {
     }
 
     public static AppClientVersion getAppClientVersion(String version) {
-        AppClientVersion result = APP_CLIENT_5_0;
+        AppClientVersion result = APP_CLIENT_6_0;
 
         if(APP_CLIENT_1_3.toString().equals(version)) {
             result = APP_CLIENT_1_3;
         } else if(APP_CLIENT_1_4.toString().equals(version)) {
             result = APP_CLIENT_1_4;
+        } else if(APP_CLIENT_5_0.toString().equals(version)) {
+            result = APP_CLIENT_5_0;
         }
 
         return result;

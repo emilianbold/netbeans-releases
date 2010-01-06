@@ -56,11 +56,11 @@ import org.w3c.dom.Element;
  * @author ads
  *
  */
-class WebBeansModelImpl extends AbstractDocumentModel<WebBeansComponent> 
+public class WebBeansModelImpl extends AbstractDocumentModel<WebBeansComponent> 
     implements WebBeansModel 
 {
 
-    WebBeansModelImpl( ModelSource source ) {
+    public WebBeansModelImpl( ModelSource source ) {
         super(source);
         myFactory = new WebBeansComponentFactoryImpl( this );
     }

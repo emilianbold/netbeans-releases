@@ -63,6 +63,7 @@ import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntPanelController;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.bridge.AntBridge;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
@@ -172,7 +173,7 @@ public final class TargetExecutor implements Runnable {
     }
     
     private static final Map<InputOutput,StopAction> stopActions = new HashMap<InputOutput,StopAction>();
-    private static final Map<InputOutput,RerunAction> rerunActions = new HashMap<InputOutput,RerunAction>();
+    private static final Map<InputOutput,RerunAction[]> rerunActions = new HashMap<InputOutput,RerunAction[]>();
 
     private static final class StopAction extends AbstractAction {
 
@@ -204,13 +205,15 @@ public final class TargetExecutor implements Runnable {
 
     private static final class RerunAction extends AbstractAction implements FileChangeListener {
 
+        private final boolean withModifications;
         private AntProjectCookie pcookie;
         private List<String> targetNames;
-        //private int verbosity;
+        private int verbosity;
         private Map<String,String> properties;
         private String displayName;
 
-        public RerunAction(TargetExecutor prototype) {
+        public RerunAction(TargetExecutor prototype, boolean withModifications) {
+            this.withModifications = withModifications;
             reinit(prototype);
             setEnabledEQ(this, false); // initially, until ready
             FileObject script = pcookie.getFileObject();
@@ -222,7 +225,7 @@ public final class TargetExecutor implements Runnable {
         private void reinit(TargetExecutor prototype) {
             pcookie = prototype.pcookie;
             targetNames = prototype.targetNames;
-            //verbosity = prototype.verbosity;
+            verbosity = prototype.verbosity;
             properties = prototype.properties;
             displayName = prototype.suggestedDisplayName;
         }
@@ -230,9 +233,17 @@ public final class TargetExecutor implements Runnable {
         @Override
         public Object getValue(String key) {
             if (key.equals(Action.SMALL_ICON)) {
-                return new ImageIcon(TargetExecutor.class.getResource("/org/apache/tools/ant/module/resources/rerun.png"));
+                if (withModifications) {
+                    return new ImageIcon(TargetExecutor.class.getResource("/org/apache/tools/ant/module/resources/rerun-mod.png"));
+                } else {
+                    return new ImageIcon(TargetExecutor.class.getResource("/org/apache/tools/ant/module/resources/rerun.png"));
+                }
             } else if (key.equals(Action.SHORT_DESCRIPTION)) {
-                return NbBundle.getMessage(TargetExecutor.class, "TargetExecutor.RerunAction.rerun");
+                if (withModifications) {
+                    return NbBundle.getMessage(TargetExecutor.class, "TargetExecutor.RerunAction.rerun_different");
+                } else {
+                    return NbBundle.getMessage(TargetExecutor.class, "TargetExecutor.RerunAction.rerun");
+                }
             } else {
                 return super.getValue(key);
             }
@@ -241,14 +252,24 @@ public final class TargetExecutor implements Runnable {
         public void actionPerformed(ActionEvent e) {
             setEnabled(false);
             try {
-                TargetExecutor exec = new TargetExecutor(pcookie,
-                        targetNames != null ? targetNames.toArray(new String[targetNames.size()]) : null);
-                //exec.setVerbosity(verbosity);
-                exec.setProperties(properties);
-                if (displayName != null) {
-                    exec.setDisplayName(displayName);
+                if (withModifications) {
+                    AdvancedActionPanel panel = new AdvancedActionPanel(pcookie, TargetLister.getTargets(pcookie));
+                    panel.setTargets(targetNames);
+                    panel.setVerbosity(verbosity);
+                    panel.setProperties(properties);
+                    if (!panel.display()) {
+                        setEnabled(true);
+                    }
+                } else {
+                    TargetExecutor exec = new TargetExecutor(pcookie,
+                            targetNames != null ? targetNames.toArray(new String[targetNames.size()]) : null);
+                    //exec.setVerbosity(verbosity);
+                    exec.setProperties(properties);
+                    if (displayName != null) {
+                        exec.setDisplayName(displayName);
+                    }
+                    exec.execute();
                 }
-                exec.execute();
             } catch (IOException x) {
                 Logger.getLogger(TargetExecutor.class.getName()).log(Level.INFO, null, x);
             }
@@ -338,10 +359,10 @@ public final class TargetExecutor implements Runnable {
             }
             if (io == null) {
                 StopAction sa = new StopAction();
-                RerunAction ra = new RerunAction(this);
-                io = IOProvider.getDefault().getIO(displayName, new Action[] {ra, sa, new OptionsAction()});
+                RerunAction[] ras = {new RerunAction(this, false), new RerunAction(this, true)};
+                io = IOProvider.getDefault().getIO(displayName, new Action[] {ras[0], ras[1], sa, new OptionsAction()});
                 stopActions.put(io, sa);
-                rerunActions.put(io, ra);
+                rerunActions.put(io, ras);
             }
             task = ExecutionEngine.getDefault().execute(null, this, InputOutput.NULL);
         }
@@ -398,8 +419,8 @@ public final class TargetExecutor implements Runnable {
         final LastTargetExecuted[] thisExec = new LastTargetExecuted[1];
         final StopAction sa = stopActions.get(io);
         assert sa != null;
-        RerunAction ra = rerunActions.get(io);
-        assert ra != null;
+        RerunAction[] ras = rerunActions.get(io);
+        assert ras != null;
         try {
             
         final boolean[] displayed = new boolean[] {AntSettings.getAlwaysShowOutput()};
@@ -494,7 +515,9 @@ public final class TargetExecutor implements Runnable {
         handle.setInitialDelay(0); // #92436
         handle.start();
         setEnabledEQ(sa, true);
-        setEnabledEQ(ra, false);
+        for (RerunAction ra : ras) {
+            setEnabledEQ(ra, false);
+        }
         ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName, interestingOutputCallback, handle, io);
         
         } finally {
@@ -508,8 +531,10 @@ public final class TargetExecutor implements Runnable {
             }
             sa.t = null;
             setEnabledEQ(sa, false);
-            setEnabledEQ(ra, true);
-            ra.reinit(this);
+            for (RerunAction ra : ras) {
+                setEnabledEQ(ra, true);
+                ra.reinit(this);
+            }
             activeDisplayNames.remove(displayName);
         }
     }

@@ -93,7 +93,7 @@ public class VectorConfiguration<E> {
 
     public void reset() {
         //value.removeAll(); // FIXUP
-        value = new ArrayList<E>();
+        value = new ArrayList<E>(0);
     }
 
     // Clone and Assign

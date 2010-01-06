@@ -41,10 +41,15 @@
 
 package org.openide.awt;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.JPanel;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.ContextAwareAction;
@@ -63,9 +68,11 @@ public class GlobalManagerTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
     }
 
+    @Override
     protected void tearDown() throws Exception {
     }
 
@@ -140,4 +147,50 @@ public class GlobalManagerTest extends NbTestCase {
         assertGC("Can the component GC?", ref);
 
     }
+
+    public void testActionsUpdatedWhenActionMapChanges() throws Exception {
+        ContextAwareAction a = Actions.callback("ahoj", null, true, "Ahoj!", "no/icon.png", true);
+        final InstanceContent ic = new InstanceContent();
+        Lookup lkp = new AbstractLookup(ic);
+
+        ActionMap a1 = new ActionMap();
+        ActionMap a2 = new ActionMap();
+        a2.put("ahoj", new Enabled());
+
+        ic.add(a1);
+        Action clone = a.createContextAwareInstance(lkp);
+        class L implements PropertyChangeListener {
+            int cnt;
+            public void propertyChange(PropertyChangeEvent evt) {
+                cnt++;
+            }
+        }
+        L listener = new L();
+        clone.addPropertyChangeListener(listener);
+        assertFalse("Not enabled", isEnabled(clone));
+
+        ic.set(Collections.singleton(a2), null);
+
+        assertTrue("Enabled now", isEnabled(clone));
+        assertEquals("one change", 1, listener.cnt);
+    }
+
+    private static boolean isEnabled(final Action a) throws Exception {
+        final boolean[] ret = new boolean[1];
+        EventQueue.invokeAndWait(new Runnable() {
+            public void run() {
+                ret[0] = a.isEnabled();
+            }
+        });
+        return ret[0];
+    }
+
+    private static final class Enabled extends AbstractAction {
+        public Enabled() {
+            setEnabled(true);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        }
+    } // end of Enabled
 }

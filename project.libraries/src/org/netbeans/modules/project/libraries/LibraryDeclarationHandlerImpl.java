@@ -43,7 +43,9 @@ package org.netbeans.modules.project.libraries;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -163,7 +165,7 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
             String contentType = entry.getKey();
             List<URL> cp = entry.getValue();
             try {
-                if (!update || !safeEquals (this.library.getContent(contentType),cp)) {
+                if (!update || !urlsEqual(this.library.getContent(contentType),cp)) {
                     this.library.setContent(contentType, cp);
                 }
             } catch (IllegalArgumentException e) {
@@ -203,6 +205,22 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
 
     private static boolean safeEquals (Object o1, Object o2) {
         return o1 == null ? o2 == null : o1.equals (o2);
+    }
+
+    private static boolean urlsEqual (final Collection<? extends URL> first, final Collection<? extends URL> second) {
+        assert first != null;
+        assert second != null;
+        if (first.size() != second.size()) {
+            return false;
+        }
+        for (Iterator<? extends URL> fit = first.iterator(), sit = second.iterator(); fit.hasNext();) {
+            final URL furl = fit.next();
+            final URL surl = sit.next();
+            if (!furl.toExternalForm().equals(surl.toExternalForm())) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

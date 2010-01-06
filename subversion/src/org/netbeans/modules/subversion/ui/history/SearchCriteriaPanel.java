@@ -107,7 +107,10 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         for (int i = 0; i < SearchExecutor.dateFormats.length; i++) {
             DateFormat dateformat = SearchExecutor.dateFormats[i];
             try {
-                return dateformat.parse(s);
+                Date date = dateformat.parse(s);
+                if (s.equals(dateformat.format(date))) {
+                    return date;
+                }
             } catch (ParseException e) {
                 // try the next one
             }

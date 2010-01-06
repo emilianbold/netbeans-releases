@@ -726,20 +726,20 @@ public final class TreeUtilities {
             @Override
             public Void visitClass(ClassTree node, Void p) {
                 fromIdx[0] = ((JCClassDecl)node).index;
-                return super.visitClass(node, p);
+                return null;
             }
         };
         scanner.scan(from, null);
+        if (fromIdx[0] < -1)
+            return;
         scanner = new TreeScanner<Void, Void>() {
             @Override
             public Void visitClass(ClassTree node, Void p) {
                 ((JCClassDecl)node).index = fromIdx[0]++;
-                return super.visitClass(node, p);
+                return null;
             }
         };
         scanner.scan(to, null);
-        if (fromIdx[0] < -1)
-            return;
     }
 
     private static class UncaughtExceptionsVisitor extends TreePathScanner<Void, Set<TypeMirror>> {

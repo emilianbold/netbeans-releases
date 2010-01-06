@@ -81,6 +81,7 @@ import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Linker;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Window displaying the line annotation with links to bugtracking in the commit message.
@@ -239,7 +240,7 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
     }
 
     public void windowLostFocus(WindowEvent e) {
-        if (contentWindow != null && e.getOppositeWindow() != contentWindow && e.getOppositeWindow() != contentWindow.getOwner()) {
+        if (contentWindow != null && e.getOppositeWindow() == null) {
             shutdown();
         }
     }
@@ -276,8 +277,8 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                                 authorStyle,
                                 doc,
                                 author,
-                                kenaiUser.getChatLink(
-                                    master.getDocument(),
+                                KenaiUser.getChatLink(
+                                    master.getCurrentFileObject(),
                                     annotateLine.getLineNum()));
                         linkerSupport.add(l, 0);
                     }

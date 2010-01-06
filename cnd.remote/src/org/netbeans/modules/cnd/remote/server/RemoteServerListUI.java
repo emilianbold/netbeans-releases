@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -80,6 +81,10 @@ public class RemoteServerListUI extends ServerListUIEx {
     @Override
     protected boolean showServerListDialogImpl(AtomicReference<ExecutionEnvironment> selectedEnv) {
         ToolsCacheManager cacheManager = new ToolsCacheManager();
+        for (ServerRecord record : ServerList.getRecords()) {
+            CompilerSetManager csm = CompilerSetManager.getDefault(record.getExecutionEnvironment());
+            cacheManager.addCompilerSetManager(csm);
+        }
         if (showServerListDialog(cacheManager, selectedEnv)) {
             cacheManager.applyChanges();
             return true;

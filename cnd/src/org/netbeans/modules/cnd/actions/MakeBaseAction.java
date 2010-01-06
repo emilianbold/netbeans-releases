@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.actions;
 
+import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -49,17 +50,16 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.execution.CompilerLineConvertor;
 import org.netbeans.modules.cnd.loaders.MakefileDataObject;
 import org.netbeans.modules.cnd.settings.MakeSettings;
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.LifecycleManager;
@@ -67,9 +67,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.WindowManager;
 
 /**
  * Base class for Make Actions ...
@@ -93,19 +93,32 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
 
     protected Future<Integer> performAction(final Node node, final String target, final ExecutionListener listener, final Writer outputListener, final Project project,
                                  final List<String> additionalEnvironment, final InputOutput inputOutput) {
-        if (SwingUtilities.isEventDispatchThread()){
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    _performAction(node, target, listener, outputListener, project, additionalEnvironment, inputOutput);
+        if (SwingUtilities.isEventDispatchThread()) {
+            final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
+                private ExecutionService es;
+                public void doWork() {
+                    es = MakeBaseAction.this.prepare(node, target, listener, outputListener, project, additionalEnvironment, inputOutput);
                 }
-            });
+                public void doPostRunInEDT() {
+                    if (es != null) {
+                        es.run();
+                    }
+                }
+            };
+            Frame mainWindow = WindowManager.getDefault().getMainWindow();
+            String title = getString("DLG_TITLE_Prepare", "make"); // NOI18N
+            String msg = getString("MSG_TITLE_Prepare", "make"); // NOI18N
+            ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
         } else {
-            return _performAction(node, target, listener, outputListener, project, additionalEnvironment, inputOutput);
+            ExecutionService es = prepare(node, target, listener, outputListener, project, additionalEnvironment, inputOutput);
+            if (es != null) {
+                return es.run();
+            }
         }
         return null;
     }
 
-    private Future<Integer> _performAction(Node node, String target, final ExecutionListener listener, final Writer outputListener,
+    private ExecutionService prepare(Node node, String target, final ExecutionListener listener, final Writer outputListener,
                                 Project project, List<String> additionalEnvironment, InputOutput inputOutput) {
         if (MakeSettings.getDefault().getSaveAll()) {
             LifecycleManager.getDefault().saveAll();
@@ -138,7 +151,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         if (inputOutput == null) {
             // Tab Name
             String tabName = getString("MAKE_LABEL", node.getName()); // NOI18N
-            if (target != null && target.length() > 0) {
+            if (target.length() > 0) {
                 tabName += " " + target; // NOI18N
             }
             InputOutput _tab = IOProvider.getDefault().getIO(tabName, false); // This will (sometimes!) find an existing one.
@@ -177,7 +190,6 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         .postExecution(processChangeListener)
         .errConvertorFactory(processChangeListener)
         .outConvertorFactory(processChangeListener);
-        ExecutionService es = ExecutionService.newService(npb, descr, "make"); // NOI18N
-        return es.run();
+        return ExecutionService.newService(npb, descr, "make"); // NOI18N
     }
 }

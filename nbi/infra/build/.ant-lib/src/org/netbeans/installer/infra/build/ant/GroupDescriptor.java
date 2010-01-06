@@ -118,9 +118,11 @@ public class GroupDescriptor extends Task {
             for (String locale: locales.split(" ")) { // NOI18N
                 displayName = get(
                         "group.display.name." + locale); // NOI18N
-                xml.append("                <localized locale=\"" + // NOI18N
-                        locale + "\"><![CDATA[" + // NOI18N
-                        displayName + "]]></localized>\n"); // NOI18N
+                if (displayName != null) {
+                    xml.append("                <localized locale=\"" + // NOI18N
+                            locale + "\"><![CDATA[" + // NOI18N
+                            displayName + "]]></localized>\n"); // NOI18N
+                }
             }
         }
         xml.append("            </display-name>\n"); // NOI18N
@@ -137,9 +139,11 @@ public class GroupDescriptor extends Task {
             for (String locale: locales.split(" ")) { // NOI18N
                 description = get(
                         "group.description." + locale); // NOI18N
-                xml.append("                <localized locale=\"" + // NOI18N
-                        locale + "\"><![CDATA[" + // NOI18N
-                        description + "]]></localized>\n"); // NOI18N
+                if (description != null) {
+                    xml.append("                <localized locale=\"" + // NOI18N
+                            locale + "\"><![CDATA[" + // NOI18N
+                            description + "]]></localized>\n"); // NOI18N
+                }
             }
         }
         xml.append("            </description>\n"); // NOI18N

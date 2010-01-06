@@ -69,6 +69,16 @@ public class GoToTypeActionTest extends TestCase {
         action.waitSearchFinished();
         assertEquals("Provider queried once", 1, TestTypeProvider.count);
     }
+
+    public void testPendingResults() throws IOException {
+        TestTypeProvider.count = 10;
+        GoToTypeAction action = new GoToTypeAction();
+        TypeDescriptor desc = action.getSelectedType(false);
+        panel = action.panel;
+        panel.nameField.setText("Pepik");
+        action.waitSearchFinished();
+        assertEquals("Provider queried once", 12, TestTypeProvider.count);
+    }
     
     @Override
     protected void tearDown() throws Exception {
@@ -90,7 +100,7 @@ public class GoToTypeActionTest extends TestCase {
             final String text = panel.messageLabel.getText();
             assertTrue(text, text.startsWith("Searching"));
             count++;
-//SPI            if (count == 1) result.pendingResult();
+            if (count == 10) result.pendingResult();
         }
 
         public void cancel() {

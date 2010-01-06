@@ -39,11 +39,13 @@
 
 package org.netbeans.modules.kenai.ui.nodes;
 
+import org.netbeans.modules.kenai.api.KenaiManager;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Pattern;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
 import org.openide.util.NbBundle;
@@ -181,7 +183,7 @@ public class KenaiInstanceCustomizer extends javax.swing.JPanel implements java.
         if (!urlPatten.matcher(s).matches()) {
             return NbBundle.getMessage(KenaiInstanceCustomizer.class, "ERR_UrlNotValid");
         }
-        for (KenaiInstance instance : KenaiInstancesManager.getDefault().getInstances()) {
+        for (Kenai instance : KenaiManager.getDefault().getKenais()) {
             if (instance.getUrl().toString().equals(s.endsWith("/") ? s.substring(0, s.length() - 1) : s)) { // NOI18N
                 return NbBundle.getMessage(KenaiInstanceCustomizer.class, "ERR_UrlUsed", s);
             }

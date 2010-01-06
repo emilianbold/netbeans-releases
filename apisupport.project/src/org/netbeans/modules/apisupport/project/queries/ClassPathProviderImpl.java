@@ -118,7 +118,18 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         dir = dir == null ? null : FileUtil.normalizeFile(dir);
         FileObject testClassesDir = (dir == null || ! dir.exists()) ? null : FileUtil.toFileObject(dir);
         File moduleJar;
-        if (srcDir != null && (FileUtil.isParentOf(srcDir, file) || file == srcDir)) {
+        URL generatedClasses = FileUtil.urlForArchiveOrDir(project.getGeneratedClassesDirectory());
+        URL generatedUnitTestClasses = FileUtil.urlForArchiveOrDir(project.getTestGeneratedClassesDirectory("unit"));
+        URL generatedFunctionalTestClasses = FileUtil.urlForArchiveOrDir(project.getTestGeneratedClassesDirectory("qa-functional"));
+        String fileU;
+        try {
+            fileU = file.getURL().toString();
+        } catch (FileStateInvalidException x) {
+            LOG.log(Level.INFO, null, x);
+            return null;
+        }
+        if (srcDir != null &&
+                (FileUtil.isParentOf(srcDir, file) || file == srcDir || fileU.startsWith(generatedClasses.toString()))) {
             // Regular sources.
             if (type.equals(ClassPath.COMPILE)) {
                 if (compile == null) {
@@ -133,11 +144,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 return execute;
             } else if (type.equals(ClassPath.SOURCE)) {
                 if (source == null) {
-                    source = ClassPathSupport.createClassPath(new FileObject[] {srcDir});
+                    try {
+                        source = ClassPathSupport.createClassPath(srcDir.getURL(), generatedClasses);
+                    } catch (FileStateInvalidException x) {
+                        LOG.log(Level.INFO, null, x);
+                    }
                 }
                 return source;
             }
-        } else if (testSrcDir != null && (FileUtil.isParentOf(testSrcDir, file) || file == testSrcDir)) {
+        } else if (testSrcDir != null &&
+                (FileUtil.isParentOf(testSrcDir, file) || file == testSrcDir || fileU.startsWith(generatedUnitTestClasses.toString()))) {
             // Unit tests.
             // XXX refactor to use project.supportedTestTypes
             if (type.equals(ClassPath.COMPILE)) {
@@ -154,15 +170,24 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 return testExecute;
             } else if (type.equals(ClassPath.SOURCE)) {
                 if (testSource == null) {
-                    testSource = ClassPathSupport.createClassPath(new FileObject[] {testSrcDir});
+                    try {
+                        testSource = ClassPathSupport.createClassPath(testSrcDir.getURL(), generatedUnitTestClasses);
+                    } catch (FileStateInvalidException x) {
+                        LOG.log(Level.INFO, null, x);
+                    }
                 }
                 return testSource;
             }
-        } else if (funcTestSrcDir != null && (FileUtil.isParentOf(funcTestSrcDir, file) || file == funcTestSrcDir)) {
+        } else if (funcTestSrcDir != null &&
+                (FileUtil.isParentOf(funcTestSrcDir, file) || file == funcTestSrcDir || fileU.startsWith(generatedFunctionalTestClasses.toString()))) {
             // Functional tests.
             if (type.equals(ClassPath.SOURCE)) {
                 if (funcTestSource == null) {
-                    funcTestSource = ClassPathSupport.createClassPath(new FileObject[] {funcTestSrcDir});
+                    try {
+                        funcTestSource = ClassPathSupport.createClassPath(funcTestSrcDir.getURL(), generatedFunctionalTestClasses);
+                    } catch (FileStateInvalidException x) {
+                        LOG.log(Level.INFO, null, x);
+                    }
                 }
                 return funcTestSource;
             } else if (type.equals(ClassPath.COMPILE)) {

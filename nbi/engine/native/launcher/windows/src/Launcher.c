@@ -188,8 +188,10 @@ void createTMPDir(LauncherProperties * props) {
 
 void checkExtractionStatus(LauncherProperties *props) {
     if(props->status == ERROR_FREESPACE) {
-        double d = int64ttoDouble(props->bundledSize) / (1024.0 * 1024.0) + 1.0;
-        DWORD dw = (DWORD) d;
+        DWORD hiMB  = props->bundledSize->High;
+        DWORD lowMB  = props->bundledSize->Low;
+        DWORD hiMult = (hiMB!=0) ? ((MAXDWORD / 1024) + 1) / 1024 : 0;
+        DWORD dw = hiMult * hiMB + lowMB / (1024 * 1024) + 1;
         WCHAR * size = DWORDtoWCHAR(dw);
         
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 1, "Error! Not enought free space !", 1);
@@ -419,15 +421,15 @@ void resolveLauncherProperties(LauncherProperties * props, WCHAR **result) {
                 if(propName!=NULL) {
                     WCHAR * propValue = NULL;
                     
-                    if(wcscmp(propName, L"nbi.launcher.tmp.dir")==0) {
+                    if(lstrcmpW(propName, L"nbi.launcher.tmp.dir")==0) {
                         propValue = appendStringW(NULL, props->tmpDir); // launcher tmpdir
-                    } else if(wcscmp(propName, L"nbi.launcher.java.home")==0) {
+                    } else if(lstrcmpW(propName, L"nbi.launcher.java.home")==0) {
                         if(props->java!=NULL) {
                             propValue  = appendStringW(NULL, props->java->javaHome); // relative to javahome
                         }
-                    } else if(wcscmp(propName, L"nbi.launcher.user.home")==0) {
+                    } else if(lstrcmpW(propName, L"nbi.launcher.user.home")==0) {
                         propValue = getCurrentUserHome();
-                    } else if(wcscmp(propName, L"nbi.launcher.parent.dir")==0) {
+                    } else if(lstrcmpW(propName, L"nbi.launcher.parent.dir")==0) {
                         propValue = appendStringW(NULL, props->exeDir); // launcher parent
                     }
                     
@@ -463,7 +465,7 @@ void resolveString(LauncherProperties * props, WCHAR ** result) {
         resolveLauncherStringProperty(props, result);
         //writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... step 3 : ", 0);
         //writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);
-    } while(wcscmp(tmp, *result)!=0);
+    } while(lstrcmpW(tmp, *result)!=0);
     
     FREE(tmp);
     

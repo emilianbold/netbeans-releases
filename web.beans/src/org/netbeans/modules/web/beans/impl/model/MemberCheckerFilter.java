@@ -120,10 +120,10 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
             if ( overridenElement != null && AnnotationObjectProvider.hasSpecializes(
                     current, model.getHelper()))
             {
-                if ( FieldInjectionPointLogic.CURRENT_BINDING_ANNOTATION.
+                if ( FieldInjectionPointLogic.DEFAULT_QUALIFIER_ANNOTATION.
                         equals( annotationName))
                 {
-                    if ( AnnotationObjectProvider.checkSpecializedCurrent(
+                    if ( AnnotationObjectProvider.checkSpecializedDefault(
                             overridenElement, model.getHelper()))
                     {
                         return overridenElement;
@@ -199,9 +199,8 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
         AnnotationValue valueForType = elementValues.get(exec);
         if (!equals(value, valueForType)) {
             iterator.remove();
-            return true;
         }
-        return false;
+        return true;
     }
     
     private boolean equals( AnnotationValue value1 , AnnotationValue value2 ){

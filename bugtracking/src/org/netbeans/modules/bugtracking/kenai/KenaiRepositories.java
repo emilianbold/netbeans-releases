@@ -134,7 +134,7 @@ public abstract class KenaiRepositories {
             int count = 0;
             KenaiProject[] kenaiProjects = new KenaiProject[handles.length];
             for (ProjectHandle handle : handles) {
-                KenaiProject project = KenaiUtil.getKenaiProject(handle);
+                KenaiProject project = handle.getKenaiProject();
                 if (project != null) {
                     kenaiProjects[count++] = project;
                 } else {

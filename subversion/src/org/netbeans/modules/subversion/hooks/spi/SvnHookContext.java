@@ -42,27 +42,23 @@ package org.netbeans.modules.subversion.hooks.spi;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
+import org.netbeans.modules.versioning.hooks.VCSHookContext;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class SvnHookContext {
+public class SvnHookContext extends VCSHookContext {
 
-    private final File[] files;
     private final String msg;
     private final List<LogEntry> logEntries;
     private String warning;
 
     public SvnHookContext(File[] files, String msg, List<LogEntry> logEntries) {
-        this.files = files;
+        super(files);
         this.msg = msg;
         this.logEntries = logEntries;
-    }
-
-    public File[] getFiles() {
-        return files;
     }
 
     public String getMessage() {

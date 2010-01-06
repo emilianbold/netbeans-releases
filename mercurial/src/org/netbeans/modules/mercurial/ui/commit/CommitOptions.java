@@ -46,7 +46,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Maros Sandor
  */
-abstract class CommitOptions {
+public abstract class CommitOptions {
 
     public static final CommitOptions COMMIT = new Commit("CTL_CommitOption_Commit"); // NOI18N
     public static final CommitOptions COMMIT_REMOVE = new Commit("CTL_CommitOption_CommitRemove"); // NOI18N

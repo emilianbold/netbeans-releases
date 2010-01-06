@@ -87,16 +87,21 @@ public class RunOffEDTImpl implements RunOffEDTProvider {
         long startTime = System.currentTimeMillis();
         runOffEventDispatchThreadImpl(operation, operationDescr, cancelOperation, waitForCanceled, waitCursorTime, dlgTime);
         int elapsed = (int) (System.currentTimeMillis() - startTime);
-        Class<? extends Runnable> clazz = operation.getClass();
-        synchronized (OPERATIONS) {
-            if (elapsed < CLEAR_TIME) {
-                OPERATIONS.remove(clazz);
-            } else {
-                Integer prevElapsed = OPERATIONS.get(operation.getClass());
-                if (prevElapsed != null && elapsed + prevElapsed > WARNING_TIME) {
-                    LOG.log(Level.WARNING, "Operation is too slow", new Exception(clazz + " is too slow"));
+
+        boolean ea = false;
+        assert ea = true;
+        if (ea) {
+            Class<? extends Runnable> clazz = operation.getClass();
+            synchronized (OPERATIONS) {
+                if (elapsed < CLEAR_TIME) {
+                    OPERATIONS.remove(clazz);
+                } else {
+                    Integer prevElapsed = OPERATIONS.get(operation.getClass());
+                    if (prevElapsed != null && elapsed + prevElapsed > WARNING_TIME) {
+                        LOG.log(Level.WARNING, "Operation is too slow", new Exception(clazz + " is too slow"));
+                    }
+                    OPERATIONS.put(clazz, elapsed);
                 }
-                OPERATIONS.put(clazz, elapsed);
             }
         }
     }

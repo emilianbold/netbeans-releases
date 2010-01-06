@@ -155,6 +155,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
             final ClassLoader classLoader = ClassPathUtils.getProjectClassLoader(formFile);
             final FormLAF.PreviewInfo previewInfo = FormLAF.initPreviewLaf(selectedLaf, classLoader);
             final Frame frame = (Frame) FormDesigner.createFormView(topComp, previewInfo);
+            frame.setEnabled(true); // Issue 178457
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {

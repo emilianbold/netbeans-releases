@@ -52,7 +52,9 @@ import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 import java.util.*;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
@@ -119,6 +121,9 @@ class SearchExecutor implements Runnable {
             SVNUrl url = e.getValue();
             if(url != null) {
                 String rootPath = SVNUrlUtils.getRelativePath(rootUrl, url, true);
+                if (rootPath == null) {
+                    Subversion.LOG.log(Level.WARNING, "populatePathToRoot: rootUrl: {0}, url: {1}", new String[] {rootUrl.toString(), url.toString()});
+                }
                 String fileAbsPath = e.getKey().getAbsolutePath().replace(File.separatorChar, '/');
                 int commonPathLength = getCommonPostfixLength(rootPath, fileAbsPath);
                 pathToRoot.put(rootPath.substring(0, rootPath.length() - commonPathLength),

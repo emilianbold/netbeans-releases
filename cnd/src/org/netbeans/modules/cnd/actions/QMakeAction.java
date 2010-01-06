@@ -39,9 +39,11 @@
 
 package org.netbeans.modules.cnd.actions;
 
+import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
@@ -52,16 +54,18 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.cnd.loaders.QtProjectDataObject;
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -91,18 +95,31 @@ public class QMakeAction extends AbstractExecutorRunAction {
 
     public static Future<Integer> performAction(final Node node, final ExecutionListener listener, final Writer outputListener, final Project project, final InputOutput inputOutput) {
         if (SwingUtilities.isEventDispatchThread()){
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    _performAction(node, listener, outputListener, project, inputOutput);
+            final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
+                private ExecutionService es;
+                public void doWork() {
+                    es = QMakeAction.prepare(node, listener, outputListener, project, inputOutput);
                 }
-            });
+                public void doPostRunInEDT() {
+                    if (es != null) {
+                        es.run();
+                    }
+                }
+            };
+            Frame mainWindow = WindowManager.getDefault().getMainWindow();
+            String title = getString("DLG_TITLE_Prepare","qmake"); // NOI18N
+            String msg = getString("MSG_TITLE_Prepare","qmake"); // NOI18N
+            ModalMessageDlg.runLongTask(mainWindow, title, msg, runner, null);
         } else {
-            return _performAction(node, listener, outputListener, project, inputOutput);
+            ExecutionService es = prepare(node, listener, outputListener, project, inputOutput);
+            if (es != null) {
+                return es.run();
+            }
         }
         return null;
     }
 
-    private static Future<Integer> _performAction(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
+    private static ExecutionService prepare(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
         //Save file
         saveNode(node);
         DataObject dataObject = node.getCookie(DataObject.class);
@@ -148,12 +165,15 @@ public class QMakeAction extends AbstractExecutorRunAction {
         }
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, inputOutput, "QMake", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
-        .setCommandLine(quoteExecutable(executable)+" "+argsFlat) // NOI18N
         .setWorkingDirectory(buildDir)
         .unbufferOutput(false)
         .addNativeProcessListener(processChangeListener);
         npb.getEnvironment().putAll(envMap);
         npb.redirectError();
+        List<String> list = ImportUtils.parseArgs(argsFlat.toString());
+        list = ImportUtils.normalizeParameters(list);
+        npb.setExecutable(executable);
+        npb.setArguments(list.toArray(new String[list.size()]));
 
         ExecutionDescriptor descr = new ExecutionDescriptor()
         .controllable(true)
@@ -164,7 +184,6 @@ public class QMakeAction extends AbstractExecutorRunAction {
         .showProgress(true)
         .postExecution(processChangeListener)
         .outConvertorFactory(processChangeListener);
-        ExecutionService es = ExecutionService.newService(npb, descr, "qmake"); // NOI18N
-        return es.run();
+        return ExecutionService.newService(npb, descr, "qmake"); // NOI18N
     }
 }

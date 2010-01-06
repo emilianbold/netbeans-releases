@@ -42,10 +42,9 @@
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
-public abstract class Platform extends PlatformTypes {
+public abstract class Platform /*extends PlatformTypes*/ {
     
     private String name;
     private String displayName;

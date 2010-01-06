@@ -169,7 +169,7 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     private void getKenaiAuthData(SvnKenaiSupport support) {
         final String urlString = url.toString();
         
-        PasswordAuthentication pa = support.getPasswordAuthentication(true);
+        PasswordAuthentication pa = support.getPasswordAuthentication(urlString, true);
         if(pa == null) {
             throw new RuntimeException(new InterruptedException(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_ActionCanceledByUser"))); //NOI18N
         }

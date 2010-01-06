@@ -299,6 +299,10 @@ public class SvnConfigFiles implements PreferenceChangeListener {
         if (command == null) {
             return;
         }
+        if (Utilities.isWindows()) {
+            // tunnel command should contain forward slashes even on windows
+            command = command.replace("\\", "/");                       //NOI18N
+        }
         Ini.Section tunnels = getSection(config, "tunnels", true);
         tunnels.put(tunnelName, command);
         storeIni(config, "config");                                                     // NOI18N

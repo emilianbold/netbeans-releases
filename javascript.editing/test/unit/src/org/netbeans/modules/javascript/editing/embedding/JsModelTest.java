@@ -62,7 +62,6 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -76,11 +75,6 @@ public class JsModelTest extends JsTestBase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        try {
-            TestLanguageProvider.register(RhtmlTokenId.language());
-        } catch (IllegalStateException ise) {
-            // Already registered?
-        }
         try {
             TestLanguageProvider.register(HTMLTokenId.language());
         } catch (IllegalStateException ise) {
@@ -110,7 +104,6 @@ public class JsModelTest extends JsTestBase {
     }
 
     private Snapshot getTranslatedSource(BaseDocument doc, String relFilePath) throws Exception {
-        String RHTML_MIME_TYPE = RhtmlTokenId.MIME_TYPE;
         String HTML_MIME_TYPE = HtmlKit.HTML_MIME_TYPE;
 
         Language lexerLanguage;
@@ -118,9 +111,6 @@ public class JsModelTest extends JsTestBase {
         if (relFilePath.endsWith(".html")) {
             mimeType = HTML_MIME_TYPE;
             lexerLanguage = HTMLTokenId.language();
-        } else if (relFilePath.endsWith(".erb") || relFilePath.endsWith(".rhtml")) {
-            mimeType = RHTML_MIME_TYPE;
-            lexerLanguage = RhtmlTokenId.language();
         } else {
             fail("Unexpected file extension for " + relFilePath);
             return null;

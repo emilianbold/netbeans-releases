@@ -45,26 +45,46 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OS;
 
 public final class MacroExpanderFactory {
 
+    private static final HashMap<String, MacroExpander> expanderCache = new HashMap<String, MacroExpander>();
+
+    public static enum ExpanderStyle {
+
+        SUNSTUDIO_STYLE,
+        DEFAULT_STYLE
+    }
+
     private MacroExpanderFactory() {
     }
 
     public static MacroExpander getExpander(ExecutionEnvironment execEnv) {
-        return getExpander(execEnv, null);
+        return getExpander(execEnv, ExpanderStyle.DEFAULT_STYLE);
     }
 
-    public static MacroExpander getExpander(
-            ExecutionEnvironment execEnv, String style) {
-        MacroExpander result;
+    public static synchronized MacroExpander getExpander(
+            ExecutionEnvironment execEnv, ExpanderStyle style) {
 
-        if ("SunStudio".equals(style)) { // NOI18N
-            result = new SunStudioMacroExpander(execEnv);
-        } else {
-            result = new CommonMacroExpander(execEnv);
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            throw new IllegalStateException("Host " + execEnv + " must be connected at this point"); // NOI18N
+        }
+
+        String key = ExecutionEnvironmentFactory.toUniqueID(execEnv) + '_' + style;
+        MacroExpander result = expanderCache.get(key);
+
+        if (result == null) {
+            try {
+                result = new MacroExpanderImpl(HostInfoUtils.getHostInfo(execEnv), style);
+                expanderCache.put(key, result);
+            } catch (IOException ex) {
+                // should not occur - as info is available
+            } catch (CancellationException ex) {
+                // should not occur - as info is available
+            }
         }
 
         return result;
@@ -79,25 +99,22 @@ public final class MacroExpanderFactory {
                 Map<String, String> envVariables) throws ParseException;
     }
 
-    private static class CommonMacroExpander implements MacroExpander {
+    private static class MacroExpanderImpl implements MacroExpander {
 
-        protected static final Map<String, String> predefinedMacros =
-                Collections.synchronizedMap(new HashMap<String, String>());
-        protected final ExecutionEnvironment execEnv;
-        private final int[][] ttable = new int[][]{
+        private static final int[][] ttable = new int[][]{
             {0, 0, 0, 1, 0, 0},
             {2, 3, 3, 10, 4, 3},
             {2, 2, 5, 6, 5, 5},
             {7, 7, 8, 8, 8, 9},
             {7, 3, 3, 3, 8, 8}
         };
-        private final StringBuilder res = new StringBuilder();
-        private final StringBuilder buf = new StringBuilder();
-        private boolean initialized;
+        protected final Map<String, String> predefinedMacros =
+                Collections.synchronizedMap(new HashMap<String, String>());
+        protected final HostInfo hostInfo;
 
-        public CommonMacroExpander(ExecutionEnvironment execEnv) {
-            this.execEnv = execEnv;
-            initialized = false;
+        public MacroExpanderImpl(final HostInfo hostInfo, final ExpanderStyle style) {
+            this.hostInfo = hostInfo;
+            setupPredefined(style);
         }
 
         private int getCharClass(char c) {
@@ -142,24 +159,8 @@ public final class MacroExpanderFactory {
                 return string;
             }
 
-            synchronized (this) {
-                if (!initialized) {
-                    try {
-                        HostInfo hi = HostInfoUtils.getHostInfo(execEnv);
-                        if (hi != null) {
-                            setupPredefined(hi);
-                            initialized = true;
-                        }
-                    } catch (IOException ex) {
-                    } catch (CancellationException ex) {
-                    }
-                // Should we try to get host info next time?
-                // (in case of failure)
-                }
-            }
-
-            res.setLength(0);
-            buf.setLength(0);
+            StringBuilder res = new StringBuilder();
+            StringBuilder buf = new StringBuilder();
 
             int state = 0, pos = 0, mpos = -1;
             char[] chars = (string + (char) 0).toCharArray();
@@ -227,10 +228,10 @@ public final class MacroExpanderFactory {
             return res.toString();
         }
 
-        protected void setupPredefined(final HostInfo hi) {
+        protected void setupPredefined(ExpanderStyle style) {
             String soext;
             String osname;
-            switch (hi.getOSFamily()) {
+            switch (hostInfo.getOSFamily()) {
                 case WINDOWS:
                     soext = "dll"; // NOI18N
                     osname = "Windows"; // NOI18N
@@ -248,42 +249,29 @@ public final class MacroExpanderFactory {
                     osname = "Linux"; // NOI18N
                     break;
                 default:
-                    osname = hi.getOSFamily().name();
+                    osname = hostInfo.getOSFamily().name();
                     soext = "so"; // NOI18N
             }
 
-            OS os = hi.getOS();
+            OS os = hostInfo.getOS();
 
-            predefinedMacros.put("hostname", hi.getHostname().toLowerCase()); // NOI18N
+            predefinedMacros.put("hostname", hostInfo.getHostname().toLowerCase()); // NOI18N
             predefinedMacros.put("soext", soext); // NOI18N
-            predefinedMacros.put("platform", hi.getCpuFamily().name().toLowerCase()); // NOI18N
             predefinedMacros.put("osname", osname); // NOI18N
             predefinedMacros.put("isa", os.getBitness().toString()); // NOI18N
             predefinedMacros.put("_isa", os.getBitness() == HostInfo.Bitness._64 ? "_64" : ""); // NOI18N
-        }
-    }
+            String platform = hostInfo.getCpuFamily().name().toLowerCase();
 
-    private static class SunStudioMacroExpander extends CommonMacroExpander {
+            if (style == ExpanderStyle.SUNSTUDIO_STYLE) {
+                if ("x86".equals(platform)) { // NOI18N
+                    platform = "intel"; // NOI18N
+                }
 
-        public SunStudioMacroExpander(ExecutionEnvironment execEnv) {
-            super(execEnv);
-        }
-
-        @Override
-        protected void setupPredefined(HostInfo hi) {
-            super.setupPredefined(hi);
-
-            // Rewrite "platform"
-            String platform = predefinedMacros.get("platform"); // NOI18N
-
-            if ("x86".equals(platform)) { // NOI18N
-                platform = "intel"; // NOI18N
-            }
-
-            if (hi.getOSFamily() == HostInfo.OSFamily.SUNOS) { // NOI18N
-                platform += "-S2"; // NOI18N
-            } else {
-                platform += "-" + hi.getOSFamily().name(); // NOI18N
+                if (hostInfo.getOSFamily() == HostInfo.OSFamily.SUNOS) { // NOI18N
+                    platform += "-S2"; // NOI18N
+                } else {
+                    platform += "-" + osname; // NOI18N
+                }
             }
 
             predefinedMacros.put("platform", platform); // NOI18N

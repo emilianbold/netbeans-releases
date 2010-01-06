@@ -110,7 +110,9 @@ public class JDBCView extends ViewImplementation {
                     LOGGER.log(Level.FINE, "Created column {0}", column);
                 }
             } finally {
-                rs.close();
+                if (rs != null) {
+                    rs.close();
+                }
             }
         } catch (SQLException e) {
             throw new MetadataException(e);

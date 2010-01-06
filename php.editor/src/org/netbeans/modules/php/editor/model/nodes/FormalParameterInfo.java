@@ -62,11 +62,12 @@ public class FormalParameterInfo extends ASTNodeInfo<FormalParameter> {
         String name = getName();
         String defVal = CodeUtils.getParamDefaultValue(formalParameter);
         Expression parameterType = formalParameter.getParameterType();
-        List<QualifiedName> types = parameterType != null ? Collections.singletonList(QualifiedName.create(parameterType)) : paramDocTypes.get(name);
+        final boolean isRawType = parameterType != null;
+        List<QualifiedName> types = isRawType ? Collections.singletonList(QualifiedName.create(parameterType)) : paramDocTypes.get(name);
         if (types == null) {
             types = Collections.emptyList();
         }
-        parameter = new ParameterImpl(name, defVal, types,getRange());
+        parameter = new ParameterImpl(name, defVal, types, isRawType,getRange());
     }
 
     public static FormalParameterInfo create(FormalParameter node, Map<String, List<QualifiedName>> paramDocTypes) {

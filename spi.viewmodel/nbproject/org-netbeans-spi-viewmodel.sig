@@ -1,7 +1,27 @@
-#Signature file v4.0
-#Version 1.17.1
+#Signature file v4.1
+#Version 1.22
 
 CLSS public abstract interface java.io.Serializable
+
+CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
+meth public abstract int compareTo({java.lang.Comparable%0})
+
+CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
+cons protected Enum(java.lang.String,int)
+intf java.io.Serializable
+intf java.lang.Comparable<{java.lang.Enum%0}>
+meth protected final java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth protected final void finalize()
+meth public final boolean equals(java.lang.Object)
+meth public final int compareTo({java.lang.Enum%0})
+meth public final int hashCode()
+meth public final int ordinal()
+meth public final java.lang.Class<{java.lang.Enum%0}> getDeclaringClass()
+meth public final java.lang.String name()
+meth public java.lang.String toString()
+meth public static <%0 extends java.lang.Enum<{%%0}>> {%%0} valueOf(java.lang.Class<{%%0}>,java.lang.String)
+supr java.lang.Object
+hfds name,ordinal
 
 CLSS public java.lang.Exception
 cons public Exception()
@@ -55,6 +75,22 @@ meth public java.lang.Object getSource()
 meth public java.lang.String toString()
 supr java.lang.Object
 hfds serialVersionUID
+
+CLSS public abstract interface org.netbeans.spi.viewmodel.AsynchronousModelFilter
+fld public final static java.util.concurrent.Executor CURRENT_THREAD
+fld public final static java.util.concurrent.Executor DEFAULT
+innr public final static !enum CALL
+intf org.netbeans.spi.viewmodel.Model
+meth public abstract java.util.concurrent.Executor asynchronous(java.util.concurrent.Executor,org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+
+CLSS public final static !enum org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL
+fld public final static org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL CHILDREN
+fld public final static org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL DISPLAY_NAME
+fld public final static org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL SHORT_DESCRIPTION
+fld public final static org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL VALUE
+meth public static org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL valueOf(java.lang.String)
+meth public static org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL[] values()
+supr java.lang.Enum<org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL>
 
 CLSS public abstract interface org.netbeans.spi.viewmodel.CheckNodeModel
 intf org.netbeans.spi.viewmodel.NodeModel
@@ -120,6 +156,7 @@ CLSS public abstract interface org.netbeans.spi.viewmodel.Model
 
 CLSS public org.netbeans.spi.viewmodel.ModelEvent
 innr public static NodeChanged
+innr public static SelectionChanged
 innr public static TableValueChanged
 innr public static TreeChanged
 supr java.util.EventObject
@@ -134,8 +171,16 @@ fld public final static int ICON_MASK = 2
 fld public final static int SHORT_DESCRIPTION_MASK = 4
 meth public int getChange()
 meth public java.lang.Object getNode()
+meth public java.lang.String toString()
 supr org.netbeans.spi.viewmodel.ModelEvent
 hfds change,node
+
+CLSS public static org.netbeans.spi.viewmodel.ModelEvent$SelectionChanged
+cons public !varargs SelectionChanged(java.lang.Object,java.lang.Object[])
+meth public java.lang.Object[] getNodes()
+meth public java.lang.String toString()
+supr org.netbeans.spi.viewmodel.ModelEvent
+hfds nodes
 
 CLSS public static org.netbeans.spi.viewmodel.ModelEvent$TableValueChanged
 cons public TableValueChanged(java.lang.Object,java.lang.Object,java.lang.String)
@@ -170,7 +215,7 @@ meth public static org.openide.nodes.Node createNodes(org.netbeans.spi.viewmodel
 meth public static void setModelsToView(javax.swing.JComponent,org.netbeans.spi.viewmodel.Models$CompoundModel)
 supr java.lang.Object
 hfds defaultExpansionModels,verbose
-hcls ActionSupport,CompoundNodeActionsProvider,CompoundNodeModel,CompoundTableModel,CompoundTreeExpansionModel,CompoundTreeModel,DefaultTreeExpansionModel,DefaultTreeFeatures,DelegatingNodeActionsProvider,DelegatingNodeModel,DelegatingTableModel,DelegatingTreeExpansionModel,DelegatingTreeModel,EmptyNodeActionsProvider,EmptyNodeModel,EmptyTableModel,EmptyTreeModel
+hcls ActionSupport,CompoundAsynchronousModel,CompoundNodeActionsProvider,CompoundNodeModel,CompoundTableModel,CompoundTreeExpansionModel,CompoundTreeModel,DefaultAsynchronousModel,DefaultTreeExpansionModel,DefaultTreeFeatures,DelegatingNodeActionsProvider,DelegatingNodeModel,DelegatingTableModel,DelegatingTreeExpansionModel,DelegatingTreeModel,EmptyNodeActionsProvider,EmptyNodeModel,EmptyTableModel,EmptyTreeModel,ModelLists
 
 CLSS public abstract interface static org.netbeans.spi.viewmodel.Models$ActionPerformer
 meth public abstract boolean isEnabled(java.lang.Object)
@@ -204,6 +249,7 @@ meth public java.lang.String getIconBase(java.lang.Object) throws org.netbeans.s
 meth public java.lang.String getIconBaseWithExtension(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public java.lang.String getShortDescription(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public java.lang.String toString()
+meth public java.util.concurrent.Executor asynchronous(org.netbeans.spi.viewmodel.AsynchronousModelFilter$CALL,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public javax.swing.Action[] getActions(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public org.netbeans.spi.viewmodel.ColumnModel[] getColumns()
 meth public org.openide.util.datatransfer.PasteType[] getPasteTypes(java.lang.Object,java.awt.datatransfer.Transferable) throws org.netbeans.spi.viewmodel.UnknownTypeException
@@ -216,7 +262,7 @@ meth public void setName(java.lang.Object,java.lang.String) throws org.netbeans.
 meth public void setSelected(java.lang.Object,java.lang.Boolean) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public void setValueAt(java.lang.Object,java.lang.String,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 supr java.lang.Object
-hfds cnodeModel,columnModels,nodeActionsProvider,nodeModel,propertiesHelpID,rp,tableModel,treeExpansionModel,treeModel
+hfds asynchModel,cnodeModel,columnModels,mainSubModel,nodeActionsProvider,nodeModel,propertiesHelpID,subModels,subModelsFilter,tableModel,treeExpansionModel,treeModel
 
 CLSS public abstract static org.netbeans.spi.viewmodel.Models$TreeFeatures
 cons public TreeFeatures()

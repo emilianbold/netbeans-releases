@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -79,6 +80,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     private String displayName;
     private final Folder parent;
     private ArrayList<Object> items = null; // Folder or Item
+    private HashMap<String,HashMap<Configuration,DeletedConfiguration>> deletedItems;
     private final Set<ChangeListener> changeListenerList = new WeakSet<ChangeListener>(1);
     private final boolean projectFiles;
     private String id = null;
@@ -459,10 +461,28 @@ public class Folder implements FileChangeListener, ChangeListener {
             if (configurationDescriptor.getConfs() == null) {
                 return item;
             }
+            HashMap<Configuration, DeletedConfiguration> map = null;
+            if (deletedItems != null) {
+                map = deletedItems.get(item.getPath());
+            }
             Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
             for (int i = 0; i < configurations.length; i++) {
                 FolderConfiguration folderConfiguration = getFolderConfiguration(configurations[i]);
-                configurations[i].addAuxObject(new ItemConfiguration(configurations[i], item));
+                DeletedConfiguration old = null;
+                if (map != null) {
+                    old = map.get(configurations[i]);
+                }
+                ItemConfiguration ic = new ItemConfiguration(configurations[i], item);
+                if (old != null) {
+                    ic.setTool(old.ic.getTool());
+                    ic.assignValues(old.aux);
+                } else {
+                    ic = new ItemConfiguration(configurations[i], item);
+                }
+                configurations[i].addAuxObject(ic);
+            }
+            if (map != null && deletedItems != null) {
+                deletedItems.remove(item.getPath());
             }
         }
 
@@ -578,9 +598,17 @@ public class Folder implements FileChangeListener, ChangeListener {
             // Remove it from project Items
             configurationDescriptor.removeProjectItem(item);
             // Remove it form all configurations
+            if (deletedItems == null) {
+                deletedItems = new HashMap<String, HashMap<Configuration, DeletedConfiguration>>();
+            }
+            HashMap<Configuration, DeletedConfiguration> map = new HashMap<Configuration, DeletedConfiguration>();
+            deletedItems.put(item.getPath(), map);
             Configuration[] configurations = configurationDescriptor.getConfs().getConfs();
             for (int i = 0; i < configurations.length; i++) {
-                configurations[i].removeAuxObject(item.getId()/*ItemConfiguration.getId(item.getPath())*/);
+                DeletedConfiguration del = new DeletedConfiguration();
+                del.ic = item.getItemConfiguration(configurations[i]);
+                del.aux = configurations[i].removeAuxObject(item.getId()/*ItemConfiguration.getId(item.getPath())*/);
+                map.put(configurations[i], del);
             }
         }
         item.setFolder(null);
@@ -708,7 +736,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public Item[] getItemsAsArray() {
         ArrayList<Item> found = new ArrayList<Item>();
-        Iterator iter = new ArrayList<Object>(getElements()).iterator();
+        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
             Object o = iter.next();
             if (o instanceof Item) {
@@ -720,7 +748,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public List<NativeFileItem> getAllItemsAsList() {
         ArrayList<NativeFileItem> found = new ArrayList<NativeFileItem>();
-        Iterator iter = new ArrayList<Object>(getElements()).iterator();
+        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
             Object o = iter.next();
             if (o instanceof Item) {
@@ -744,7 +772,7 @@ public class Folder implements FileChangeListener, ChangeListener {
      */
     public Set<FileObject> getItemsAsFileObjectSet() {
         ArrayList<FileObject> files = new ArrayList<FileObject>();
-        Iterator iter = new ArrayList<Object>(getElements()).iterator();
+        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
             Item item = (Item) iter.next();
             FileObject fo = item.getFileObject();
@@ -762,7 +790,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         ArrayList<FileObject> files = new ArrayList<FileObject>();
 
         if (!projectFilesOnly || isProjectFiles()) {
-            Iterator iter = new ArrayList<Object>(getElements()).iterator();
+            Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Item) {
@@ -785,7 +813,7 @@ public class Folder implements FileChangeListener, ChangeListener {
      */
     public Set<DataObject> getItemsAsDataObjectSet(String MIMETypeFilter) {
         ArrayList<DataObject> files = new ArrayList<DataObject>();
-        Iterator iter = new ArrayList<Object>(getElements()).iterator();
+        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
             Item item = (Item) iter.next();
             DataObject da = item.getDataObject();
@@ -803,7 +831,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         ArrayList<DataObject> files = new ArrayList<DataObject>();
 
         if (!projectFilesOnly || isProjectFiles()) {
-            Iterator iter = new ArrayList<Object>(getElements()).iterator();
+            Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Item) {
@@ -834,7 +862,7 @@ public class Folder implements FileChangeListener, ChangeListener {
      */
     public Vector<Folder> getFolders() {
         Vector<Folder> folders = new Vector<Folder>();
-        Iterator iter = new ArrayList<Object>(getElements()).iterator();
+        Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
         while (iter.hasNext()) {
             Object item = iter.next();
             if (item instanceof Folder) {
@@ -851,7 +879,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         Vector<Folder> folders = new Vector<Folder>();
 
         if (!projectFilesOnly || isProjectFiles()) {
-            Iterator iter = new ArrayList<Object>(getElements()).iterator();
+            Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Folder) {
@@ -900,14 +928,14 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public void fireChangeEvent(Object source) {
-        Iterator it;
+        Iterator<ChangeListener> it;
 
         synchronized (changeListenerList) {
             it = new HashSet<ChangeListener>(changeListenerList).iterator();
         }
         ChangeEvent ev = new ChangeEvent(source);
         while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
+            (it.next()).stateChanged(ev);
         }
         configurationDescriptor.setModified();
     }
@@ -1075,5 +1103,10 @@ public class Folder implements FileChangeListener, ChangeListener {
     @Override
     public String toString() {
         return name;
+    }
+
+    private static final class DeletedConfiguration {
+        private ConfigurationAuxObject aux;
+        private ItemConfiguration ic;
     }
 }

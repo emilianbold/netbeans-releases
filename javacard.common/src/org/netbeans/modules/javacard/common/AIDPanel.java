@@ -350,7 +350,11 @@ public final class AIDPanel extends javax.swing.JPanel implements DocumentListen
     }// </editor-fold>//GEN-END:initComponents
 
     private void generateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateButtonActionPerformed
+        AID old = getAID();
         AID aid = Utils.generateAppletAID(pkg, clazz);
+        if (old != null && old.equals(aid)) {
+            aid = Utils.generateRandomAppletAid(clazz);
+        }
         setAID(aid);
         getAID();
         fireChange();

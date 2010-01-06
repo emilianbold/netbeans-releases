@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.24.1
+#Signature file v4.1
+#Version 1.28
 
 CLSS public java.lang.Object
 cons public Object()
@@ -95,6 +95,7 @@ meth public static java.util.prefs.Preferences getPreferences(org.netbeans.api.p
 meth public static org.netbeans.api.project.ProjectInformation getInformation(org.netbeans.api.project.Project)
 meth public static org.netbeans.api.project.Sources getSources(org.netbeans.api.project.Project)
 meth public static org.netbeans.spi.project.AuxiliaryConfiguration getAuxiliaryConfiguration(org.netbeans.api.project.Project)
+meth public static org.openide.filesystems.FileObject getCacheDirectory(org.netbeans.api.project.Project,java.lang.Class<?>) throws java.io.IOException
 supr java.lang.Object
 hcls BasicInformation
 

@@ -43,7 +43,7 @@ package org.netbeans.modules.print.action;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 import org.netbeans.modules.print.util.Config;
-import static org.netbeans.modules.print.ui.UI.*;
+import static org.netbeans.modules.print.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

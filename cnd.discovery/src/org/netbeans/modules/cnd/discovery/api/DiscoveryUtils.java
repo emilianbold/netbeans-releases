@@ -245,8 +245,8 @@ public class DiscoveryUtils {
         if (hasQuotes) {
             List<String> newList = new ArrayList<String>();
             for(int i = 0; i < list.size();) {
-                String s = list.get(i);
-                if (s.startsWith("-D") && i+1 < list.size() && list.get(i+1).startsWith("\"")){ // NOI18N
+                String s = list.get(i); 
+                if (s.startsWith("-D") && s.endsWith("=") && i+1 < list.size() && list.get(i+1).startsWith("\"")){ // NOI18N
                     String longString = null;
                     for(int j = i+1; j < list.size() && list.get(j).startsWith("\""); j++){  //NOI18N
                         if (longString != null) {
@@ -266,7 +266,7 @@ public class DiscoveryUtils {
         }
         String what = null;
         Iterator<String> st = list.iterator();
-        String option = null;
+        String option = null; 
         if (st.hasNext()) {
             option = st.next();
             if (option.equals("+") && st.hasNext()) { // NOI18N
@@ -284,10 +284,13 @@ public class DiscoveryUtils {
                 }
             }
             if (option.startsWith("-D")){ // NOI18N
+                String macro;
                 if (option.equals("-D") && st.hasNext()){  //NOI18N
-                    option = st.next();
+                    macro = st.next();
+                } else {
+                    macro = option.substring(2);
                 }
-                String macro = option.substring(2);
+                macro = removeQuotes(macro);
                 int i = macro.indexOf('=');
                 if (i>0){
                     String value = macro.substring(i+1).trim();
@@ -298,7 +301,7 @@ public class DiscoveryUtils {
                            (value.charAt(0) == '"' && value.charAt(1) == '\\' && value.charAt(2) == '"' &&  // NOI18N
                             value.charAt(value.length()-3) == '\\' && value.charAt(value.length()-2) == '"' && value.charAt(value.length()-1) == '"')) { // NOI18N
                             value = value.substring(2,value.length()-3)+"\"";  // NOI18N
-                        } else if (!isQuote && value.length() >= 4 &&
+                        } else if (value.length() >= 4 &&
                            (value.charAt(0) == '\\' && value.charAt(1) == '"' &&  // NOI18N
                             value.charAt(value.length()-2) == '\\' && value.charAt(value.length()-1) == '"' )) { // NOI18N
                             value = value.substring(1,value.length()-2)+"\"";  // NOI18N

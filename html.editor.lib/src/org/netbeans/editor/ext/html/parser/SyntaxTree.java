@@ -68,7 +68,7 @@ public class SyntaxTree {
     static final String FORBIDDEN_END_TAG = "forbidded_endtag"; //NOI18N
     static final String UNMATCHED_TAG = "unmatched_tag"; //NOI18N
     static final String MISSING_REQUIRED_END_TAG = "missing_required_end_tag"; //NOI18N
-    static final String MISSING_REQUIRED_ATTRIBUTES = "missing_required_attribute"; //NOI18N
+    public static final String MISSING_REQUIRED_ATTRIBUTES = "missing_required_attribute"; //NOI18N
     static final String TAG_CANNOT_BE_EMPTY = "tag_cannot_be_empty"; //NOI18N
 
     public static AstNode makeTree(SyntaxParserContext context) {
@@ -616,16 +616,23 @@ public class SyntaxTree {
         }
 
         //check missing required attributes
-        StringBuffer missingAttributesListMsg = new StringBuffer();
+        Collection<String> missingAttrsNames = new ArrayList<String>();
         for (Object _attr : dtdElement.getAttributeList(null)) {
             DTD.Attribute attr = (DTD.Attribute) _attr;
             if (attr.isRequired() && !existingAttrNames.contains(attr.getName())) {
-                //missing required attribute
-                missingAttributesListMsg.append(attr.getName());
-                missingAttributesListMsg.append(", ");
+                missingAttrsNames.add(attr.getName());
             }
 
         }
+
+        StringBuffer missingAttributesListMsg = new StringBuffer();
+        for(String missingAttrName : missingAttrsNames) {
+            //missing required attribute
+            missingAttributesListMsg.append(missingAttrName);
+            missingAttributesListMsg.append(", ");
+        }
+
+
         if (missingAttributesListMsg.length() > 0) {
             //cut last comma and space
             missingAttributesListMsg.deleteCharAt(missingAttributesListMsg.length() - 2);
@@ -635,6 +642,8 @@ public class SyntaxTree {
                     NbBundle.getMessage(SyntaxTree.class, "MSG_MISSING_REQUIRED_ATTRIBUTES", //NOI18N
                     new Object[]{missingAttributesListMsg.toString()}),
                     Description.WARNING);
+            //store the collection of the missing attribute for further usage in hintfixes
+            node.setProperty(MISSING_REQUIRED_ATTRIBUTES, missingAttrsNames);
         }
 
     }

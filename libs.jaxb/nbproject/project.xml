@@ -96,6 +96,7 @@
                 <package>com.sun.dtdparser</package>
                 <package>com.sun.istack</package>
                 <package>com.sun.istack.localization</package>
+                <package>com.sun.istack.logging</package>
                 <package>com.sun.istack.tools</package>
                 <package>com.sun.org.apache.xml.internal.resolver</package>
                 <package>com.sun.org.apache.xml.internal.resolver.helpers</package>

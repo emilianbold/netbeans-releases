@@ -14,6 +14,10 @@ __RESOURCE_NAME__.prototype = {
    
    getRemote : function() {
       return new __RESOURCE_NAME__Remote(this.uri);
+   },
+
+   getItems : function() {
+      return new Array();
    }
 }
 

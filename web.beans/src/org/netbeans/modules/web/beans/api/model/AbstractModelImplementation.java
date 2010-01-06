@@ -41,6 +41,8 @@
 package org.netbeans.modules.web.beans.api.model;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
+import org.openide.util.Lookup;
 
 
 /**
@@ -53,6 +55,10 @@ public abstract class AbstractModelImplementation {
         myUnit = unit;
         myModel = new WebBeansModel( this );
     }
+    
+    public ModelUnit getModelUnit(){
+        return myUnit;
+    }
 
     protected AnnotationModelHelper getHelper(){
         return getModelUnit().getHelper();
@@ -62,8 +68,8 @@ public abstract class AbstractModelImplementation {
         return myModel;
     }
     
-    public ModelUnit getModelUnit(){
-        return myUnit;
+    protected WebBeansModelProvider getProvider(){
+        return Lookup.getDefault().lookup( WebBeansModelProvider.class);
     }
     
     private ModelUnit myUnit;

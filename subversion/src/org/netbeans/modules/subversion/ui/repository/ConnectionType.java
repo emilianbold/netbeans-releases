@@ -211,6 +211,7 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
 
             panel.userTextField.getDocument().addDocumentListener(this);
             panel.certFileTextField.getDocument().addDocumentListener(this);
+            panel.proxySettingsButton.setVisible(repository.isSet(Repository.FLAG_SHOW_PROXY));
         }
 
         @Override

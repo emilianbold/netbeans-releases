@@ -488,7 +488,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 l2.add (u1);
             }
         }
-        return findDependent(root, deps, inverseDeps, classes, includeFilesInError);
+        return findDependent(root, deps, inverseDeps, classes, includeFilesInError, true);
     }
 
 
@@ -496,7 +496,8 @@ public class JavaCustomIndexer extends CustomIndexer {
             final Map<URL, List<URL>> sourceDeps,
             final Map<URL, List<URL>> inverseDeps,
             final Collection<ElementHandle<TypeElement>> classes,
-            boolean includeFilesInError) throws IOException {
+            boolean includeFilesInError,
+            boolean includeCurrentSourceRoot) throws IOException {
         final Map<URL, Set<URL>> ret = new LinkedHashMap<URL, Set<URL>>();
 
         //performance: filter out anonymous innerclasses:
@@ -598,6 +599,10 @@ public class JavaCustomIndexer extends CustomIndexer {
                 }
                 bases.put(depRoot, toHandle);
 
+                if (!includeCurrentSourceRoot && depRoot.equals(root)) {
+                    continue;
+                }
+                
                 final Set<FileObject> files = new HashSet<FileObject>();
                 for (ElementHandle<TypeElement> e : toHandle)
                     files.addAll(index.getResources(e, EnumSet.complementOf(EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS)), EnumSet.of(ClassIndex.SearchScope.SOURCE)));

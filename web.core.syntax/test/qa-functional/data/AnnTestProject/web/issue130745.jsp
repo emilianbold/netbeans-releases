@@ -1,4 +1,4 @@
 <%@ page contentType = "text/html" %>
 
-<%@ include file="myinclude.jsp"%>
+<%@ include file="testinclude.jsp"%>
 

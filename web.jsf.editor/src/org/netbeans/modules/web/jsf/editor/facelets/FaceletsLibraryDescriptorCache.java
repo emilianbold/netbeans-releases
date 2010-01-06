@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.web.jsf.editor.facelets;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.web.jsf.editor.tld.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,16 +61,27 @@ public class FaceletsLibraryDescriptorCache {
         this.support = support;
     }
 
-    public synchronized FaceletsLibraryDescriptor getLibrary(String namespace) throws LibraryDescriptorException {
-        FaceletsLibraryDescriptor lib = LIBRARIES.get(namespace);
-        if(lib == null) {
-            FileObject file = support.getIndex().getFaceletsLibaryDescriptorFile(namespace);
-            if(file != null) {
-                lib = FaceletsLibraryDescriptor.create(file);
-                LIBRARIES.put(namespace, lib);
-            }
+    public void clearCache() {
+        synchronized (LIBRARIES) {
+            LIBRARIES.clear();
         }
-        return lib;
+    }
+
+    public FaceletsLibraryDescriptor getLibrary(String namespace) throws LibraryDescriptorException {
+        synchronized (LIBRARIES) {
+        FaceletsLibraryDescriptor lib = LIBRARIES.get(namespace);
+            if (lib == null) {
+                FileObject file = support.getIndex().getFaceletsLibaryDescriptorFile(namespace);
+                if (file != null) {
+                    lib = FaceletsLibraryDescriptor.create(file);
+                    LIBRARIES.put(namespace, lib);
+                } else {
+                    //try to get the library descriptor from the bundled jsf-impl.jar
+                    return DefaultFaceletLibraries.getInstance().getLibrariesDescriptors().get(namespace);
+                }
+            }
+            return lib;
+        }
     }
 
     private void dumpLibs() {

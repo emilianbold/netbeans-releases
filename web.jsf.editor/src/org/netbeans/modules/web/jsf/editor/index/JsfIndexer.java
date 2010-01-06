@@ -40,8 +40,10 @@ package org.netbeans.modules.web.jsf.editor.index;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -54,6 +56,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -69,11 +72,17 @@ public class JsfIndexer extends EmbeddingIndexer {
 
     private static final Logger LOG = Logger.getLogger(JsfIndexer.class.getSimpleName());
 
+    private Set<String> modifications;
+
+    public JsfIndexer(Set<String> modifications) {
+	this.modifications = modifications;
+    }
+
     @Override
     protected void index(Indexable indexable, Result parserResult, Context context) {
         try {
             FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
-            LOG.log(Level.FINE, "indexing " + fo.getPath());
+            LOG.log(Level.FINE, "indexing " + fo.getPath()); //NOI18N
             List<IndexDocument> documents = new LinkedList<IndexDocument>();
             IndexingSupport support = IndexingSupport.getInstance(context);
 
@@ -81,7 +90,7 @@ public class JsfIndexer extends EmbeddingIndexer {
             Collection<JsfPageModel> models = JsfPageModelFactory.getModels((HtmlParserResult) parserResult);
             for (JsfPageModel model : models) {
                 IndexDocument document = support.createDocument(indexable);
-                model.storeToIndex(document);
+                modifications.add(model.storeToIndex(document));
                 documents.add(document);
             }
 
@@ -100,16 +109,35 @@ public class JsfIndexer extends EmbeddingIndexer {
         static final String NAME = "jsf"; //NOI18N
         static final int VERSION = 1;
 
+	private Set<String> modifications;
+
         @Override
         public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
             if (isIndexable(snapshot)) {
-                return new JsfIndexer();
+                return new JsfIndexer(modifications);
             } else {
                 return null;
             }
-
         }
 
+	@Override
+	public boolean scanStarted(Context context) {
+	    this.modifications = new HashSet<String>();
+	    return super.scanStarted(context);
+	}
+
+	@Override
+	public void scanFinished(Context context) {
+	    super.scanFinished(context);
+	    
+	    if(context.getRoot() != null) {
+		JsfSupport jsfsupport = JsfSupport.findFor(context.getRoot());
+		if(jsfsupport != null) {
+		    jsfsupport.getFaceletsLibrarySupport().librariesChanged(modifications);
+		}
+	    }
+	}
+	
         @Override
         public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
         }

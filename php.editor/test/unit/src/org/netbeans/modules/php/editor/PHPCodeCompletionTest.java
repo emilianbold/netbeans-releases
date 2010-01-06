@@ -152,9 +152,9 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return PhpDoc01News|PhpDoc01^", false);
     }
 
-    public void testTypesInPHPDOC5() throws Exception {
+    /*public void testTypesInPHPDOC5() throws Exception {
         checkCompletion("testfiles/completion/lib/typeInPHPDoc01.php", "* @return PhpDoc01News|PhpDoc01   text|@^", false);
-    }
+    }*/
 
 //    public void testNamespaces1() throws Exception {
 //        checkCompletion("testfiles/completion/lib/namespaces1.php", "use ^", false);

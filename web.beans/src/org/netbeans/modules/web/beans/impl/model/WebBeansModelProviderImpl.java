@@ -52,8 +52,10 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 
 import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelException;
+import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
+import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -64,12 +66,9 @@ import org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider;
 public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic 
     implements WebBeansModelProvider 
 {
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getInjectable(javax.lang.model.element.VariableElement, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
-     */
-    public Element getInjectable( VariableElement element , 
-            AbstractModelImplementation impl) throws WebBeansModelException
+
+    public Result getInjectable(VariableElement element, DeclaredType parentType, 
+            AbstractModelImplementation impl) 
     {
         WebBeansModelImplementation modelImpl = getImplementation(impl);
         if ( modelImpl == null ){
@@ -81,7 +80,7 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
         Element parent = element.getEnclosingElement();
         
         if ( parent instanceof TypeElement){
-            return findVariableInjectable(element, modelImpl);
+            return findVariableInjectable(element, parentType , modelImpl);
         }
         else if ( parent instanceof ExecutableElement ){
             // Probably injected field in method. One need to check method.
@@ -92,27 +91,28 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
              * 2) Method is disposer method. In this case injectable
              * is producer corresponding method.
              */
-            return findParameterInjectable(element, modelImpl );
+            return findParameterInjectable(element, parentType, modelImpl );
         }
         
         return null;
     }
-
+    
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getInjectables(javax.lang.model.element.VariableElement, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#lookupInjectables(javax.lang.model.element.VariableElement, javax.lang.model.type.DeclaredType, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
      */
-    public List<Element> getInjectables( VariableElement element ,
-            AbstractModelImplementation impl ) 
+    public Result lookupInjectables( VariableElement element,
+            DeclaredType parentType, AbstractModelImplementation modelImpl )
     {
         // TODO Auto-generated method stub
         return null;
     }
 
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#isDynamicInjectionPoint(javax.lang.model.element.VariableElement)
      */
     public boolean isDynamicInjectionPoint( VariableElement element , 
-            AbstractModelImplementation impl) throws WebBeansModelException
+            AbstractModelImplementation impl) 
     {
         // TODO Auto-generated method stub
         return false;
@@ -122,37 +122,48 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
      * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#isInjectionPoint(javax.lang.model.element.VariableElement)
      */
     public boolean isInjectionPoint( VariableElement element , 
-            AbstractModelImplementation modelImpl) throws WebBeansModelException 
+            AbstractModelImplementation modelImpl)  throws InjectionPointDefinitionError
     {
         WebBeansModelImplementation impl = getImplementation( modelImpl);
         if ( impl == null ){
             return false;
         }
+        
+        Element parent = element.getEnclosingElement();
+        
+        if ( parent instanceof TypeElement){
+            List<? extends AnnotationMirror> annotations = 
+                impl.getHelper().getCompilationController().getElements().
+                getAllAnnotationMirrors(element);
+            return impl.getHelper().hasAnnotation(annotations, INJECT_ANNOTATION);
+        }
+        else if ( parent instanceof ExecutableElement ){
+            return isMethodParameterInjection(element, impl, 
+                    (ExecutableElement)parent);
+        }
+        return false;
+    }
+
+    private boolean isMethodParameterInjection( VariableElement element,
+            WebBeansModelImplementation impl, ExecutableElement parent )
+            throws InjectionPointDefinitionError
+    {
         List<? extends AnnotationMirror> annotations = 
             impl.getHelper().getCompilationController().getElements().
-            getAllAnnotationMirrors(element);
-        boolean hasBinding = false;
-        boolean hasProduces = false;
-        for (AnnotationMirror annotationMirror : annotations) {
-            DeclaredType type = annotationMirror.getAnnotationType();
-            TypeElement annotationElement = (TypeElement)type.asElement();
-            if ( isBinding( annotationElement , impl.getHelper()) ){
-                hasBinding = true;
-            }
-            if ( PRODUCER_ANNOTATION.equals( annotationElement.getQualifiedName())){
-                hasProduces = true;
-            }
+            getAllAnnotationMirrors(parent);
+        if (isDisposeParameter( element, parent, annotations,  impl))
+        {
+            return true;
         }
-        
-        // TODO : check initialization of field
-        return hasBinding && !hasProduces;
+        if ( isObservesParameter(element, parent, annotations, impl)){
+            return true;
+        }
+        return impl.getHelper().hasAnnotation(annotations, INJECT_ANNOTATION)||
+            impl.getHelper().hasAnnotation(annotations, PRODUCER_ANNOTATION);
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getBindings(javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
-     */
-    public List<AnnotationMirror> getBindings( Element element ,
-        AbstractModelImplementation modelImpl )
+
+    public List<AnnotationMirror> getQualifiers(Element element, 
+            AbstractModelImplementation modelImpl) 
     {
         WebBeansModelImplementation impl = getImplementation( modelImpl);
         if ( impl == null ){
@@ -160,18 +171,19 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
         }
         List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
         List<? extends AnnotationMirror> annotations = impl.getHelper().
-            getCompilationController().getElements().getAllAnnotationMirrors( element);
+            getCompilationController().getElements().getAllAnnotationMirrors( 
+                    element);
         for (AnnotationMirror annotationMirror : annotations) {
             DeclaredType type = annotationMirror.getAnnotationType();
             TypeElement annotationElement = (TypeElement)type.asElement();
-            if ( isBinding( annotationElement , impl.getHelper()) ){
+            if ( isQualifier( annotationElement , impl.getHelper()) ){
                 result.add( annotationMirror );
             }
         }
         return result;
     }
 
-    private WebBeansModelImplementation getImplementation(
+    private static WebBeansModelImplementation getImplementation(
             AbstractModelImplementation impl )
     {
         WebBeansModelImplementation modelImpl = null;
@@ -183,4 +195,103 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
         }
         return modelImpl;
     }
+    
+    /*
+     * Observer method could have only one parameter.
+     * Other parameters are error for observer method.
+     * They are not injection points.
+     */
+    private boolean isObservesParameter( VariableElement element,
+            ExecutableElement method , List<? extends AnnotationMirror> annotations, 
+            AbstractModelImplementation modelImpl ) throws InjectionPointDefinitionError
+    {
+        List<? extends VariableElement> parameters = method.getParameters();
+        boolean observesFound = false;
+        for (VariableElement variableElement : parameters) {
+            if (  AnnotationObjectProvider.hasAnnotation(variableElement, 
+                    OBSERVES_ANNOTATION, getImplementation(modelImpl).getHelper()))
+            {
+                if ( observesFound ){
+                    throw new InjectionPointDefinitionError(method, 
+                            NbBundle.getMessage(WebBeansModelImplementation.class, 
+                                    "ERR_MultipleObserves" , method.getSimpleName()));
+                }
+                observesFound = true;
+            }
+        }
+        if ( !observesFound ){
+            return false;
+        }
+        
+        String badAnnotation = checkInjectProducers(annotations, modelImpl);
+        if ( badAnnotation != null ){
+            throw new InjectionPointDefinitionError( method, 
+                    NbBundle.getMessage(WebBeansModelImplementation.class, 
+                            "ERR_ObserverHasInjectOrProduces" , method.getSimpleName(),
+                            badAnnotation ));
+        }
+        return observesFound;
+    }
+
+    /*
+     * All parameters of disposer method are injection points.
+     */
+    private boolean isDisposeParameter( VariableElement element,
+            ExecutableElement method , List<? extends AnnotationMirror> annotations, 
+            AbstractModelImplementation modelImpl ) throws InjectionPointDefinitionError
+    {
+        List<? extends VariableElement> parameters = method.getParameters();
+        boolean disposeFound = false;
+        boolean observesFound = false;
+        for (VariableElement variableElement : parameters) {
+            if (  AnnotationObjectProvider.hasAnnotation(variableElement, 
+                    DISPOSES_ANNOTATION, getImplementation(modelImpl).getHelper()))
+            {
+                if ( disposeFound ){
+                    throw new InjectionPointDefinitionError(method, 
+                            NbBundle.getMessage(WebBeansModelImplementation.class, 
+                                    "ERR_MultipleDisposes" , method.getSimpleName()));
+                }
+                disposeFound = true;
+            }
+            if (  AnnotationObjectProvider.hasAnnotation(variableElement, 
+                    OBSERVES_ANNOTATION, getImplementation(modelImpl).getHelper()))
+            {
+                observesFound = true;
+            }
+        }
+        if ( !disposeFound ){
+            return false;
+        }
+        if ( observesFound ){
+            throw new InjectionPointDefinitionError(method, 
+                    NbBundle.getMessage(WebBeansModelImplementation.class, 
+                            "ERR_DisposesHasObserves" , method.getSimpleName()));
+        }
+        String badAnnotation = checkInjectProducers(annotations, modelImpl);
+        if ( badAnnotation != null ){
+            throw new InjectionPointDefinitionError( method, 
+                    NbBundle.getMessage(WebBeansModelImplementation.class, 
+                            "ERR_DisposesHasInjectOrProduces" , method.getSimpleName(),
+                            badAnnotation ));
+        }
+        return disposeFound;
+    }
+    
+    private String checkInjectProducers(List<? extends AnnotationMirror> annotations, 
+            AbstractModelImplementation impl ) 
+    {
+        if (getImplementation(impl).getHelper().hasAnnotation(annotations, 
+                INJECT_ANNOTATION))
+        {
+            return INJECT_ANNOTATION;
+        }
+        if ( getImplementation(impl).getHelper().hasAnnotation(annotations, 
+                        PRODUCER_ANNOTATION))
+        {
+            return PRODUCER_ANNOTATION; 
+        }
+        return null;
+    }
+
 }
