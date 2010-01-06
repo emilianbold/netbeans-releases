@@ -124,7 +124,13 @@ implements Stamps.Updater {
         try {
             InputStream is = Stamps.getModulesJARs().asStream("netigso-bundles");
             if (is == null) {
-                deleteRec(getNetigsoCache());
+                File f;
+                try {
+                    f = getNetigsoCache();
+                } catch (IllegalStateException ex) {
+                    return;
+                }
+                deleteRec(f);
                 return;
             }
             BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
