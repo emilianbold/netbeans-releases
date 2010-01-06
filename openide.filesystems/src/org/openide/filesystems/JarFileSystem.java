@@ -603,7 +603,7 @@ public class JarFileSystem extends AbstractFileSystem {
     }
 
     protected void lock(String name) throws IOException {
-        throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_CannotLock", name, getDisplayName(), name));
+        throw new FSException(NbBundle.getMessage(JarFileSystem.class, "EXC_CannotLock_JAR", name, root));
     }
 
     protected void unlock(String name) {
