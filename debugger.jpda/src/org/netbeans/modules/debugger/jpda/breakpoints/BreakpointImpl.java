@@ -233,6 +233,7 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             EventRequestWrapper.setSuspendPolicy (r, JPDABreakpoint.SUSPEND_ALL);
         else
             EventRequestWrapper.setSuspendPolicy (r, JPDABreakpoint.SUSPEND_EVENT_THREAD);
+        r.putProperty("brkpSuspend", getBreakpoint().getSuspend()); // Remember the original breakpoint suspend property
         int hitCountFilter = getBreakpoint().getHitCountFilter();
         if (!ignoreHitCount && hitCountFilter > 0) {
             EventRequestWrapper.addCountFilter(r, hitCountFilter);
@@ -416,7 +417,11 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
             getBreakpoint (),
             e
         );
-        resume = getBreakpoint().getSuspend() == JPDABreakpoint.SUSPEND_NONE || e.getResume ();
+        Integer brkpSuspend = (Integer) event.request().getProperty("brkpSuspend");
+        if (brkpSuspend == null) {
+            brkpSuspend = getBreakpoint().getSuspend();
+        }
+        resume = brkpSuspend.intValue() == JPDABreakpoint.SUSPEND_NONE || e.getResume ();
         logger.fine("BreakpointImpl: perform breakpoint: " + this + " resume: " + resume);
         if (!resume) {
             try {
