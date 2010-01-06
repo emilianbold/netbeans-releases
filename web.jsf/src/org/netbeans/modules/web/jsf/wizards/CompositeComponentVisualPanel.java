@@ -50,6 +50,11 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -59,7 +64,10 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.wizards.BrowseFolders;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 // XXX I18N
 
@@ -86,12 +94,23 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         initComponents();
         locationCB.setRenderer( CELL_RENDERER );
 
-        if (selectedText != null) {
-            selectedTextArea.setText(selectedText);
+	if (selectedText != null) {
+	    try {
+		EditorKit kit = MimeLookup.getLookup(MimePath.parse("text/xhtml")).lookup(EditorKit.class); //NOI18N
+		Document doc = kit.createDefaultDocument();
+		doc.insertString(0, selectedText, null);
+		selectedTextPane.setEditorKit(kit);
+		selectedTextPane.setDocument(doc);
+		
+	    } catch (BadLocationException ex) {
+		Exceptions.printStackTrace(ex);
+	    }
         } else {
             customPanel.setVisible(false);
         }
-        initValues(null, null, null);
+	super.validate();
+
+	initValues(null, null, null);
         
         browseButton.addActionListener( this );
         locationCB.addActionListener( this );
@@ -134,6 +153,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
             displayName = template.getName ();
         }
         putClientProperty ("NewFileWizard_Title", displayName);// NOI18N
+	putClientProperty(TemplateWizard.PROP_CONTENT_DATA, new String[]{NbBundle.getMessage(CompositeComponentWizardPanel.class, "LBL_SimpleTargetChooserPanel_Name")}); // NOI18N);
         if (template != null) {
             final String baseName = template.getName ();
             if (documentName == null) {
@@ -238,7 +258,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         customPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        selectedTextArea = new javax.swing.JTextArea();
+        selectedTextPane = new javax.swing.JEditorPane();
         fillerPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -354,6 +374,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(targetSeparator, gridBagConstraints);
 
+        customPanel.setPreferredSize(new java.awt.Dimension(400, 180));
         customPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "LBL_IMPLEMENTATION")); // NOI18N
@@ -367,10 +388,11 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
         customPanel.add(jLabel2, gridBagConstraints);
 
-        selectedTextArea.setColumns(20);
-        selectedTextArea.setEditable(false);
-        selectedTextArea.setRows(5);
-        jScrollPane1.setViewportView(selectedTextArea);
+        selectedTextPane.setEditable(false);
+        selectedTextPane.setEnabled(false);
+        selectedTextPane.setMinimumSize(null);
+        selectedTextPane.setPreferredSize(null);
+        jScrollPane1.setViewportView(selectedTextPane);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -394,9 +416,8 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         add(fillerPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -418,7 +439,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
     private javax.swing.JLabel pathLabel;
     private javax.swing.JLabel projectLabel;
     private javax.swing.JTextField projectTextField;
-    private javax.swing.JTextArea selectedTextArea;
+    private javax.swing.JEditorPane selectedTextPane;
     private javax.swing.JSeparator targetSeparator;
     // End of variables declaration//GEN-END:variables
 
