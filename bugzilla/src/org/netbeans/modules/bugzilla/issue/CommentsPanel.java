@@ -40,7 +40,9 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -61,7 +63,9 @@ import java.util.logging.Level;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -143,11 +147,8 @@ public class CommentsPanel extends JPanel {
                             return;
                         }
 
-                        OpenAttachmentAction attachmentAction
-                                        = (OpenAttachmentAction)
-                                          as.getAttribute(ATTACHMENT_ATTRIBUTE);
-                        if (attachmentAction != null) {
-                            attachmentAction.openAttachment(pane.getText());
+                        if (as.getAttribute(ATTACHMENT_ATTRIBUTE) != null) {
+                            CommentsPanel.this.openAttachmentHyperlink(pane);
                             return;
                         }
                     }
@@ -354,7 +355,7 @@ public class CommentsPanel extends JPanel {
                 Style defStyle = StyleContext.getDefaultStyleContext()
                                  .getStyle(StyleContext.DEFAULT_STYLE);
                 Style hlStyle = doc.addStyle("regularBlue", defStyle);      //NOI18N
-                hlStyle.addAttribute(ATTACHMENT_ATTRIBUTE, new OpenAttachmentAction());
+                hlStyle.addAttribute(ATTACHMENT_ATTRIBUTE, new Object());
                 StyleConstants.setForeground(hlStyle, Color.BLUE);
                 StyleConstants.setUnderline(hlStyle, true);
 
@@ -372,6 +373,9 @@ public class CommentsPanel extends JPanel {
                 }
             }
         }
+
+        // pop-ups
+        textPane.setComponentPopupMenu(new PopupMenu());
 
         textPane.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")), // NOI18N
@@ -439,28 +443,73 @@ public class CommentsPanel extends JPanel {
         }
     }
 
-    private class OpenAttachmentAction {
-        void openAttachment(String commentText) {
-            String attachmentId = null;
-            try {
-                attachmentId = AttachmentHyperlinkSupport
-                               .getAttachmentId(commentText);
-                openAttachmentById(attachmentId);
-            } catch (Exception ex) {
-                assert false;
-                String errMsg = "Could not open attachment";            //NOI18N
-                if (attachmentId != null) {
-                    errMsg += " #" + attachmentId;                      //NOI18N
-                }
-                ErrorManager.getDefault().log(ErrorManager.WARNING, errMsg);
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+    private void openAttachmentHyperlink(JTextPane textPane) {
+        String attachmentId = null;
+        try {
+            BugzillaIssue.Attachment attachment = getAttachment(textPane);
+            if (attachment != null) {
+                attachment.open();
+            }
+        } catch (Exception ex) {
+            assert false;
+            String errMsg = "Could not open attachment";                //NOI18N
+            if (attachmentId != null) {
+                errMsg += " #" + attachmentId;                          //NOI18N
+            }
+            ErrorManager.getDefault().log(ErrorManager.WARNING, errMsg);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+    }
+
+    private BugzillaIssue.Attachment getAttachment(JTextPane textPane) {
+        String commentText = textPane.getText();
+        String attachmentId = AttachmentHyperlinkSupport
+                              .getAttachmentId(commentText);
+        if (attachmentId != null) {
+            int index = attachmentIds.indexOf(attachmentId);
+            if (index != -1) {
+                return attachments.get(index);
             }
         }
-        private void openAttachmentById(String attachmentId) {
-            int index = attachmentIds.indexOf(attachmentId);
-            assert index != -1;
-            attachments.get(index).open();
+        return null;
+    }
+
+    class PopupMenu extends JPopupMenu {
+
+        /*
+         * Holds the location of where the user invoked the pop-up menu.
+         * It must be remembered before calling super.show(...) because
+         * the method show() may change the location of the pop-up menu,
+         * so the original location might not be available.
+         */
+        private final Point clickPoint = new Point();
+
+        @Override
+        public void show(Component invoker, int x, int y) {
+            clickPoint.setLocation(x, y);
+            super.show(invoker, x, y);
         }
+
+        @Override
+        public void setVisible(boolean b) {
+            if (b) {
+                JTextPane pane = (JTextPane) getInvoker();
+                StyledDocument doc = pane.getStyledDocument();
+                Element elem = doc.getCharacterElement(pane.viewToModel(clickPoint));
+                if (elem.getAttributes().getAttribute(ATTACHMENT_ATTRIBUTE) != null) {
+                    BugzillaIssue.Attachment attachment = getAttachment(pane);
+                    if (attachment != null) {
+                        add(new JMenuItem(attachment.new DefaultAttachmentAction()));
+                        add(new JMenuItem(attachment.new SaveAttachmentAction()));
+                        super.setVisible(true);
+                    }
+                }
+            } else {
+                super.setVisible(false);
+                removeAll();
+            }
+        }
+
     }
 
     public interface NewCommentHandler {
