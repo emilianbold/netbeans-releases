@@ -134,6 +134,8 @@ public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public void phpModuleOpened(PhpModule phpModule) {
+        // XXX add check for the latest version of the commands provider
+        // XXX maybe remove it from project, in fact it is useless
         FileObject library = phpModule.getSourceDirectory().getFileObject("library");
         if (library == null || !library.isValid()) {
             LOGGER.warning("Folder 'library' not found underneath sources for " + phpModule);
