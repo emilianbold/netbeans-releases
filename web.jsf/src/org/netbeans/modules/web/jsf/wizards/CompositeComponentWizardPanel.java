@@ -41,7 +41,10 @@ package org.netbeans.modules.web.jsf.wizards;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -55,6 +58,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -80,92 +84,112 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
     private static final Pattern INVALID_FOLDERNAME_CHARACTERS = Pattern.compile("[`~!@#$%^&*()=+|{};:'\",<>?]"); // NOI18N
 
     public CompositeComponentWizardPanel(TemplateWizard wizard, SourceGroup[] folders, String selectedText) {
-        this.wizard = wizard;
-        text = selectedText;
-        this.folders = folders;
-        project = Templates.getProject(wizard);
+	this.wizard = wizard;
+	text = selectedText;
+	this.folders = folders;
+	project = Templates.getProject(wizard);
     }
 
+    //we need to run it in AWT thread because of the editor initialization
+    public Component getComponent() {
+	if (SwingUtilities.isEventDispatchThread()) {
+	    return _getComponent();
+	} else {
+	    final AtomicReference<Component> ref = new AtomicReference<Component>();
+	    try {
+		SwingUtilities.invokeAndWait(new Runnable() {
+		    public void run() {
+			ref.set(_getComponent());
+		    }
+		});
+	    } catch (InterruptedException ex) {
+		Exceptions.printStackTrace(ex);
+	    } catch (InvocationTargetException ex) {
+		Exceptions.printStackTrace(ex);
+	    }
+	    return ref.get();
+	}
+    }
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
-    public Component getComponent() {
-        if (component == null) {
-            component = new CompositeComponentVisualPanel(project, folders, text);
-            component.addChangeListener(this);
-        }
-        return component;
+    public Component _getComponent() {
+	if (component == null) {
+	    component = new CompositeComponentVisualPanel(project, folders, text);
+	    component.addChangeListener(this);
+	}
+	return component;
     }
 
     public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
-        // If you have context help:
-        // return new HelpCtx(SampleWizardPanel1.class);
+	// Show no Help button for this panel:
+	return HelpCtx.DEFAULT_HELP;
+	// If you have context help:
+	// return new HelpCtx(SampleWizardPanel1.class);
     }
 
     public boolean isValid() {
 
-        String errorMessage = null;
-        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        if (!Utilities.isJavaEE6(wizard)  && !(JSFUtils.isJavaEE5((TemplateWizard) wizard) && JSFUtils.isJSF20(webModule))) {
-            errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Not_JSF20");
-        }
-        boolean ok = ( component != null && component.getTargetName() != null && component.getTargetGroup() != null );
+	String errorMessage = null;
+	WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+	if (!Utilities.isJavaEE6(wizard) && !(JSFUtils.isJavaEE5((TemplateWizard) wizard) && JSFUtils.isJSF20(webModule))) {
+	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Not_JSF20");
+	}
+	boolean ok = (component != null && component.getTargetName() != null && component.getTargetGroup() != null);
 
-        if (!ok) {
-            return false;
-        }
+	if (!ok) {
+	    return false;
+	}
 
 	//check the selection context
-	if(Boolean.TRUE.equals((Boolean)wizard.getProperty("incorrectActionContext"))) {
+	if (Boolean.TRUE.equals((Boolean) wizard.getProperty("incorrectActionContext"))) {
 	    wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(CompositeComponentVisualPanel.class, "MSG_Invalid_Selection"));
 	    return true; //we can still finish the wizard
 	}
 
 
-        if (component ==null || component.getTargetFolder() == null || !component.getTargetFolder().startsWith(RESOURCES_FOLDER)) {
-            errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_resources_folder");
-        } else if (component.getTargetFolder().equals(RESOURCES_FOLDER) || component.getTargetFolder().equals(RESOURCES_FOLDER+File.separatorChar)) {
-            errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_component_folder");
-        }
-        
-        String filename = component.getTargetName();
-        if ("".equals(filename) || INVALID_FILENAME_CHARACTERS.matcher(filename).find()) {
-            errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Wrong_Filename");
-        }
+	if (component == null || component.getTargetFolder() == null || !component.getTargetFolder().startsWith(RESOURCES_FOLDER)) {
+	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_resources_folder");
+	} else if (component.getTargetFolder().equals(RESOURCES_FOLDER) || component.getTargetFolder().equals(RESOURCES_FOLDER + File.separatorChar)) {
+	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_component_folder");
+	}
 
-        String folderName = component.getTargetFolder();
-        if (INVALID_FOLDERNAME_CHARACTERS.matcher(folderName).find()) {
-            errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Wrong_Foldername");
-        }
+	String filename = component.getTargetName();
+	if ("".equals(filename) || INVALID_FILENAME_CHARACTERS.matcher(filename).find()) {
+	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Wrong_Filename");
+	}
 
-        if (webModule !=null && webModule.getDocumentBase() !=null) {
-            String expectedExtension = Templates.getTemplate(wizard).getExt();
-            expectedExtension = expectedExtension.length() == 0 ? "" : "."+expectedExtension;   //NOI18N
-            FileObject targetFile = webModule.getDocumentBase().getFileObject(folderName+"/"+filename+expectedExtension);   //NOI18N
-            if (targetFile != null) {
-                errorMessage = filename+expectedExtension+" already exist"; //NOI18N
-            }
-        }
-        wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
+	String folderName = component.getTargetFolder();
+	if (INVALID_FOLDERNAME_CHARACTERS.matcher(folderName).find()) {
+	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Wrong_Foldername");
+	}
 
-        return errorMessage == null;
-        // If it depends on some condition (form filled out...), then:
-        // return someCondition();
-        // and when this condition changes (last form field filled in...) then:
-        // fireChangeEvent();
-        // and uncomment the complicated stuff below.
+	if (webModule != null && webModule.getDocumentBase() != null) {
+	    String expectedExtension = Templates.getTemplate(wizard).getExt();
+	    expectedExtension = expectedExtension.length() == 0 ? "" : "." + expectedExtension;   //NOI18N
+	    FileObject targetFile = webModule.getDocumentBase().getFileObject(folderName + "/" + filename + expectedExtension);   //NOI18N
+	    if (targetFile != null) {
+		errorMessage = filename + expectedExtension + " already exist"; //NOI18N
+	    }
+	}
+	wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
+
+	return errorMessage == null;
+	// If it depends on some condition (form filled out...), then:
+	// return someCondition();
+	// and when this condition changes (last form field filled in...) then:
+	// fireChangeEvent();
+	// and uncomment the complicated stuff below.
     }
 
     public void addChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
+	changeSupport.addChangeListener(l);
     }
 
     public void removeChangeListener(ChangeListener l) {
-        changeSupport.removeChangeListener(l);
+	changeSupport.removeChangeListener(l);
     }
 
     // You can use a settings object to keep track of state. Normally the
@@ -173,90 +197,88 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     public void readSettings(Object settings) {
-        if (settings instanceof TemplateWizard) {
-            this.wizard = (TemplateWizard) settings;
-            this.project = Templates.getProject(wizard);
-            if (component == null) {
-                getComponent();
-            }
-            if (component != null) {
+	if (settings instanceof TemplateWizard) {
+	    this.wizard = (TemplateWizard) settings;
+	    this.project = Templates.getProject(wizard);
+	    if (component == null) {
+		getComponent();
+	    }
+	    if (component != null) {
 
-                FileObject preselectedTarget = Templates.getTargetFolder( wizard );
-                if (preselectedTarget == null) {
-                    preselectedTarget = project.getProjectDirectory();
-                }
-                // Try to preserve the already entered target name
-                String targetName = Templates.getTargetName( wizard );
-                // Init values
-                component.initValues( Templates.getTemplate( wizard ), preselectedTarget, targetName );
-            }
-            Object substitute = component.getClientProperty ("NewFileWizard_Title"); // NOI18N
-            if (substitute != null) {
-                wizard.putProperty ("NewFileWizard_Title", substitute); // NOI18N
-            }
-            wizard.putProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[] { // NOI18N
-//                NbBundle.getBundle (CompositeComponentWizardPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
-                NbBundle.getBundle (CompositeComponentWizardPanel.class).getString ("LBL_SimpleTargetChooserPanel_Name")}); // NOI18N
-        }
+		FileObject preselectedTarget = Templates.getTargetFolder(wizard);
+		if (preselectedTarget == null) {
+		    preselectedTarget = project.getProjectDirectory();
+		}
+		// Try to preserve the already entered target name
+		String targetName = Templates.getTargetName(wizard);
+		// Init values
+		component.initValues(Templates.getTemplate(wizard), preselectedTarget, targetName);
+	    }
+	    Object substitute = component.getClientProperty("NewFileWizard_Title"); // NOI18N
+	    if (substitute != null) {
+		wizard.putProperty("NewFileWizard_Title", substitute); // NOI18N
+	    }
+//	    wizard.putProperty(WizardDescriptor.PROP_CONTENT_DATA, new String[]{ // NOI18N
+//			//                NbBundle.getBundle (CompositeComponentWizardPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
+//			NbBundle.getBundle(CompositeComponentWizardPanel.class).getString("LBL_SimpleTargetChooserPanel_Name")}); // NOI18N
+	}
     }
 
     public void storeSettings(Object settings) {
-        if (settings instanceof TemplateWizard) {
-            TemplateWizard wizard = (TemplateWizard) settings;
+	if (settings instanceof TemplateWizard) {
+	    TemplateWizard wizard = (TemplateWizard) settings;
 
-            if (WizardDescriptor.PREVIOUS_OPTION.equals(wizard.getValue())) {
-                return;
-            }
-            if(!wizard.getValue().equals(WizardDescriptor.CANCEL_OPTION) && isValid()) {
+	    if (WizardDescriptor.PREVIOUS_OPTION.equals(wizard.getValue())) {
+		return;
+	    }
+	    if (!wizard.getValue().equals(WizardDescriptor.CANCEL_OPTION) && isValid()) {
 
-                FileObject template = Templates.getTemplate( wizard );
+		FileObject template = Templates.getTemplate(wizard);
 
-                String name = component.getTargetName ();
-                if (name.indexOf ('/') > 0) { // NOI18N
-                    name = name.substring (name.lastIndexOf ('/') + 1);
-                }
+		String name = component.getTargetName();
+		if (name.indexOf('/') > 0) { // NOI18N
+		    name = name.substring(name.lastIndexOf('/') + 1);
+		}
 
-                Templates.setTargetFolder(wizard, getTargetFolderFromGUI());
-                Templates.setTargetName(wizard, name);
-            }
-            wizard.putProperty("NewFileWizard_Title", null); // NOI18N
-        }
+		Templates.setTargetFolder(wizard, getTargetFolderFromGUI());
+		Templates.setTargetName(wizard, name);
+	    }
+	    wizard.putProperty("NewFileWizard_Title", null); // NOI18N
+	}
     }
-    
-    private FileObject getTargetFolderFromGUI () {
-        FileObject rootFolder = component.getTargetGroup().getRootFolder();
-        String folderName = component.getTargetFolder();
-        String newObject = component.getTargetName ();
 
-        if (newObject.indexOf ('/') > 0) { // NOI18N
-            String path = newObject.substring (0, newObject.lastIndexOf ('/')); // NOI18N
-            folderName = folderName == null || "".equals (folderName) ? path : folderName + '/' + path; // NOI18N
-        }
+    private FileObject getTargetFolderFromGUI() {
+	FileObject rootFolder = component.getTargetGroup().getRootFolder();
+	String folderName = component.getTargetFolder();
+	String newObject = component.getTargetName();
 
-        FileObject targetFolder;
-        if ( folderName == null ) {
-            targetFolder = rootFolder;
-        }
-        else {
-            targetFolder = rootFolder.getFileObject( folderName );
-        }
+	if (newObject.indexOf('/') > 0) { // NOI18N
+	    String path = newObject.substring(0, newObject.lastIndexOf('/')); // NOI18N
+	    folderName = folderName == null || "".equals(folderName) ? path : folderName + '/' + path; // NOI18N
+	}
 
-        if ( targetFolder == null ) {
-            // XXX add deletion of the file in uninitalize ow the wizard
-            try {
-                targetFolder = FileUtil.createFolder( rootFolder, folderName );
-            } catch (IOException ioe) {
-                // Can't create the folder
-                throw new IllegalArgumentException(ioe); // ioe already annotated
-            }
-        }
+	FileObject targetFolder;
+	if (folderName == null) {
+	    targetFolder = rootFolder;
+	} else {
+	    targetFolder = rootFolder.getFileObject(folderName);
+	}
 
-        return targetFolder;
+	if (targetFolder == null) {
+	    // XXX add deletion of the file in uninitalize ow the wizard
+	    try {
+		targetFolder = FileUtil.createFolder(rootFolder, folderName);
+	    } catch (IOException ioe) {
+		// Can't create the folder
+		throw new IllegalArgumentException(ioe); // ioe already annotated
+	    }
+	}
+
+	return targetFolder;
     }
 
     public void stateChanged(ChangeEvent e) {
-        changeSupport.fireChange();
+	changeSupport.fireChange();
     }
-
 }
 

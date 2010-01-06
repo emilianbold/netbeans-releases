@@ -111,7 +111,7 @@ public class InjectCompositeComponent {
 
     public static Hint getHint(final RuleContext context, final int from, final int to) {
 	return new Hint(injectCCRule,
-		NbBundle.getMessage(InjectCompositeComponent.class, "MSG_InjectCompositeComponentHint"), //NOI18N
+		NbBundle.getMessage(InjectCompositeComponent.class, "MSG_InjectCompositeComponentSelectionHintDescription"), //NOI18N
 		context.parserResult.getSnapshot().getSource().getFileObject(),
 		new OffsetRange(from, to),
 		Collections.<HintFix>singletonList(new HintFix() {
