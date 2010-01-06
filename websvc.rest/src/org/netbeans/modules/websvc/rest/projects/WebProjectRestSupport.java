@@ -159,6 +159,9 @@ public class WebProjectRestSupport extends WebRestSupport {
                 ActionUtils.runTarget(buildFo, new String[] {WebRestSupport.REST_CONFIG_TARGET}, null);
             }
         }
+        if (hasSpringSupport()) {
+            addJerseySpringJar();
+        }
         ProjectManager.getDefault().saveProject(getProject());
         if (needsRefresh) {
             refreshRestServicesMetadataModel();
@@ -378,5 +381,5 @@ public class WebProjectRestSupport extends WebRestSupport {
         }
         return null;
     }
-   
+
 }
