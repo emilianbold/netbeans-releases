@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,6 +57,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -121,7 +123,8 @@ public abstract class RestSupport {
     public static final String REST_API_JAR = "jsr311-api.jar";//NOI18N
     public static final String REST_RI_JAR = "jersey";//NOI18N
     public static final String IGNORE_PLATFORM_RESTLIB = "restlib.ignore.platform";//NOI18N
-    public static final String JSR311_API_LOCATION = "modules/ext/rest/jsr311-api.jar";//NOI18N
+    public static final String JSR311_JAR_PATTERN = "jsr311-api.*\\.jar";//NOI18N
+    public static final String JERSEY_API_LOCATION = "modules/ext/rest";//NOI18N
     public static final String JTA_USER_TRANSACTION_CLASS = "javax/transaction/UserTransaction.class";  //NOI18
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type";       //NOI18N
     public static final String TOMCAT_SERVER_TYPE = "tomcat";       //NOI18N
@@ -261,8 +264,14 @@ public abstract class RestSupport {
     }
     
     public static ClassPath extendWithJsr311Api(ClassPath classPath) {
-        File jsr311JarFile = InstalledFileLocator.getDefault().locate(JSR311_API_LOCATION, null, false);
-        return extendClassPath(classPath, jsr311JarFile);
+        File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, null, false);
+        if (jerseyRoot != null && jerseyRoot.isDirectory()) {
+            File[] jsr311Jars = jerseyRoot.listFiles(new JerseyFilter(JSR311_JAR_PATTERN));
+            if (jsr311Jars != null && jsr311Jars.length>0) {
+                return extendClassPath(classPath, jsr311Jars[0]);
+            }
+        }
+        return classPath;
     }
     
     public static ClassPath extendClassPath(ClassPath classPath, File path) {
@@ -698,6 +707,18 @@ public abstract class RestSupport {
 
     public String getApplicationPath() throws IOException {
         return "resources"; // default application path
+    }
+
+    protected static class JerseyFilter implements FileFilter {
+        private Pattern pattern;
+
+        JerseyFilter(String regexp) {
+            pattern = Pattern.compile(regexp);
+        }
+
+        public boolean accept(File pathname) {
+            return pattern.matcher(pathname.getName()).matches();
+        }
     }
 }
 
