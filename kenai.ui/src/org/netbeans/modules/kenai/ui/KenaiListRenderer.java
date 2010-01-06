@@ -44,6 +44,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -69,8 +70,10 @@ public class KenaiListRenderer extends JLabel
                                        boolean cellHasFocus) {
 
         if (value instanceof Kenai) {
-            setText(((Kenai)value).getName());
-            setIcon(((Kenai)value).getIcon());
+            final Kenai kenai = (Kenai) value;
+            setText("<html><b>" + kenai.getName() + "</b> (" +  kenai.getUrl().getProtocol() + "://" + kenai.getUrl().getHost() + ")</html>");
+            //setIcon(((Kenai)value).getIcon());
+            setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/kenai-small.png", true));
         } else {
             setIcon(null);
             setText(value==null?null:value.toString());

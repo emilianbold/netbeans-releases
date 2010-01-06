@@ -47,6 +47,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
@@ -214,14 +216,18 @@ public class SourceAccessorImpl extends SourceAccessor {
                     FileObject fo = FileUtil.toFileObject(src.getWorkingDirectory());
                     Favorites.getDefault().selectWithAddition(fo);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    printStackTrace(ex);
                 } catch (IllegalArgumentException ex) {
-                    Exceptions.printStackTrace(ex);
+                    printStackTrace(ex);
                 } catch (NullPointerException ex) {
-                    Exceptions.printStackTrace(ex);
+                    printStackTrace(ex);
                 }
              }
         };
+    }
+
+    private static void printStackTrace(Throwable t) {
+        Logger.getLogger(SourceAccessorImpl.class.getName()).log(Level.FINE, t.getMessage(), t);
     }
 
 
