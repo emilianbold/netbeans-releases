@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.ui.query;
@@ -42,16 +42,13 @@ package org.netbeans.modules.bugtracking.ui.query;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Font;
 import java.awt.Insets;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.PanelUI;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.bugtracking.spi.Query;
-import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import static java.lang.Math.max;
 import static javax.swing.SwingConstants.EAST;
@@ -70,8 +67,6 @@ class RepoPanel extends ViewportWidthAwarePanel {
     private final RepoSelectorPanel repoSelectorPanel;
     private final QueriesPanel queriesPanel;
 
-    final int defaultFontSize;
-
     private int baseline;
     private boolean baselineValid;
 
@@ -82,20 +77,11 @@ class RepoPanel extends ViewportWidthAwarePanel {
     RepoPanel(JComponent repoSelector,
               JComponent newRepoButton) {
         super(null);
-        JLabel title             = new JLabel();
         repoSelectorPanel = new RepoSelectorPanel(repoSelector, newRepoButton);
         queriesPanel      = new QueriesPanel();
         queriesPanel.setVisible(false);
 
-        Font titleFont = title.getFont();
-        defaultFontSize = titleFont.getSize();
-        title.setFont(titleFont.deriveFont(1.7f * defaultFontSize));
-
         queriesPanel.setBackground(new Color(224, 224, 224));
-
-        Mnemonics.setLocalizedText(
-                title,
-                getText("QueryTopComponent.findIssuesLabel.text"));     //NOI18N
 
         LayoutStyle layoutStyle = LayoutStyle.getSharedInstance();
         setBorder(BorderFactory.createEmptyBorder(
@@ -202,10 +188,6 @@ class RepoPanel extends ViewportWidthAwarePanel {
             cachedInsets = super.getInsets();
         }
         return cachedInsets;
-    }
-
-    int getDefaultFontSize() {
-        return defaultFontSize;
     }
 
     @Override
