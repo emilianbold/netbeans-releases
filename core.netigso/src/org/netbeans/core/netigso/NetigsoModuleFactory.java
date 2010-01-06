@@ -84,19 +84,39 @@ implements Stamps.Updater {
     private static Framework framework;
     private static Set<String> registered;
 
+    public NetigsoModuleFactory() {
+        readBundles();
+    }
+    
     /** used from tests.
      */
     static void clear() throws Exception {
         activator = null;
         if (framework != null) {
             framework.stop();
-            framework = null;
-        }        framework = null;
+        }
+        framework = null;
         readBundles();
     }
 
-    public NetigsoModuleFactory() {
-        readBundles();
+    private static File getNetigsoCache() throws IllegalStateException {
+        // Explicitly specify the directory to use for caching bundles.
+        String ud = System.getProperty("netbeans.user");
+        if (ud == null) {
+            throw new IllegalStateException();
+        }
+        File udf = new File(ud);
+        return new File(new File(new File(udf, "var"), "cache"), "netigso");
+    }
+
+    private static void deleteRec(File dir) {
+        File[] arr = dir.listFiles();
+        if (arr != null) {
+            for (File f : arr) {
+                deleteRec(f);
+            }
+        }
+        dir.delete();
     }
 
     private static void readBundles() {
@@ -104,6 +124,7 @@ implements Stamps.Updater {
         try {
             InputStream is = Stamps.getModulesJARs().asStream("netigso-bundles");
             if (is == null) {
+                deleteRec(getNetigsoCache());
                 return;
             }
             BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
@@ -156,12 +177,7 @@ implements Stamps.Updater {
     synchronized static Framework getContainer() throws BundleException {
         if (framework == null) {
             Map<String,Object> configMap = new HashMap<String,Object>();
-            // Explicitly specify the directory to use for caching bundles.
-            String ud = System.getProperty("netbeans.user");
-            if (ud == null) {
-                throw new IllegalStateException();
-            }
-            String cache = ud + File.separator + "var" + File.separator + "cache" + File.separator + "netigso";
+            final String cache = getNetigsoCache().getPath();
             configMap.put("felix.cache.profiledir", cache);
             configMap.put("felix.cache.dir", cache);
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
