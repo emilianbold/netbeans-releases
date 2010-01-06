@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.util;
@@ -65,6 +65,17 @@ public class PlaceholderPanel extends JPanel {
 
     public PlaceholderPanel(boolean isDoubleBuffered) {
         super(null, isDoubleBuffered);
+    }
+
+    public void setComponent(Component comp) {
+        if (isEmpty()) {
+            add(comp);
+        } else {
+            removeAll();
+            add(comp);
+            revalidate();
+            repaint();
+        }
     }
 
     @Override
@@ -120,30 +131,35 @@ public class PlaceholderPanel extends JPanel {
 
         super.addImpl(comp, constraints, index);
         updateOpacity();
+        invalidate();
     }
 
     @Override
     public void remove(Component comp) {
         super.remove(comp);
         updateOpacity();
+        invalidate();
     }
 
     @Override
     public void remove(int index) {
         super.remove(index);
         updateOpacity();
+        invalidate();
     }
 
     @Override
     public synchronized void remove(MenuComponent popup) {
         super.remove(popup);
         updateOpacity();
+        invalidate();
     }
 
     @Override
     public void removeAll() {
         super.removeAll();
         updateOpacity();
+        invalidate();
     }
 
     private void updateOpacity() {
