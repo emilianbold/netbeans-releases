@@ -545,7 +545,10 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private void setSaved() {
-        repoPanel.setVisible(false);
+        jPanel2.removeAll();
+        jPanel2.add(panel);
+        jPanel2.revalidate();
+        jPanel2.repaint();
         setNameAndTooltip();
     }
 
