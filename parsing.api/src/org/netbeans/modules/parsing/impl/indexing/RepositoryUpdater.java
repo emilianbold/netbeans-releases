@@ -218,6 +218,20 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         return (beforeInitialScanStarted && openingProjects) || getWorker().isWorking() || !PathRegistry.getDefault().isFinished();
     }
 
+    public boolean isIndexer() {
+        return inIndexer.get() == Boolean.TRUE;
+    }
+
+    public void runIndexer(final Runnable indexer) {
+        assert indexer != null;
+        inIndexer.set(Boolean.TRUE);
+        try {
+            indexer.run();
+        } finally {
+            inIndexer.remove();
+        }
+    }
+
     // returns false when timed out
     public boolean waitUntilFinished(long timeout) throws InterruptedException {
         long ts1 = System.currentTimeMillis();
@@ -795,7 +809,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private final RootsListeners rootsListeners = new RootsListeners();
     private final FileChangeListener sourceRootsListener = new FCL(true);
     private final FileChangeListener binaryRootsListener = new FCL(false);
-    
+    private final ThreadLocal<Boolean> inIndexer = new ThreadLocal<Boolean>();
+
     private RepositoryUpdater () {
         // no-op
     }
