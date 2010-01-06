@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.ui.query;
@@ -191,7 +191,7 @@ public final class QueryTopComponent extends TopComponent
         repoPanel.setNextFocusableComponent(newButton);
 
         /* scrolling */
-        int unitIncrement = (int) (1.5f * repoPanel.defaultFontSize + 0.5f);
+        int unitIncrement = (int) (1.5f * titleFont.getSize() + 0.5f);
         scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
         scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
     }
