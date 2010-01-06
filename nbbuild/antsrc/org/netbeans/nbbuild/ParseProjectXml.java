@@ -1041,15 +1041,19 @@ public final class ParseProjectXml extends Task {
         File jar = module.getJar();
         if (jar == null) return null;
 
-        if (module.getClusterName() != null && clusterPath != null) {
-            File clusterF = jar.getParentFile().getParentFile();
-            if (!clusterPath.contains(clusterF)) {
-                String msg = "The module " + cnb + " cannot be " + (runtime ? "run" : "compiled") +
-                        " against because it is part of the cluster " +
-                        clusterF + " which is not part of cluster.path in your suite configuration.\n\n" +
-                        "Cluster.path is: " + clusterPath;
-                throw new BuildException(msg, getLocation());
+        OK: if (module.getClusterName() != null && clusterPath != null) {
+            File clusterF = jar.getParentFile();
+            while (clusterF != null) {
+                if (clusterPath.contains(clusterF)) {
+                    break OK;
+                }
+                clusterF = clusterF.getParentFile();
             }
+            String msg = "The module " + cnb + " cannot be " + (runtime ? "run" : "compiled") +
+                    " against because it is part of the cluster " +
+                    clusterF + " which is not part of cluster.path in your suite configuration.\n\n" +
+                    "Cluster.path is: " + clusterPath;
+            throw new BuildException(msg, getLocation());
         }
         /* XXX consider readding:
         if (excludedModules != null && excludedModules.contains(cnb)) { // again #68716
