@@ -245,10 +245,23 @@ public abstract class BaseFileObj extends FileObject {
         String nameExt = FileInfo.composeName(name,ext);
         target.getChildrenCache().getChild(nameExt, true);
         //TODO: review
-        BaseFileObj result = (BaseFileObj)FileBasedFileSystem.getFileObject(
-                new File(target.getFileName().getFile(),nameExt));
-        assert result != null;
-        result.fireFileDataCreatedEvent(false);
+        BaseFileObj result = null;
+        for (int i = 0; i < 10; i++) {
+            result = (BaseFileObj) FileBasedFileSystem.getFileObject(
+                    new File(target.getFileName().getFile(), nameExt));
+            if (result != null) {
+                result.fireFileDataCreatedEvent(false);
+                break;
+            }
+            // #179109 - result is sometimes null, probably when moved file
+            // is not yet ready. We wait max. 1000 ms.
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                // ignore
+            }
+        }
+        assert result != null : "FileObject for " + new File(target.getFileName().getFile(), nameExt) + " not found.";
         FolderObj parent = getExistingParent();
         if (parent != null) {
             parent.refresh(true);
