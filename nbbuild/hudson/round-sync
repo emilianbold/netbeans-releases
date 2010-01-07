@@ -41,7 +41,7 @@ if hg push -r $TIP https://"$push_username":"$push_password"@hg.netbeans.org/"$p
     echo Push OK.
 else
     HEADS=`hg heads --template "{node}\n" | wc -l`
-    hg incoming http://hg.netbeans.org/"$push_repo"
+    hg incoming -r default http://hg.netbeans.org/"$push_repo"
     STATUS=$?
     # status is 1 when there are no incoming changesets
     if [ "$HEADS" = 1 ] && [ "$STATUS" = 1 ]; then
