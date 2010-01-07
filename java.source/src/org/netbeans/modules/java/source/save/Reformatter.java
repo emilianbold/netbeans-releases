@@ -592,8 +592,9 @@ public class Reformatter implements ReformatTask {
                             spaces(cs.spaceAfterComma() ? 1 : 0);
                         }
                     }
-                    if (tpLevel > 0) {
-                        switch (accept(GT, GTGT, GTGTGT)) {
+                    JavaTokenId accepted;
+                    if (tpLevel > 0 && (accepted = accept(GT, GTGT, GTGTGT)) != null) {
+                        switch (accepted) {
                             case GTGTGT:
                                 tpLevel -= 3;
                                 break;
@@ -899,8 +900,9 @@ public class Reformatter implements ReformatTask {
                         spaces(cs.spaceAfterComma() ? 1 : 0);
                     }
                 }
-                if (tpLevel > 0) {
-                    switch (accept(GT, GTGT, GTGTGT)) {
+                JavaTokenId accepted;
+                if (tpLevel > 0 && (accepted = accept(GT, GTGT, GTGTGT)) != null) {
+                    switch (accepted) {
                         case GTGTGT:
                             tpLevel -= 3;
                             break;
@@ -1081,8 +1083,9 @@ public class Reformatter implements ReformatTask {
                         spaces(cs.spaceAfterComma() ? 1 : 0);
                     }
                 }
-                if (tpLevel > 0) {
-                    switch (accept(GT, GTGT, GTGTGT)) {
+                JavaTokenId accepted;
+                if (tpLevel > 0 && (accepted = accept(GT, GTGT, GTGTGT)) != null) {
+                    switch (accepted) {
                         case GTGTGT:
                             tpLevel -= 3;
                             break;
@@ -1361,8 +1364,9 @@ public class Reformatter implements ReformatTask {
                             spaces(cs.spaceAfterComma() ? 1 : 0);
                         }
                     }
-                    if (tpLevel > 0) {
-                        switch (accept(GT, GTGT, GTGTGT)) {
+                    JavaTokenId accepted;
+                    if (tpLevel > 0 && (accepted = accept(GT, GTGT, GTGTGT)) != null) {
+                        switch (accepted) {
                             case GTGTGT:
                                 tpLevel -= 3;
                                 break;
@@ -1438,8 +1442,9 @@ public class Reformatter implements ReformatTask {
                         spaces(cs.spaceAfterComma() ? 1 : 0);
                     }
                 }
-                if (tpLevel > 0) {
-                    switch (accept(GT, GTGT, GTGTGT)) {
+                JavaTokenId accepted;
+                if (tpLevel > 0 && (accepted = accept(GT, GTGT, GTGTGT)) != null) {
+                    switch (accepted) {
                         case GTGTGT:
                             tpLevel -= 3;
                             break;
