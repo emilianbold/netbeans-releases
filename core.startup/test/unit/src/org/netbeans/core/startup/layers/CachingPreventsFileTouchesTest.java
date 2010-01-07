@@ -44,10 +44,13 @@ package org.netbeans.core.startup.layers;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -55,6 +58,8 @@ import org.openide.util.Lookup;
  * see details on http://wiki.netbeans.org/FitnessViaWhiteAndBlackList
  */
 public class CachingPreventsFileTouchesTest extends NbTestCase {
+    private static final Logger LOG = Logger.getLogger(CachingPreventsFileTouchesTest.class.getName());
+
     private static void initCheckReadAccess() throws IOException {
         Set<String> allowedFiles = new HashSet<String>();
         CountingSecurityManager.initialize(null, CountingSecurityManager.Mode.CHECK_READ, allowedFiles);
@@ -66,6 +71,7 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
     
     public static Test suite() throws IOException {
         CountingSecurityManager.initialize("none", CountingSecurityManager.Mode.CHECK_READ, null);
+        System.setProperty("org.netbeans.Stamps.level", "ALL");
 
         NbTestSuite suite = new NbTestSuite();
         {
@@ -75,6 +81,8 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
             conf = conf.addTest("testInitUserDir").gui(false);
             suite.addTest(NbModuleSuite.create(conf));
         }
+
+        suite.addTest(new CachingPreventsFileTouchesTest("testInMiddle"));
 
         {
             NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
@@ -90,11 +98,17 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
     public void testInitUserDir() throws Exception {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         Class<?> c = Class.forName("javax.help.HelpSet", true, l);
+        FileObject fo = FileUtil.getConfigFile("Services/Browsers");
+        fo.delete();
         // will be reset next time the system starts
         System.getProperties().remove("netbeans.dirs");
         // initializes counting, but waits till netbeans.dirs are provided
         // by NbModuleSuite
         initCheckReadAccess();
+    }
+
+    public void testInMiddle() {
+        LOG.info("First run finished, starting another one");
     }
 
     public void testReadAccess() throws Exception {

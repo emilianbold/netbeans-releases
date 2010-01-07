@@ -98,6 +98,22 @@ public class CreateModuleXML extends Task {
     public void setXmldir(File f) {
         xmldir = f;
     }
+
+    private File trackingdir;
+    /** Directory where to generate the update tracking file. Does not need
+     * to be specified.
+     */
+    public void setUpdateTrackingRoot(File f) {
+        trackingdir = f;
+    }
+
+    private boolean failOnMissingManifest = true;
+    /** By default true. Set to false if JAR files without proper manifest
+     * shall be ignored.
+     */
+    public void setFailOnMissingManifest(boolean fail) {
+        failOnMissingManifest = fail;
+    }
     
     private List<String> enabledNames = new ArrayList<String>(50);
     private List<String> disabledNames = new ArrayList<String>(10);
@@ -183,7 +199,23 @@ public class CreateModuleXML extends Task {
         }
     }
 
-    private void scanOneModule(File module, String kid, boolean isEnabled,boolean isAutoload, boolean isEager, boolean isHidden, List<String> names) throws BuildException {
+    private void scanOneModule(
+        File module, String kid, boolean isEnabled,
+        boolean isAutoload, boolean isEager,
+        boolean isHidden, List<String> names
+    ) throws BuildException {
+        UpdateTracking ut = null;
+        if (trackingdir != null) {
+            ut = new UpdateTracking(trackingdir.getAbsolutePath());
+        }
+
+        processModule(module, kid, isEnabled, isAutoload, isEager, isHidden, names, ut);
+    }
+    private void processModule(
+        File module, String kid, boolean isEnabled,boolean isAutoload,
+        boolean isEager, boolean isHidden,
+        List<String> names, UpdateTracking ut
+    ) throws BuildException {
         if (!module.exists()) {
             throw new BuildException("Module file does not exist: " + module, getLocation());
         }
@@ -195,9 +227,14 @@ public class CreateModuleXML extends Task {
             try {
                 Manifest m = jar.getManifest();
                 Attributes attr = m.getMainAttributes();
-                String codename = attr.getValue("OpenIDE-Module");
+                String codename = JarWithModuleAttributes.extractCodeName(attr);
                 if (codename == null) {
-                    throw new BuildException("Missing manifest tag OpenIDE-Module; " + module + " is not a module", getLocation());
+                    if (failOnMissingManifest) {
+                        throw new BuildException("Missing manifest tag OpenIDE-Module; " + module + " is not a module", getLocation());
+                    } else {
+                        log("No module manifest in " + module, Project.MSG_WARN);
+                        return;
+                    }
                 }
                 if (codename.endsWith(" ") || codename.endsWith("\t")) {
                     // #62887
@@ -254,6 +291,11 @@ public class CreateModuleXML extends Task {
                     displayname = codename;
                 }
                 names.add(displayname);
+                UpdateTracking.Version v = null;
+                if (ut != null) {
+                    v = ut.addNewModuleVersion(codename, spec);
+                    v.addFileForRoot(module);
+                }
                 if (isHidden) {
                     File h = new File(xml.getParentFile(), xml.getName() + "_hidden");
                     h.createNewFile();
@@ -280,9 +322,15 @@ public class CreateModuleXML extends Task {
                     } finally {
                         os.close();
                     }
+                    if (v != null) {
+                        v.addFileForRoot(xml);
+                    }
                 }
             } finally {
                 jar.close();
+            }
+            if (ut != null) {
+                ut.write();
             }
         } catch (IOException ioe) {
             throw new BuildException("Caught while processing " + module + ": " + ioe, ioe, getLocation());

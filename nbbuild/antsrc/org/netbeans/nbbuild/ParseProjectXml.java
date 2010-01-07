@@ -701,7 +701,8 @@ public final class ParseProjectXml extends Task {
         }
 
         private boolean matches(Attributes attr) {
-            String givenCodeName = attr.getValue("OpenIDE-Module");
+            boolean[] osgi = new boolean[1];
+            String givenCodeName = JarWithModuleAttributes.extractCodeName(attr, osgi);
             int slash = givenCodeName.indexOf('/');
             int givenRelease = -1;
             if (slash != -1) {
@@ -725,13 +726,17 @@ public final class ParseProjectXml extends Task {
                 return false;
             }
             if (spec != null) {
-                String givenSpec = attr.getValue("OpenIDE-Module-Specification-Version");
+                String givenSpec = attr.getValue(
+                    osgi[0] ?
+                        "Bundle-Version" :
+                        "OpenIDE-Module-Specification-Version"
+                );
                 if (givenSpec == null) {
                     return false;
                 }
                 // XXX cannot use org.openide.modules.SpecificationVersion from here
-                int[] specVals = digitize(spec);
-                int[] givenSpecVals = digitize(givenSpec);
+                int[] specVals = digitize(spec, osgi[0]);
+                int[] givenSpecVals = digitize(givenSpec, osgi[0]);
                 int len1 = specVals.length;
                 int len2 = givenSpecVals.length;
                 int max = Math.max(len1, len2);
@@ -752,9 +757,12 @@ public final class ParseProjectXml extends Task {
             }
             return true;
         }
-        private int[] digitize(String spec) throws NumberFormatException {
+        private int[] digitize(String spec, boolean osgi) throws NumberFormatException {
             StringTokenizer tok = new StringTokenizer(spec, ".");
             int len = tok.countTokens();
+            if (osgi && len > 3) {
+                len = 3;
+            }
             int[] digits = new int[len];
             for (int i = 0; i < len; i++) {
                 digits[i] = Integer.parseInt(tok.nextToken());
@@ -1033,15 +1041,19 @@ public final class ParseProjectXml extends Task {
         File jar = module.getJar();
         if (jar == null) return null;
 
-        if (module.getClusterName() != null && clusterPath != null) {
-            File clusterF = jar.getParentFile().getParentFile();
-            if (!clusterPath.contains(clusterF)) {
-                String msg = "The module " + cnb + " cannot be " + (runtime ? "run" : "compiled") +
-                        " against because it is part of the cluster " +
-                        clusterF + " which is not part of cluster.path in your suite configuration.\n\n" +
-                        "Cluster.path is: " + clusterPath;
-                throw new BuildException(msg, getLocation());
+        OK: if (module.getClusterName() != null && clusterPath != null) {
+            File clusterF = jar.getParentFile();
+            while (clusterF != null) {
+                if (clusterPath.contains(clusterF)) {
+                    break OK;
+                }
+                clusterF = clusterF.getParentFile();
             }
+            String msg = "The module " + cnb + " cannot be " + (runtime ? "run" : "compiled") +
+                    " against because it is part of the cluster " +
+                    clusterF + " which is not part of cluster.path in your suite configuration.\n\n" +
+                    "Cluster.path is: " + clusterPath;
+            throw new BuildException(msg, getLocation());
         }
         /* XXX consider readding:
         if (excludedModules != null && excludedModules.contains(cnb)) { // again #68716
