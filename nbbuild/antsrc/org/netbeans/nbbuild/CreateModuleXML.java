@@ -133,6 +133,7 @@ public class CreateModuleXML extends Task {
         this.hiddenList = hiddenList;
     }
 
+    @Override
     public void execute() throws BuildException {
         if (xmldir == null) throw new BuildException("Must set xmldir attribute", getLocation());
         if (!xmldir.exists ()) {
@@ -291,6 +292,7 @@ public class CreateModuleXML extends Task {
                     displayname = codename;
                 }
                 names.add(displayname);
+                String spec = attr.getValue("OpenIDE-Module-Specification-Version");
                 UpdateTracking.Version v = null;
                 if (ut != null) {
                     v = ut.addNewModuleVersion(codename, spec);
