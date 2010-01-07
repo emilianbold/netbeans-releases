@@ -108,6 +108,7 @@ public class CommentsPanel extends JPanel {
     private final static String REPLY_TO_PROPERTY = "replyTo"; // NOI18N
     private final static String QUOTE_PREFIX = "> "; // NOI18N
     private final static int MAX_COMMENT_HEIGHT = 10000;
+    private final JPopupMenu commentsPopup = new PopupMenu();
     private final BugzillaIssueFinder issueFinder;
     private BugzillaIssue issue;
     private List<BugzillaIssue.Attachment> attachments;
@@ -375,7 +376,7 @@ public class CommentsPanel extends JPanel {
         }
 
         // pop-ups
-        textPane.setComponentPopupMenu(new PopupMenu());
+        textPane.setComponentPopupMenu(commentsPopup);
 
         textPane.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")), // NOI18N

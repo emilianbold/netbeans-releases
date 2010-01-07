@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.bugtracking.ui.query;
@@ -115,7 +115,7 @@ public final class QueryTopComponent extends TopComponent
     private final RepoPanel repoPanel;
     private final JPanel jPanel2;
     private final LinkButton newButton;
-    private final JPanel panel;
+    private final PlaceholderPanel panel;
     private final JComboBox repositoryComboBox;
     private final JScrollPane scrollPane;
 
@@ -191,7 +191,7 @@ public final class QueryTopComponent extends TopComponent
         repoPanel.setNextFocusableComponent(newButton);
 
         /* scrolling */
-        int unitIncrement = (int) (1.5f * repoPanel.defaultFontSize + 0.5f);
+        int unitIncrement = (int) (1.5f * titleFont.getSize() + 0.5f);
         scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
         scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
     }
@@ -238,7 +238,7 @@ public final class QueryTopComponent extends TopComponent
         if (query != null) {
             setSaved();
             BugtrackingController c = query.getController();
-            panel.add(c.getComponent());
+            panel.setComponent(c.getComponent());
             this.query.addPropertyChangeListener(this);
             this.query.addNotifyListener(this);
         } else {
@@ -497,8 +497,7 @@ public final class QueryTopComponent extends TopComponent
                     final BugtrackingController addController = query.getController();
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            panel.removeAll();
-                            panel.add(addController.getComponent());
+                            panel.setComponent(addController.getComponent());
 
                             focusFirstEnabledComponent();
 
@@ -546,7 +545,10 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private void setSaved() {
-        repoPanel.setVisible(false);
+        jPanel2.removeAll();
+        jPanel2.add(panel);
+        jPanel2.revalidate();
+        jPanel2.repaint();
         setNameAndTooltip();
     }
 

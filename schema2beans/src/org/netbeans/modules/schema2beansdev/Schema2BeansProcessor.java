@@ -40,7 +40,6 @@
 package org.netbeans.modules.schema2beansdev;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -110,15 +109,11 @@ public class Schema2BeansProcessor extends AbstractProcessor {
                     }
                     String nameAndExt = name + "." + extension;
                     try {
-                        processingEnv.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, pkg, nameAndExt).openInputStream().close();
-                        throw new IOException("should not get here");
+                        return processingEnv.getFiler().createSourceFile(pkg + "." + name, e).openOutputStream();
                     } catch (FilerException x) {
                         processingEnv.getMessager().printMessage(Kind.WARNING, "ignoring attempt to regenerate " + nameAndExt/*, e*/);
                         return new ByteArrayOutputStream(); // XXX could check that the same contents are written
-                    } catch (FileNotFoundException x) {
-                        // expected
                     }
-                    return processingEnv.getFiler().createSourceFile(pkg + "." + name, e).openOutputStream();
                 }
                 public boolean isOlderThan(String dir, String name, String extension, long time) throws IOException {
                     return true;
