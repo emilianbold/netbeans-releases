@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
@@ -154,7 +155,9 @@ public class ComponentUsagesChecker extends HintsProvider {
                                 //2. check for unknown attributes
                                 for (AstNode.Attribute nodeAttr : node.getAttributes()) {
                                     //do not check attributes with a namespace
-                                    if (nodeAttr.namespacePrefix() == null && tag.getAttribute(nodeAttr.name()) == null) {
+                                    if (nodeAttr.namespacePrefix() == null && 
+					    tag.getAttribute(nodeAttr.name()) == null &&
+					    !"xmlns".equals(nodeAttr.name().toLowerCase(Locale.ENGLISH))) {
                                         //unknown attribute
                                         Hint hint = new Hint(DEFAULT_ERROR_RULE,
                                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_ATTRIBUTE", nodeAttr.name()),
