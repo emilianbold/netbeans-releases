@@ -3289,6 +3289,40 @@ public class FormatingTest extends GeneratorTestMDRCompat {
         reformat(doc, content, golden, 127, 163);
     }
     
+    public void test177858() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "     {\n" +
+            "         java.util.Set<String\n" +
+            "     }\n" +
+            "}\n"
+            );
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie) testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        String content =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    {\n" +
+            "        java.util.Set<String\n" +
+            "    }\n" +
+            "}\n";
+
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n\n" +
+            "    {\n" +
+            "        java.util.Set<String\n" +
+            "    }\n" +
+            "}\n";
+        reformat(doc, content, golden);
+    }
+
     private void reformat(Document doc, String content, String golden) throws Exception {
         reformat(doc, content, golden, 0, content.length());
     }

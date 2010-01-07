@@ -48,7 +48,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.JTextComponent;
 import org.netbeans.editor.EditorDebug;
 
 /** Draw layer list stores multiple draw-layers sorted
@@ -61,7 +60,7 @@ import org.netbeans.editor.EditorDebug;
 */
 
 
-/* package */ class DrawLayerList {
+public final class DrawLayerList {
 
     private static final Logger LOG = Logger.getLogger(DrawLayerList.class.getName());
 
@@ -73,13 +72,8 @@ import org.netbeans.editor.EditorDebug;
     
     private final ArrayList visibilityList = new ArrayList();
 
-    public static synchronized DrawLayerList forComponent(JTextComponent jtc) {
-        DrawLayerList dll = (DrawLayerList) jtc.getClientProperty(DrawLayerList.class);
-        if (dll == null) {
-            dll = new DrawLayerList();
-            jtc.putClientProperty(DrawLayerList.class, dll);
-        }
-        return dll;
+    public DrawLayerList() {
+        // no-op
     }
 
     /** Add the new layer to the list depending on visibility.

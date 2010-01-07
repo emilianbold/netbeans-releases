@@ -93,5 +93,6 @@ public abstract class EditorUiAccessor {
     public abstract int getTextLimitWidth(EditorUI eui);
     public abstract int getLineAscent(EditorUI eui);
     public abstract void paint(EditorUI eui, Graphics g);
+    public abstract DrawLayerList getDrawLayerList(EditorUI eui);
 
 }
