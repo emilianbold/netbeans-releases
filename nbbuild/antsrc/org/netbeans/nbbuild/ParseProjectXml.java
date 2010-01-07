@@ -850,7 +850,7 @@ public final class ParseProjectXml extends Task {
             classpath.add(new URL("jar:" + jar.toURI() + "!/"));
         }
         ClassLoader loader = new URLClassLoader(classpath.toArray(new URL[classpath.size()]));
-        Class automaticDependenciesClazz = loader.loadClass("org.netbeans.core.startup.AutomaticDependencies");
+        Class<?> automaticDependenciesClazz = loader.loadClass("org.netbeans.core.startup.AutomaticDependencies");
         Method refineDependenciesSimple;
         try {
             refineDependenciesSimple = automaticDependenciesClazz.getMethod("refineDependenciesSimple", String.class, Set.class);
