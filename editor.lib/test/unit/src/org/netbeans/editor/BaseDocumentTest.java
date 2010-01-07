@@ -27,6 +27,7 @@
  */
 package org.netbeans.editor;
 
+import javax.swing.text.BadLocationException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 
@@ -52,6 +53,44 @@ public class BaseDocumentTest extends NbTestCase {
         for (int i = 0; i < doc.getLength() + 1; i++) {
             assertEquals(doc.getText(i, 1).charAt(0), text.charAt(i));
         }
+    }
+
+    public void testBreakAtomicLock() throws Exception {
+        final BaseDocument doc = new BaseDocument(false, "text/plain");
+        doc.runAtomic(new Runnable() {
+            public void run() {
+                try {
+                    doc.insertString(0, "test1", null);
+                    doc.breakAtomicLock();
+                } catch (BadLocationException e) {
+                    // Expected
+                }
+            }
+        });
+        boolean failure = false;
+        try {
+            doc.runAtomic(new Runnable() {
+                public void run() {
+                    throw new IllegalStateException("test");
+                }
+            });
+            failure = true;
+        } catch (Throwable t) {
+            // Expected
+        }
+        if (failure) {
+            throw new IllegalStateException("Unexpected");
+        }
+        doc.runAtomic(new Runnable() {
+            public void run() {
+                try {
+                    doc.insertString(0, "test1", null);
+                    doc.insertString(10, "test2", null);
+                } catch (BadLocationException e) {
+                    // Expected
+                }
+            }
+        });
     }
 
 }
