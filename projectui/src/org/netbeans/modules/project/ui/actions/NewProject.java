@@ -49,8 +49,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -71,18 +69,15 @@ import org.openide.util.RequestProcessor;
 
 public class NewProject extends BasicAction {
         
-    private static final Icon ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/newProject.png", false); //NOI18N
-    private static final String NAME = NbBundle.getMessage( NewProject.class, "LBL_NewProjectAction_Name" ); // NOI18N
-    private static final String _SHORT_DESCRIPTION = NbBundle.getMessage( NewProject.class, "LBL_NewProjectAction_Tooltip" ); // NOI18N
-    
     private boolean isPreselect = false;
     
     private RequestProcessor.Task bodyTask;
 
     public NewProject() {
-        super( NAME, ICON );
+        super(NbBundle.getMessage(NewProject.class, "LBL_NewProjectAction_Name"),
+                ImageUtilities.loadImageIcon("org/netbeans/modules/project/ui/resources/newProject.png", false));
         putValue("iconBase","org/netbeans/modules/project/ui/resources/newProject.png"); //NOI18N
-        putValue(SHORT_DESCRIPTION, _SHORT_DESCRIPTION);
+        putValue(SHORT_DESCRIPTION, NbBundle.getMessage(NewProject.class, "LBL_NewProjectAction_Tooltip"));
         bodyTask = new RequestProcessor( "NewProjectBody" ).create( new Runnable () { // NOI18N
             public void run () {
                 doPerform ();
@@ -223,8 +218,8 @@ public class NewProject extends BasicAction {
                             ProjectUtilities.selectAndExpandProject(lastProject);
                         }
                         // Second open the files
-                        for( Iterator it = filesToOpen.iterator(); it.hasNext(); ) { // Open the files
-                            ProjectUtilities.openAndSelectNewObject( (DataObject)it.next() );
+                        for (DataObject d : filesToOpen) { // Open the files
+                            ProjectUtilities.openAndSelectNewObject(d);
                         }
                         
                     }
