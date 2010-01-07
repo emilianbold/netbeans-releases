@@ -52,10 +52,8 @@ import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 import java.util.*;
 import java.io.File;
-import java.net.MalformedURLException;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.utils.SVNUrlUtils;
 
