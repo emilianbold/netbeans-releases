@@ -41,11 +41,11 @@
 
 package org.netbeans.modules.gsf.testrunner.api;
 
-import org.netbeans.modules.gsf.testrunner.api.StatisticsPanel;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import javax.accessibility.AccessibleContext;
@@ -59,19 +59,19 @@ import javax.swing.SwingUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOContainer.CallBacks;
 
-
 /**
  *
  * @author Marian Petras, Erno Mononen
  */
 final class ResultWindow extends TopComponent {
-    
+
     /** unique ID of <code>TopComponent</code> (singleton) */
     private static final String ID = "gsf-testrunner-results";              //NOI18N
     /**
@@ -80,7 +80,7 @@ final class ResultWindow extends TopComponent {
      * @see  #getInstance
      */
     private static WeakReference<ResultWindow> instance = null;
-    
+
     /**
      * Returns a singleton of this class.
      *
@@ -144,22 +144,22 @@ final class ResultWindow extends TopComponent {
 
     /** */
     private JSplitPane view;
-    
-    
+    private Object lookup;
+
     /** Creates a new instance of ResultWindow */
     public ResultWindow() {
         super();
         setFocusable(true);
         setLayout(new BorderLayout());
         //add(tabbedPanel = new JTabbedPane(), BorderLayout.CENTER);
-        
+
         setName(ID);
         setDisplayName(NbBundle.getMessage(ResultWindow.class,
                                            "TITLE_TEST_RESULTS"));      //NOI18N
         setIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/gsf/testrunner/resources/testResults.png",//NOI18N
 	        true));
-        
+
         AccessibleContext accessibleContext = getAccessibleContext();
         accessibleContext.setAccessibleName(
                 NbBundle.getMessage(getClass(), "ACSN_TestResults"));   //NOI18N
@@ -169,45 +169,46 @@ final class ResultWindow extends TopComponent {
 
     /**
      */
-    public void addDisplayComponent(JSplitPane displayComp) {
+    public void addDisplayComponent(JSplitPane displayComp, Lookup l) {
         assert EventQueue.isDispatchThread();
 
         removeAll();
         addView(displayComp);
+        this.lookup = new WeakReference<Lookup>(l);
         revalidate();
     }
-    
+
     /**
      */
     private void addView(final JSplitPane view) {
         assert EventQueue.isDispatchThread();
-        
+
         this.view = view;
         view.setMinimumSize(new Dimension(0, 0));
         add(view);
     }
-    
+
     /**
      */
     private boolean isActivated() {
         return TopComponent.getRegistry().getActivated() == this;
     }
-    
+
     /**
      */
     public void promote() {
         assert EventQueue.isDispatchThread();
-        
+
         open();
         requestVisible();
         // don't activate, see #145382
         //requestActive();
     }
-    
+
     /**
      * Sets the layout orientation of the contained result pane.
-     * 
-     * @param orientation the orientation (see {@link JSplitPane#VERTICAL_SPLIT} 
+     *
+     * @param orientation the orientation (see {@link JSplitPane#VERTICAL_SPLIT}
      * and {@link JSplitPane#HORIZONTAL_SPLIT}) to set.
      */
     public void setOrientation(int orientation) {
@@ -218,28 +219,43 @@ final class ResultWindow extends TopComponent {
             view.setOrientation(orientation);
         }
     }
-    
+
     /**
      */
     @Override
     protected String preferredID() {
         return ID;
     }
-    
+
     /**
      */
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(getClass());
     }
-    
+
     /**
      */
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
-    
+
+    @Override
+    public Lookup getLookup() {
+        if (lookup == null) {
+            return super.getLookup();
+        }
+        if (lookup instanceof Reference) {
+            Object l = ((Reference) lookup).get();
+
+            if (l instanceof Lookup) {
+                return (Lookup) l;
+            }
+        }
+        return Lookup.EMPTY;
+    }
+
     /**
      * Resolves to the {@linkplain #getDefault default instance} of this class.
      *
