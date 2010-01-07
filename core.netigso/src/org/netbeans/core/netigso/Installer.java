@@ -49,7 +49,7 @@ public class Installer extends ModuleInstall {
     @Override
     public void close() {
         try {
-            NetigsoModuleFactory.clear();
+            NetigsoModuleFactory.shutdown();
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }

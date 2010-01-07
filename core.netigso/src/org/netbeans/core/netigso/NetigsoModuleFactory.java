@@ -87,15 +87,20 @@ implements Stamps.Updater {
     public NetigsoModuleFactory() {
         readBundles();
     }
-    
-    /** used from tests.
-     */
-    static void clear() throws Exception {
+
+    /** Used on shutdown */
+    static void shutdown() throws Exception {
         activator = null;
         if (framework != null) {
             framework.stop();
         }
         framework = null;
+    }
+    
+    /** used from tests.
+     */
+    static void clear() throws Exception {
+        shutdown();
         readBundles();
     }
 
