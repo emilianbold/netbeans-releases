@@ -41,60 +41,34 @@
 
 package org.netbeans.modules.java.source;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
 import java.io.File;
 import java.util.Enumeration;
-import java.util.LinkedList;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
-import junit.framework.*;
+import org.netbeans.junit.NbTestCase;
 
 
 /** Makes sure the TestUtility class works as expected.
  *
  * @author Petr Hrebejk
  */
-public class TestUtilTest extends TestCase {
+public class TestUtilTest extends NbTestCase {
 
     public TestUtilTest( String testName ) {
         super( testName );
     }
 
     protected void setUp() throws Exception {
+        clearWorkDir();
     }
 
-    protected void tearDown() throws Exception {
-    }
-
-    public static Test suite() {
-        TestSuite suite = new TestSuite( TestUtilTest.class );        
-        return suite;
-    }
-
-    public void testCreateAndRemoveWorkDir() throws Exception {
-	
-	
-        File workDir = TestUtil.createWorkFolder();
-        
-        assertEquals( "WorkDir must exist", true, workDir.exists() );
-        assertEquals( "WorkDir must be readable", true, workDir.canRead() );
-        assertEquals( "WorkDir must be writeable", true, workDir.canWrite() );
-        
-        TestUtil.removeWorkFolder( workDir );
-        assertEquals( "WorkDir must disapear", false, workDir.exists() );
-                
-    }
-    
     public void testCopyResourceFile() throws Exception {
         
 	String SAMPLE_FILE = "samples1/EmptyClass.java";
 	
-        File workDir = TestUtil.createWorkFolder();
+        File workDir = getWorkDir();
         
         TestUtil.copyFiles( workDir, SAMPLE_FILE );        
         File sf = new File( workDir, SAMPLE_FILE );
@@ -109,15 +83,11 @@ public class TestUtilTest extends TestCase {
         assertEquals( "WorkDir must exist", true, rt.exists() );
         assertEquals( "WorkDir must be readable", true, rt.canRead() );
         assertEquals( "WorkDir must be writeable", true, rt.canWrite() );
-	
-        TestUtil.removeWorkFolder( workDir );
-        assertEquals( "WorkDir must disapear", false, workDir.exists() );
-        
     }
     
     public void testCopySampleFile() throws Exception {
         
-        File workDir = TestUtil.createWorkFolder();
+        File workDir = getWorkDir();
         
         TestUtil.copyFiles( workDir, "samples1/EmptyClass.java" );        
         File sample = new File( workDir, "samples1/EmptyClass.java" );
@@ -125,15 +95,11 @@ public class TestUtilTest extends TestCase {
         assertEquals( "WorkDir must exist", true, sample.exists() );
         assertEquals( "WorkDir must be readable", true, sample.canRead() );
         assertEquals( "WorkDir must be writeable", true, sample.canWrite() );
-        
-        TestUtil.removeWorkFolder( workDir );
-        assertEquals( "WorkDir must disapear", false, workDir.exists() );
-        
     }
     
     public void testUnzip() throws Exception {
         
-        File workDir = TestUtil.createWorkFolder();
+        File workDir = getWorkDir();
         
         TestUtil.copyFiles( TestUtil.getJdkDir(), workDir, TestUtil.RT_JAR );
         File rt = new File( workDir, TestUtil.RT_JAR );
@@ -154,10 +120,6 @@ public class TestUtilTest extends TestCase {
         
         assertEquals( "Sets should have the same size", entryNames.size(), fileNames.size() );        
         assertEquals( "Lists should be identical", entryNames, fileNames );
-        
-        TestUtil.removeWorkFolder( workDir );
-        assertEquals( "WorkDir must disapear", false, workDir.exists() );
-        
     }
     
     // Private methods ---------------------------------------------------------
@@ -195,6 +157,5 @@ public class TestUtilTest extends TestCase {
         }
                 
     }
-    
     
 }

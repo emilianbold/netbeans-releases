@@ -93,7 +93,7 @@ public class SourceUtilsTest extends NbTestCase {
     }
 
     private void prepareTest() throws Exception {
-        File work = TestUtil.createWorkFolder();
+        File work = getWorkDir();
         FileObject workFO = FileUtil.toFileObject(work);
         
         assertNotNull(workFO);
