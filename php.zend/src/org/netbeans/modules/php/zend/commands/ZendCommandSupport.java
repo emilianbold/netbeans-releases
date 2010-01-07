@@ -62,6 +62,8 @@ import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.zend.ZendScript;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -145,6 +147,12 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
         try {
             if (task.get().intValue() == 0) {
                 freshCommands = lineProcessor.getCommands();
+                // # 179255
+                if (freshCommands.isEmpty()) {
+                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
+                            NbBundle.getMessage(ZendCommandSupport.class, "MSG_CopyNbCommandsProvider"),
+                            NotifyDescriptor.INFORMATION_MESSAGE));
+                }
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
@@ -165,7 +173,10 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
             }
             String trimmed = line.trim();
             List<String> exploded = StringUtils.explode(trimmed, SEPARATOR);
-            assert exploded.size() >= 1 : exploded;
+            if (exploded.size() == 1) {
+                // error occured
+                return;
+            }
             String command = exploded.get(0);
             String description = ""; // NOI18N
             if (exploded.size() > 1) {

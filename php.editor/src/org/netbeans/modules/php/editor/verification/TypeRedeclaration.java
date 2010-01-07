@@ -50,6 +50,7 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.QualifiedName;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
@@ -69,12 +70,13 @@ public class TypeRedeclaration extends AbstractRule {
         Collection<? extends TypeScope> declaredTypes = ModelUtils.getDeclaredTypes(fileScope);
         Set<String> typeNames = new HashSet<String>();
         for (TypeScope typeScope : declaredTypes) {
-            final String name = typeScope.getName();
+            final QualifiedName qualifiedName = typeScope.getNamespaceName().append(typeScope.getName()).toFullyQualified();
+            final String name = qualifiedName.toString();
             if (typeNames.contains(name)) {
                 continue;
             }
             typeNames.add(name);
-            List<? extends TypeScope> instances = ModelUtils.filter(declaredTypes, name);
+            List<? extends TypeScope> instances = ModelUtils.filter(declaredTypes, qualifiedName);
             if (instances.size() > 1) {
                 TypeScope firstDeclaredInstance = null;
                 for (TypeScope typeInstance : instances) {

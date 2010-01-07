@@ -66,6 +66,7 @@ import org.netbeans.editor.AtomicLockListener;
 import org.netbeans.editor.BaseCaret;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Coloring;
+import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.view.spi.LockView;
 import org.netbeans.modules.editor.lib2.highlighting.CaretBasedBlockHighlighting.CaretRowHighlighting;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
@@ -191,8 +192,9 @@ public final class HighlightingDrawLayer extends DrawLayer.AbstractLayer
         }
     }; // End of FILTER_D constant
     
-    public static void hookUp(JTextComponent jtc) {
-        DrawLayerList dll = DrawLayerList.forComponent(jtc);
+    public static void hookUp(EditorUI eui) {
+        DrawLayerList dll = EditorUiAccessor.get().getDrawLayerList(eui);
+        JTextComponent jtc = eui.getComponent();
         DrawLayer layerA = dll.findLayer(LAYER_A_NAME);
         if (layerA == null) {
             layerA = new HighlightingDrawLayer(LAYER_A_NAME, FILTER_A);

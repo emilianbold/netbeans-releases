@@ -86,6 +86,7 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.editor.lib.ColoringMap;
+import org.netbeans.modules.editor.lib.drawing.DrawLayerList;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
@@ -271,7 +272,9 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     private Preferences prefs = null;
     private final Listener listener = new Listener();
     private PreferenceChangeListener weakPrefsListener = null;
-    
+
+    private final DrawLayerList drawLayerList = new DrawLayerList();
+
     /** Construct extended UI for the use with a text component */
     public EditorUI() {
         focusL = new FocusAdapter() {
@@ -308,12 +311,12 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
      */
     public EditorUI(BaseDocument printDoc, boolean usePrintColoringMap, boolean lineNumberEnabled) {
         this.printDoc = printDoc;
-
         listener.preferenceChange(null);
-
         setLineNumberEnabled(lineNumberEnabled);
-
         updateLineNumberWidth(0);
+        // when printing there is no JTextComponent and EditorUI us not installed/uninstalled
+        // hence we have to hookup the huighlighting layers here
+        HighlightingDrawLayer.hookUp(this);
     }
     
     /**
@@ -363,7 +366,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         renderingHints = (Map<?, ?>) fcs.getFontColors(FontColorNames.DEFAULT_COLORING).getAttribute(EditorStyleConstants.RenderingHints);
 
         // Initialize draw layers
-        HighlightingDrawLayer.hookUp(c);
+        HighlightingDrawLayer.hookUp(this);
 
         synchronized (getComponentLock()) {
             this.component = c;
@@ -1810,6 +1813,11 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         @Override
         public void paint(EditorUI eui, Graphics g) {
             eui.paint(g);
+        }
+
+        @Override
+        public DrawLayerList getDrawLayerList(EditorUI eui) {
+            return eui.drawLayerList;
         }
 
     } // End of Accessor class

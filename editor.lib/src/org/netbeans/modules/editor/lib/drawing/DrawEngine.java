@@ -210,7 +210,7 @@ public final class DrawEngine {
         ctx.drawGraphics.setY(ctx.y);
 
         // Init all draw-layers
-        ctx.layers = DrawLayerList.forComponent(ctx.component).currentLayers();
+        ctx.layers = accessor.getDrawLayerList(eui).currentLayers();
         int layersLength = ctx.layers.length;
         ctx.layerActives = new boolean[layersLength];
         ctx.layerActivityChangeOffsets = new int[layersLength];
@@ -1423,7 +1423,6 @@ public final class DrawEngine {
         */
         int fragmentCharCount;
 
-        Rectangle extentBounds;
         Insets textMargin;
         int textLeftMarginWidth;
 

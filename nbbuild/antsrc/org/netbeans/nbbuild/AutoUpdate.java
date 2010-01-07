@@ -95,15 +95,6 @@ public class AutoUpdate extends Task {
         return nbmSet;
     }
 
-    public void setNBM(File nbm) {
-        if (nbmSet != null) {
-            throw new BuildException("Just one nbms set allowed");
-        }
-        nbmSet = new FileSet();
-        nbmSet.setDir(nbm.getParentFile());
-        nbmSet.setIncludes(nbm.getName());
-    }
-
     public void setInstallDir(File dir) {
         this.dir = dir;
     }
