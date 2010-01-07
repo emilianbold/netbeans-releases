@@ -93,6 +93,7 @@ implements Stamps.Updater {
         activator = null;
         if (framework != null) {
             framework.stop();
+            framework.waitForStop(10000L);
         }
         framework = null;
     }
