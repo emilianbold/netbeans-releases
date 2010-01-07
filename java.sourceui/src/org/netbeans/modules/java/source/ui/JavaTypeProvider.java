@@ -303,10 +303,16 @@ public class JavaTypeProvider implements TypeProvider {
             c = getCache();
             if (c != null) {
                 for (final CacheItem ci : c) {
-                    Set<ElementHandle<TypeElement>> names = customizer.query(
+                    final Set<ElementHandle<TypeElement>> names = new HashSet<ElementHandle<TypeElement>> (customizer.query(
                             ci.classpathInfo, textForQuery, nameKind,
                             EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
-                    );
+                    ));
+                    if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
+                        names.addAll(customizer.query(
+                            ci.classpathInfo, textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX,
+                            EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
+                        ));
+                    }
                     for (ElementHandle<TypeElement> name : names) {
                         JavaTypeDescription td = new JavaTypeDescription(ci, name);
                         types.add(td);
@@ -334,9 +340,14 @@ public class JavaTypeProvider implements TypeProvider {
                 if (c == null) return;
                 for (final CacheItem ci : getCache()) {
                     @SuppressWarnings("unchecked")
-                    final Set<ElementHandle<TypeElement>> names = ci.classpathInfo.getClassIndex().getDeclaredTypes(
+                    final Set<ElementHandle<TypeElement>> names = new HashSet<ElementHandle<TypeElement>> (ci.classpathInfo.getClassIndex().getDeclaredTypes(
                             textForQuery, nameKind, EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
-                    );
+                    ));
+                    if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
+                        names.addAll(ci.classpathInfo.getClassIndex().getDeclaredTypes(
+                            textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
+                        ));
+                    }
                     for (ElementHandle<TypeElement> name : names) {
                         JavaTypeDescription td = new JavaTypeDescription(ci, name);
                         types.add(td);
