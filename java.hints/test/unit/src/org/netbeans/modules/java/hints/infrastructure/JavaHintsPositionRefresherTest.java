@@ -125,11 +125,11 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
             }
         });
 
-        if (cache == null) {
-            cache = FileUtil.normalizeFile(getWorkDir());
-            cacheFO = FileUtil.toFileObject(cache);
+        clearWorkDir();
 
-            cache.deleteOnExit();
+        if (cache == null) {
+            cache = FileUtil.normalizeFile(new File(getWorkDir(), "cache"));
+            cacheFO = FileUtil.createFolder(cache);
 
             IndexUtil.setCacheFolder(cache);
 

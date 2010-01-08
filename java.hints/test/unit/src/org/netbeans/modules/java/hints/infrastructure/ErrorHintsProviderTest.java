@@ -92,12 +92,13 @@ public class ErrorHintsProviderTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
+
+        clearWorkDir();
         
         if (cache == null) {
-            cache = getWorkDir();
-            cacheFO = FileUtil.toFileObject(cache);
+            cache = new File(getWorkDir(), "cache");
+            cacheFO = FileUtil.createFolder(cache);
             IndexUtil.setCacheFolder(cache);
-            cache.deleteOnExit();
         }
 
         RepositoryUpdater.getDefault().start(true);
@@ -108,7 +109,7 @@ public class ErrorHintsProviderTest extends NbTestCase {
     }
     
     private void prepareTest(String capitalizedName) throws Exception {
-        FileObject workFO = SourceUtilsTestUtil.makeScratchDir(this);
+        FileObject workFO = FileUtil.toFileObject(getWorkDir());
         
         assertNotNull(workFO);
         

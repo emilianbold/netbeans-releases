@@ -121,21 +121,19 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
                         }
                     }});
         
+        clearWorkDir();
+        
         if (cache == null) {
-            cache = FileUtil.normalizeFile(getWorkDir());
-            cacheFO = FileUtil.toFileObject(cache);
-
-            cache.deleteOnExit();
+            cache = new File(FileUtil.normalizeFile(getWorkDir()), "cache");
+            cacheFO = FileUtil.createFolder(cache);
 
             IndexUtil.setCacheFolder(cache);
 
             TestUtilities.analyzeBinaries(SourceUtilsTestUtil.getBootClassPath());
         }
     }
-    
+
     private void prepareTest(String fileName, String code) throws Exception {
-        clearWorkDir();
-        
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
         
         assertNotNull(workFO);
