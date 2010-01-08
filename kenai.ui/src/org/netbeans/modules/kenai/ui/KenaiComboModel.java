@@ -80,7 +80,10 @@ public class KenaiComboModel extends AbstractListModel implements ComboBoxModel 
     public Object getElementAt(int index) {
         int i = 0;
         for (Kenai k: KenaiManager.getDefault().getKenais()) {
-            if (i++ == index) {
+            if (k.getStatus()==status) {
+                i++;
+            }
+            if (i -1 == index) {
                 return k;
             }
         }
