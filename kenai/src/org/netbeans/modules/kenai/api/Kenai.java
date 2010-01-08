@@ -714,7 +714,7 @@ public final class Kenai implements Comparable<Kenai> {
             return false;
         }
         final Kenai other = (Kenai) obj;
-        if ((this.getUrl() == null) ? (other.getUrl() != null) : !this.getUrl().equals(other.getUrl())) {
+        if ((this.getUrl() == null) ? (other.getUrl() != null) : !this.getUrl().toString().equals(other.getUrl().toString())) {
             return false;
         }
         return true;

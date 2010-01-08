@@ -146,6 +146,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                     panel.setKenai(((Kenai) kenaiCombo.getSelectedItem()));
                 } else {
                     new AddInstanceAction().actionPerformed(e);
+                    panel.setKenai(((Kenai) kenaiCombo.getSelectedItem()));
                 }
             }
         });

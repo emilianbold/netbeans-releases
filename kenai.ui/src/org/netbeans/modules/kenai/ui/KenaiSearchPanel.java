@@ -159,6 +159,16 @@ public class KenaiSearchPanel extends JPanel {
                     }
                 } else {
                     new AddInstanceAction().actionPerformed(e);
+                    kenai = ((Kenai) kenaiCombo.getSelectedItem());
+                    kenaiFeaturedProjectsList=null;
+                    kenaiRecentProjectsList=null;
+                    kenaiFeaturedProjectsListWithRepos=null;
+                    kenaiRecentProjectsListWithRepos=null;
+                    if (panelType == PanelType.OPEN) {
+                        setOpenPanels();
+                    } else {
+                        setBrowsePanels();
+                    }
                 }
             }
         });

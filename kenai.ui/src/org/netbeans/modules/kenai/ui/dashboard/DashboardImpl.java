@@ -72,7 +72,6 @@ import javax.swing.UIManager;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
-import org.netbeans.modules.kenai.ui.LoginAction;
 import org.netbeans.modules.kenai.ui.LoginHandleImpl;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
@@ -469,7 +468,7 @@ public final class DashboardImpl extends Dashboard {
             openProjects.clear();
             otherProjectsLoaded = false;
             if( isOpened() ) {
-                startLoadingAllProjects(true);
+                startLoadingAllProjects(false);
             }
         }
     }
