@@ -40,6 +40,7 @@
 package org.netbeans.modules.java.source.parsing;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -97,10 +98,10 @@ public class AptSourceFileManager extends SourceFileManager {
         }
         final String nameStr = pkgName.length() == 0 ?
             relativeName :
-            pkgName.replace('.', '/') + '/' + relativeName;    //NOI18N
-        final FileObject file = FileUtil.createData(aptRoot, nameStr);
-        assert file != null;
-        final javax.tools.FileObject result = FileObjects.nbFileObject(file, aptRoot);
+            pkgName.replace('.', File.separatorChar) + File.separatorChar + relativeName;    //NOI18N
+        //Always on master fs -> file is save.
+        File rootFile = FileUtil.toFile(aptRoot);
+        final javax.tools.FileObject result = FileObjects.nbFileObject( new File(rootFile,nameStr).toURI().toURL(), aptRoot);
         mark(result);
         return result;
     }
@@ -116,10 +117,10 @@ public class AptSourceFileManager extends SourceFileManager {
         if (aptRoot == null) {
             throw new UnsupportedOperationException("No apt root for source root: " + getOwnerRoot(sibling)); // NOI18N
         }
-        final String nameStr = className.replace('.', '/') + kind.extension;    //NOI18N
-        final FileObject file = FileUtil.createData(aptRoot, nameStr);
-        assert file != null;
-        final JavaFileObject result = FileObjects.nbFileObject(file, aptRoot);
+        final String nameStr = className.replace('.', File.separatorChar) + kind.extension;    //NOI18N
+        //Always on master fs -> file is save.
+        File rootFile = FileUtil.toFile(aptRoot);
+        final JavaFileObject result = FileObjects.nbFileObject(new File(rootFile,nameStr).toURI().toURL(), aptRoot);
         mark(result);
         return result;
     }
@@ -146,7 +147,7 @@ public class AptSourceFileManager extends SourceFileManager {
                 }
             }
             return true;
-        }        
+        }
         else {
             return super.handleOption(head, tail);
         }
