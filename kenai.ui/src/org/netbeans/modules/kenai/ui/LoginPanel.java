@@ -341,6 +341,14 @@ public class LoginPanel extends javax.swing.JPanel {
 
         } else {
             new AddInstanceAction().actionPerformed(evt);
+            this.kenai = ((Kenai) kenaiCombo.getSelectedItem());
+            forgotPassword.setAction(new URLDisplayerAction("", getForgetPasswordUrl()));
+            signUp.setAction(new URLDisplayerAction("", getRegisterUrl()));
+
+            forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));
+            signUp.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"));
+
+            setChkOnline();
         }
     }//GEN-LAST:event_kenaiComboActionPerformed
 
@@ -379,5 +387,9 @@ public class LoginPanel extends javax.swing.JPanel {
 
     public boolean isOnline() {
         return chkIsOnline.isSelected();
+    }
+
+    public Kenai getKenai() {
+        return (Kenai) kenaiCombo.getSelectedItem();
     }
 }
