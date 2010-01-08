@@ -463,18 +463,17 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         }
 }//GEN-LAST:event_bHelpActionPerformed
 
-    @SuppressWarnings("unchecked")
     private Object getHelpInstance () {
         if (helpInstance == null) {
             try {
-                Class clazz = Class.forName ("org.netbeans.api.javahelp.Help", // NOI18N
+                Class<?> clazz = Class.forName("org.netbeans.api.javahelp.Help", // NOI18N
                         false, Thread.currentThread().getContextClassLoader());
                 if (clazz == null) {
                     return null;
                 }
                 helpInstance = Lookup.getDefault ().lookup (clazz);
             } catch (ClassNotFoundException ex) {
-                Logger.getLogger (PluginManagerUI.class.getName ()).log (Level.INFO, ex.getLocalizedMessage (), ex);
+                Logger.getLogger(PluginManagerUI.class.getName()).log(Level.FINE, "JavaHelp integration not found", ex);
             }
         }
         return helpInstance;
