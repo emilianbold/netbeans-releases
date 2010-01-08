@@ -47,6 +47,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JFileChooser;
@@ -102,9 +103,7 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
         if(selectOnFocusFields == null) {
             selectOnFocusFields = new ArrayList<JTextField>();
         }
-        for (JTextField txt : txts) {
-            selectOnFocusFields.add(txt);
-        }
+        selectOnFocusFields.addAll(Arrays.asList(txts));
     }
 
     public void insertUpdate(DocumentEvent e) {
