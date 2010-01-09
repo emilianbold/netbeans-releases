@@ -1364,7 +1364,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
                     sb.append(((CsmExpressionBasedSpecializationParameter) param).getText());
                 }
             }
-            sb.append('>');
+            TemplateUtils.addGREATERTHAN(sb);
         }
         return sb;
     }
