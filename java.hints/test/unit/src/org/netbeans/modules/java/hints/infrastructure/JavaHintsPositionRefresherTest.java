@@ -92,8 +92,8 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     private FileObject sourceRoot;
     private CompilationInfo info;
     private Document doc;
-    private File cache;
-    private FileObject cacheFO;
+    private static File cache;
+    private static FileObject cacheFO;
 
     public JavaHintsPositionRefresherTest(String name) {
         super(name);
@@ -138,8 +138,6 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     }
 
     private void prepareTest(String fileName, String code) throws Exception {
-        clearWorkDir();
-
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
 
         assertNotNull(workFO);

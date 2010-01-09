@@ -172,7 +172,14 @@ public class HintsTestBase extends NbTestCase {
     }
     
     protected void prepareTest(String capitalizedName) throws Exception {
-        FileObject workFO = FileUtil.toFileObject(getWorkDir());
+        File workFolder = new File(getWorkDir(), "work");
+        FileObject workFO = FileUtil.createFolder(workFolder);
+        
+        assertNotNull(workFO);
+
+        workFO.delete();
+
+        workFO = FileUtil.createFolder(workFolder);
         
         assertNotNull(workFO);
         
