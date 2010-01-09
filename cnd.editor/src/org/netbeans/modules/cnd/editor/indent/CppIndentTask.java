@@ -394,13 +394,18 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                     }
                                     break;
                                 case FOR:
-                                    if (alignMultilineFor()) {
-                                        TokenItem lparen = getLeftParen(t, tt);
-                                        if (lparen != null){
-                                            return getTokenColumn(lparen)+1;
+                                    if (isForLoopSemicolon(t)) {
+                                        if (alignMultilineFor()) {
+                                            TokenItem lparen = getLeftParen(t, tt);
+                                            if (lparen != null){
+                                                indent = getTokenColumn(lparen)+1;
+                                                break;
+                                            }
                                         }
+                                        indent = getTokenIndent(tt) + getFormatStatementContinuationIndent();
+                                    } else {
+                                        indent = getTokenIndent(tt);
                                     }
-                                    indent = getTokenIndent(tt) + getFormatStatementContinuationIndent();
                                     break;
                                 default:
                                     indent = getTokenIndent(tt);
