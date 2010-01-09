@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,10 +40,8 @@
  */
 package org.netbeans.modules.java.editor.overridden;
 
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,8 +58,6 @@ import org.netbeans.modules.java.source.TreeLoader;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 
 /**XXX: tests for multi source root is overridden annotations are missing!
@@ -83,17 +79,19 @@ public class IsOverriddenAnnotationCreatorTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
+
+        clearWorkDir();
         
         if (cache == null) {
-            cache = TestUtil.createWorkFolder();
-            cacheFO = FileUtil.toFileObject(cache);
+            cache = new File(getWorkDir(), "cache");
+            cacheFO = FileUtil.createFolder(cache);
 
             cache.deleteOnExit();
         }
     }
     
     private void prepareTest(String capitalizedName) throws Exception {
-        FileObject workFO = SourceUtilsTestUtil.makeScratchDir(this);
+        FileObject workFO = FileUtil.toFileObject(getWorkDir());
         
         assertNotNull(workFO);
         
