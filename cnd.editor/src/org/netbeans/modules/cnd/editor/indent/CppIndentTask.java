@@ -445,7 +445,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                         break;
 
                     case RBRACE:
-                        TokenItem t3 = findStatementStart(token);
+                        TokenItem t3 = findStatementStart(token, true);
                         if (t3 != null) {
                             indent = getTokenIndent(t3);
                         }

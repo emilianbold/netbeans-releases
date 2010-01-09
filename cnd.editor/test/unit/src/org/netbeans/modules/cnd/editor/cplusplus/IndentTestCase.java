@@ -1188,4 +1188,31 @@ public class IndentTestCase extends EditorBase {
             "}\n"
             );
     }
+
+    public void testNestedFor2() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    for(i=0;i<10;i++)\n"+
+            "        for(j=0;j<10;j++)\n"+
+            "            for(k=0;k<10;k++)\n"+
+            "                {\n"+
+            "                    //contents of the last loop\n"+
+            "                }|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of empty for",
+            "int main() {\n"+
+            "    for(i=0;i<10;i++)\n"+
+            "        for(j=0;j<10;j++)\n"+
+            "            for(k=0;k<10;k++)\n"+
+            "                {\n"+
+            "                    //contents of the last loop\n"+
+            "                }\n"+
+            "    \n"+
+            "}\n"
+            );
+    }
 }
