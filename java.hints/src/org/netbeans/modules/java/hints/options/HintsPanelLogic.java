@@ -235,6 +235,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         if ( path != null ) {
             Rectangle r = errorTree.getPathBounds(path);
             if (r != null) {
+                r.width = r.height;
                 if ( r.contains(p)) {
                     toggle( path );
                 }
