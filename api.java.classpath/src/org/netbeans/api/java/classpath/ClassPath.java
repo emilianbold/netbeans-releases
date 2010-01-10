@@ -80,6 +80,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -246,10 +247,10 @@ public final class ClassPath {
         List<ClassPath.Entry> entries = this.entries();
         FileObject[] ret;
         synchronized (this) {
-            if (this.invalidRoots == current) {                            
+            if (this.invalidRoots == current) {
                 if (rootsCache == null || rootsListener == null) {
                     attachRootsListener();
-                    this.rootsCache = createRoots (entries);                    
+                    this.rootsCache = createRoots (entries);
                 }
                 ret = this.rootsCache;
             }
@@ -260,19 +261,21 @@ public final class ClassPath {
         assert ret != null;
         return ret;
     }
-    
+
     private FileObject[] createRoots (final List<ClassPath.Entry> entries) {
-        List<FileObject> l = new ArrayList<FileObject> ();
+        final List<FileObject> l = new ArrayList<FileObject> ();
+        final Set<URL> listenOn = new HashSet<URL>();
         for (Entry entry : entries) {
-            RootsListener rL = this.getRootsListener();
-            if (rL != null) {
-                rL.addRoot (entry.getURL());
-            }
+            listenOn.add(entry.getURL());
             FileObject fo = entry.getRoot();
             if (fo != null) {
                 l.add(fo);
                 root2Filter.put(fo, entry.filter);
             }
+        }
+        final RootsListener rL = this.getRootsListener();
+        if (rL != null) {
+            rL.addRoots (listenOn);
         }
         return l.toArray (new FileObject[l.size()]);
     }
@@ -1006,44 +1009,52 @@ public final class ClassPath {
 
     private static class RootsListener extends WeakReference<ClassPath> implements FileChangeListener, Runnable {
 
-        private boolean initialized;
-        private Set<String> roots;
+        private final Set<File> roots;
 
         private RootsListener (ClassPath owner) {
             super (owner, Utilities.activeReferenceQueue());
-            roots = new HashSet<String> ();
+            roots = new HashSet<File> ();
         }
 
-        public void addRoot (URL url) {
-            if (!isInitialized()) {
-                FileUtil.addFileChangeListener (this);
-                setInitialized(true);
+        public void addRoots (final Set<? extends URL> urls) {
+            Parameters.notNull("urls",urls);    //NOI18N
+            final Set<File> newRoots = new HashSet<File>();
+            for (URL url : urls) {
+                if ("jar".equals(url.getProtocol())) { //NOI18N
+                    url = FileUtil.getArchiveFile(url);
+                }
+                try {
+                    newRoots.add(new File(url.toURI()));
+                } catch (IllegalArgumentException e) {
+                    LOG.warning(e.getLocalizedMessage());
+                    //pass
+                } catch (URISyntaxException e) {
+                    LOG.warning("Invalid URL: " + url); //NOI18N
+                    //pass
+                }
             }
-            if ("jar".equals(url.getProtocol())) { //NOI18N
-                url = FileUtil.getArchiveFile(url);
+            synchronized (this) {
+                final Set<File> toRemove = new HashSet<File>(roots);
+                toRemove.removeAll(newRoots);
+                final Set<File> toAdd = new HashSet<File>(newRoots);
+                toAdd.removeAll(roots);
+                for (File root : toRemove) {
+                    FileUtil.removeFileChangeListener(this, root);
+                    roots.remove(root);
+                }
+                for (File root : toAdd) {
+                    FileUtil.addFileChangeListener(this, root);
+                    roots.add (root);
+                }
             }
-            String path = url.getPath();
-            if (path.endsWith("/")) {       //NOI18N
-                path = path.substring(0,path.length()-1);
-            }
-            roots.add (path);
         }
 
-        public void removeRoot (URL url) {            
-            if ("jar".equals(url.getProtocol())) { //NOI18N
-                url = FileUtil.getArchiveFile(url);
-            }
-            String path = url.getPath();
-            if (path.endsWith("/")) {   //NOI18N
-                path = path.substring(0,path.length()-1);
-            }
-            roots.remove (path);
-        }
 
-        public void removeAllRoots () {
+        public synchronized void removeAllRoots () {
+            for (File root : roots) {
+                FileUtil.removeFileChangeListener(this, root);
+            }
             this.roots.clear();
-            FileUtil.removeFileChangeListener(this);
-            initialized = false; //Already synchronized
         }
 
         public void fileFolderCreated(FileEvent fe) {
@@ -1055,21 +1066,7 @@ public final class ClassPath {
         }
 
         public void fileChanged(FileEvent fe) {
-            if (!isInitialized()) {
-                return; //Cache already cleared
-            }
-            String path = getPath (fe.getFile());
-            if (this.roots.contains(path)) {
-                ClassPath cp = get();
-                if (cp != null) {
-                    synchronized (cp) {
-                        cp.rootsCache = null;
-                        cp.invalidRoots++;
-                        this.removeAllRoots();  //No need to listen
-                    }
-                    cp.firePropertyChange(PROP_ROOTS,null,null,null);
-               }
-            }
+            processEvent(fe);
         }
 
         public void fileDeleted(FileEvent fe) {
@@ -1080,66 +1077,23 @@ public final class ClassPath {
             this.processEvent (fe);
         }
 
-        public void fileAttributeChanged(FileAttributeEvent fe) {            
+        public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
         public void run() {
-            if (isInitialized()) {
-                FileUtil.removeFileChangeListener(this);
-            }
+            removeAllRoots();
         }
 
         private void processEvent (FileEvent fe) {
-            if (!isInitialized()) {
-                return; //Not interesting, cache already cleared
-            }
-            String path = getPath (fe.getFile());
-            if (path == null)
-                return;
-            ClassPath cp = get();
+            final ClassPath cp = get();
             if (cp == null) {
                 return;
             }
-            boolean fire = false;
             synchronized (cp) {
-                for (String rootPath : roots) {
-                    if (rootPath.startsWith (path)) {
-                        cp.rootsCache = null;
-                        cp.invalidRoots++;
-                        this.removeAllRoots();  //No need to listen
-                        fire = true;
-                        break;
-                    }
-                }            
+                cp.rootsCache = null;
+                cp.invalidRoots++;
             }
-            if (fire) {
-                cp.firePropertyChange(PROP_ROOTS,null,null,null);
-            }
-        }
-
-        private static String getPath (FileObject fo) {
-            if (fo == null)
-                return null;            
-            try {
-                URL url = fo.getURL();
-                String path = url.getPath();
-                if (path.endsWith("/")) {        //NOI18N
-                    path=path.substring(0,path.length()-1);
-                }
-                return path;
-            } catch (FileStateInvalidException e) {
-                Exceptions.printStackTrace(e);
-                return null;
-            }
-        }
-        
-        private synchronized boolean isInitialized () {
-            return this.initialized;
-        }
-        
-        private synchronized void setInitialized (boolean newValue) {
-            this.initialized = newValue;
+            cp.firePropertyChange(PROP_ROOTS,null,null,null);
         }
     }
-
 }
