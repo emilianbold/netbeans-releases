@@ -674,6 +674,16 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hi, LPSTR lpCmdLine, int nCmd
         }
     }
     FREE(currentProgressSize);
-    FREE(totalProgressSize)
+    FREE(totalProgressSize);
     return (status==ERROR_OK) ? exitCode : status;
+}
+
+int WINAPI MyMain(void) {
+    int exitCode;
+    STARTUPINFO StartupInfo;
+    StartupInfo.dwFlags = 0;
+    GetStartupInfo( &StartupInfo );
+    exitCode = WinMain(GetModuleHandle(NULL), NULL, NULL,  StartupInfo.dwFlags & STARTF_USESHOWWINDOW  ? StartupInfo.wShowWindow : SW_SHOWDEFAULT);
+    ExitProcess(exitCode);
+    return exitCode;
 }
