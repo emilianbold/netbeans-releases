@@ -38,36 +38,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.api.model;
+package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 
-import org.netbeans.modules.web.beans.impl.model.BeansModelImpl;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.web.beans.impl.model.AbstractObjectProvider.Refreshable;
 
 
 /**
  * @author ads
  *
  */
-public final class BeansModelFactory {
+class NamedStereotype extends PersistentObject implements Refreshable{
+
+    public NamedStereotype( AnnotationModelHelper helper,
+            TypeElement typeElement )
+    {
+        super(helper, typeElement);
+        boolean valid = refresh( typeElement);
+        assert valid;
+    }
     
-    private BeansModelFactory(){
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.AbstractObjectProvider.Refreshable#refresh(javax.lang.model.element.TypeElement)
+     */
+    @Override
+    public boolean refresh( TypeElement type ) {
+        List<? extends AnnotationMirror> allAnnotationMirrors = 
+            getHelper().getCompilationController().getElements().
+                getAllAnnotationMirrors(type);
+        Map<String, ? extends AnnotationMirror> annotationsByType = 
+                getHelper().getAnnotationsByType( allAnnotationMirrors );
+        boolean isStereotype = annotationsByType.get( 
+                StereotypeChecker.STEREOTYPE) != null ;
+        if ( !isStereotype ){
+            return false;
+        }
+        boolean hasNamed = NamedStereotypeObjectProvider.hasNamed(type, 
+                getHelper());
+        return hasNamed;
     }
 
-    public static BeansModel createModel( ModelUnit unit ){
-        return new BeansModelImpl(unit);
-    }
-    
-    public static synchronized BeansModel getModel( ModelUnit unit ){
-        BeansModel model = MODELS.get( unit );
-        if ( model == null ){
-            model = createModel( unit );
-            MODELS.put(unit, model);
-        }
-        return model;
-    }
-    
-    private static final Map<ModelUnit, BeansModel> MODELS = 
-        new WeakHashMap<ModelUnit, BeansModel>();
 }

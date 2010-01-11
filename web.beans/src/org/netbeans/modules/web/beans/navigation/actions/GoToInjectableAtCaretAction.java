@@ -83,6 +83,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.Result;
@@ -238,11 +239,19 @@ public final class GoToInjectableAtCaretAction extends BaseAction {
         }
         SourceGroup[] sourceGroups = sources.getSourceGroups( 
                 JavaProjectConstants.SOURCES_TYPE_JAVA );
-        ClassPath[] paths = new ClassPath[ sourceGroups.length];
+        SourceGroup[] webGroup = sources.getSourceGroups(
+                WebProjectConstants.TYPE_WEB_INF);
+        ClassPath[] paths = new ClassPath[ sourceGroups.length+webGroup.length];
         int i=0;
         for (SourceGroup sourceGroup : sourceGroups) {
             FileObject rootFolder = sourceGroup.getRootFolder();
             paths[ i ] = provider.findClassPath( rootFolder, type);
+            i++;
+        }
+        for (SourceGroup sourceGroup : webGroup) {
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            paths[ i ] = provider.findClassPath( rootFolder, type);
+            i++;
         }
         return ClassPathSupport.createProxyClassPath( paths );
     }
@@ -448,6 +457,9 @@ public final class GoToInjectableAtCaretAction extends BaseAction {
             if ( !((Result.ApplicableResult)result).isDisabled(element)){
                 handles.add( ElementHandle.create( element ));
             }
+        }
+        if ( handles.size() == 0 ){
+            return;
         }
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                 InjectablesModel.class, "LBL_WaitNode"));

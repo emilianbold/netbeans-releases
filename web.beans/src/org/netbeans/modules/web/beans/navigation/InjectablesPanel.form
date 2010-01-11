@@ -45,12 +45,12 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="myType" alignment="0" pref="522" max="32767" attributes="0"/>
-                          <Component id="myBindings" alignment="0" pref="522" max="32767" attributes="0"/>
+                          <Component id="myType" alignment="0" pref="518" max="32767" attributes="0"/>
+                          <Component id="myBindings" alignment="0" pref="518" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="myАiltersLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="myFiltersLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="myFiltersToolbar" pref="539" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -59,7 +59,7 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="myInjectableBindingLbl" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="myInjectableBindings" pref="594" max="32767" attributes="0"/>
+                      <Component id="myInjectableBindings" pref="588" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -97,7 +97,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
                   <Group type="103" alignment="1" groupAlignment="3" attributes="0">
-                      <Component id="myАiltersLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="myFiltersLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="myCloseButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="myFiltersToolbar" min="-2" pref="25" max="-2" attributes="0"/>
@@ -193,7 +193,7 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JLabel" name="my&#x410;iltersLabel">
+    <Component class="javax.swing.JLabel" name="myFiltersLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/web/beans/navigation/Bundle.properties" key="LABEL_filtersLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

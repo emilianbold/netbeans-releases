@@ -38,36 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.api.model;
+package org.netbeans.modules.web.beans.impl.model;
 
-import java.util.Map;
-import java.util.WeakHashMap;
+import javax.lang.model.element.TypeElement;
 
-import org.netbeans.modules.web.beans.impl.model.BeansModelImpl;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 
 
 /**
+ * Provider for type elements which are annotated with some stereotype.
+ * 
  * @author ads
  *
  */
-public final class BeansModelFactory {
+class StereotypedObjectProvider extends AbstractObjectProvider<StereotypedObject>
+{
     
-    private BeansModelFactory(){
+    StereotypedObjectProvider( String stereotypeAnnotation , 
+            AnnotationModelHelper helper )
+    {
+        super( stereotypeAnnotation, helper);
     }
 
-    public static BeansModel createModel( ModelUnit unit ){
-        return new BeansModelImpl(unit);
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.AbstractObjectProvider#createTypeElement(javax.lang.model.element.TypeElement)
+     */
+    @Override
+    protected StereotypedObject createTypeElement( TypeElement element ) {
+        return new StereotypedObject( getAnnotation(), getHelper() , element );
     }
-    
-    public static synchronized BeansModel getModel( ModelUnit unit ){
-        BeansModel model = MODELS.get( unit );
-        if ( model == null ){
-            model = createModel( unit );
-            MODELS.put(unit, model);
-        }
-        return model;
-    }
-    
-    private static final Map<ModelUnit, BeansModel> MODELS = 
-        new WeakHashMap<ModelUnit, BeansModel>();
+
 }

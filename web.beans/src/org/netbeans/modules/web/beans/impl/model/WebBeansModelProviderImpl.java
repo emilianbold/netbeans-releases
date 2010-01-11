@@ -40,17 +40,25 @@
  */
 package org.netbeans.modules.web.beans.impl.model;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
 import org.netbeans.modules.web.beans.api.model.AbstractModelImplementation;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.Result;
@@ -181,6 +189,220 @@ public class WebBeansModelProviderImpl extends ParameterInjectionPointLogic
             }
         }
         return result;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getName(javax.lang.model.element.Element, org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
+     */
+    @Override
+    public String getName( Element element,
+            AbstractModelImplementation modelImpl )
+    {
+        WebBeansModelImplementation impl = getImplementation( modelImpl);
+        if ( impl == null ){
+            return null;
+        }
+        String name = inspectSpecializes( element , impl );
+        if ( name != null ){
+            return name;
+        }
+        List<AnnotationMirror> allStereotypes = getAllStereotypes(element, 
+                impl.getHelper());
+        for (AnnotationMirror annotationMirror : allStereotypes) {
+            DeclaredType annotationType = annotationMirror.getAnnotationType();
+            TypeElement annotation = (TypeElement)annotationType.asElement();
+            if ( AnnotationObjectProvider.hasAnnotation(annotation, 
+                    NAMED_QUALIFIER_ANNOTATION, impl.getHelper() ) )
+            {
+                return getNamedName(element , null, impl.getHelper());
+            }
+        }
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.model.spi.WebBeansModelProvider#getNamedElements(org.netbeans.modules.web.beans.api.model.AbstractModelImplementation)
+     */
+    @Override
+    public List<Element> getNamedElements( AbstractModelImplementation modelImpl ) {
+        WebBeansModelImplementation impl = getImplementation( modelImpl);
+        if ( impl == null ){
+            return Collections.emptyList();
+        }
+        List<Element> result = new LinkedList<Element>();
+        Collection<BindingQualifier> objects = impl.getNamedManager().getObjects();
+        for (BindingQualifier named : objects) {
+            result.add( named.getTypeElement() );
+        }
+        List<Element> members = AbstractObjectProvider.getNamedMembers( 
+                impl.getHelper() );
+        for (Element element : members) {
+            if ( element.getKind()!= ElementKind.METHOD ){
+                continue;
+            }
+            Set<Element> childSpecializes = getChildSpecializes( element, impl );
+            result.addAll( childSpecializes );
+        }
+        result.addAll( members );
+        
+        Set<String> stereotypeNames = impl.adjustStereotypesManagers();
+        for (String stereotype : stereotypeNames) {
+            PersistentObjectManager<StereotypedObject> manager = 
+                impl.getStereotypedManager(stereotype);
+            Collection<StereotypedObject> beans = manager.getObjects();
+            for (StereotypedObject bean : beans) {
+                result.add( bean.getTypeElement() );
+            }
+            List<Element> stereotypedMembers = StereotypedObjectProvider.
+                getAnnotatedMembers( stereotype, impl.getHelper());
+            result.addAll( stereotypedMembers );
+        }
+        
+        return result;
+    }
+    
+    public static List<AnnotationMirror> getAllStereotypes( Element element ,
+            AnnotationModelHelper helper  ) 
+    {
+        List<AnnotationMirror> result = new LinkedList<AnnotationMirror>();
+        Set<Element> foundStereotypesElement = new HashSet<Element>(); 
+        StereotypeChecker checker = new StereotypeChecker( helper);
+        doGetStereotypes(element, result, foundStereotypesElement, checker,
+                helper);
+        return result;
+    }
+    
+    public static boolean isStereotype( TypeElement annotationElement,
+            StereotypeChecker checker ) 
+    {
+        checker.init(annotationElement);
+        boolean result = checker.check();
+        checker.clean();
+        return result;
+    }
+    
+    private String inspectSpecializes( Element element,
+            WebBeansModelImplementation impl )
+    {
+        if (element instanceof TypeElement) {
+            String name = doGetName(element, element, impl);
+            if ( name != null ){
+                return name;
+            }
+            TypeElement superElement = AnnotationObjectProvider.checkSuper(
+                    (TypeElement)element, NAMED_QUALIFIER_ANNOTATION, 
+                    impl.getHelper());
+            if ( superElement != null ){
+                return doGetName(element, superElement, impl);
+            }
+        }
+        else if ( element instanceof ExecutableElement ){
+            String name = doGetName(element, element, impl);
+            if ( name == null ){
+                Element specialized = MemberCheckerFilter.getSpecialized( element, 
+                        impl, NAMED_QUALIFIER_ANNOTATION);
+                if ( specialized!= null ){
+                    return doGetName(element , specialized, impl);
+                }
+            }
+            else {
+                return name;
+            }
+        }
+        else {
+            return doGetName(element, element, impl);
+        }
+        return null;
+    }
+    
+    private String doGetName( Element original , Element element, 
+            WebBeansModelImplementation impl )
+    {
+        List<? extends AnnotationMirror> annotations = impl.getHelper().
+            getCompilationController().getElements().getAllAnnotationMirrors( 
+                element);
+        for (AnnotationMirror annotationMirror : annotations) {
+        DeclaredType type = annotationMirror.getAnnotationType();
+        TypeElement annotationElement = (TypeElement)type.asElement();
+            if ( NAMED_QUALIFIER_ANNOTATION.contentEquals( 
+                    annotationElement.getQualifiedName()))
+            {
+                return getNamedName( original , annotationMirror ,
+                        impl.getHelper());
+            }
+        }
+        return null;
+    }
+    
+    private static void doGetStereotypes( Element element , 
+            List<AnnotationMirror> result ,Set<Element>  foundStereotypesElement,
+            StereotypeChecker checker , AnnotationModelHelper helper ) 
+    {
+        List<? extends AnnotationMirror> annotationMirrors = helper.
+            getCompilationController().getElements().getAllAnnotationMirrors( element );
+        for (AnnotationMirror annotationMirror : annotationMirrors) {
+            TypeElement annotationElement = (TypeElement)annotationMirror.
+                getAnnotationType().asElement();
+            if ( foundStereotypesElement.contains( annotationElement)){
+                continue;
+            }
+            if ( isStereotype( annotationElement, checker ) ){
+                foundStereotypesElement.add( annotationElement );
+                result.add(annotationMirror);
+                doGetStereotypes(annotationElement, result, 
+                        foundStereotypesElement, checker , helper);
+            }
+        }
+    }
+    
+    private String getNamedName( Element element, AnnotationMirror namedAnnotation,
+            AnnotationModelHelper helper )
+    {
+        if (namedAnnotation != null) {
+            AnnotationParser parser = AnnotationParser.create(helper);
+            parser.expectString(RuntimeAnnotationChecker.VALUE, null);
+            ParseResult result = parser.parse(namedAnnotation);
+            String name = result.get(RuntimeAnnotationChecker.VALUE, String.class);
+            if ( name != null ){
+                return name;
+            }
+        }
+        if ( element instanceof TypeElement ){
+            String name = element.getSimpleName().toString();
+            if ( name.length() >0 ){
+                return Character.toLowerCase(name.charAt( 0 ))+name.substring(1);
+            }
+            else {
+                return name;
+            }
+        }
+        if ( element instanceof VariableElement ){
+            return element.getSimpleName().toString();
+        }
+        if ( element instanceof ExecutableElement ){
+            String name = element.getSimpleName().toString();
+            if ( name.startsWith("get") && name.length() > 3 ){     // NOI18N
+                return getPropertyName(name, 3);
+            }
+            else if ( name.startsWith("is") && name.length() >2 ){  // NOI18N
+                return getPropertyName(name, 2);
+            }
+            return name;
+        }
+        return null;
+    }
+    
+    private String getPropertyName(String methodName, int prefixLength) {
+        String propertyName = methodName.substring(prefixLength);
+        String propertyNameWithoutFL = propertyName.substring(1);
+
+        if (propertyNameWithoutFL.length() > 0) {
+            if (propertyNameWithoutFL.equals(propertyNameWithoutFL.toUpperCase())) {
+                //property is in uppercase
+                return propertyName;
+            }
+        }
+        return Character.toLowerCase(propertyName.charAt(0)) + propertyNameWithoutFL;
     }
 
     private static WebBeansModelImplementation getImplementation(
