@@ -42,6 +42,7 @@
 package org.netbeans.modules.subversion;
 
 
+import java.awt.EventQueue;
 import java.net.MalformedURLException;
 import java.util.regex.Pattern;
 import java.util.*;
@@ -49,6 +50,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.Utils;
 
@@ -77,11 +79,12 @@ public class SvnModuleConfig {
     public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";                               // NOI18N
     private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";                                 // NOI18N
     private static final String LAST_USED_MODIFICATION_CONTEXT = "lastUsedModificationContext"; //NOI18N
-
+    public static final String KEY_PASSWORD = "versioning.subversion."; //NOI18N
+    public static final String KEY_CERT_PASSWORD = "versioning.subversion.cert."; //NOI18N
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
         
-    private Map<String, String[]> urlCredentials;
+    private Map<String, Object[]> urlCredentials;
     
     public static SvnModuleConfig getDefault() {
         return INSTANCE;
@@ -196,7 +199,7 @@ public class SvnModuleConfig {
         return rc;
     }      
     
-    public void insertRecentUrl(RepositoryConnection rc) {        
+    public void insertRecentUrl(final RepositoryConnection rc) {
         Preferences prefs = getPreferences();
         
         List<String> urlValues = Utils.getStringList(prefs, KEY_RECENT_URL);
@@ -208,6 +211,8 @@ public class SvnModuleConfig {
             }
         }
         handleCredentials(rc);
+        storeCredentials(rc);
+
         String url = RepositoryConnection.getString(rc);
         if (!"".equals(url)) {                                          //NOI18N
             Utils.insert(prefs, KEY_RECENT_URL, url, -1);
@@ -222,6 +227,7 @@ public class SvnModuleConfig {
             idx++;
             RepositoryConnection rc = it.next();
             handleCredentials(rc);
+            storeCredentials(rc);
             String url = RepositoryConnection.getString(rc);
             if (!"".equals(url)) {                                      //NOI18N
                 urls.add(url);
@@ -235,14 +241,31 @@ public class SvnModuleConfig {
         Preferences prefs = getPreferences();
         List<String> urls = Utils.getStringList(prefs, KEY_RECENT_URL);
         List<RepositoryConnection> ret = new ArrayList<RepositoryConnection>(urls.size());
-        for (Iterator<String> it = urls.iterator(); it.hasNext();) {
-            RepositoryConnection rc = RepositoryConnection.parse(it.next());
-            if(getUrlCredentials().containsKey(rc.getUrl())) {
-                String[] creds = getUrlCredentials().get(rc.getUrl());
-                if(creds.length < 2) continue; //skip garbage
-                rc = new RepositoryConnection(rc.getUrl(), creds[0], creds[1], rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), rc.getCertPassword());
+        List<RepositoryConnection> withPassword = new LinkedList<RepositoryConnection>();
+        for (String urlString : urls) {
+            RepositoryConnection rc = RepositoryConnection.parse(urlString);
+            if (rc.getPassword() != null || rc.getCertPassword() != null) {
+                withPassword.add(rc);
+            } else {
+                if(getUrlCredentials().containsKey(rc.getUrl())) {
+                    Object[] creds = getUrlCredentials().get(rc.getUrl());
+                    if(creds.length < 2) continue; //skip garbage
+                    rc = new RepositoryConnection(rc.getUrl(), (String)creds[0], (char[])creds[1], rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), rc.getCertPassword());
+                } else if (!EventQueue.isDispatchThread()) {
+                    char[] password = KeyringSupport.read(KEY_PASSWORD, rc.getUrl().toString());
+                    char[] certPassword = KeyringSupport.read(KEY_CERT_PASSWORD, rc.getUrl().toString());
+                    rc = new RepositoryConnection(rc.getUrl(), rc.getUsername(), password, rc.getExternalCommand(), rc.getSavePassword(), rc.getCertFile(), certPassword);
+                }
+                ret.add(rc);
             }
-            ret.add(rc);
+        }
+        // there's an old-style connection with password set
+        // rewrite these connections with the new version with no password included
+        if (withPassword.size() > 0) {
+            for (RepositoryConnection conn : withPassword) {
+                insertRecentUrl(conn);
+            }
+            return getRecentUrls();
         }
         return ret;
     }
@@ -339,15 +362,15 @@ public class SvnModuleConfig {
     
     private void handleCredentials(RepositoryConnection rc) {
         if(!rc.getSavePassword()) {
-            getUrlCredentials().put(rc.getUrl(), new String[]{rc.getUsername(), rc.getPassword()});
+            getUrlCredentials().put(rc.getUrl(), new Object[]{rc.getUsername(), rc.getPassword()});
         } else {
             getUrlCredentials().remove(rc.getUrl());
         }                      
     }    
     
-    private Map<String, String[]> getUrlCredentials() {
+    private Map<String, Object[]> getUrlCredentials() {
         if(urlCredentials == null) {
-            urlCredentials =  new HashMap<String, String[]>();
+            urlCredentials =  new HashMap<String, Object[]>();
         }
         return urlCredentials;
     }    
@@ -372,5 +395,26 @@ public class SvnModuleConfig {
             }
         }
         return null;
+    }
+
+    private void storeCredentials (final RepositoryConnection rc) {
+        if ((rc.getSavePassword() && rc.getPassword() != null) || rc.getCertPassword() != null) {
+            Runnable outOfAWT = new Runnable() {
+                public void run() {
+                    if (rc.getSavePassword() && rc.getPassword() != null) {
+                        KeyringSupport.save(KEY_PASSWORD, rc.getUrl().toString(), rc.getPassword().clone(), null);
+                    }
+                    if (rc.getCertPassword() != null) {
+                        KeyringSupport.save(KEY_CERT_PASSWORD, rc.getUrl().toString(), rc.getCertPassword().clone(), null);
+                    }
+                }
+            };
+            // keyring should be called only in a background thread
+            if (EventQueue.isDispatchThread()) {
+                Subversion.getInstance().getRequestProcessor().post(outOfAWT);
+            } else {
+                outOfAWT.run();
+            }
+        }
     }
 }

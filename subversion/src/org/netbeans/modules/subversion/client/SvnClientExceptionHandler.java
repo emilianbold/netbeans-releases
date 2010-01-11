@@ -217,11 +217,11 @@ public class SvnClientExceptionHandler {
             if(ret) {
                 RepositoryConnection rc = repository.getSelectedRC();
                 String username = rc.getUsername();
-                String password = rc.getPassword();
+                char[] password = rc.getPassword();
 
                 adapter.setUsername(username);
-                if (commandLine) {
-                    adapter.setPassword(password);
+                if (commandLine && password != null) {
+                    adapter.setPassword(new String(password));
                 }
                 SvnModuleConfig.getDefault().insertRecentUrl(rc);
             }
@@ -417,8 +417,7 @@ public class SvnClientExceptionHandler {
             if(certFile == null || certFile.trim().equals("")) {                            // NOI18N
                 return null;
             }               
-            String certPassword = rc.getCertPassword();                                                                        
-            char[] certPasswordChars = certPassword != null ? certPassword.toCharArray() : null;                        
+            char[] certPasswordChars = rc.getCertPassword();
             
             KeyStore ks = KeyStore.getInstance("pkcs12");                                   // NOI18N            
             ks.load(new FileInputStream(certFile), certPasswordChars);

@@ -51,6 +51,8 @@ import org.netbeans.api.keyring.Keyring;
  */
 public class KeyringSupport {
 
+    private static final Logger LOG = Logger.getLogger("versioning.util.KeyringSupport"); //NOI18N
+
     /**
      * Saves password for a key constructed from keyPrefix and key
      * @param keyPrefix key prefix for each versioning system
@@ -59,6 +61,9 @@ public class KeyringSupport {
      * @param description can be null
      */
     public static void save (String keyPrefix, String key, char[] password, String description) {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Saving password for {0}:{1}", new String[] {keyPrefix, key}); //NOI18N
+        }
         Keyring.save(getKeyringKey(keyPrefix, key), password, description);
     }
 
@@ -69,7 +74,11 @@ public class KeyringSupport {
      * @return stored password or null
      */
     public static char[] read (String keyPrefix, String key) {
-        return Keyring.read(getKeyringKey(keyPrefix, key));
+        char[] retval = Keyring.read(getKeyringKey(keyPrefix, key));
+        if (LOG.isLoggable(Level.FINE) && retval == null) {
+            LOG.log(Level.FINE, "No password for {0}:{1}", new String[] {keyPrefix, key}); //NOI18N
+        }
+        return retval;
     }
 
     private static String getKeyringKey (String keyPrefix, String keyToHash) {

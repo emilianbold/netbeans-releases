@@ -221,10 +221,10 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
         @Override
         protected void refresh(RepositoryConnection rc) {
             panel.userTextField.setText(rc.getUsername());
-            panel.userPasswordField.setText(rc.getPassword());
+            panel.userPasswordField.setText(rc.getPassword() == null ? "" : new String(rc.getPassword())); //NOI18N
             panel.savePasswordCheckBox.setSelected(rc.getSavePassword());
             panel.certFileTextField.setText(rc.getCertFile());
-            panel.certPasswordField.setText(rc.getCertPassword());
+            panel.certPasswordField.setText(rc.getCertPassword() == null ? "" : new String(rc.getCertPassword())); //NOI18N
         }
 
         @Override
@@ -315,14 +315,14 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
 
         private void onPasswordChange(RepositoryConnection rc) {
             if (rc != null) {
-                rc.setPassword(new String(panel.userPasswordField.getPassword()));
+                rc.setPassword(panel.userPasswordField.getPassword());
             }
             repository.setValid(true, "");
         }
 
         private void onCertPasswordChange(RepositoryConnection rc) {
             if (rc != null) {
-                rc.setCertPassword(new String(panel.certPasswordField.getPassword()));
+                rc.setCertPassword(panel.certPasswordField.getPassword());
             }
         }
 
@@ -335,10 +335,10 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
         @Override
         protected void fillRC(RepositoryConnection editedrc) {
             editedrc.setUsername(panel.userTextField.getText());
-            editedrc.setPassword(new String(panel.userPasswordField.getPassword()));
+            editedrc.setPassword(panel.userPasswordField.getPassword());
             editedrc.setSavePassword(panel.savePasswordCheckBox.isSelected());
             editedrc.setCertFile(panel.certFileTextField.getText());
-            editedrc.setCertPassword(new String(panel.certPasswordField.getPassword()));
+            editedrc.setCertPassword(panel.certPasswordField.getPassword());
         }
 
         @Override
@@ -474,8 +474,8 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
 
         @Override
         protected void refresh(RepositoryConnection rc) {
-            panel.passwordField.setText(rc.getPassword());
-            panel.certPasswordField.setText(rc.getCertPassword());
+            panel.passwordField.setText(rc.getPassword() == null ? "" : new String(rc.getPassword())); //NOI18N
+            panel.certPasswordField.setText(rc.getCertPassword() == null ? "" : new String(rc.getCertPassword())); //NOI18N
             panel.certFileTextField.setText(rc.getCertFile());
         }
 
@@ -553,8 +553,8 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
 
         @Override
         protected void fillRC(RepositoryConnection rc) {
-            rc.setPassword(new String(panel.passwordField.getPassword()));
-            rc.setCertPassword(new String(panel.certPasswordField.getPassword()));
+            rc.setPassword(panel.passwordField.getPassword());
+            rc.setCertPassword(panel.certPasswordField.getPassword());
             rc.setCertFile(panel.certFileTextField.getText());
         }
 
