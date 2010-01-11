@@ -71,9 +71,6 @@ pack_all_components()
 
     rm -rf extra
 
-    pack_component $DIST_DIR/zip/moduleclusters $NAME soa "soa*"
-    rm -rf soa*
-
     pack_component $DIST_DIR/zip/moduleclusters $NAME uml "uml*"
     rm -rf uml*
 
@@ -132,9 +129,6 @@ pack_all_components()
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME ergonomics "ergonomics*"
     rm -rf ergonomics*
-
-    pack_component $DIST_DIR/zip/moduleclusters $NAME soa "soa*"
-    rm -rf soa*
 
     pack_component $DIST_DIR/zip/moduleclusters $NAME apisupport "apisupport*"
     rm -rf apisupport*
