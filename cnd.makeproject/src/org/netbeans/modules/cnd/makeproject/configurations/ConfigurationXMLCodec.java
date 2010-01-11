@@ -200,7 +200,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP:  < version 5
             currentFolder = new Folder(projectDescriptor, projectDescriptor.getLogicalFolders(), "ExternalFiles", "Important Files", false); // NOI18N
             projectDescriptor.setExternalFileItems(currentFolder);
-            projectDescriptor.getLogicalFolders().addFolder(currentFolder);
+            projectDescriptor.getLogicalFolders().addFolder(currentFolder, true);
         } else if (element.equals(LOGICAL_FOLDER_ELEMENT)) {
             if (currentFolderStack.size() == 0) {
                 currentFolder = projectDescriptor.getLogicalFolders();
