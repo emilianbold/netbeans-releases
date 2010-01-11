@@ -59,7 +59,6 @@ import java.util.ArrayList;
 import org.netbeans.modules.subversion.ui.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
@@ -206,7 +205,7 @@ public class Subversion {
 
     public SvnClient getClient(SVNUrl repositoryUrl,
                                String username,
-                               String password)
+                               char[] password)
     throws SVNClientException
     {
         return getClient(repositoryUrl, username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
@@ -214,7 +213,7 @@ public class Subversion {
 
     public SvnClient getClient(SVNUrl repositoryUrl,
                                String username,
-                               String password,
+                               char[] password,
                                int handledExceptions) throws SVNClientException {
         SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, null, username, password, handledExceptions);
         attachListeners(client);
@@ -223,14 +222,14 @@ public class Subversion {
 
     public SvnClient getClient(SVNUrl repositoryUrl, SvnProgressSupport progressSupport) throws SVNClientException {
         String username = ""; // NOI18N
-        String password = ""; // NOI18N
+        char[] password = null;
 
         SvnKenaiSupport kenaiSupport = SvnKenaiSupport.getInstance();
         if(kenaiSupport.isKenai(repositoryUrl.toString())) {
             PasswordAuthentication pa = kenaiSupport.getPasswordAuthentication(repositoryUrl.toString(), false);
             if(pa != null) {
                 username = pa.getUserName();
-                password = new String(pa.getPassword());
+                password = pa.getPassword();
             }
         } else {
             RepositoryConnection rc = SvnModuleConfig.getDefault().getRepositoryConnection(repositoryUrl.toString());
@@ -244,9 +243,9 @@ public class Subversion {
 
     public SvnClient getClient(SVNUrl repositoryUrl,
                                String username,
-                               String password,
+                               char[] password,
                                SvnProgressSupport support) throws SVNClientException {
-        SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support, /*null, */username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
+        SvnClient client = SvnClientFactory.getInstance().createSvnClient(repositoryUrl, support, username, password, SvnClientExceptionHandler.EX_DEFAULT_HANDLED_EXCEPTIONS);
         attachListeners(client);
         return client;
     }

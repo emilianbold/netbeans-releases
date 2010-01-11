@@ -103,7 +103,7 @@ public class SvnConfigFilesTest extends NbTestCase {
         SVNUrl url = new SVNUrl("https://feher.lo.nem.lo.com/kuon");
         RepositoryConnection rc = new RepositoryConnection(
                 url.toString(),
-                "usr", "psswd", null, false, "/cert/file", "pssphrs");
+                "usr", "psswd".toCharArray(), null, false, "/cert/file", "pssphrs".toCharArray());
 
         SvnModuleConfig.getDefault().insertRecentUrl(rc);
         String path = "/tmp" + File.separator + "svn" + File.separator + "config" + System.currentTimeMillis();
@@ -128,7 +128,7 @@ public class SvnConfigFilesTest extends NbTestCase {
         // lets change the credentials ...
         rc = new RepositoryConnection(
                 url.toString(),
-                "usr", "psswd", null, false, "/cert/file2", "pssphrs2");
+                "usr", "psswd".toCharArray(), null, false, "/cert/file2", "pssphrs2".toCharArray());
         SvnModuleConfig.getDefault().insertRecentUrl(rc);
         scf.storeSvnServersSettings(url);
         s = getSection(serversFile);
@@ -142,7 +142,7 @@ public class SvnConfigFilesTest extends NbTestCase {
         url = url.appendPath("whatever");
         rc = new RepositoryConnection(
                 url.toString(),
-                "usr", "psswd", null, false, "/cert/file3", "pssphrs3");
+                "usr", "psswd".toCharArray(), null, false, "/cert/file3", "pssphrs3".toCharArray());
         SvnModuleConfig.getDefault().insertRecentUrl(rc);
         lastMod = serversFile.lastModified();
         scf.storeSvnServersSettings(url);
