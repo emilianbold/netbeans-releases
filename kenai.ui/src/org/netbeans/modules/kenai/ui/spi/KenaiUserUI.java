@@ -127,8 +127,11 @@ public final class KenaiUserUI {
         Runnable run = new Runnable() {
 
             public void run() {
-
                 final Kenai kenai = user.getKenai();
+                if (!Utilities.isChatSupported(kenai)) {
+                    JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(Utilities.class, "MSG_CHAT_NOT_SUPPORTED", kenai.getName()));
+                    return;
+                }
                 if (kenai.getStatus() != Status.ONLINE) {
                     if (JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(Utilities.class, "MSG_GO_ONLINE"), NbBundle.getMessage(Utilities.class, "MSG_GO_ONLINE_TITLE"),JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION) {
                         RequestProcessor.getDefault().post(new Runnable() {
