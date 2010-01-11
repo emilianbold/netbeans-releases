@@ -179,11 +179,13 @@ final class AdvancedActionPanel extends javax.swing.JPanel {
 
     public void setTargets(List<String> targetNames) {
         StringBuilder targets = new StringBuilder();
-        for (String target : targetNames) {
-            if (targets.length() > 0) {
-                targets.append(' ');
+        if (targetNames != null) {
+            for (String target : targetNames) {
+                if (targets.length() > 0) {
+                    targets.append(' ');
+                }
+                targets.append(target);
             }
-            targets.append(target);
         }
         targetComboBox.setSelectedItem(targets.toString());
 
