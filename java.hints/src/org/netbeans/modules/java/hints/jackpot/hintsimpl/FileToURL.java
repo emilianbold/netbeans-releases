@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.hintsimpl;
@@ -59,7 +59,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public class FileToURL {
 
-    @Hint(value="org.netbeans.modules.java.hints.jackpot.hintsimpl.FileToURL.computeTreeKind", category="General")
+//    @Hint(value="org.netbeans.modules.java.hints.jackpot.hintsimpl.FileToURL.computeTreeKind", category="General")
     @TriggerTreeKind(Kind.METHOD_INVOCATION)
     public static ErrorDescription computeTreeKind(HintContext ctx) {
         MethodInvocationTree mit = (MethodInvocationTree) ctx.getPath().getLeaf();
@@ -84,7 +84,7 @@ public class FileToURL {
         return null;
     }
     
-    @Hint(value="org.netbeans.modules.java.hints.jackpot.hintsimpl.FileToURL.computeTreeKind", category="General")
+//    @Hint(value="org.netbeans.modules.java.hints.jackpot.hintsimpl.FileToURL.computeTreeKind", category="General")
     @TriggerPattern(value="$1.toURL()", constraints=@Constraint(variable="$1", type="java.io.File"))
     public static ErrorDescription computePattern(HintContext ctx) {
         ErrorDescription w = ErrorDescriptionFactory.forName(ctx, ctx.getPath(), "Use of java.io.File.toURL()");

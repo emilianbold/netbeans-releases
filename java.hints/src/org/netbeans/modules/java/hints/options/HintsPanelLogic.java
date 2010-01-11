@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.java.hints.options;
 
+import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import java.awt.BorderLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -68,16 +70,16 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 
-import org.netbeans.modules.java.hints.options.HintsPanel.ExtendedModel;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.java.hints.options.DepScanningSettings.DependencyTracking;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
 import static org.netbeans.modules.java.hints.spi.AbstractHint.*;
 
 
@@ -87,7 +89,7 @@ import static org.netbeans.modules.java.hints.spi.AbstractHint.*;
  */
 class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListener, ChangeListener, ActionListener {
 
-    private Map<AbstractHint,ModifiedPreferences> changes = new HashMap<AbstractHint, ModifiedPreferences>();
+    private Map<String,ModifiedPreferences> changes = new HashMap<String, ModifiedPreferences>();
     private DependencyTracking depScn = null;
     
     private static Map<HintSeverity,Integer> severity2index;
@@ -170,9 +172,9 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     }
     
     synchronized void applyChanges() {
-        for (AbstractHint hint : changes.keySet()) {
+        for (String hint : changes.keySet()) {
             ModifiedPreferences mn = changes.get(hint);
-            mn.store(hint.getPreferences(HintsSettings.getCurrentProfileId()));            
+            mn.store(RulesManager.getPreferences(hint, HintsSettings.getCurrentProfileId()));
         }
         if (depScn != null)
             DepScanningSettings.setDependencyTracking(depScn);
@@ -184,15 +186,15 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         return !changes.isEmpty() || depScn != null;
     }
     
-    synchronized Preferences getCurrentPrefernces( AbstractHint hint ) {
-        Preferences node = changes.get(hint);
-        return node == null ? hint.getPreferences( HintsSettings.getCurrentProfileId() ) : node;
+    synchronized Preferences getCurrentPrefernces( String id ) {
+        Preferences node = changes.get(id);
+        return node == null ? RulesManager.getPreferences(id, HintsSettings.getCurrentProfileId() ) : node;
     }
     
-    synchronized Preferences getPreferences4Modification( AbstractHint hint ) {        
+    synchronized Preferences getPreferences4Modification(String hint ) {
         Preferences node = changes.get(hint);        
         if ( node == null ) {
-            node = new ModifiedPreferences( hint.getPreferences( HintsSettings.getCurrentProfileId() ) );
+            node = new ModifiedPreferences(RulesManager.getPreferences(hint, HintsSettings.getCurrentProfileId() ) );
             changes.put( hint, (ModifiedPreferences)node);
         }        
         return node;                
@@ -217,9 +219,9 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         for( int i = 0; i < node.getChildCount(); i++ ) {
             DefaultMutableTreeNode ch = (DefaultMutableTreeNode) node.getChildAt(i);
             Object o = ch.getUserObject();
-            if ( o instanceof AbstractHint ) {
-                AbstractHint hint = (AbstractHint)o;
-                if ( HintsSettings.isEnabled(hint, getCurrentPrefernces(hint)) ) {
+            if ( o instanceof HintMetadata ) {
+                HintMetadata hint = (HintMetadata)o;
+                if ( HintsSettings.isEnabled(hint, getCurrentPrefernces(hint.id)) ) {
                     return true;
                 }
             }
@@ -276,20 +278,20 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     public void valueChanged(TreeSelectionEvent ex) {            
         Object o = getUserObject(errorTree.getSelectionPath());
         
-        if ( o instanceof AbstractHint ) {
+        if ( o instanceof HintMetadata ) {
             if (defModel != severityComboBox.getModel()) {
                 severityComboBox.setModel(defModel);
                 Mnemonics.setLocalizedText(severityLabel, defLabel);
             }
 
-            AbstractHint hint = (AbstractHint) o;
+            HintMetadata hint = (HintMetadata) o;
             
             // Enable components
             componentsSetEnabled(true);
             
             // Set proper values to the componetnts
             
-            Preferences p = getCurrentPrefernces(hint);
+            Preferences p = getCurrentPrefernces(hint.id);
 
             HintSeverity severity = HintsSettings.getSeverity(hint, p);
             if (severity != null) {
@@ -303,15 +305,15 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             boolean toTasklist = HintsSettings.isShowInTaskList(hint, p);
             tasklistCheckBox.setSelected(toTasklist);
             
-            String description = hint.getDescription();
+            String description = hint.description;
             descriptionTextArea.setText( description == null ? "" : wrapDescription(description)); // NOI18N
                                     
             // Optionally show the customizer
             customizerPanel.removeAll();
-            JComponent c = hint.getCustomizer(ex == null ? 
-                getCurrentPrefernces(hint) :
-                getPreferences4Modification(hint));
-            
+            JComponent c = hint.customizer != null ? hint.customizer.getCustomizer(ex == null ?
+                getCurrentPrefernces(hint.id) :
+                getPreferences4Modification(hint.id)) : null;
+
             if ( c != null ) {               
                 customizerPanel.add(c, BorderLayout.CENTER);
             }            
@@ -350,9 +352,9 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         
         Object o = getUserObject(errorTree.getSelectionPath());
         
-        if ( o instanceof AbstractHint ) {
-            AbstractHint hint = (AbstractHint) o;
-            Preferences p = getPreferences4Modification(hint);
+        if ( o instanceof HintMetadata ) {
+            HintMetadata hint = (HintMetadata) o;
+            Preferences p = getPreferences4Modification(hint.id);
             
             if(HintsSettings.getSeverity(hint, p) != null)
                 HintsSettings.setSeverity(p, index2severity(severityComboBox.getSelectedIndex()));            
@@ -400,29 +402,29 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
 
         Object o = getUserObject(treePath);
 
-        ExtendedModel model = (ExtendedModel) errorTree.getModel();
+        DefaultTreeModel model = (DefaultTreeModel) errorTree.getModel();
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
 
 
-        if ( o instanceof AbstractHint ) {
-            AbstractHint hint = (AbstractHint)o;
-            boolean value = HintsSettings.isEnabled(hint,getCurrentPrefernces(hint));
-            Preferences mn = getPreferences4Modification(hint);
+        if ( o instanceof HintMetadata ) {
+            HintMetadata hint = (HintMetadata)o;
+            boolean value = HintsSettings.isEnabled(hint,getCurrentPrefernces(hint.id));
+            Preferences mn = getPreferences4Modification(hint.id);
             HintsSettings.setEnabled(mn, !value);
             model.nodeChanged(node);
             model.nodeChanged(node.getParent());
         }
-        else if ( o instanceof FileObject ) {
+        else if ( o instanceof HintCategory ) {
             boolean value = !isSelected(node);
                                    
             for( int i = 0; i < node.getChildCount(); i++ ) {
                 DefaultMutableTreeNode ch = (DefaultMutableTreeNode) node.getChildAt(i);                
                 Object cho = ch.getUserObject();
-                if ( cho instanceof AbstractHint ) {
-                    AbstractHint hint = (AbstractHint)cho;
-                    boolean cv = HintsSettings.isEnabled(hint,getCurrentPrefernces(hint));
+                if ( cho instanceof HintMetadata ) {
+                    HintMetadata hint = (HintMetadata)cho;
+                    boolean cv = HintsSettings.isEnabled(hint,getCurrentPrefernces(hint.id));
                     if ( cv != value ) {                    
-                        Preferences mn = getPreferences4Modification(hint);
+                        Preferences mn = getPreferences4Modification(hint.id);
                         HintsSettings.setEnabled(mn, value);
                         model.nodeChanged( ch );
                     }
@@ -455,6 +457,20 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         severityComboBox.setEnabled(enabled);
         tasklistCheckBox.setEnabled(enabled);
         descriptionTextArea.setEnabled(enabled);
+    }
+
+    public static final class HintCategory {
+        private  static final String HINTS_FOLDER = "org-netbeans-modules-java-hints/rules/hints/";  // NOI18N
+
+        public final String codeName;
+        public final String displayName;
+
+        public HintCategory(String codeName) {
+            this.codeName = codeName;
+            FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + codeName);
+            this.displayName = catFO != null ? HintsPanel.getFileObjectLocalizedName(catFO) : codeName;
+        }
+
     }
 
     // Inner classes -----------------------------------------------------------
@@ -527,6 +543,5 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         }
         
     }
-
 
 }

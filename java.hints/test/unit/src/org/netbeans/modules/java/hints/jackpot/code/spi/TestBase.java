@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,16 +34,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.code.spi;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,6 +61,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImpl;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.jackpot.spi.HintsRunner;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -137,11 +141,17 @@ public abstract class TestBase extends NbTestCase {
     private Document doc;
 
     private List<ErrorDescription> computeErrors(CompilationInfo info) {
-        List<HintDescription> hints = new LinkedList<HintDescription>();
+        Map<HintMetadata, Collection<? extends HintDescription>> hints = new HashMap<HintMetadata, Collection<? extends HintDescription>>();
         
         CodeHintProviderImpl.processClass(hintClass, hints);
 
-        return HintsRunner.computeErrors(info, hints, new AtomicBoolean());
+        List<HintDescription> total = new LinkedList<HintDescription>();
+
+        for (Collection<? extends HintDescription> l : hints.values()) {
+            total.addAll(l);
+        }
+
+        return HintsRunner.computeErrors(info, total, new AtomicBoolean());
     }
 
     protected String toDebugString(CompilationInfo info, Fix f) {

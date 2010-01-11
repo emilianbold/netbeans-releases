@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.spi;
@@ -42,8 +42,6 @@ package org.netbeans.modules.java.hints.jackpot.spi;
 import com.sun.source.tree.Tree.Kind;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.Parameters;
@@ -54,20 +52,16 @@ import org.openide.util.Parameters;
  */
 public final class HintDescription {
 
-    private final String displayName;
-    private final String category;
+    private final HintMetadata metadata;
     private final Kind triggerKind;
     private final PatternDescription triggerPattern;
     private final Worker worker;
-    private final List<String> suppressWarnings;
 
-    private HintDescription(String displayName, String category, Kind triggerKind, PatternDescription triggerPattern, Worker worker, List<String> suppressWarnings) {
-        this.displayName = displayName;
-        this.category = category;
+    private HintDescription(HintMetadata metadata, Kind triggerKind, PatternDescription triggerPattern, Worker worker) {
+        this.metadata = metadata;
         this.triggerKind = triggerKind;
         this.triggerPattern = triggerPattern;
         this.worker = worker;
-        this.suppressWarnings = suppressWarnings;
     }
 
     //XXX: should not be public
@@ -85,26 +79,20 @@ public final class HintDescription {
         return worker;
     }
 
-    //XXX: should not be public
-    public String getDisplayName() {
-        if (displayName == null) {
-            //XXX:
-            return "No Display Name";
-        }
-        
-        return displayName;
+    public HintMetadata getMetadata() {
+        return metadata;
     }
 
-    public List<String> getSuppressWarnings() {
-        return suppressWarnings;
+    public Iterable<? extends String> getSuppressWarnings() {
+        return metadata.suppressWarnings;
     }
 
-    static HintDescription create(String displayName, String category, PatternDescription triggerPattern, Worker worker, List<String> suppressWarnings) {
-        return new HintDescription(displayName, category, null, triggerPattern, worker, suppressWarnings);
+    static HintDescription create(HintMetadata metadata, PatternDescription triggerPattern, Worker worker) {
+        return new HintDescription(metadata, null, triggerPattern, worker);
     }
 
-    static HintDescription create(String displayName, String category, Kind triggerKind, Worker worker, List<String> suppressWarnings) {
-        return new HintDescription(displayName, category, triggerKind, null, worker, suppressWarnings);
+    static HintDescription create(HintMetadata metadata, Kind triggerKind, Worker worker) {
+        return new HintDescription(metadata, triggerKind, null, worker);
     }
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,8 +42,15 @@
 package org.netbeans.modules.java.hints.options;
 
 import java.awt.Component;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
 import javax.swing.JTree;
@@ -56,12 +63,13 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.java.hints.infrastructure.RulesManager;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.options.HintsPanelLogic.HintCategory;
 
 
 final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
@@ -89,7 +97,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         
         update();
 
-        errorTree.setModel(new ExtendedModel());
+        errorTree.setModel(constructTM(RulesManager.getInstance().allHints.keySet()));
     }
     
     /** This method is called from within the constructor to
@@ -274,18 +282,18 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         renderer.setEnabled( true );
 
         Object data = ((DefaultMutableTreeNode)value).getUserObject();
-        if ( data instanceof FileObject ) {
-            FileObject fo = ((FileObject)data);            
-            renderer.setText( getFileObjectLocalizedName(fo) );
+        if ( data instanceof HintCategory ) {
+            HintCategory cat = ((HintCategory)data);
+            renderer.setText(cat.displayName);
             if (logic!=null)
                 renderer.setSelected( logic.isSelected((DefaultMutableTreeNode)value));
         }
-        else if ( data instanceof AbstractHint ) {
-            AbstractHint treeRule = (AbstractHint)data;
-            renderer.setText( treeRule.getDisplayName() );            
+        else if ( data instanceof HintMetadata ) {
+            HintMetadata treeRule = (HintMetadata)data;
+            renderer.setText( treeRule.displayName );
 
             if (logic != null) {
-                Preferences node = logic.getCurrentPrefernces(treeRule);
+                Preferences node = logic.getCurrentPrefernces(treeRule.id);
                 renderer.setSelected(HintsSettings.isEnabled(treeRule, node));
             }
         }
@@ -299,7 +307,7 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         return renderer;
     }
     
-    private String getFileObjectLocalizedName( FileObject fo ) {
+    static String getFileObjectLocalizedName( FileObject fo ) {
         Object o = fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
         if ( o instanceof String ) {
             String bundleName = (String)o;
@@ -334,49 +342,66 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     private javax.swing.JPanel treePanel;
     // End of variables declaration//GEN-END:variables
 
-    class ExtendedModel implements TreeModel {
+    private DefaultTreeModel constructTM(Collection<? extends HintMetadata> metadata) {
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        Map<HintCategory, Collection<HintMetadata>> cat2Hints = new TreeMap<HintCategory, Collection<HintMetadata>>(new Comparator<HintCategory>() {
+            public int compare(HintCategory o1, HintCategory o2) {
+                return HintsPanel.compare(o1.displayName, o2.displayName);
+            }
+        });
+        Map<String, HintCategory> cat2CatDesc =  new HashMap<String, HintCategory>();
 
-        private DefaultTreeModel delegate = (DefaultTreeModel) RulesManager.getInstance().getHintsTreeModel();
+        for (HintMetadata m : metadata) {
+            if (m.kind != HintMetadata.Kind.HINT) continue;
 
-        public Object getRoot() {
-            return delegate.getRoot();
+            HintCategory cat = cat2CatDesc.get(m.category);
+
+            if (cat == null) {
+                cat2CatDesc.put(m.category, cat = new HintCategory(m.category));
+            }
+            
+            Collection<HintMetadata> catNode = cat2Hints.get(cat);
+
+            if (catNode == null) {
+                cat2Hints.put(cat, catNode = new TreeSet<HintMetadata>(new Comparator<HintMetadata>() {
+                    public int compare(HintMetadata o1, HintMetadata o2) {
+                        return HintsPanel.compare(o1.displayName, o2.displayName);
+                    }
+                }));
+            }
+
+            catNode.add(m);
         }
 
-        public Object getChild(Object parent, int index) {
-            return parent == getRoot() && index == delegate.getChildCount(parent) ? extraNode : delegate.getChild(parent, index);
+        for (Entry<HintCategory, Collection<HintMetadata>> e : cat2Hints.entrySet()) {
+            DefaultMutableTreeNode catNode = new DefaultMutableTreeNode(e.getKey());
+
+            for (HintMetadata hm : e.getValue()) {
+                catNode.add(new DefaultMutableTreeNode(hm));
+            }
+
+            root.add(catNode);
         }
 
-        public int getChildCount(Object parent) {
-            return parent == getRoot() ? delegate.getChildCount(parent) + 1 : delegate.getChildCount(parent);
-        }
+        root.add(extraNode);
+        
+        return new DefaultTreeModel(root);
+    }
 
-        public boolean isLeaf(Object node) {
-            return node == extraNode ? true : delegate.isLeaf(node);
-        }
+    private static int compare(String s1, String s2) {
+        return clearNonAlpha(s1).compareToIgnoreCase(clearNonAlpha(s2));
+    }
 
-        public void valueForPathChanged(TreePath path, Object newValue) {
-            delegate.valueForPathChanged(path, newValue);
-        }
+    private static String clearNonAlpha(String str) {
+        StringBuilder sb = new StringBuilder(str.length());
 
-        public int getIndexOfChild(Object parent, Object child) {
-            return child == extraNode ? delegate.getChildCount(parent) : delegate.getIndexOfChild(parent, child);
-        }
-
-        public void addTreeModelListener(TreeModelListener l) {
-            delegate.addTreeModelListener(l);
-        }
-
-        public void removeTreeModelListener(TreeModelListener l) {
-            delegate.removeTreeModelListener(l);
-        }
-
-        public void nodeChanged(TreeNode node) {
-            if (node == extraNode) {
-                delegate.nodeChanged((TreeNode)delegate.getRoot());
-            } else {
-                delegate.nodeChanged(node);
+        for (char c : str.toCharArray()) {
+            if (Character.isLetter(c)) {
+                sb.append(c);
             }
         }
-    }
-}
 
+        return sb.toString();
+    }
+    
+}

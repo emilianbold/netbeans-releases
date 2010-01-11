@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.hintsimpl;
@@ -59,6 +59,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  *
  * @author Max Sauer
  */
+@Hint(id="org.netbeans.modules.java.hints.jackpot.hintsimpl.ForbiddenMethod.hint", category="general")
 public class ForbiddenMethod {
 
     private static final Map<String, Pair<String, String>> map;
@@ -68,7 +69,6 @@ public class ForbiddenMethod {
         map.put("exit", new Pair<String, String>("System", "Non-portable"));
     }
 
-    @Hint(value="org.netbeans.modules.java.hints.jackpot.hintsimpl.ForbiddenMethod.hint", category="General")
     @TriggerTreeKind(Tree.Kind.METHOD_INVOCATION)
     public static ErrorDescription hint(HintContext ctx) {
         MethodInvocationTree mit = (MethodInvocationTree) ctx.getPath().getLeaf();

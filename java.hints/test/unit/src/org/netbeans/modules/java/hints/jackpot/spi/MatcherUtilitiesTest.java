@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.spi;
@@ -44,7 +44,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Pattern;
 import org.netbeans.modules.java.hints.jackpot.impl.TestBase;
-import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 
 /**
  *
@@ -65,7 +64,7 @@ public class MatcherUtilitiesTest extends TestBase {
         prepareTest("test/Test.java", code);
 
         TreePath tp = info.getTreeUtilities().pathFor(pos);
-        HintContext ctx = HintContext.create(info, HintSeverity.ERROR, tp, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
+        HintContext ctx = HintContext.create(info, null, tp, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
 
         assertTrue(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), "$0 = $_"));
     }
@@ -79,7 +78,7 @@ public class MatcherUtilitiesTest extends TestBase {
         prepareTest("test/Test.java", code);
 
         TreePath tp = info.getTreeUtilities().pathFor(pos);
-        HintContext ctx = HintContext.create(info, HintSeverity.ERROR, tp, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
+        HintContext ctx = HintContext.create(info, null, tp, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
 
         assertTrue(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), "$1 $0 = $_;"));
     }

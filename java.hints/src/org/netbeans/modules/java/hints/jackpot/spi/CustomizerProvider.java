@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,30 +31,23 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.infrastructure;
 
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.JavaSource.Priority;
-import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.java.hints.jackpot.spi;
+
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 
 /**
  *
- * @author Jan Lahoda
+ * @author lahvac
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
-public class HintsTaskFactory extends EditorAwareJavaSourceTaskFactory {
-    
-    /** Creates a new instance of SuggestionsAndHintsTaskFactory */
-    public HintsTaskFactory() {
-        super(Phase.UP_TO_DATE, Priority.MIN);
-    }
-    
-    protected CancellableTask<CompilationInfo> createTask(FileObject file) {
-        return new HintsTask();
-    }
+public interface CustomizerProvider {
+
+    public JComponent getCustomizer(Preferences prefs);
 
 }

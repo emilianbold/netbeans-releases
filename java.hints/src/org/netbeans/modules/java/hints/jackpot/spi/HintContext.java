@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.spi;
@@ -44,8 +44,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
+import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
+import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 
 /**
@@ -55,6 +58,7 @@ import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 public class HintContext {
 
     private final CompilationInfo info;
+    private final Preferences preferences;
     private final HintSeverity severity;
     private final TreePath path;
     private final Map<String, TreePath> variables;
@@ -62,13 +66,14 @@ public class HintContext {
     private final Map<String, String> variableNames;
     private final Collection<? super MessageImpl> messages;
 
-    public HintContext(CompilationInfo info, HintSeverity severity, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames) {
-        this(info, severity, path, variables, multiVariables, variableNames, new LinkedList<MessageImpl>());
+    public HintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames) {
+        this(info, metadata, path, variables, multiVariables, variableNames, new LinkedList<MessageImpl>());
     }
 
-    public HintContext(CompilationInfo info, HintSeverity severity, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Collection<? super MessageImpl> problems) {
+    public HintContext(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames, Collection<? super MessageImpl> problems) {
         this.info = info;
-        this.severity = severity;
+        this.preferences = metadata != null ? RulesManager.getPreferences(metadata.id, HintsSettings.getCurrentProfileId()) : null;
+        this.severity = preferences != null ? HintsSettings.getSeverity(metadata, preferences) : HintSeverity.ERROR;
         this.path = path;
 
         variables = new HashMap<String, TreePath>(variables);
@@ -82,6 +87,10 @@ public class HintContext {
 
     public CompilationInfo getInfo() {
         return info;
+    }
+
+    public Preferences getPreferences() {
+        return preferences;
     }
 
     public HintSeverity getSeverity() {
@@ -115,8 +124,8 @@ public class HintContext {
     }
 
     //XXX: probably should not be visible to clients:
-    public static HintContext create(CompilationInfo info, HintSeverity severity, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames) {
-        return new HintContext(info, severity, path, variables, multiVariables, variableNames);
+    public static HintContext create(CompilationInfo info, HintMetadata metadata, TreePath path, Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variableNames) {
+        return new HintContext(info, metadata, path, variables, multiVariables, variableNames);
     }
 
     public enum MessageKind {
