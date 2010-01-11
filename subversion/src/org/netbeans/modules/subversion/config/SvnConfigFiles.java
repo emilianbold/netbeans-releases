@@ -225,8 +225,9 @@ public class SvnConfigFiles implements PreferenceChangeListener {
         if(certFile == null || certFile.equals("")) {
             return true;
         }
-        String certPassword = rc.getCertPassword();
-        if(certPassword == null || certPassword.equals("")) {
+        char[] certPasswordChars = rc.getCertPassword();
+        String certPassword = certPasswordChars == null ? "" : new String(certPasswordChars); //NOI18N
+        if(certPassword.equals("")) { // NOI18N
             return true;
         }
         nbGlobalSection.put("ssl-client-cert-file", certFile);

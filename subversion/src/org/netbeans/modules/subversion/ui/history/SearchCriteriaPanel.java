@@ -58,9 +58,7 @@ import java.text.ParseException;
 import java.util.Date;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import static org.jdesktop.layout.GroupLayout.BASELINE;
-import static org.jdesktop.layout.GroupLayout.DEFAULT_SIZE;
 import static org.jdesktop.layout.GroupLayout.LEADING;
-import static org.jdesktop.layout.GroupLayout.PREFERRED_SIZE;
 import static org.jdesktop.layout.LayoutStyle.RELATED;
 
 /**

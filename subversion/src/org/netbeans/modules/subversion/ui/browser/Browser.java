@@ -97,7 +97,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
     private final String helpID;
 
     private final String username;
-    private final String password;
+    private final char[] password;
     
     private static final RepositoryFile[] EMPTY_ROOT = new RepositoryFile[0];
     private static final Action[] EMPTY_ACTIONS = new Action[0];
@@ -139,7 +139,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
                    RepositoryFile repositoryRoot,
                    RepositoryFile[] select,
                    String username,
-                   String password,
+                   char[] password,
                    BrowserAction[] nodeActions,
                    String helpID) {
         this.mode = mode;       
@@ -150,9 +150,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
          * or both are non-null:
          */
         this.username = username;
-        this.password = (username == null) ? null
-                                           : (password != null) ? password
-                                                                : "";   //NOI18N
+        this.password = (username == null) ? null : password;
         
         panel = new BrowserPanel(title,           
                                  org.openide.util.NbBundle.getMessage(Browser.class, "ACSN_RepositoryTree"),                                            // NOI18N
