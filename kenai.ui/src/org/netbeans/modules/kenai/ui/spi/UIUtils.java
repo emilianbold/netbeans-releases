@@ -179,7 +179,7 @@ public final class UIUtils {
      */
     public static boolean showLogin(final Kenai kenai) {
         PresenceIndicator.getDefault().init();
-        final LoginPanel loginPanel = new LoginPanel(kenai);
+        final LoginPanel loginPanel = new LoginPanel(kenai, new CredentialsImpl());
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
         final String ctlLogin = NbBundle.getMessage(Utilities.class, "CTL_Login");
         final String ctlCancel = NbBundle.getMessage(Utilities.class, "CTL_Cancel");
@@ -245,20 +245,27 @@ public final class UIUtils {
         login.setClosingOptions(new Object[]{ctlCancel});
         Dialog d = DialogDisplayer.getDefault().createDialog(login);
 
-        String uname=preferences.get(getPrefName(kenai, KENAI_USERNAME_PREF), null); // NOI18N
-        if (uname != null) {
-            loginPanel.setUsername(uname);
-            char[] password = loadPassword(kenai, preferences);
-            if (password != null) {
-                loginPanel.setPassword(password);
-            }
-        }
         d.pack();
         d.setResizable(false);
         loginPanel.clearStatus();
         d.setVisible(true);
 
         return loginPanel.getClientProperty("cancel")==null; // NOI18N
+    }
+
+    private static class CredentialsImpl implements LoginPanel.Credentials {
+
+        public String getUsername(Kenai kenai) {
+            final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+            String uname = preferences.get(getPrefName(kenai, KENAI_USERNAME_PREF), ""); // NOI18N
+            return uname;
+        }
+
+        public char[] getPassword(Kenai kenai) {
+            final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+            char[] password = loadPassword(kenai, preferences);
+            return password;
+        }
     }
 
     public static JLabel createUserWidget(String user) {

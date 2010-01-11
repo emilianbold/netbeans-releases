@@ -70,6 +70,7 @@ import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
+import org.eclipse.mylyn.tasks.core.data.TaskAttributeMetaData;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.api.diff.PatchUtils;
@@ -212,6 +213,34 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         public String getDisplayName() {
             assert displayNameKey != null; // shouldn't be called for a field with a null display name
             return NbBundle.getMessage(BugzillaIssue.class, displayNameKey);
+        }
+
+    }
+
+    static class CustomIssueField extends IssueField {
+        private String displayName;
+        private String type;
+        private Map<String,String> options;
+
+        CustomIssueField(TaskAttribute attr) {
+            super(attr.getId(), null);
+            TaskAttributeMetaData meta = attr.getMetaData();
+            displayName = meta.getLabel();
+            type = meta.getType();
+            options = attr.getOptions();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public Map<String,String> getOptions() {
+            return options;
         }
 
     }
@@ -997,7 +1026,12 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
             fields.add(IssueField.REMOVECC);
             fields.add(IssueField.COMMENT_COUNT);
             fields.add(IssueField.ATTACHEMENT_COUNT);
-            // PENDING custom fields
+            // Custom fields
+            for (Map.Entry<String,TaskAttribute> entry : getTaskData().getRoot().getAttributes().entrySet()) {
+                if (entry.getKey().startsWith("cf_")) { // NOI18N
+                    fields.add(new CustomIssueField(entry.getValue()));
+                }
+            }
         }
         return fields;
     }

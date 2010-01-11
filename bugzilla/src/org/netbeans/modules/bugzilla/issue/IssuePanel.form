@@ -93,6 +93,7 @@
                           <Component id="summaryLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="attachmentsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="addCommentLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="customFieldsPanelLeft" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -220,8 +221,9 @@
                                       <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="messagePanel" alignment="0" max="32767" attributes="0"/>
+                                  <Component id="customFieldsPanelRight" alignment="0" max="32767" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -353,7 +355,12 @@
                   </Group>
                   <Component id="dummyAttachmentsPanel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="customFieldsPanelRight" min="-2" max="-2" attributes="0"/>
+                  <Component id="customFieldsPanelLeft" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="summaryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="summaryField" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -364,7 +371,7 @@
                   <Component id="addCommentLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="scrollPane1" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="submitButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -380,6 +387,14 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
+    <Container class="javax.swing.JPanel" name="customFieldsPanelLeft">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+    </Container>
+    <Container class="javax.swing.JPanel" name="customFieldsPanelRight">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+    </Container>
     <Component class="javax.swing.JTextField" name="reportedField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
