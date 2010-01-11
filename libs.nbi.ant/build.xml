@@ -30,12 +30,14 @@
     <target name="netbeans-extra">
          <copy file="${basedir}/../nbi/infra/build/.ant-lib/dist/nbi-ant-tasks.jar" todir="${cluster}/modules/ext"/> 
          <copy file="${basedir}/../nbi/infra/lib/registries-management/dist/registries-management.jar" tofile="${cluster}/modules/ext/nbi-registries-management.jar"/> 
+         <!--
          <copy todir="${cluster}/nbi/common">
              <fileset dir="${basedir}/../nbi/infra/build/.common"/>
          </copy>
          <copy todir="${cluster}/nbi/engine">
              <fileset dir="${basedir}/../nbi/infra/build/engine"/>
          </copy>
+         -->
     </target>
 
     <target name="clean" depends="projectized-common.clean">

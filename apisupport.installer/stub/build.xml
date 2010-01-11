@@ -1,0 +1,287 @@
+<project name="build installers" default="build" basedir=".">
+    <property file="${basedir}/build.properties"/>
+    <property file="${basedir}/custom.properties"/>
+    
+    <target name="build" depends="init,-build,-generate-bundles,post-build"/>
+    
+    <target name="init" depends="-clean,-checkout,-init,-init-properties,-post-init-clean"/>
+
+    <target name="-clean-cvs" unless="no.checkout">
+        <delete dir="${nbi.all.dir}"/>
+    </target>
+    
+    <target name="-clean" depends="-clean-cvs" unless="no.clean">
+        <delete dir="${output.dir}"/>
+        <delete dir="${nbi.ext.dir}/products/helloworld/build"/>
+        <delete dir="${nbi.ext.dir}/products/helloworld/dist"/>
+        <delete dir="${nbi.ext.dir}/engine/build"/>
+        <delete dir="${nbi.ext.dir}/engine/dist"/>
+
+        <!--<delete dir="${basedir}/cache"/>-->
+    </target>
+
+    <target name="post-build">
+        <delete dir="${output.dir}/registry-temp"/>
+    </target>
+    
+    <target name="-checkout">
+        
+        <copy todir="${nbi.all.dir}/.common">
+            <fileset dir="${basedir}/.common"/>
+        </copy>
+
+        <copy todir="${nbi.ext.dir}">
+            <fileset dir="${basedir}/ext">
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="-init">
+        <!--
+        <delete dir="${custom.tasks.cls}"/>
+        <mkdir dir="${custom.tasks.cls}"/>
+        -->
+        <!-- first we need to perform an "unofficial" build of the engine in order 
+             to ensure it's available in the classpath for the custom ant tasks -->
+	<!--
+        <subant buildpath="${nbi.core.dir}/engine" 
+                target="compile" 
+                failonerror="true" 
+                output="${nbi.all.dir}/core.engine.unofficial.build.output">
+            <property name="platforms.JDK_1.5.home" value="${jdk.home}"/>
+            <property name="basedir" value="${nbi.core.dir}/engine"/>
+        </subant>
+        <copy todir="${custom.tasks.cls}">
+            <fileset dir="${nbi.core.dir}/engine/build/classes">
+                <include name="**/*.*"/>
+            </fileset>
+        </copy>
+        -->
+        <!-- second we compile the required custom libraries -->
+        <!--
+        <javac 
+            srcdir="${nbi.core.dir}/infra/lib/registries-management" 
+            destdir="${custom.tasks.cls}"
+            classpath="${custom.tasks.cls}"
+            debug="true"/>
+        -->
+        <!-- then compile all the custom ant tasks -->
+        <!--
+        <javac 
+            srcdir="${custom.tasks.src.1}" 
+            destdir="${custom.tasks.cls}"
+            classpath="${custom.tasks.cls}"
+            debug="true"/>
+        <javac 
+            srcdir="${custom.tasks.src.2}" 
+            destdir="${custom.tasks.cls}"
+            classpath="${custom.tasks.cls}"
+            debug="true"/>
+        -->
+
+
+        <taskdef 
+            name="if" 
+            classpath="${custom.tasks.cls}" 
+            classname="org.netbeans.installer.infra.build.ant.If"/>
+        <taskdef 
+            name="for-each" 
+            classpath="${custom.tasks.cls}" 
+            classname="org.netbeans.installer.infra.build.ant.ForEach"/>
+        <taskdef 
+            name="set" 
+            classpath="${custom.tasks.cls}" 
+            classname="org.netbeans.installer.infra.build.ant.SetProperty"/>
+
+        <taskdef 
+            name="create-bundle" 
+            classpath="${custom.tasks.cls}" 
+            classname="org.netbeans.installer.infra.build.ant.registries.CreateBundle"/>
+        
+        <delete file="${temp.file}"/>
+    </target>
+    
+    <target name="-init-properties">
+        <echo file="${environment.properties}"/>
+        
+        <if property="cvs.branch">
+            <echo file="${environment.properties}" append="true">
+cvs.branch=${cvs.branch}
+
+            </echo>
+        </if>
+        <echo file="${environment.properties}" append="true">
+
+checkout.sources=false
+sources.dir=${nbi.all.dir}
+cvs.module=ext
+
+release.to.server=false
+release.registry.dir=${output.dir}/registry-temp
+
+dont.build.custom.tasks=true
+custom.tasks.cls=${custom.tasks.cls}
+
+build.engine=false
+
+engine.dist.file.name=nbi-engine.jar
+engine.dist.file=${nbi.core.dir}/infra/build/engine/dist/nbi-engine.jar
+
+packaged.data.dir=${basedir}/cache/packaged
+downloads.cache.dir=${basedir}/cache/raw
+
+jarsigner.enabled=${jarsigner.enabled}
+        </echo>
+        <replace file="${environment.properties}" token="\" value="/"/>
+    </target>
+    
+    <target name="-post-init-clean">
+        <delete dir="${basedir}/cache/raw"/>
+    </target>
+    
+    <target name="-build">
+        <delete dir="${output.dir}"/>
+        
+        <mkdir dir="${output.dir}"/>
+        <mkdir dir="${bundles.release.dir}"/>
+        <mkdir dir="${output.dir}/components"/>
+        
+        <property name="engine.dist.file.name" value="nbi-engine.jar"/>
+        <!--
+        <echo message="BUILDING CORE ENGINE ======================================"/>
+        <ant dir="${nbi.core.dir}/infra/build/engine" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.core.dir}/infra/build/engine"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property
+                name="build.native"
+                value="false"/>
+            <property 
+                name="cvs.module" 
+                value="${core.module.name}"/>
+        </ant>
+        -->
+
+        <echo message="BUILDING HELLOWORLD EXT ENGINE =================================="/>
+        <ant dir="${nbi.ext.dir}/infra/build/engine" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.ext.dir}/infra/build/engine"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            
+            <property 
+                name="core.engine.dist.file" 
+                value="${nbi.engine.jar}"/>
+        </ant>
+
+
+	<echo message="BUILDING HELLOWORLD PRODUCT =================================="/>
+        <ant dir="${nbi.ext.dir}/infra/build/products/helloworld" target="release-all">
+            <property 
+                name="basedir" 
+                value="${nbi.ext.dir}/infra/build/products/helloworld"/>
+            <property 
+                name="environment.properties" 
+                value="${environment.properties}"/>
+            <property
+                name="dist.dir"
+                value="${output.dir}/components"/>
+
+            <property
+                name="release.parent.uid"
+                value=""/>
+            <property
+                name="release.parent.version"
+                value=""/>
+            <property
+                name="release.parent.platforms"
+                value=""/>
+
+            <property 
+                name="engine.dist.file" 
+                value="${output.dir}/registry-temp/engine.jar"/>
+
+
+        </ant>
+    </target>
+
+    <target name="-generate-bundles">
+        <!--<set property="bundle.files.prefix" value="helloworld"/>-->
+
+        <if property="do.build.windows.bundles" value="true">
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="windows" 
+                       target="${bundles.release.dir}/${bundle.files.prefix}-windows.exe">
+            <component uid="${main.product.uid}" version="1.0.0.0.0"/>
+        </create-bundle>
+        </if>
+        <if property="do.build.linux.bundles" value="true">
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="linux" 
+                       target="${bundles.release.dir}/${bundle.files.prefix}-linux.sh">
+            <component uid="${main.product.uid}" version="1.0.0.0.0"/>
+        </create-bundle>
+        </if>
+        <if property="do.build.solaris.bundles" value="true">
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="solaris" 
+                       target="${bundles.release.dir}/${bundle.files.prefix}-solaris.sh">
+            <component uid="${main.product.uid}" version="1.0.0.0.0"/>
+        </create-bundle>
+        </if>
+        <if property="do.build.macosx.bundles" value="true">
+        <create-bundle root="${output.dir}/registry-temp" 
+                       platform="macosx" 
+                       target="${bundles.release.dir}/${bundle.files.prefix}-macosx.zip">
+            <component uid="${main.product.uid}" version="1.0.0.0.0"/>
+        </create-bundle>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${bundles.release.dir}/${bundle.files.prefix}-macosx.zip"/>
+            <param name="output.file" value="${bundles.release.dir}/${bundle.files.prefix}-macosx.tgz"/>
+        </antcall>
+	<delete>
+            <fileset dir="${bundles.release.dir}">
+		<include name="${bundle.files.prefix}-macosx.zip"/>
+            </fileset>
+        </delete>
+        </if>
+    </target>
+
+    <target name="replace">
+        <property file="${token.file}"/>
+        <replaceregexp file="${file.to.replace}" flags="mg">
+            <regexp pattern="${regexp.token}"/>
+            <substitution expression="${regexp.replacement}"/>
+        </replaceregexp>
+    </target>
+
+    <target name="zip-to-tgz">
+	<set property="tar.tmpdir"
+             value="${bundles.release.dir}/tempdir"/>
+
+	<mkdir dir="${tar.tmpdir}"/>
+
+	<unzip 
+		src="${input.file}"
+		dest="${tar.tmpdir}"/>
+
+        <tar tarfile="${output.file}" 
+             compression="gzip">
+            <tarfileset dir="${tar.tmpdir}" mode="644">
+                <include name="**/*.*"/>
+		<exclude name="**/executable"/>
+            </tarfileset>
+	    <tarfileset dir="${tar.tmpdir}" mode="755">
+		<include name="**/executable"/>
+            </tarfileset>
+        </tar>
+	<delete dir="${tar.tmpdir}"/>
+    </target>
+
+</project>

@@ -1,0 +1,75 @@
+<project name="build installers" default="build" basedir=".">
+    <!--<property file="${basedir}/template.properties"/>-->
+    
+    <target name="build" depends="init,-prepare-sources,-build,post-build"/>
+    
+    <target name="init" depends="-clean">
+        <property name="installer.build.dir" value="${suite.location}/build/installer"/>
+
+
+        <delete dir="${installer.build.dir}" includeemptydirs="yes" failonerror="false"/>
+
+        <mkdir dir="${installer.build.dir}"/>
+    </target>
+
+    
+    <target name="-clean">
+    </target>
+
+    <target name="post-build">
+    </target>
+    
+    <target name="-build">
+    </target>
+
+    <target name="-prepare-sources">
+        <copy todir="${installer.build.dir}">
+           <fileset dir="${nbi.stub.location}"/>
+        </copy>
+        <copy todir="${installer.build.dir}/.common">
+           <fileset dir="${nbi.stub.common.location}"/>
+        </copy>
+
+        <property file="${suite.location}/nbproject/project.properties" prefix="suite.props."/>
+        <property name="product-uid"  value="${suite.nbi.product.uid}"/>
+
+        <replace file="${installer.build.dir}/build.properties">
+            <replacefilter token="{nbi.ant.tasks.jar}"             value="${nbi.ant.tasks.jar}"/>
+            <replacefilter token="{nbi.registries.management.jar}" value="${nbi.registries.management.jar}"/>
+            <replacefilter token="{nbi.engine.jar}"                value="${nbi.engine.jar}"/>
+            <replacefilter token="{windows-bundles}"               value="${windows-bundles}"/>
+            <replacefilter token="{linux-bundles}"                 value="${linux-bundles}"/>
+            <replacefilter token="{solaris-bundles}"               value="${solaris-bundles}"/>
+            <replacefilter token="{macosx-bundles}"                value="${macosx-bundles}"/>
+            <replacefilter token="{generator-jdk-location-forward-slashes}"         value="${generator-jdk-location-forward-slashes}"/>
+            <replacefilter token="{generated-installers-location-forward-slashes}"  value="${generated-installers-location-forward-slashes}"/>
+            <replacefilter token="{pack200.enabled}"               value="${pack200.enabled}"/>
+            <replacefilter token="{generated-installers-prefix}"   value="${suite.props.app.name}"/>
+            <replacefilter token="{product-uid}"                   value="${product-uid}"/>
+        </replace>
+
+        <replace dir="${installer.build.dir}/ext">
+            <replacefilter token="{product-name}" value="${suite.props.app.title}"/>
+            <replacefilter token="{product-description}" value=""/>
+        </replace>
+
+        <replace dir="${installer.build.dir}/ext/infra/build/products">
+            <replacefilter token="{product.platforms}"  value="windows linux macosx"/>
+            <replacefilter token="{product-data-uri}"   value="${suite.zip.uri}"/>
+            <replacefilter token="{product-data-sub-dir}"          value="${suite.props.app.name}"/>
+            <replacefilter token="{product-uid}"                   value="${product-uid}"/>
+            <replacefilter token="{product-install-directory-name}"         value="${suite.props.app.name}"/>
+            <replacefilter token="{product-install-directory-name-windows}" value="${suite.props.app.title}"/>
+            <replacefilter token="{product-install-directory-name-macosx}"  value="${suite.props.app.title}"/>
+        </replace>       
+
+    </target>
+    
+    <target name="replace">
+        <property file="${token.file}"/>
+        <replaceregexp file="${file.to.replace}" flags="mg">
+            <regexp pattern="${regexp.token}"/>
+            <substitution expression="${regexp.replacement}"/>
+        </replaceregexp>
+    </target>
+</project>
