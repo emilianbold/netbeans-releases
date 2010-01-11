@@ -47,6 +47,11 @@ import org.openide.util.Exceptions;
 public class Installer extends ModuleInstall {
 
     @Override
+    public void restored() {
+        NetigsoModuleFactory.start();
+    }
+
+    @Override
     public void close() {
         try {
             NetigsoModuleFactory.shutdown();

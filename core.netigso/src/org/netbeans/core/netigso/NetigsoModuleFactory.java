@@ -64,6 +64,7 @@ import org.netbeans.Module;
 import org.netbeans.ModuleFactory;
 import org.netbeans.ModuleManager;
 import org.netbeans.Stamps;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.osgi.framework.Bundle;
@@ -80,12 +81,60 @@ import org.osgi.framework.launch.FrameworkFactory;
 @ServiceProvider(service=ModuleFactory.class)
 public class NetigsoModuleFactory extends ModuleFactory
 implements Stamps.Updater {
+    private static NetigsoModuleFactory instance;
     private static NetigsoActivator activator;
     private static Framework framework;
     private static Set<String> registered;
+    private static List<NetigsoModule> toInit = new ArrayList<NetigsoModule>();
+    private static List<Module> toRegister = new ArrayList<Module>();
 
     public NetigsoModuleFactory() {
+        instance = this;
         readBundles();
+    }
+
+    /** Starts all the bundles with enabled modules.*/
+    static void start() {
+        List<NetigsoModule> turnOn;
+        List<Module> turnRegister;
+        synchronized (NetigsoModuleFactory.class) {
+            turnOn = toInit;
+            turnRegister = toRegister;
+            toRegister = null;
+            toInit = null;
+        }
+        if (turnOn == null || turnOn.isEmpty()) {
+            return;
+        }
+
+        for (Module m :turnRegister) {
+            try {
+                fakeOneModule(m);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        startContainer();
+        for (NetigsoModule nm : turnOn) {
+            nm.start();
+        }
+    }
+
+    static synchronized void classLoaderUp(NetigsoModule nm) {
+        if (toInit != null) {
+            toInit.add(nm);
+            return;
+        }
+        startContainer();
+        nm.start();
+    }
+
+    static synchronized void classLoaderDown(NetigsoModule nm) {
+        if (toInit != null) {
+            toInit.remove(nm);
+            return;
+        }
     }
 
     /** Used on shutdown */
@@ -180,7 +229,7 @@ implements Stamps.Updater {
                 if (name == null) {
                     throw ex;
                 }
-                return new NetigsoModule(jar, mgr, ev, history, reloadable, autoload, eager);
+                return new NetigsoModule(mani, jar, mgr, ev, history, reloadable, autoload, eager);
             }
             throw ex;
         }
@@ -188,6 +237,7 @@ implements Stamps.Updater {
 
     synchronized static Framework getContainer() throws BundleException {
         if (framework == null) {
+            assert toInit == null : "OSGi container shall be initialized only after restored of core.netigso was called";
             Map<String,Object> configMap = new HashMap<String,Object>();
             final String cache = getNetigsoCache().getPath();
             configMap.put("felix.cache.profiledir", cache);
@@ -206,11 +256,15 @@ implements Stamps.Updater {
         return framework;
     }
 
-    static void startContainer() throws BundleException {
-        if (getContainer().getState() == Bundle.STARTING) {
-            NetigsoModule.LOG.finer("OSGi start:"); // NOI18N
-            getContainer().start();
-            NetigsoModule.LOG.finer("OSGi started"); // NOI18N
+    private static void startContainer() {
+        try {
+            if (getContainer().getState() == Bundle.STARTING) {
+                NetigsoModule.LOG.finer("OSGi start:"); // NOI18N
+                getContainer().start();
+                NetigsoModule.LOG.finer("OSGi started"); // NOI18N
+            }
+        } catch (BundleException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -258,11 +312,21 @@ implements Stamps.Updater {
         return (Integer.parseInt(segments[0]) + major * 100) + "."  + segments[1] + "." + segments[2];
     }
 
-    private void registerBundle(Module m) throws IOException {
+    private static void registerBundle(Module m) throws IOException {
         if (!registered.add(m.getCodeName())) {
             return;
         }
 
+        synchronized (NetigsoModuleFactory.class) {
+            if (toRegister != null) {
+                toRegister.add(m);
+                return;
+            }
+        }
+        fakeOneModule(m);
+    }
+
+    private static void fakeOneModule(Module m) throws IOException {
         InputStream is = fakeBundle(m);
         if (is != null) {
             try {
@@ -272,7 +336,7 @@ implements Stamps.Updater {
             } catch (BundleException ex) {
                 throw new IOException(ex.getMessage());
             }
-            Stamps.getModulesJARs().scheduleSave(this, "netigso-bundles", false); // NOI18N
+            Stamps.getModulesJARs().scheduleSave(instance, "netigso-bundles", false); // NOI18N
         }
     }
 

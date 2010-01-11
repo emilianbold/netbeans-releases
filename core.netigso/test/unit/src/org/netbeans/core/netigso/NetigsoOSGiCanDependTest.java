@@ -52,6 +52,9 @@ import org.netbeans.ModuleManager;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class NetigsoOSGiCanDependTest extends NetigsoHid {
+    static {
+        NetigsoModuleFactory.start();
+    }
 
     public NetigsoOSGiCanDependTest(String name) {
         super(name);

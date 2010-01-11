@@ -1,11 +1,14 @@
 package org.netbeans.core.netigso;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.ProxyClassLoader;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
@@ -13,11 +16,14 @@ import org.openide.util.NbCollections;
 import org.osgi.framework.Bundle;
 
 final class NetigsoLoader extends ProxyClassLoader {
+    private static final Logger LOG = Logger.getLogger(NetigsoLoader.class.getName());
+    private Bundle bundle;
 
-    private final Bundle bundle;
-
-    public NetigsoLoader(Bundle bundle) {
+    NetigsoLoader() {
         super(new ClassLoader[0], true);
+    }
+
+    void init(Bundle bundle) {
         this.bundle = bundle;
         Set<String> pkgs = new HashSet<String>();
         Enumeration en = bundle.findEntries("", "", true);
@@ -33,14 +39,26 @@ final class NetigsoLoader extends ProxyClassLoader {
 
     @Override
     public URL findResource(String name) {
-        return bundle.getResource(name);
+        NetigsoModuleFactory.start();
+        Bundle b = bundle;
+        if (b == null) {
+            LOG.log(Level.WARNING, "Trying to load resource before initialization finished {0}", name);
+            return null;
+        }
+        return b.getResource(name);
     }
 
     @Override
     public Enumeration<URL> findResources(String name) {
+        NetigsoModuleFactory.start();
+        Bundle b = bundle;
+        if (b == null) {
+            LOG.log(Level.WARNING, "Trying to load resource before initialization finished {0}", name);
+            return Enumerations.empty();
+        }
         Enumeration ret = null;
         try {
-            ret = bundle.getResources(name);
+            ret = b.getResources(name);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -49,8 +67,13 @@ final class NetigsoLoader extends ProxyClassLoader {
 
     @Override
     protected Class<?> doLoadClass(String pkg, String name) {
+        Bundle b = bundle;
+        if (b == null) {
+            LOG.log(Level.WARNING, "Trying to load class before initialization finished {0}", pkg + '.' + name);
+            return null;
+        }
         try {
-            return bundle.loadClass(name);
+            return b.loadClass(name);
         } catch (ClassNotFoundException ex) {
             if (NetigsoModule.LOG.isLoggable(Level.FINEST)) {
                 NetigsoModule.LOG.log(Level.FINEST, "No class found in " + this, ex);
@@ -65,8 +88,13 @@ final class NetigsoLoader extends ProxyClassLoader {
         if (c != null) {
             return c;
         }
+        Bundle b = bundle;
+        if (b == null) {
+            LOG.log(Level.WARNING, "Trying to load class before initialization finished {0}", new Object[] { name });
+            return null;
+        }
         try {
-            c = bundle.loadClass(name);
+            c = b.loadClass(name);
             if (resolve) {
                 resolveClass(c);
             }
@@ -79,6 +107,10 @@ final class NetigsoLoader extends ProxyClassLoader {
 
     @Override
     public String toString() {
-        return "Netigso[" + bundle.getLocation() + "]";
+        Bundle b = bundle;
+        if (b == null) {
+            return "Netigso[uninitialized]";
+        }
+        return "Netigso[" + b.getLocation() + "]";
     }
 }

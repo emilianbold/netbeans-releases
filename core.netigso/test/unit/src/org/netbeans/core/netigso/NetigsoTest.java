@@ -58,6 +58,10 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jaroslav Tulach
  */
 public class NetigsoTest extends NetigsoHid {
+    static {
+        NetigsoModuleFactory.start();
+    }
+
     public NetigsoTest(String name) {
         super(name);
     }

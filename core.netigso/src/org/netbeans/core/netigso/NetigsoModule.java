@@ -3,11 +3,8 @@ package org.netbeans.core.netigso;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Dictionary;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
-import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,32 +21,15 @@ import org.osgi.framework.BundleException;
 final class NetigsoModule extends Module {
     static final Logger LOG = Logger.getLogger(NetigsoModule.class.getPackage().getName());
 
-
-    final Bundle bundle;
+    private File jar;
+    private Bundle bundle;
     private NetigsoLoader loader;
     private Manifest manifest;
 
-    public NetigsoModule(File jar, ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
+    public NetigsoModule(Manifest mani, File jar, ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
         super(mgr, ev, history, reloadable, autoload, eager);
-        Attributes attr;
-        Dictionary dict;
-        Enumeration keys;
-        Object v;
-        try {
-            BundleContext bc = NetigsoModuleFactory.getContainer().getBundleContext();
-            bundle = bc.installBundle(jar.toURI().toURL().toExternalForm());
-            manifest = new Manifest();
-            attr = manifest.getMainAttributes();
-            dict = bundle.getHeaders();
-            keys = dict.keys();
-            while (keys.hasMoreElements()) {
-                Object k = keys.nextElement();
-                v = dict.get(k);
-                attr.put(new Attributes.Name((String)k), v);
-            }
-        } catch (BundleException ex) {
-            throw (IOException) new IOException(ex.getMessage()).initCause(ex);
-        }
+        this.jar = jar;
+        this.manifest = mani;
     }
 
     @Override
@@ -64,13 +44,13 @@ final class NetigsoModule extends Module {
 
     @Override
     public String getCodeNameBase() {
-        return bundle.getSymbolicName().replace('-', '_');
+        String version = manifest.getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
+        return version.replace('-', '_');
     }
 
     @Override
     public int getCodeNameRelease() {
-        String version = (String) bundle.getHeaders().get("Bundle-SymbolicName");
-        // NOI18N
+        String version = manifest.getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
         int slash = version.lastIndexOf('/');
         if (slash != -1) {
             return Integer.parseInt(version.substring(slash + 1));
@@ -80,9 +60,9 @@ final class NetigsoModule extends Module {
 
     @Override
     public SpecificationVersion getSpecificationVersion() {
-        String version = (String) bundle.getHeaders().get("Bundle-Version"); // NOI18N
+        String version = manifest.getMainAttributes().getValue("Bundle-Version"); // NOI18N
         if (version == null) {
-            NetigsoModule.LOG.warning("No Bundle-Version for " + bundle.getSymbolicName());
+            NetigsoModule.LOG.log(Level.WARNING, "No Bundle-Version for {0}", jar);
             return new SpecificationVersion("0.0");
         }
         int pos = -1;
@@ -98,12 +78,12 @@ final class NetigsoModule extends Module {
     @Override
     public String getImplementationVersion() {
         String explicit = super.getImplementationVersion(); // OIDE-M-I-V/-B-V added by NB build harness
-        return explicit != null ? explicit : (String) bundle.getHeaders().get("Bundle-Version"); // NOI18N
+        return explicit != null ? explicit : manifest.getMainAttributes().getValue("Bundle-Version"); // NOI18N
     }
 
     @Override
     protected void parseManifest() throws InvalidException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -113,37 +93,43 @@ final class NetigsoModule extends Module {
 
     @Override
     public void setReloadable(boolean r) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void reload() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException();
+    }
+
+    final void start() {
+        if (bundle != null) {
+            return;
+        }
+        try {
+            BundleContext bc = NetigsoModuleFactory.getContainer().getBundleContext();
+            bundle = bc.installBundle(jar.toURI().toURL().toExternalForm());
+            loader.init(bundle);
+            bundle.start();
+        } catch (IOException ex) {
+            LOG.log(Level.WARNING, "Cannot initialize: " + jar, ex);
+        } catch (BundleException ex) {
+            LOG.log(Level.WARNING, "Cannot initialize: " + jar, ex);
+        }
     }
 
     @Override
     protected void classLoaderUp(Set<Module> parents) throws IOException {
-        NetigsoModule.LOG.log(Level.FINE, "classLoaderUp {0}, state: {1}", new Object[] { getCodeNameBase(), bundle.getState() }); // NOI18N
-        switch (bundle.getState()) {
-            case Bundle.INSTALLED: break;
-            case Bundle.ACTIVE: break;
-            case Bundle.RESOLVED: break;
-            case Bundle.STARTING: break;
-            default: return;
-        }
-        try {
-            NetigsoModuleFactory.startContainer();
-            bundle.start();
-        } catch (BundleException ex) {
-            throw (IOException) new IOException(ex.getMessage()).initCause(ex);
-        }
-        loader = new NetigsoLoader(bundle);
-        assert bundle.getState() == Bundle.ACTIVE;
+        loader = new NetigsoLoader();
+        NetigsoModuleFactory.classLoaderUp(this);
     }
 
     @Override
     protected void classLoaderDown() {
         NetigsoModule.LOG.log(Level.FINE, "classLoaderDown {0}", getCodeNameBase()); // NOI18N
+        if (bundle == null) {
+            NetigsoModuleFactory.classLoaderDown(this);
+            return;
+        }
         assert bundle.getState() == Bundle.ACTIVE;
         try {
             bundle.stop();
@@ -194,6 +180,6 @@ final class NetigsoModule extends Module {
 
     @Override
     public String toString() {
-        return "Netigso: " + getCodeName();
+        return "Netigso: " + jar;
     }
 }
