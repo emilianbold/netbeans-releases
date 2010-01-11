@@ -279,7 +279,6 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     public EditorUI() {
         focusL = new FocusAdapter() {
                      public @Override void focusGained(FocusEvent evt) {
-                         Registry.activate(getComponent());
                          /* Fix of #25475 - copyAction's enabled flag
                           * must be updated on focus change
                           */

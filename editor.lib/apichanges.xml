@@ -104,6 +104,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Registry-cleanup">
+            <summary>Cleaning up o.n.editor.Registry</summary>
+            <version major="2" minor="2"/>
+            <date day="11" month="1" year="2010"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="incompatible" semantic="compatible" addition="no" deprecation="no" deletion="yes" modification="no" />
+            <description>
+                <p>
+                    <code>o.n.editor.Registry</code> was internally bridged to <code>o.n.api.editor.EditorRegistry</code>
+                    and some of its methods were removed from API. <code>@PatchedPublic</code> was used to preserve binary compatibility.
+                    The whole class has been deprecated for a long time
+                    and its usage is discouraged in favor of <code>EditorRegistry</code>.
+                </p>
+            </description>
+            <issue number="179368"/>
+        </change>
+
         <change id="removing-DrawLayer">
             <summary>Removing DrawLayer and related API</summary>
             <version major="2" minor="1"/>
