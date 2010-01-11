@@ -38,51 +38,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.beans.api.model;
+package org.netbeans.modules.web.beans.impl.model;
 
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.web.api.webmodule.WebModule;
+import java.util.List;
+import java.util.Map;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.web.beans.impl.model.AbstractObjectProvider.Refreshable;
 
 
 /**
+ * Represents TypeElement annotated with some stereotype.
+ * 
  * @author ads
  *
  */
-public class BeansModelUnit {
+class StereotypedObject extends PersistentObject implements Refreshable {
 
-    private BeansModelUnit( ClassPath boot, ClassPath compile,ClassPath src, 
-            WebModule module)
+    public StereotypedObject( String stereotype , AnnotationModelHelper helper,
+            TypeElement typeElement )
     {
-        myBootPath = boot;
-        myCompilePath = compile;
-        mySourcePath = src;
-        myModule = module;
-    }
-    
-    public static BeansModelUnit create( ClassPath boot, ClassPath compile,
-            ClassPath src, WebModule module )
-    {
-        return new BeansModelUnit(boot, compile, src, module);
-    }
-    
-    public ClassPath getBootPath() {
-        return myBootPath;
+        super(helper, typeElement);
+        myStereotype = stereotype;
+        boolean valid = refresh(typeElement);
+        assert valid;
     }
 
-    public ClassPath getCompilePath() {
-        return myCompilePath;
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.impl.model.AbstractObjectProvider.Refreshable#refresh(javax.lang.model.element.TypeElement)
+     */
+    @Override
+    public boolean refresh( TypeElement type ) {
+        List<? extends AnnotationMirror> allAnnotationMirrors = 
+            getHelper().getCompilationController().getElements().
+                getAllAnnotationMirrors(type);
+        Map<String, ? extends AnnotationMirror> annotationsByType = 
+                getHelper().getAnnotationsByType( allAnnotationMirrors );
+        return annotationsByType.get( myStereotype) != null ;
     }
 
-    public ClassPath getSourcePath() {
-        return mySourcePath;
-    }
-    
-    public WebModule getModule(){
-        return myModule;
-    }
-
-    private final ClassPath myBootPath;
-    private final ClassPath myCompilePath;
-    private final ClassPath mySourcePath;
-    private final WebModule myModule;
+    private String myStereotype;
 }

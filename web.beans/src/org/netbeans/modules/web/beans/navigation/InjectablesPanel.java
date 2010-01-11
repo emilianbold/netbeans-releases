@@ -52,7 +52,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -126,8 +125,6 @@ public class InjectablesPanel extends javax.swing.JPanel {
         pleaseWaitTreeModel = new DefaultTreeModel(root);
     }
     
-    private InjectablesModel javaHierarchyModel;
-
     public InjectablesPanel(Result result,  List<AnnotationMirror> bindings , 
             CompilationController controller, MetadataModel<WebBeansModel> model ) 
     {
@@ -766,7 +763,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         myFilterLabel = new javax.swing.JLabel();
         myFilterTextField = new javax.swing.JTextField();
         myCaseSensitiveFilterCheckBox = new javax.swing.JCheckBox();
-        myАiltersLabel = new javax.swing.JLabel();
+        myFiltersLabel = new javax.swing.JLabel();
         myCloseButton = new javax.swing.JButton();
         myFiltersToolbar = new NoBorderToolBar();
         myShowFQNToggleButton = new javax.swing.JToggleButton();
@@ -797,7 +794,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(myCaseSensitiveFilterCheckBox, org.openide.util.NbBundle.getBundle(InjectablesPanel.class).getString("LABEL_caseSensitiveFilterCheckBox")); // NOI18N
         myCaseSensitiveFilterCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(myАiltersLabel, org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "LABEL_filtersLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(myFiltersLabel, org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "LABEL_filtersLabel")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(myCloseButton, org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "LABEL_Close")); // NOI18N
 
@@ -860,10 +857,10 @@ public class InjectablesPanel extends javax.swing.JPanel {
                             .add(myTypeLbl))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(myType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
-                            .add(myBindings, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)))
+                            .add(myType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
+                            .add(myBindings, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
-                        .add(myАiltersLabel)
+                        .add(myFiltersLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(myFiltersToolbar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -871,7 +868,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(myInjectableBindingLbl)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(myInjectableBindings, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE)))
+                        .add(myInjectableBindings, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 588, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -901,7 +898,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(myАiltersLabel)
+                        .add(myFiltersLabel)
                         .add(myCloseButton))
                     .add(myFiltersToolbar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
@@ -912,8 +909,8 @@ public class InjectablesPanel extends javax.swing.JPanel {
         myFilterTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSD_TextFieldFilter")); // NOI18N
         myCaseSensitiveFilterCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSN_CaseSensitive")); // NOI18N
         myCaseSensitiveFilterCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "caseSensitiveFilterCheckBox_ACSD")); // NOI18N
-        myАiltersLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSN_Filters")); // NOI18N
-        myАiltersLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSD_Filters")); // NOI18N
+        myFiltersLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSN_Filters")); // NOI18N
+        myFiltersLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSD_Filters")); // NOI18N
         myCloseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSN_Close")); // NOI18N
         myCloseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSD_Close")); // NOI18N
         myBindingLbl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InjectablesPanel.class, "ACSN_Bindings")); // NOI18N
@@ -933,6 +930,7 @@ public class InjectablesPanel extends javax.swing.JPanel {
     public javax.swing.JButton myExpandAllButton;
     public javax.swing.JLabel myFilterLabel;
     public javax.swing.JTextField myFilterTextField;
+    public javax.swing.JLabel myFiltersLabel;
     public javax.swing.JToolBar myFiltersToolbar;
     public javax.swing.JLabel myInjectableBindingLbl;
     public javax.swing.JEditorPane myInjectableBindings;
@@ -943,7 +941,6 @@ public class InjectablesPanel extends javax.swing.JPanel {
     public javax.swing.JSplitPane mySplitPane;
     public javax.swing.JEditorPane myType;
     public javax.swing.JLabel myTypeLbl;
-    public javax.swing.JLabel myАiltersLabel;
     // End of variables declaration//GEN-END:variables
     
     private StringBuilder myFqnTypeName;
@@ -951,6 +948,8 @@ public class InjectablesPanel extends javax.swing.JPanel {
     
     private String myFqnBindings;
     private String myShortBindings;
+    
+    private InjectablesModel javaHierarchyModel;
     
     private DocumentationScrollPane myDocPane;
     private MetadataModel<WebBeansModel> myModel;

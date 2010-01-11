@@ -77,4 +77,9 @@ public interface WebBeansModelProvider {
     List<AnnotationMirror> getQualifiers( Element element , 
             AbstractModelImplementation impl );
 
+    List<Element> getNamedElements( AbstractModelImplementation impl );
+
+    String getName( Element element,
+            AbstractModelImplementation modelImplementation );
+
 }
