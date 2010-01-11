@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.code;
@@ -43,6 +43,7 @@ import com.sun.source.tree.Tree.Kind;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.junit.Test;
 import org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImpl.WorkerImpl;
@@ -54,12 +55,14 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import static org.junit.Assert.*;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
  *
  * @author lahvac
  */
+@Hint(id="hintPattern", category="general")
 public class CodeHintProviderImplTest {
 
     public CodeHintProviderImplTest() {
@@ -67,15 +70,17 @@ public class CodeHintProviderImplTest {
 
     @Test
     public void testComputeHints() {
-        Collection<? extends HintDescription> hints = new CodeHintProviderImpl().computeHints();
+        Map<HintMetadata, Collection<? extends HintDescription>> hints = new CodeHintProviderImpl().computeHints();
 
         Set<String> golden = new HashSet<String>(Arrays.asList(
             "null:$1.toURL():public static org.netbeans.spi.editor.hints.ErrorDescription org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImplTest.hintPattern1(org.netbeans.modules.java.hints.jackpot.spi.HintContext)",
             "METHOD_INVOCATION:null:public static org.netbeans.spi.editor.hints.ErrorDescription org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImplTest.hintPattern2(org.netbeans.modules.java.hints.jackpot.spi.HintContext)"
         ));
 
-        for (HintDescription d : hints) {
-            golden.remove(toString(d));
+        for (Collection<? extends HintDescription> hds : hints.values()) {
+            for (HintDescription d : hds) {
+                golden.remove(toString(d));
+            }
         }
 
         assertTrue(golden.toString(), golden.isEmpty());
@@ -97,13 +102,11 @@ public class CodeHintProviderImplTest {
         return sb.toString();
     }
 
-    @Hint(value="hintPattern1", category="general")
     @TriggerPattern(value="$1.toURL()", constraints=@Constraint(variable="$1", type="java.io.File"))
     public static ErrorDescription hintPattern1(HintContext ctx) {
         return null;
     }
 
-    @Hint(value="hintPattern2", category="general")
     @TriggerTreeKind(Kind.METHOD_INVOCATION)
     public static ErrorDescription hintPattern2(HintContext ctx) {
         return null;

@@ -938,7 +938,6 @@ public class EditorContextImpl extends EditorContext {
         JavaSource js = JavaSource.forFileObject(fo);
         if (js == null) return null;
         final int currentOffset = (ep == null) ? 0 : ep.getCaretPosition();
-        //final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
         final String[] currentMethodPtr = new String[] { null, null, null };
         final Future<Void> scanFinished;
         try {
@@ -1806,7 +1805,6 @@ public class EditorContextImpl extends EditorContext {
             currentOffset = 0;
         }
 
-        //final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
         final String[] currentElementPtr = new String[] { null };
         final Future<Void> scanFinished;
         try {

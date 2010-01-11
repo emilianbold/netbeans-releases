@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.spi;
@@ -72,7 +72,7 @@ public abstract class PatternConvertor {
         PatternDescription pd = PatternDescription.create(code, Collections.<String, String>emptyMap());
 
         HintDescription desc = HintDescriptionFactory.create()
-                                                     .setDisplayName("Pattern Matches")
+//                                                     .setDisplayName("Pattern Matches")
                                                      .setTriggerPattern(pd)
                                                      .setWorker(new WorkerImpl())
                                                      .produce();

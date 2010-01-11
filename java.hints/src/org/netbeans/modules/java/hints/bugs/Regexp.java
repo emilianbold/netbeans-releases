@@ -65,9 +65,9 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
+@Hint(category="bugs")
 public class Regexp {
 
-    @Hint(value="regexp", category="bugs")
     @TriggerPatterns({
         @TriggerPattern(value="java.util.regex.Pattern.compile($pattern)",
                         constraints={

@@ -528,11 +528,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             ((BaseKit) kit).initDocument(this);
         }
 
-        // Possibly add the document to registry
-        if (addToRegistry) {
-            Registry.addDocument(this); // add if created thru the kit
-        }
-
         // Start listen on find-support
         findSupportListener = new PropertyChangeListener() {
                                   public void propertyChange(PropertyChangeEvent evt) {

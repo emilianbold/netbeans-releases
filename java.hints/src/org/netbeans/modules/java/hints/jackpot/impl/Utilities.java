@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.impl;
@@ -220,59 +220,59 @@ public class Utilities {
         }
     }
 
-    public static Map<String, Collection<HintDescription>> sortOutHints(Iterable<? extends HintDescription> hints, Map<String, Collection<HintDescription>> output) {
-        for (HintDescription d : hints) {
-            Collection<HintDescription> h = output.get(d.getDisplayName());
-
-            if (h == null) {
-                output.put(d.getDisplayName(), h = new LinkedList<HintDescription>());
-            }
-
-            h.add(d);
-        }
-
-        return output;
-    }
-
-    public static List<HintDescription> listAllHints(Set<ClassPath> cps) {
-        List<HintDescription> result = new LinkedList<HintDescription>();
-
-        for (HintProvider p : Lookup.getDefault().lookupAll(HintProvider.class)) {
-            for (HintDescription hd : p.computeHints()) {
-                if (hd.getTriggerPattern() == null) continue; //TODO: only pattern based hints are currently supported
-                result.add(hd);
-            }
-        }
-
-        Set<FileObject> roots = new HashSet<FileObject>();
-
-        for (ClassPath cp : cps) {
-            for (FileObject r : cp.getRoots()) {
-                Result2 src;
-
-                try {
-                    src = SourceForBinaryQuery.findSourceRoots2(r.getURL());
-                } catch (FileStateInvalidException ex) {
-                    Logger.getLogger(Utilities.class.getName()).log(Level.FINE, null, ex);
-                    src = null;
-                }
-
-                if (src != null && src.preferSources()) {
-                    roots.addAll(Arrays.asList(src.getRoots()));
-                } else {
-                    roots.add(r);
-                }
-            }
-        }
-
-        ClassPath cp = ClassPathSupport.createClassPath(roots.toArray(new FileObject[0]));
-
-        for (ClassPathBasedHintProvider p : Lookup.getDefault().lookupAll(ClassPathBasedHintProvider.class)) {
-            result.addAll(p.computeHints(cp));
-        }
-
-        return result;
-    }
+//    public static Map<String, Collection<HintDescription>> sortOutHints(Iterable<? extends HintDescription> hints, Map<String, Collection<HintDescription>> output) {
+//        for (HintDescription d : hints) {
+//            Collection<HintDescription> h = output.get(d.getDisplayName());
+//
+//            if (h == null) {
+//                output.put(d.getDisplayName(), h = new LinkedList<HintDescription>());
+//            }
+//
+//            h.add(d);
+//        }
+//
+//        return output;
+//    }
+//
+//    public static List<HintDescription> listAllHints(Set<ClassPath> cps) {
+//        List<HintDescription> result = new LinkedList<HintDescription>();
+//
+//        for (HintProvider p : Lookup.getDefault().lookupAll(HintProvider.class)) {
+//            for (HintDescription hd : p.computeHints()) {
+//                if (hd.getTriggerPattern() == null) continue; //TODO: only pattern based hints are currently supported
+//                result.add(hd);
+//            }
+//        }
+//
+//        Set<FileObject> roots = new HashSet<FileObject>();
+//
+//        for (ClassPath cp : cps) {
+//            for (FileObject r : cp.getRoots()) {
+//                Result2 src;
+//
+//                try {
+//                    src = SourceForBinaryQuery.findSourceRoots2(r.getURL());
+//                } catch (FileStateInvalidException ex) {
+//                    Logger.getLogger(Utilities.class.getName()).log(Level.FINE, null, ex);
+//                    src = null;
+//                }
+//
+//                if (src != null && src.preferSources()) {
+//                    roots.addAll(Arrays.asList(src.getRoots()));
+//                } else {
+//                    roots.add(r);
+//                }
+//            }
+//        }
+//
+//        ClassPath cp = ClassPathSupport.createClassPath(roots.toArray(new FileObject[0]));
+//
+//        for (ClassPathBasedHintProvider p : Lookup.getDefault().lookupAll(ClassPathBasedHintProvider.class)) {
+//            result.addAll(p.computeHints(cp));
+//        }
+//
+//        return result;
+//    }
     
     public static Tree parseAndAttribute(CompilationInfo info, String pattern, Scope scope) {
         return parseAndAttribute(info, JavaSourceAccessor.getINSTANCE().getJavacTask(info), pattern, scope);

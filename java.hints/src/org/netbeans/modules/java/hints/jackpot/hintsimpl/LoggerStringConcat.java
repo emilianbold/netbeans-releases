@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.hintsimpl;
@@ -76,9 +76,9 @@ import org.netbeans.spi.editor.hints.Fix;
  *
  * @author lahvac
  */
+@Hint(id="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", category="general")
 public class LoggerStringConcat {
 
-    @Hint(value="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", category="General")
     @TriggerPattern(value = "$logger.log($level, $message)",
                     constraints = {
                         @Constraint(variable="$logger", type="java.util.logging.Logger"),
@@ -105,7 +105,6 @@ public class LoggerStringConcat {
 //        return compute(ctx, methodName);
 //    }
 
-    @Hint(value="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", category="General")
     @TriggerPatterns({
         @TriggerPattern(value = "$logger.severe($message)",
                         constraints = {

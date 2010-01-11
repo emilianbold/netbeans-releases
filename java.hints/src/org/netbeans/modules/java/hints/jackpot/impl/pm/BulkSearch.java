@@ -71,19 +71,19 @@ public abstract class BulkSearch {
         this.requiresLightweightVerification = requiresLightweightVerification;
     }
     
-    public final Map<String, Collection<TreePath>> match(CompilationInfo info, Tree tree, BulkPattern pattern) {
-        return match(info, tree, pattern, null);
+    public final Map<String, Collection<TreePath>> match(CompilationInfo info, TreePath toSearch, BulkPattern pattern) {
+        return match(info, toSearch, pattern, null);
     }
 
     public final boolean requiresLightweightVerification() {
         return requiresLightweightVerification;
     }
 
-    public abstract Map<String, Collection<TreePath>> match(CompilationInfo info, Tree tree, BulkPattern pattern, Map<String, Long> timeLog);
+    public abstract Map<String, Collection<TreePath>> match(CompilationInfo info, TreePath toSearch, BulkPattern pattern, Map<String, Long> timeLog);
 
     public abstract boolean matches(InputStream encoded, BulkPattern pattern);
     
-    public abstract boolean matches(CompilationInfo info, Tree tree, BulkPattern pattern);
+    public abstract boolean matches(CompilationInfo info, TreePath toSearch, BulkPattern pattern);
 
     public abstract void encode(Tree tree, EncodingContext ctx);
     

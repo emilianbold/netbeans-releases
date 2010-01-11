@@ -211,6 +211,10 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
                 new String[] {"1:1-1:2:verifier:Empty statement"});
     }
 
+    public void testPatternBasedHint() throws Exception {
+        performTest("test/Test.java", "class Test { public void method(String g) {\n java.util.|logging.Logger.global.fine(g + g); \n} }",
+                new String[] {"1:38-1:43:verifier:Inefficient to use string concat in logger"});
+    }
 
     private void performTest(String fileName , String code, String[] expected) throws Exception {
         int[] caretPosition = new int[1];
@@ -232,7 +236,7 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
                 eds.add(ed.toString().replace(":  ", "  :"));
             }
         }
-        assertTrue("Provided error messages differ. ", eds.containsAll(Arrays.asList(expected)));
+        assertTrue("Provided error messages differ. " + eds, eds.containsAll(Arrays.asList(expected)));
     }
    
 

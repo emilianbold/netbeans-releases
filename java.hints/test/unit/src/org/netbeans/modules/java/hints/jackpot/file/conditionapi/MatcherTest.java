@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.file.conditionapi;
@@ -77,7 +77,7 @@ public class MatcherTest extends TestBase {
         variables.put("$1", var);
         Map<String, Collection<? extends TreePath>> multiVariables = new HashMap<String, Collection<? extends TreePath>>();
         multiVariables.put("$2$", Arrays.asList(tp));
-        HintContext ctx = HintContext.create(info, HintSeverity.ERROR, null, variables, multiVariables, null);
+        HintContext ctx = HintContext.create(info, null, null, variables, multiVariables, null);
 
         new Matcher(ctx).referencedIn(new Variable("$1"), new Variable("$2$"));
     }

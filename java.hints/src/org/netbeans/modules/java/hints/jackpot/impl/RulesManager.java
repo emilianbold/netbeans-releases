@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,36 +34,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.impl;
 
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.TreePath;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.PackageElement;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.modules.java.hints.jackpot.spi.ClassPathBasedHintProvider;
 import org.netbeans.modules.java.hints.jackpot.spi.ElementBasedHintProvider;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.jackpot.spi.HintProvider;
+import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -73,6 +70,7 @@ public class RulesManager {
 
     private final Map<Kind, List<HintDescription>> kind2Hints = new HashMap<Kind, List<HintDescription>>();
     private final Map<PatternDescription, List<HintDescription>> pattern2Hint = new HashMap<PatternDescription, List<HintDescription>>();
+    public final Map<HintMetadata, Collection<? extends HintDescription>> allHints = new HashMap<HintMetadata, Collection<? extends HintDescription>>();
 
     private static final RulesManager INSTANCE = new RulesManager();
 
@@ -82,7 +80,12 @@ public class RulesManager {
 
     private RulesManager() {
         for (HintProvider p : Lookup.getDefault().lookupAll(HintProvider.class)) {
-            sortOut(p.computeHints(), kind2Hints, pattern2Hint);
+            Map<HintMetadata, Collection<? extends HintDescription>> pHints = p.computeHints();
+
+            for (Collection<? extends HintDescription> v : pHints.values()) {
+                sortOut( v, kind2Hints, pattern2Hint);
+            }
+            allHints.putAll(pHints);
         }
     }
 
@@ -137,4 +140,25 @@ public class RulesManager {
         }
     }
 
+    /** Gets preferences node, which stores the options for given hint. 
+     * The preferences node is created
+     * by calling <code>NbPreferences.forModule(this.getClass()).node(profile).node(getId());</code>
+     * @param hintId id of the hint
+     * @param profile Profile to get the node for. May be null for current profile
+     * @return Preferences node for given hint.
+     */
+    public static Preferences getPreferences(String hintId, String profile) {
+        Map<String, Preferences> override = HintsSettings.getPreferencesOverride();
+
+        if (override != null) {
+            Preferences p = override.get(hintId);
+
+            if (p != null) {
+                return p;
+            }
+        }
+
+        profile = profile == null ? HintsSettings.getCurrentProfileId() : profile;
+        return NbPreferences.forModule(RulesManager.class).node(profile).node(hintId);
+    }
 }

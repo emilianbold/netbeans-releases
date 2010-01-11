@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.file.test;
@@ -112,7 +112,7 @@ public class TestPerformer {
     }
 
     private static Map<TestCase, Collection<String>> performTestImpl(FileObject ruleFile, FileObject test, TestCase[] tests, final AtomicBoolean cancel) throws Exception {
-        final List<HintDescription> hints = DeclarativeHintRegistry.parseHintFile(ruleFile);
+        final Collection<? extends HintDescription> hints = DeclarativeHintRegistry.join(DeclarativeHintRegistry.parseHintFile(ruleFile));
         FileObject scratchPad = FileUtil.toFileObject(createScratchpadDir());
         Map<TestCase, Collection<String>> result = new HashMap<TestCase, Collection<String>>();
 

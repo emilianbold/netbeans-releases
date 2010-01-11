@@ -63,9 +63,9 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
+@Hint(category="bugs")
 public class AnnotationsNotRuntime {
 
-    @Hint(value="AnnotationsNotRuntime", category="bugs")
     @TriggerPattern(value="$el.isAnnotationPresent($annotation.class)",
                     constraints={
                         @Constraint(variable="$el", type="java.lang.reflect.AnnotatedElement")
@@ -81,7 +81,6 @@ public class AnnotationsNotRuntime {
         return hint(ctx, "DN_AnnotationsNotRuntime_isAnnotation");
     }
 
-    @Hint(value="AnnotationsNotRuntime", category="bugs")
     @TriggerPattern(value="$el.getAnnotation($annotation.class)",
                     constraints={
                         @Constraint(variable="$el", type="java.lang.reflect.AnnotatedElement")
@@ -97,7 +96,6 @@ public class AnnotationsNotRuntime {
         return hint(ctx, "DN_AnnotationsNotRuntime_getAnnotation");
     }
 
-    @Hint(value="AnnotationsNotRuntime", category="bugs")
     @TriggerPattern(value="$ann instanceof $annotation)",
                     constraints={
                         @Constraint(variable="$ann", type="java.lang.Annotation")
