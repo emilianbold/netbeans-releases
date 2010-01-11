@@ -384,20 +384,32 @@ public class FortranIndentSupport {
         // Search backwards ...
         TokenItem indentToken = findImportantToken(token, null, true);
         startToken = findLineStartToken(indentToken);
+        if (startToken == null) {
+            return 6;
+        }
         // in fixed format: line cont. and preprocessors are not treated as important tokens
         while (isFixedFormatLineContinuation(startToken) || isPreprocessor(startToken) || startToken.getTokenID() == KW_ENTRY) {
             indentToken = findImportantToken(startToken, null, true);
             startToken = findLineStartToken(indentToken);
+            if (startToken == null) {
+                return 6;
+            }
         }
 
         // ignore whitespace && fixed format labels
         while (isFixedFormatLabel(startToken) || startToken.getTokenID() == WHITESPACE) {
             startToken = startToken.getNext();
+            if (startToken == null) {
+                return 6;
+            }
         }
 
         // check for END Tokens
         while (isFixedFormatLineContinuation(token) || isFixedFormatLabel(token) || token.getTokenID() == WHITESPACE) {
             token = token.getNext();
+            if (token == null) {
+                return 6;
+            }
         }
         if (token.getTokenID() == KW_SUBROUTINE || token.getTokenID() == KW_ENTRY || token.getTokenID() == KW_FUNCTION) {
             return 6;
