@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.ruby.railsprojects.classpath;
 
+import org.netbeans.modules.ruby.rubyproject.RequiredGems;
+import org.netbeans.modules.ruby.rubyproject.GemRequirement;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -126,8 +128,8 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private final RailsProject project;
     private final PropertyEvaluator evaluator;
     private List<PathResourceImplementation> resourcesCache;
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private RequiredGems requiredGems;
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final RequiredGems requiredGems;
     private final boolean forTests;
 
     public BootClassPathImplementation(RailsProject project, File projectDirectory, PropertyEvaluator evaluator, boolean forTests) {
@@ -138,7 +140,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
         RubyPreferences.addPropertyChangeListener(WeakListeners.propertyChange(this, RubyPreferences.getInstance()));
         this.requiredGems = project.getLookup().lookup(RequiredGems.class);
-        this.requiredGems.addPropertyChangeListener(this);
         this.forTests = forTests;
     }
 
@@ -265,7 +266,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     }
 
     private List<URL> filterNotRequiredGems(Collection<URL> gemUrls) {
-        List<GemRequirement> required = requiredGems.geGemRequirements();
+        List<GemRequirement> required = requiredGems.getGemRequirements();
         if (required == null || forTests) { // use all gems for tests boot class (until we can actually resolve requires in tests)
             return new ArrayList<URL>(gemUrls);
         }

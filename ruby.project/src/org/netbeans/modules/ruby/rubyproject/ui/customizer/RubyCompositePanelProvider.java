@@ -108,7 +108,7 @@ public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCa
             return new CustomizerRun(uiProps);
         } else if (GEMS.equals(nm)) {
             RubyBaseProject project = context.lookup(RubyBaseProject.class);
-            return new GemsPanel(uiProps, project);
+            return new GemsPanel(project);
         }
         return new JPanel();
 
