@@ -54,8 +54,7 @@ public class GdbUnitTest extends TestSuite {
         addTestSuite(StringProcessingTestCase.class);
         addTestSuite(ValuePresenterTestCase.class);
         addTestSuite(VersionParserTestCase.class);
-        // disabled, see IZ 178567 and 178155
-        //addTestSuite(VariablesTestCase.class);
+        addTestSuite(VariablesTestCase.class);
     }
 
     public static Test suite() {
