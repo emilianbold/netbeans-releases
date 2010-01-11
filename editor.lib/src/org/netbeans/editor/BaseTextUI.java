@@ -251,8 +251,6 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
 
         SwingUtilities.replaceUIInputMap(c, JComponent.WHEN_FOCUSED, null);
         
-        Registry.addComponent(component);
-        Registry.activate(component);
         EditorApiPackageAccessor.get().register(component);
         component.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
     }
@@ -281,7 +279,6 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
             comp.setCaret(null);
 
             getEditorUI().uninstallUI(comp);
-            Registry.removeComponent(comp);
         }
     }
     
@@ -412,7 +409,6 @@ public class BaseTextUI extends BasicTextUI implements PropertyChangeListener, D
                                   
             if (newDoc != null) {
                 newDoc.addDocumentListener(this);
-                Registry.activate(newDoc); // Activate the new document
             }
         } else if ("ancestor".equals(propName)) { // NOI18N
             JTextComponent comp = (JTextComponent)evt.getSource();
