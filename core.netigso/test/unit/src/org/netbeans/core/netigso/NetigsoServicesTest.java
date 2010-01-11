@@ -47,6 +47,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Locale;
@@ -145,10 +148,12 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
 
         Bundle b = findBundle("org.bar");
         assertNotNull("Bundle really found", b);
-        final IOException s = new IOException();
+        IOException s = new IOException();
         ServiceRegistration sr = b.getBundleContext().registerService(IOException.class.getName(), s, null);
+        assertBundles("Nobody is using the service yet", 0, sr.getReference().getUsingBundles());
         IOException found = Lookup.getDefault().lookup(IOException.class);
         assertNotNull("Result really found", found);
+        assertBundles("Someone is using the service now", 1, sr.getReference().getUsingBundles());
         Result<IOException> res = Lookup.getDefault().lookupResult(IOException.class);
         res.addLookupListener(this);
         assertEquals("One instance found", 1, res.allInstances().size());
@@ -157,6 +162,16 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
         assertNull("Result not found", notFound);
         assertEquals("No instance found", 0, res.allInstances().size());
         assertEquals("One change", 1, cnt);
+    }
+
+    static void assertBundles(String msg, int len, Bundle[] bundles) {
+        if (bundles == null && len == 0) {
+            return;
+        }
+        if (len == bundles.length) {
+            return;
+        }
+        fail(msg + " expected: " + len + " was: " + bundles.length + "\n" + Arrays.toString(bundles));
     }
 
 
