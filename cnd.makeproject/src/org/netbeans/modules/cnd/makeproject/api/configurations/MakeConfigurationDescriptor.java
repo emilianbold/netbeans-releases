@@ -977,7 +977,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
             if (toBeRemoved.size() > 0) {
                 for (String rootToBeRemoved : toBeRemoved) {
-                    Vector<Folder> rootFolders = getLogicalFolders().getAllFolders(modified);
+                    Vector<Folder> rootFolders = getLogicalFolders().getAllFolders(modified); // FIXUP: should probably alays be 'true'
                     for (Folder root : rootFolders) {
                         if (root.getRoot() != null && root.getRoot().equals(rootToBeRemoved)) {
                             getLogicalFolders().removeFolderAction(root);
