@@ -462,7 +462,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                 try {
                     if (passwdAuth != null) {
                         svnFolders = Subversion.selectRepositoryFolders(title, repoUrl,
-                                passwdAuth.getUserName(), new String(passwdAuth.getPassword()));
+                                passwdAuth.getUserName(), passwdAuth.getPassword());
                     } else {
                         svnFolders = Subversion.selectRepositoryFolders(title, repoUrl);
                     }
