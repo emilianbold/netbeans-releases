@@ -608,7 +608,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         GrepEntry grep =new GrepEntry();
         grep.firstMacro="HTIOP_ACCEPTOR_IMPL_CPP";
         grep.firstMacroLine=4;
-        String name = "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP/HTIOP_Acceptor_Impl.cpp";
+        String name = "/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP/HTIOP_Acceptor_Impl.cpp";
         grepBase.put(name, grep);
         if (Utilities.isWindows()) {
              //this is hack for testing on windows an object file created on unix
@@ -639,26 +639,27 @@ public class DwarfSourceReaderTest extends NbTestCase {
         "../../../../TAO/tao/AnyTypeCode",
         "../../../../TAO/../protocols/ace/HTBP",
         prefix+"/usr/include/rpc",
-        "../../../../TAO/orbsvcs",
-        "../../../../TAO/../protocols",
-        "../../../../TAO",
-        "../../../../TAO/..",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace",
-        "../../..",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/ace",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/sys",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/netinet",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/net",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/arpa",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/tao",
-        "../..",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/TAO/tao",
-        "../../orbsvcs",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/TAO/orbsvcs/orbsvcs",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/tao/AnyTypeCode",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/protocols/ace/HTBP"
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/ace",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/sys",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/netinet",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/net",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/arpa",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/tao",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/TAO/tao",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/TAO/orbsvcs/orbsvcs",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/tao/AnyTypeCode",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/protocols/ace/HTBP"
+        // next dirs are detected if source file is available
+        //"../../../../TAO/orbsvcs",
+        //"../../../../TAO/../protocols",
+        //"../../../../TAO",
+        //"../../../../TAO/..",
+        //"../../..",
+        //"../..",
+        //"../../orbsvcs"
                 }));
         printInclidePaths(source);
     }
