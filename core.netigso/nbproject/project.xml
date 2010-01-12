@@ -122,7 +122,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <public-packages>
-                <package>org.osgi.framework</package>
+                <subpackages>org.osgi</subpackages>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>felix-2.0.1.jar</runtime-relative-path>
