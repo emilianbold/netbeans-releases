@@ -405,6 +405,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.killer</friend>
                 <friend>org.netbeans.modules.maven.kit</friend>
                 <friend>org.netbeans.modules.maven.maven.checkstyle.bridge</friend>
+                <friend>org.netbeans.modules.maven.osgi</friend>
                 <friend>org.netbeans.modules.maven.persistence</friend>
                 <friend>org.netbeans.modules.maven.profiler</friend>
                 <friend>org.netbeans.modules.maven.repository</friend>
