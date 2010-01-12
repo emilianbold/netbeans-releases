@@ -98,7 +98,7 @@ implements BundleActivator, SynchronousBundleListener {
                     return;
             }
         }
-            NetigsoModule.LOG.warning("No join for " + cnb);
+            NetigsoModule.LOG.log(Level.WARNING, "No join for {0}", cnb);
     }
     }
 
