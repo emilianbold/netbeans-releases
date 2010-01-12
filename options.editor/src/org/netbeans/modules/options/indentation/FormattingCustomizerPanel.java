@@ -110,24 +110,6 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
         return new Factory((String)attrs.get("allowedMimeTypes")); //NOI18N
     }
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType="org-netbeans-modules-maven",
-        category="Formatting",
-        categoryLabel="#LBL_CategoryFormatting",
-        position=1000
-    )
-    public static ProjectCustomizer.CompositeCategoryProvider createCategoryProviderForAll() {
-        return new Factory();
-    }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registrations({
-        @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-java-j2seproject", position=1000),
-        @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-ant-freeform", position=1000)
-    })
-    public static ProjectCustomizer.CompositeCategoryProvider createCategoryProviderForJava() {
-        return new Factory("text/x-java");
-    }
-
     public static class Factory implements ProjectCustomizer.CompositeCategoryProvider {
  
         private static final String CATEGORY_FORMATTING = "Formatting"; // NOI18N
