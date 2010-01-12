@@ -71,7 +71,7 @@ public class OSGIRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
             "java-beans",           // NOI18N
             "oasis-XML-catalogs",   // NOI18N
             "XML",                  // NOI18N
-            "junit",                // NOI18N                    
+            "junit",                // NOI18N
             "simple-files"         // NOI18N
         };
         
