@@ -156,7 +156,7 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
     public void testPath() {
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "localhost", 0); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        npb.setExecutable("/bin/env"); // NOI18N
+        npb.setExecutable("env"); // NOI18N
         MacroMap env = npb.getEnvironment();
         env.prependPathVariable("PATH", "/firstPath"); // NOI18N
         env.appendPathVariable("PATH", "${ZZZ}_${platform}"); // NOI18N
