@@ -39,9 +39,15 @@
 package org.netbeans.modules.bugtracking.ui.search;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
@@ -64,6 +70,14 @@ class FindBar extends javax.swing.JPanel {
         findCombo.setSelectedItem(""); // NOI18N
         initialized = true;
         addComboEditorListener();
+        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        String closeKey = "close"; // NOI18N
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), closeKey);
+        getActionMap().put(closeKey, new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                FindBar.this.support.cancel();
+            }
+        });
     }
 
     private void addComboEditorListener() {
@@ -279,7 +293,7 @@ class FindBar extends javax.swing.JPanel {
     }//GEN-LAST:event_closeButtonActionPerformed
 
     private void findComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findComboActionPerformed
-        if (initialized) {
+        if (initialized && isVisible()) {
             updateComboModel();
             support.findNext();
         }
