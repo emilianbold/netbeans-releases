@@ -331,7 +331,7 @@ public class JCProjectActionProvider implements ActionProvider, PropertyChangeLi
 
                         if (run)
                         ActionUtils.runTarget(buildFo, targetNames, props).addTaskListener(new TaskListener() {
-
+                            @SuppressWarnings("deprecation")
                             public void taskFinished(org.openide.util.Task task) {
                                 if (((ExecutorTask) task).result() != 0) {
                                     synchronized (JCProjectActionProvider.this) {

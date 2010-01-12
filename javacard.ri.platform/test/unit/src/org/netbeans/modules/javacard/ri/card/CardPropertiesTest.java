@@ -279,6 +279,7 @@ public class CardPropertiesTest {
         if (!Utilities.isWindows()) { //FIXME
             return;
         }
+        String winEepromFile = "org-netbeans-modules-javacard/eeproms/TestPlatform\\foo.eprom";
         String[] got = p.getRunCommandLine(platformProps, false, 0);
         String[] expect = new String[] {
             win ? "C:\\Java Card\\JCDK3.0.2\\bin\\cjcre.exe" : "usr/local/java/jcdk3.0.2/bin/cjcre",
@@ -289,7 +290,7 @@ public class CardPropertiesTest {
             "-corsize",
             "3K",
             "-e2pfile",
-            win ? "C:\\foo\\foo.eprom" : "/home/user/foo/foo.eprom",
+            win ? winEepromFile : "/home/user/foo/foo.eprom",
             "-loggerlevel",
             "severe",
             "-httpport",
@@ -312,13 +313,14 @@ public class CardPropertiesTest {
         if (!Utilities.isWindows()) { //FIXME
             return;
         }
+        String winEepromFile = "org-netbeans-modules-javacard/eeproms/TestPlatform\\foo.eprom";
         assertNotNull (platformProps.get("javacard.instance.id"));
         String[] got = p.getResumeCommandLine(platformProps);
         String[] expect = new String[] {
             win ? "C:\\Java Card\\JCDK3.0.2\\bin\\cjcre.exe" : "usr/local/java/jcdk3.0.2/bin/cjcre",
             "-resume",
             "-e2pfile",
-            win ? "C:\\foo\\foo.eprom" : "/home/user/foo/foo.eprom"
+            win ? winEepromFile : "/home/user/foo/foo.eprom"
         };
         for (int i = 0; i < Math.min(expect.length, got.length); i++) {
             assertEquals("Expected '" + expect[i] + "' at " + i + " got '" + got[i] + "' :" + Arrays.asList(got), expect[i], got[i]);

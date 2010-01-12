@@ -325,6 +325,7 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
      * @param nue The new state
      */
     @Override
+    @SuppressWarnings("fallthrough") //NOI18N
     protected void onStateChanged(CardState old, CardState nue) {
         if (old == nue) return;
         log(this + " stateChange " + old + "->" + nue); //NOI18N

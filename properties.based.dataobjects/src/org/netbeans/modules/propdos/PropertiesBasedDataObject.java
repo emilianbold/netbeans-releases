@@ -125,8 +125,8 @@ public abstract class PropertiesBasedDataObject<T> extends MultiDataObject {
     private void replaceCreatedObject() {
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "replaceCreatedObject() on " + //NOI18N
-                    getPrimaryFile().getPath() + " for " + type().getName() +
-                    " discarding old InstanceContent.Converter and its" +
+                    getPrimaryFile().getPath() + " for " + type().getName() + //NOI18N
+                    " discarding old InstanceContent.Converter and its" + //NOI18N
                     " instance, and invoking onReplaceObject()"); //NOI18N
         }
         lkp.replaceConverter(new C());
