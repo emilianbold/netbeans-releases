@@ -243,6 +243,8 @@ public final class QuerySupport {
         Parameters.notNull("fieldValue", fieldValue); //NOI18N
         Parameters.notNull("kind", kind); //NOI18N
 
+        Iterable<? extends Pair<URL, IndexImpl>> indices = indexerQuery.getIndices(roots);
+        
         // check if there are stale indices
         for (Pair<URL, IndexImpl> pair : indices) {
             final IndexImpl index = pair.second;
@@ -334,16 +336,16 @@ public final class QuerySupport {
     private static final Logger LOG = Logger.getLogger(QuerySupport.class.getName());
 
     private final IndexerQuery indexerQuery;
-    private final Iterable<? extends Pair<URL, IndexImpl>> indices;
+    private final List<URL> roots;
 
     private QuerySupport (final String indexerName, int indexerVersion, final URL... roots) throws IOException {
         this.indexerQuery = IndexerQuery.forIndexer(indexerName, indexerVersion);
-        this.indices = indexerQuery.getIndices(roots);
+        this.roots = new LinkedList<URL>(Arrays.asList(roots));
 
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine(getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) //NOI18N
                     + "[indexer=" + indexerQuery.getIndexerId() + "]:"); //NOI18N
-            for(Pair<URL, IndexImpl> pair : indices) {
+            for(Pair<URL, IndexImpl> pair : indexerQuery.getIndices(this.roots)) {
                 LOG.fine(" " + pair.first + " -> index: " + pair.second); //NOI18N
             }
             LOG.fine("----"); //NOI18N
@@ -432,7 +434,7 @@ public final class QuerySupport {
             return q;
         }
 
-        public Iterable<? extends Pair<URL, IndexImpl>> getIndices(URL... roots) {
+        public Iterable<? extends Pair<URL, IndexImpl>> getIndices(List<? extends URL> roots) {
             synchronized (root2index) {
                 List<Pair<URL, IndexImpl>> indices = new LinkedList<Pair<URL, IndexImpl>>();
 
