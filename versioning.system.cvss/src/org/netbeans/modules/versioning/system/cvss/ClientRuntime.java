@@ -61,10 +61,9 @@ import org.openide.ErrorManager;
 import org.openide.windows.InputOutput;
 import org.openide.windows.IOProvider;
 import org.openide.windows.OutputListener;
-
-import javax.net.SocketFactory;
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 
 /**
  * Defines a runtime environment for one CVSRoot. Everytime a command is executed for a new CVSRoot,
@@ -350,7 +349,16 @@ public class ClientRuntime {
         String method = cvsRoot.getMethod();
         if (CVSRoot.METHOD_PSERVER.equals(method)) {
             PServerConnection con = new PServerConnection(patchedCvsRoot, factory);
-            String password = PasswordsFile.findPassword(cvsRoot.toString());                    
+            char[] passwordChars = KeyringSupport.read(CvsModuleConfig.PREFIX_KEYRING_KEY, cvsRoot.toString());
+            String password;
+            if (passwordChars != null) {
+                password = new String(passwordChars);
+            } else {
+                password = PasswordsFile.findPassword(cvsRoot.toString());
+                if (password != null) {
+                    KeyringSupport.save(CvsModuleConfig.PREFIX_KEYRING_KEY, cvsRoot.toString(), password.toCharArray(), null);
+                }
+            }
             con.setEncodedPassword(password);
             return con;
         } else if (CVSRoot.METHOD_EXT.equals(method)) {
@@ -360,7 +368,7 @@ public class ClientRuntime {
             if (extSettings.extUseInternalSsh) {
                 int port = patchedCvsRoot.getPort();
                 port = port == 0 ? 22 : port;  // default port
-                String password = extSettings.extPassword;
+                String password = new String(extSettings.extPassword);
                 if (password == null) {
                     password = "\n";  // NOI18N    user will be asked later on
                 }
