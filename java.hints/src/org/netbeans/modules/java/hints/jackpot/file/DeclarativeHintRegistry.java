@@ -73,7 +73,6 @@ import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -150,13 +149,35 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
             return Collections.emptyList();
         }
 
-        return findFiles(folder);
+        return findFilesRecursive(folder);
     }
 
     private static Collection<? extends FileObject> findFiles(FileObject folder) {
         List<FileObject> result = new LinkedList<FileObject>();
         
         for (FileObject f : folder.getChildren()) {
+            if (!"hint".equals(f.getExt())) {
+                continue;
+            }
+            result.add(f);
+        }
+
+        return result;
+    }
+
+    private static Collection<? extends FileObject> findFilesRecursive(FileObject folder) {
+        List<FileObject> todo = new LinkedList<FileObject>();
+        List<FileObject> result = new LinkedList<FileObject>();
+
+        todo.add(folder);
+
+        while (!todo.isEmpty()) {
+            FileObject f = todo.remove(0);
+
+            if (f.isFolder()) {
+                todo.addAll(Arrays.asList(f.getChildren()));
+                continue;
+            }
             if (!"hint".equals(f.getExt())) {
                 continue;
             }

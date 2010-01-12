@@ -185,11 +185,17 @@ public class IndexingSupportTest extends NbTestCase {
         QuerySupport.IndexerQuery.indexFactory = lif;
 
         QuerySupport qs1 = QuerySupport.forRoots("fooIndexer", 1, root);
-        assertTrue("Expecting getIndex not called", lif.getIndexCalled);
+        assertFalse("Expecting getIndex not called", lif.getIndexCalled);
+        qs1.query("", "", QuerySupport.Kind.EXACT);
+        assertTrue("Expecting getIndex called", lif.getIndexCalled);
 
         lif.getIndexCalled = false;
+        qs1.query("", "", QuerySupport.Kind.EXACT);
+        assertFalse("Expecting getIndex not called", lif.getIndexCalled);
 
         QuerySupport qs2 = QuerySupport.forRoots("fooIndexer", 1, root);
+        assertFalse("Expecting getIndex not called", lif.getIndexCalled);
+        qs2.query("", "", QuerySupport.Kind.EXACT);
         assertFalse("Expecting getIndex not called", lif.getIndexCalled);
     }
 }

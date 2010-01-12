@@ -36,59 +36,24 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
-<!hint="manual-array-copy",hint-category="performance">
-
-'#manual-array-copy-coll':
-for (int $i = 0; $i < $arr.length; $i++) {
-    $coll.add($arr[$i]);
-} :: $arr instanceof Object[] && $coll instanceof java.util.Collection
-=>
-'#manual-array-copy-coll-fix':
-$coll.addAll(java.util.Arrays.asList($arr));
-;;
-
-'#manual-array-copy-coll':
-for ($type $var : $arr) {
-    $coll.add($var);
-} :: $arr instanceof Object[] && $coll instanceof java.util.Collection
-=>
-'#manual-array-copy-coll-fix':
-$coll.addAll(java.util.Arrays.asList($arr));
-;;
-
-'#manual-array-copy':
-for (int $i = $s; $i < $len; $i++) {
-    $tarr[$i] = $arr[$i];
+%%TestCase positive-replaceAll-1
+package test;
+public class Test {
+    private void test() {
+        "a".replaceAll(".", "/");
+    }
 }
-=>
-'#manual-array-copy-fix':
-java.lang.System.arraycopy($arr, 0, $tarr, 0, $len); :: matchesAny($s, "0")
-=>
-'#manual-array-copy-fix':
-java.lang.System.arraycopy($arr, $s, $tarr, 0, $len - $s); :: !matchesAny($s, "0")
-;;
-
-'#manual-array-copy':
-for (int $i = $s; $i < $len; $i++) {
-    $tarr[$o + $i] = $arr[$i];
+%%=>
+package test;
+public class Test {
+    private void test() {
+        "a".replaceAll("\\.", "/");
+    }
 }
-=>
-'#manual-array-copy-fix':
-java.lang.System.arraycopy($arr, 0, $tarr, $o, $len); :: matchesAny($s, "0")
-=>
-'#manual-array-copy-fix':
-java.lang.System.arraycopy($arr, $s, $tarr, $o + $s, $len - $s); :: !matchesAny($s, "0")
-;;
-
-'#manual-array-copy':
-for (int $i = $s; $i < $len; $i++) {
-    $tarr[$i + $o] = $arr[$i];
+%%TestCase negative-replaceAll-1
+package test;
+public class Test {
+    private void test() {
+        "a".replaceAll(",", "/");
+    }
 }
-=>
-'#manual-array-copy-fix':
-java.lang.System.arraycopy($arr, 0, $tarr, $o, $len); :: matchesAny($s, "0")
-=>
-'#manual-array-copy-fix':
-java.lang.System.arraycopy($arr, $s, $tarr, $s + $o, $len - $s); :: !matchesAny($s, "0")
-;;
