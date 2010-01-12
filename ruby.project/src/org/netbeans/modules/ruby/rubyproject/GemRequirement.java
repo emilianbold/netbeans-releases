@@ -36,19 +36,19 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby.railsprojects.classpath;
+package org.netbeans.modules.ruby.rubyproject;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.Util;
+import org.openide.util.Parameters;
 
 /**
- * Represents a gem requirement in a Rails application.
+ * Represents a gem requirement in a Ruby/Rails application.
  * 
  * @author Erno Mononen
  */
-final class GemRequirement {
+public final class GemRequirement implements Comparable<GemRequirement>{
 
     private static final Pattern STATUS = Pattern.compile("\\s*-\\s*\\[(.*)\\].*");
     private static final Pattern NAME = Pattern.compile("\\s*-\\s*\\[.*\\]\\s(\\S*).*");
@@ -104,13 +104,15 @@ final class GemRequirement {
     }
 
     GemRequirement(String name, String version, String operator, Status status) {
+        Parameters.notNull("name", name);
+        Parameters.notNull("status", status);
         this.name = name;
         this.version = version;
         this.operator = operator;
         this.status = status;
     }
 
-    public Status getStatus() {
+    Status getStatus() {
         return status;
     }
 
@@ -140,6 +142,10 @@ final class GemRequirement {
      */
     public String getVersion() {
         return version;
+    }
+
+    public String getVersionRequirement() {
+        return operator + " " + version;
     }
 
     /**
@@ -217,7 +223,7 @@ final class GemRequirement {
      * @param line
      * @return
      */
-    static GemRequirement parse(String line) {
+    public static GemRequirement parse(String line) {
         Matcher statusMatcher = STATUS.matcher(line);
         Matcher nameMatcher = NAME.matcher(line);
         Matcher versionMatcher = VERSION.matcher(line);
@@ -289,7 +295,20 @@ final class GemRequirement {
         return hash;
     }
 
-    
+    public int compareTo(GemRequirement o) {
+        int result = this.name.compareTo(o.name);
+        if (result != 0) {
+            return result;
+        }
+        if (this.version != null && o.version != null) {
+            return this.version.compareTo(o.version);
+        }
+        if (this.version != null) {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
 
 }
 

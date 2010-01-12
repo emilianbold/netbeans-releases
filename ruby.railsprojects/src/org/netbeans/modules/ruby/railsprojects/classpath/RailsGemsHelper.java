@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.ruby.railsprojects.classpath;
 
+import org.netbeans.modules.ruby.rubyproject.RequiredGems;
+import org.netbeans.modules.ruby.rubyproject.GemRequirement;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -45,9 +47,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.print.ConvertedLine;
@@ -129,7 +128,7 @@ public final class RailsGemsHelper implements RakeTaskCustomizer {
             private void finish() throws IOException {
                 if (!gems.isEmpty()) {
                     delegate.processInput(("\n").toCharArray());
-                    List<GemRequirement> old = requiredGems.geGemRequirements();
+                    List<GemRequirement> old = requiredGems.getGemRequirements();
                     boolean addOr = false;
                     if (old == null
                             || !new HashSet<GemRequirement>(old).equals(new HashSet<GemRequirement>(gems))) {

@@ -36,17 +36,53 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.ruby.railsprojects.classpath;
+package org.netbeans.modules.ruby.rubyproject;
 
 import junit.framework.TestCase;
-import org.netbeans.modules.ruby.railsprojects.classpath.GemRequirement.Status;
+import org.netbeans.modules.ruby.rubyproject.GemRequirement.Status;
 
 /**
  *
  * @author Erno Mononen
  */
-public class RequiredGemTest extends TestCase {
+public class GemRequirementTest extends TestCase {
+
+    public GemRequirementTest() {
+    }
+
+    public void testParse() {
+        GemRequirement info = GemRequirement.parse("- [I] color");
+        assertNotNull(info);
+        assertEquals("color", info.getName());
+        assertEquals(GemRequirement.Status.INSTALLED, info.getStatus());
+
+        info = GemRequirement.parse("      - [I] rubyforge ~> 1.0.4");
+        assertEquals("rubyforge", info.getName());
+        assertEquals("1.0.4", info.getVersion());
+        assertEquals("~>", info.getOperator());
+        assertEquals(GemRequirement.Status.INSTALLED, info.getStatus());
+
+        info = GemRequirement.parse("- [ ] javan-whenever");
+        assertEquals("javan-whenever", info.getName());
+        assertEquals(GemRequirement.Status.NOT_INSTALLED, info.getStatus());
+
+        info = GemRequirement.parse("      - [R] rake >= 0.8.7");
+        assertEquals("rake", info.getName());
+        assertEquals("0.8.7", info.getVersion());
+        assertEquals(GemRequirement.Status.FRAMEWORK, info.getStatus());
+
+    }
+
+    public void testFromString() {
+        GemRequirement info = GemRequirement.fromString("color");
+        assertNotNull(info);
+        assertEquals("color", info.getName());
+
+        info = GemRequirement.fromString("rubyforge ~> 1.0.4");
+        assertEquals("rubyforge", info.getName());
+        assertEquals("1.0.4", info.getVersion());
+        assertEquals("~>", info.getOperator());
+    }
 
     public void testSatisfiedBy() {
         GemRequirement gem = new GemRequirement("test", "0.1.0", ">=", Status.INSTALLED);
@@ -75,5 +111,4 @@ public class RequiredGemTest extends TestCase {
         assertTrue(gem.satisfiedBy("5.4.6"));
         assertFalse(gem.satisfiedBy("5.5.3"));
     }
-
 }
