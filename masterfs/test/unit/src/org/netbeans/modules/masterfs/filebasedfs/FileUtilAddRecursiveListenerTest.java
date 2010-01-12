@@ -1,0 +1,262 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ */
+package org.netbeans.modules.masterfs.filebasedfs;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import junit.framework.Test;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.test.TestFileUtils;
+import org.netbeans.modules.masterfs.filebasedfs.FileUtilTest.EventType;
+import org.netbeans.modules.masterfs.filebasedfs.FileUtilTest.TestFileChangeListener;
+
+/**
+ * @author Jiri Skrivanek
+ */
+public class FileUtilAddRecursiveListenerTest extends NbTestCase {
+
+    public FileUtilAddRecursiveListenerTest(String name) {
+        super(name);
+    }
+
+    /** Tests FileObject.addRecursiveListener on folder as declared in
+     * {@link FileObject#addRecursiveListener(org.openide.filesystems.FileChangeListener) }.
+     * It is expected that all events from sub folders are delivered just once.
+     */
+    public void testAddRecursiveListenerToFileObjectFolder() throws Exception {
+        checkFolderRecursiveListener(false);
+    }
+
+    /** Tests FileUtil.addRecursiveListener on folder as declared in
+     * {@link FileUtil#addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File) }.
+     * It is expected that all events from sub folders are delivered just once.
+     */
+    public void testAddRecursiveListenerToFileFolder() throws Exception {
+        checkFolderRecursiveListener(true);
+    }
+
+    /** Tests addRecursiveListener on folder either added to FileObject or File.
+     * @param isOnFile true to add listener to java.io.File, false to FileObject
+     */
+    private void checkFolderRecursiveListener(boolean isOnFile) throws Exception {
+        clearWorkDir();
+        // test files: dir/file1, dir/subdir/subfile, dir/subdir/subsubdir/subsubfile
+        final File rootF = getWorkDir();
+        final File dirF = new File(rootF, "dir");
+        File fileF = new File(dirF, "file1");
+        File subdirF = new File(dirF, "subdir");
+        File subfileF = new File(subdirF, "subfile");
+        File subsubdirF = new File(subdirF, "subsubdir");
+        File subsubfileF = new File(subsubdirF, "subsubfile");
+
+        TestFileChangeListener fcl = new TestFileChangeListener();
+        FileObject dirFO;
+        if (isOnFile) {
+            FileUtil.addRecursiveListener(fcl, dirF);
+            dirFO = FileUtil.createFolder(dirF);
+            assertEquals("Wrong number of events fired when folder created.", 1, fcl.check(EventType.FOLDER_CREATED));
+        } else {
+            dirFO = FileUtil.createFolder(dirF);
+            dirFO.addRecursiveListener(fcl);
+        }
+
+        // create dir
+        FileObject subdirFO = dirFO.createFolder("subdir");
+        assertEquals("Wrong number of events fired when sub folder created.", 1, fcl.check(EventType.FOLDER_CREATED));
+        FileObject subsubdirFO = subdirFO.createFolder("subsubdir");
+        assertEquals("Wrong number of events when sub sub folder created.", 1, fcl.check(EventType.FOLDER_CREATED));
+
+        // create file
+        FileObject file1FO = dirFO.createData("file1");
+        assertEquals("Wrong number of events when data created.", 1, fcl.check(EventType.DATA_CREATED));
+        FileObject subfileFO = subdirFO.createData("subfile");
+        assertEquals("Wrong number of events when data in sub folder created.", 1, fcl.check(EventType.DATA_CREATED));
+        FileObject subsubfileFO = subsubdirFO.createData("subsubfile");
+        assertEquals("Wrong number of events when data in sub sub folder created.", 1, fcl.check(EventType.DATA_CREATED));
+
+        // modify
+        file1FO.getOutputStream().close();
+        assertEquals("Wrong number of events when file folder modified.", 1, fcl.check(EventType.CHANGED));
+        subfileFO.getOutputStream().close();
+        assertEquals("Wrong number of events when file in sub folder modified.", 1, fcl.check(EventType.CHANGED));
+        subsubfileFO.getOutputStream().close();
+        assertEquals("Wrong number of events when file in sub sub folder modified.", 1, fcl.check(EventType.CHANGED));
+
+        // delete
+        file1FO.delete();
+        assertEquals("Wrong number of events when child file deleted.", 1, fcl.check(EventType.DELETED));
+        subsubfileFO.delete();
+        assertEquals("Wrong number of events when child file in sub sub folder deleted.", 1, fcl.check(EventType.DELETED));
+        subsubdirFO.delete();
+        assertEquals("Wrong number of events when sub sub folder deleted.", 1, fcl.check(EventType.DELETED));
+        subfileFO.delete();
+        assertEquals("Wrong number of events when child file in sub folder deleted.", 1, fcl.check(EventType.DELETED));
+        subdirFO.delete();
+        assertEquals("Wrong number of events when sub folder deleted.", 1, fcl.check(EventType.DELETED));
+
+        // atomic action
+        FileUtil.runAtomicAction(new Runnable() {
+
+            public void run() {
+                try {
+                    FileObject rootFO = FileUtil.toFileObject(rootF);
+                    rootFO.createFolder("fakedir");  // no events
+                    rootFO.setAttribute("fake", "fake");  // no events
+                    rootFO.createData("fakefile");  // no events
+                    FileObject dirFO = FileUtil.toFileObject(dirF);
+                    dirFO.createData("file1");
+                    FileObject subdirFO = dirFO.createFolder("subdir");
+                    subdirFO.createData("subfile");
+                    FileObject subsubdirFO = subdirFO.createFolder("subsubdir");
+                    subsubdirFO.createData("subsubfile");
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+
+            }
+        });
+        // TODO - should be 3
+        assertEquals("Wrong number of events fired when file was created in atomic action.", 1, fcl.check(EventType.DATA_CREATED));
+        // TODO - should be 2
+        assertEquals("Wrong number of events fired when file was created in atomic action.", 1, fcl.check(EventType.FOLDER_CREATED));
+        assertEquals("No other events should be fired.", 0, fcl.checkAll());
+
+        // rename
+        file1FO = dirFO.getFileObject("file1");
+        subdirFO = dirFO.getFileObject("subdir");
+        subfileFO = subdirFO.getFileObject("subfile");
+        subsubdirFO = subdirFO.getFileObject("subsubdir");
+        subsubfileFO = subsubdirFO.getFileObject("subsubfile");
+        fcl.clearAll();
+        FileLock lock = file1FO.lock();
+        file1FO.rename(lock, "file1Renamed", null);
+        lock.releaseLock();
+        assertEquals("Wrong number of events when child file renamed.", 1, fcl.check(EventType.RENAMED));
+        lock = subfileFO.lock();
+        subfileFO.rename(lock, "subfileRenamed", null);
+        lock.releaseLock();
+        assertEquals("Wrong number of events when child file in sub folder renamed.", 1, fcl.check(EventType.RENAMED));
+        lock = subsubfileFO.lock();
+        subsubfileFO.rename(lock, "subsubfileRenamed", null);
+        lock.releaseLock();
+        assertEquals("Wrong number of events when child file in sub sub folder renamed.", 1, fcl.check(EventType.RENAMED));
+        lock = subsubdirFO.lock();
+        subsubdirFO.rename(lock, "subsubdirRenamed", null);
+        lock.releaseLock();
+        assertEquals("Wrong number of events when sub sub folder renamed.", 1, fcl.check(EventType.RENAMED));
+        lock = subdirFO.lock();
+        subdirFO.rename(lock, "subdirRenamed", null);
+        lock.releaseLock();
+        assertEquals("Wrong number of events when sub folder renamed.", 1, fcl.check(EventType.RENAMED));
+        lock = dirFO.lock();
+        dirFO.rename(lock, "dirRenamed", null);
+        lock.releaseLock();
+        assertEquals("Wrong number of events when sub folder renamed.", 1, fcl.check(EventType.RENAMED));
+        lock = dirFO.lock();
+        dirFO.rename(lock, "dir", null);
+        lock.releaseLock();
+        /* According to jskrivanek in http://www.netbeans.org/nonav/issues/showattachment.cgi/86910/X.diff, the rename back does not need to
+         * fire an event. Instead the support delivers FOLDER_CREATED event:
+        assertEquals("Wrong number of events when sub folder renamed.", 1, fcl.check(EventType.RENAMED));
+        assertEquals("Wrong number of events when sub folder renamed.", 1, fcl.check(EventType.FOLDER_CREATED));
+        fcl.printAll();
+        assertEquals("No other events should be fired.", 0, fcl.checkAll());
+         */
+        // cleanup after rename
+        dirFO.getFileObject("file1Renamed").delete();
+        dirFO.getFileObject("subdirRenamed").delete();
+        fcl.clearAll();
+
+        // disk changes
+        Thread.sleep(1000); // give OS same time
+        assertTrue(subsubdirF.mkdirs());
+        assertTrue(fileF.createNewFile());
+        assertTrue(subfileF.createNewFile());
+        assertTrue(subsubfileF.createNewFile());
+        FileUtil.refreshAll();
+        // TODO - should be 3
+        assertEquals("Wrong number of events when file was created.", 1, fcl.check(EventType.DATA_CREATED));
+        // TODO - should be 2
+        assertEquals("Wrong number of events when folder created.", 1, fcl.check(EventType.FOLDER_CREATED));
+        // TODO - should be 0
+        assertEquals("Wrong number of Attribute change events (see #129178).", 1, fcl.check(EventType.ATTRIBUTE_CHANGED));
+        assertEquals("No other events should be fired.", 0, fcl.checkAll());
+
+        TestFileUtils.touch(subsubfileF, null);
+        TestFileUtils.touch(subfileF, null);
+        TestFileUtils.touch(fileF, null);
+        FileUtil.refreshAll();
+        assertEquals("Wrong number of events when file was modified.", 3, fcl.check(EventType.CHANGED));
+        assertEquals("Wrong number of Attribute change events (see #129178).", 7, fcl.check(EventType.ATTRIBUTE_CHANGED));
+
+        assertTrue(subsubfileF.delete());
+        assertTrue(subsubdirF.delete());
+        assertTrue(subfileF.delete());
+        assertTrue(subdirF.delete());
+        assertTrue(fileF.delete());
+        FileUtil.refreshAll();
+        assertEquals("Wrong number of events when file deleted.", 5, fcl.check(EventType.DELETED));
+
+        // delete folder itself
+        dirFO.delete();
+        assertEquals("Wrong number of events when folder deleted.", 1, fcl.check(EventType.DELETED));
+    }
+}

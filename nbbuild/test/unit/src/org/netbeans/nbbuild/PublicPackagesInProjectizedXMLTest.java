@@ -216,11 +216,15 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
     }
     
     final static File extractResource(String res) throws Exception {
+        File f = File.createTempFile("res", ".xml");
+        f.deleteOnExit ();
+        extractResource(f, res);
+        return f;
+    }
+    static void extractResource(File f, String res) throws Exception {
         URL u = PublicPackagesInProjectizedXMLTest.class.getResource(res);
         assertNotNull ("Resource should be found " + res, u);
         
-        File f = File.createTempFile("res", ".xml");
-        f.deleteOnExit ();
         
         FileOutputStream os = new FileOutputStream(f);
         InputStream is = u.openStream();
@@ -230,11 +234,9 @@ public class PublicPackagesInProjectizedXMLTest extends NbTestCase {
             os.write (ch);
         }
         os.close ();
-            
-        return f;
     }
     
-    final static void execute (String res, String[] args) throws Exception {
+    final static void execute (String res, String... args) throws Exception {
         execute (extractResource (res), args);
     }
     

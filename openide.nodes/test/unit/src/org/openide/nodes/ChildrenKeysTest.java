@@ -2335,7 +2335,8 @@ public class ChildrenKeysTest extends NbTestCase {
         
         //fail("Ok");
     }
-    
+
+    @RandomlyFails // seems to cause problems for following testSetChildrenDoNotCallAddNotify, at least in NB-Core-Build
     public void testIssue148911()  {
         final CountDownLatch block1 = new CountDownLatch(1);
         final CountDownLatch block2 = new CountDownLatch(1);

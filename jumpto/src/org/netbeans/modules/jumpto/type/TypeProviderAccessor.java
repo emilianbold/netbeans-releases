@@ -64,4 +64,6 @@ public abstract class TypeProviderAccessor {
     public abstract Context createContext(Project p, String text, SearchType t);
 
     public abstract Result createResult(List<? super TypeDescriptor> result, String[] message);
+
+    public abstract int getRetry(Result result);
 }

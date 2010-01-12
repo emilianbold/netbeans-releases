@@ -66,6 +66,7 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
 
     private static TransformPerformer recentPerfomer;
 
+/*************
     public static synchronized TransformAction getInstance() {
         TransformAction actionInstance = null;
         String thisClassName = TransformAction.class.getName();
@@ -77,6 +78,7 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
         }
         return actionInstance;
     }
+***************/
 
     @Override
     protected boolean enable(Node[] activatedNodes) {

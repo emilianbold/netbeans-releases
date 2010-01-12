@@ -42,6 +42,7 @@ package org.netbeans.modules.kenai.ui;
 import java.awt.Component;
 import java.util.List;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.SharedItem;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -60,9 +61,12 @@ public class SourceAndIssuesWizardPanel implements WizardDescriptor.Panel,
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final List<SharedItem> initialItems;
+    private NewKenaiProjectWizardIterator iter;
 
-    public SourceAndIssuesWizardPanel(List<SharedItem> items) {
+
+    public SourceAndIssuesWizardPanel(NewKenaiProjectWizardIterator iter, List<SharedItem> items) {
         this.initialItems = items;
+        this.iter = iter;
     }
 
     List<SharedItem> getInitialItems() {
@@ -111,6 +115,10 @@ public class SourceAndIssuesWizardPanel implements WizardDescriptor.Panel,
 
     public boolean isFinishPanel() {
         return true;
+    }
+
+    Kenai getKenai() {
+        return iter.getKenai();
     }
 
 }

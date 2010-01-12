@@ -42,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -68,6 +69,15 @@ public class KenaiTest extends NbTestCase {
     private static String uname = null;
     private static String passw = null;
 
+    static {
+        try {
+            instance = KenaiManager.getDefault().createKenai("testkenai.com", "https://testkenai.com");
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+
     public KenaiTest(String S) {
         super(S);
     }
@@ -81,7 +91,6 @@ public class KenaiTest extends NbTestCase {
     }
 
     public void setInstance() {
-        instance = Kenai.getDefault();
     }
 
     @Before
@@ -90,8 +99,6 @@ public class KenaiTest extends NbTestCase {
         try {
             final Logger logger = Logger.getLogger("TIMER.kenai");
             logger.setLevel(Level.FINE);
-            System.setProperty("kenai.com.url", "https://testkenai.com");
-            instance = Kenai.getDefault();
             if (uname == null) {
                 uname = System.getProperty("kenai.user.login");
                 passw = System.getProperty("kenai.user.password");
@@ -598,7 +605,7 @@ public class KenaiTest extends NbTestCase {
             String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "licences.data";
             br = new BufferedReader(new FileReader(_fileName));
             String line = null;
-            for (KenaiLicense lic : Kenai.getDefault().getLicenses()) {
+            for (KenaiLicense lic : instance.getLicenses()) {
                 // Check the licence name
                 line = br.readLine().trim();
                 assertEquals(line, lic.getName());
@@ -630,7 +637,7 @@ public class KenaiTest extends NbTestCase {
      */
     public void testGetServices() throws KenaiException {
         System.out.println("testGetServices");
-        for (KenaiService ser : Kenai.getDefault().getServices()) {
+        for (KenaiService ser : instance.getServices()) {
             System.out.println(ser.getName());
             System.out.println(ser.getDescription());
             System.out.println(ser.getDisplayName());

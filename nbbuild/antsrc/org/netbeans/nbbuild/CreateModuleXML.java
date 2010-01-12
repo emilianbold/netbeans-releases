@@ -47,7 +47,6 @@ import org.apache.tools.ant.*;
 import java.util.jar.*;
 import java.io.*;
 import java.util.zip.ZipEntry;
-import org.apache.tools.ant.types.Mapper;
 
 /** Create XML files corresponding to the set of known modules
  * without actually running the IDE.
@@ -206,17 +205,10 @@ public class CreateModuleXML extends Task {
                 }
                 int idx = codename.lastIndexOf('/');
                 String codenamebase;
-                int rel;
                 if (idx == -1) {
                     codenamebase = codename;
-                    rel = -1;
                 } else {
                     codenamebase = codename.substring(0, idx);
-                    try {
-                        rel = Integer.parseInt(codename.substring(idx + 1));
-                    } catch (NumberFormatException e) {
-                        throw new BuildException("Invalid OpenIDE-Module '" + codename + "' in " + module, getLocation());
-                    }
                 }
                 File xml = new File(xmldir, codenamebase.replace('.', '-') + ".xml");
                 if (xml.exists()) {
@@ -262,7 +254,6 @@ public class CreateModuleXML extends Task {
                     displayname = codename;
                 }
                 names.add(displayname);
-                String spec = attr.getValue("OpenIDE-Module-Specification-Version");
                 if (isHidden) {
                     File h = new File(xml.getParentFile(), xml.getName() + "_hidden");
                     h.createNewFile();
@@ -282,13 +273,7 @@ public class CreateModuleXML extends Task {
                             pw.println("    <param name=\"enabled\">" + isEnabled + "</param>");
                         }
                         pw.println("    <param name=\"jar\">" + kid.replace(File.separatorChar, '/') + "</param>");
-                        if (rel != -1) {
-                            pw.println("    <param name=\"release\">" + rel + "</param>");
-                        }
                         pw.println("    <param name=\"reloadable\">false</param>");
-                        if (spec != null) {
-                            pw.println("    <param name=\"specversion\">" + spec + "</param>");
-                        }
                         pw.println("</module>");
                         pw.flush();
                         pw.close();

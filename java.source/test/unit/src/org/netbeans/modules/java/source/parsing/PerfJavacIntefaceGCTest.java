@@ -40,16 +40,9 @@
  */
 
 package org.netbeans.modules.java.source.parsing;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.tools.javac.util.Context;
 import java.io.File;
-import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.util.Collections;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.insane.scanner.ScannerUtils;
-import org.netbeans.insane.scanner.SimpleXmlVisitor;
-import org.netbeans.insane.scanner.Visitor;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -80,16 +73,13 @@ public class PerfJavacIntefaceGCTest extends NbTestCase {
     }
 
     protected void setUp() throws Exception {
-        workDir = TestUtil.createWorkFolder();
+        clearWorkDir();
+        workDir = getWorkDir();
         TestUtil.copyFiles( workDir, TestUtil.RT_JAR, "jdk/JTable.java" );
         rtJar = new File( workDir, TestUtil.RT_JAR );
         URL url = FileUtil.getArchiveRoot (rtJar.toURI().toURL());
         this.bootPath = ClassPathSupport.createClassPath (new URL[] {url});
         this.classPath = ClassPathSupport.createClassPath(new URL[0]);
-    }
-
-    protected void tearDown() throws Exception {
-        TestUtil.removeWorkFolder( workDir );
     }
 
 //    public void testSimple() throws Exception {

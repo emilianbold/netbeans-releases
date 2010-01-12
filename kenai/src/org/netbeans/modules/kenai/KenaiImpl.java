@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.kenai;
 
+import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.Collection;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -67,9 +68,9 @@ public abstract class KenaiImpl {
      * @return list of Kenai projects
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public abstract Collection<ProjectData> searchProjects(String pattern) throws KenaiException;
+    public abstract Collection<ProjectData> searchProjects(String pattern, PasswordAuthentication pa) throws KenaiException;
 
-    public abstract Collection<ProjectData> getMyProjects() throws KenaiException;
+    public abstract Collection<ProjectData> getMyProjects(PasswordAuthentication pa) throws KenaiException;
 
     /**
      * Retrieves all available information about a Kenai project.
@@ -78,9 +79,9 @@ public abstract class KenaiImpl {
      * @return KenaiProjectImpl or null if the project does not exist
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public abstract ProjectData getProject(String name) throws KenaiException;
+    public abstract ProjectData getProject(String name, PasswordAuthentication pa) throws KenaiException;
 
-    public abstract Collection<UserData> getProjectMembers(String name) throws KenaiException;
+    public abstract Collection<UserData> getProjectMembers(String name, PasswordAuthentication pa) throws KenaiException;
 
     /**
      * Asks whether a person is authorized to perform an activity on a particular project.
@@ -91,7 +92,7 @@ public abstract class KenaiImpl {
      * @return true if the person is authorized to perform the activity on the project, false otherwise
      * @throws org.netbeans.modules.kenai.api.KenaiException
      */
-    public abstract boolean isAuthorized(String projectName, String feature, String activity) throws KenaiException;
+    public abstract boolean isAuthorized(String projectName, String feature, String activity, PasswordAuthentication pa) throws KenaiException;
 
     /**
      * Verifies that the supplied credentials are valid.
@@ -126,7 +127,8 @@ public abstract class KenaiImpl {
             String displayName,
             String description,
             String[] licenses,
-            String tags
+            String tags,
+            PasswordAuthentication pa
             ) throws KenaiException;
 
     /**
@@ -150,7 +152,8 @@ public abstract class KenaiImpl {
             String url,
             String repository_url,
             String browse_url,
-            String service
+            String service,
+            PasswordAuthentication pa
             ) throws KenaiException;
 
     public abstract void joinProject(String projectName, String userName);

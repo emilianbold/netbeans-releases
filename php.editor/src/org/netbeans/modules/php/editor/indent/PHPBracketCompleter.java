@@ -1085,6 +1085,9 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             if (ch == '}') {
                 reindent(doc, dotPos, PHPTokenId.PHP_CURLY_CLOSE, caret);
             }
+            else if (ch == '{') {
+                reindent(doc, dotPos, PHPTokenId.PHP_CURLY_OPEN, caret);
+            }
         }
 
         break;
@@ -1222,6 +1225,19 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 }
 
                 OffsetRange begin;
+
+                if (id == PHPTokenId.PHP_CURLY_OPEN && ts.offset() == rowFirstNonWhite
+                        && ts.movePrevious()) {
+                    // The curly is at the first nonwhite char at the line.
+                    // Do we need to indent the { according previous line?
+                    int previousExprestion = PHPNewLineIndenter.findStartTokenOfExpression(ts);
+                    int previousIndent = Utilities.getRowIndent(doc, previousExprestion);
+                    int currentIndent = Utilities.getRowIndent(doc, offset);
+                    if (previousIndent != currentIndent) {
+                        GsfUtilities.setLineIndentation(doc, offset, previousIndent);
+                        return;
+                    }
+                }
 
                 if (id == PHPTokenId.PHP_CURLY_CLOSE) {
                     begin = LexUtilities.findBwd(doc, ts, '{', '}');

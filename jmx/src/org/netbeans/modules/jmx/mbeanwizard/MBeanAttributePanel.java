@@ -106,7 +106,7 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
         //String str = NbBundle.getMessage(MBeanAttributePanel.class,"LBL_Attribute_Panel");// NOI18N
         String str = bundle.getString("LBL_Attribute_Panel");// NOI18N
         setName(str);
-        wiz.setErrorMsg(" ");// NOI18N
+        wiz.setErrorMsg(null);
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
@@ -302,7 +302,7 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
             
             boolean attrValid = true;
             boolean opValid = true;
-            String msg = WizardConstants.EMPTY_STRING;
+            String msg = null;
             
             if (getPanel() != null) {
                 if (getPanel().AttributeNameAlreadyContained()) {
@@ -385,7 +385,7 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
                 attrModel.addRow(new MBeanAttribute(name,type,access,descr, mirror));
                 
             }
-            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");// NOI18N
+            setErrorMsg(null);
         }
         
         /**

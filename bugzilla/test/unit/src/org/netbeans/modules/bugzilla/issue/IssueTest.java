@@ -918,7 +918,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         while (!lh.done) {
             Thread.sleep(100);
         }
-        for (IssueField f : IssueField.values()) {
+        for (IssueField f : issue.getFields()) {
             // seen -> everything's uptodate
             assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, f);
         }

@@ -293,11 +293,11 @@ public class TableView extends JScrollPane {
         }
         if (firstSelection >= 0) {
             Rectangle rect = table.getCellRect(firstSelection, 0, true);
-            java.awt.Insets ins = getInsets();
-            rect.height = getHeight() - 30;
-            table.scrollRectToVisible(rect);
+            if (!getViewport().getViewRect().contains(rect.getLocation())) {
+                rect.height = Math.max(rect.height, getHeight() - 30);
+                table.scrollRectToVisible(rect);
+            }
         }
-
     }
     
     /**
@@ -625,6 +625,9 @@ public class TableView extends JScrollPane {
             if (o instanceof Node.Property) { // && (e == null || e instanceof KeyEvent)) {
                 //Toggle booleans without instantiating an editor
                 Node.Property p = (Node.Property)o;
+                if (!p.canWrite()) {
+                    return false;
+                }
                 if (p.getValueType() == Boolean.class || p.getValueType() == Boolean.TYPE) {
                     PropertiesRowModel.toggleBooleanProperty(p);
                     Rectangle r = getCellRect(row, column, true);

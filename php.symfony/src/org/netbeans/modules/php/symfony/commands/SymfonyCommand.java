@@ -49,14 +49,12 @@ import org.netbeans.modules.php.symfony.SymfonyScript;
  */
 public class SymfonyCommand extends FrameworkCommand {
     private final WeakReference<PhpModule> phpModule;
-    private final String preview;
 
     public SymfonyCommand(PhpModule phpModule, String command, String description, String displayName) {
         super(command, description, displayName);
         assert phpModule != null;
 
         this.phpModule = new WeakReference<PhpModule>(phpModule);
-        preview = SymfonyScript.SCRIPT_NAME + " " + getCommand(); // NOI18N
     }
 
     @Override
@@ -70,6 +68,6 @@ public class SymfonyCommand extends FrameworkCommand {
 
     @Override
     public String getPreview() {
-        return preview;
+        return SymfonyScript.SCRIPT_NAME + " " + super.getPreview(); // NOI18N
     }
 }

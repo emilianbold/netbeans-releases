@@ -81,8 +81,7 @@ public final class MIMEResolverImpl {
     // enable some tracing
     private static final Logger ERR = Logger.getLogger(MIMEResolverImpl.class.getName());
         
-    private static final boolean CASE_INSENSITIVE =
-        Utilities.isWindows() || Utilities.getOperatingSystem() == Utilities.OS_VMS;
+    private static final boolean CASE_INSENSITIVE = Utilities.getOperatingSystem() == Utilities.OS_VMS;
 
     // notification limit in bytes for reading file content. It should not exceed 4192 (4kB) because it is read in one disk touch.
     private static final int READ_LIMIT = 4000;

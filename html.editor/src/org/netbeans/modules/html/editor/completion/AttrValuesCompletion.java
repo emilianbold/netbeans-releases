@@ -65,6 +65,7 @@ public abstract class AttrValuesCompletion {
 
     private static final Map<String, Map<String, AttrValuesCompletion>> SUPPORTS = new HashMap<String, Map<String, AttrValuesCompletion>>();
     private static final AttrValuesCompletion FILE_NAME_SUPPORT = new FilenameSupport();
+    private static final AttrValuesCompletion CONTENT_TYPE_SUPPORT = new ContentTypeSupport();
 
     static {
         //TODO uff, such long list ... redo it so it resolves according to the DTD attribute automatically
@@ -91,6 +92,9 @@ public abstract class AttrValuesCompletion {
         putSupport("ins", "cite", FILE_NAME_SUPPORT); //NOI18N
         putSupport("del", "cite", FILE_NAME_SUPPORT); //NOI18N
         putSupport("form", "action", FILE_NAME_SUPPORT); //NOI18N
+
+        putSupport("script", "type", CONTENT_TYPE_SUPPORT); //NOI18N
+        putSupport("stype", "type", CONTENT_TYPE_SUPPORT); //NOI18N
     }
 
     private static void putSupport(String tag, String attr, AttrValuesCompletion support) {
@@ -112,6 +116,24 @@ public abstract class AttrValuesCompletion {
     }
 
     public abstract List<HtmlCompletionItem> getValueCompletionItems(Document doc, int offset, String valuePart);
+
+    public static class ContentTypeSupport extends AttrValuesCompletion {
+
+        public static String[] TYPICAL_CONTENT_TYPES = new String[]{"text/css", "text/javascript"}; //NOI18N
+
+        @Override
+        public List<HtmlCompletionItem> getValueCompletionItems(Document doc, int offset, String valuePart) {
+            //linear search, too little items, no problem
+            List<HtmlCompletionItem> items = new ArrayList<HtmlCompletionItem>();
+            for(int i = 0; i < TYPICAL_CONTENT_TYPES.length; i++) {
+                if(TYPICAL_CONTENT_TYPES[i].startsWith(valuePart)) {
+                    items.add(HtmlCompletionItem.createAttributeValue(TYPICAL_CONTENT_TYPES[i], offset));
+                }
+            }
+            return items;
+        }
+
+    }
 
     public static class FilenameSupport extends AttrValuesCompletion {
 

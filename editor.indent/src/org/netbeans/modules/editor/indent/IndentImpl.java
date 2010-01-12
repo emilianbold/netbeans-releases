@@ -84,6 +84,10 @@ public final class IndentImpl {
     private TaskHandler reformatHandler;
     
     private Formatter defaultFormatter;
+
+    private Thread lockThread;
+
+    private int lockExtraDepth;
     
     public IndentImpl(Document doc) {
         this.doc = doc;
@@ -125,8 +129,19 @@ public final class IndentImpl {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("indentLock() on " + this);
         }
-        if (indentHandler != null)
-            throw new IllegalStateException("Already locked");
+        Thread currentThread = Thread.currentThread();
+        while (lockThread != null) {
+            if (currentThread == lockThread) {
+                lockExtraDepth++; // Extra inner lock
+                return;
+            }
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                throw new Error("Interrupted at acquiring indent-lock");
+            }
+        }
+        lockThread = currentThread;
         TaskHandler handler = new TaskHandler(true, doc);
         if (handler.collectTasks()) {
             handler.lock();
@@ -138,10 +153,19 @@ public final class IndentImpl {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("indentUnlock() on " + this);
         }
-        if (indentHandler == null)
-            throw new IllegalStateException("Already unlocked");
-        indentHandler.unlock();
-        indentHandler = null;
+        Thread currentThread = Thread.currentThread();
+        if (currentThread != lockThread) {
+            throw new IllegalStateException("Invalid indentUnlock(): current-thread=" + // NOI18N
+                    currentThread + ", lockThread=" + lockThread + ", lockExtraDepth=" + lockExtraDepth); // NOI18N
+        }
+        if (lockExtraDepth == 0) {
+            indentHandler.unlock();
+            indentHandler = null;
+            lockThread = null;
+            notifyAll();
+        } else {
+            lockExtraDepth--;
+        }
     }
     
     public TaskHandler indentHandler() {

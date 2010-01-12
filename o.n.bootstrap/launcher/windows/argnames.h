@@ -20,6 +20,7 @@
 #define ARG_NAME_JDKHOME "--jdkhome"
 #define ARG_NAME_CP_PREPEND "--cp:p"
 #define ARG_NAME_CP_APPEND "--cp:a"
+#define ARG_NAME_NOSPLASH "--nosplash"
 
 
 #endif	/* _ARGNAMES_H */

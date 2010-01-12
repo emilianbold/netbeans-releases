@@ -504,3 +504,13 @@ org.jivesoftware.smackx.provider.RosterExchangeProvider
 org.jivesoftware.smackx.provider.StreamInitiationProvider
 org.jivesoftware.smackx.provider.VCardProvider
 org.jivesoftware.smackx.provider.XHTMLExtensionProvider
+
+
+org.netbeans.modules.cnd.api.model.CsmClass
+org.netbeans.modules.cnd.api.model.CsmClassifier
+org.netbeans.modules.cnd.api.model.CsmCompoundClassifier
+org.netbeans.modules.cnd.api.model.CsmDeclaration
+org.netbeans.modules.cnd.api.model.CsmOffsetable
+org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration
+org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement
+org.netbeans.modules.cnd.api.model.CsmScopeElement

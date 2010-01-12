@@ -40,9 +40,12 @@
  */
 package org.netbeans.modules.web.beans.xml.impl;
 
+import org.netbeans.modules.web.beans.xml.Alternatives;
+import org.netbeans.modules.web.beans.xml.BeanClass;
 import org.netbeans.modules.web.beans.xml.Beans;
-import org.netbeans.modules.web.beans.xml.Deploy;
-import org.netbeans.modules.web.beans.xml.Type;
+import org.netbeans.modules.web.beans.xml.Decorators;
+import org.netbeans.modules.web.beans.xml.Interceptors;
+import org.netbeans.modules.web.beans.xml.Stereotype;
 import org.netbeans.modules.web.beans.xml.WebBeansComponent;
 import org.netbeans.modules.web.beans.xml.WebBeansComponentFactory;
 import org.w3c.dom.Element;
@@ -77,17 +80,38 @@ class WebBeansComponentFactoryImpl implements WebBeansComponentFactory {
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createDeploy()
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createAlternatives()
      */
-    public Deploy createDeploy() {
-        return new DeployImpl( getModel());
+    public Alternatives createAlternatives() {
+        return new AlternativesImpl(getModel());
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createType()
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createBeanClass()
      */
-    public Type createType() {
-        return new TypeImpl( getModel() );
+    public BeanClass createBeanClass() {
+        return new BeanClassImpl( getModel());
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createDecorators()
+     */
+    public Decorators createDecorators() {
+        return new DecoratorsImpl( getModel());
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createInterceptors()
+     */
+    public Interceptors createInterceptors() {
+        return new InterceptorsImpl(getModel());
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.xml.WebBeansComponentFactory#createStereotype()
+     */
+    public Stereotype createStereotype() {
+        return new StereotypeImpl(getModel());
     }
     
     private WebBeansModelImpl getModel(){

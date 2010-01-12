@@ -55,7 +55,9 @@ public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd
 class ZipSyncFactory extends BaseSyncFactory {
 
     /*package*/ static final boolean ENABLE_SCP = CndUtils.getBoolean("cnd.remote.scp", false);
-    /*package*/ static final String ID = "scp"; //NOI18N
+
+    /** this factory ID -  public for test purposes */
+    public static final String ID = "scp"; //NOI18N
     
     @Override
     public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,

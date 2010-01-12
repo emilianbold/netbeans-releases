@@ -113,8 +113,14 @@ public class TemplateUtils {
                 if (grandChild != null) {
                     addSpecializationSuffix(grandChild, sb, parameters);
                 }
-                sb.append('>');
+                addGREATERTHAN(sb);
                 sb.append(' ');
+            } else if (child.getType() == CPPTokenTypes.GREATERTHAN) {
+                addGREATERTHAN(sb);
+                depth--;
+                if (depth == 0) {
+                    break;
+                }
             } else {
                 String text = child.getText();
                 if (parameters != null) {
@@ -134,15 +140,16 @@ public class TemplateUtils {
                     }
                 }
                 sb.append(text);
-
-                if (child.getType() == CPPTokenTypes.GREATERTHAN) {
-                    depth--;
-                    if (depth == 0) {
-                        break;
-                    }
-                }
             }
         }
+    }
+
+    public static void addGREATERTHAN(StringBuilder sb) {
+        // IZ#179276
+        if (sb.length() > 0 && sb.charAt(sb.length() - 1) == '>') {
+            sb.append(' ');
+        }
+        sb.append('>');
     }
     
     public static boolean isPartialClassSpecialization(AST ast) {

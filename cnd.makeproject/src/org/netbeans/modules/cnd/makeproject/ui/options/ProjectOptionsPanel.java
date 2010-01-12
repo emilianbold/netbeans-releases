@@ -117,6 +117,7 @@ public class ProjectOptionsPanel extends JPanel {
         reuseCheckBox.setSelected(makeOptions.getReuse());
         viewBinaryFilesCheckBox.setSelected(makeOptions.getViewBinaryFiles());
         showProfilerCheckBox.setSelected(makeOptions.getShowProfiling());
+        showConfigurationWarningCheckBox.setSelected(makeOptions.getShowConfigurationWarning());
 
         listen = true;
         changed = false;
@@ -133,6 +134,7 @@ public class ProjectOptionsPanel extends JPanel {
         makeOptions.setReuse(reuseCheckBox.isSelected());
         makeOptions.setViewBinaryFiles(viewBinaryFilesCheckBox.isSelected());
         makeOptions.setShowProfiling(showProfilerCheckBox.isSelected());
+        makeOptions.setShowConfigurationWarning(showConfigurationWarningCheckBox.isSelected());
 
         changed = false;
     }
@@ -198,6 +200,7 @@ public class ProjectOptionsPanel extends JPanel {
         viewBinaryFilesCheckBox = new javax.swing.JCheckBox();
         jSeparator1 = new javax.swing.JSeparator();
         showProfilerCheckBox = new javax.swing.JCheckBox();
+        showConfigurationWarningCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -320,7 +323,7 @@ public class ProjectOptionsPanel extends JPanel {
         add(viewBinaryFilesCheckBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -332,10 +335,22 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 10;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(showProfilerCheckBox, gridBagConstraints);
+
+        showConfigurationWarningCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("SHOW_WARNING_ABOUT_MISMATCHED_CONFIGURATIONS.MN").charAt(0));
+        showConfigurationWarningCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "SHOW_WARNING_ABOUT_MISMATCHED_CONFIGURATIONS.TXT")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
+        add(showConfigurationWarningCheckBox, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void dependencyCheckingCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependencyCheckingCheckBoxActionPerformed
@@ -362,6 +377,7 @@ public class ProjectOptionsPanel extends JPanel {
     private javax.swing.JLabel makeOptionsTxt;
     private javax.swing.JCheckBox reuseCheckBox;
     private javax.swing.JCheckBox saveCheckBox;
+    private javax.swing.JCheckBox showConfigurationWarningCheckBox;
     private javax.swing.JCheckBox showProfilerCheckBox;
     private javax.swing.JCheckBox viewBinaryFilesCheckBox;
     // End of variables declaration//GEN-END:variables

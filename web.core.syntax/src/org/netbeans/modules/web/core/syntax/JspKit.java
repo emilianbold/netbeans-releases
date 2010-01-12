@@ -54,7 +54,6 @@ import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
-import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 import java.awt.event.ActionEvent;
 import java.beans.*;
 import javax.swing.Action;
@@ -303,13 +302,6 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         } else {
             return new HtmlSyntax();
         }
-    }
-
-    @Override
-    protected void initDocument(BaseDocument doc) {
-        doc.addLayer(new ELDrawLayerFactory.ELLayer(),
-                ELDrawLayerFactory.EL_LAYER_VISIBILITY);
-
     }
 
     private void initLexerColoringListener(Document doc) {

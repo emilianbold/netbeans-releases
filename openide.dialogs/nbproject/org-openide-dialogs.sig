@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 7.10.1
+#Signature file v4.1
+#Version 7.13
 
 CLSS public abstract interface java.io.Serializable
 
@@ -157,6 +157,7 @@ cons protected LifecycleManager()
 meth public abstract void exit()
 meth public abstract void saveAll()
 meth public static org.openide.LifecycleManager getDefault()
+meth public void markForRestart()
 supr java.lang.Object
 hcls Trivial
 

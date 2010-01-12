@@ -15,7 +15,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
 import javax.persistence.EntityManager;
@@ -23,6 +22,7 @@ import o.n.m.ws.qaf.rest.crud.Manufacturer;
 import o.n.m.ws.qaf.rest.crud.Product;
 import java.util.Collection;
 import o.n.m.ws.qaf.rest.crud.converter.ManufacturerConverter;
+import com.sun.jersey.api.core.ResourceContext;
 
 /**
  *
@@ -31,16 +31,16 @@ import o.n.m.ws.qaf.rest.crud.converter.ManufacturerConverter;
 
 public class ManufacturerResource {
     @Context
-    protected UriInfo uriInfo;
-    @Context
     protected ResourceContext resourceContext;
+    @Context
+    protected UriInfo uriInfo;
     protected Integer id;
-
+  
     /** Creates a new instance of ManufacturerResource */
     public ManufacturerResource() {
     }
 
-    protected void setId(Integer id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -53,7 +53,7 @@ public class ManufacturerResource {
     @GET
     @Produces({"application/xml", "application/json"})
     public ManufacturerConverter get(@QueryParam("expandLevel")
-    @DefaultValue("1")
+                                     @DefaultValue("1")
     int expandLevel) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
@@ -123,7 +123,7 @@ public class ManufacturerResource {
      * @param newEntity the entity containing the new data
      * @return the updated entity
      */
-    protected Manufacturer updateEntity(Manufacturer entity, Manufacturer newEntity) {
+    private Manufacturer updateEntity(Manufacturer entity, Manufacturer newEntity) {
         EntityManager em = PersistenceService.getInstance().getEntityManager();
         Collection<Product> productCollection = entity.getProductCollection();
         Collection<Product> productCollectionNew = newEntity.getProductCollection();
@@ -150,7 +150,7 @@ public class ManufacturerResource {
      *
      * @param entity the entity to deletle
      */
-    protected void deleteEntity(Manufacturer entity) {
+    private void deleteEntity(Manufacturer entity) {
         EntityManager em = PersistenceService.getInstance().getEntityManager();
         if (!entity.getProductCollection().isEmpty()) {
             throw new WebApplicationException(new Throwable("Cannot delete entity because productCollection is not empty."));
@@ -166,16 +166,16 @@ public class ManufacturerResource {
      */
     @Path("productCollection/")
     public ProductsResource getProductCollectionResource() {
-        ProductCollectionResourceSub resource = resourceContext.getResource(ProductCollectionResourceSub.class);
-        resource.setParent(getEntity());
-        return resource;
+        ProductCollectionResourceSub productCollectionResourceSub = resourceContext.getResource(ProductCollectionResourceSub.class);
+        productCollectionResourceSub.setParent(getEntity());
+        return productCollectionResourceSub;
     }
 
     public static class ProductCollectionResourceSub extends ProductsResource {
 
         private Manufacturer parent;
 
-        protected void setParent(Manufacturer parent) {
+        public void setParent(Manufacturer parent) {
             this.parent = parent;
         }
 

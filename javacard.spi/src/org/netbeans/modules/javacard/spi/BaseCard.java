@@ -50,13 +50,14 @@ import java.util.logging.Logger;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
-import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.capabilities.CapabilitiesProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.netbeans.modules.javacard.spi.capabilities.ClearEpromCapability;
 import org.netbeans.modules.javacard.spi.capabilities.DebugCapability;
+import org.netbeans.modules.javacard.spi.capabilities.DeleteCapability;
 import org.netbeans.modules.javacard.spi.capabilities.EpromFileCapability;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ProfileCapability;
@@ -123,7 +124,7 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         return null;
     }
 
-    protected ApduSupport createApduSupport(T t) {
+    protected UrlCapability createApduSupport(T t) {
         return null;
     }
 
@@ -164,6 +165,10 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
     }
 
     protected CardCustomizerProvider createCardCustomizerProvidert(T t) {
+        return null;
+    }
+
+    public DeleteCapability createDeleteCapability(T t) {
         return null;
     }
 
@@ -252,6 +257,9 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         if (state.isNotRunning() && declaredCapabilities.contains(CardCustomizerProvider.class)) {
             maybeAddCapability(createCardCustomizerProvidert(props));
         }
+        if (declaredCapabilities.contains(DeleteCapability.class)) {
+            maybeAddCapability(createDeleteCapability(props));
+        }
         maybeAddEpromCapabilities();
         log("calling subclass initLookup()"); //NOI18N
         initLookup();
@@ -289,31 +297,9 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         }
         boolean resumeSupported = capabilityTypes.contains(ResumeCapability.class);
         if ((resumeSupported && epromFile != null && epromSupported) || (resumeSupported && !epromSupported)) {
-            maybeAddCapability(createResumeCapability(props));
+            ResumeCapability resume = createResumeCapability(props);
+            maybeAddCapability(resume);
         }
-    }
-
-    /**
-     * XXX DELETEME
-     * @param create
-     * @return
-     */
-    protected FileObject getEpromFile(boolean create) {
-        FileObject fld = Utils.sfsFolderForDeviceEepromsForPlatformNamed(getSystemId(), create);
-        FileObject result = null;
-        if (fld != null) {
-            result = fld.getFileObject(getSystemId(), JCConstants.EEPROM_FILE_EXTENSION);
-            if (result == null && create) {
-                if (result == null) {
-                    try {
-                        result = fld.createData(getSystemId(), JCConstants.EEPROM_FILE_EXTENSION);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        }
-        return result;
     }
 
     /**

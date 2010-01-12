@@ -51,6 +51,8 @@ import org.netbeans.modules.mercurial.ui.pull.PullOtherAction;
 import org.netbeans.modules.mercurial.ui.push.PushAction;
 import org.netbeans.modules.mercurial.ui.push.PushOtherAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Container menu for branch actions.
@@ -59,7 +61,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
  */
 public class ShareMenu extends AbstractAction implements DynamicMenuContent {
     private VCSContext ctx;
-    
+
     public ShareMenu(VCSContext ctx) {
         super(NbBundle.getMessage(ShareMenu.class, "CTL_MenuItem_ShareMenu"));
         this.ctx = ctx;
@@ -73,6 +75,7 @@ public class ShareMenu extends AbstractAction implements DynamicMenuContent {
         return new JComponent [] { createMenu() };
     }
 
+    @Override
     public boolean isEnabled() {
         return true;
     }
@@ -85,17 +88,17 @@ public class ShareMenu extends AbstractAction implements DynamicMenuContent {
         JMenu menu = new JMenu(this);
         org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(ShareMenu.class, "CTL_MenuItem_ShareMenu")); // NOI18N
         
-        JMenuItem item = menu.add(new PushAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PushLocal"), ctx));
-        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(ShareMenu.class, "CTL_PopupMenuItem_PushLocal")); // NOI18N
+        JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(PushAction.class), NbBundle.getMessage(ShareMenu.class, "CTL_PopupMenuItem_PushLocal"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
-        item = menu.add(new PushOtherAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PushOther"), ctx)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(ShareMenu.class, "CTL_PopupMenuItem_PushOther")); // NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(PushOtherAction.class), NbBundle.getMessage(ShareMenu.class, "CTL_PopupMenuItem_PushOther"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         
-        item = menu.add(new PullAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PullLocal"), ctx)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(ShareMenu.class, "CTL_PopupMenuItem_PullLocal")); // NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(PullAction.class), NbBundle.getMessage(ShareMenu.class, "CTL_PopupMenuItem_PullLocal"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
-        item = menu.add(new PullOtherAction(NbBundle.getMessage(MercurialAnnotator.class,"CTL_PopupMenuItem_PullOther"), ctx)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(ShareMenu.class, "CTL_PopupMenuItem_PullOther")); // NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(PullOtherAction.class), NbBundle.getMessage(ShareMenu.class, "CTL_PopupMenuItem_PullOther"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
         return menu;
     }

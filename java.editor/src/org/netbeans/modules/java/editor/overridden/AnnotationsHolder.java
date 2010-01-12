@@ -60,7 +60,8 @@ import org.openide.loaders.DataObject;
  * @author Jan Lahoda
  */
 public class AnnotationsHolder implements PropertyChangeListener {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(AnnotationsHolder.class.getName());
     private static final Map<DataObject, AnnotationsHolder> file2Annotations = new HashMap<DataObject, AnnotationsHolder>();
     
     public static synchronized AnnotationsHolder get(FileObject file) {
@@ -82,7 +83,7 @@ public class AnnotationsHolder implements PropertyChangeListener {
             
             return a;
         } catch (IOException ex) {
-            IsOverriddenAnnotationHandler.LOG.log(Level.INFO, null, ex);
+            LOGGER.log(Level.INFO, null, ex);
             
             return null;
         }

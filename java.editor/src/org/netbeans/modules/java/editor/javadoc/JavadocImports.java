@@ -54,7 +54,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -221,7 +220,8 @@ public final class JavadocImports {
                     ParamTag ptag = (ParamTag) tag;
                     boolean isKindMatching = (isParam && !ptag.isTypeParameter())
                             || (isTypeParam && ptag.isTypeParameter());
-                    if (isKindMatching && toFind.getSimpleName().contentEquals(ptag.parameterName())) {
+                    if (isKindMatching && toFind.getSimpleName().contentEquals(ptag.parameterName())
+                            && toFind == paramElementFor(el, ptag)) {
                         Token<JavadocTokenId> token = findNameTokenOfParamTag(tag, positions, jdTokenSequence);
                         if (token != null) {
                             if (result == null) {
@@ -238,6 +238,28 @@ public final class JavadocImports {
             result = Collections.emptyList();
         }
         return result;
+    }
+
+    /** maps ParamTag to parameter or type parameter of method or class */
+    private static Element paramElementFor(Element methodOrClass, ParamTag ptag) {
+        ElementKind kind = methodOrClass.getKind();
+        List<? extends Element> params = Collections.emptyList();
+        if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
+            ExecutableElement ee = (ExecutableElement) methodOrClass;
+            params = ptag.isTypeParameter()
+                    ? ee.getTypeParameters()
+                    : ee.getParameters();
+        } else if (kind.isClass() || kind.isInterface()) {
+            TypeElement te = (TypeElement) methodOrClass;
+            params = te.getTypeParameters();
+        }
+
+        for (Element param : params) {
+            if (param.getSimpleName().contentEquals(ptag.parameterName())) {
+                return param;
+            }
+        }
+        return null;
     }
     
     /**
@@ -303,28 +325,7 @@ public final class JavadocImports {
                 }
             } else if (tag != null && "@param".equals(tag.name())) { // NOI18N
                 ParamTag ptag = (ParamTag) tag;
-                if (ptag.isTypeParameter()) {
-                    List<? extends TypeParameterElement> params =  null;
-                    if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
-                        params = ((ExecutableElement) el).getTypeParameters();
-                    } else if (kind.isClass() || kind.isInterface()) {
-                        params = ((TypeElement) el).getTypeParameters();
-                    } else {
-                        return null;
-                    }
-                    for (TypeParameterElement param : params) {
-                        if (param.getSimpleName().contentEquals(ptag.parameterName())) {
-                            return param;
-                        }
-                    }
-                } else if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
-                    ExecutableElement ee = (ExecutableElement) el;
-                    for (VariableElement param : ee.getParameters()) {
-                        if (param.getSimpleName().contentEquals(ptag.parameterName())) {
-                            return param;
-                        }
-                    }
-                }
+                result = paramElementFor(el, ptag);
             }
         }
         return result;

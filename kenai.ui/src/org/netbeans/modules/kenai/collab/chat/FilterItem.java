@@ -43,6 +43,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -55,12 +56,14 @@ public class FilterItem {
 
     private String name;
     private static ImageIcon GROUP = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/kenai/collab/resources/chatroom_online.png")); // NOI18N
+    private KenaiProject project;
 
     public FilterItem() {
     }
 
-    public FilterItem(String name) {
+    public FilterItem(String name, KenaiProject project) {
         this.name = name;
+        this.project = project;
     }
 
     public String getName() {
@@ -69,19 +72,18 @@ public class FilterItem {
 
     @Override
     public String toString() {
-        try {
-            if (name == null) {
-                return NbBundle.getMessage(FilterItem.class, "FilterItem.All"); // NOI18N
+        if (name == null) {
+            return NbBundle.getMessage(FilterItem.class, "FilterItem.All"); // NOI18N
             }
-            return Kenai.getDefault().getProject(name).getDisplayName();
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return ""; // NOI18N
+        return project.getDisplayName();
     }
 
     public Icon getIcon() {
         return name == null?null:GROUP;
+    }
+
+    public KenaiProject getKenaiProject() {
+        return project;
     }
 
 }

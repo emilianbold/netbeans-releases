@@ -355,6 +355,9 @@ public abstract class CommonLauncher extends Launcher {
                         String mainClassName = manifest.getMainAttributes().getValue(Attributes.Name.MAIN_CLASS);
                         if (mainClassName != null) {
                             resource = ResourceUtils.getResourceClassName(mainClassName);
+                            if(jar.getJarEntry(resource)==null) {
+                                resource = null;
+                            }
                         }
                     }
                     if (resource == null) {

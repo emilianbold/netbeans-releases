@@ -68,7 +68,6 @@ public final class JavacardPlatformKeyNames {
     public static final String PLATFORM_CLASSPATH = "javacard.classpath"; //NOI18N
     public static final String PLATFORM_JAVADOC_PATH = "javacard.javadocpath"; //NOI18N
     public static final String PLATFORM_SRC_PATH = "javacard.sourcepath"; //NOI18N
-    public static final String PLATFORM_IS_REFERENCE_IMPLEMENTATION = "javacard.isRI"; //NOI18N
     //The following three are optional as part of the specification definition
     public static final String PLATFORM_PROFILE = "javacard.profile"; //NOI18N
     public static final String PLATFORM_PROFILE_MAJOR_VERSION = "javacard.profileMajorVersion"; //NOI18N
@@ -83,7 +82,8 @@ public final class JavacardPlatformKeyNames {
     //IDE generates
     public static final String PLATFORM_DISPLAYNAME = "javacard.displayName"; //NOI18N
     public static final String PLATFORM_HOME = "javacard.home"; //NOI18N
-    public static final String RI_HOME = "javacard.ri.home"; //NOI18N
+    public static final String PLATFORM_RI_HOME = "javacard.ri.home"; //NOI18N
+    public static final String PLATFORM_RI_PROPERTIES_PATH = "javacard.ri.properties.path"; //NOI18N
     public static final String PLATFORM_EMULATOR_PATH = "javacard.emulator"; //NOI18N
     public static final String PLATFORM_ID = "javacard.instance.id"; //NOI18N
     public static final String PLATFORM_DEBUG_PROXY = "javacard.debug.proxy"; //NOI18N
@@ -92,8 +92,9 @@ public final class JavacardPlatformKeyNames {
     public static final String PLATFORM_TOOLS_CLASSPATH = "javacard.toolClassPath"; //NOI18N
     public static final String PLATFORM_IS_RI_WRAPPER = "javacard.wrap.ri"; //NOI18N
     public static final String PLATFORM_DEVICE_FILE_NOT_REQUIRED = "javacard.build.no.device.file"; //NOI18N
-    public static final String PLATFORM_JAVACARD_SPECIFICATION_VERSION = "javacard.specification.version"; //NOI18N
+    //public static final String PLATFORM_JAVACARD_SPECIFICATION_VERSION = "javacard.specification.version"; //NOI18N
     public static final String PLATFORM_JAVACARD_VERSION = "javacard.version"; //NOI18N
+    public static final String PLATFORM_SUPPORTED_PROJECT_KINDS = "javacard.supported.project.kinds"; //NOI18N
 
     /**
      * Get the list of property names that need to be absolutized
@@ -135,7 +136,7 @@ public final class JavacardPlatformKeyNames {
             PLATFORM_TOOLS_CLASSPATH,
             PLATFORM_VENDOR,
             PLATFORM_NAME,
-            PLATFORM_JAVACARD_SPECIFICATION_VERSION
+            PLATFORM_JAVACARD_VERSION
         ));
     }
 
@@ -150,7 +151,7 @@ public final class JavacardPlatformKeyNames {
             PLATFORM_TASKS_CLASSPATH,
             PLATFORM_TOOLS_CLASSPATH,
             PLATFORM_HOME,
-            RI_HOME
+            PLATFORM_RI_HOME
         ));
     }
 

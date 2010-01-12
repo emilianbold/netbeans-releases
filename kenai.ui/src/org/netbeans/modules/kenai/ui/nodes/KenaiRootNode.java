@@ -48,6 +48,8 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -81,18 +83,18 @@ public class KenaiRootNode extends AbstractNode {
         return actions.toArray(new Action[actions.size()]);
     }
 
-    private static class RootNodeChildren extends ChildFactory<KenaiInstance> implements PropertyChangeListener {
+    private static class RootNodeChildren extends ChildFactory<Kenai> implements PropertyChangeListener {
         
         public RootNodeChildren() {
-            KenaiInstancesManager.getDefault().addPropertyChangeListener(this);
+            KenaiManager.getDefault().addPropertyChangeListener(this);
         }
 
-        protected @Override Node createNodeForKey(KenaiInstance key) {
+        protected @Override Node createNodeForKey(Kenai key) {
             return new KenaiInstanceNode(key);
         }
         
-        protected boolean createKeys(List<KenaiInstance> toPopulate) {
-            toPopulate.addAll(KenaiInstancesManager.getDefault().getInstances());
+        protected boolean createKeys(List<Kenai> toPopulate) {
+            toPopulate.addAll(KenaiManager.getDefault().getKenais());
             Collections.sort(toPopulate);
             return true;
         }

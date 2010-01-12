@@ -157,7 +157,14 @@ public class TestFileUtils {
         if (ref != null) {
             older = Math.max(older, ref.lastModified());
         }
-        for (long pause = 1; pause < 9999; pause *= 2) {
+        int maxPause = 9999;
+        /* XXX consider this (as yet untested):
+        long curr = System.currentTimeMillis();
+        if (older > curr + maxPause) {
+            throw new IllegalArgumentException("reference too far into the future, by " + (older - curr) + "msec");
+        }
+         */
+        for (long pause = 1; pause < maxPause; pause *= 2) {
             Thread.sleep(pause);
             f.setLastModified(System.currentTimeMillis() + 1);  // plus 1 needed for FileObject tests (initially FO lastModified is set to currentTimeMillis)
             if (f.lastModified() > older) {

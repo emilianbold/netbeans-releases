@@ -150,6 +150,10 @@ public class NewDevicePanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
 
+    public void read (KeysAndValues<?> data) {
+        pnl.read(data);
+    }
+
     public void write (KeysAndValues<?> data) {
         pnl.write(data);
         data.put(JavacardDeviceKeyNames.DEVICE_DISPLAY_NAME, displayNameField.getText());

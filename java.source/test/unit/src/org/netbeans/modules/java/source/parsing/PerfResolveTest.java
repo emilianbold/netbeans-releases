@@ -40,12 +40,10 @@
  */
 
 package org.netbeans.modules.java.source.parsing;
-import com.sun.source.tree.CompilationUnitTree;
 import java.io.File;
 import java.net.URL;
-import junit.framework.*;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.java.source.StopWatch;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
@@ -53,7 +51,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Hrebejk
  */
-public class PerfResolveTest extends TestCase {
+public class PerfResolveTest extends NbTestCase {
 
     private File workDir;
     private File rtJar;
@@ -75,16 +73,12 @@ public class PerfResolveTest extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        workDir = TestUtil.createWorkFolder();
+        workDir = getWorkDir();
         TestUtil.copyFiles( workDir, TestUtil.RT_JAR, "jdk/JTable.java" );
         rtJar = new File( workDir, TestUtil.RT_JAR );
         URL url = FileUtil.getArchiveRoot (rtJar.toURI().toURL());
         this.bootPath = ClassPathSupport.createClassPath (new URL[] {url});
         this.classPath = ClassPathSupport.createClassPath(new URL[0]);
-    }
-
-    protected void tearDown() throws Exception {
-        TestUtil.removeWorkFolder( workDir );
     }
 
     /*

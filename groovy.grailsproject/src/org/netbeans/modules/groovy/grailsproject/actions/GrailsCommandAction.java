@@ -39,20 +39,18 @@
 
 package org.netbeans.modules.groovy.grailsproject.actions;
 
-import org.netbeans.modules.groovy.grailsproject.commands.*;
-import java.awt.event.ActionEvent;
 import java.net.URL;
 import java.util.concurrent.Callable;
-import javax.swing.AbstractAction;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsPlatform;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.GrailsServerState;
+import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandChooser;
+import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -97,9 +95,10 @@ public class GrailsCommandAction extends CallableSystemAction {
         Callable<Process> callable;
         ExecutionDescriptor descriptor;
 
+        final boolean debug = commandDescriptor.isDebug();
+
         if (GrailsPlatform.IDE_RUN_COMMAND.equals(commandDescriptor.getGrailsCommand().getCommand())) {
             final GrailsServerState serverState = project.getLookup().lookup(GrailsServerState.class);
-            final boolean debug = false;
             Process process = null;
             if (serverState != null && serverState.isRunning()) {
                 if (!debug /*|| debug == serverState.isDebug()*/) {
@@ -134,11 +133,13 @@ public class GrailsCommandAction extends CallableSystemAction {
                 }
             };
 
-            descriptor = project.getCommandSupport().getRunDescriptor();
+            descriptor = project.getCommandSupport().getRunDescriptor(debug);
         } else {
             callable = ExecutionSupport.getInstance().createSimpleCommand(
-                    commandDescriptor.getGrailsCommand().getCommand(), GrailsProjectConfig.forProject(project), params);
-            descriptor = project.getCommandSupport().getDescriptor(commandDescriptor.getGrailsCommand().getCommand());
+                    commandDescriptor.getGrailsCommand().getCommand(), debug,
+                    GrailsProjectConfig.forProject(project), params);
+            descriptor = project.getCommandSupport().getDescriptor(
+                    commandDescriptor.getGrailsCommand().getCommand(), debug);
         }
         ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();

@@ -15,7 +15,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
 import javax.persistence.EntityManager;
@@ -23,6 +22,7 @@ import o.n.m.ws.qaf.rest.crud.Product;
 import java.util.Collection;
 import o.n.m.ws.qaf.rest.crud.ProductCode;
 import o.n.m.ws.qaf.rest.crud.converter.ProductCodeConverter;
+import com.sun.jersey.api.core.ResourceContext;
 
 /**
  *
@@ -31,16 +31,16 @@ import o.n.m.ws.qaf.rest.crud.converter.ProductCodeConverter;
 
 public class ProductCodeResource {
     @Context
-    protected UriInfo uriInfo;
-    @Context
     protected ResourceContext resourceContext;
+    @Context
+    protected UriInfo uriInfo;
     protected String id;
-
+  
     /** Creates a new instance of ProductCodeResource */
     public ProductCodeResource() {
     }
 
-    protected void setId(String id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -53,7 +53,7 @@ public class ProductCodeResource {
     @GET
     @Produces({"application/xml", "application/json"})
     public ProductCodeConverter get(@QueryParam("expandLevel")
-    @DefaultValue("1")
+                                    @DefaultValue("1")
     int expandLevel) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
@@ -123,7 +123,7 @@ public class ProductCodeResource {
      * @param newEntity the entity containing the new data
      * @return the updated entity
      */
-    protected ProductCode updateEntity(ProductCode entity, ProductCode newEntity) {
+    private ProductCode updateEntity(ProductCode entity, ProductCode newEntity) {
         EntityManager em = PersistenceService.getInstance().getEntityManager();
         Collection<Product> productCollection = entity.getProductCollection();
         Collection<Product> productCollectionNew = newEntity.getProductCollection();
@@ -150,7 +150,7 @@ public class ProductCodeResource {
      *
      * @param entity the entity to deletle
      */
-    protected void deleteEntity(ProductCode entity) {
+    private void deleteEntity(ProductCode entity) {
         EntityManager em = PersistenceService.getInstance().getEntityManager();
         if (!entity.getProductCollection().isEmpty()) {
             throw new WebApplicationException(new Throwable("Cannot delete entity because productCollection is not empty."));
@@ -166,16 +166,16 @@ public class ProductCodeResource {
      */
     @Path("productCollection/")
     public ProductsResource getProductCollectionResource() {
-        ProductCollectionResourceSub resource = resourceContext.getResource(ProductCollectionResourceSub.class);
-        resource.setParent(getEntity());
-        return resource;
+        ProductCollectionResourceSub productCollectionResourceSub = resourceContext.getResource(ProductCollectionResourceSub.class);
+        productCollectionResourceSub.setParent(getEntity());
+        return productCollectionResourceSub;
     }
 
     public static class ProductCollectionResourceSub extends ProductsResource {
 
         private ProductCode parent;
 
-        protected void setParent(ProductCode parent) {
+        public void setParent(ProductCode parent) {
             this.parent = parent;
         }
 

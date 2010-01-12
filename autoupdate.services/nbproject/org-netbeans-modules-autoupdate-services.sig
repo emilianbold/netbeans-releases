@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.8.1
+#Signature file v4.1
+#Version 1.16
 
 CLSS public abstract interface java.io.Serializable
 
@@ -97,6 +97,7 @@ meth public java.util.List<org.netbeans.api.autoupdate.OperationContainer$Operat
 meth public org.netbeans.api.autoupdate.OperationContainer$OperationInfo<{org.netbeans.api.autoupdate.OperationContainer%0}> add(org.netbeans.api.autoupdate.UpdateElement)
 meth public org.netbeans.api.autoupdate.OperationContainer$OperationInfo<{org.netbeans.api.autoupdate.OperationContainer%0}> add(org.netbeans.api.autoupdate.UpdateUnit,org.netbeans.api.autoupdate.UpdateElement)
 meth public static org.netbeans.api.autoupdate.OperationContainer<org.netbeans.api.autoupdate.InstallSupport> createForInstall()
+meth public static org.netbeans.api.autoupdate.OperationContainer<org.netbeans.api.autoupdate.InstallSupport> createForInternalUpdate()
 meth public static org.netbeans.api.autoupdate.OperationContainer<org.netbeans.api.autoupdate.InstallSupport> createForUpdate()
 meth public static org.netbeans.api.autoupdate.OperationContainer<org.netbeans.api.autoupdate.OperationSupport> createForCustomInstallComponent()
 meth public static org.netbeans.api.autoupdate.OperationContainer<org.netbeans.api.autoupdate.OperationSupport> createForCustomUninstallComponent()

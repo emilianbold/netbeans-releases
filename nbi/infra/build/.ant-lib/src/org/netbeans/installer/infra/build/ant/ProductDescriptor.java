@@ -118,10 +118,13 @@ public class ProductDescriptor extends Task {
                 get("product.display.name.default") + "]]></default>\n"); // NOI18N
         if (!locales.equals("")) { // NOI18N
             for (String locale: locales.split(" ")) { // NOI18N
-                xml.append("                <localized locale=\"" + // NOI18N
-                        locale + "\"><![CDATA[" + // NOI18N
-                        get("product.display.name." + locale) + // NOI18N
-                        "]]></localized>\n"); // NOI18N
+                String name = get("product.display.name." + locale);
+                if (name != null) {
+                    xml.append("                <localized locale=\"" + // NOI18N
+                            locale + "\"><![CDATA[" + // NOI18N
+                            name + // NOI18N
+                            "]]></localized>\n"); // NOI18N
+                }
             }
         }
         xml.append("            </display-name>\n"); // NOI18N
@@ -132,10 +135,13 @@ public class ProductDescriptor extends Task {
                 get("product.description.default") + "]]></default>\n"); // NOI18N
         if (!locales.equals("")) { // NOI18N
             for (String locale: locales.split(" ")) { // NOI18N
-                xml.append("                <localized locale=\"" + // NOI18N
-                        locale + "\"><![CDATA[" + // NOI18N
-                        get("product.description." + locale) + // NOI18N
-                        "]]></localized>\n"); // NOI18N
+                String desc = get("product.description." + locale);
+                if (desc != null) {
+                    xml.append("                <localized locale=\"" + // NOI18N
+                            locale + "\"><![CDATA[" + // NOI18N
+                            desc + // NOI18N
+                            "]]></localized>\n"); // NOI18N
+                }
             }
         }
         xml.append("            </description>\n"); // NOI18N

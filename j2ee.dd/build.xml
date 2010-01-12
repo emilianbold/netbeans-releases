@@ -62,11 +62,10 @@ made subject to such option by the copyright holder.
   <target name="build-init" depends="projectized.build-init"/>
 
   <target name="s2binit" depends="build-init">
+      <!-- XXX do not know how to replace with @Schema2Beans; see issue #178426 for discussion -->
 	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
 	  <classpath>
 		<pathelement path="${schema2beans.dir}/modules/org-netbeans-modules-schema2beans.jar" />
-		<pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
-		<pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
 	  </classpath>
 	</taskdef>
   </target>
@@ -295,6 +294,22 @@ made subject to such option by the copyright holder.
 	  attrProp="true"
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/>
+    <replace file="${s2b_root_3_1}/EjbJar.java" summary="true">
+        <replacetoken>public java.lang.String getVersion() {</replacetoken>
+        <replacevalue>public java.lang.String getVersionString() {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_3_1}/EjbJar.java" summary="true">
+        <replacetoken>public void setVersion(java.lang.String value) {</replacetoken>
+        <replacevalue>public void setVersionString(java.lang.String value) {</replacevalue>
+    </replace>
+    <replace file="${s2b_root_3_1}/EjbJar.java" summary="true">
+        <replacetoken>(getVersion()</replacetoken>
+        <replacevalue>(getVersionString()</replacevalue>
+    </replace>
+    <replace file="${s2b_root_3_1}/EjbJar.java" summary="true">
+        <replacetoken>setVersion("3.1");</replacetoken>
+        <replacevalue>setVersionString("3.1");</replacevalue>
+    </replace>
         <schema2beans schema="${s2b_res_root}/application_1_4.xsd"
  	  mddFile="${s2b_res_root}/application_1_4.mdd"
 	  package="org.netbeans.modules.j2ee.dd.impl.application.model_1_4"

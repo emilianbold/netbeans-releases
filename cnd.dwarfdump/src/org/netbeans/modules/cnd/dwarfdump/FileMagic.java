@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.dwarfdump;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.LinkedList;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 
 /**
@@ -132,11 +133,11 @@ public class FileMagic {
     private static final class MyRandomAccessFile extends RandomAccessFile {
 
         private static final int BUF_SIZE = Integer.getInteger("cnd.dwarfdump.random_access_file_buffer_size", 8 * 1024); // NOI18N
+        private static final int BUF_ALIGNMENT = 1024;
+        private static final int BUF_CACHE_SIZE = 4;
         private String fileName;
-        private byte buffer[] = new byte[BUF_SIZE];
-        private int buf_end = 0;
-        private int buf_pos = 0;
-        private long real_pos = 0;
+        private BufferCache currentCache;
+        private LinkedList<BufferCache> bufferList = new LinkedList<BufferCache>();
         private static final boolean TRACE_STATISTIC = false;
         private long countOfReads = 0;
         private long countOfBufferReads = 0;
@@ -144,24 +145,32 @@ public class FileMagic {
         private MyRandomAccessFile(String fileName) throws IOException {
             super(fileName, "r"); // NOI18N
             this.fileName = fileName;
+            currentCache = new BufferCache(0);
             invalidate();
         }
 
         private void invalidate() throws IOException {
-            buf_end = 0;
-            buf_pos = 0;
-            real_pos = super.getFilePointer();
+            currentCache.buf_end = 0;
+            currentCache.buf_pos = 0;
+            currentCache.real_pos = super.getFilePointer();
         }
 
         private int fillBuffer() throws IOException {
+            int shift = (int)(currentCache.real_pos%BUF_ALIGNMENT);
+            if (currentCache.real_pos-shift >= BUF_ALIGNMENT) {
+                shift += BUF_ALIGNMENT;
+            }
+            super.seek(currentCache.real_pos-shift);
             if (TRACE_STATISTIC) {
                 countOfBufferReads++;
+                long real = super.getFilePointer();
+                System.err.println("Read buffer at "+real); // NOI18N
             }
-            int n = super.read(buffer, 0, BUF_SIZE);
+            int n = super.read(currentCache.buffer, 0, BUF_SIZE);
             if (n >= 0) {
-                real_pos += n;
-                buf_end = n;
-                buf_pos = 0;
+                currentCache.real_pos += n - shift;
+                currentCache.buf_end = n;
+                currentCache.buf_pos = shift;
             }
             return n;
         }
@@ -171,24 +180,24 @@ public class FileMagic {
             if (TRACE_STATISTIC) {
                 countOfReads++;
             }
-            if (buf_pos >= buf_end) {
+            if (currentCache.buf_pos >= currentCache.buf_end) {
                 if (fillBuffer() < 0) {
                     return -1;
                 }
             }
-            if (buf_end == 0) {
+            if (currentCache.buf_end == 0) {
                 return -1;
             } else {
-                return (0xff & buffer[buf_pos++]);
+                return (0xff & currentCache.buffer[currentCache.buf_pos++]);
             }
         }
 
         @Override
         public int read(byte b[], int off, int len) throws IOException {
-            int leftover = buf_end - buf_pos;
+            int leftover = currentCache.buf_end - currentCache.buf_pos;
             if (len <= leftover) {
-                System.arraycopy(buffer, buf_pos, b, off, len);
-                buf_pos += len;
+                System.arraycopy(currentCache.buffer, currentCache.buf_pos, b, off, len);
+                currentCache.buf_pos += len;
                 return len;
             }
             for (int i = 0; i < len; i++) {
@@ -207,24 +216,51 @@ public class FileMagic {
 
         @Override
         public long getFilePointer() throws IOException {
-            long l = real_pos;
-            return (l - buf_end + buf_pos);
+            long l = currentCache.real_pos;
+            return (l - currentCache.buf_end + currentCache.buf_pos);
         }
 
         @Override
         public void seek(long pos) throws IOException {
-            int n = (int) (real_pos - pos);
-            if (n >= 0 && n <= buf_end) {
-                buf_pos = buf_end - n;
-            } else {
-                super.seek(pos);
-                invalidate();
+            int n = (int) (currentCache.real_pos - pos);
+            if (n >= 0 && n <= currentCache.buf_end) {
+                currentCache.buf_pos = currentCache.buf_end - n;
+                return;
             }
+            boolean currentInList = false;
+            for(BufferCache cache : bufferList) {
+                n = (int) (cache.real_pos - pos);
+                if (n >= 0 && n <= cache.buf_end) {
+                    cache.buf_pos = cache.buf_end - n;
+                    currentCache = cache;
+                    return;
+                }
+                if (currentCache == cache) {
+                    currentInList = true;
+                }
+            }
+            // not found needed cache
+            if (currentInList) {
+                bufferList.remove(currentCache);
+            }
+            BufferCache oldest = null;
+            if (bufferList.size() >= BUF_CACHE_SIZE){
+               oldest = bufferList.removeFirst();
+            }
+            if (oldest != null) {
+                currentCache = oldest;
+            } else {
+                bufferList.addLast(currentCache);
+                currentCache = new BufferCache(pos);
+            }
+            bufferList.addLast(currentCache);
+            super.seek(pos);
+            invalidate();
         }
 
         public void dispose() {
             if (TRACE_STATISTIC) {
-                if (buffer != null) {
+                if (currentCache.buffer != null) {
                     System.err.println("File " + fileName); // NOI18N
                     try {
                         System.err.println("\tFile Length= " + length()); // NOI18N
@@ -239,7 +275,23 @@ public class FileMagic {
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-            buffer = null;
+            currentCache.buffer = null;
+        }
+
+        private static final class BufferCache {
+            private byte buffer[] = new byte[BUF_SIZE];
+            private int buf_end = 0;
+            private int buf_pos = 0;
+            private long real_pos = 0;
+
+            private BufferCache(long realFilePointer) {
+                real_pos = realFilePointer;
+            }
+
+            @Override
+            public String toString() {
+                return "Buffer length "+buf_end+" Current buffer position "+buf_pos+" File position ["+(real_pos-buf_end)+","+real_pos+"]"; // NOI18N
+            }
         }
     }
 }

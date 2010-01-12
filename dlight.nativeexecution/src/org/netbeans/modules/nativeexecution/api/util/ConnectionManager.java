@@ -225,6 +225,19 @@ public final class ConnectionManager {
     }
 
     /**
+     * Disconnects from the remote host
+     * @param env specifies the host to disconnect
+     */
+    public void disconnect(ExecutionEnvironment env) {
+        synchronized (sessions) {
+            Session session = sessions.remove(env);
+            if (session != null) {
+                session.disconnect();
+            }
+        }
+    }
+
+    /**
      *
      * @param env
      * @return  true only if call to this method initiated new connection...

@@ -186,7 +186,8 @@ public final class CndFileUtils {
     }
 
     public static boolean isExistingDirectory(File file, String filePath) {
-        return getFlags(file, filePath, false).directory;
+        Flags flags = getFlags(file, filePath, false);
+        return flags.exist && flags.directory;
     }
 
    /**

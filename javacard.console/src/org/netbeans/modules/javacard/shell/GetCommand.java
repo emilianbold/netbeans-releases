@@ -46,7 +46,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 
 /**
@@ -58,7 +58,7 @@ final class GetCommand implements Command {
     public String execute(ShellPanel shellPanel, String[] args) throws ShellException {
         StringBuilder sb = new StringBuilder();
         PortProvider prov = shellPanel.getCard().getCapability(PortProvider.class);
-        ApduSupport apdu = shellPanel.getCard().getCapability(ApduSupport.class);
+        UrlCapability apdu = shellPanel.getCard().getCapability(UrlCapability.class);
         assert prov != null;
         String url = apdu.getURL();
         if (!url.endsWith("/")) { //NOI18N

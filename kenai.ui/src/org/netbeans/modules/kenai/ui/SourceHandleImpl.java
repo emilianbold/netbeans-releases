@@ -68,6 +68,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -158,8 +159,13 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        List<Project> newProjects = getNewProjects((Project[])evt.getOldValue(), (Project[])evt.getNewValue());
-        addToRecentProjects(newProjects, true);
+        final List<Project> newProjects = getNewProjects((Project[])evt.getOldValue(), (Project[])evt.getNewValue());
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+                addToRecentProjects(newProjects, true);
+            }
+        });
     }
 
     void remove(NbProjectHandleImpl aThis) {
@@ -174,7 +180,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         }
     }
 
-    private void addToRecentProjects(List<Project> newProjects, boolean fireChanges) {
+    private synchronized void addToRecentProjects(List<Project> newProjects, boolean fireChanges) {
         for (Project prj : newProjects) {
             try {
                 if (isUnder(prj.getProjectDirectory())) {

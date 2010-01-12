@@ -17,6 +17,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.javacard.common</friend>
                 <friend>org.netbeans.modules.javacard.kit</friend>
+                <friend>org.netbeans.modules.javacard.oberthur</friend>
                 <friend>org.netbeans.modules.javacard.project</friend>
                 <friend>org.netbeans.modules.javacard.ri.platform</friend>
                 <friend>org.netbeans.modules.javacard.spi</friend>

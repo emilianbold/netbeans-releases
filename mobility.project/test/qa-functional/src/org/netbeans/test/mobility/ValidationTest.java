@@ -100,7 +100,7 @@ public class ValidationTest extends JellyTestCase {
         String wtkZipPath = null;
         String cp = System.getProperty ("java.class.path");
         String[] x = cp.split(File.pathSeparator);
-        String oneModule = x[0];
+        String oneModule = x[1];
         int ix = oneModule.indexOf ("nbbuild" + File.separatorChar + "netbeans");
         String srcPath = oneModule.substring(0, ix);
         File userBuildProps = new File (new File (srcPath),

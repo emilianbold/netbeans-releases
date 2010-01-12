@@ -134,9 +134,18 @@ public class CasualDiff {
         int[] bounds = td.getBounds(oldTree);
         boolean isCUT = oldTree.getKind() == Kind.COMPILATION_UNIT;
         int start = isCUT ? 0 : bounds[0];
-        int end   = isCUT ? td.workingCopy.getText().length() : bounds[1];
-        int ln = td.oldTopLevel.lineMap.getLineNumber(start);
-        int lineStart = td.oldTopLevel.lineMap.getStartPosition(ln);
+        String origText = td.workingCopy.getText();
+        int end   = isCUT ? origText.length() : bounds[1];
+
+        //#177660: LineMap is probably not updated correctly for partial reparse, workaround:
+        int lineStart = start;
+
+        while (lineStart > 0 && origText.charAt(lineStart - 1) != '\n') {
+            lineStart--;
+        }
+        //was:
+//        int ln = td.oldTopLevel.lineMap.getLineNumber(start);
+//        int lineStart = td.oldTopLevel.lineMap.getStartPosition(ln);
         
         td.printer.setInitialOffset(lineStart);
 
@@ -173,10 +182,10 @@ public class CasualDiff {
             }
         }
 
-        td.printer.print(td.workingCopy.getText().substring(lineStart, start));
+        td.printer.print(origText.substring(lineStart, start));
         td.diffTree(oldTree, newTree, (JCTree) (oldTreePath.getParentPath() != null ? oldTreePath.getParentPath().getLeaf() : null), new int[] {start, bounds[1]});
         String resultSrc = td.printer.toString().substring(start - lineStart);
-        String originalText = isCUT ? td.workingCopy.getText() : td.workingCopy.getText().substring(start, end);
+        String originalText = isCUT ? origText : origText.substring(start, end);
         new DiffFacility(td).makeListMatch(originalText, resultSrc, start);
         userInfo.putAll(td.diffInfo);
 

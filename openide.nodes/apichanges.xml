@@ -179,7 +179,7 @@ made subject to such option by the copyright holder.
             <a href="@TOP@/org/openide/nodes/Node.Cookie.html">Cookies</a>.
             This addition change is accompanied with two additional changes:
             <a href="@TOP@/org/openide/nodes/CookieSet.html">
-            CookieSet</a> now implements <a href="@org-openide-util@/org/openide/util/Lookup.Provider.html">
+            CookieSet</a> now implements <a href="@org-openide-util-lookup@/org/openide/util/Lookup.Provider.html">
             Lookup.Provider</a> and thus has a method <code>getLookup</code> to 
             allow queries for of its content.
             Also there is a new method 

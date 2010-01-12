@@ -121,7 +121,6 @@ extern const char * MAIN_WINDOW_TITLE;
     WCHAR *createWCHAR(SizedString * sz);
     
     SizedString * createSizedString();
-    double int64ttoDouble(int64t*);
     char * int64ttoCHAR(int64t*);
     WCHAR * int64ttoWCHAR(int64t*);
     char * DWORDtoCHAR(DWORD);
@@ -149,7 +148,9 @@ extern const char * MAIN_WINDOW_TITLE;
     char ** newppChar(DWORD length);
     int64t * newint64_t(DWORD low, DWORD high);
     int compare(int64t * size, DWORD value);
+    int compareInt64t(int64t * a1, int64t * a2);
     void plus(int64t * size, DWORD value);
+    void multiply(int64t * size, DWORD value);
     void minus(int64t * size, DWORD value);
     DWORD getLineSeparatorNumber(char *str);
     DWORD getLengthA(const char * message);

@@ -224,6 +224,12 @@ public class ModelUtils {
 
     @NonNull
     public static <T extends ModelElement> List<? extends T> filter(Collection<T> allElements,
+            final QualifiedName qName) {
+        return filter(allElements, QuerySupport.Kind.EXACT, qName);
+    }
+
+    @NonNull
+    public static <T extends ModelElement> List<? extends T> filter(Collection<T> allElements,
             final String... elementName) {
         return filter(allElements, QuerySupport.Kind.EXACT, elementName);
     }

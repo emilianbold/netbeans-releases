@@ -726,6 +726,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                             CreateDomain cd = new CreateDomain("anonymous", "", new File(f,"glassfish"), ip, this,true); // NOI18N
                             cd.start();
                         }
+
                     }
                 }
             } catch (IOException ex) {

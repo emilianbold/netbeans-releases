@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 2.18.1
+#Signature file v4.1
+#Version 2.21
 
 CLSS public abstract interface java.io.Serializable
 
@@ -662,7 +662,7 @@ meth public final boolean isRunning()
 meth public void addAnimatorListener(org.netbeans.api.visual.animator.AnimatorListener)
 meth public void removeAnimatorListener(org.netbeans.api.visual.animator.AnimatorListener)
 supr java.lang.Object
-hfds listeners,reset,sceneAnimator
+hfds listeners,sceneAnimator
 
 CLSS public final org.netbeans.api.visual.animator.AnimatorEvent
 meth public double getProgress()
@@ -1275,8 +1275,8 @@ meth public final boolean isComponentVisible()
 meth public final java.awt.Component getComponent()
 meth public final void setComponentVisible(boolean)
 supr org.netbeans.api.visual.widget.Widget
-hfds component,componentAdded,componentListener,componentVisible,validateListener,widgetAdded,zoomFactor
-hcls ComponentComponentListener,ComponentSceneListener
+hfds component,componentAdded,componentListener,componentVisible,componentWrapper,validateListener,widgetAdded,zoomFactor
+hcls ComponentComponentListener,ComponentSceneListener,ComponentWrapper
 
 CLSS public org.netbeans.api.visual.widget.ConnectionWidget
 cons public ConnectionWidget(org.netbeans.api.visual.widget.Scene)

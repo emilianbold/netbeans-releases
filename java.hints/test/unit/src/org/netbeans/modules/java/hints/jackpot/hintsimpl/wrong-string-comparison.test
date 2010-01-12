@@ -1,0 +1,56 @@
+%%TestCase simple
+package test;
+public class Test {
+    public static boolean get(String s1, String s2) {
+        return s1 == s2;
+    }
+}
+%%=>
+package test;
+public class Test {
+    public static boolean get(String s1, String s2) {
+        return s1 == null ? s2 == null : s1.equals(s2);
+    }
+}
+%%=>
+package test;
+public class Test {
+    public static boolean get(String s1, String s2) {
+        return s1.equals(s2);
+    }
+}
+%%TestCase neg
+package test;
+public class Test {
+    public static boolean get(String s1, String s2) {
+        return s1 != s2;
+    }
+}
+%%=>
+package test;
+public class Test {
+    public static boolean get(String s1, String s2) {
+        return !(s1 == null ? s2 == null : s1.equals(s2));
+    }
+}
+%%=>
+package test;
+public class Test {
+    public static boolean get(String s1, String s2) {
+        return !s1.equals(s2);
+    }
+}
+%%TestCase neg-accept
+package test;
+public class Test {
+    public static boolean get(String s1, String s2) {
+        return s1 != s2 && (s1 == null || s1.equals(s2));
+    }
+}
+%%TestCase null
+package test;
+public class Test {
+    public static boolean get(String s1, String s2) {
+        return s1 == null;
+    }
+}

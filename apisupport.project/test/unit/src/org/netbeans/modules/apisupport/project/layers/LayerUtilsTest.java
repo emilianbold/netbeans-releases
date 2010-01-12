@@ -80,6 +80,7 @@ import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileObject;
@@ -422,68 +423,9 @@ public class LayerUtilsTest extends LayerTestBase {
         return files;
     }
 
-    public void testLayerHandle() throws Exception {
-        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
-        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
-        FileObject expectedLayerXML = project.getProjectDirectory().getFileObject("src/org/example/module/resources/layer.xml");
-        assertNotNull(expectedLayerXML);
-        FileObject layerXML = handle.getLayerFile();
-        assertNotNull("layer.xml already exists", layerXML);
-        assertEquals("right layer file", expectedLayerXML, layerXML);
-        FileSystem fs = handle.layer(true);
-        assertEquals("initially empty", 0, fs.getRoot().getChildren().length);
-        long initialSize = layerXML.getSize();
-        fs.getRoot().createData("foo");
-        assertEquals("not saved yet", initialSize, layerXML.getSize());
-        fs = handle.layer(true);
-        assertNotNull("still have in-memory mods", fs.findResource("foo"));
-        fs.getRoot().createData("bar");
-        handle.save();
-        assertTrue("now it is saved", layerXML.getSize() > initialSize);
-        String xml =
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">\n" +
-                "<filesystem>\n" +
-                "    <file name=\"bar\"/>\n" +
-                "    <file name=\"foo\"/>\n" +
-                "</filesystem>\n";
-        assertEquals("right contents too", xml, TestBase.slurp(layerXML));
-        // XXX test that nbres: file contents work
-    }
-
-    public void testLayerAutoSave() throws Exception {
-        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
-        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
-        FileSystem fs = handle.layer(true);
-        handle.setAutosave(true);
-        FileObject foo = fs.getRoot().createData("foo");
-        FileObject layerXML = handle.getLayerFile();
-        String xml =
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">\n" +
-                "<filesystem>\n" +
-                "    <file name=\"foo\"/>\n" +
-                "</filesystem>\n";
-        assertEquals("saved automatically", xml, TestBase.slurp(layerXML));
-        foo.setAttribute("a", Boolean.TRUE);
-        xml =
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">\n" +
-                "<filesystem>\n" +
-                "    <file name=\"foo\">\n" +
-                "        <attr name=\"a\" boolvalue=\"true\"/>\n" +
-                "    </file>\n" +
-                "</filesystem>\n";
-        assertEquals("saved automatically from an attribute change too", xml, TestBase.slurp(layerXML));
-    }
-
-    // XXX testInitiallyInvalidLayer
-    // XXX testInitiallyMissingLayer
-    // XXX testGcLayerHandle
-
     public void testSystemFilesystemStandaloneProject() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
-        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
+        LayerHandle handle = LayerHandle.forProject(project);
         FileObject layerXML = handle.getLayerFile();
         String xml =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -522,7 +464,7 @@ public class LayerUtilsTest extends LayerTestBase {
                 "test/module1/resources/layer.xml",
                 suiteDir);
         NbModuleProject module1 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(module1Dir));
-        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(module1);
+        LayerHandle handle = LayerHandle.forProject(module1);
         FileUtil.createData(handle.layer(true).getRoot(), "random/stuff");
         handle.save();
         File module2Dir = new File(suiteDir, "testModule2");
@@ -534,7 +476,7 @@ public class LayerUtilsTest extends LayerTestBase {
                 "test/module2/resources/layer.xml",
                 suiteDir);
         NbModuleProject module2 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(module2Dir));
-        handle = LayerUtils.layerForProject(module2);
+        handle = LayerHandle.forProject(module2);
         FileObject layerXML = handle.getLayerFile();
         String xml =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +

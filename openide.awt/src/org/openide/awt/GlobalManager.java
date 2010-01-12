@@ -131,7 +131,7 @@ class GlobalManager extends Object implements LookupListener {
                 listeners.put(key, existing);
             }
             existing.add(a);
-            a.updateState(new ActionMap(), actionMap.get());
+            a.updateState(new ActionMap(), actionMap.get(), false);
         }
     }
 
@@ -185,9 +185,15 @@ class GlobalManager extends Object implements LookupListener {
         if (now == null) now = new ActionMap();
         
         HashSet<Object> keys = new HashSet<Object>();
-        keys.addAll(Arrays.asList(prev));
-        keys.addAll(Arrays.asList(now));
-        
+        Object[] allPrev = prev.allKeys();
+        Object[] allNow = now.allKeys();
+        if (allPrev != null) {
+            keys.addAll(Arrays.asList(allPrev));
+        }
+        if (allNow != null) {
+            keys.addAll(Arrays.asList(allNow));
+        }
+
         for (Object k : keys) {
             Set<GeneralAction.DelegateAction> actions = listeners.get(k);
             if (actions == null) {
@@ -195,7 +201,7 @@ class GlobalManager extends Object implements LookupListener {
             }
             for (GeneralAction.DelegateAction del : actions) {
                 if (del != null) {
-                    del.updateState(prev, now);
+                    del.updateState(prev, now, true);
                 }
             }
         }

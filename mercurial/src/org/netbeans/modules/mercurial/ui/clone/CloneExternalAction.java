@@ -40,24 +40,9 @@
  */
 package org.netbeans.modules.mercurial.ui.clone;
 
-import org.netbeans.modules.versioning.spi.VCSContext;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.util.List;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.mercurial.HgException;
-import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 import org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction;
+import org.openide.nodes.Node;
 
 /**
  * Clone action for mercurial: 
@@ -67,14 +52,13 @@ import org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction;
  * @author Padraig O'Briain
  */
 public class CloneExternalAction extends ContextAction {
-    private final VCSContext context;
 
-    public CloneExternalAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_CloneExternal"; // NOI18N
     }
-    
-    public void performAction(ActionEvent ev){
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
         CloneWizardAction wiz = CloneWizardAction.getInstance();
         wiz.performAction();
     }

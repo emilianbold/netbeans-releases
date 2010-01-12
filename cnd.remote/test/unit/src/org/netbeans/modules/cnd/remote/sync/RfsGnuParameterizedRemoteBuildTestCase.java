@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -49,15 +48,14 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.netbeans.modules.nativeexecution.test.Conditional;
+import org.netbeans.modules.nativeexecution.test.If;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
@@ -104,7 +102,7 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsBaseRemoteBuildTe
         System.err.printf("PROJECT=%s HOST=%s TRANSPORT=%s TIME=%d seconds\n", projectPath, getTestExecutionEnvironment(), sync, time/1000);
     }
 
-    @Conditional(section=SECTION, key = "test.build")
+    @If(section=SECTION, key = "test.build")
     @ForAllEnvironments(section = SECTION)
     public void testBuildRfsParameterized() throws Exception {
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
@@ -113,7 +111,7 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsBaseRemoteBuildTe
         doTest("project", sync, buildCommand, Level.ALL);
     }
 
-    @Conditional(section=SECTION, key = "measure.plain.copy")
+    @If(section=SECTION, key = "measure.plain.copy")
     @ForAllEnvironments(section = SECTION)
     public void testPlainCopy() throws Exception {
         setLoggersLevel(Level.OFF);
@@ -164,6 +162,6 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsBaseRemoteBuildTe
     }
 
     public static Test suite() {
-        return new RemoteDevelopmentTest(RfsGnuParameterizedRemoteBuildTestCase.class);
+        return new RemoteDevelopmentTestSuite(RfsGnuParameterizedRemoteBuildTestCase.class);
     }
 }

@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.apisupport.project;
 
-import org.netbeans.modules.apisupport.project.ProjectXMLManager.CyclicDependencyException;
-import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -82,6 +80,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.apisupport.project.ProjectXMLManager.CyclicDependencyException;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -96,7 +97,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;

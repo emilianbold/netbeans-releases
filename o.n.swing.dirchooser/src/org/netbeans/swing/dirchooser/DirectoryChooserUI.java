@@ -1706,11 +1706,11 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         }
         
         public int getIconWidth() {
-            return icon != null ? icon.getIconWidth() + depth*space : null;
+            return icon != null ? icon.getIconWidth() + depth*space : 0;
         }
         
         public int getIconHeight() {
-            return icon != null ? icon.getIconHeight() : null;
+            return icon != null ? icon.getIconHeight() : 0;
         }
         
     }

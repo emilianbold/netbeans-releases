@@ -45,12 +45,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.text.Position;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
@@ -450,7 +452,16 @@ public class WordMatch extends FinderFactory.AbstractFinder implements PropertyC
         if (doc == getStaticWordsDoc()) {
             return null;
         }
-        BaseDocument nextDoc = Registry.getLessActiveDocument(doc);
+        BaseDocument nextDoc = null;
+        List<? extends JTextComponent> list = EditorRegistry.componentList();
+        for(int i = 0; i < list.size(); i++) {
+            if (doc == list.get(i).getDocument()) {
+                if (i + 1 < list.size()) {
+                    nextDoc = Utilities.getDocument(list.get(i + 1));
+                }
+                break;
+            }
+        }
         if (nextDoc == null) {
             nextDoc = getStaticWordsDoc();
         }
@@ -527,7 +538,7 @@ public class WordMatch extends FinderFactory.AbstractFinder implements PropertyC
 
         public @Override String toString() {
             return "{word='" + word + "', pos=" + pos.getOffset() // NOI18N
-                   + ", doc=" + Registry.getID(doc) + "}"; // NOI18N
+                   + ", doc=" + doc + "}"; // NOI18N
         }
 
     } // End of WordInfo class

@@ -44,6 +44,7 @@ import java.net.URL;
 import org.netbeans.modules.parsing.impl.indexing.CancelRequest;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
@@ -143,7 +144,7 @@ public final class Indexable {
         return delegate.toString();
     }
 
-    private static class MyAccessor extends SPIAccessor {
+    private static final class MyAccessor extends SPIAccessor {
 
         @Override
         public Indexable create(IndexableImpl delegate) {
@@ -151,18 +152,26 @@ public final class Indexable {
         }
 
         @Override
-        public void index(BinaryIndexer indexer, Context context) {
+        public void index(final BinaryIndexer indexer, final Context context) {
             assert indexer != null;
             assert context != null;
-            indexer.index(context);
+            RepositoryUpdater.getDefault().runIndexer(new Runnable() {
+                public void run() {
+                    indexer.index(context);
+                }
+            });
         }
 
         @Override
-        public void index(CustomIndexer indexer, Iterable<? extends Indexable> files, Context context) {
+        public void index(final CustomIndexer indexer, final Iterable<? extends Indexable> files, final Context context) {
             assert indexer != null;
             assert files != null;
             assert context != null;
-            indexer.index(files, context);
+            RepositoryUpdater.getDefault().runIndexer(new Runnable() {
+                public void run() {
+                    indexer.index(files, context);
+                }
+            });
         }
 
         @Override
@@ -186,12 +195,16 @@ public final class Indexable {
         }
 
         @Override
-        public void index(EmbeddingIndexer indexer, Indexable indexable, Result parserResult, Context ctx) {
+        public void index(final EmbeddingIndexer indexer, final Indexable indexable, final Result parserResult, final Context ctx) {
             assert indexer != null;
             assert indexable != null;
             assert parserResult != null;
             assert ctx != null;
-            indexer.index(indexable, parserResult, ctx);
+            RepositoryUpdater.getDefault().runIndexer(new Runnable() {
+                public void run() {
+                    indexer.index(indexable, parserResult, ctx);
+                }
+            });
         }
 
         @Override

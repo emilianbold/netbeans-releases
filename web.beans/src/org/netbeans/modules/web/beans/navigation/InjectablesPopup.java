@@ -42,16 +42,19 @@ package org.netbeans.modules.web.beans.navigation;
 
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Toolkit;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.List;
+
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListModel;
@@ -60,9 +63,6 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.java.source.ui.ElementOpen;
-import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  * @author ads
@@ -194,9 +194,18 @@ public class InjectablesPopup extends JPanel implements FocusListener {
                 ElementHandle<?> handle = (ElementHandle<?>)value;
                 Element resolve = handle.resolve( myController);
                 if ( resolve!= null) {
+                    DeclaredType parent = null;
+                    if ( resolve instanceof VariableElement || 
+                            resolve instanceof ExecutableElement )
+                    {
+                        TypeElement enclosingTypeElement = 
+                            myController.getElementUtilities().
+                            enclosingTypeElement(resolve);
+                        parent = (DeclaredType)enclosingTypeElement.asType();
+                    }
                     setIcon(ElementIcons.getElementIcon(resolve.getKind(), 
                             resolve.getModifiers()));
-                    setText(Utils.format(resolve));
+                    setText(Utils.format(resolve, parent , myController));
                 }
             }
             

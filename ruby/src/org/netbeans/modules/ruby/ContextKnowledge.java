@@ -39,9 +39,11 @@
 package org.netbeans.modules.ruby;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.jrubyparser.ast.Node;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.ruby.elements.AstMethodElement;
 import org.openide.util.Parameters;
 
 public final class ContextKnowledge {
@@ -56,6 +58,7 @@ public final class ContextKnowledge {
     private final int astOffset;
     private final int lexOffset;
     private final ParserResult parserResult;
+    private List<AstMethodElement> analyzedMethods;
 
     private boolean analyzed;
 
@@ -75,6 +78,32 @@ public final class ContextKnowledge {
         this.typesForSymbols = new HashMap<String, RubyType>();
         this.typesForNodes = new HashMap<Node, RubyType>();
         this.parserResult = parserResult;
+    }
+
+    void setAnalyzedMethods(List<AstMethodElement> analyzedMethods) {
+        this.analyzedMethods = analyzedMethods;
+    }
+
+    /**
+     * Checks whether the type of the given method is already known and
+     * returns it if it is. Note that this works only for methods that were 
+     * already analyzed.
+     * 
+     * @param clazz
+     * @param methodName
+     * @return
+     */
+    RubyType getTypeForMethod(String clazz, String methodName) {
+        if (analyzedMethods == null || analyzedMethods.isEmpty()) {
+            return null;
+        }
+        for (AstMethodElement each : analyzedMethods) {
+            String in = each.getIn();
+            if (in != null && in.equals(clazz) && each.getName().equals(methodName)) {
+                return each.getType();
+            }
+        }
+        return null;
     }
 
     RubyType getType(final String symbol) {

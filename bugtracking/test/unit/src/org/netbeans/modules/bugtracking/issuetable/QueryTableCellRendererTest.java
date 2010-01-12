@@ -332,7 +332,6 @@ public class QueryTableCellRendererTest {
             return null;
         }
 
-        @Override
         public IssueNode getNode() {
             fail("implement me!!!");
             return null;
@@ -354,7 +353,6 @@ public class QueryTableCellRendererTest {
             return null;
         }
 
-        @Override
         public Map<String, String> getAttributes() {
             fail("implement me!!!");
             return null;
@@ -437,6 +435,9 @@ public class QueryTableCellRendererTest {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
                 public String getID(Object issueData) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+                public Map getAttributes(Issue issue) {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
             }) {});

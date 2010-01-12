@@ -43,7 +43,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -125,21 +127,9 @@ public abstract class AbstractHgTest extends NbTestCase {
         List<File> filesToAdd = new ArrayList<File>();
         FileInformation status;
         for (File file : files) {
-
-            status = HgCommand.getSingleStatus(repository, file.getParentFile().getAbsolutePath(), file.getName());
-            if(status.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+            if(findStatus(HgCommand.getStatus(repository, Collections.singletonList(file)),
+                    FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
                 filesToAdd.add(file);
-
-                File parent = file.getParentFile();
-                while (!repository.equals(parent)) {
-                    status = HgCommand.getSingleStatus(repository, parent.getParentFile().getAbsolutePath(), parent.getName());
-                    if(status.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
-                        filesToAdd.add(0, parent);
-                        parent = parent.getParentFile();
-                    } else {
-                        break;
-                    }
-                }
             }
         }
 
@@ -164,8 +154,12 @@ public abstract class AbstractHgTest extends NbTestCase {
     }
     
     protected  void assertStatus(File f, int status) throws HgException, IOException {
-        FileInformation s = HgCommand.getSingleStatus(getWorkDir(), f.getParentFile().getAbsolutePath(), f.getName());
-        assertEquals(status, s.getStatus());
+        FileInformation s = HgCommand.getStatus(getWorkDir(), Collections.singletonList(f)).get(f);
+        if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
+            assertEquals(s, null);
+        } else {
+            assertEquals(status, s.getStatus());
+        }
     }        
     
     protected void assertCacheStatus(File f, int status) throws HgException, IOException {
@@ -207,6 +201,15 @@ public abstract class AbstractHgTest extends NbTestCase {
                 w.close();
             }
         }
+    }
+
+    private boolean findStatus(Map<File, FileInformation> statuses, int status) {
+        for (Map.Entry<File, FileInformation> e : statuses.entrySet()) {
+            if (e.getValue().getStatus() == status) {
+                return true;
+            }
+        }
+        return false;
     }
     
     private static class VersionCheckBlocker extends Handler {

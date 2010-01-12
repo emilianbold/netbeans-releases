@@ -31,7 +31,7 @@ DEFAULTCONF=Debug32
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Debug32 Debug64 Release32 Release64 Test32 
+ALLCONFS=Debug32 Debug64 Release32 Release64 Test_filedata_32 
 
 
 # build

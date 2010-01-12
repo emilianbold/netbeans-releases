@@ -45,10 +45,9 @@ import java.util.ArrayList;
 import javax.swing.JLabel;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.modules.jmx.test.helpers.Attribute;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
@@ -60,39 +59,29 @@ import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
  * Check components and created files.
  */
 public class AddMBeanAttributesActions extends ActionsTestCase {
+    private static boolean initialized;
     
     /** Need to be defined because of JUnit */
     public AddMBeanAttributesActions(String name) {
         super(name);
         popupPath = ACTION_JMX + "|" + ACTION_ADD_MBEAN_ATTRIBUTES;
     }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        if (!initialized) {
+            init();
+            initialized = true;
+        }
     }
-    
-    public static NbTestSuite suite() {
-        
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new AddMBeanAttributesActions("init"));
-        suite.addTest(new AddMBeanAttributesActions("test1"));
-        suite.addTest(new AddMBeanAttributesActions("test2"));
-        suite.addTest(new AddMBeanAttributesActions("test3"));
-        suite.addTest(new AddMBeanAttributesActions("test4"));
-        suite.addTest(new AddMBeanAttributesActions("test5"));
-        suite.addTest(new AddMBeanAttributesActions("test6"));
-        return suite;
-    }
-    
-    
+
     /**
      * Create all needed files for running next tests
      */
     public void init() {
         
-        System.out.println("====================  init  ====================");
+        System.out.println("====================  setup AddMBeanAttributesActions ====================");
         
         System.out.println("Create new java class " + SIMPLE_1);
         createJavaFile(SIMPLE_1);
@@ -189,7 +178,7 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
         System.out.println("Open java file " + SIMPLE_1);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(SIMPLE_1);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
@@ -204,7 +193,7 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_1);
         System.out.println("Open java file " + DYNAMIC_1);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(DYNAMIC_1);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
@@ -222,7 +211,7 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         System.out.println("Open java file " + className);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);

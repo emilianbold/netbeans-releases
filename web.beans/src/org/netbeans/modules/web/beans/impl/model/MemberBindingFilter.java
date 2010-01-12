@@ -61,7 +61,7 @@ import javax.lang.model.type.DeclaredType;
 class MemberBindingFilter<T extends Element> extends Filter<T> {
     
     private static final String NON_BINDING_MEMBER_ANNOTATION =
-                "javax.enterprise.inject.NonBinding";    // NOI18N
+                "javax.enterprise.inject.Nonbinding";    // NOI18N
     
     private MemberBindingFilter( Class<T> clazz ){
         myClass = clazz;
@@ -108,7 +108,7 @@ class MemberBindingFilter<T extends Element> extends Filter<T> {
          * One need to check presence of member in binding annotation at 
          * injected point and compare this member with member in annotation
          * for discovered type.
-         * Members with  @NonBinding annotation should be ignored. 
+         * Members with  @Nonbinding annotation should be ignored. 
          */
          for (AnnotationMirror annotation : getBindingAnnotations()) {
             Map<? extends ExecutableElement, ? extends AnnotationValue> 

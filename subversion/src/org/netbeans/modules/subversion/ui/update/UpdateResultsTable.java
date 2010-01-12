@@ -61,6 +61,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.File;
 import java.util.*;
 import java.lang.reflect.InvocationTargetException;
@@ -87,6 +88,10 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
     
     private String [] tableColumns; 
     private TableSorter sorter;
+    /**
+     * File is in conflict and is not a directory
+     */
+    private static final int ACTION_CONFLICTED_FILE = FileUpdateInfo.ACTION_CONFLICTED | FileUpdateInfo.ACTION_TYPE_FILE;
 
     /**
      * Defines labels for Versioning view table columns.
@@ -271,7 +276,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
     }
     private static ActionEvaluator conflictEvaluator = new ActionEvaluator() {
         public boolean isAction(FileUpdateInfo info) {
-            return (info.getAction() & FileUpdateInfo.ACTION_CONFLICTED & FileUpdateInfo.ACTION_TYPE_FILE) != 0; 
+            return (info.getAction() & ACTION_CONFLICTED_FILE) == ACTION_CONFLICTED_FILE;
         }
     };
     private static ActionEvaluator notDeletedEvaluator = new ActionEvaluator() {
@@ -411,15 +416,16 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
             File changedFile = (File) event.getParams()[0];
             FileInformation newFileInfo = (FileInformation) event.getParams()[2];
             
-            List<UpdateResultNode> nodesList = new ArrayList<UpdateResultNode>();                        
+            final List<UpdateResultNode> nodesList = new ArrayList<UpdateResultNode>();
             boolean touched = false;
-            for(UpdateResultNode node : nodes) {
+            final UpdateResultNode[] currentNodes = nodes;
+            for(UpdateResultNode node : currentNodes) {
                 FileUpdateInfo fui = (FileUpdateInfo) node.getLookup().lookup(FileUpdateInfo.class);
                 if(fui != null) {                    
                     int action = fui.getAction();
-                    if((action & FileUpdateInfo.ACTION_CONFLICTED & FileUpdateInfo.ACTION_TYPE_FILE) != 0 && 
+                    if((action & ACTION_CONFLICTED_FILE) == ACTION_CONFLICTED_FILE &&
                        fui.getFile().equals(changedFile) && 
-                       ( (newFileInfo.getStatus() & newFileInfo.STATUS_VERSIONED_CONFLICT) == 0) ) 
+                       ( (newFileInfo.getStatus() & FileInformation.STATUS_VERSIONED_CONFLICT) == 0) )
                     {
                         action &= ~FileUpdateInfo.ACTION_CONFLICTED;
                         action |=  FileUpdateInfo.ACTION_CONFLICTED_RESOLVED;
@@ -434,11 +440,17 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
                     nodesList.add(node);
                 }                                                
             }
-            
-            // XXX reschedule !!!
-            if(touched) {
-                setTableModel(nodesList.toArray(new UpdateResultNode[nodesList.size()]));
+
+            if(!touched) {
+                return;
             }
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    if (currentNodes == nodes) {
+                        setTableModel(nodesList.toArray(new UpdateResultNode[nodesList.size()]));
+                    }
+                }
+            });
         }
     }
 }

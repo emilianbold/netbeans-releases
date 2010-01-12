@@ -62,6 +62,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
@@ -210,7 +211,7 @@ final class NewProjectIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_CreateProjectStep",  "Name and Location")); // NOI18N
         
         // 3. create sample template
-        FileObject xml = LayerUtils.layerForProject(project).getLayerFile();
+        FileObject xml = LayerHandle.forProject(project).getLayerFile();
         FileObject parent = xml != null ? xml.getParent() : null;
         // XXX this is not fully accurate since if two ops would both create the same file,
         // really the second one would automatically generate a uniquified name... but close enough!

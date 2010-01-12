@@ -79,7 +79,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     }
 
     public String getDefaultNamespace() {
-        return JsfUtils.COMPOSITE_LIBRARY_NS + "/" + getLibraryName();
+        return JsfUtils.getCompositeLibraryURL(getLibraryName());
     }
 
     @Override
@@ -179,7 +179,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 sb.append("</p>");//NOI18N
                 sb.append("<p style=\"color: red\">" + msgNoTld + "</p>"); //NOI18N
 
-                Tag t = new Tag(cname, sb.toString(), attrs);
+                Tag t = new TagImpl(cname, sb.toString(), attrs);
                 cctags.put(cname, t);
             }
         }

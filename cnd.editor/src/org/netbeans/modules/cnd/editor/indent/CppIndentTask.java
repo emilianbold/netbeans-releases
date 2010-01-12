@@ -43,10 +43,10 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider;
-import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider.Function;
-import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider.Parameter;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider;
+import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.Function;
+import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.Parameter;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
@@ -360,6 +360,9 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                     TokenItem cls = findClassifier(token);
                     if (cls != null) {
                         indent = getTokenIndent(cls);
+                        if (isHalfIndentVisibility()) {
+                            indent += getShiftWidth()/2;
+                        }
                     }
                     break;
                 case CLASS:
@@ -386,15 +389,23 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                 case PRIVATE:
                                 case PROTECTED:
                                     indent = getTokenIndent(tt) + getShiftWidth();
+                                    if (isHalfIndentVisibility()) {
+                                        indent -= getShiftWidth()/2;
+                                    }
                                     break;
                                 case FOR:
-                                    if (alignMultilineFor()) {
-                                        TokenItem lparen = getLeftParen(t, tt);
-                                        if (lparen != null){
-                                            return getTokenColumn(lparen)+1;
+                                    if (isForLoopSemicolon(t)) {
+                                        if (alignMultilineFor()) {
+                                            TokenItem lparen = getLeftParen(t, tt);
+                                            if (lparen != null){
+                                                indent = getTokenColumn(lparen)+1;
+                                                break;
+                                            }
                                         }
+                                        indent = getTokenIndent(tt) + getFormatStatementContinuationIndent();
+                                    } else {
+                                        indent = getTokenIndent(tt);
                                     }
-                                    indent = getTokenIndent(tt) + getFormatStatementContinuationIndent();
                                     break;
                                 default:
                                     indent = getTokenIndent(tt);
@@ -420,6 +431,13 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                             case SWITCH:
                                 indent = getTokenIndent(lbss) + getShiftWidth();
                                 break;
+                            case NAMESPACE:
+                                if (indentNamespace()) {
+                                    indent = getTokenIndent(lbss) + getRightIndentDeclaration();
+                                } else {
+                                    indent = getTokenIndent(lbss);
+                                }
+                                break;
                             default:
                                 indent = getTokenIndent(lbss) + getRightIndentDeclaration();
                                 break;
@@ -427,7 +445,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                         break;
 
                     case RBRACE:
-                        TokenItem t3 = findStatementStart(token);
+                        TokenItem t3 = findStatementStart(token, true);
                         if (t3 != null) {
                             indent = getTokenIndent(t3);
                         }
@@ -437,6 +455,9 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                         TokenItem ttt = getVisibility(t);
                         if (ttt != null){
                             indent = getTokenIndent(ttt) + getRightIndentDeclaration();
+                            if (isHalfIndentVisibility()) {
+                                indent -= getShiftWidth()/2;
+                            }
                         } else {
                             ttt = findAnyToken(t, null,
                                     new CppTokenId[] {CppTokenId.CASE,
