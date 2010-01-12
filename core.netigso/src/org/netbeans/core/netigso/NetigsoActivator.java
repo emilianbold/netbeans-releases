@@ -96,10 +96,10 @@ implements BundleActivator, SynchronousBundleListener {
                 if (cnb.equals(mi.getCodeNameBase())) {
                 join(ev.getBundle(), mi);
                     return;
+                }
             }
-        }
             NetigsoModule.LOG.log(Level.WARNING, "No join for {0}", cnb);
-    }
+        }
     }
 
     void register(Module m) {
