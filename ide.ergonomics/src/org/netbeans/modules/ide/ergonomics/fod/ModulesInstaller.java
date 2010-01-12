@@ -150,18 +150,11 @@ public class ModulesInstaller {
     
     private RequestProcessor.Task createInstallTask () {
         assert installTask == null || installTask.isFinished () : "The Install Task cannot be started nor scheduled.";
-        installTask = FeatureManager.getInstance().create(doInstall);
+        installTask = FeatureManager.getInstance().create(new InstallOrActivateTask(this));
         return installTask;
     }
     
-    private Runnable doInstall = new Runnable () {
-        public void run() {
-            installMissingModules ();
-        }
-
-    };
-    
-    private void installMissingModules () {
+    final void installMissingModules () {
         try {
             doInstallMissingModules ();
         } catch (Exception x) {
