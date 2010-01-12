@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLDocReader;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -222,20 +223,32 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
     // Attach listeners to all disk folders
     private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor){
-        //final long time = System.currentTimeMillis();
-        //System.err.println("Start attach folder listeners");
         Task task = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                //boolean currentState = configurationDescriptor.getModified();
-                Vector<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
-                for (Folder f : firstLevelFolders) {
-                    if (f.isDiskFolder()) {
-                        f.refreshDiskFolder(false);
-                        f.attachListeners();
-                    }
+                long time = 0;
+                if (MakeProject.TRACE_MAKE_PROJECT_CREATION) {
+                    time = System.currentTimeMillis();
+                    System.err.println("Start attach folder listeners");
                 }
-                //configurationDescriptor.setModified(currentState);
-                //System.err.println("End attach folder listeners, time "+(System.currentTimeMillis()-time)+"ms.");
+                String oldName = Thread.currentThread().getName();
+                try {
+                    //boolean currentState = configurationDescriptor.getModified();
+                    Thread.currentThread().setName("Attach listeners to all disk folders"); // NOI18N
+                    Vector<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
+                    for (Folder f : firstLevelFolders) {
+                        if (f.isDiskFolder()) {
+                            f.refreshDiskFolder(false);
+                            f.attachListeners();
+                        }
+                    }
+                    //configurationDescriptor.setModified(currentState);
+                    if (MakeProject.TRACE_MAKE_PROJECT_CREATION) {
+                        System.err.println("End attach folder listeners, time "+(System.currentTimeMillis()-time)+"ms.");
+                    }
+                } finally {
+                    // restore thread name - it might belong to the pool
+                    Thread.currentThread().setName(oldName);
+                }
             }
         });
         // Refresh disk folders in background process
