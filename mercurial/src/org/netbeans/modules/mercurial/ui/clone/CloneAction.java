@@ -220,10 +220,6 @@ public class CloneAction extends ContextAction {
                             cc.scanForProjects(this);
                         }
                     }
-                } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
-                }finally {
                     HgConfigFiles hgConfigFiles = new HgConfigFiles(target);
                     if (hgConfigFiles.getException() == null) {
                         if (source.isKenaiURL()) {
@@ -239,7 +235,10 @@ public class CloneAction extends ContextAction {
                         Mercurial.LOG.log(Level.WARNING, this.getClass().getName() + ": Cannot set default push and pull path"); // NOI18N
                         Mercurial.LOG.log(Level.INFO, null, hgConfigFiles.getException());
                     }
-                        
+                } catch (HgException ex) {
+                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+                    DialogDisplayer.getDefault().notifyLater(e);
+                }finally {    
                     if(!isLocalClone){
                         logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
                         logger.output(""); // NOI18N
