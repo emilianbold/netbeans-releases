@@ -367,6 +367,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.ant.freeform</friend>
                 <friend>org.netbeans.modules.apisupport.project</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
@@ -378,6 +379,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.java.editor</friend>
                 <friend>org.netbeans.modules.java.source</friend>
                 <friend>org.netbeans.modules.javafx.editor</friend>
+                <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.python.editor</friend>
