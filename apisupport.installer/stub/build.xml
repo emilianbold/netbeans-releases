@@ -214,43 +214,36 @@ jarsigner.enabled=${jarsigner.enabled}
     <target name="-generate-bundles">
         <!--<set property="bundle.files.prefix" value="helloworld"/>-->
 
-        <if property="do.build.windows.bundles" value="true">
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="windows" 
-                       target="${bundles.release.dir}/${bundle.files.prefix}-windows.exe">
-            <component uid="${main.product.uid}" version="1.0.0.0.0"/>
-        </create-bundle>
-        </if>
-        <if property="do.build.linux.bundles" value="true">
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="linux" 
-                       target="${bundles.release.dir}/${bundle.files.prefix}-linux.sh">
-            <component uid="${main.product.uid}" version="1.0.0.0.0"/>
-        </create-bundle>
-        </if>
-        <if property="do.build.solaris.bundles" value="true">
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="solaris" 
-                       target="${bundles.release.dir}/${bundle.files.prefix}-solaris.sh">
-            <component uid="${main.product.uid}" version="1.0.0.0.0"/>
-        </create-bundle>
-        </if>
-        <if property="do.build.macosx.bundles" value="true">
-        <create-bundle root="${output.dir}/registry-temp" 
-                       platform="macosx" 
-                       target="${bundles.release.dir}/${bundle.files.prefix}-macosx.zip">
-            <component uid="${main.product.uid}" version="1.0.0.0.0"/>
-        </create-bundle>
-        <antcall target="zip-to-tgz">
-            <param name="input.file"  value="${bundles.release.dir}/${bundle.files.prefix}-macosx.zip"/>
-            <param name="output.file" value="${bundles.release.dir}/${bundle.files.prefix}-macosx.tgz"/>
-        </antcall>
-	<delete>
-            <fileset dir="${bundles.release.dir}">
-		<include name="${bundle.files.prefix}-macosx.zip"/>
-            </fileset>
-        </delete>
-        </if>
+        <for-each property="platform" list="${target.platforms}" separator=" ">
+
+            <condition property="bundle.extention.${platform}" value="exe">
+                 <contains string="${platform}" substring="windows"/>
+            </condition>
+            <condition property="bundle.extention.${platform}" value="sh">
+                 <or>
+                     <contains string="${platform}" substring="linux"/>
+                     <contains string="${platform}" substring="solaris"/>
+                 </or>
+            </condition>
+            <condition property="bundle.extention.${platform}" value="zip">
+                 <contains string="${platform}" substring="macosx"/>
+            </condition>
+
+            <set property="bundle.extention" source="bundle.extention.${platform}"/>
+
+            <create-bundle root="${output.dir}/registry-temp" 
+                       platform="${platform}" 
+                       target="${bundles.release.dir}/${bundle.files.prefix}-${platform}.${bundle.extention}">
+                <component uid="${main.product.uid}" version="1.0.0.0.0"/>
+            </create-bundle>
+            <if property="bundle.extention" value="zip">
+                <antcall target="zip-to-tgz">
+                    <param name="input.file"  value="${bundles.release.dir}/${bundle.files.prefix}-${platform}.zip"/>
+                    <param name="output.file" value="${bundles.release.dir}/${bundle.files.prefix}-${platform}.tgz"/>
+                </antcall>
+	        <delete file="${bundles.release.dir}/${bundle.files.prefix}-${platform}.zip"/>
+            </if>
+        </for-each>
     </target>
 
     <target name="replace">

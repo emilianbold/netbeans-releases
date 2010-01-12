@@ -37,10 +37,7 @@
             <replacefilter token="{nbi.ant.tasks.jar}"             value="${nbi.ant.tasks.jar}"/>
             <replacefilter token="{nbi.registries.management.jar}" value="${nbi.registries.management.jar}"/>
             <replacefilter token="{nbi.engine.jar}"                value="${nbi.engine.jar}"/>
-            <replacefilter token="{windows-bundles}"               value="${windows-bundles}"/>
-            <replacefilter token="{linux-bundles}"                 value="${linux-bundles}"/>
-            <replacefilter token="{solaris-bundles}"               value="${solaris-bundles}"/>
-            <replacefilter token="{macosx-bundles}"                value="${macosx-bundles}"/>
+            <replacefilter token="{product-platforms}"             value="${generate.installer.for.platforms}"/>
             <replacefilter token="{generator-jdk-location-forward-slashes}"         value="${generator-jdk-location-forward-slashes}"/>
             <replacefilter token="{generated-installers-location-forward-slashes}"  value="${generated-installers-location-forward-slashes}"/>
             <replacefilter token="{pack200.enabled}"               value="${pack200.enabled}"/>
@@ -54,10 +51,10 @@
         </replace>
 
         <replace dir="${installer.build.dir}/ext/infra/build/products">
-            <replacefilter token="{product.platforms}"  value="windows linux macosx"/>
-            <replacefilter token="{product-data-uri}"   value="${suite.zip.uri}"/>
-            <replacefilter token="{product-data-sub-dir}"          value="${suite.props.app.name}"/>
-            <replacefilter token="{product-uid}"                   value="${product-uid}"/>
+            <replacefilter token="{product.platforms}"        value="${generate.installer.for.platforms}"/>
+            <replacefilter token="{product-data-path}"        value="${suite.location}/dist/${suite.props.app.name}.zip"/>
+            <replacefilter token="{product-data-sub-dir}"     value="${suite.props.app.name}"/>
+            <replacefilter token="{product-uid}"              value="${product-uid}"/>
             <replacefilter token="{product-install-directory-name}"         value="${suite.props.app.name}"/>
             <replacefilter token="{product-install-directory-name-windows}" value="${suite.props.app.title}"/>
             <replacefilter token="{product-install-directory-name-macosx}"  value="${suite.props.app.title}"/>

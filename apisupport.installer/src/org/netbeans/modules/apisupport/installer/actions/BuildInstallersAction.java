@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -126,10 +128,8 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                             Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "Can`t store properties", ex);
                         }
                         Logger.getLogger(BuildInstallersAction.class.getName()).warning("actionPerformed for " + suiteLocation);
-                        File suiteZipLocation = new File(new File(suiteLocation, "dist"), appName + ".zip");
                         Properties props = new Properties();
                         props.put("suite.location", suiteLocation.getAbsolutePath().replace("\\", "/"));
-                        props.put("suite.zip.uri", suiteZipLocation.toURI().toString());
                         props.put("suite.nbi.product.uid", 
                                 appName.replaceAll("[0-9]+", "").toLowerCase(Locale.ENGLISH));
                         
@@ -155,14 +155,24 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                                 "modules/ext/nbi-engine.jar",
                                 "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\","/"));
 
-                        props.put(
-                                "windows-bundles", ps.getProperty("installer.os.windows", "true"));
-                        props.put(
-                                "linux-bundles", ps.getProperty("installer.os.linux", "true"));
-                        props.put(
-                                "solaris-bundles", ps.getProperty("installer.os.solaris", "true"));
-                        props.put(
-                                "macosx-bundles", ps.getProperty("installer.os.macosx", "true"));
+                        List <String> platforms = new ArrayList <String> ();
+                        for(Object s : ps.keySet()) {
+                            String key = (String) s;
+                            String prefix = "installer.os.";
+                            if(key.startsWith(prefix) && ps.get(key).equals("true")) {
+                                platforms.add(key.substring(prefix.length()));
+                            }
+                        }
+                        StringBuilder sb = new StringBuilder();
+                        for(int i=0;i<platforms.size();i++) {
+                            if(i!=0) {
+                                sb.append(" ");
+                            }
+                            sb.append(platforms.get(i));
+                        }
+
+                        props.put("generate.installer.for.platforms",
+                                sb.toString());
                         
                         File javaHome = new File(System.getProperty("java.home"));
                         if (new File(javaHome,
