@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-AutoUpdate-Show-In-Client: false
+AutoUpdate-Show-In-Client: true
 OpenIDE-Module: org.netbeans.modules.apisupport.installer
 OpenIDE-Module-Layer: org/netbeans/modules/apisupport/installer/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/apisupport/installer/Bundle.properties
