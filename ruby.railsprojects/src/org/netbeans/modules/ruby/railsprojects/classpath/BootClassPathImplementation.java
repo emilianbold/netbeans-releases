@@ -41,7 +41,6 @@
 package org.netbeans.modules.ruby.railsprojects.classpath;
 
 import org.netbeans.modules.ruby.rubyproject.RequiredGems;
-import org.netbeans.modules.ruby.rubyproject.GemRequirement;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -63,6 +62,7 @@ import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.netbeans.modules.ruby.platform.Util;
+import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
@@ -85,10 +85,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     // Flag for controlling last-minute workaround for issue #120231
     private static final boolean INCLUDE_NONLIBPLUGINS = Boolean.getBoolean("ruby.include_nonlib_plugins");
 
-    private static final String[] RAILS_GEMS =  new String[] {"actionmailer", "actionpack", "activerecord",  // NOI18N
-                                         "activeresource", "activesupport", "rails", // NOI18N
-                                         "actionwebservice" }; // NOI18N    actionwebservice is Rails 1.x only
-    
     private File projectDirectory;
     private final RailsProject project;
     private final PropertyEvaluator evaluator;
@@ -158,17 +154,15 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 for (URL url : vendorPlugins) {
                     result.add(ClassPathSupport.createResource(url));
                 }
-
-                
                 // TODO - handle multiple gem versions in the same repository
                 List<URL> combinedGems = mergeVendorGems(vendor,
                         new HashMap<String, String>(gemVersions),
                         new HashMap<String, URL>(gemUrls));
 
-                addGems(filterNotRequiredGems(combinedGems), result);
+                filterAndAddGems(combinedGems, result);
 
             } else {
-                addGems(filterNotRequiredGems(gemUrls.values()), result);
+                filterAndAddGems(gemUrls.values(), result);
             }
             
             resourcesCache = Collections.unmodifiableList (result);
@@ -177,9 +171,10 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         return this.resourcesCache;
     }
 
-    private void addGems(Collection<URL> gemsToAdd, List<PathResourceImplementation> result) {
-        for (URL url : gemsToAdd) {
-            String gem = getGemName(url);
+    private void filterAndAddGems(Collection<URL> gemsToAdd, List<PathResourceImplementation> result) {
+        Collection<URL> filtered = forTests ? gemsToAdd : requiredGems.filterNotRequiredGems(gemsToAdd);
+        for (URL url : filtered) {
+            String gem = Gem.getGemName(url);
             if (gemFilter.include(gem)) {
                 result.add(ClassPathSupport.createResource(url));
                 continue;
@@ -191,50 +186,9 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         }
     }
 
-    private List<URL> filterNotRequiredGems(Collection<URL> gemUrls) {
-        List<GemRequirement> required = requiredGems.getGemRequirements();
-        if (required == null || forTests) { // use all gems for tests boot class (until we can actually resolve requires in tests)
-            return new ArrayList<URL>(gemUrls);
-        }
-
-        List<URL> result = new ArrayList<URL>();
-        for (URL url : gemUrls) {
-            String[] nameAndVersion = GemFilesParser.parseNameAndVersion(getGemName(url));
-            if (nameAndVersion != null) {
-                String name = nameAndVersion[0];
-                String version = nameAndVersion[1];
-                // special cases, rails and rake (which are not listed by rake gems)
-                if (isRailsGem(name) || "rake".equals(name)) { //NOI18N
-                    result.add(url);
-                    continue;
-                }
-                for (GemRequirement each : required) {
-                    if (each.getName().equals(name) && each.satisfiedBy(version)) {
-                        result.add(url);
-                        break;
-                    }
-                }
-            }
-        }
-        for (URL url : result) {
-            LOGGER.fine("Including in boot class path: " + url);
-        }
-        return result;
-    }
-
     private boolean useVendorGemsOnly() {
         return new File(projectDirectory, "vendor" + File.separator + "gems").exists() //NOI18N
                 && RubyPreferences.isIndexVendorGemsOnly();
-    }
-
-    private static String getGemName(URL gemUrl) {
-        String urlString = gemUrl.getFile();
-        if (urlString.endsWith("/lib/")) {
-            urlString = urlString.substring(urlString.lastIndexOf('/', urlString.length()-6)+1,
-                    urlString.length()-5);
-        }
-        
-        return urlString;
     }
 
     /** Adjust the gem urls according to the RAILS_GEM_VERSION specified in config/environment.rb */
@@ -283,7 +237,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         gemUrls.get("actionwebservice");
 
         boolean first = true;
-        for (String gemName : RAILS_GEMS) { // NOI18N
+        for (String gemName : Gem.getRailsGems()) { // NOI18N
             URL url = gemUrls.get(gemName);
             if (url != null) {
                 String urlString = url.toExternalForm();
@@ -312,15 +266,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         }
 
         return gemUrls;
-    }
-
-    private boolean isRailsGem(String name) {
-        for (String each : RAILS_GEMS) {
-            if (each.equals(name)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
