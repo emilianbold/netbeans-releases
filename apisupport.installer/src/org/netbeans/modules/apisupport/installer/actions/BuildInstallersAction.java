@@ -62,13 +62,16 @@ import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
 import org.openide.util.actions.Presenter;
 import org.openide.windows.WindowManager;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.TaskListener;
 
 public final class BuildInstallersAction extends AbstractAction implements ContextAwareAction {
 
@@ -114,7 +117,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
         public static void actionPerformed(Node[] e) {
             if (e != null) {
                 for (Node node : e) {
-                    Project prj = node.getLookup().lookup(Project.class);
+                    final Project prj = node.getLookup().lookup(Project.class);
                     if (prj != null) {
                         File suiteLocation = FileUtil.toFile(prj.getProjectDirectory());
                         FileObject propertiesFile = prj.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -130,42 +133,42 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         Logger.getLogger(BuildInstallersAction.class.getName()).warning("actionPerformed for " + suiteLocation);
                         Properties props = new Properties();
                         props.put("suite.location", suiteLocation.getAbsolutePath().replace("\\", "/"));
-                        props.put("suite.nbi.product.uid", 
+                        props.put("suite.nbi.product.uid",
                                 appName.replaceAll("[0-9]+", "").toLowerCase(Locale.ENGLISH));
-                        
+
 
                         props.put("nbi.stub.location", InstalledFileLocator.getDefault().locate(
                                 "nbi/stub",
-                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\","/"));
+                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
                         props.put(
                                 "nbi.stub.common.location", InstalledFileLocator.getDefault().locate(
                                 "nbi/.common",
-                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\","/"));
+                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
 
                         props.put(
                                 "nbi.ant.tasks.jar", InstalledFileLocator.getDefault().locate(
                                 "modules/ext/nbi-ant-tasks.jar",
-                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\","/"));
+                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
                         props.put(
                                 "nbi.registries.management.jar", InstalledFileLocator.getDefault().locate(
                                 "modules/ext/nbi-registries-management.jar",
-                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\","/"));
+                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
                         props.put(
                                 "nbi.engine.jar", InstalledFileLocator.getDefault().locate(
                                 "modules/ext/nbi-engine.jar",
-                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\","/"));
+                                "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
 
-                        List <String> platforms = new ArrayList <String> ();
-                        for(Object s : ps.keySet()) {
+                        List<String> platforms = new ArrayList<String>();
+                        for (Object s : ps.keySet()) {
                             String key = (String) s;
                             String prefix = "installer.os.";
-                            if(key.startsWith(prefix) && ps.get(key).equals("true")) {
+                            if (key.startsWith(prefix) && ps.get(key).equals("true")) {
                                 platforms.add(key.substring(prefix.length()));
                             }
                         }
                         StringBuilder sb = new StringBuilder();
-                        for(int i=0;i<platforms.size();i++) {
-                            if(i!=0) {
+                        for (int i = 0; i < platforms.size(); i++) {
+                            if (i != 0) {
                                 sb.append(" ");
                             }
                             sb.append(platforms.get(i));
@@ -173,7 +176,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
 
                         props.put("generate.installer.for.platforms",
                                 sb.toString());
-                        
+
                         File javaHome = new File(System.getProperty("java.home"));
                         if (new File(javaHome,
                                 "lib/rt.jar").exists() && javaHome.getName().equals("jre")) {
@@ -183,13 +186,13 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                                 "generator-jdk-location-forward-slashes", javaHome.getAbsolutePath().replace("\\", "/"));
                         props.put(
                                 "generated-installers-location-forward-slashes",
-                                new File(suiteLocation, "dist").getAbsolutePath().replace("\\","/"));
+                                new File(suiteLocation, "dist").getAbsolutePath().replace("\\", "/"));
 
                         props.put(
                                 "pack200.enabled", "false");
 
-                        
-                        for(Object s : props.keySet()) {
+
+                        for (Object s : props.keySet()) {
                             Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.INFO,
                                     "[" + s + "] = " + props.get(s));
                         }
@@ -204,17 +207,31 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                             Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "Can`t store properties", ex);
                         }
                         try {
-                            if(ActionUtils.runTarget(findGenXml(prj), new String[] {"build"}, props).result() == 0) {
-                                ActionUtils.runTarget(findInstXml(prj), new String[] {"build"}, new Properties());
-                            }
+                            final ExecutorTask executorTask = ActionUtils.runTarget(findGenXml(prj), new String[]{"build"}, props);
+                            /*
+                            executorTask.addTaskListener(new TaskListener() {
+
+                                public void taskFinished(Task task) {
+                                    if (executorTask.result() == 0) {
+                                        try {
+                                            ActionUtils.runTarget(findInstXml(prj), new String[]{"build"}, new Properties());
+                                        } catch (FileStateInvalidException ex) {
+                                            ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
+                                        } catch (IOException ex) {
+                                            ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
+
+                                        }
+                                    }
+                                }
+                            });*/
                         } catch (FileStateInvalidException ex) {
                             ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
                         } catch (IOException ex) {
                             ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
                         }
 
-                        
-                        if(tmpProps!=null && !tmpProps.delete() && tmpProps.exists()) {
+
+                        if (tmpProps != null && !tmpProps.delete() && tmpProps.exists()) {
                             tmpProps.deleteOnExit();
                         }
                     }
@@ -229,14 +246,16 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
         private static FileObject findBuildXml(Project project) {
             return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
         }
+
         private static FileObject findGenXml(Project project) {
             return FileUtil.toFileObject(InstalledFileLocator.getDefault().locate(
-                                "nbi/stub/template.xml",
-                                "org.netbeans.modules.apisupport.installer", false));
+                    "nbi/stub/template.xml",
+                    "org.netbeans.modules.apisupport.installer", false));
         }
+
         private static FileObject findInstXml(Project project) throws FileStateInvalidException {
             return project.getProjectDirectory().getFileObject("build/installer/build.xml");
-        }       
+        }
 
         public JMenuItem getPopupPresenter() {
             Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();

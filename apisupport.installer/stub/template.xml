@@ -1,11 +1,11 @@
 <project name="build installers" default="build" basedir=".">
     <!--<property file="${basedir}/template.properties"/>-->
     
-    <target name="build" depends="init,-prepare-sources,-build,post-build"/>
+    <target name="build" depends="init,prepare-sources,prepare-zip,-build,post-build,run-build"/>
     
     <target name="init" depends="-clean">
         <property name="installer.build.dir" value="${suite.location}/build/installer"/>
-
+        <property file="${suite.location}/nbproject/project.properties" prefix="suite.props."/>
 
         <delete dir="${installer.build.dir}" includeemptydirs="yes" failonerror="false"/>
 
@@ -22,7 +22,22 @@
     <target name="-build">
     </target>
 
-    <target name="-prepare-sources">
+    <target name="run-build">
+        <ant dir="${installer.build.dir}" inheritAll="false"/>
+    </target>
+
+    <target name="-init-zip">
+        <condition property="do.build.zip">
+            <available file="${suite.location}/dist/${suite.props.app.name}.zip"/>
+        </condition>
+    </target>
+    <target name="-build-zip" depends="-init-zip" unless="do.build.zip">
+        <ant dir="${suite.location}" inheritAll="false" target="build-zip"/>
+    </target>
+
+    <target name="prepare-zip" depends="-init-zip,-build-zip"/>
+
+    <target name="prepare-sources">
         <copy todir="${installer.build.dir}">
            <fileset dir="${nbi.stub.location}"/>
         </copy>
@@ -30,7 +45,7 @@
            <fileset dir="${nbi.stub.common.location}"/>
         </copy>
 
-        <property file="${suite.location}/nbproject/project.properties" prefix="suite.props."/>
+
         <property name="product-uid"  value="${suite.nbi.product.uid}"/>
 
         <replace file="${installer.build.dir}/build.properties">
