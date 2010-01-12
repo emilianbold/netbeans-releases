@@ -187,7 +187,7 @@ public class InjectCompositeComponent {
 
 	templateDO = DataObject.find(template);
 	Set<DataObject> result = templateWizard.instantiate(templateDO, targetFolder);
-	final String prefix = (String)templateWizard.getProperty("selectedPrefix");
+	final String prefix = (String)templateWizard.getProperty("selectedPrefix"); //NOI18N
 	if (result != null && result.size() > 0) {
 	    final String compName = result.iterator().next().getName();
 	    //TODO XXX Replace selected text by created component in editor

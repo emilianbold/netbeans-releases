@@ -42,7 +42,6 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
@@ -137,26 +136,26 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
     	String errorMessage = null;
 	WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
 	if (!Utilities.isJavaEE6(wizard) && !(JSFUtils.isJavaEE5((TemplateWizard) wizard) && JSFUtils.isJSF20(webModule))) {
-	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Not_JSF20");
+	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Not_JSF20");//NOI18N
 	}
 	if (component == null || component.getTargetName() == null || component.getTargetGroup() == null) {
 	    return false;
 	}
 
 	if (component.getTargetFolder() == null || !component.getTargetFolder().startsWith(RESOURCES_FOLDER)) {
-	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_resources_folder");
+	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_resources_folder");//NOI18N
 	} else if (component.getTargetFolder().equals(RESOURCES_FOLDER) || component.getTargetFolder().equals(RESOURCES_FOLDER + File.separatorChar)) {
-	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_component_folder");
+	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_component_folder");//NOI18N
 	}
 
 	String filename = component.getTargetName();
 	if ("".equals(filename) || INVALID_FILENAME_CHARACTERS.matcher(filename).find()) {
-	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Wrong_Filename");
+	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Wrong_Filename");//NOI18N
 	}
 
 	String folderName = component.getTargetFolder();
 	if (INVALID_FOLDERNAME_CHARACTERS.matcher(folderName).find()) {
-	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Wrong_Foldername");
+	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Wrong_Foldername");//NOI18N
 	}
 
 	if (webModule != null && webModule.getDocumentBase() != null) {
@@ -169,7 +168,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	}
 
 	//check the selection context
-	if (Boolean.TRUE.equals((Boolean) wizard.getProperty("incorrectActionContext"))) {
+	if (Boolean.TRUE.equals((Boolean) wizard.getProperty("incorrectActionContext"))) {//NOI18N
 	    //we can still finish the wizard
 	    wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(CompositeComponentVisualPanel.class, "MSG_Invalid_Selection"));
 	    return true;
@@ -178,7 +177,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	//current prefix in the panel
 	String prefix = component.getPrefix();
 	if(prefix.length() == 0) {
-	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "MSG_Library_Prefix_Empty");
+	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "MSG_Library_Prefix_Empty");//NOI18N
 	} else {
 	    //there's some prefix
 	    //check for used prefixes
@@ -190,7 +189,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 	    //another library
 	    if(!prefix.equals(declaredPrefixes.get(ccLibNamespace)) && declaredPrefixes.values().contains(prefix)) {
 		//the selected prefix is already in use, show warning, but let the user finish the wizard
-		wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(CompositeComponentVisualPanel.class, "MSG_Already_Used_Prefix", component.getPrefix()));
+		wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(CompositeComponentVisualPanel.class, "MSG_Already_Used_Prefix", component.getPrefix()));//NOI18N
 		return true;
 	    }
 	}
@@ -260,7 +259,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 		Templates.setTargetName(wizard, name);
 	    }
 	    wizard.putProperty("NewFileWizard_Title", null); // NOI18N
-	    wizard.putProperty("selectedPrefix", component.getPrefix());
+	    wizard.putProperty("selectedPrefix", component.getPrefix()); //NOI18N
 	}
     }
 

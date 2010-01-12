@@ -89,7 +89,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
     private String expectedExtension;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final ListCellRenderer CELL_RENDERER = new GroupCellRenderer();
-    private final Pattern FOLDER_NAME_PATTERN = Pattern.compile(".*/(.*)");
+    private final Pattern FOLDER_NAME_PATTERN = Pattern.compile(".*/(.*)");//NOI18N
     private boolean indirectModification, prefixLocked;
     private static final String COMPOSITE_LIBRARY_NS = "http://java.sun.com/jsf/composite"; //NOI18N
     
@@ -227,9 +227,9 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
 
     public String getCompositeComponentURI() {
 	String folder = getTargetFolder();
-	String resfslash = RESOURCES_FOLDER+"/";
+	String resfslash = RESOURCES_FOLDER+"/";//NOI18N
 	if(folder.startsWith(resfslash)) {
-	    return COMPOSITE_LIBRARY_NS + "/" + folder.substring(resfslash.length()); //copied from JsfUtils from web.jsf.editor module
+	    return COMPOSITE_LIBRARY_NS + "/" + folder.substring(resfslash.length()); //NOI18N //copied from JsfUtils from web.jsf.editor module
 	} else {
 	    return null; //messed, must start with resources/
 	}
@@ -468,6 +468,7 @@ public class CompositeComponentVisualPanel extends javax.swing.JPanel implements
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         add(prefixTextField, gridBagConstraints);
+        prefixTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CompositeComponentVisualPanel.class, "A11Y_Library_Prefix")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     
