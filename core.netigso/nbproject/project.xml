@@ -121,8 +121,8 @@ made subject to such option by the copyright holder.
                 <package>org.osgi.framework</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>felix.jar</runtime-relative-path>
-                <binary-origin>external/felix.jar</binary-origin>
+                <runtime-relative-path>felix-2.0.1.jar</runtime-relative-path>
+                <binary-origin>external/felix-2.0.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
