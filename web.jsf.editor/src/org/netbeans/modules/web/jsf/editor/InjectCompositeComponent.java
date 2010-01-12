@@ -40,9 +40,9 @@ package org.netbeans.modules.web.jsf.editor;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -83,6 +83,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -93,7 +94,7 @@ public class InjectCompositeComponent {
     private static final int HINT_PRIORITY = 60; //magic number
     private static final String TEMPLATES_FOLDER = "JSF";   //NOI18N
     private static final String TEMPLATE_NAME = "out.xhtml";  //NOI18N
-
+ 
     public static void inject(Document document, int from, int to) {
 	try {
 	    FileObject fileObject = NbEditorUtilities.getFileObject(document);
@@ -201,13 +202,14 @@ public class InjectCompositeComponent {
 	    //to the resources/xxx/ folder we need to wait until the files
 	    //get indexed and the library is created
 	    final String compositeLibURL = JsfUtils.getCompositeLibraryURL(compFolder);
-	    ParserManager.parseWhenScanFinished(Collections.singletonList(Source.create(document)), new UserTask() { //NOI18N
+	    Source documentSource = Source.create(document);
+	    ParserManager.parseWhenScanFinished(Collections.singletonList(documentSource), new UserTask() { //NOI18N
 
 		@Override
 		public void run(ResultIterator resultIterator) throws Exception {
 		    FaceletsLibrary lib = jsfs.getFaceletsLibraries().get(compositeLibURL);
 		    if (lib != null) {
-			if (null == JsfUtils.importLibrary(document, lib, "ez")) { //XXX: fix the damned static prefix !!!
+			if (!JsfUtils.importLibrary(document, lib, "ez")) { //XXX: fix the damned static prefix !!!
 			    logger.warning("Cannot import composite components library " + compositeLibURL); //NOI18N
 			}
 		    } else {
@@ -221,23 +223,28 @@ public class InjectCompositeComponent {
 	    DataObject templateInstance = result.iterator().next();
 	    EditorCookie ec = templateInstance.getCookie(EditorCookie.class);
 	    final Document templateInstanceDoc = ec.openDocument();
-	    Source templateInstanceSource = Source.create(templateInstanceDoc);
-	    ParserManager.parseWhenScanFinished(Collections.singletonList(templateInstanceSource), new UserTask() { //NOI18N
+	    ParserManager.parseWhenScanFinished(Collections.singletonList(documentSource), new UserTask() { //NOI18N
 
 		@Override
 		public void run(ResultIterator resultIterator) throws Exception {
+		    final Map<FaceletsLibrary, String> importsMap = new LinkedHashMap<FaceletsLibrary, String>();
 		    for (String uri : context.getDeclarations().keySet()) {
 			String prefix = context.getDeclarations().get(uri);
 			FaceletsLibrary lib = jsfs.getFaceletsLibraries().get(uri);
 			if (lib != null) {
-			    if (null == JsfUtils.importLibrary(templateInstanceDoc, lib, prefix)) {
-				logger.warning("Cannot import library " + uri); //NOI18N
-			    }
-			} else {
-			    //error
-			    logger.warning("Library for uri " + compositeLibURL + " doesn't seem to exist."); //NOI18N
+			    importsMap.put(lib, prefix);
 			}
 		    }
+		    //do the import under atomic lock in different thread,
+		    RequestProcessor.getDefault().post(new Runnable() {
+			public void run() {
+			    ((BaseDocument)templateInstanceDoc).runAtomic(new Runnable() {
+				public void run() {
+				    JsfUtils.importLibrary(templateInstanceDoc, importsMap);
+				}
+			    });
+			}
+		    });
 		}
 	    });
 	    ec.saveDocument(); //save the template instance after imports
