@@ -50,12 +50,16 @@ import org.netbeans.modules.kenai.UserData;
 public final class KenaiProjectMember {
 
     private final KenaiUser user;
-    private final Role role;
+    private Role role;
     KenaiProjectMember(Kenai kenai, UserData userData) {
         if ("registered".equals(userData.role)) {
             this.role = Role.OBSERVER;
         } else {
-            this.role= Role.valueOf(userData.role.toUpperCase());
+            try {
+                this.role = Role.valueOf(userData.role.toUpperCase());
+            } catch (IllegalArgumentException iae) {
+                this.role = Role.UNKNOWN;
+            }
         }
         this.user = KenaiUser.get(kenai, userData);
     }
@@ -92,6 +96,8 @@ public final class KenaiProjectMember {
         ADMIN,
         DEVELOPER,
         CONTENT,
-        OBSERVER
+        OBSERVER,
+        TESTER,
+        UNKNOWN
     }
 }
