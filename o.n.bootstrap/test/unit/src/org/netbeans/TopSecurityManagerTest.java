@@ -39,6 +39,9 @@
 
 package org.netbeans;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.logging.LogManager;
 import junit.framework.TestCase;
 
 /**
@@ -73,6 +76,39 @@ public class TopSecurityManagerTest extends TestCase {
         }
         fail("Associating own security manager when one is already installed shall not be allowed");
     }
+
+    public void testLoggerCannotBeReset() {
+        boolean asserts = false;
+        assert asserts = true;
+        if (asserts) {
+            TopSecurityManager.install();
+            SecurityException ex = null;
+            try {
+                LogManager.getLogManager().reset();
+            } catch (SecurityException e) {
+                ex = e;
+            }
+            assertNotNull ("LogManager.reset() should throw a SecurityException",
+                    ex);
+        }
+    }
+
+    public void testLoggerCannotBeReconfigured() throws IOException {
+        boolean asserts = false;
+        assert asserts = true;
+        if (asserts) {
+            TopSecurityManager.install();
+            SecurityException ex = null;
+            try {
+                LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(new byte[256]));
+            } catch (SecurityException e) {
+                ex = e;
+            }
+            assertNotNull ("LogManager.readConfiguration() should throw a SecurityException",
+                    ex);
+        }
+    }
+
 
     private static final class SecMan extends SecurityManager {
     }
