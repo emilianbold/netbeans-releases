@@ -23,6 +23,7 @@ if [ "$action" = "build" ]; then
     testmodule core.execution
     testmodule core.ide
     testmodule core.kit
+    testmodule core.netigso
     testmodule core.multiview
     testmodule core.output2
     testmodule core.startup

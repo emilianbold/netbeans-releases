@@ -73,6 +73,7 @@ import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleInstaller;
 import org.netbeans.ModuleManager;
+import org.netbeans.ProxyClassLoader;
 import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
@@ -214,7 +215,8 @@ final class NbInstaller extends ModuleInstaller {
         // For layer & help set, validate only that the base-locale resource
         // exists, not its contents or anything.
         String layerResource = m.getManifest().getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
-        if (layerResource != null) {
+        String osgi = m.getManifest().getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
+        if (layerResource != null && osgi == null) {
             URL layer = m.getClassLoader().getResource(layerResource);
             if (layer == null) throw new InvalidException(m, "Layer not found: " + layerResource); // NOI18N
         }
@@ -559,7 +561,12 @@ final class NbInstaller extends ModuleInstaller {
                 boolean foundSomething = false;
                 for (String suffix : NbCollections.iterable(NbBundle.getLocalizingSuffixes())) {
                     String resource = base + suffix + ext;
-                    URL u = cl.getResource(resource);
+                    URL u;
+                    if (cl instanceof ProxyClassLoader) {
+                        u = ((ProxyClassLoader)cl).findResource(resource);
+                    } else {
+                        u = cl.getResource(resource);
+                    }
                     if (u != null) {
                         theseurls.add(u);
                         foundSomething = true;

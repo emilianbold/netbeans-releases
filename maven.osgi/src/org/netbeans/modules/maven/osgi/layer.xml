@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <!-- templates -->
+    <folder name="Templates">
+
+        <folder name="OSGI">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.osgi.Bundle"/>
+            <attr name="position" intvalue="723"/>
+
+            <file name="Activator.java" url="templates/activator.java.template">
+                <attr name="position" intvalue="100"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="simple" boolvalue="false"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.osgi.Bundle"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.maven.osgi.ActivatorIterator" />
+                <!--attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/templates/EmptyJUnitTest.html"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.png"/-->
+                <attr name="templateCategory" stringvalue="osgi"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>
