@@ -60,9 +60,11 @@ public class OSGIRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
             "Templates/Classes/Package", // NOI18N
             "Templates/Classes/Interface.java", // NOI18N
             //"Templates/GUIForms/JPanel.java", // NOI18N
+            "Templates/OSGI/Activator.java", // NOI18N
             "Templates/JUnit/SimpleJUnitTest.java", // NOI18N
         };
         private static final String[] OSGI_TYPES = new String[] {
+            "osgi",                 // NOI18N
             "java-classes",         // NOI18N
             "java-main-class",      // NOI18N
             "java-forms",           // NOI18N
@@ -70,8 +72,7 @@ public class OSGIRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
             "oasis-XML-catalogs",   // NOI18N
             "XML",                  // NOI18N
             "junit",                // NOI18N                    
-            "simple-files",         // NOI18N
-            "osgi-specific"         // NOI18N
+            "simple-files"         // NOI18N
         };
         
     
