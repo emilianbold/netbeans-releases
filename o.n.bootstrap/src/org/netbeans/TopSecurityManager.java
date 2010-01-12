@@ -414,12 +414,10 @@ public class TopSecurityManager extends SecurityManager {
                 //a logger - see JDK bug 1694855
                 if ("java.util.logging.LogManager".equals(e.getClassName()) && "reset".equals(e.getMethodName())) { //NOI18N
                     SecurityException se = new SecurityException("Illegal attempt to reset system logger"); //NOI18N
-                    se.printStackTrace();
                     throw se;
                 }
                 if ("java.util.logging.LogManager".equals(e.getClassName()) && "readConfiguration".equals(e.getMethodName())) { //NOI18N
                     SecurityException se = new SecurityException("Illegal attempt to replace system logger configuration"); //NOI18N
-                    se.printStackTrace();
                     throw se;
                 }
             }
