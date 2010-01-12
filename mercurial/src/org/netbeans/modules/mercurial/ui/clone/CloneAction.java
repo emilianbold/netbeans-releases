@@ -214,10 +214,9 @@ public class CloneAction extends ContextAction {
                             openProject(cloneProjFile, projectManager, hg);
                         } else if (scanForProjects) {
                             CloneCompleted cc = new CloneCompleted(target);
-                            if (isCanceled()) {
-                                return;
+                            if (!isCanceled()) {
+                                cc.scanForProjects(this);
                             }
-                            cc.scanForProjects(this);
                         }
                     }
                     HgConfigFiles hgConfigFiles = new HgConfigFiles(target);
