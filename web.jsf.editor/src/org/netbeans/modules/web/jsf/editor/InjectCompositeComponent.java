@@ -40,11 +40,13 @@ package org.netbeans.modules.web.jsf.editor;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -65,6 +67,8 @@ import org.netbeans.modules.csl.api.Rule.SelectionRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.html.editor.api.HtmlKit;
+import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -164,8 +168,26 @@ public class InjectCompositeComponent {
 	    templateWizard.putProperty("incorrectActionContext", true); //NOI18N
 	}
 
+	//get list of used declarations, which needs to be passed to the wizard
+	Source source = Source.create(document);
+	final AtomicReference<Map<String, String>> declaredPrefixes = new AtomicReference<Map<String, String>>();
+	ParserManager.parse(Collections.singleton(source), new UserTask() {
+	    @Override
+	    public void run(ResultIterator resultIterator) throws Exception {
+		ResultIterator ri = Utils.getResultIterator(resultIterator, HtmlKit.HTML_MIME_TYPE);
+		if (ri != null) {
+		    HtmlParserResult result = (HtmlParserResult) ri.getParserResult();
+		    if(result != null) {
+			declaredPrefixes.set(result.getNamespaces());
+		    }
+		}
+	    }
+	});
+	templateWizard.putProperty("declaredPrefixes", declaredPrefixes.get()); //NOI18N
+
 	templateDO = DataObject.find(template);
 	Set<DataObject> result = templateWizard.instantiate(templateDO, targetFolder);
+	final String prefix = (String)templateWizard.getProperty("selectedPrefix"); //NOI18N
 	if (result != null && result.size() > 0) {
 	    final String compName = result.iterator().next().getName();
 	    //TODO XXX Replace selected text by created component in editor
@@ -179,7 +201,7 @@ public class InjectCompositeComponent {
 		    public void run() {
 			try {
 			    doc.remove(startOffset, endOffset - startOffset);
-			    String text = "<ez:" + compName + "/>"; //NOI18N
+			    String text = "<" + prefix + ":" + compName + "/>"; //NOI18N
 			    doc.insertString(startOffset, text, null);
 			    indent.reindent(startOffset, startOffset + text.length());
 			} catch (BadLocationException ex) {
@@ -209,7 +231,7 @@ public class InjectCompositeComponent {
 		public void run(ResultIterator resultIterator) throws Exception {
 		    FaceletsLibrary lib = jsfs.getFaceletsLibraries().get(compositeLibURL);
 		    if (lib != null) {
-			if (!JsfUtils.importLibrary(document, lib, "ez")) { //XXX: fix the damned static prefix !!!
+			if (!JsfUtils.importLibrary(document, lib, prefix)) { //XXX: fix the damned static prefix !!!
 			    logger.warning("Cannot import composite components library " + compositeLibURL); //NOI18N
 			}
 		    } else {
