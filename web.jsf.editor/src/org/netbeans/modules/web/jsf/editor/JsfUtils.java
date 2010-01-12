@@ -48,6 +48,7 @@ import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.HtmlKit;
@@ -223,7 +224,7 @@ public class JsfUtils {
         assert doc != null;
 
         int originalFrom = 0;
-        int originalTo = 0;
+	int originalTo = doc.getLength();
 
         //try to find nearest original offset if the embedded offsets cannot be directly recomputed
         //from - try backward
@@ -234,9 +235,18 @@ public class JsfUtils {
                 break;
             }
         }
+	
+	try {
+	    //some heuristic - use end of line where the originalFrom lies 
+	    //in case if we cannot match the end offset at all
+	    CharSequence sourceText = doc.getText(0, doc.getLength());
+	    originalTo = GsfUtilities.getRowEnd(sourceText, originalFrom);
+	} catch (BadLocationException ex) {
+	    //ignore, end of the document will be used as end offset
+	}
 
         //to - try forward
-        for (int i = embeddedOffsetTo; i < snapshot.getText().length(); i++) {
+        for (int i = embeddedOffsetTo; i <= snapshot.getText().length(); i++) {
             int originalOffset = snapshot.getOriginalOffset(i);
             if (originalOffset != -1) {
                 originalTo = originalOffset;
