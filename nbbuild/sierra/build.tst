@@ -47,7 +47,7 @@
     
     <!-- unit test -->
     <target name="unit-test">
-        <!-- ant target="test" dir="${home}/print"/-->
+        <ant target="test" dir="${home}/print"/>
         <ant target="test" dir="${home}/xml.search"/>
         <ant target="test" dir="${home}/bpel.model"/>
     </target>

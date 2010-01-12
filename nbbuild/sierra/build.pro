@@ -105,11 +105,9 @@
     <property name="home" value="../.."/>
     <property name="cache" value="${home}/../cache"/>
     <property name="sierra.build"  value="main"/>
-    <!--property name="sierra.build"  value="sierra"/-->
     <property name="netbeans.zip" value="netbeans-6.8.zip"/>
     <property name="repository" value="http://hg.netbeans.org/main"/>
     <property name="sierra.user"  value=".netbeans/dev"/>
-    <!--property name="sierra.user"  value=".netbeans/${sierra.build}"/ todo a -->
     <property name="jbi" location="${cache}/test/${test.cvs.path}"/>
     <property name="bpel.samples" value="${home}/bpel.samples/resources"/>
     <property name="xslt.samples" value="${home}/xslt.samples/resources"/>
