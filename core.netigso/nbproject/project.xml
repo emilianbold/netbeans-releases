@@ -105,6 +105,10 @@ made subject to such option by the copyright holder.
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>
                         <compile-dependency/>
@@ -118,11 +122,11 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <public-packages>
-                <package>org.osgi.framework</package>
+                <subpackages>org.osgi</subpackages>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>felix.jar</runtime-relative-path>
-                <binary-origin>external/felix.jar</binary-origin>
+                <runtime-relative-path>felix-2.0.1.jar</runtime-relative-path>
+                <binary-origin>external/felix-2.0.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
