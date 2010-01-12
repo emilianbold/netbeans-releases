@@ -57,7 +57,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -687,24 +690,41 @@ public class EditorContextImpl extends EditorContext {
     ) {
         final DataObject dataObject = getDataObject (url);
         if (dataObject == null) return -1;
-        return getFieldLineNumber(dataObject.getPrimaryFile(), className, fieldName);
+        Future<Integer> fi = getFieldLineNumber(dataObject.getPrimaryFile(), className, fieldName);
+        if (fi == null) {
+            return -1;
+        }
+        try {
+            return fi.get();
+        } catch (InterruptedException ex) {
+            return -1;
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+            return -1;
+        }
     }
 
-    static int getFieldLineNumber (
+    /**
+     * @param fo
+     * @param className
+     * @param fieldName
+     * @return <code>null</code> or Future with the line number
+     */
+    static Future<Integer> getFieldLineNumber (
         FileObject fo,
         final String className,
         final String fieldName
     ) {
         JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) return -1;
+        if (js == null) return null;
         final int[] result = new int[] {-1};
         final StyledDocument doc = findDocument(fo);
         if (doc == null) {
-            return -1;
+            return null;
         }
 
         try {
-            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+            final Future f = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, doc);
@@ -757,37 +777,38 @@ public class EditorContextImpl extends EditorContext {
                     }
                 }
             });
+            if (!f.isDone()) {
+                return new Future<Integer>() {
+
+                    public boolean cancel(boolean mayInterruptIfRunning) {
+                        return f.cancel(mayInterruptIfRunning);
+                    }
+
+                    public boolean isCancelled() {
+                        return f.isCancelled();
+                    }
+
+                    public boolean isDone() {
+                        return f.isDone();
+                    }
+
+                    public Integer get() throws InterruptedException, ExecutionException {
+                        f.get();
+                        return result[0];
+                    }
+
+                    public Integer get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                        f.get(timeout, unit);
+                        return result[0];
+                    }
+
+                };
+            }
         } catch (ParseException pex) {
             ErrorManager.getDefault().notify(pex);
-            return -1;
+            return null;
         }
-        return result[0];
-        /*
-        CompilationUnitTree cutree = ci.getTree();
-        if (cutree == null) return -1;
-        List typeDecls = cutree.getTypeDecls();
-        ClassTree ctree = findClassTree(typeDecls, className);
-        */
-        /*
-        Elements elms = ci.getElements();
-        SourceCookie.Editor sc = (SourceCookie.Editor) dataObject.getCookie
-            (SourceCookie.Editor.class);
-        if (sc == null) return -1;
-        sc.open ();
-        StyledDocument sd = sc.getDocument ();
-        if (sd == null) return -1;
-        ClassElement[] classes = sc.getSource ().getAllClasses ();
-        FieldElement fe = null;
-        int i, k = classes.length;
-        for (i = 0; i < k; i++)
-            if (classes [i].getName ().getFullName ().equals (className)) {
-                fe = classes [i].getField (Identifier.create (fieldName));
-                break;
-            }
-        if (fe == null) return -1;
-        int position = sc.sourceToText (fe).getStartOffset ();
-        return NbDocument.findLineNumber (sd, position) + 1;
-         */
+        return new DoneFuture<Integer>(result[0]);
     }
 
     /**
@@ -811,7 +832,19 @@ public class EditorContextImpl extends EditorContext {
     ) {
         final DataObject dataObject = getDataObject (url);
         if (dataObject == null) return -1;
-        int[] lns = getMethodLineNumbers(dataObject.getPrimaryFile(), className, null, methodName, methodSignature);
+        Future<int[]> flns = getMethodLineNumbers(dataObject.getPrimaryFile(), className, null, methodName, methodSignature);
+        if (flns == null) {
+            return -1;
+        }
+        int[] lns;
+        try {
+            lns = flns.get();
+        } catch (InterruptedException ex) {
+            return -1;
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+            return -1;
+        }
         if (lns.length == 0) {
             return -1;
         } else {
@@ -819,7 +852,15 @@ public class EditorContextImpl extends EditorContext {
         }
     }
 
-    static int[] getMethodLineNumbers(
+    /**
+     * @param fo
+     * @param className
+     * @param classExcludeNames
+     * @param methodName
+     * @param methodSignature
+     * @return <code>null</code> or Future with line numbers
+     */
+    static Future<int[]> getMethodLineNumbers(
         FileObject fo,
         final String className,
         final String[] classExcludeNames,
@@ -827,12 +868,12 @@ public class EditorContextImpl extends EditorContext {
         final String methodSignature
     ) {
         JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) return new int[] {};
+        if (js == null) return null;
         final List<Integer> result = new ArrayList<Integer>();
         final StyledDocument doc = findDocument(fo);
-        if (doc == null) return new int[] {};
+        if (doc == null) return null;
         try {
-            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+            final Future f = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(doc)), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, doc);
@@ -909,15 +950,50 @@ public class EditorContextImpl extends EditorContext {
                     }
                 }
             });
+            if (!f.isDone()) {
+                return new Future<int[]>() {
+
+                    public boolean cancel(boolean mayInterruptIfRunning) {
+                        return f.cancel(mayInterruptIfRunning);
+                    }
+
+                    public boolean isCancelled() {
+                        return f.isCancelled();
+                    }
+
+                    public boolean isDone() {
+                        return f.isDone();
+                    }
+
+                    public int[] get() throws InterruptedException, ExecutionException {
+                        f.get();
+                        return getResultArray();
+                    }
+
+                    public int[] get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                        f.get(timeout, unit);
+                        return getResultArray();
+                    }
+
+                    private int[] getResultArray() {
+                        final int[] resultArray = new int[result.size()];
+                        for (int i = 0; i < resultArray.length; i++) {
+                            resultArray[i] = result.get(i).intValue();
+                        }
+                        return resultArray;
+                    }
+
+                };
+            }
         } catch (ParseException pex) {
             ErrorManager.getDefault().notify(pex);
-            return new int[] {};
+            return null;
         }
         int[] resultArray = new int[result.size()];
         for (int i = 0; i < resultArray.length; i++) {
             resultArray[i] = result.get(i).intValue();
         }
-        return resultArray;
+        return new DoneFuture<int[]>(resultArray);
     }
 
     private static boolean egualMethodSignatures(String s1, String s2) {
@@ -2076,6 +2152,29 @@ public class EditorContextImpl extends EditorContext {
             assignNextOperations(methodTree, cu, ci, bytecodeProvider, expTrees, info, nodeOperations);
         }
         return ops;
+    }
+
+
+    // Support classes:
+
+    private static final class DoneFuture<T> implements Future<T> {
+
+        private final T result;
+
+        public DoneFuture(T result) {
+            this.result = result;
+        }
+
+        public boolean cancel(boolean mayInterruptIfRunning) { return false; }
+        public boolean isCancelled() { return false; }
+        public boolean isDone() { return true; }
+
+        public T get() throws InterruptedException, ExecutionException {
+            return result;
+        }
+        public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return result;
+        }
     }
 
     private class EditorContextDispatchListener extends Object implements PropertyChangeListener {
