@@ -42,6 +42,8 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
@@ -132,25 +134,16 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 
     public boolean isValid() {
 
-	String errorMessage = null;
+    	String errorMessage = null;
 	WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
 	if (!Utilities.isJavaEE6(wizard) && !(JSFUtils.isJavaEE5((TemplateWizard) wizard) && JSFUtils.isJSF20(webModule))) {
 	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_Not_JSF20");
 	}
-	boolean ok = (component != null && component.getTargetName() != null && component.getTargetGroup() != null);
-
-	if (!ok) {
+	if (component == null || component.getTargetName() == null || component.getTargetGroup() == null) {
 	    return false;
 	}
 
-	//check the selection context
-	if (Boolean.TRUE.equals((Boolean) wizard.getProperty("incorrectActionContext"))) {
-	    wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(CompositeComponentVisualPanel.class, "MSG_Invalid_Selection"));
-	    return true; //we can still finish the wizard
-	}
-
-
-	if (component == null || component.getTargetFolder() == null || !component.getTargetFolder().startsWith(RESOURCES_FOLDER)) {
+	if (component.getTargetFolder() == null || !component.getTargetFolder().startsWith(RESOURCES_FOLDER)) {
 	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_resources_folder");
 	} else if (component.getTargetFolder().equals(RESOURCES_FOLDER) || component.getTargetFolder().equals(RESOURCES_FOLDER + File.separatorChar)) {
 	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "ERR_No_component_folder");
@@ -174,14 +167,37 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 		errorMessage = filename + expectedExtension + " already exist"; //NOI18N
 	    }
 	}
-	wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
 
+	//check the selection context
+	if (Boolean.TRUE.equals((Boolean) wizard.getProperty("incorrectActionContext"))) {
+	    //we can still finish the wizard
+	    wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(CompositeComponentVisualPanel.class, "MSG_Invalid_Selection"));
+	    return true;
+	}
+
+	//current prefix in the panel
+	String prefix = component.getPrefix();
+	if(prefix.length() == 0) {
+	    errorMessage = NbBundle.getMessage(CompositeComponentWizardPanel.class, "MSG_Library_Prefix_Empty");
+	} else {
+	    //there's some prefix
+	    //check for used prefixes
+	    //get declared libraries map //namespace2prefix map
+	    Map<String, String> declaredPrefixes = (Map<String, String>)wizard.getProperty("declaredPrefixes");
+	    //compute namespace of the library according to the folder
+	    String ccLibNamespace = component.getCompositeComponentURI();
+	    //warning if the current library namespace is not already declared, but the prefix is used for
+	    //another library
+	    if(!prefix.equals(declaredPrefixes.get(ccLibNamespace)) && declaredPrefixes.values().contains(prefix)) {
+		//the selected prefix is already in use, show warning, but let the user finish the wizard
+		wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(CompositeComponentVisualPanel.class, "MSG_Already_Used_Prefix", component.getPrefix()));
+		return true;
+	    }
+	}
+	
+	wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
+	
 	return errorMessage == null;
-	// If it depends on some condition (form filled out...), then:
-	// return someCondition();
-	// and when this condition changes (last form field filled in...) then:
-	// fireChangeEvent();
-	// and uncomment the complicated stuff below.
     }
 
     public void addChangeListener(ChangeListener l) {
@@ -244,6 +260,7 @@ public class CompositeComponentWizardPanel implements WizardDescriptor.Panel, Ch
 		Templates.setTargetName(wizard, name);
 	    }
 	    wizard.putProperty("NewFileWizard_Title", null); // NOI18N
+	    wizard.putProperty("selectedPrefix", component.getPrefix());
 	}
     }
 
