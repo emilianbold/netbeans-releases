@@ -50,6 +50,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.Icon;
@@ -765,7 +767,18 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
             ProjectManager.getDefault().saveProject(project);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Set<Entry<Thread, StackTraceElement[]>> entrySet = Thread.getAllStackTraces().entrySet();
+            ex.printStackTrace();
+            System.err.println("----- Start thread dump on catching IOException-----"); // NOI18N
+            for (Map.Entry<Thread, StackTraceElement[]> entry : entrySet) {
+                System.err.println(entry.getKey().getName());
+                for (StackTraceElement element : entry.getValue()) {
+                    System.err.println("\tat " + element.toString()); // NOI18N
+                }
+                System.err.println();
+            }
+            System.err.println("-----End thread dump on catching IOException-----"); // NOI18N
+            //ErrorManager.getDefault().notify(ex);
         }
     }
 
