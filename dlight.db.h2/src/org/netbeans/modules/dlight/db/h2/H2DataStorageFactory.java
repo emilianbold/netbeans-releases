@@ -42,7 +42,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
+import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory.Mode;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorageFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
@@ -68,6 +70,7 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
         return supportedStorageTypes;
     }
 
+    @Override
     public H2DataStorage createStorage() {
         try {
             return new H2DataStorage();
@@ -76,4 +79,16 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
             return null;
         }
     }
-}
+
+    public H2DataStorage openStorage(String uniqueKey) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getUniqueKey(H2DataStorage storage) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public H2DataStorage openStorage(String uniqueKey, Mode mode) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    }

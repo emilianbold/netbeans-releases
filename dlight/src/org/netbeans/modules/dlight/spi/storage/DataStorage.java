@@ -74,8 +74,7 @@ public interface DataStorage {
     boolean hasData(DataTableMetadata data);
 
     /**
-     * Adds rows <code>data</code> to the table with name <code>tableName</code> of this
-     * soprage.
+     * Adds rows <code>data</code> to the table with name <code>tableName</code> of this  storage.
      * @param tableName table name to add data into
      * @param data data to add
      */
@@ -98,7 +97,7 @@ public interface DataStorage {
 
     /**
      * Creates tables: invoked to create {@link org.netbeans.modules.dlight.api.storage.DataTableMetadata} needed
-     * @param tableMetadatas tables decsription to create in the storage
+     * @param tableMetadatas tables description to create in the storage
      */
     void createTables(List<DataTableMetadata> tableMetadatas);
 
