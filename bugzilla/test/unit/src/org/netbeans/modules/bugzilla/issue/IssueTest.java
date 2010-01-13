@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -51,7 +50,6 @@ import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
@@ -60,8 +58,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Comment;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.IssueField;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
@@ -384,7 +380,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         resetStatusValues(issue);
 
         BugzillaRepository repository = getRepository();
-        BugzillaRepositoryConnector brc = new BugzillaRepositoryConnector();
+        BugzillaRepositoryConnector brc = new BugzillaRepositoryConnector(new File(getWorkDir().getAbsolutePath(), "bugzillaconfiguration"));
         TaskData data = brc.getTaskData(repository.getTaskRepository(), issue.getID(), new NullProgressMonitor());
         BugzillaIssue modIssue = new BugzillaIssue(data, repository);
 
