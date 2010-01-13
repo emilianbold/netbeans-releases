@@ -38,54 +38,53 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
-import javax.swing.Action;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+package org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions;
+
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.WLItemNode;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
- * A node that represents a concrete target for a particuler server instance.
- * As it gets filtered and does not appear in the registry we do not implement
- * anything special.
  *
- * @author Kirill Sorokin
+ * @author Petr Hejl
  */
-public class WLTargetNode extends AbstractNode {
+public class RefreshModulesAction extends NodeAction {
 
-    /**
-     * Creates a new instance of the WSTargetNode.
-     *
-     * @param lookup a lookup object that contains the objects required for 
-     *      node's customization, such as the deployment manager
-     */
-    public WLTargetNode(Lookup lookup) {
-        super(new Children.Array());
-        getChildren().add(new Node[] {new WLItemNode(
-                new WLApplicationsChildren(lookup), NbBundle.getMessage(WLTargetNode.class, "LBL_Apps"))});
+    public RefreshModulesAction() {
     }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public int hashCode() {
-        return super.hashCode();
+
+    protected boolean enable(org.openide.nodes.Node[] nodes) {
+        RefreshModulesCookie cookie;
+        for (int i = 0; i < nodes.length; i++) {
+            cookie = nodes[i].getCookie(RefreshModulesCookie.class);
+            if (cookie == null) {
+                return false;
+            }
+        }
+
+        return true;
     }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public boolean equals(Object obj) {
-        return super.equals(obj);
+
+    public String getName() {
+        return NbBundle.getMessage(WLItemNode.class, "LBL_RefreshModulesAction"); // NOI18N
     }
-    
-    @Override
-    public Action[] getActions(boolean b) {
-        return new Action[] {};
+
+    protected void performAction(org.openide.nodes.Node[] nodes) {
+        for (int i = 0; i < nodes.length; i++) {
+            RefreshModulesCookie cookie = nodes[i].getCookie(RefreshModulesCookie.class);
+            if (cookie != null) {
+                cookie.refresh();
+            }
+        }
+    }
+
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 }

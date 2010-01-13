@@ -38,54 +38,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
-import javax.swing.Action;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+package org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions;
+
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
- * A node that represents a concrete target for a particuler server instance.
- * As it gets filtered and does not appear in the registry we do not implement
- * anything special.
  *
- * @author Kirill Sorokin
+ * @author Michal Mocnak
  */
-public class WLTargetNode extends AbstractNode {
+public interface RefreshModulesCookie extends Node.Cookie {
 
-    /**
-     * Creates a new instance of the WSTargetNode.
-     *
-     * @param lookup a lookup object that contains the objects required for 
-     *      node's customization, such as the deployment manager
-     */
-    public WLTargetNode(Lookup lookup) {
-        super(new Children.Array());
-        getChildren().add(new Node[] {new WLItemNode(
-                new WLApplicationsChildren(lookup), NbBundle.getMessage(WLTargetNode.class, "LBL_Apps"))});
-    }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public int hashCode() {
-        return super.hashCode();
-    }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-    
-    @Override
-    public Action[] getActions(boolean b) {
-        return new Action[] {};
-    }
+    void refresh();
 }

@@ -38,9 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
-import javax.swing.Action;
+import javax.enterprise.deploy.shared.ModuleType;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -48,44 +49,59 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- * A node that represents a concrete target for a particuler server instance.
- * As it gets filtered and does not appear in the registry we do not implement
- * anything special.
+ * It describes children nodes of the Applications node
  *
- * @author Kirill Sorokin
+ * @author Michal Mocnak
+ * @author Petr Hejl
  */
-public class WLTargetNode extends AbstractNode {
+public class WLApplicationsChildren extends Children.Keys {
+    
+    WLApplicationsChildren(Lookup lookup) {
+        setKeys(new Object[] {createEarApplicationsNode(lookup),
+                                createEjbModulesNode(lookup),
+                                createWebApplicationsNode(lookup)});
+    }
+    
+    protected void addNotify() {
+    }
+    
+    protected void removeNotify() {
+    }
+    
+    protected org.openide.nodes.Node[] createNodes(Object key) {
+        if (key instanceof AbstractNode){
+            return new Node[]{(AbstractNode)key};
+        }
+        
+        return null;
+    }
+    
+    /*
+     * Creates an EAR Applications parent node
+     */
+    public static WLItemNode createEarApplicationsNode(Lookup lookup) {
+        return new  WLItemNode(
+                new WLModuleChildFactory(lookup, ModuleType.EAR),
+                NbBundle.getMessage(WLApplicationsChildren.class, "LBL_EarApps"), ModuleType.EAR);
+    }
+    
+    /*
+     * Creates an Web Applications parent node
+     */
+    public static WLItemNode createWebApplicationsNode(Lookup lookup) {
+        return new WLItemNode(
+                new WLModuleChildFactory(lookup, ModuleType.WAR),
+                NbBundle.getMessage(WLApplicationsChildren.class, "LBL_WebApps"), ModuleType.WAR);
+    }
+    
+    /*
+     * Creates an EJB Modules parent node
+     */
+    public static WLItemNode createEjbModulesNode(Lookup lookup) {
+        return new WLItemNode(
+                new WLModuleChildFactory(lookup, ModuleType.EJB),
+                NbBundle.getMessage(WLApplicationsChildren.class, "LBL_EjbModules"), ModuleType.EJB);
+    }
 
-    /**
-     * Creates a new instance of the WSTargetNode.
-     *
-     * @param lookup a lookup object that contains the objects required for 
-     *      node's customization, such as the deployment manager
-     */
-    public WLTargetNode(Lookup lookup) {
-        super(new Children.Array());
-        getChildren().add(new Node[] {new WLItemNode(
-                new WLApplicationsChildren(lookup), NbBundle.getMessage(WLTargetNode.class, "LBL_Apps"))});
-    }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public int hashCode() {
-        return super.hashCode();
-    }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-    
-    @Override
-    public Action[] getActions(boolean b) {
-        return new Action[] {};
-    }
+
 }

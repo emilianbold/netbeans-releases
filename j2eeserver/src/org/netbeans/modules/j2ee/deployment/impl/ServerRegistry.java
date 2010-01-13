@@ -371,6 +371,7 @@ public final class ServerRegistry implements java.io.Serializable {
             Logger.getLogger("global").log(Level.SEVERE, NbBundle.getMessage(ServerRegistry.class, "MSG_NullUrl"));
             return;
         }
+
         FileObject dir = FileUtil.getConfigFile(DIR_INSTALLED_SERVERS);
         FileObject instanceFOs[] = dir.getChildren();
         FileObject instanceFO = null;
