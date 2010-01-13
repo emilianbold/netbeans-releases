@@ -402,6 +402,13 @@ public class MercurialInterceptor extends VCSInterceptor {
          */
         private void refreshHgFolderTimestamp(File hgFolder, long timestamp) {
             boolean exists = timestamp > 0 || hgFolder.exists();
+            synchronized (hgFolders) {
+                Long ts;
+                if (exists && (ts = hgFolders.get(hgFolder)) != null && ts >= timestamp) {
+                    // do not enter the filesystem module unless really need to
+                    return;
+                }
+            }
             FileObject hgFolderFO = exists ? FileUtil.toFileObject(hgFolder) : null;
             synchronized (hgFolders) {
                 hgFolders.remove(hgFolder);
