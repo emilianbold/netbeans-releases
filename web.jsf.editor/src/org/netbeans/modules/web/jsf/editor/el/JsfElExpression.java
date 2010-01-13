@@ -337,10 +337,9 @@ public class JsfElExpression extends ELExpression {
             }
         }
 	//web beans
-
 	for (Element bean : WebBeansModelSupport.getNamedBeans(webBeansModel)){
 	    String beanName = bean.getSimpleName().toString();
-            if (beanName.equals(beanName)){
+            if (name.equals(beanName)){
                 name = bean.asType().toString(); //bean class
                 break;
             }
