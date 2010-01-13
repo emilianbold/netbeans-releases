@@ -51,6 +51,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -824,6 +825,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void storeFieldValue(BugzillaIssue.IssueField field, JTextComponent textComponent) {
         storeFieldValue(field, textComponent.getText());
+    }
+
+    private void storeFieldValue(BugzillaIssue.IssueField field, JList list) {
+        List<String> values = new ArrayList<String>();
+        for (Object value : list.getSelectedValues()) {
+            values.add(value.toString());
+        }
+        issue.setFieldValues(field, values);
     }
 
     private void storeFieldValue(BugzillaIssue.IssueField field, String value) {
@@ -1992,6 +2001,18 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         storeFieldValue(BugzillaIssue.IssueField.BLOCKS, blocksField);
         if (!isNew && !"".equals(addCommentArea.getText().trim())) { // NOI18N
             issue.addComment(addCommentArea.getText());
+        }
+        // Store custom fields
+        for (CustomFieldInfo field : customFields) {
+            if (field.comp instanceof JTextComponent) {
+                storeFieldValue(field.field, (JTextComponent)field.comp);
+            } else if (field.comp instanceof JComboBox) {
+                storeFieldValue(field.field, (JComboBox)field.comp);
+            } else if (field.comp instanceof JList) {
+                storeFieldValue(field.field, (JList)field.comp);
+            } else {
+                Bugzilla.LOG.log(Level.INFO, "Custom field component {0} is not supported!", field.comp); // NOI18N
+            }
         }
         String submitMessage;
         if (isNew) {
