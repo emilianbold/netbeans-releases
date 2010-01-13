@@ -196,6 +196,8 @@ public class Schema2BeansProcessor extends AbstractProcessor {
         if (u.getScheme() == null) {
             u = new URI("file", u.getPath(), u.getFragment());
         }
+        processingEnv.getMessager().printMessage(Kind.NOTE, "parsing: " + u);
+        // XXX note that File.toURI is broken for UNC paths: JDK #6916645
         return u;
     }
 
