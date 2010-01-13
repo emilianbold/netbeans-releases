@@ -39,39 +39,22 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.lookup;
+package org.netbeans.core;
 
-import org.netbeans.junit.*;
-import junit.textui.TestRunner;
-
-import javax.swing.Action;
-
-/** A test.
- * @author Jesse Glick
- * @see InstanceDataObjectModuleTestHid
+/**
+ * Interface describing basic control over window system.
+ * @since 1.15
  */
-public class InstanceDataObjectModuleTest1 extends InstanceDataObjectModuleTestHid {
+public interface WindowSystem {
 
-    public InstanceDataObjectModuleTest1(String name) {
-        super(name);
-    }
-    
-    public static void main(String[] args) {
-        // Turn on verbose logging while developing tests:
-        //System.setProperty("org.netbeans.core.modules", "0");
-        TestRunner.run(new NbTestSuite(InstanceDataObjectModuleTest1.class));
-    }
-    
-    public void testCanFindSomeActionUsingDotInstance() throws Exception {
-        twiddle(m1, TWIDDLE_ENABLE);
-        try {
-            assertTrue("Some instance of Action with name 'SomeAction' found in lookup after module installation",
-                existsSomeAction(Action.class));
-        } finally {
-            twiddle(m1, TWIDDLE_DISABLE);
-        }
-        assertTrue("The action was removed from lookup after module uninstallation",
-            !existsSomeAction(Action.class));
-    }
-    
+    void init();
+
+    void show();
+
+    void hide();
+
+    void load();
+
+    void save();
+
 }

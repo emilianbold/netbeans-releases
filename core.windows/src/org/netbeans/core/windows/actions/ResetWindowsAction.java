@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import org.netbeans.core.NbTopManager;
+import org.netbeans.core.WindowSystem;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.PersistenceHandler;
 import org.netbeans.core.windows.TopComponentGroupImpl;
@@ -77,7 +77,7 @@ public class ResetWindowsAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        final NbTopManager.WindowSystem ws = Lookup.getDefault().lookup( NbTopManager.WindowSystem.class );
+        final WindowSystem ws = Lookup.getDefault().lookup( WindowSystem.class );
         if( null == ws ) {
             //unsupported window system implementation
             Logger.getLogger(ResetWindowsAction.class.getName()).log(Level.INFO,
