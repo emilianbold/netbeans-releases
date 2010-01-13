@@ -210,10 +210,11 @@ WCHAR * toWCHAR(char * charBuffer, DWORD size) {
     }
     
     buffer = (WCHAR*) LocalAlloc(LPTR, sizeof(WCHAR) * (size/2+1));
+    ZERO(buffer, sizeof(WCHAR) * (size/2+1));
     for(i=0;i<size/2;i++) {
         realStringPtr[2*i] = (realStringPtr[2*i]) & 0xFF;
         realStringPtr[2*i+1] = (realStringPtr[2*i+1])& 0xFF;
-        buffer [i] = realStringPtr[2*i] + ((realStringPtr[2*i+1])& 0xFF);
+        buffer [i] = realStringPtr[2*i] + (realStringPtr[2*i+1] << 8);
     }
     
     return buffer;
@@ -254,12 +255,14 @@ void getLines(WCHAR *str, WCHAR *** list, DWORD * number) {
                 ptr2 = search(ptr, LINE_SEPARATOR) + sepLength;
                 length = lstrlenW(ptr) - lstrlenW(ptr2) - sepLength;
                 (*list) [counter ] = (WCHAR*) LocalAlloc(LPTR, sizeof(WCHAR*)*(length+1));
+                ZERO((*list) [counter ], sizeof(WCHAR*)*(length+1));
                 for(i=0;i<length;i++) {
                     (*list) [counter ][i]=ptr[i];
                 }
                 ptr = ptr2;
             } else if((length = lstrlenW(ptr)) > 0) {
                 (*list)[counter ] = (WCHAR*) LocalAlloc(LPTR, sizeof(WCHAR*)*(length+1));
+                ZERO((*list) [counter ], sizeof(WCHAR*)*(length+1));
                 for(i=0;i<length;i++) {
                     (*list) [counter ][i]=ptr[i];
                 }
@@ -275,10 +278,12 @@ void getLines(WCHAR *str, WCHAR *** list, DWORD * number) {
 void readStringList(HANDLE fileHandle, WCHAR *** list, DWORD *number) {
     DWORD size = GetFileSize(fileHandle, NULL); // hope it much less than 2GB
     DWORD read = 0;
-    char * charBuffer = (char*) LocalAlloc(LPTR, sizeof(char) * (size + 1));
+    char * charBuffer = (char*) LocalAlloc(LPTR, sizeof(char) * (size + 2));
+    ZERO(charBuffer, sizeof(char) * (size + 2));
     
     if(ReadFile(fileHandle, charBuffer, size, &read, 0) && read >=2) {
-        WCHAR * buffer = toWCHAR(charBuffer, size);
+        WCHAR * buffer = toWCHAR(charBuffer, size + 2);
+        //MessageBoxW(0, buffer, L"!Message!", MB_OK);
         getLines(buffer, list, number);
         LocalFree(buffer);
     }
@@ -299,7 +304,7 @@ void deleteFile(WCHAR * filePath) {
     for(i=0;i<filePathLength;i++) {
         file[i+prefixLength] = filePath[i];
     }
-    
+
     if(GetFileAttributesExW(file, GetFileExInfoStandard, &attrs)) {
         if(attrs.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             while((!RemoveDirectoryW(file) || GetFileAttributesExW(file, GetFileExInfoStandard, &attrs)) &&
