@@ -1028,7 +1028,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         if ((comp instanceof JComboBox)
                 || ((comp instanceof JTextComponent) && ((JTextComponent)comp).isEditable())
-                || (comp instanceof AbstractButton)) {
+                || (comp instanceof AbstractButton) || (comp instanceof JList)) {
             if (enable) {
                 Boolean b = enableMap.get(comp);
                 if (b != null) {
