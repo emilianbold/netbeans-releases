@@ -103,7 +103,7 @@ public class JiraTestUtil {
 
         final TaskAttributeMapper attributeMapper = rc.getTaskDataHandler().getAttributeMapper(repository);
         final TaskData data = new TaskData(attributeMapper, repository.getConnectorKind(), repository.getRepositoryUrl(), "");
-        rc.getTaskDataHandler().initializeTaskData(data, client, project);
+        rc.getTaskDataHandler().initializeTaskData(repository, data, client, project, new NullProgressMonitor());
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.USER_ASSIGNED);
         ta = rta.createMappedAttribute(TaskAttribute.SUMMARY);
@@ -126,7 +126,7 @@ public class JiraTestUtil {
 
         final TaskAttributeMapper attributeMapper = rc.getTaskDataHandler().getAttributeMapper(repository);
         final TaskData data = new TaskData(attributeMapper, repository.getConnectorKind(), repository.getRepositoryUrl(), "");
-        rc.getTaskDataHandler().initializeTaskData(data, client, project);
+        rc.getTaskDataHandler().initializeTaskData(repository, data, client, project, new NullProgressMonitor());
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.USER_ASSIGNED);
         ta = rta.createMappedAttribute(TaskAttribute.SUMMARY);

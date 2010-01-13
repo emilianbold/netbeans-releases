@@ -83,7 +83,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 
 /**
@@ -103,12 +102,7 @@ public class JiraIssueTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {    
-        JiraCorePlugin jcp = new JiraCorePlugin();
-        try {
-            jcp.start(null);
-        } catch (Exception ex) {
-            throw ex;
-        }
+        Jira.getInstance(); // force JiraCorePlugin init
         BugtrackingManager.getInstance();
         // need this to initialize cache -> server defined status values & co
         getClient().getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
@@ -116,7 +110,7 @@ public class JiraIssueTest extends NbTestCase {
     }
 
     @Override
-    protected void tearDown() throws Exception {        
+    protected void tearDown() throws Exception {
     }
 
 //    XXX not proprly supported in mylyn

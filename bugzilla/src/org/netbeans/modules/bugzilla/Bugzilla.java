@@ -83,8 +83,7 @@ public class Bugzilla {
     private Bugzilla() {
         ModuleLifecycleManager.instantiated = true;
         bcp = new BugzillaCorePlugin();
-        BugzillaCorePlugin.setConfigurationCacheFile(new File(BugtrackingRuntime.getInstance().getCacheStore(), "bugzillaconfiguration"));
-        brc = new BugzillaRepositoryConnector();
+        brc = new BugzillaRepositoryConnector(new File(BugtrackingRuntime.getInstance().getCacheStore(), "bugzillaconfiguration"));
         clientManager = getRepositoryConnector().getClientManager();
         BugzillaIssueProvider.getInstance();
         try {
@@ -122,7 +121,7 @@ public class Bugzilla {
 
     public RepositoryConfiguration getRepositoryConfiguration(BugzillaRepository repository, boolean forceRefresh) throws CoreException, MalformedURLException {
         getClient(repository); // XXX mylyn 3.1.1 workaround. initialize the client, otherwise the configuration will be downloaded twice
-        RepositoryConfiguration rc = BugzillaCorePlugin.getRepositoryConfiguration(repository.getTaskRepository(), forceRefresh, new NullProgressMonitor());
+        RepositoryConfiguration rc = brc.getRepositoryConfiguration(repository.getTaskRepository(), forceRefresh, new NullProgressMonitor());
         return rc;
     }
 

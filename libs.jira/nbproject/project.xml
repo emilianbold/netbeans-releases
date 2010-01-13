@@ -138,12 +138,12 @@ made subject to such option by the copyright holder.
                 <package>org.eclipse.mylyn.internal.jira.core.util</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.mylyn.jira.core-3.1.1.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.mylyn.jira.core-3.1.1.jar</binary-origin>
+                <runtime-relative-path>ext/org.eclipse.mylyn.jira.core_3.3.1.jar</runtime-relative-path>
+                <binary-origin>external/org.eclipse.mylyn.jira.core_3.3.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.mylyn.commons.soap-3.1.1.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.mylyn.commons.soap-3.1.1.jar</binary-origin>
+                <runtime-relative-path>ext/org.eclipse.mylyn.commons.soap_3.3.0.jar</runtime-relative-path>
+                <binary-origin>external/org.eclipse.mylyn.commons.soap_3.3.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/saaj-1.2.0.jar</runtime-relative-path>
