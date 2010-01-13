@@ -533,7 +533,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("No default pkg", -1, res.indexOf ("\n\n"));
     }
 
-    public void testSharedPackagesForOneCluster() throws Exception {
+    public void DISABLEtestSharedPackagesForOneCluster() throws Exception {
         Manifest m0 = createManifest ();
         m0.getMainAttributes ().putValue ("OpenIDE-Module", "my.huge.module/3");
         File hugeModule = generateJar (new String[] { "not/X.class", "is/too/MyClass.class", }, m0);
@@ -1390,7 +1390,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         
     }
     
-    public void testPrintNamesOfPackagesSharedBetweenMoreModules () throws Exception {
+    public void DISABLEtestPrintNamesOfPackagesSharedBetweenMoreModules () throws Exception {
         File notAModule = generateJar (new String[] { "org/shared/not/X.class", "org/shared/yes/X.html" }, createManifest ());
         
         Manifest m = createManifest ();
