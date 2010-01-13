@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.WizardDescriptor;
@@ -57,6 +58,16 @@ import org.openide.util.NbBundle;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.Build;
+import org.netbeans.modules.maven.model.pom.Configuration;
+import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMQName;
+import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -105,11 +116,84 @@ public class ActivatorIterator implements TemplateWizard.AsynchronousInstantiati
         FileObject template = Templates.getTemplate( wiz );
         
         DataObject dTemplate = DataObject.find( template );                
-        DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wiz )  );
+        final DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wiz )  );
 
+        //this part might be turned pluggable once we have also ant based osgi projects. if..
         Project project = Templates.getProject( wiz );
+        ClassPath cp = ClassPath.getClassPath(dobj.getPrimaryFile(), ClassPath.SOURCE);
+        final String path = cp.getResourceName(dobj.getPrimaryFile(), '.', false);
+
+        final NbMavenProject prj = project.getLookup().lookup(NbMavenProject.class);
+        if (prj != null) {
+            Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"),
+                    Collections.<ModelOperation<POMModel>>singletonList(
+                        new ModelOperation<POMModel>() {
+                           public void performOperation(POMModel model) {
+                               addActivator(prj, model, path);
+                           }
+                    }
+            ));
+        }
 
         return Collections.singleton(dobj);
+    }
+
+    private void addActivator(NbMavenProject prj, POMModel mdl, String path) {
+        //TODO check if present already..
+
+        Plugin old = null;
+        Plugin plugin;
+        Build bld = mdl.getProject().getBuild();
+        if (bld != null) {
+            old = bld.findPluginById(OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN);
+        } else {
+            mdl.getProject().setBuild(mdl.getFactory().createBuild());
+        }
+        if (old != null) {
+            plugin = old;
+        } else {
+            plugin = mdl.getFactory().createPlugin();
+            plugin.setGroupId(OSGIConstants.GROUPID_FELIX);
+            plugin.setArtifactId(OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN);
+            String ver = PluginPropertyUtils.getPluginVersion(prj.getMavenProject(), 
+                    OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN);
+            if (ver == null) {
+                //not defined in resolved project, set version.
+//                plugin.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_FELIX));
+                plugin.setVersion("2.0.1"); //TODO get from some preferences file.
+            }
+            mdl.getProject().getBuild().addPlugin(plugin);
+        }
+        Configuration conf = plugin.getConfiguration();
+        if (conf == null) {
+            conf = mdl.getFactory().createConfiguration();
+            plugin.setConfiguration(conf);
+        }
+        List<POMExtensibilityElement> elems = conf.getConfigurationElements();
+        POMExtensibilityElement instructions = null;
+        for (POMExtensibilityElement el : elems) {
+            if ("instructions".equals(el.getQName().getLocalPart())) {
+                instructions = el;
+                break;
+            }
+        }
+        if (instructions == null) {
+            instructions = mdl.getFactory().createPOMExtensibilityElement(POMQName.createQName("instructions", mdl.getPOMQNames().isNSAware()));
+            conf.addExtensibilityElement(instructions);
+        }
+        elems = instructions.getExtensibilityElements();
+        POMExtensibilityElement activator = null;
+        for (POMExtensibilityElement el : elems) {
+            if ("Bundle-Activator".equals(el.getQName().getLocalPart())) {
+                activator = el;
+                break;
+            }
+        }
+        if (activator == null) {
+            activator = mdl.getFactory().createPOMExtensibilityElement(POMQName.createQName("Bundle-Activator", mdl.getPOMQNames().isNSAware()));
+            instructions.addExtensibilityElement(activator);
+        }
+        activator.setElementText(path);
     }
 
     // --- The rest probably does not need to be touched. ---
