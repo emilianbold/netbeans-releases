@@ -56,4 +56,5 @@ public interface DataStorageFactory<T extends DataStorage> {
      Collection<DataStorageType> getStorageTypes();
 
      T createStorage();
+     
 }

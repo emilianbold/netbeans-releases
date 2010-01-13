@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,15 +34,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.storage;
+package org.netbeans.modules.dlight.management.api;
 
 /**
- * The persistent storage
- * @author Maria Tishkova
+ * The sessions joined in the same group share the storage
  */
-public interface PersistentDataStorage extends DataStorage{
+public interface DLightSessionsGroup {
 
 }

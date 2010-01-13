@@ -39,9 +39,8 @@
 
 package org.netbeans.modules.dlight.api.impl;
 
-import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.execution.DLightSessionConfiguration;
 import org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler;
-import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -49,14 +48,16 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * 
  */
 public interface DLightToolkitManager {
+
+    DLightSessionHandler createSession(DLightSessionConfiguration sessionConfiguration);
     
-  DLightSessionHandler createSession(DLightTarget target, String configurationName);
-
-  DLightSessionHandler createSession(DLightTarget target, String configurationName, String sessionName);
-
-  DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration);
-
-  DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration, String sessionName);
+//  DLightSessionHandler createSession(DLightTarget target, String configurationName);
+//
+//  DLightSessionHandler createSession(DLightTarget target, String configurationName, String sessionName);
+//
+//  DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration);
+//
+//  DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration, String sessionName);
 
   DLightSessionHandler open(String sessionID);
 
@@ -79,7 +80,7 @@ public interface DLightToolkitManager {
   /**
    * Saves DLight session, the session can be opened later using session ID returned in this method,
    * will store all session related information into the <param>dir</param> directory
-   * @param env execution enviroment 
+   * @param env execution environment
    * @param dir directory to store all session related info into
    * @param reference dlight session to save
    * @return session ID that can be used later to open session using #open(String) method

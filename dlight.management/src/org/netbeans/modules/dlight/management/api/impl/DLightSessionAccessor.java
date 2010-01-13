@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,15 +34,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.management.api.impl;
 
-package org.netbeans.modules.dlight.spi.storage;
+import org.netbeans.modules.dlight.management.api.DLightSession;
 
 /**
- * The persistent storage
- * @author Maria Tishkova
+ *
+ * @author mt154047
  */
-public interface PersistentDataStorage extends DataStorage{
+public abstract class DLightSessionAccessor {
 
+    private static volatile DLightSessionAccessor DEFAULT;
+
+    public static DLightSessionAccessor getDefault() {
+        DLightSessionAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
+
+        try {
+            Class.forName(DLightSession.class.getName(), true,
+                    DLightSession.class.getClassLoader());//
+        } catch (Exception e) {
+        }
+        return DEFAULT;
+    }
+
+    public static void setDefault(DLightSessionAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
+    }
+
+    public DLightSessionAccessor() {
+    }
+
+    public abstract boolean isUsingSharedStorage(DLightSession session);
+    public abstract String getSharedStorageUniqueKey(DLightSession session);
 }

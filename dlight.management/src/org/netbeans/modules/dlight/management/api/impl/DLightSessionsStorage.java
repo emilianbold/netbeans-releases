@@ -61,6 +61,7 @@ public final class DLightSessionsStorage {
     }
 
     public final DLightSession openSession(String sessionID){
+        //it will open the session and set its state to analyze
         return null;
     }
 }

@@ -40,22 +40,39 @@
 package org.netbeans.modules.dlight.spi.storage;
 
 /**
- *
- * @author mt154047
+ * This is a factory to be registered in the ServiceProvider which can open the storage using the unique
+ * key which is returned by the 
+ * @param <T> Storage instance this factory is responsible for
+ * @author Maria Tishkova
  */
 public interface PersistentDataStorageFactory<T extends PersistentDataStorage> extends DataStorageFactory<T> {
 
      /**
       * Opens storage with the unique key <code>uniqueKey</code>
-      * @param uniqueKey uniquey key generated using <link>getUniqueKey(T)</link> method
+      * @param uniqueKey unique key generated using <link>getUniqueKey(T)</link> method
       * @return storage opened if exists, <code>null</code> it the storage doesn't exists or cannot be opened
       */
      T openStorage(String uniqueKey);
 
+
+     /**
+      * Opens storage with the unique key <code>uniqueKey</code>
+      * @param uniqueKey unique key generated using <link>getUniqueKey(T)</link> method
+      * @param mode the mode the storage will be opened: REadO
+      * @return storage opened if exists, <code>null</code> it the storage doesn't exists or cannot be opened
+      */
+     T openStorage(String uniqueKey, Mode mode);
+
+
      /**
       * Unique key which can be used later to
       * @param storage
-      * @return
+      * @return unique key
       */
      String getUniqueKey(T storage);
+
+     enum Mode{
+         ReadOnly,
+         ReadWrite
+     }
 }

@@ -20,17 +20,4 @@ public abstract class SQLDataStorageFactory<G extends SQLDataStorage> implements
         return Arrays.asList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
     }
 
-    public G createStorage(){
-        return null;
-    }
-
-    public String getUniqueKey(G storage){
-        return null;
-    }
-
-    public G openStorage(String uniqueKey){
-        return null;
-    }
-
-
 }
