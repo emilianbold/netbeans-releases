@@ -102,6 +102,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
         RubyPreferences.addPropertyChangeListener(WeakListeners.propertyChange(this, RubyPreferences.getInstance()));
         this.requiredGems = project.getLookup().lookup(RequiredGems.class);
+        this.requiredGems.addPropertyChangeListener(WeakListeners.propertyChange(this, this.requiredGems));
         this.forTests = forTests;
         this.gemFilter = new GemFilter(evaluator);
     }
@@ -183,6 +184,9 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 continue;
             }
             result.add(ClassPathSupport.createResource(url));
+        }
+        if (!forTests) {
+            requiredGems.setIndexedGems(filtered);
         }
     }
 
@@ -281,7 +285,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 || evt.getSource() == RubyPreferences.getInstance() && evt.getPropertyName().equals(RubyPreferences.VENDOR_GEMS_PROPERTY)) {
             resetCache();
         }
-        if (evt.getPropertyName().equals(RequiredGems.REQUIRED_GEMS_PROPERTY)) {
+        if (evt.getPropertyName().equals(RequiredGems.REQUIRED_GEMS_CHANGED_PROPERTY)) {
             resetCache();
         }
 //        if (evt.getSource() == this.evaluator && evt.getPropertyName().equals(PLATFORM_ACTIVE)) {
