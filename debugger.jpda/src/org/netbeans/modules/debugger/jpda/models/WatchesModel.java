@@ -259,10 +259,11 @@ public class WatchesModel implements TreeModel {
 
     // innerclasses ............................................................
     
-    private static class JPDAWatchEvaluating extends AbstractObjectVariable
+    public /*private*/ static class JPDAWatchEvaluating extends AbstractObjectVariable
                                              implements JPDAWatch, Variable,
                                                         Refreshable, //.Lazy {
-                                                        PropertyChangeListener {
+                                                        PropertyChangeListener/*,
+                                                        Watch.Provider*/ {
         
         private WatchesModel model;
         private Watch w;
@@ -286,6 +287,10 @@ public class WatchesModel implements TreeModel {
             }
         }
         
+        public Watch getWatch() {
+            return w;
+        }
+
         private void parseExpression(String exprStr) {
             expression = new EvaluatorExpression(exprStr);
         }
