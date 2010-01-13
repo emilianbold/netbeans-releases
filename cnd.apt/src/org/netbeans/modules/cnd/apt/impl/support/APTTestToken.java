@@ -43,16 +43,18 @@ package org.netbeans.modules.cnd.apt.impl.support;
 
 import org.netbeans.modules.cnd.antlr.TokenImpl;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.utils.cache.TinyCharSequence;
 
 /**
  * lightweigth Token implementation (to reduce memory used by APT)
  * @author Vladimir Voskresensky
  */
-public class APTTestToken extends TokenImpl implements APTToken {
+public final class APTTestToken extends TokenImpl implements APTToken {
 
     private int offset;
-    private int textID;
+
+
+    
+//    private int textID;
 
     public APTTestToken() {
 
@@ -91,7 +93,6 @@ public class APTTestToken extends TokenImpl implements APTToken {
     
     public CharSequence getTextID() {
         CharSequence res = getText();
-        assert res instanceof TinyCharSequence;
         return res;
     }
     
