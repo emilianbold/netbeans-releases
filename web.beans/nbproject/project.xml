@@ -259,14 +259,17 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.projectui</code-name-base>
                     </test-dependency>
-			<test-dependency>
-			    <code-name-base>org.netbeans.modules.javahelp</code-name-base>
-		            <recursive/>
-			    <compile-dependency/>
-			</test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.javahelp</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.web.jsf.editor</friend>
+                <package>org.netbeans.modules.web.beans.api.model</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
