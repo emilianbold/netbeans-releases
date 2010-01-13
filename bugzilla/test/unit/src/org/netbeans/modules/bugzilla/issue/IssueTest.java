@@ -58,8 +58,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssue.IssueField;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 
 /**
  *
@@ -914,7 +914,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         while (!lh.done) {
             Thread.sleep(100);
         }
-        for (IssueField f : issue.getFields()) {
+        for (IssueField f : issue.getBugzillaRepository().getConfiguration().getFields()) {
             // seen -> everything's uptodate
             assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, f);
         }

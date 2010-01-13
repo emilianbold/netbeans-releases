@@ -110,6 +110,8 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.bugzilla.repository.CustomIssueField;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
@@ -131,7 +133,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private CommentsPanel commentsPanel;
     private AttachmentsPanel attachmentsPanel;
     private int resolvedIndex;
-    private Map<BugzillaIssue.IssueField,String> initialValues = new HashMap<BugzillaIssue.IssueField,String>();
+    private Map<String,String> initialValues = new HashMap<String,String>();
     private List<String> keywords = new LinkedList<String>();
     private boolean reloading;
     private boolean skipReload;
@@ -392,18 +394,18 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             Dimension dim = headerLabel.getPreferredSize();
             headerLabel.setMinimumSize(new Dimension(0, dim.height));
             headerLabel.setPreferredSize(new Dimension(0, dim.height));
-            reloadField(force, summaryField, BugzillaIssue.IssueField.SUMMARY, summaryWarning, summaryLabel);
-            reloadField(force, productCombo, BugzillaIssue.IssueField.PRODUCT, productWarning, productLabel);
-            reloadField(force, productField, BugzillaIssue.IssueField.PRODUCT, null, null);
-            reloadField(force, componentCombo, BugzillaIssue.IssueField.COMPONENT, componentWarning, componentLabel);
-            reloadField(force, versionCombo, BugzillaIssue.IssueField.VERSION, versionWarning, versionLabel);
-            reloadField(force, platformCombo, BugzillaIssue.IssueField.PLATFORM, platformWarning, platformLabel);
-            reloadField(force, osCombo, BugzillaIssue.IssueField.OS, osWarning, platformLabel);
-            reloadField(force, resolutionField, BugzillaIssue.IssueField.RESOLUTION, null, null); // Must be before statusCombo
-            String status = reloadField(force, statusCombo, BugzillaIssue.IssueField.STATUS, statusWarning, statusLabel);
+            reloadField(force, summaryField, IssueField.SUMMARY, summaryWarning, summaryLabel);
+            reloadField(force, productCombo, IssueField.PRODUCT, productWarning, productLabel);
+            reloadField(force, productField, IssueField.PRODUCT, null, null);
+            reloadField(force, componentCombo, IssueField.COMPONENT, componentWarning, componentLabel);
+            reloadField(force, versionCombo, IssueField.VERSION, versionWarning, versionLabel);
+            reloadField(force, platformCombo, IssueField.PLATFORM, platformWarning, platformLabel);
+            reloadField(force, osCombo, IssueField.OS, osWarning, platformLabel);
+            reloadField(force, resolutionField, IssueField.RESOLUTION, null, null); // Must be before statusCombo
+            String status = reloadField(force, statusCombo, IssueField.STATUS, statusWarning, statusLabel);
             initStatusCombo(status);
-            reloadField(force, resolutionCombo, BugzillaIssue.IssueField.RESOLUTION, resolutionWarning, resolutionLabel);
-            String initialResolution = initialValues.get(BugzillaIssue.IssueField.RESOLUTION);
+            reloadField(force, resolutionCombo, IssueField.RESOLUTION, resolutionWarning, resolutionLabel);
+            String initialResolution = initialValues.get(IssueField.RESOLUTION.getKey());
             if ("DUPLICATE".equals(initialResolution)) { // NOI18N
                 duplicateField.setEditable(false);
                 duplicateField.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
@@ -414,17 +416,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 duplicateField.setBorder(field.getBorder());
                 duplicateField.setBackground(field.getBackground());
             }
-            reloadField(force, priorityCombo, BugzillaIssue.IssueField.PRIORITY, priorityWarning, priorityLabel);
+            reloadField(force, priorityCombo, IssueField.PRIORITY, priorityWarning, priorityLabel);
             if (BugzillaUtil.isNbRepository(issue.getRepository())) {
-                reloadField(force, issueTypeCombo, BugzillaIssue.IssueField.ISSUE_TYPE, issueTypeWarning, issueTypeLabel);
+                reloadField(force, issueTypeCombo, IssueField.ISSUE_TYPE, issueTypeWarning, issueTypeLabel);
             }
-            reloadField(force, severityCombo, BugzillaIssue.IssueField.SEVERITY, severityWarning, priorityLabel);
+            reloadField(force, severityCombo, IssueField.SEVERITY, severityWarning, priorityLabel);
             if (usingTargetMilestones) {
-                reloadField(force, targetMilestoneCombo, BugzillaIssue.IssueField.MILESTONE, milestoneWarning, targetMilestoneLabel);
+                reloadField(force, targetMilestoneCombo, IssueField.MILESTONE, milestoneWarning, targetMilestoneLabel);
             }
-            reloadField(force, urlField, BugzillaIssue.IssueField.URL, urlWarning, urlLabel);
-            reloadField(force, statusWhiteboardField, BugzillaIssue.IssueField.WHITEBOARD, statusWhiteboardWarning, statusWhiteboardLabel);
-            reloadField(force, keywordsField, BugzillaIssue.IssueField.KEYWORDS, keywordsWarning, keywordsLabel);
+            reloadField(force, urlField, IssueField.URL, urlWarning, urlLabel);
+            reloadField(force, statusWhiteboardField, IssueField.WHITEBOARD, statusWhiteboardWarning, statusWhiteboardLabel);
+            reloadField(force, keywordsField, IssueField.KEYWORDS, keywordsWarning, keywordsLabel);
 
             // reported field
             boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
@@ -432,8 +434,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
                 Date creation = issue.getCreatedDate();
                 String creationTxt = creation != null ? DateFormat.getDateInstance(DateFormat.DEFAULT).format(creation) : ""; // NOI18N
-                String reporterName = issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME);
-                String reporter = issue.getFieldValue(BugzillaIssue.IssueField.REPORTER);
+                String reporterName = issue.getFieldValue(IssueField.REPORTER_NAME);
+                String reporter = issue.getFieldValue(IssueField.REPORTER);
                 String reporterTxt = ((reporterName == null) || (reporterName.trim().length() == 0)) ? reporter : reporterName;
                 String reportedTxt = MessageFormat.format(format, creationTxt, reporterTxt);
                 reportedField.setText(reportedTxt);
@@ -457,7 +459,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 fixPrefSize(modifiedField);
             }
 
-            String assignee = issue.getFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO);
+            String assignee = issue.getFieldValue(IssueField.ASSIGNED_TO);
             String selectedAssignee = (assignedField.getParent() == null) ? assignedCombo.getSelectedItem().toString() : assignedField.getText();
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
                 int index = assignee.indexOf('@');
@@ -475,14 +477,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 assignedToStatusLabel.setVisible(assignee.trim().length() > 0);
             }
             if (assignedField.getParent() == null) {
-                reloadField(force, assignedCombo, BugzillaIssue.IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
+                reloadField(force, assignedCombo, IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
             } else {
-                reloadField(force, assignedField, BugzillaIssue.IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
+                reloadField(force, assignedField, IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
             }
-            reloadField(force, qaContactField, BugzillaIssue.IssueField.QA_CONTACT, qaContactWarning, qaContactLabel);
-            reloadField(force, ccField, BugzillaIssue.IssueField.CC, ccWarning, ccLabel);
-            reloadField(force, dependsField, BugzillaIssue.IssueField.DEPENDS_ON, dependsOnWarning, dependsLabel);
-            reloadField(force, blocksField, BugzillaIssue.IssueField.BLOCKS, blocksWarning, blocksLabel);
+            reloadField(force, qaContactField, IssueField.QA_CONTACT, qaContactWarning, qaContactLabel);
+            reloadField(force, ccField, IssueField.CC, ccWarning, ccLabel);
+            reloadField(force, dependsField, IssueField.DEPENDS_ON, dependsOnWarning, dependsLabel);
+            reloadField(force, blocksField, IssueField.BLOCKS, blocksWarning, blocksLabel);
             // Reload custom fields
             for (CustomFieldInfo field : customFields) {
                 reloadField(force, field.comp, field.field, field.warning, field.label);
@@ -524,7 +526,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         textField.setPreferredSize(fixedDim);
     }
 
-    private String reloadField(boolean force, JComponent component, BugzillaIssue.IssueField field, JLabel warningLabel, JLabel fieldLabel) {
+    private String reloadField(boolean force, JComponent component, IssueField field, JLabel warningLabel, JLabel fieldLabel) {
         String currentValue = null;
         if (issue.getTaskData().isNew()) {
             force = true;
@@ -547,7 +549,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 currentValue = sb.toString();
             }
         }
-        String initialValue = initialValues.get(field);
+        String initialValue = initialValues.get(field.getKey());
         String newValue;
         if (component instanceof JList) {
             StringBuilder sb = new StringBuilder();
@@ -608,10 +610,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 warningLabel.setToolTipText(message);
             }
         }
-        if ((BugzillaIssue.IssueField.SUMMARY == field) || (BugzillaIssue.IssueField.PLATFORM == field) || (BugzillaIssue.IssueField.PRIORITY == field)) {
+        if ((IssueField.SUMMARY == field) || (IssueField.PLATFORM == field) || (IssueField.PRIORITY == field)) {
             warningLabel.setVisible(warningLabel.getIcon() != null);
         }
-        initialValues.put(field, newValue);
+        initialValues.put(field.getKey(), newValue);
         return currentValue;
     }
 
@@ -776,30 +778,30 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private void updateFieldStatuses() {
-        updateFieldStatus(BugzillaIssue.IssueField.PRODUCT, productLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.COMPONENT, componentLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.VERSION, versionLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.PLATFORM, platformLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.OS, platformLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.STATUS, statusLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.RESOLUTION, resolutionLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.PRIORITY, priorityLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.SEVERITY, priorityLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.MILESTONE, targetMilestoneLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.URL, urlLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.WHITEBOARD, statusWhiteboardLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.KEYWORDS, keywordsLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.ASSIGNED_TO, assignedLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.QA_CONTACT, qaContactLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.CC, ccLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.DEPENDS_ON, dependsLabel);
-        updateFieldStatus(BugzillaIssue.IssueField.BLOCKS, blocksLabel);
+        updateFieldStatus(IssueField.PRODUCT, productLabel);
+        updateFieldStatus(IssueField.COMPONENT, componentLabel);
+        updateFieldStatus(IssueField.VERSION, versionLabel);
+        updateFieldStatus(IssueField.PLATFORM, platformLabel);
+        updateFieldStatus(IssueField.OS, platformLabel);
+        updateFieldStatus(IssueField.STATUS, statusLabel);
+        updateFieldStatus(IssueField.RESOLUTION, resolutionLabel);
+        updateFieldStatus(IssueField.PRIORITY, priorityLabel);
+        updateFieldStatus(IssueField.SEVERITY, priorityLabel);
+        updateFieldStatus(IssueField.MILESTONE, targetMilestoneLabel);
+        updateFieldStatus(IssueField.URL, urlLabel);
+        updateFieldStatus(IssueField.WHITEBOARD, statusWhiteboardLabel);
+        updateFieldStatus(IssueField.KEYWORDS, keywordsLabel);
+        updateFieldStatus(IssueField.ASSIGNED_TO, assignedLabel);
+        updateFieldStatus(IssueField.QA_CONTACT, qaContactLabel);
+        updateFieldStatus(IssueField.CC, ccLabel);
+        updateFieldStatus(IssueField.DEPENDS_ON, dependsLabel);
+        updateFieldStatus(IssueField.BLOCKS, blocksLabel);
         if (BugzillaUtil.isNbRepository(issue.getRepository())) {
-            updateFieldStatus(BugzillaIssue.IssueField.ISSUE_TYPE, issueTypeLabel);
+            updateFieldStatus(IssueField.ISSUE_TYPE, issueTypeLabel);
         }
     }
 
-    private void updateFieldStatus(BugzillaIssue.IssueField field, JLabel label) {
+    private void updateFieldStatus(IssueField field, JLabel label) {
         boolean highlight = !issue.getTaskData().isNew() && (issue.getFieldStatus(field) != BugzillaIssue.FIELD_STATUS_UPTODATE);
         label.setOpaque(highlight);
         if (highlight) {
@@ -814,7 +816,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }
 
-    private void storeFieldValue(BugzillaIssue.IssueField field, JComboBox combo) {
+    private void storeFieldValue(IssueField field, JComboBox combo) {
         Object value = combo.getSelectedItem();
         // It (normally) should not happen that value is null, but issue 159804 shows that
         // some strange configurations (or other bugs) can lead into this situation
@@ -823,11 +825,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }
 
-    private void storeFieldValue(BugzillaIssue.IssueField field, JTextComponent textComponent) {
+    private void storeFieldValue(IssueField field, JTextComponent textComponent) {
         storeFieldValue(field, textComponent.getText());
     }
 
-    private void storeFieldValue(BugzillaIssue.IssueField field, JList list) {
+    private void storeFieldValue(IssueField field, JList list) {
         List<String> values = new ArrayList<String>();
         for (Object value : list.getSelectedValues()) {
             values.add(value.toString());
@@ -835,9 +837,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         issue.setFieldValues(field, values);
     }
 
-    private void storeFieldValue(BugzillaIssue.IssueField field, String value) {
-        if (issue.getTaskData().isNew() || !value.equals(initialValues.get(field))) {
-            if (field == BugzillaIssue.IssueField.STATUS) {
+    private void storeFieldValue(IssueField field, String value) {
+        if (issue.getTaskData().isNew() || !value.equals(initialValues.get(field.getKey()))) {
+            if (field == IssueField.STATUS) {
                 if (value.equals("CLOSED")) { // NOI18N
                     issue.close();
                 } else if (value.equals("VERIFIED")) { // NOI18N
@@ -849,7 +851,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 } else if (value.equals("ASSIGNED")) { // NOI18N
                     issue.accept();
                 }
-            } else if ((field == BugzillaIssue.IssueField.ASSIGNED_TO) && !issue.isNew()) {
+            } else if ((field == IssueField.ASSIGNED_TO) && !issue.isNew()) {
                 issue.reassign(value);
             }
             issue.setFieldValue(field, value);
@@ -1109,53 +1111,58 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         GroupLayout.SequentialGroup fieldVerticalGroup = fieldLayout.createSequentialGroup();
         boolean nbRepository = BugzillaUtil.isNbRepository(issue.getRepository());
         boolean anyField = false;
-        for (BugzillaIssue.IssueField field : issue.getFields()) {
-            if (field instanceof BugzillaIssue.CustomIssueField) {
-                BugzillaIssue.CustomIssueField cField = (BugzillaIssue.CustomIssueField)field;
-                if (nbRepository && cField.getKey().equals(BugzillaIssue.IssueField.ISSUE_TYPE.getKey())) {
+        for (IssueField field : issue.getBugzillaRepository().getConfiguration().getFields()) {
+            if (field instanceof CustomIssueField) {
+                CustomIssueField cField = (CustomIssueField)field;
+                if (nbRepository && cField.getKey().equals(IssueField.ISSUE_TYPE.getKey())) {
                     continue; // NB Issue type is already among non-custom fields
                 }
                 JLabel label = new JLabel(cField.getDisplayName()+":"); // NOI18N
-                String type = cField.getType();
                 JComponent comp;
                 JComponent editor;
                 boolean rigid = false;
-                if ("longText".equals(type)) { // NOI18N
-                    JScrollPane scrollPane = new JScrollPane();
-                    JTextArea textArea = new JTextArea();
-                    textArea.setRows(5);
-                    scrollPane.setViewportView(textArea);
-                    comp = scrollPane;
-                    editor = textArea;
-                    label.setVerticalAlignment(SwingConstants.TOP);
-                    BugtrackingUtil.fixFocusTraversalKeys(textArea);
-                    BugtrackingUtil.issue163946Hack(scrollPane);
-                } else if ("shortText".equals(type)) { // NOI18N
-                    comp = editor = new JTextField();
-                } else if ("multiSelect".equals(type)) { // NOI18N
-                    JList list = new JList();
-                    DefaultComboBoxModel model = new DefaultComboBoxModel(cField.getOptions().keySet().toArray());
-                    list.setModel(model);
-                    if (model.getSize()<list.getVisibleRowCount()) {
-                        list.setVisibleRowCount(model.getSize());
-                    }
-                    JScrollPane scrollPane = new JScrollPane();
-                    scrollPane.setViewportView(list);
-                    comp = scrollPane;
-                    editor = list;
-                    label.setVerticalAlignment(SwingConstants.TOP);
-                    rigid = true;
-                    BugtrackingUtil.issue163946Hack(scrollPane);
-                } else if ("singleSelect".equals(type)) { // NOI18N
-                    comp = editor = new JComboBox();
-                    DefaultComboBoxModel model = new DefaultComboBoxModel(cField.getOptions().keySet().toArray());
-                    ((JComboBox)comp).setModel(model);
-                    rigid = true;
-                } else if ("dateTime".equals(type)) { // NOI18N
-                    comp = editor = new JTextField();
-                } else {
-                    Bugzilla.LOG.log(Level.INFO, "Custom field type {0} is not supported!", type); // NOI18N
-                    continue;
+                switch (cField.getType()) {
+                    case LargeText:
+                        JScrollPane scrollPane = new JScrollPane();
+                        JTextArea textArea = new JTextArea();
+                        textArea.setRows(5);
+                        scrollPane.setViewportView(textArea);
+                        comp = scrollPane;
+                        editor = textArea;
+                        label.setVerticalAlignment(SwingConstants.TOP);
+                        BugtrackingUtil.fixFocusTraversalKeys(textArea);
+                        BugtrackingUtil.issue163946Hack(scrollPane);
+                        break;
+                    case FreeText:
+                        comp = editor = new JTextField();
+                        break;
+                    case MultipleSelection:
+                        JList list = new JList();
+                        DefaultComboBoxModel model = new DefaultComboBoxModel(cField.getOptions().toArray());
+                        list.setModel(model);
+                        if (model.getSize()<list.getVisibleRowCount()) {
+                            list.setVisibleRowCount(model.getSize());
+                        }
+                        scrollPane = new JScrollPane();
+                        scrollPane.setViewportView(list);
+                        comp = scrollPane;
+                        editor = list;
+                        label.setVerticalAlignment(SwingConstants.TOP);
+                        rigid = true;
+                        BugtrackingUtil.issue163946Hack(scrollPane);
+                        break;
+                    case DropDown:
+                        comp = editor = new JComboBox();
+                        model = new DefaultComboBoxModel(cField.getOptions().toArray());
+                        ((JComboBox)comp).setModel(model);
+                        rigid = true;
+                        break;
+                    case DateTime:
+                        comp = editor = new JTextField();
+                        break;
+                    default:
+                        Bugzilla.LOG.log(Level.INFO, "Custom field type {0} is not supported!", cField.getType()); // NOI18N
+                        continue;
                 }
                 JLabel warning = new JLabel();
                 customFields.add(new CustomFieldInfo(cField, label, editor, warning));
@@ -1907,7 +1914,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         TaskData data = issue.getTaskData();
         if (data.isNew()) {
             String summary = summaryField.getText();
-            issue.setFieldValue(BugzillaIssue.IssueField.PRODUCT, product);
+            issue.setFieldValue(IssueField.PRODUCT, product);
             BugzillaRepositoryConnector connector = Bugzilla.getInstance().getRepositoryConnector();
             try {
                 connector.getTaskDataHandler().initializeTaskData(issue.getBugzillaRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
@@ -1923,7 +1930,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         cancelHighlight(statusLabel);
         cancelHighlight(resolutionLabel);
         // Hide/show resolution combo
-        String initialStatus = initialValues.get(BugzillaIssue.IssueField.STATUS);
+        String initialStatus = initialValues.get(IssueField.STATUS.getKey());
         boolean resolvedInitial = "RESOLVED".equals(initialStatus); // NOI18N
         if (!resolvedInitial) {
             if ("RESOLVED".equals(statusCombo.getSelectedItem())) { // NOI18N
@@ -1962,43 +1969,43 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         boolean isNew = issue.getTaskData().isNew();
         if (isNew) {
-            storeFieldValue(BugzillaIssue.IssueField.DESCRIPTION, addCommentArea);
+            storeFieldValue(IssueField.DESCRIPTION, addCommentArea);
         }
-        storeFieldValue(BugzillaIssue.IssueField.SUMMARY, summaryField);
-        storeFieldValue(BugzillaIssue.IssueField.PRODUCT, productCombo);
-        storeFieldValue(BugzillaIssue.IssueField.COMPONENT, componentCombo);
-        storeFieldValue(BugzillaIssue.IssueField.VERSION, versionCombo);
-        storeFieldValue(BugzillaIssue.IssueField.PLATFORM, platformCombo);
-        storeFieldValue(BugzillaIssue.IssueField.OS, osCombo);
-        storeFieldValue(BugzillaIssue.IssueField.STATUS, statusCombo);
+        storeFieldValue(IssueField.SUMMARY, summaryField);
+        storeFieldValue(IssueField.PRODUCT, productCombo);
+        storeFieldValue(IssueField.COMPONENT, componentCombo);
+        storeFieldValue(IssueField.VERSION, versionCombo);
+        storeFieldValue(IssueField.PLATFORM, platformCombo);
+        storeFieldValue(IssueField.OS, osCombo);
+        storeFieldValue(IssueField.STATUS, statusCombo);
         if (resolutionCombo.isVisible()) {
-            storeFieldValue(BugzillaIssue.IssueField.RESOLUTION, resolutionCombo);
+            storeFieldValue(IssueField.RESOLUTION, resolutionCombo);
         } else if (!resolutionField.isVisible()) {
-            storeFieldValue(BugzillaIssue.IssueField.RESOLUTION, ""); // NOI18N
+            storeFieldValue(IssueField.RESOLUTION, ""); // NOI18N
         }
         if (duplicateField.isVisible() && duplicateField.isEditable()) {
             issue.duplicate(duplicateField.getText());
         }
-        storeFieldValue(BugzillaIssue.IssueField.PRIORITY, priorityCombo);
+        storeFieldValue(IssueField.PRIORITY, priorityCombo);
         if (BugzillaUtil.isNbRepository(issue.getRepository())) {
-            storeFieldValue(BugzillaIssue.IssueField.ISSUE_TYPE, issueTypeCombo);
+            storeFieldValue(IssueField.ISSUE_TYPE, issueTypeCombo);
         }
-        storeFieldValue(BugzillaIssue.IssueField.SEVERITY, severityCombo);
+        storeFieldValue(IssueField.SEVERITY, severityCombo);
         if (usingTargetMilestones) {
-            storeFieldValue(BugzillaIssue.IssueField.MILESTONE, targetMilestoneCombo);
+            storeFieldValue(IssueField.MILESTONE, targetMilestoneCombo);
         }
-        storeFieldValue(BugzillaIssue.IssueField.URL, urlField);
-        storeFieldValue(BugzillaIssue.IssueField.WHITEBOARD, statusWhiteboardField);
-        storeFieldValue(BugzillaIssue.IssueField.KEYWORDS, keywordsField);
+        storeFieldValue(IssueField.URL, urlField);
+        storeFieldValue(IssueField.WHITEBOARD, statusWhiteboardField);
+        storeFieldValue(IssueField.KEYWORDS, keywordsField);
         if (assignedField.getParent() == null) {
-            storeFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO, assignedCombo);
+            storeFieldValue(IssueField.ASSIGNED_TO, assignedCombo);
         } else {
-            storeFieldValue(BugzillaIssue.IssueField.ASSIGNED_TO, assignedField);
+            storeFieldValue(IssueField.ASSIGNED_TO, assignedField);
         }
-        storeFieldValue(BugzillaIssue.IssueField.QA_CONTACT, qaContactField);
+        storeFieldValue(IssueField.QA_CONTACT, qaContactField);
         storeCCValue();
-        storeFieldValue(BugzillaIssue.IssueField.DEPENDS_ON, dependsField);
-        storeFieldValue(BugzillaIssue.IssueField.BLOCKS, blocksField);
+        storeFieldValue(IssueField.DEPENDS_ON, dependsField);
+        storeFieldValue(IssueField.BLOCKS, blocksField);
         if (!isNew && !"".equals(addCommentArea.getText().trim())) { // NOI18N
             issue.addComment(addCommentArea.getText());
         }
@@ -2066,14 +2073,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_submitButtonActionPerformed
 
     private void storeCCValue() {
-        Set<String> oldCCs = ccs(issue.getFieldValue(BugzillaIssue.IssueField.CC));
+        Set<String> oldCCs = ccs(issue.getFieldValue(IssueField.CC));
         Set<String> newCCs = ccs(ccField.getText());
 
         String removedCCs = getMissingCCs(oldCCs, newCCs);
         String addedCCs = getMissingCCs(newCCs, oldCCs);
 
-        storeFieldValue(BugzillaIssue.IssueField.REMOVECC, removedCCs);
-        storeFieldValue(BugzillaIssue.IssueField.NEWCC, addedCCs);
+        storeFieldValue(IssueField.REMOVECC, removedCCs);
+        storeFieldValue(IssueField.NEWCC, addedCCs);
     }
 
     private Set<String> ccs(String values) {
@@ -2534,12 +2541,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private static class CustomFieldInfo {
-        BugzillaIssue.CustomIssueField field;
+        CustomIssueField field;
         JLabel label;
         JComponent comp;
         JLabel warning;
 
-        CustomFieldInfo(BugzillaIssue.CustomIssueField field, JLabel label, JComponent comp, JLabel warning) {
+        CustomFieldInfo(CustomIssueField field, JLabel label, JComponent comp, JLabel warning) {
             this.field = field;
             this.label = label;
             this.comp = comp;
