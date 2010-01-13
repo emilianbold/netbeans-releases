@@ -40,18 +40,23 @@
  */
 package org.eclipse.core.runtime;
 
+import org.eclipse.core.runtime.content.IContentType;
 import org.osgi.framework.Bundle;
 
 import java.net.URL;
 import java.util.*;
+import org.eclipse.core.runtime.content.IContentTypeManager;
 
 /**
  * @author Maros Sandor
  */
 public final class Platform {
+
+    private static IContentTypeManager contentTypeManager;
     
     public static boolean isRunning() {
-        return true;
+        return false; // prevents TaskRepository from using o.e.equinox.security.storage.
+                      // until 3.3.1 there are no other known usages of .isRunning()  
     }
     
     private static Map<URL, Map> infos = new HashMap<URL, Map>();
@@ -86,5 +91,20 @@ public final class Platform {
     
     public static String getOSArch() {
         return null;
+    }
+
+    public static String getWS() {
+        return null;
+    }
+
+    public static IContentTypeManager getContentTypeManager() {
+        if (contentTypeManager == null) {
+            contentTypeManager = new IContentTypeManager() {
+                public IContentType findContentTypeFor(String fileName) {
+                    return null;
+                }
+            };
+        }
+        return contentTypeManager;
     }
 }

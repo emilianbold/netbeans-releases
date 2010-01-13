@@ -49,9 +49,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.jira.core.JiraCorePlugin;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
-import org.eclipse.mylyn.internal.jira.core.service.JiraClientData;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.netbeans.junit.NbTestCase;
@@ -59,6 +57,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.JiraTestUtil;
@@ -87,12 +86,7 @@ public class RepositoryTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        JiraCorePlugin bcp = new JiraCorePlugin();
-        try {
-            bcp.start(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        Jira.getInstance(); // force JiraCorePlugin init
         JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));
     }
 
@@ -224,29 +218,6 @@ public class RepositoryTest extends NbTestCase {
 //        assertNotNull(i);
 //        assertEquals("somari", i.getSummary());
 //    }
-
-    public void testConfigurationData () throws NoSuchFieldException, NoSuchMethodException {
-        Class configurationDataClass = JiraConfiguration.ConfigurationData.class;
-        Field[] declaredFields = JiraClientData.class.getDeclaredFields();
-        for (Field f : declaredFields) {
-            if (Modifier.isPrivate(f.getModifiers())) {
-                continue;
-            }
-            Field confDataField = configurationDataClass.getDeclaredField(f.getName());
-            assertNotNull(confDataField);
-            compareModifiers(f.getModifiers(), confDataField.getModifiers());
-        }
-
-        Method[] declaredMethods = JiraClientData.class.getDeclaredMethods();
-        for (Method m : declaredMethods) {
-            if (Modifier.isPrivate(m.getModifiers())) {
-                continue;
-            }
-            Method confDataMethod = configurationDataClass.getDeclaredMethod(m.getName());
-            assertNotNull(confDataMethod);
-            compareModifiers(m.getModifiers(), confDataMethod.getModifiers());
-        }
-    }
 
     public void testSimpleSearch() throws MalformedURLException, CoreException, JiraException {
         long ts = System.currentTimeMillis();

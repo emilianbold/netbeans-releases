@@ -249,7 +249,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     }
 
     public void setTaskData(TaskData taskData) {
-        assert !taskData.isPartial();
+//        assert !taskData.isPartial();
         this.taskData = taskData;
         attributes = null; // reset
         availableOperations = null;
