@@ -198,7 +198,7 @@ public final class DLightTool implements Validateable<DLightTarget> {
                 List<IndicatorDataProviderConfiguration> idpConfigurations = toolConfAccessor.getIndicatorDataProviders(configuration);
 
                 for (DataCollectorConfiguration conf : configurations) {
-                    DataCollector collector = DataCollectorProvider.getInstance().createDataCollector(conf);
+                    DataCollector<?> collector = DataCollectorProvider.getInstance().createDataCollector(conf);
                     if (collector == null) {
                         log.info("Could not find DataCollector for configuration with id:" + conf.getID() + " check if " + //NOI18N
                                 "DataColelctorFactory is registered in Global Lookup with the same ID"); //NOI18N
@@ -206,8 +206,8 @@ public final class DLightTool implements Validateable<DLightTarget> {
                     }
                     registerCollector(collector);
                     //if it is indicator and registered as indicator
-                    if (idpConfigurations.contains((IndicatorDataProviderConfiguration) conf) && collector instanceof IndicatorDataProvider) {
-                        registerIndicatorDataProvider((IndicatorDataProvider) collector);
+                    if (collector instanceof IndicatorDataProvider<?> && idpConfigurations.contains((IndicatorDataProviderConfiguration) conf)) {
+                        registerIndicatorDataProvider((IndicatorDataProvider<?>) collector);
                     }
                 }
             }
