@@ -120,9 +120,11 @@ public class Schema2BeansProcessor extends AbstractProcessor {
                 }
             });
             FileObject schema = findResource(s2b.schema(), pkg);
-            processingEnv.getMessager().printMessage(Kind.NOTE, "generating beans for " + schema.getName() + " in " + pkg/*, e*/);
+            processingEnv.getMessager().printMessage(Kind.NOTE, "generating beans in " + pkg/*, e*/);
             config.setFileIn(schema.openInputStream());
-            config.setInputURI(fileObjectToUri(schema).toString());
+            String inputUri = fileObjectToUri(schema).toString();
+            processingEnv.getMessager().printMessage(Kind.NOTE, "parsing: " + inputUri);
+            config.setInputURI(inputUri);
             switch (s2b.schemaType()) {
             case DTD:
                 config.setSchemaType(Config.DTD);
@@ -173,9 +175,12 @@ public class Schema2BeansProcessor extends AbstractProcessor {
                 }
             }
         } catch (Exception x) {
-            // Oddly, the ERROR is never printed.
-            processingEnv.getMessager().printMessage(Kind.WARNING, x.toString(), e);
-            processingEnv.getMessager().printMessage(Kind.ERROR, "Could not process");
+            processingEnv.getMessager().printMessage(Kind.ERROR, "Failed to process", e);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(baos);
+            x.printStackTrace(ps);
+            ps.close();
+            processingEnv.getMessager().printMessage(Kind.ERROR, baos.toString());
         }
     }
 
@@ -196,7 +201,6 @@ public class Schema2BeansProcessor extends AbstractProcessor {
         if (u.getScheme() == null) {
             u = new URI("file", u.getPath(), u.getFragment());
         }
-        processingEnv.getMessager().printMessage(Kind.NOTE, "parsing: " + u);
         // XXX note that File.toURI is broken for UNC paths: JDK #6916645
         return u;
     }
