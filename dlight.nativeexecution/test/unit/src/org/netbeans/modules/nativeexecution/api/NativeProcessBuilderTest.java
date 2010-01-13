@@ -53,6 +53,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import static org.junit.Assert.*;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
 
@@ -165,16 +166,28 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         assertEquals(0, result);
 
         if (ee.isLocal()) {
-            File dir = new File(testDir);
+            String testDir1 = testDir;
+            if (HostInfoUtils.getHostInfo(ee).getOS().getFamily() == HostInfo.OSFamily.WINDOWS){
+                testDir1 = WindowsSupport.getInstance().convertToWindowsPath(testDir);
+            }
+            File dir = new File(testDir1);
             assertTrue(dir.exists() && dir.isDirectory());
         } else {
             assertTrue(HostInfoUtils.fileExists(ee, testDir));
         }
 
-        System.out.println("Copy file /bin/ls to '" + testDir + "' with name 'copied ls'"); // NOI18N
+        String resource = "/bin/ls";
+        if (ee.isLocal()) {
+            if (HostInfoUtils.getHostInfo(ee).getOS().getFamily() == HostInfo.OSFamily.WINDOWS){
+                // TODO: find ls in paths and copy
+                resource = WindowsSupport.getInstance().convertToShellPath("C:/cygwin/bin/ls.exe");
+            }
+        }
+
+        System.out.println("Copy file "+resource+" to '" + testDir + "' with name 'copied ls'"); // NOI18N
 
         npb = NativeProcessBuilder.newProcessBuilder(ee);
-        npb.setCommandLine("cp /bin/ls \"" + testDir + "/copied ls\""); // NOI18N
+        npb.setCommandLine("cp "+resource+" \"" + testDir + "/copied ls\""); // NOI18N
 
         try {
             result = npb.call().waitFor();
@@ -242,16 +255,28 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         assertEquals(0, result);
 
         if (ee.isLocal()) {
-            File dir = new File(testDir);
+            String testDir1 = testDir;
+            if (HostInfoUtils.getHostInfo(ee).getOS().getFamily() == HostInfo.OSFamily.WINDOWS){
+                testDir1 = WindowsSupport.getInstance().convertToWindowsPath(testDir);
+            }
+            File dir = new File(testDir1);
             assertTrue(dir.exists() && dir.isDirectory());
         } else {
             assertTrue(HostInfoUtils.fileExists(ee, testDir));
         }
 
-        System.out.println("Copy file /bin/ls to '" + testDir + "' with name 'copied ls'"); // NOI18N
+        String resource = "/bin/ls";
+        if (ee.isLocal()) {
+            if (HostInfoUtils.getHostInfo(ee).getOS().getFamily() == HostInfo.OSFamily.WINDOWS){
+                // TODO: find ls in paths and copy
+                resource = WindowsSupport.getInstance().convertToShellPath("C:/cygwin/bin/ls.exe");
+            }
+        }
+        System.out.println("Copy file "+resource+" to '" + testDir + "' with name 'copied ls'"); // NOI18N
 
         npb = NativeProcessBuilder.newProcessBuilder(ee);
-        npb.setExecutable("cp").setArguments("/bin/ls", testDir + "/copied ls"); // NOI18N
+
+        npb.setExecutable("cp").setArguments(resource, testDir + "/copied ls"); // NOI18N
 
         try {
             result = npb.call().waitFor();
