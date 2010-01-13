@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.persistence.entitygenerator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -517,6 +518,9 @@ public class DbSchemaEjbGenerator {
             ColumnElement[] cols = table.getColumns();
             UniqueKeyElement pk = getPrimaryOrCandidateKey(table);
             ForeignKeyElement[] fkeys = table.getForeignKeys();
+            //sometimes database may contain duplicating foreign keys (or it may be an issue in db schema generation)
+            //TODO: uncomment to fix issue 177341
+
             for (int col = 0; col < cols.length; col++) {
                 if (pk != null &&
                         pk.getColumn(cols[col].getName()) != null) {
@@ -578,5 +582,77 @@ public class DbSchemaEjbGenerator {
         }
         names.add(newName);
         return newName;
+    }
+
+    /*
+     * may be used for issue 177341 fix later
+     */
+    private ForeignKeyElement[] removeDuplicateFK(ForeignKeyElement[] fkeys) {
+        if(fkeys==null || fkeys.length==0) return fkeys;
+        HashMap<ComparableFK, ForeignKeyElement> ret = new HashMap<ComparableFK, ForeignKeyElement>();
+        for(int i=0;i<fkeys.length;i++)
+        {
+            ForeignKeyElement key=fkeys[i];
+            ComparableFK fkc=new ComparableFK(key);
+            if(ret.get(fkc)!=null){//we already have the same key
+                LOGGER.log(Level.INFO,key.getKeyName()+" key in "+key.getDeclaringTable().getName().getFullName() + " is considered as a duplicate, you may need to verify your schema or database structure.");//NOI18N
+                continue;
+            } else {
+                ret.put(fkc, key);
+            }
+        }
+        return (ForeignKeyElement[]) ret.values().toArray();
+    }
+
+    /**
+     * consider equal if refernced from/to the same tables with the same set of columns, fk name do not matter
+     */
+    private class ComparableFK
+    {
+        private ForeignKeyElement key;
+        private String tableName;
+        private String refName;
+        private ColumnElement[] lc;
+        private ColumnElement[] rc;
+        ComparableFK(ForeignKeyElement fk)
+        {
+            key=fk;
+            tableName = key.getDeclaringTable().getName().getName();
+            refName = key.getReferencedTable().getName().getName();
+            lc = key.getLocalColumns();
+            rc = key.getReferencedColumns();
+            Arrays.sort(lc);
+            Arrays.sort(rc);
+        }
+
+        @Override
+        public int hashCode() {
+            return tableName.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ComparableFK other = (ComparableFK) obj;
+            if ((this.tableName == null) ? (other.tableName != null) : !this.tableName.equals(other.tableName)) {
+                return false;
+            }
+            if ((this.refName == null) ? (other.refName != null) : !this.refName.equals(other.refName)) {
+                return false;
+            }
+
+            if (!Arrays.deepEquals(this.lc, other.lc)) {
+                return false;
+            }
+            if (!Arrays.deepEquals(this.rc, other.rc)) {
+                return false;
+            }
+            return true;
+        }
     }
 }
