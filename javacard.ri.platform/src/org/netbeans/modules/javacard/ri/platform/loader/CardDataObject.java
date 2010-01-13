@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.javacard.ri.platform.loader;
 
-import java.awt.event.ActionEvent;
 import org.netbeans.modules.propdos.PropertiesAdapter;
 import org.netbeans.modules.propdos.PropertiesBasedDataObject;
 import org.netbeans.modules.propdos.ObservableProperties;
@@ -49,7 +48,6 @@ import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
-import org.openide.actions.DeleteAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -60,7 +58,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.InstanceContent;
 
 import java.io.File;
@@ -72,7 +69,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.javacard.common.NodeRefresher;
 import org.netbeans.modules.javacard.ri.card.RICard;
@@ -85,7 +81,6 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.capabilities.StopCapability;
 import org.netbeans.modules.javacard.spi.actions.CardActions;
-import org.openide.actions.PropertiesAction;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.PropertySupport;
@@ -120,6 +115,7 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
         }
         CardDataNode nd = nodeRef == null ? null : nodeRef.get();
         if (nd != null) {
+            nd.checkForRunningStateChange();
             nd.updateChildren();
         }
     }
@@ -315,10 +311,16 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
             boolean activeChildren = c == null ? false : !c.getState().isNotRunning();
             startListening (card);
             if (activeChildren) {
-                Children kids = Children.create (new CardChildren((CardDataObject) getDataObject()), true);
+                Children kids = Children.create (new CardChildren(CardDataObject.this), true);
                 setChildren(kids);
             } else {
-                AbstractNode nd = new AbstractNode (Children.LEAF);
+                AbstractNode nd = new AbstractNode (Children.LEAF) {
+                    //XXX replace when SimpleNode is integrated
+                    @Override
+                    public String getHtmlDisplayName() {
+                        return "<font color='!controlShadow'>" + getDisplayName();
+                    }
+                };
                 nd.setDisplayName (NbBundle.getMessage(CardDataNode.class,
                         "MSG_NOT_STARTED")); //NOI18N
                 Children kids = new Children.Array();
@@ -334,6 +336,10 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
             if (cardLocal != null && cardLocal.getState().isRunning()) {
                 Image badge = ImageUtilities.loadImage(
                         "org/netbeans/modules/javacard/spi/resources/running.png"); //NOI18N
+                result = ImageUtilities.mergeImages(result, badge, 11, 11);
+            } else if (cardLocal != null && !cardLocal.isValid()) {
+                Image badge = ImageUtilities.loadImage(
+                        "org/netbeans/modules/javacard/ri/platform/loader/errorBadge.png"); //NOI18N
                 result = ImageUtilities.mergeImages(result, badge, 11, 11);
             }
             return result;
@@ -380,24 +386,6 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
         public String getName() {
             DataObject dob = getLookup().lookup(DataObject.class);
             return dob.getName();
-        }
-
-        @Override
-        public Action[] getActions(boolean context) {
-            Action[] others = new Action[]{
-                CardActions.createStartAction(),
-                CardActions.createResumeAction(),
-                CardActions.createStopAction(),
-                null,
-                CardActions.createClearEpromAction(),
-                null,
-                new RefreshChildrenAction(),
-                null,
-                SystemAction.get(DeleteAction.class),
-                null,
-                CardActions.createCustomizeAction(),
-                SystemAction.get(PropertiesAction.class),};
-            return others;
         }
 
         @Override
@@ -490,18 +478,6 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
             public String getValue() throws IllegalAccessException, InvocationTargetException {
                 Card card = getLookup().lookup(Card.class);
                 return card.getState().toString();
-            }
-        }
-
-        private class RefreshChildrenAction extends AbstractAction {
-            RefreshChildrenAction() {
-                putValue (NAME, NbBundle.getMessage(RefreshChildrenAction.class,
-                        "ACTION_REFRESH")); //NOI18N
-            }
-
-            public void actionPerformed(ActionEvent e) {
-                checkForRunningStateChange();
-                updateChildren();
             }
         }
     }

@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javacard.ri.platform.loader;
+package org.netbeans.modules.javacard.spi;
 
 import com.sun.javacard.filemodels.XListEntry;
 import com.sun.javacard.filemodels.XListInstanceEntry;
@@ -45,12 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.javacard.spi.Card;
-import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
-import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
-import org.netbeans.modules.propdos.ObservableProperties;
-import org.netbeans.modules.propdos.PropertiesAdapter;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -60,36 +55,25 @@ import org.openide.util.lookup.Lookups;
 
 /**
  * Children of a Card node, which get their contents by calling
- * $CARDMANAGER_URL/xlist/
+ * from the Card's CardContentsProvider capability, if present.
  *
  * @author Tim Boudreau
  */
-public class CardChildren extends ChildFactory.Detachable<XListEntry> implements PropertyChangeListener {
-    //XXX this is a near-duplicate of org.netbeans.modules.javacard.spi - replace
-    //with that when possible
-    private final CardDataObject ob;
-    private ObservableProperties props;
+final class CardChildren extends ChildFactory.Detachable<XListEntry> implements PropertyChangeListener {
 
-    public CardChildren(CardDataObject ob) {
-        this.ob = ob;
+    private final CardContentsProvider contents;
+
+    public CardChildren(CardContentsProvider ob) {
+        this.contents = ob;
     }
 
     @Override
     protected void addNotify() {
         super.addNotify();
-        PropertiesAdapter adap = ob.getLookup().lookup(PropertiesAdapter.class);
-        if (adap != null) {
-            props = adap.asProperties();
-            props.addPropertyChangeListener(this);
-        }
     }
 
     @Override
     protected void removeNotify() {
-        if (props != null) {
-            props.removePropertyChangeListener(this);
-            props = null;
-        }
         super.removeNotify();
     }
 
@@ -100,16 +84,9 @@ public class CardChildren extends ChildFactory.Detachable<XListEntry> implements
 
     @Override
     protected boolean createKeys(List<XListEntry> toPopulate) {
-        Card card = ob.getLookup().lookup(Card.class);
-        if (card != null) {
-            CardContentsProvider contents = card.getCapability(
-                    CardContentsProvider.class);
-            if (contents != null) {
-                XListModel mdl = contents.getContents();
-                if (mdl != null) {
-                    toPopulate.addAll(mdl.getData());
-                }
-            }
+        XListModel mdl = contents.getContents();
+        if (mdl != null) {
+            toPopulate.addAll(mdl.getData());
         }
         return true;
     }

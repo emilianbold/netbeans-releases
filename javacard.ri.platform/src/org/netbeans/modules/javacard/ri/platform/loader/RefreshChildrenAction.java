@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,39 +34,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javacard.spi.capabilities;
+
+package org.netbeans.modules.javacard.ri.platform.loader;
+
+import org.netbeans.modules.javacard.common.NodeRefresher;
+import org.netbeans.spi.actions.Single;
+import org.openide.util.NbBundle;
 
 /**
- * Enum of supported Contacted Protocol kinds.
+ *
  * @author Tim Boudreau
  */
-public enum ContactedProtocol {
-
-    /** T=0 */
-    T0, T1;
+public final class RefreshChildrenAction extends Single<NodeRefresher> {
+    public RefreshChildrenAction() {
+        super (NodeRefresher.class, NbBundle.getMessage(RefreshChildrenAction.class,
+                        "ACTION_REFRESH"), null); //NOI18N
+    }
 
     @Override
-    public String toString() {
-        switch (this) {
-            case T0:
-                return "T=0"; //NOI18N
-            case T1:
-                return "T=1"; //NOI18N
-            default:
-                throw new AssertionError();
-        }
+    protected void actionPerformed(NodeRefresher target) {
+        target.refreshNode();
     }
 
-    public static ContactedProtocol forString(String val) {
-        val = val == null ? null : val.trim();
-        if ("T=0".equals(val)) {
-            return T0;
-        } else if ("T=1".equals(val)) {
-            return T1;
-        } else {
-            return null;
-        }
-    }
 }
