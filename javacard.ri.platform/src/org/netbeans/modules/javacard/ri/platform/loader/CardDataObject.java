@@ -195,8 +195,8 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
             } else {
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.log(Level.FINE, "No cached instance - invoking " + //NOI18N
-                            "Card.create() for " + platform.getDisplayName() + //NOI18N
-                            " with " + properties); //NOI18N
+                            "Card.create() for {0} with {1}", 
+                            new Object[]{platform.getDisplayName(), properties}); //NOI18N
                 }
                 result = new RICard(this, platform, getName());
             }
