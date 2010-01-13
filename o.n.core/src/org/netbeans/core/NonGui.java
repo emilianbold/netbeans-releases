@@ -240,10 +240,4 @@ public class NonGui implements RunLevel {
         }
     }
 
-    /** Exits from the VM.
-    */
-    static void doExit (int code) {
-        TopSecurityManager.exit(code);
-    }
-
 }
