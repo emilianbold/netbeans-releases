@@ -39,6 +39,7 @@
 package org.netbeans.modules.ruby.platform.gems;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -185,6 +186,16 @@ public final class GemFilesParser {
             return null;
         }
         return new String[]{m.group(1), m.group(2)};
+    }
+
+    /**
+     * Parses the gem name and version from the given URL.
+     * @param gemUrl the url to parse; must represent an URL of a gem.
+     * @return a string array of length 2 containing the name [0] and version [1]
+     * or <code>null</code> if parsing was unsuccessful.
+     */
+    public static String[] parseNameAndVersion(URL gemUrl) {
+        return parseNameAndVersion(Gem.getGemName(gemUrl));
     }
 
 }
