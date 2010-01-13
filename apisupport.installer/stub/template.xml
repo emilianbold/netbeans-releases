@@ -48,7 +48,7 @@
 
         <property name="product-uid"  value="${suite.nbi.product.uid}"/>
 
-        <replace file="${installer.build.dir}/build.properties">
+        <replace file="${installer.build.dir}/build.properties" encoding="utf-8">
             <replacefilter token="{nbi.ant.tasks.jar}"             value="${nbi.ant.tasks.jar}"/>
             <replacefilter token="{nbi.registries.management.jar}" value="${nbi.registries.management.jar}"/>
             <replacefilter token="{nbi.engine.jar}"                value="${nbi.engine.jar}"/>
@@ -60,12 +60,12 @@
             <replacefilter token="{product-uid}"                   value="${product-uid}"/>
         </replace>
 
-        <replace dir="${installer.build.dir}/ext">
+        <replace dir="${installer.build.dir}/ext" encoding="utf-8">
             <replacefilter token="{product-name}" value="${suite.props.app.title}"/>
             <replacefilter token="{product-description}" value=""/>
         </replace>
 
-        <replace dir="${installer.build.dir}/ext/infra/build/products">
+        <replace dir="${installer.build.dir}/ext/infra/build/products" encoding="utf-8">
             <replacefilter token="{product.platforms}"        value="${generate.installer.for.platforms}"/>
             <replacefilter token="{product-data-path}"        value="${suite.location}/dist/${suite.props.app.name}.zip"/>
             <replacefilter token="{product-data-sub-dir}"     value="${suite.props.app.name}"/>
@@ -74,7 +74,15 @@
             <replacefilter token="{product-install-directory-name-windows}" value="${suite.props.app.title}"/>
             <replacefilter token="{product-install-directory-name-macosx}"  value="${suite.props.app.title}"/>
         </replace>       
+        <property name="dir.dir" value="${installer.build.dir}/tmpdirfornac"/>
+        <mkdir dir="${dir.dir}"/>
 
+        <native2ascii encoding="utf-8" src="${installer.build.dir}" dest="${dir.dir}" includes="build.properties ext/**/*.properties"/>
+
+        <copy todir="${installer.build.dir}" overwrite="true" includeEmptyDirs="true">
+             <fileset dir="${dir.dir}"/>
+        </copy> 
+        <delete dir="${dir.dir}" includeEmptyDirs="true"/>
     </target>
     
     <target name="replace">

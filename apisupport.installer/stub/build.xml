@@ -102,16 +102,7 @@
     </target>
     
     <target name="-init-properties">
-        <echo file="${environment.properties}"/>
-        
-        <if property="cvs.branch">
-            <echo file="${environment.properties}" append="true">
-cvs.branch=${cvs.branch}
-
-            </echo>
-        </if>
-        <echo file="${environment.properties}" append="true">
-
+        <echo file="${nbi.all.dir}/environment.tmp" encoding="utf-8">
 checkout.sources=false
 sources.dir=${nbi.all.dir}
 cvs.module=ext
@@ -132,7 +123,8 @@ downloads.cache.dir=${basedir}/cache/raw
 
 jarsigner.enabled=${jarsigner.enabled}
         </echo>
-        <replace file="${environment.properties}" token="\" value="/"/>
+        <replace file="${nbi.all.dir}/environment.tmp" token="\" value="/" encoding="utf-8"/>
+        <native2ascii src="${nbi.all.dir}" dest="${nbi.all.dir}" encoding="utf-8" includes="environment.tmp" ext=".properties"/>
     </target>
     
     <target name="-post-init-clean">

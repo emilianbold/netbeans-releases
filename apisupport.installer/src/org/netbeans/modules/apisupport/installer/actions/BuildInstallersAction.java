@@ -41,6 +41,7 @@
 package org.netbeans.modules.apisupport.installer.actions;
 
 import java.awt.event.ActionEvent;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -51,6 +52,8 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
@@ -62,7 +65,6 @@ import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Task;
 import org.openide.util.actions.Presenter;
 import org.openide.windows.WindowManager;
 import org.apache.tools.ant.module.api.support.ActionUtils;
@@ -71,7 +73,6 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.TaskListener;
 
 public final class BuildInstallersAction extends AbstractAction implements ContextAwareAction {
 
@@ -114,6 +115,30 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
             }
         }
 
+        private static String convertToAscii(final String string) {
+            final Properties properties = new Properties();
+
+            properties.put("uberkey", string);
+
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try {
+                properties.store(baos, "");
+            } catch (IOException e) {
+                Logger.getLogger(BuildInstallersAction.class.getName()).
+                        log(Level.WARNING, "Cannot convert string " + string, e);
+                return string;
+            }
+
+            final Matcher matcher = Pattern.compile("uberkey=(.*)$", Pattern.MULTILINE).
+                    matcher(baos.toString());
+
+            if (matcher.find()) {
+                return matcher.group(1);
+            } else {
+                return string;
+            }
+        }
+
         public static void actionPerformed(Node[] e) {
             if (e != null) {
                 for (Node node : e) {
@@ -130,7 +155,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         } catch (IOException ex) {
                             Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "Can`t store properties", ex);
                         }
-                        Logger.getLogger(BuildInstallersAction.class.getName()).warning("actionPerformed for " + suiteLocation);
+                        //Logger.getLogger(BuildInstallersAction.class.getName()).warning("actionPerformed for " + suiteLocation);
                         Properties props = new Properties();
                         props.put("suite.location", suiteLocation.getAbsolutePath().replace("\\", "/"));
                         props.put("suite.nbi.product.uid",
@@ -191,12 +216,12 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         props.put(
                                 "pack200.enabled", "false");
 
-
+                        /*
                         for (Object s : props.keySet()) {
                             Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.INFO,
                                     "[" + s + "] = " + props.get(s));
                         }
-
+                        */
                         File tmpProps = null;
                         try {
                             tmpProps = File.createTempFile("nbi-properties-", ".properties");
@@ -211,18 +236,18 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                             /*
                             executorTask.addTaskListener(new TaskListener() {
 
-                                public void taskFinished(Task task) {
-                                    if (executorTask.result() == 0) {
-                                        try {
-                                            ActionUtils.runTarget(findInstXml(prj), new String[]{"build"}, new Properties());
-                                        } catch (FileStateInvalidException ex) {
-                                            ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
-                                        } catch (IOException ex) {
-                                            ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
+                            public void taskFinished(Task task) {
+                            if (executorTask.result() == 0) {
+                            try {
+                            ActionUtils.runTarget(findInstXml(prj), new String[]{"build"}, new Properties());
+                            } catch (FileStateInvalidException ex) {
+                            ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
+                            } catch (IOException ex) {
+                            ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
 
-                                        }
-                                    }
-                                }
+                            }
+                            }
+                            }
                             });*/
                         } catch (FileStateInvalidException ex) {
                             ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
@@ -259,20 +284,8 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
 
         public JMenuItem getPopupPresenter() {
             Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
-
-
-
-
             if (n.length == 1) {
                 Project prj = n[0].getLookup().lookup(Project.class);
-
-
-
-
-
-
-
-
                 if (prj != null && prj.getClass().getSimpleName().equals("SuiteProject")) {
                     return new JMenuItem(this);
                 }
@@ -280,8 +293,6 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
 
             JMenuItem dummy = new JMenuItem();
             dummy.setVisible(false);
-
-
             return dummy;
 
         }
