@@ -1024,9 +1024,13 @@ public final class ClassPath {
                     url = FileUtil.getArchiveFile(url);
                 }
                 try {
-                    newRoots.add(new File(url.toURI()));
+                    //todo: Ignore non file urls, we can try to url->fileobject->url
+                    //if it becomes a file.
+                    if ("file".equals(url.getProtocol())) { //NOI18N
+                        newRoots.add(new File(url.toURI()));
+                    }
                 } catch (IllegalArgumentException e) {
-                    LOG.warning(e.getLocalizedMessage());
+                    LOG.warning(String.format("%s (URL: %s)", e.getLocalizedMessage(), url.toString()));
                     //pass
                 } catch (URISyntaxException e) {
                     LOG.warning("Invalid URL: " + url); //NOI18N
