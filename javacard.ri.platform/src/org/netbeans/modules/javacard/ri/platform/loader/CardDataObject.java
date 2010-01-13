@@ -86,7 +86,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.WeakListeners;
 
-public class CardDataObject extends PropertiesBasedDataObject<Card> implements CardStateObserver, NodeRefresher {
+public class CardDataObject extends PropertiesBasedDataObject<Card> implements CardStateObserver {
 
     private static final String ICON_BASE = "org/netbeans/modules/javacard/ri/platform/loader/card.png"; //NOI18N
     private Reference<Card> cardRef;
@@ -97,8 +97,15 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
     public CardDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader, Card.class);
         content.add(new StringBuilder("platform"), new PlatformConverter()); //NOI18N
+        content.add(new NR());
         platformName = pf.getParent().getName();
         myName = pf.getName();
+    }
+
+    private class NR implements NodeRefresher {
+        public void refreshNode() {
+            CardDataObject.this.refreshNode();
+        }
     }
 
     @Override
