@@ -71,12 +71,13 @@ import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFacto
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(id="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", category="general")
+@Hint(id="org.netbeans.modules.java.hints.jackpot.hintsimpl.LoggerStringConcat", category="logging")
 public class LoggerStringConcat {
 
     @TriggerPattern(value = "$logger.log($level, $message)",
@@ -161,9 +162,9 @@ public class LoggerStringConcat {
             return null;
         }
 
-        FixImpl fix = new FixImpl("Convert", methodName, TreePathHandle.create(ctx.getPath(), ctx.getInfo()), TreePathHandle.create(message, ctx.getInfo()));
+        FixImpl fix = new FixImpl(NbBundle.getMessage(LoggerStringConcat.class, "MSG_LoggerStringConcat_fix"), methodName, TreePathHandle.create(ctx.getPath(), ctx.getInfo()), TreePathHandle.create(message, ctx.getInfo()));
 
-        return ErrorDescriptionFactory.forTree(ctx, message, "Inefficient to use string concat in logger", fix);
+        return ErrorDescriptionFactory.forTree(ctx, message, NbBundle.getMessage(LoggerStringConcat.class, "MSG_LoggerStringConcat"), fix);
     }
 
     private static void rewrite(WorkingCopy wc, ExpressionTree level, MethodInvocationTree invocation, TreePath message) {
