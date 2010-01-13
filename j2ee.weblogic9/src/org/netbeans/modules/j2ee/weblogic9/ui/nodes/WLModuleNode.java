@@ -38,54 +38,68 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
+import java.awt.Image;
+import java.util.logging.Logger;
+import javax.enterprise.deploy.shared.ModuleType;
 import javax.swing.Action;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
- * A node that represents a concrete target for a particuler server instance.
- * As it gets filtered and does not appear in the registry we do not implement
- * anything special.
+ * Node which describes Web Module.
  *
- * @author Kirill Sorokin
+ * @author Petr Hejl
  */
-public class WLTargetNode extends AbstractNode {
+public class WLModuleNode extends AbstractNode {
 
-    /**
-     * Creates a new instance of the WSTargetNode.
-     *
-     * @param lookup a lookup object that contains the objects required for 
-     *      node's customization, such as the deployment manager
-     */
-    public WLTargetNode(Lookup lookup) {
-        super(new Children.Array());
-        getChildren().add(new Node[] {new WLItemNode(
-                new WLApplicationsChildren(lookup), NbBundle.getMessage(WLTargetNode.class, "LBL_Apps"))});
+    private final ModuleType moduleType;
+
+    public WLModuleNode(String name, Lookup lookup, ModuleType moduleType) {
+        super(Children.LEAF);
+        this.moduleType = moduleType;
+        setDisplayName(name);
     }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public int hashCode() {
-        return super.hashCode();
-    }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-    
+
     @Override
-    public Action[] getActions(boolean b) {
-        return new Action[] {};
+    public Action[] getActions(boolean context) {
+        return new SystemAction[] {};
     }
+
+    @Override
+    public Image getIcon(int type) {
+        if (ModuleType.EAR.equals(moduleType)) {
+            return UISupport.getIcon(ServerIcon.EAR_ARCHIVE);
+        } else if (ModuleType.EJB.equals(moduleType)) {
+            return UISupport.getIcon(ServerIcon.EJB_ARCHIVE);
+        } else if (ModuleType.WAR.equals(moduleType)) {
+            return UISupport.getIcon(ServerIcon.WAR_ARCHIVE);
+        } else {
+            return super.getIcon(type);
+        }
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
+
+//    private static class OpenURLActionCookieImpl implements OpenURLActionCookie {
+//
+//        private String url;
+//
+//        public OpenURLActionCookieImpl(String url) {
+//            this.url = url;
+//        }
+//
+//        public String getWebURL() {
+//            return url;
+//        }
+//    }
 }

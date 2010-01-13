@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,55 +31,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
-import javax.swing.Action;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.exceptions.TargetException;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesCookie;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
- * A node that represents a concrete target for a particuler server instance.
- * As it gets filtered and does not appear in the registry we do not implement
- * anything special.
  *
- * @author Kirill Sorokin
+ * @author Petr Hejl
  */
-public class WLTargetNode extends AbstractNode {
+public class WLModuleChildFactory
+        extends org.openide.nodes.ChildFactory<WLModuleNode> implements RefreshModulesCookie {
 
-    /**
-     * Creates a new instance of the WSTargetNode.
-     *
-     * @param lookup a lookup object that contains the objects required for 
-     *      node's customization, such as the deployment manager
-     */
-    public WLTargetNode(Lookup lookup) {
-        super(new Children.Array());
-        getChildren().add(new Node[] {new WLItemNode(
-                new WLApplicationsChildren(lookup), NbBundle.getMessage(WLTargetNode.class, "LBL_Apps"))});
+    private static final Logger LOGGER = Logger.getLogger(WLModuleChildFactory.class.getName());
+
+    private final Lookup lookup;
+
+    private final ModuleType moduleType;
+
+    public WLModuleChildFactory(Lookup lookup, ModuleType moduleType) {
+        this.lookup = lookup;
+        this.moduleType = moduleType;
     }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public int hashCode() {
-        return super.hashCode();
+
+    public final void refresh() {
+        refresh(false);
     }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-    
+
     @Override
-    public Action[] getActions(boolean b) {
-        return new Action[] {};
+    protected Node createNodeForKey(WLModuleNode key) {
+        return key;
+    }
+
+    @Override
+    protected boolean createKeys(List<WLModuleNode> toPopulate) {
+        WLDeploymentManager dm = lookup.lookup(WLDeploymentManager.class);
+        try {
+            TargetModuleID[] modules = dm.getAvailableModules(moduleType, dm.getTargets());
+            if (modules != null) {
+                for (TargetModuleID module : modules) {
+                    toPopulate.add(new WLModuleNode(module.getModuleID(), lookup, moduleType));
+                }
+            }
+            return modules != null && modules.length > 0;
+        } catch (IllegalStateException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (TargetException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return false;
     }
 }

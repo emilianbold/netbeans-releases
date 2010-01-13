@@ -167,6 +167,7 @@ public class WLInstantiatingIterator  implements WizardDescriptor.InstantiatingI
     private String password;
     private String url;
 
+
     /**
      * Setter for the instance url.
      *
