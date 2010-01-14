@@ -164,7 +164,7 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
         return null;
     }
 
-    protected CardCustomizerProvider createCardCustomizerProvidert(T t) {
+    protected CardCustomizerProvider createCardCustomizerProvider(T t) {
         return null;
     }
 
@@ -255,7 +255,7 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
             maybeAddCapability(createProfileCapability(props));
         }
         if (state.isNotRunning() && declaredCapabilities.contains(CardCustomizerProvider.class)) {
-            maybeAddCapability(createCardCustomizerProvidert(props));
+            maybeAddCapability(createCardCustomizerProvider(props));
         }
         if (declaredCapabilities.contains(DeleteCapability.class)) {
             maybeAddCapability(createDeleteCapability(props));
@@ -362,7 +362,7 @@ public abstract class BaseCard<T extends CapabilitiesProvider> extends AbstractC
                     maybeAddCapability(createStartCapability(t));
                 }
                 if (declaredCapabilities.contains(CardCustomizerProvider.class)) {
-                    maybeAddCapability(createCardCustomizerProvidert(t));
+                    maybeAddCapability(createCardCustomizerProvider(t));
                 }
             case STOPPING:
                 //Do this here as well as in BEFORE_STOPPING, to handle

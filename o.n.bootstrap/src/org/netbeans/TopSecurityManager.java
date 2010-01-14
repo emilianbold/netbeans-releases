@@ -364,7 +364,7 @@ public class TopSecurityManager extends SecurityManager {
     }
 
     public @Override void checkPermission(Permission perm) {
-        assert checkLogger(perm); //#178013 & JDK bug 1694855
+//        assert checkLogger(perm); //#178013 & JDK bug 1694855
         checkSetSecurityManager(perm);
         
         //
@@ -393,7 +393,7 @@ public class TopSecurityManager extends SecurityManager {
     }
     
     public @Override void checkPermission(Permission perm, Object context) {
-        assert checkLogger(perm); //#178013 & JDK bug 1694855
+//        assert checkLogger(perm); //#178013 & JDK bug 1694855
         checkSetSecurityManager(perm);
         return;
     }

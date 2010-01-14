@@ -42,8 +42,12 @@ package org.netbeans.modules.javacard.common;
 /**
  * Object which can be in the lookup of a DataObject for a card or platform,
  * which can be called to indicate the display name or icon may have changed
- * due to a state change, and the data object my need to update its node if
- * present.
+ * due to a state change, or the child nodes may have changed, 
+ * and the data object my need to update its node if present.
+ * <p/>
+ * If present in the lookup of a DataObject for a Card (or, if using the
+ * Cards class, in the lookup of the Lookup.Provider used to find the card),
+ * then the Refresh action will be enabled.
  *
  * @author Tim Boudreau
  */

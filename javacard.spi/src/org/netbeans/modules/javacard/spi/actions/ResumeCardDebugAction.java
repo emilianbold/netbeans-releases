@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,36 +31,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javacard.shell;
 
+package org.netbeans.modules.javacard.spi.actions;
+
+import java.util.Collection;
 import org.netbeans.modules.javacard.api.RunMode;
-import org.netbeans.modules.javacard.spi.CardState;
 import org.netbeans.modules.javacard.spi.capabilities.ResumeCapability;
+import org.netbeans.spi.actions.ContextAction;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anki R Nelaturu
+ * @author Tim
  */
-final class ResumeCommand implements Command {
-
-    public String execute(ShellPanel shellPanel, String[] args) throws ShellException {
-        CardState state = shellPanel.getCard().getState();
-        if (state.isTransitionalState()) {
-            return NbBundle.getMessage(ResumeCommand.class,
-                    "ERR_TRANSITIONAL_STATE", shellPanel.getCard().getState()); //NOI18N
-        }
-        ResumeCapability cap = shellPanel.getCard().getLookup().lookup(ResumeCapability.class);
-        if (cap != null) {
-            cap.resume(RunMode.RUN).awaitUninterruptibly();
-        } else {
-            return APDUSender.getString("ERR_RESUME_NOT_SUPPORTED");
-        }
-        return APDUSender.getString("DONE"); //NOI18N
+final class ResumeCardDebugAction extends ContextAction<ResumeCapability> {
+    private final RunMode mode;
+    ResumeCardDebugAction(RunMode mode) {
+        super (ResumeCapability.class, mode == RunMode.RUN ? NbBundle.getMessage(ResumeCardDebugAction.class,
+                "ACTION_RESUME_CARD") : NbBundle.getMessage(ResumeCardDebugAction.class, //NOI18N
+                "ACTION_RESUME_CARD_MODAL", mode), null); //NOI18N
+        this.mode = mode;
     }
 
-    public String usage() {
-        return APDUSender.getString("USAGE_RESUME"); //NOI18N
+    @Override
+    protected void actionPerformed(Collection<? extends ResumeCapability> targets) {
+        for (ResumeCapability c : targets) {
+            c.resume(mode);
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof ResumeCardDebugAction && ((ResumeCardDebugAction)o).mode == mode;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() + (11 * mode.hashCode());
     }
 }

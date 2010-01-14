@@ -198,7 +198,7 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     }
 
     @Override
-    protected CardCustomizerProvider createCardCustomizerProvidert(CardProperties t) {
+    protected CardCustomizerProvider createCardCustomizerProvider(CardProperties t) {
         Lookup lkp = Lookups.forPath(CommonSystemFilesystemPaths.SFS_ADD_HANDLER_REGISTRATION_ROOT + getPlatform().getPlatformKind());
         return lkp.lookup(CardCustomizerProvider.class);
     }
@@ -211,8 +211,12 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     private String[] getDebugProxyCommandLine(Project project) {
         CardProperties p = getCapability(CardProperties.class);
         File jar = AntClasspathClosureProvider.getTargetArtifact(project);
-        String classpathClosure = AntClasspathClosureProvider.getClasspathClosure(project)
-                + File.pathSeparator + jar.getAbsolutePath();
+        String classpathClosure = AntClasspathClosureProvider.getClasspathClosure(project);
+        if (classpathClosure != null && !"".equals(classpathClosure)) {
+            classpathClosure += File.pathSeparator + jar.getAbsolutePath();
+        } else {
+            classpathClosure = jar.getAbsolutePath();
+        }
         return p.getDebugProxyCommandLine(getPlatform().toProperties(),
                 classpathClosure);
     }
@@ -220,14 +224,17 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
     private String[] getStartCommandLine(RunMode mode) {
         CardProperties p = getCapability(CardProperties.class);
         assert p != null;
-        boolean forDebug = mode == RunMode.DEBUG;
+        boolean forDebug = mode.isDebug();
+        boolean suspend = forDebug ? false : p.isSuspend();
         Properties props = getPlatform().toProperties();
-        return p.getRunCommandLine(props, forDebug, 0);
+        return p.getRunCommandLine(props, forDebug, suspend, false);
     }
 
-    private String[] getResumeCommandLine() {
+    private String[] getResumeCommandLine(RunMode mode) {
         CardProperties p = getCapability(CardProperties.class);
-        return p.getResumeCommandLine(getPlatform().toProperties());
+        boolean debug = mode.isDebug();
+        boolean suspend = debug ? false : p.isSuspend();
+        return p.getRunCommandLine(getPlatform().toProperties(), debug, suspend, true);
     }
 
     private String getDisplayName() {
@@ -482,11 +489,11 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
 
     private class Resume implements ResumeCapability {
 
-        public Condition resume() {
+        public Condition resume(RunMode mode) {
             if (!getState().isNotRunning()) {
                 return new ConditionImpl();
             }
-            String[] cls = getResumeCommandLine();
+            String[] cls = getResumeCommandLine(mode);
             if (cls == null || cls.length <= 0) {
                 return new ConditionImpl();
             }
@@ -745,21 +752,16 @@ public class RICard extends BaseCard<CardProperties> { //non-final only for unit
                             in.close();
                         }
                     } catch (IOException ex) {
-                        Logger.getLogger(CardChildren.class.getName()).log(
-                                Level.INFO,
-                                "IOException getting children for URL from " + //NOI18N
-                                getSystemId() + ":" + url, ex); //NOI18N
+                        //do not log - perfectly normal if remote process is
+                        //not running, which is a common occurence
                     } finally {
                         try {
                             if (in != null) {
                                 in.close();
                             }
                         } catch (IOException ex) {
-                            Logger.getLogger(CardChildren.class.getName()).log(
-                                    Level.INFO, "IOException closing stream " + //NOI18N
-                                    "for URL from " + //NOI18N
-                                    getSystemId() + ":" + //NOI18N
-                                    url, ex);
+                        //do not log - perfectly normal if remote process is
+                        //not running, which is a common occurence
                         }
                     }
                 }

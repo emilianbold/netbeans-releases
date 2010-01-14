@@ -214,6 +214,9 @@ public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject
         //have to iterate all platform DataObjects to find the one for this
         //JavacardPlatform
         platformProps.setProperty(JavacardPlatformKeyNames.PLATFORM_ID, filename);
+
+        addMissingPropertiesJC302 ();
+
         progress();
         //Create the file
         FileObject fo = platformFile = platformsFolder.createData(filename,
@@ -274,6 +277,23 @@ public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject
         return fo;
     }
     private int step;
+
+    private final void addMissingPropertiesJC302() {
+        if (!platformProps.containsKey(JavacardPlatformKeyNames.PLATFORM_DEBUG_PROXY)) {
+            FileObject fo = baseDir.getFileObject("bin/debugproxy.bat");
+            if (fo == null) {
+                fo = baseDir.getFileObject("bin/debugproxy");
+            }
+            if (fo == null) {
+                fo = baseDir.getFileObject("bin/debugproxy.sh");
+            }
+            if (fo != null) {
+                File file = FileUtil.toFile(fo);
+                String path = file == null ? fo.getPath() /* unit tests */ : file.getAbsolutePath();
+                platformProps.put (JavacardPlatformKeyNames.PLATFORM_DEBUG_PROXY, path);
+            }
+        }
+    }
 
     private void progress() {
         if (h != null) {
