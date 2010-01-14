@@ -73,7 +73,6 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
                     <attr name="position" intvalue="100"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/spi/resources/capproject.png"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javacard.wizard.ProjectWizardIterator.create"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/CapProjectDescription.html"/>
                     <attr name="projectType" stringvalue="CLASSIC_APPLET"/>
@@ -83,7 +82,6 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
                     <attr name="position" intvalue="300"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/spi/resources/eapproject.png"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javacard.wizard.ProjectWizardIterator.create"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/EapProjectDescription.html"/>
                     <attr name="projectType" stringvalue="EXTENDED_APPLET"/>
@@ -93,7 +91,6 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
                     <attr name="position" intvalue="400"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/spi/resources/clslibproject.png"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javacard.wizard.ProjectWizardIterator.create"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/ClsLibProjectDescription.html"/>
                     <attr name="projectType" stringvalue="CLASSIC_LIBRARY"/>
@@ -103,7 +100,6 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
                     <attr name="position" intvalue="500"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/spi/resources/extlibproject.png"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javacard.wizard.ProjectWizardIterator.create"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/ExtLibProjectDescription.html"/>
                     <attr name="projectType" stringvalue="EXTENSION_LIBRARY"/>
@@ -113,7 +109,6 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
                     <attr name="position" intvalue="600"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/spi/resources/webproject.png"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javacard.wizard.ProjectWizardIterator.create"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/WebProjectDescription.html"/>
                     <attr name="projectType" stringvalue="WEB"/>
@@ -158,7 +153,7 @@ made subject to such option by the copyright holder.
 
     <folder name="Projects">
         <folder name="org-netbeans-modules-javacard-webproject">
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/webproject.png"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/spi/resources/webproject.png"/>
             <folder name="Nodes">
                 <file name="org-netbeans-modules-javacard-project-JCProjectSourceNodeFactory.instance">
                     <attr name="position" intvalue="100"/>
@@ -206,7 +201,7 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
         <folder name="org-netbeans-modules-javacard-eapproject">
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/eapproject.png"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/spi/resources/eapproject.png"/>
             <folder name="Nodes">
                 <file name="org-netbeans-modules-javacard-project-JCProjectSourceNodeFactory.instance">
                     <attr name="position" intvalue="100"/>
@@ -253,7 +248,7 @@ made subject to such option by the copyright holder.
         </folder>
 
         <folder name="org-netbeans-modules-javacard-capproject">
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/capproject.png"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/spi/resources/capproject.png"/>
             <folder name="Nodes">
                 <file name="org-netbeans-modules-javacard-project-JCProjectSourceNodeFactory.instance">
                     <attr name="position" intvalue="100"/>
@@ -308,7 +303,7 @@ made subject to such option by the copyright holder.
         </folder>
 
         <folder name="org-netbeans-modules-javacard-extlibproject">
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/extlibproject.png"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/spi/resources/extlibproject.png"/>
             <folder name="Nodes">
                 <file name="org-netbeans-modules-javacard-project-JCProjectSourceNodeFactory.instance">
                     <attr name="position" intvalue="100"/>
@@ -352,7 +347,7 @@ made subject to such option by the copyright holder.
         </folder>
 
         <folder name="org-netbeans-modules-javacard-clslibproject">
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/resources/clslibproject.png"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javacard/spi/resources/clslibproject.png"/>
             <folder name="Nodes">
                 <file name="org-netbeans-modules-javacard-project-JCProjectSourceNodeFactory.instance">
                     <attr name="position" intvalue="100"/>

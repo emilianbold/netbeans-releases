@@ -89,6 +89,7 @@
             <file name="ApduTemplate.scr" url="ApduTemplate.scr">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.apdufile.Bundle#Templates/Other/ApduTemplate.scr"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="position" intvalue="32740"/>
             </file>
         </folder>
     </folder>
