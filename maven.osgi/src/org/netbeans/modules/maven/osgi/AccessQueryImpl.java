@@ -58,13 +58,9 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
     private Project project;
     private WeakReference<List<Pattern>> ref;
     
-    private static final String MANIFEST_PATH = "src/main/nbm/manifest.mf"; //NOI18N
-    private static final String ATTR_PUBLIC_PACKAGE = "OpenIDE-Module-Public-Packages"; //NOI18N
-    
     public AccessQueryImpl(Project prj) {
         project = prj;
         mavenProject = prj.getLookup().lookup(NbMavenProject.class);
-        
     }
     
     /**
@@ -78,25 +74,21 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
             String path = FileUtil.getRelativePath(srcdir, pkg);
             if (path != null) {
                 String name = path.replace('/', '.');
-                //TODO cache somehow..
-                List<Pattern> pp = getPublicPackagesPatterns();
-                if (pp.size() > 0) {
-                    return check(pp, name);
-                }
+                return check(name);
             }
         }
         
         return null;
     }
     
-    private boolean check(List<Pattern> patt, String value) {
+    private boolean check(String value) {
         boolean matches = false;
-        for (Pattern pattern : patt) {
-            matches = pattern.matcher(value).matches();
-            if (matches) {
-                break;
-            }
-        }
+//        for (Pattern pattern : patt) {
+//            matches = pattern.matcher(value).matches();
+//            if (matches) {
+//                break;
+//            }
+//        }
         return matches;
     }
     
