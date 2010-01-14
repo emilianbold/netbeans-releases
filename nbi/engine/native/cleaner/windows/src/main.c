@@ -214,7 +214,7 @@ WCHAR * toWCHAR(char * charBuffer, DWORD size) {
     for(i=0;i<size/2;i++) {
         realStringPtr[2*i] = (realStringPtr[2*i]) & 0xFF;
         realStringPtr[2*i+1] = (realStringPtr[2*i+1])& 0xFF;
-        buffer [i] = realStringPtr[2*i] + (realStringPtr[2*i+1] << 8);
+        buffer [i] = ((unsigned char)realStringPtr[2*i]) + (((unsigned char)realStringPtr[2*i+1]) << 8);
     }
     
     return buffer;
@@ -283,7 +283,6 @@ void readStringList(HANDLE fileHandle, WCHAR *** list, DWORD *number) {
     
     if(ReadFile(fileHandle, charBuffer, size, &read, 0) && read >=2) {
         WCHAR * buffer = toWCHAR(charBuffer, size + 2);
-        //MessageBoxW(0, buffer, L"!Message!", MB_OK);
         getLines(buffer, list, number);
         LocalFree(buffer);
     }
