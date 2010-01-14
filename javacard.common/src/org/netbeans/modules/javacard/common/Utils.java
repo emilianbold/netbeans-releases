@@ -647,6 +647,11 @@ public final class Utils {
      * </pre>
      * into an array of strings suitable as individual arguments to pass into
      * Runtime.exec() or similar.
+     * <p>
+     * The one caveat is that it is not possible to have to consecutive arguments
+     * that do not begin with a - character; they will be treated as a single
+     * argument.
+     *
      * @param s A command line
      * @return The command line split into tokens, taking into account
      * things like spaces in file paths, dash characters in file paths, etc.
