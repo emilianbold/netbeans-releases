@@ -520,6 +520,7 @@ public class DbSchemaEjbGenerator {
             ForeignKeyElement[] fkeys = table.getForeignKeys();
             //sometimes database may contain duplicating foreign keys (or it may be an issue in db schema generation)
             //TODO: uncomment to fix issue 177341
+            fkeys = removeDuplicateFK(fkeys);
 
             for (int col = 0; col < cols.length; col++) {
                 if (pk != null &&
@@ -595,13 +596,13 @@ public class DbSchemaEjbGenerator {
             ForeignKeyElement key=fkeys[i];
             ComparableFK fkc=new ComparableFK(key);
             if(ret.get(fkc)!=null){//we already have the same key
-                LOGGER.log(Level.INFO,key.getKeyName()+" key in "+key.getDeclaringTable().getName().getFullName() + " is considered as a duplicate, you may need to verify your schema or database structure.");//NOI18N
+                LOGGER.log(Level.INFO,key.getName().getFullName()+" key in "+key.getDeclaringTable().getName().getFullName() + " is considered as a duplicate, you may need to verify your schema or database structure.");//NOI18N
                 continue;
             } else {
                 ret.put(fkc, key);
             }
         }
-        return (ForeignKeyElement[]) ret.values().toArray();
+        return (ForeignKeyElement[]) ret.values().toArray(new ForeignKeyElement[]{});
     }
 
     /**
