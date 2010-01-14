@@ -44,16 +44,23 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
@@ -294,6 +301,159 @@ implements PropertyChangeListener, LookupListener {
             public void run() {
             }
         }).waitFinished();
+    }
+
+
+    //
+    // Features Off Demand
+    //
+    private static final Logger LOG = Logger.getLogger(FeatureManager.class.getName());
+    static void associateFiles(List<FileObject> enabled) {
+        long when = 0;
+        for (FileObject f : enabled) {
+            long t = f.lastModified().getTime();
+            if (t > when) {
+                when = t;
+            }
+        }
+        for (FileObject f : enabled) {
+            LOG.log(Level.FINE, "Enabling ErgoControl for {0}", f);
+            try {
+                f.setAttribute("ergonomicsEnabled", when); // NOI18N
+                f.setAttribute("ergonomicsUnused", 0); // NOI18N
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    public static void incrementUnused(Project[] projects) throws IOException {
+        final FileObject fo = FileUtil.getConfigFile("Modules"); // NOI18N
+        if (fo == null) {
+            return;
+        }
+        final FileObject[] arr = fo.getChildren();
+
+
+        Map<String,Long> cnb2Date = new HashMap<String, Long>();
+        Map<Long,List<FileObject>> date2Files = new HashMap<Long,List<FileObject>>();
+
+        for (int i = 0; i < arr.length; i++) {
+            final FileObject module = arr[i];
+            final String cnb = module.getName().replace('-', '.');
+            final Object when = module.getAttribute("ergonomicsEnabled"); // NOI18N
+            LOG.log(Level.FINEST, "Controlling {0}: {1}", new Object[] { module, when });
+            if (!(when instanceof Long) || ((Long)when) < module.lastModified().getTime()) {
+                continue;
+            }
+            final Long date = (Long) when;
+            cnb2Date.put(cnb, date);
+            List<FileObject> files = date2Files.get(date);
+            if (files == null) {
+                files = new ArrayList<FileObject>();
+                date2Files.put(date, files);
+            }
+            files.add(module);
+        }
+
+
+        List<FeatureInfo> unused = new ArrayList<FeatureInfo>();
+        unused.addAll(FeatureManager.features());
+        for (int i = 0; i < projects.length; i++) {
+            FeatureProjectFactory.Data d = new FeatureProjectFactory.Data(
+                projects[i].getProjectDirectory(), true
+            );
+
+            for (FeatureInfo fi : FeatureManager.features()) {
+                if (!fi.isEnabled()) {
+                    continue;
+                }
+                if (fi.isProject(d) == 0) {
+                    continue;
+                }
+                unused.remove(fi);
+                for (String cnb : fi.getCodeNames()) {
+                    final Long thisIsUsedGroup = cnb2Date.get(cnb);
+                    final List<FileObject> files = date2Files.get(thisIsUsedGroup);
+                    if (files != null) {
+                        for (FileObject usedFile : files) {
+                            Object prev = usedFile.getAttribute("ergonomicsUnused"); // NOI18N
+                            if (!(prev instanceof Number) || ((Number)prev).intValue() == 0) {
+                                LOG.log(Level.FINE, "Already marked as used: {0}", usedFile);
+                                continue;
+                            }
+                            LOG.log(Level.FINE, "Marking {0} as used", usedFile);
+                            usedFile.setAttribute("ergonomicsUnused", 0); // NOI18N
+                        }
+                        date2Files.remove(thisIsUsedGroup);
+                    }
+                }
+            }
+        }
+
+        Set<FileObject> processed = new HashSet<FileObject>();
+        for (FeatureInfo fi : unused) {
+            LOG.log(Level.FINE, "Unused feature {0}", fi.clusterName);
+            Long groupId = null;
+            for (String cnb : fi.getCodeNames()) {
+                if (groupId == null) {
+                    groupId = cnb2Date.get(cnb);
+                    if (groupId == null) {
+                        break;
+                    }
+                }
+                if (!groupId.equals(cnb2Date.get(cnb))) {
+                    date2Files.remove(groupId);
+                    groupId = null;
+                    break;
+                }
+            }
+            if (groupId != null) {
+                for (List<FileObject> list : date2Files.values()) {
+                    for (FileObject increment : list) {
+                        if (!processed.add(increment)) {
+                            continue;
+                        }
+                        int now = 0;
+                        Object obj = increment.getAttribute("ergonomicsUnused"); // NOI18N
+                        if (obj instanceof Number) {
+                            now = ((Number)obj).intValue();
+                        }
+                        now++;
+                        increment.setAttribute("ergonomicsUnused", now); // NOI18N
+                        LOG.log(Level.FINE, "Incremented to {0} for {1}", new Object[] { now, increment });
+                    }
+                }
+            }
+        }
+    }
+    public static void disableUnused(int howMuch) throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Modules"); // NOI18N
+        final FileObject[] arr = fo.getChildren();
+        boolean first = true;
+        for (int i = 0; i < arr.length; i++) {
+            FileObject module = arr[i];
+            final Object when = module.getAttribute("ergonomicsEnabled"); // NOI18N
+            LOG.log(Level.FINEST, "Checking {0}: {1}", new Object[] { module, when });
+            if (!(when instanceof Long) || ((Long) when) < module.lastModified().getTime()) {
+                continue;
+            }
+            final Object unused = module.getAttribute("ergonomicsUnused"); // NOI18N
+            LOG.log(Level.FINEST, "Unused {0}", unused);
+            if (!(unused instanceof Number) || ((Number)unused).intValue() < howMuch) {
+                continue;
+            }
+            String cnb = module.getName().replace('-', '.');
+            if (first) {
+                LOG.info("Long time unused modules found, disabling:"); // NOI18N
+                first = false;
+            }
+            LOG.info(cnb);
+            Object clean = module.getAttribute("removeWritables"); // NOI18N
+            if (clean instanceof Callable) {
+                ((Callable)clean).call();
+            }
+        }
     }
 
 }

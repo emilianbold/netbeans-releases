@@ -43,19 +43,15 @@ import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import junit.framework.Test;
-import org.netbeans.Module;
-import org.netbeans.ModuleManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -67,10 +63,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeEvent;
-import org.openide.nodes.NodeListener;
-import org.openide.nodes.NodeMemberEvent;
-import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -79,7 +71,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeListener {
+public class FeaturesOffDemandTest extends NbTestCase implements PropertyChangeListener {
     FileObject root;
     private static final InstanceContent ic = new InstanceContent();
 
@@ -89,7 +81,7 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
     private int change;
     
     
-    public ProjectOnDemandTest(String testName) {
+    public FeaturesOffDemandTest(String testName) {
         super(testName);
     }
 
@@ -98,7 +90,7 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
 
         return NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
-            addTest(ProjectOnDemandTest.class).
+            addTest(FeaturesOffDemandTest.class).
             clusters("ergonomics[0-9]*").
             clusters("ide[0-9]*|java[0-9]*").
             gui(false)
@@ -117,7 +109,6 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         System.setProperty("netbeans.user", getWorkDirPath());
         StringBuffer sb = new StringBuffer();
         boolean found = false;
-        Exception ex2 = null;
         for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             if (info.getCodeNameBase().equals("org.netbeans.modules.java.kit")) {
                 assertFalse("Module is disabled", info.isEnabled());
@@ -130,9 +121,9 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         }
 
         FeatureInfo info = FeatureInfo.create(
-            "cluster",
-            ProjectOnDemandTest.class.getResource("FeatureInfo.xml"),
-            ProjectOnDemandTest.class.getResource("TestBundle.properties")
+            "testcluster",
+            FeaturesOffDemandTest.class.getResource("FeatureInfo.xml"),
+            FeaturesOffDemandTest.class.getResource("TestBundle5.properties")
         );
         ic.add(info);
         
@@ -153,40 +144,18 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         assertEquals("Empty", 0, OpenProjects.getDefault().getOpenProjects().length);
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
+    public void testFoDModuleFilesAreAnnotatedWithAttributes() throws Exception {
+        FileObject sub = FileUtil.getConfigFile("Modules/org-netbeans-modules-java-kit.xml");
+        assertNotNull("Module config file found", sub);
 
-    public void testRecognizeDocBookProject() throws Exception {
+        String origContent = sub.asText("UTF-8");
+
         FileObject prjFO1 = root.getFileObject("1st");
         FileObject prjFO2 = root.getFileObject("2nd");
 
         assertTrue("Recognized as project", ProjectManager.getDefault().isProject(prjFO1));
         Project p = ProjectManager.getDefault().findProject(prjFO1);
         assertNotNull("Project found", p);
-
-        assertTrue("Recognized as project", ProjectManager.getDefault().isProject(prjFO2));
-        Project p2 = ProjectManager.getDefault().findProject(prjFO2);
-        assertNotNull("Project found", p2);
-        
-        ProjectOpenedHook open = p.getLookup().lookup(ProjectOpenedHook.class);
-        assertNotNull("Open hook found", open);
-
-        ProjectInformation info = p.getLookup().lookup(ProjectInformation.class);
-        assertNotNull("Info about icon", info);
-        assertNotNull("Icon provided", info.getIcon());
-        info.addPropertyChangeListener(this);
-
-        LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
-        assertNotNull("Provider done", lvp);
-        Node n = lvp.createLogicalView();
-        assertNotNull("Node provided", n);
-        assertNull("Nothing found", lvp.findPath(n, ""));
-        assertEquals("One child: " + n.getChildren().snapshot(), 1, n.getChildren().getNodesCount());
-
-        assertNull("No test factory in project", p.getLookup().lookup(TestFactory.class));
-        assertNull("No test factory in project", p2.getLookup().lookup(TestFactory.class));
 
         long before = System.currentTimeMillis();
         Thread.sleep(1000);
@@ -198,8 +167,6 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         Thread.sleep(1000);
         long after = System.currentTimeMillis();
         
-        assertEquals("No Dialog currently created", 0, DD.cnt);
-        
         List<Project> arr = Arrays.asList(OpenProjects.getDefault().openProjects().get());
         assertEquals("However one instance is there", 1, arr.size());
         Project newP = arr.get(0).getLookup().lookup(Project.class);
@@ -207,37 +174,13 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
             fail("New project is made available, not old: " + newP);
         }
         assertEquals("Right type", TestFactory.class, newP.getClass());
-        TestFactory tf = (TestFactory)newP;
-        assertEquals("Open hook called", 1, tf.opened);
-
-        assertEquals("Project info changed", 1, change);
-        assertEquals("One listener attached", 1, tf.listenerCount);
-        assertEquals("Info delegates", "x", info.getName());
-        assertEquals("Info delegates2", "y", info.getDisplayName());
-        assertEquals("Info delegates icon", null, info.getIcon());
-
-        LogicalViewProvider lvp2 = p.getLookup().lookup(LogicalViewProvider.class);
-        assertNotNull("Provider created", lvp2);
-        if (lvp == lvp2) {
-            fail("Should be different, the real: " + lvp2);
-        }
-        Node r = lvp2.createLogicalView();
-        assertNotNull("Root found", r);
-        assertEquals("Same name", n.getName(), r.getName());
-        assertEquals("Same display name", n.getDisplayName(), r.getDisplayName());
-        assertEquals("Two children", 2, r.getChildren().getNodesCount());
-        assertEquals("Two children", 2, n.getChildren().getNodesCount());
 
         OpenProjects.getDefault().close (new Project[] { newP });
         if (OpenProjects.getDefault().getOpenProjects().length != 0) {
             fail("All projects shall be closed: " + Arrays.asList(OpenProjects.getDefault().getOpenProjects()));
         }
 
-        assertNotNull("Test factory in opened project", p.getLookup().lookup(TestFactory.class));
-        assertNotNull("Test factory in not yet opened project", p2.getLookup().lookup(TestFactory.class));
-
-        FileObject sub = FileUtil.getConfigFile("Modules/org-netbeans-modules-subversion.xml");
-        assertNotNull("Module config file found", sub);
+        assertNotNull("File is found in userdir", FileUtil.toFile(sub));
         final Object when = sub.getAttribute("ergonomicsEnabled");
         final Object cnt = sub.getAttribute("ergonomicsUnused");
         assertNotNull("Not enabled manually", cnt);
@@ -247,6 +190,20 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
 
         Long modified = sub.lastModified().getTime();
         assertEquals("enabled attribute is same as modification day", when, modified);
+
+        if (origContent.equals(sub.asText("UTF-8"))) {
+            fail("The module shall be enabled right now:\n" + sub.asText("UTF-8"));
+        }
+
+        for (int i = 0; i < 2; i++) {
+            FeatureManager.incrementUnused(OpenProjects.getDefault().getOpenProjects());
+        }
+        FeatureManager.disableUnused(2);
+
+        assertTrue("Config file exists", sub.canRead());
+        String newContent = sub.asText("UTF-8");
+
+        assertEquals("The content is the same as originally was", origContent, newContent);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
