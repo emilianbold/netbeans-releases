@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * Interface AttributeWrappedMBean4MBean
- * 
+ *
  * @author <author>
  */
 public interface AttributeWrappedMBean4MBean

@@ -214,7 +214,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
     // -------------------------------------------- Methods from ConfigProcessor
 
-    public void process(DocumentInfo[] documents) {
+    public void process(javax.servlet.ServletContext context, DocumentInfo[] documents) {
         for (int i = 0, length = documents.length; i < length; i++) {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE,

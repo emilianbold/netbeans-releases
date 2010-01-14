@@ -69,17 +69,9 @@ public class Utilities {
         return FileUtil.normalizeFile(new File(System.getProperty("user.home")));
     }
 
-    public static boolean isUserLoggedIn() {
-        if (Kenai.getDefault().getPasswordAuthentication() == null) {
-            return false;
-        }
-        return true;
-    }
-
     private static HashMap<String, Boolean> chatSupported = new HashMap();
 
-    public static boolean isChatSupported() {
-        Kenai kenai = Kenai.getDefault();
+    public static boolean isChatSupported(Kenai kenai) {
         String kenaiHost = kenai.getUrl().getHost();
         Boolean b = chatSupported.get(kenaiHost);
         if (b==null) {
@@ -98,5 +90,11 @@ public class Utilities {
             chatSupported.put(kenaiHost, b);
         }
         return b;
+    }
+
+    public static void assertJid(String name) {
+        assert name!=null;
+        assert name.contains("@"): "name must be FQN";
+        assert !name.contains("/"): "name cannot contain '/'";
     }
 }

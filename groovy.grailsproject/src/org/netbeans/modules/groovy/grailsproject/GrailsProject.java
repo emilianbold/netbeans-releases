@@ -70,6 +70,7 @@ import org.netbeans.modules.groovy.grailsproject.commands.GrailsCommandSupport;
 import org.netbeans.modules.groovy.grailsproject.completion.ControllerCompletionProvider;
 import org.netbeans.modules.groovy.grailsproject.completion.DomainCompletionProvider;
 import org.netbeans.modules.groovy.grailsproject.config.BuildConfig;
+import org.netbeans.modules.groovy.grailsproject.debug.GrailsDebugger;
 import org.netbeans.modules.groovy.grailsproject.ui.TemplatesImpl;
 import org.netbeans.modules.groovy.support.spi.GroovyFeature;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -225,7 +226,8 @@ public final class GrailsProject implements Project {
                 new DomainCompletionProvider(),
                 logicalView, //Logical view of project implementation
                 cpProvider,
-                config
+                config,
+                new GrailsDebugger(this)
             );
         }
         return lookup;

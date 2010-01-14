@@ -41,13 +41,14 @@ package org.netbeans.modules.javacard.ri.card;
 
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.util.Map;
 import java.util.Properties;
+import java.util.WeakHashMap;
 import org.netbeans.modules.javacard.common.KeysAndValues;
 import org.netbeans.modules.javacard.ri.platform.installer.DevicePropertiesPanel;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.CardCustomizer;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
-import org.netbeans.validation.api.Problem;
 import org.netbeans.validation.api.ui.ValidationGroup;
 
 /**
@@ -57,17 +58,19 @@ import org.netbeans.validation.api.ui.ValidationGroup;
  * @author Tim Boudreau
  */
 public class CustomizerProvider implements CardCustomizerProvider {
-    private CC cc;
+    private final Map<Card, CardCustomizer> m = new WeakHashMap<Card, CardCustomizer>();
     public CardCustomizer getCardCustomizer(Card card) {
         CardProperties props = card.getCapability(CardProperties.class);
         if (props != null) {
-            Properties p = props.toProperties();
             synchronized (this) {
+                CardCustomizer cc = m.get(card);
                 if (cc == null) {
+                    Properties p = props.toProperties();
                     cc = new CC(p);
+                    m.put(card, cc);
                 }
+                return cc;
             }
-            return cc;
         } else {
             //XXX return a dummy instance?
             return null;

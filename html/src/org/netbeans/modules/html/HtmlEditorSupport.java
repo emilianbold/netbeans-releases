@@ -124,6 +124,11 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     }
 
     @Override
+    protected boolean asynchronousOpen() {
+	return true;
+    }
+
+    @Override
     public void saveDocument() throws IOException {
         updateEncoding();
         super.saveDocument();

@@ -103,7 +103,7 @@ import org.openide.util.WeakListeners;
  * is development-time only.
  * @author Jesse Glick
  */
-final class WritableXMLFileSystem extends AbstractFileSystem
+public final class WritableXMLFileSystem extends AbstractFileSystem
         implements AbstractFileSystem.Attr,
         AbstractFileSystem.Change,
         AbstractFileSystem.Info,

@@ -24,7 +24,7 @@ import java.net.URI;
 import javax.swing.text.Document;
 
 import org.netbeans.modules.web.beans.xml.WebBeansModel;
-import org.netbeans.modules.web.beans.xml.impl.WebBeansModelFactory;
+import org.netbeans.modules.web.beans.xml.WebBeansModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;

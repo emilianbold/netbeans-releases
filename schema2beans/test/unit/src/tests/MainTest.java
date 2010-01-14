@@ -56,16 +56,6 @@ public class MainTest extends NbTestCase {
         super(testName);
     }
 
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite(MainTest.class);
-        
-        return suite;
-    }
-
     public void testPurchaseOrder() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestPurchaseOrder", true, true, true);
     }

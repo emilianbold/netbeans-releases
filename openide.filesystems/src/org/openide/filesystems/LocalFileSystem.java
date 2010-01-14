@@ -458,7 +458,7 @@ public class LocalFileSystem extends AbstractFileSystem {
         File file = getFile(name);
 
         if ((!file.canWrite() && file.exists()) || isReadOnly()) {
-            throw new FSException(NbBundle.getMessage(LocalFileSystem.class, "EXC_CannotLock", name, getDisplayName(), file.getAbsolutePath()));
+            throw new FSException(NbBundle.getMessage(LocalFileSystem.class, "EXC_CannotLock", null, null, file.getAbsolutePath()));
         }
     }
 

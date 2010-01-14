@@ -66,16 +66,12 @@ import org.openide.windows.WindowManager;
  */
 public class CreateChatAction extends AbstractAction {
 
-    private String simpleName;
-    public CreateChatAction(String simpleName) {
+    private KenaiProject project;
+    public CreateChatAction(KenaiProject project) {
         super();
-        this.simpleName = simpleName;
-        try {
-            String name = Kenai.getDefault().getProject(simpleName).getDisplayName();
-            putValue(Action.NAME, name);
-        } catch (KenaiException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        this.project = project;
+        String name = project.getDisplayName();
+        putValue(Action.NAME, name);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -90,7 +86,7 @@ public class CreateChatAction extends AbstractAction {
 
             public void run() {
                 try {
-                    if (!Kenai.getDefault().isAuthorized(Kenai.getDefault().getProject(simpleName), KenaiActivity.PROJECTS_ADMIN)) {
+                    if (!project.getKenai().isAuthorized(project, KenaiActivity.PROJECTS_ADMIN)) {
                         SwingUtilities.invokeLater(new Runnable() {
 
                             public void run() {
@@ -124,11 +120,10 @@ public class CreateChatAction extends AbstractAction {
 
                                 public void run() {
                                     try {
-                                        final KenaiProject prj = Kenai.getDefault().getProject(simpleName);
-                                        final KenaiFeature f = prj.createProjectFeature(
-                                                prj.getName(),
-                                                NbBundle.getMessage(CreateChatAction.class, "CTL_ChatRoomName", prj.getName()),
-                                                NbBundle.getMessage(CreateChatAction.class, "CTL_ChatRoomDescription", prj.getName()),
+                                        final KenaiFeature f = project.createProjectFeature(
+                                                project.getName(),
+                                                NbBundle.getMessage(CreateChatAction.class, "CTL_ChatRoomName", project.getName()),
+                                                NbBundle.getMessage(CreateChatAction.class, "CTL_ChatRoomDescription", project.getName()),
                                                 KenaiService.Names.XMPP_CHAT,
                                                 null,
                                                 null,
@@ -139,7 +134,7 @@ public class CreateChatAction extends AbstractAction {
                                             public void run() {
                                                 final ChatTopComponent chatTc = ChatTopComponent.findInstance();
                                                 chatTc.open();
-                                                chatTc.addChat(new ChatPanel(KenaiConnection.getDefault().getChat(f)));
+                                                chatTc.addChat(new ChatPanel(KenaiConnection.getDefault(project.getKenai()).getChat(f)));
                                                 mainWindow.setCursor(Cursor.getDefaultCursor());
                                                 progress.finish();
                                                 if (source!=null) source.setEnabled(true);

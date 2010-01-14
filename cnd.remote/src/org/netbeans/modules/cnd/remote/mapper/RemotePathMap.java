@@ -44,7 +44,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -53,15 +52,13 @@ import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.EditPathMapDialog;
+import org.netbeans.modules.cnd.spi.remote.setup.MirrorPathProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
@@ -105,6 +102,8 @@ public abstract class RemotePathMap extends PathMap {
 
     protected final HashMap<String, String> map = new HashMap<String, String>();
     protected final ExecutionEnvironment execEnv;
+    protected volatile String localBase;
+
     protected RemotePathMap(ExecutionEnvironment execEnv) {
         this.execEnv = execEnv;
     }
@@ -198,8 +197,12 @@ public abstract class RemotePathMap extends PathMap {
                 String mpoint = entry.getKey();
                 return mpoint + rpath.substring(value.length());
             }
+        }        
+        if (useDefault) {
+            initLocalBase();
+            return localBase  + '/' + rpath;
         }
-        return useDefault ? rpath : null;
+        return null;
     }
 
     /**
@@ -390,6 +393,17 @@ public abstract class RemotePathMap extends PathMap {
         return false;
     }
 
+    protected void initLocalBase() {
+        if (localBase == null) {
+            String tmpLocalBase = getLocalSyncRoot(execEnv);
+            if (tmpLocalBase.endsWith("/")) { //NOI18N
+                tmpLocalBase = tmpLocalBase.substring(0, tmpLocalBase.length() - 1);
+            }
+            localBase = tmpLocalBase;
+        }
+    }
+
+
     private final static class CustomizableRemotePathMap extends RemotePathMap {
 
         private CustomizableRemotePathMap(ExecutionEnvironment exc) {
@@ -457,9 +471,15 @@ public abstract class RemotePathMap extends PathMap {
             if (rpath.startsWith(NO_MAPPING_PREFIX)) {
                 return rpath;
             }
-            String res = super.getLocalPath(rpath, useDefault);
-            if (res != null && Utilities.isWindows() && !"/".equals(res)) { // NOI18N
-                res = WindowsSupport.getInstance().convertFromMSysPath(res);
+            String res;
+            if (isSubPath(remoteBase, rpath)) {
+                res = super.getLocalPath(rpath, useDefault);
+                if (res != null && Utilities.isWindows() && !"/".equals(res)) { // NOI18N
+                    res = WindowsSupport.getInstance().convertFromMSysPath(res);
+                }
+            } else {
+                initLocalBase();
+                res = localBase  + '/' + rpath;
             }
             return res;
         }
@@ -475,7 +495,7 @@ public abstract class RemotePathMap extends PathMap {
 
         @Override
         public void addMapping(String localParent, String remoteParent) {
-            CndUtils.assertTrue(false, "Should never be called for " + getClass().getSimpleName()); //NOI18N
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -485,26 +505,23 @@ public abstract class RemotePathMap extends PathMap {
     }
 
     public static String getRemoteSyncRoot(ExecutionEnvironment executionEnvironment) {
-        String root;
-        root = System.getProperty("cnd.remote.sync.root." + executionEnvironment.getHost()); //NOI18N
-        if (root != null) {
-            return root;
+        for (MirrorPathProvider mpp : Lookup.getDefault().lookupAll(MirrorPathProvider.class)) {
+            String result = mpp.getRemoteMirror(executionEnvironment);
+            if (result != null) {
+                return result;
+            }
         }
-        root = System.getProperty("cnd.remote.sync.root"); //NOI18N
-        if (root != null) {
-            return root;
+        return null;
+    }
+
+    public static String getLocalSyncRoot(ExecutionEnvironment executionEnvironment) {
+        for (MirrorPathProvider mpp : Lookup.getDefault().lookupAll(MirrorPathProvider.class)) {
+            String result = mpp.getLocalMirror(executionEnvironment);
+            if (result != null) {
+                return result;
+            }
         }
-        String home = RemoteUtil.getHomeDirectory(executionEnvironment);
-        final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
-        MacroExpander expander = MacroExpanderFactory.getExpander(local);
-        String localHostID = local.getHost();
-        try {
-            localHostID = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        // each local host maps into own remote folder to prevent collisions on path mapping level
-        return (home == null) ? null : home + "/.netbeans/remote/" + localHostID; // NOI18N
+        return null;
     }
 }
 

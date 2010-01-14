@@ -48,6 +48,8 @@ import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -77,7 +79,9 @@ public class ConnectorPanel extends JPanel implements ActionListener {
     public static final String PROP_TYPE = "type";
     
     private static final String FIRST_ATTACH_TYPE = "org.netbeans.modules.debugger.jpda.ui.JPDAAttachType"; // NOI18N
-    
+
+    private static final int TOTAL_SLOTS = 4; // TOTAL_SLOTS - 1 is the maximal number of items that can appear in the attach history
+
     /** Contains list of AttachType names.*/
     private JComboBox             cbAttachTypes;
     /** Switches off listenning on cbAttachTypes.*/
@@ -210,14 +214,88 @@ public class ConnectorPanel extends JPanel implements ActionListener {
     
     boolean ok () {
         String defaultAttachTypeName = currentAttachType.getTypeDisplayName();
-        Properties.getDefault().getProperties("debugger").setString("last_attach_type", defaultAttachTypeName);
+        Properties props = Properties.getDefault().getProperties("debugger");
+        props.setString("last_attach_type", defaultAttachTypeName);
         if (controller == null) return true;
+        props = props.getProperties("last_attaches");
+        Integer[] usedSlots = (Integer[]) props.getArray("used_slots", new Integer[0]);
+        int freeSlot = -1;
+        if (usedSlots.length >= TOTAL_SLOTS) {
+            freeSlot = usedSlots[TOTAL_SLOTS - 1];
+        } else {
+            for (int x = 0; x < TOTAL_SLOTS; x++) {
+                boolean found = true;
+                for (int y = 0; y < usedSlots.length; y++) {
+                    if (x == usedSlots[y]) {
+                        found = false;
+                        break;
+                    }
+                } // for
+                if (found) {
+                    freeSlot = x;
+                    break;
+                }
+            } // for
+        }
+        Method saveMethod = null;
+        Method displayNameMethod = null;
+        try {
+            saveMethod = controller.getClass().getMethod("save", Properties.class);
+            displayNameMethod = controller.getClass().getMethod("getDisplayName");
+        } catch (NoSuchMethodException ex) {
+        } catch (SecurityException ex) {
+        }
+        String dispName = null;
+        if (saveMethod != null && displayNameMethod != null) {
+            Properties slot = props.getProperties("slot_" + freeSlot);
+            try {
+                dispName = (String) displayNameMethod.invoke(controller);
+                if (dispName != null && dispName.trim().length() > 0) {
+                    slot.setString("display_name", dispName);
+                    saveMethod.invoke(controller, slot.getProperties("values"));
+                    slot.setString("attach_type", defaultAttachTypeName);
+                }
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex); // [TODO]
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex); // [TODO]
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex); // [TODO]
+            }
+        }
+
         boolean ok = controller.ok ();
+
         if (ok) {
             GestureSubmitter.logAttach(defaultAttachTypeName);
-        }
+            if (dispName != null && dispName.trim().length() > 0) {
+                int newLength = Math.min(TOTAL_SLOTS - 1, usedSlots.length + 1);
+                int excludeIndex = -1;
+                // remove duplicities having the same display name
+                for (int x = 0; x < usedSlots.length; x++) {
+                    String str = props.getProperties("slot_" + usedSlots[x]).getString("display_name", "");
+                    if (dispName.equals(str) && x < TOTAL_SLOTS - 1) {
+                        excludeIndex = x;
+                        newLength--;
+                        break;
+                    }
+                }
+                Integer[] newUsedSlots = new Integer[newLength];
+                int copyFrom = 0;
+                for (int x = 1; x < newLength; x++) {
+                    if (copyFrom == excludeIndex) {
+                        copyFrom++;
+                    }
+                    newUsedSlots[x] = usedSlots[copyFrom];
+                    copyFrom++;
+                } // for
+                newUsedSlots[0] = freeSlot;
+                props.setArray("used_slots", newUsedSlots);
+            } // if
+            DebugMainProjectAction.attachHistoryChanged();
+        } // if
         return ok;
-    }    
+    }
 }
 
 

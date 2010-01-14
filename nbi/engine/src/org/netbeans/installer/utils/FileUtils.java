@@ -643,19 +643,35 @@ public final class FileUtils {
             final File file,
             final String token,
             final Object replacement) throws IOException {
-        modifyFile(file, token, replacement, false);
+        modifyFile(file, token, replacement, false, Charset.defaultCharset().name());
+    }
+    public static void modifyFile(
+            final File file,
+            final String token,
+            final Object replacement,
+            final String charset) throws IOException {
+        modifyFile(file, token, replacement, false, charset);
+    }
+
+    public static void modifyFile(
+            final File file,
+            final String token,
+            final Object replacement,
+            final boolean regexp) throws IOException {
+        modifyFile(file, token, replacement, regexp, Charset.defaultCharset().name());
     }
     
     public static void modifyFile(
             final File file,
             final String token,
             final Object replacement,
-            final boolean regexp) throws IOException {
+            final boolean regexp,
+            final String charset) throws IOException {
         final Map<String, Object> replacementMap = new HashMap<String, Object>();
         
         replacementMap.put(token, replacement);
         
-        modifyFile(file, replacementMap, regexp);
+        modifyFile(file, replacementMap, regexp, charset);
     }
     
     public static void modifyFile(
@@ -663,18 +679,25 @@ public final class FileUtils {
             final Map<String, Object> map) throws IOException {
         modifyFile(file, map, false);
     }
-    
+
     public static void modifyFile(
             final File file,
             final Map<String, Object> map,
             final boolean regexp) throws IOException {
+        modifyFile(file, map,regexp, Charset.defaultCharset().name());
+    }
+    public static void modifyFile(
+            final File file,
+            final Map<String, Object> map,
+            final boolean regexp,
+            final String charset) throws IOException {
         if (!exists(file)) {
             return;
         }
         
         if (file.isDirectory()) {
             for (File child: file.listFiles()) {
-                modifyFile(child, map, regexp);
+                modifyFile(child, map, regexp, charset);
             }
         } else {
             // if the file is larger than 100 Kb - skip it
@@ -682,7 +705,7 @@ public final class FileUtils {
                 return;
             }
             
-            final String original = readFile(file);
+            final String original = readFile(file, charset);
             
             String modified = new String(original);
             for(String token : map.keySet()) {
@@ -708,7 +731,7 @@ public final class FileUtils {
             if (!modified.equals(original)) {
                 LogManager.log("modifying file: " + file.getAbsolutePath());
                 
-                writeFile(file, modified);
+                writeFile(file, modified, charset);
             }
         }
     }

@@ -2064,6 +2064,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeList
         if(ts == null) {
             //Html language is not top level one
             ts = hi.tokenSequence();
+	    if(ts == null) {
+		return null; //seems to might happen during j2ee ergonomics lazy load
+	    }
             ts.move(offset);
             if(!ts.moveNext() && !ts.movePrevious()) {
                 return null; //no token found

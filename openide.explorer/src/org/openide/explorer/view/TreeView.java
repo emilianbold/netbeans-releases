@@ -1951,6 +1951,9 @@ public abstract class TreeView extends JScrollPane {
 
                         final KeyStroke stroke = KeyStroke.getKeyStrokeForEvent(e);
                         origSelectionPaths = getSelectionPaths();
+                        if (origSelectionPaths != null && origSelectionPaths.length == 0) {
+                            origSelectionPaths = null;
+                        }
                         searchTextField.setText(String.valueOf(stroke.getKeyChar()));
 
                         displaySearchField();

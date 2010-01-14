@@ -131,7 +131,7 @@ public final class InsertModuleAllTargets extends Task {
                     clustersOfModules.put(module, cluster);
                 }
             }
-            ModuleListParser mlp = new ModuleListParser(props, ParseProjectXml.TYPE_NB_ORG, prj);
+            ModuleListParser mlp = new ModuleListParser(props, ModuleType.NB_ORG, prj);
             SortedMap<String,ModuleListParser.Entry> entries = new TreeMap<String,ModuleListParser.Entry>();
             for (ModuleListParser.Entry entry : mlp.findAll()) {
                 String path = entry.getNetbeansOrgPath();

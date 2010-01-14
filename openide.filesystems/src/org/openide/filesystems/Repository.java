@@ -199,7 +199,9 @@ public class Repository implements Serializable {
 
 
         public void resultChanged(LookupEvent ev) {
-            setDelegates(computeDelegates());
+            synchronized (Repository.class) {
+                setDelegates(computeDelegates());
+            }
         }
     } // end of MainFS
 

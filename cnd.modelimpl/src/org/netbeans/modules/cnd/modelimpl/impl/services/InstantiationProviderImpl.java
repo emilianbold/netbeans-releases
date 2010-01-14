@@ -202,7 +202,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     }
                 }
             }
-            sb.append('>');
+            TemplateUtils.addGREATERTHAN(sb);
         }
     }
 

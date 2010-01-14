@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,17 +34,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.infrastructure;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
@@ -63,7 +66,6 @@ import static org.junit.Assert.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -90,8 +92,8 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     private FileObject sourceRoot;
     private CompilationInfo info;
     private Document doc;
-    private File cache;
-    private FileObject cacheFO;
+    private static File cache;
+    private static FileObject cacheFO;
 
     public JavaHintsPositionRefresherTest(String name) {
         super(name);
@@ -123,11 +125,11 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
             }
         });
 
-        if (cache == null) {
-            cache = FileUtil.normalizeFile(TestUtil.createWorkFolder());
-            cacheFO = FileUtil.toFileObject(cache);
+        clearWorkDir();
 
-            cache.deleteOnExit();
+        if (cache == null) {
+            cache = FileUtil.normalizeFile(new File(getWorkDir(), "cache"));
+            cacheFO = FileUtil.createFolder(cache);
 
             IndexUtil.setCacheFolder(cache);
 
@@ -136,8 +138,6 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     }
 
     private void prepareTest(String fileName, String code) throws Exception {
-        clearWorkDir();
-
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
 
         assertNotNull(workFO);
@@ -190,23 +190,33 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     }
 
     public void testEmpty() throws Exception {
-        performTest("test/Test.java", "package test; public class Test {\n public void foo() {while(true)|;}}", "1:20-1:32:verifier:Empty statement after 'while'");
+        performTest("test/Test.java", "package test; public class Test {\n public void foo() {while(true)|;}}", new String[] {"1:20-1:32:verifier:Empty statement after 'while'"});
     }
 
     public void testErrorHint0() throws Exception {
-        performTest("test/Test.java", "package test; public class Test {public void foo() {\n| new Foo();}}", "1:5-1:8:error:cannot find symbol\n  symbol  : class Foo\n  location: class test.Test");
+        performTest("test/Test.java", "package test; public class Test {public void foo() {\n| new Foo();}}", new String[] {"1:5-1:8:error:cannot find symbol\n  symbol  : class Foo\n  location: class test.Test"});
     }
 
     public void testWrongpackage() throws Exception {
-        performTest("test/Test.java", "|\npublic class Test {\n }", "0:0-1:0:error:Incorrect Package");
+        performTest("test/Test.java", "|\npublic class Test {\n }", new String[] {"0:0-1:0:error:Incorrect Package"});
     }
 
     public void testHintCount173282() throws Exception {
         performTest("test/Test.java", "class Test { static int statField; int field; public void method() { \n|String field = \"\"; \nSystem.out.println(field); Integer.parseInt(\"1\"); if(\"\"== \"\") { System.out.println(\"ok\"); } this.statField = 23; } }",
-                "1:7-1:12:verifier:Local variable hides a field");
+                new String[] {"2:53-2:60:verifier:Comparing Strings using == or !=", "1:7-1:12:verifier:Local variable hides a field", "2:92-2:96:verifier:Accessing static field statField"});
     }
 
-    private void performTest(String fileName , String code, String expected) throws Exception {
+    public void testEmptyStatement() throws Exception {
+        performTest("test/Test.java", "class Test { public void method() {\n |; \n} }",
+                new String[] {"1:1-1:2:verifier:Empty statement"});
+    }
+
+    public void testPatternBasedHint() throws Exception {
+        performTest("test/Test.java", "class Test { public void method(String g) {\n java.util.|logging.Logger.global.fine(g + g); \n} }",
+                new String[] {"1:38-1:43:verifier:Inefficient to use string concat in logger"});
+    }
+
+    private void performTest(String fileName , String code, String[] expected) throws Exception {
         int[] caretPosition = new int[1];
         code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, caretPosition);
         prepareTest(fileName, code);
@@ -215,19 +225,18 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
 
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-                Map<String, List<ErrorDescription>> eds = new JavaHintsPositionRefresher().getErrorDescriptionsAt(ctx, doc);
-                errorDescriptionsAt.putAll(eds);
+                Map<String, List<ErrorDescription>> edsAt = new JavaHintsPositionRefresher().getErrorDescriptionsAt(ctx, doc);
+                errorDescriptionsAt.putAll(edsAt);
             }
         });
 
-        StringBuffer buf = new StringBuffer();
+        Set<String> eds = new HashSet<String>();
         for (Entry<String, List<ErrorDescription>> e : errorDescriptionsAt.entrySet()) {
             for (ErrorDescription ed : e.getValue()) {
-                buf.append(ed.toString());
+                eds.add(ed.toString().replace(":  ", "  :"));
             }
-
         }
-        assertEquals("Provided error messages differ. ", expected, buf.toString().replace(":  ", "  :"));
+        assertTrue("Provided error messages differ. " + eds, eds.containsAll(Arrays.asList(expected)));
     }
    
 

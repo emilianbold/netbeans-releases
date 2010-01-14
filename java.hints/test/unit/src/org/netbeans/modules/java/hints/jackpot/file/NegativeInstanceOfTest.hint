@@ -1,0 +1,4 @@
+'negative instance of':
+   $1+$2 :: !$1 instanceof int && !$2 instanceof int
+=> $2+$1
+;;

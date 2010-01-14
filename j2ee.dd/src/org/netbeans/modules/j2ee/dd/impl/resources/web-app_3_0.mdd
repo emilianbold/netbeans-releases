@@ -70,6 +70,12 @@
                         if (values==null || values.length==0) return null;
                         else return values[0];
                     }
+                    public void setName(String[] value) throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_3_0);
+                    }
+                    public String[] getName() throws org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException(WebApp.VERSION_3_0);
+                    }
             </user-code>
         </meta-element>
         <meta-element>
@@ -799,5 +805,39 @@ public void setUrlPattern(String value) {
             <implements>
                 org.netbeans.modules.j2ee.dd.api.web.AbsoluteOrdering
             </implements>
+        </meta-element>
+
+<!-- changes added for EE6: -->
+
+        <meta-element>
+            <dtd-name>handlerType</dtd-name>
+            <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+            <bean-name>ServiceRefHandler</bean-name>
+            <comparator-class>org.netbeans.modules.j2ee.dd.impl.common.Comparator</comparator-class>
+            <extends>org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanMultiple</extends>
+            <implements>
+                org.netbeans.modules.j2ee.dd.api.common.ServiceRefHandler, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
+            </implements>
+            <user-code>
+                public String getKeyProperty() { return "HandlerName"; }
+            </user-code>
+        </meta-element>
+        <meta-element>
+               <dtd-name>handler-chainsType</dtd-name>
+               <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+               <bean-name>ServiceRefHandlerChains</bean-name>
+               <implements>org.netbeans.modules.j2ee.dd.api.common.ServiceRefHandlerChains</implements>
+        </meta-element>
+        <meta-element>
+            <dtd-name>handler-chainType</dtd-name>
+            <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+            <bean-name>ServiceRefHandlerChainType</bean-name>
+            <implements>org.netbeans.modules.j2ee.dd.api.common.ServiceRefHandlerChain</implements>
+        </meta-element>
+        <meta-element>
+            <dtd-name>dewey-versionType</dtd-name>
+            <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+            <bean-name>version</bean-name>
+            <wrapper-class>java.math.BigDecimal</wrapper-class>
         </meta-element>
 </metaDD>

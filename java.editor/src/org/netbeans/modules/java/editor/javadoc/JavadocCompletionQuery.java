@@ -654,7 +654,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 items.add(JavaCompletionItem.createTypeItem(
                         typeElement, (DeclaredType) typeElement.asType(),
                         substitutionOffset, typeName != qualTypeName,
-                        elements.isDeprecated(typeElement), false, true));
+                        elements.isDeprecated(typeElement), false, false, true));
             }
         }
 
@@ -942,7 +942,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 for(DeclaredType subtype : getSubtypesOf(baseType, prefix, jdctx)) {
                     TypeElement elem = (TypeElement)subtype.asElement();
                     if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(elem))
-                        items.add(JavaCompletionItem.createTypeItem(elem, subtype, substitutionOffset, true, elements.isDeprecated(elem), false, false));
+                        items.add(JavaCompletionItem.createTypeItem(elem, subtype, substitutionOffset, true, elements.isDeprecated(elem), false, false, false));
                 }
             }
         } else {
@@ -1009,7 +1009,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
 //            Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
         for(ElementHandle<TypeElement> name : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
             if (!isAnnonInner(name)) {
-                items.add(LazyTypeCompletionItem.create(name, kinds, substitutionOffset, controller.getSnapshot().getSource(), false, false));
+                items.add(LazyTypeCompletionItem.create(name, kinds, substitutionOffset, controller.getSnapshot().getSource(), false, false, false));
             }
         }
     }

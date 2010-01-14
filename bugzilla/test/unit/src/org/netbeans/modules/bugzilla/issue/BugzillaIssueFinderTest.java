@@ -285,6 +285,18 @@ public class BugzillaIssueFinderTest extends NbTestCase {
         checkIssueSpans("See issue 1446.", "issue 1446");
     }
 
+    @Test
+    public void testBug177290() {
+        issueFinder = BugzillaIssueFinder.getTestInstance();
+
+        checkIssueSpans(
+                "Seems like duplicate of 149393, thank you for report anyway.\n"
+                + '\n'
+                + "*** This issue has been marked as a duplicate of 149393 ***",
+                "149393",
+                "149393");
+    }
+
     private void checkIssueSpans(String str, String... substr) {
         checkTestValidity(str != null);
         checkTestValidity(substr != null);

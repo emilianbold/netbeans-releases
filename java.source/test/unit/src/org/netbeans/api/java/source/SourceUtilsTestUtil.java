@@ -168,7 +168,7 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
         System.arraycopy(extraLookupContent, 0, lookupContent, 4, extraLookupContent.length);
         
         lookupContent[0] = new TestProxyClassPathProvider(sourceRoot, buildRoot, classPathElements);
-        lookupContent[1] = new TestSourceForBinaryQuery(sourceRoot, classPathElements);
+        lookupContent[1] = new TestSourceForBinaryQuery(sourceRoot, buildRoot);
         lookupContent[2] = new TestSourceLevelQueryImplementation();
         lookupContent[3] = JavaDataLoader.findObject(JavaDataLoader.class, true);
         
@@ -230,34 +230,34 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
 
     private static class TestSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
         
-        private FileObject sourceRoot;
-        private List<FileObject> classPathElements;
+        private final FileObject sourceRoot;
+        private final FileObject buildRoot;
         
-        public TestSourceForBinaryQuery(FileObject sourceRoot, FileObject[] classPathElements) {
+        public TestSourceForBinaryQuery(FileObject sourceRoot, FileObject buildRoot) {
             this.sourceRoot = sourceRoot;
-            this.classPathElements = Arrays.asList(classPathElements);
+            this.buildRoot = buildRoot;
         }
         
         public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
-            if (getBootClassPath().contains(binaryRoot))
-                return null;
+            FileObject f = URLMapper.findFileObject(binaryRoot);
 
-            if (classPathElements.contains(URLMapper.findFileObject(binaryRoot)))
-                return null;
+            if (buildRoot.equals(f)) {
+                return new SourceForBinaryQuery.Result() {
+                    public FileObject[] getRoots() {
+                        return new FileObject[] {
+                            sourceRoot,
+                        };
+                    }
 
-            return new SourceForBinaryQuery.Result() {
-                public FileObject[] getRoots() {
-                    return new FileObject[] {
-                        sourceRoot,
-                    };
-                }
-                
-                public void addChangeListener(ChangeListener l) {
-                }
-                
-                public void removeChangeListener(ChangeListener l) {
-                }
-            };
+                    public void addChangeListener(ChangeListener l) {
+                    }
+
+                    public void removeChangeListener(ChangeListener l) {
+                    }
+                };
+            }
+
+            return null;
         }
         
     }

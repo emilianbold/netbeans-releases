@@ -80,8 +80,11 @@ public class ImportClassTest extends HintsTestBase {
         performTest("ImportTest6", "java.util.Collections", 7, 13);
     }
     
-    public void testImportHintDoNotPropose() throws Exception {
+    public void testImportHintDoNotPropose1() throws Exception {
         performTestDoNotPerform("ImportHintDoNotPropose", 10, 24);
+    }
+
+    public void testImportHintDoNotPropose2() throws Exception {
         performTestDoNotPerform("ImportHintDoNotPropose", 11, 24);
     }
 

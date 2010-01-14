@@ -324,14 +324,24 @@ public class SunApplicationClientProxy implements SunApplicationClient, RootInte
                 document =
                         ((org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient)appClientRoot).graphManager().getXmlDocument();
                 currentVersion = SunApplicationClient.VERSION_5_0_0;
+            } else if (appClientRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient) {
+                document =
+                        ((org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient)appClientRoot).graphManager().getXmlDocument();
+                currentVersion = SunApplicationClient.VERSION_6_0_0;
             }
             
             //remove the doctype
             document = removeDocType(document);
             
-            if(newVersion.equals(SunApplicationClient.VERSION_5_0_0)){
+            if(newVersion.equals(SunApplicationClient.VERSION_6_0_0)){
                 //This will always be an upgrade
-                generate5_00Graph(document);
+                generate6_00Graph(document);
+            }
+            if(newVersion.equals(SunApplicationClient.VERSION_5_0_0)){
+                if(currentVersion.equals(SunApplicationClient.VERSION_1_4_1) || currentVersion.equals(SunApplicationClient.VERSION_1_4_0) || currentVersion.equals(SunApplicationClient.VERSION_1_3_0))
+                    generate5_00Graph(document);
+                else
+                    downgradeClientJarGraph(document, newVersion, currentVersion);
             }
             if(newVersion.equals(SunApplicationClient.VERSION_1_4_1)){
                 if(currentVersion.equals(SunApplicationClient.VERSION_1_4_0) || currentVersion.equals(SunApplicationClient.VERSION_1_3_0))
@@ -364,6 +374,13 @@ public class SunApplicationClientProxy implements SunApplicationClient, RootInte
             }
     }
     
+    private void generate6_00Graph(Document document){
+        org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient appClientGraph =
+                org.netbeans.modules.j2ee.sun.dd.impl.client.model_6_0_0.SunApplicationClient.createGraph(document);
+        appClientGraph.changeDocType(DTDRegistry.SUN_APPCLIENT_60_DTD_PUBLIC_ID, DTDRegistry.SUN_APPCLIENT_60_DTD_SYSTEM_ID);
+        this.appClientRoot = appClientGraph;
+    }
+
     private void generate5_00Graph(Document document){
         org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient appClientGraph =
                 org.netbeans.modules.j2ee.sun.dd.impl.client.model_5_0_0.SunApplicationClient.createGraph(document);

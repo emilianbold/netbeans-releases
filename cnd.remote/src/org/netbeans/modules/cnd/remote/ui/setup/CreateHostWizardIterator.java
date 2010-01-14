@@ -51,6 +51,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
@@ -242,8 +244,10 @@ public final class CreateHostWizardIterator implements WizardDescriptor.Iterator
         }
 
         final RemoteSyncFactory syncFactory = result.getSyncFactory();
-        final ServerRecord record = ServerList.createServerRecord(execEnv, displayName, syncFactory);
-
+        final ServerRecord record = ServerList.get(execEnv);
+        RemoteServerRecord rsr = (RemoteServerRecord) record;
+        rsr.setSyncFactory(syncFactory);
+        rsr.setDisplayName(displayName);
         return record;
     }
 }

@@ -81,14 +81,15 @@ public final class NewKenaiProjectAction implements ActionListener {
 
     private void showLandingPage(Set<CreatedProjectInfo> projects) {
 
-        Object options[] = new Object[3];
-        options[0] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.goToKenai", Kenai.getDefault().getName()));
-        options[1] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.createNewProject"));
-        options[2] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.close"));
-
         CreatedProjectInfo cpi = projects.iterator().next();
         KenaiProject kenaiPrj = cpi.project;
         String localPath = cpi.localRepoPath;
+
+        Object options[] = new Object[3];
+        options[0] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.goToKenai", kenaiPrj.getKenai()));
+        options[1] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.createNewProject"));
+        options[2] = new JButton(NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.close"));
+
 
         DialogDescriptor dialogDesc = new DialogDescriptor(new LandingPagePanel(kenaiPrj.getName(), localPath), 
                 NbBundle.getMessage(NewKenaiProjectAction.class, "NewKenaiProjectAction.dialogTitle"),

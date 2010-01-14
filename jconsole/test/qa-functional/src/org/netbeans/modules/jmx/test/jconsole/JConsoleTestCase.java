@@ -41,23 +41,27 @@
 
 package org.netbeans.modules.jmx.test.jconsole;
 
+import javax.swing.Action;
+import org.netbeans.core.output2.ui.AbstractOutputTab;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.OutputTabOperator;
-import org.netbeans.jellytools.RuntimeTabOperator;
-import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.modules.jmx.test.helpers.JMXTestCase;
-import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
  * Starting class for jconsole tests.
  */
 public class JConsoleTestCase extends JMXTestCase {
 
+    private static final String stopActionName =
+                   Bundle.getString("org.netbeans.modules.extexecution.Bundle",
+                                    "Stop");
+
     /** Need to be defined because of JUnit */
     public JConsoleTestCase(String name) {
         super(name);
     }
 
-    protected void checkOutputTabOperator(String title, String text) {
+    protected OutputTabOperator checkOutputTabOperator(String title, String text) {
 
         OutputTabOperator oto = null;
 
@@ -88,23 +92,19 @@ public class JConsoleTestCase extends JMXTestCase {
                 maxToWait--;
             }
         }
+        return oto;
     }
 
-    protected void terminateProcess(String nodeName) {
+    protected void terminateProcess(OutputTabOperator oto) {
 
-        RuntimeTabOperator rto = RuntimeTabOperator.invoke();
-        // or when Runtime pane is already opened
-        //RuntimeTabOperator rto = new RuntimeTabOperator();
-        
-        Node node = new Node(rto.getRootNode(), nodeName);
-        String[] child = node.getChildren();
-        for (int i = 0; i < child.length; i++) {
-            System.out.println(child[i]);
-        }
         //Little tempo to kill once stabilized state
         sleep(2000);
-
-        System.out.println("Call Terminate Process on " + nodeName);
-        node.callPopup().pushMenu("Terminate Process");
+        AbstractOutputTab tab = (AbstractOutputTab)oto.getSource();
+        for (Action a : tab.getToolbarActions()) {
+            if (stopActionName.equals(a.getValue(Action.SHORT_DESCRIPTION))) {
+                a.actionPerformed(null);
+                break;
+            }
+        }
     }
 }

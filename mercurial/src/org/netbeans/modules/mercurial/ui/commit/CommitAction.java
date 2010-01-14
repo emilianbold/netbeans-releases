@@ -52,7 +52,6 @@ import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.HgModuleConfig;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.status.StatusAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.DialogDescriptor;
@@ -68,9 +67,8 @@ import java.util.Iterator;
 import java.util.Map;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.ResourceBundle;
@@ -82,13 +80,16 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.hooks.spi.HgHookContext;
 import org.netbeans.modules.mercurial.hooks.spi.HgHook;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 
 /**
  * Commit action for mercurial:
@@ -100,15 +101,9 @@ public class CommitAction extends ContextAction {
 
     static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage"; // NOI18N
 
-    private final VCSContext context;
-
-    public CommitAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
-    }
-
     @Override
-    public boolean isEnabled () {
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
         if (!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0) {
             return false;
@@ -116,7 +111,13 @@ public class CommitAction extends ContextAction {
         return true;
     }
 
-    public void performAction(ActionEvent e) {
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Commit"; // NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
             OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
@@ -145,7 +146,7 @@ public class CommitAction extends ContextAction {
 
         // show commit dialog
         final CommitPanel panel = new CommitPanel();
-        final List<HgHook> hooks = Mercurial.getInstance().getHooks();
+        final Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);
 
         panel.setHooks(hooks, new HgHookContext(ctx.getRootFiles().toArray( new File[ctx.getRootFiles().size()]), null, new HgHookContext.LogEntry[] {}));
         final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] {CommitTableModel.COLUMN_NAME_PATH });
@@ -195,12 +196,13 @@ public class CommitAction extends ContextAction {
 
             final Map<HgFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final String message = panel.getCommitMessage();
+            final Map<File, Set<File>> rootFiles = HgUtils.sortUnderRepository(ctx, true);
             org.netbeans.modules.versioning.util.Utils.insert(HgModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
             HgProgressSupport support = new HgProgressSupport() {
                 public void perform() {
                     OutputLogger logger = getLogger();
-                    performCommit(message, commitFiles, ctx, this, logger, hooks);
+                    performCommit(message, commitFiles, rootFiles, this, logger, hooks);
                 }
             };
             support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
@@ -353,8 +355,8 @@ public class CommitAction extends ContextAction {
         commit.setEnabled(enabled && containsCommitable(table));
     }
 
-    private static void performCommit(String message, Map<HgFileNode, CommitOptions> commitFiles,
-            VCSContext ctx, HgProgressSupport support, OutputLogger logger, List<HgHook> hooks) {
+    public static void performCommit(String message, Map<HgFileNode, CommitOptions> commitFiles,
+            Map<File, Set<File>> rootFiles, HgProgressSupport support, OutputLogger logger, Collection<HgHook> hooks) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         Map<File, List<File>> addCandidates = new HashMap<File, List<File>>();
         Map<File, List<File>> deleteCandidates = new HashMap<File, List<File>>();
@@ -431,7 +433,7 @@ public class CommitAction extends ContextAction {
                     // XXX handle veto
                 }
             }
-            final Cmd.CommitCmd commitCmd = new Cmd.CommitCmd(commitCandidates, logger, message, support, ctx,
+            final Cmd.CommitCmd commitCmd = new Cmd.CommitCmd(commitCandidates, logger, message, support, rootFiles,
                     locallyModifiedExcluded);
             commitCmd.setCommitHooks(context, hooks, hookFiles);
             IndexingBridge.getInstance().runWithoutIndexing(new Callable<Void>() {
@@ -446,7 +448,7 @@ public class CommitAction extends ContextAction {
         } catch (Exception ex) {
             Mercurial.LOG.log(Level.INFO, "Cannot run commit with disabled indexing", ex); //NOI18N
         } finally {
-            cache.refreshCached(ctx);
+            cache.refreshAllRoots(rootFiles);
             logger.outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_DONE")); // NOI18N
             logger.output(""); // NOI18N
         }
@@ -526,21 +528,21 @@ public class CommitAction extends ContextAction {
         }
         static class CommitCmd extends Cmd {
             private HgHookContext context;
-            private List<HgHook> hooks;
+            private Collection<HgHook> hooks;
             private final HgProgressSupport support;
             private File[] hookFiles;
-            private final VCSContext ctx;
+            private final Map<File, Set<File>> rootFilesPerRepository;
             private final Map<File, Boolean> locallyModifiedExcluded;
 
             public CommitCmd(Map<File, List<File>> m, OutputLogger logger, String commitMessage, HgProgressSupport support,
-                    VCSContext ctx, Map<File, Boolean> locallyModifiedExcluded) {
+                    Map<File, Set<File>> rootFilesPerRepository, Map<File, Boolean> locallyModifiedExcluded) {
                 super(m, logger, commitMessage, null);
                 this.support = support;
-                this.ctx = ctx;
+                this.rootFilesPerRepository = rootFilesPerRepository;
                 this.locallyModifiedExcluded = locallyModifiedExcluded;
             }
 
-            public void setCommitHooks (HgHookContext context, List<HgHook> hooks, File[] hookFiles) {
+            public void setCommitHooks (HgHookContext context, Collection<HgHook> hooks, File[] hookFiles) {
                 this.context = context;
                 this.hooks = hooks;
                 this.hookFiles = hookFiles;
@@ -563,9 +565,9 @@ public class CommitAction extends ContextAction {
                     Mercurial.LOG.log(Level.INFO, null, e);
                     List<File> reducedCommitCandidates;
                     String offeredFileNames = "";                       //NOI18N
-                    File[] roots = HgUtils.filterForRepository(ctx, repository, true);
-                    if (roots != null && roots.length < 5) {
-                        reducedCommitCandidates = Arrays.asList(roots);
+                    Set<File> roots = rootFilesPerRepository.get(repository);
+                    if (roots != null && roots.size() < 5) {
+                        reducedCommitCandidates = new ArrayList<File>(roots);
                         for (File f : reducedCommitCandidates) {
                             offeredFileNames += "\n" + f.getName();     //NOI18N
                         }

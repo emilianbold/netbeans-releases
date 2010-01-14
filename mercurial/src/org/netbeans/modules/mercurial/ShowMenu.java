@@ -51,6 +51,8 @@ import org.netbeans.modules.mercurial.ui.log.IncomingAction;
 import org.netbeans.modules.mercurial.ui.log.OutAction;
 import org.netbeans.modules.mercurial.ui.view.ViewAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Container menu for branch actions.
@@ -92,21 +94,21 @@ public class ShowMenu extends AbstractAction implements DynamicMenuContent {
         JMenuItem item;
         if(bShowAnnotationMenu){
             if (!bShowAnnotation) {
-                item = menu.add(new AnnotateAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowAnnotations"), ctx)); // NOI18N
-                org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowAnnotations"));
+                item = menu.add(new SystemActionBridge(SystemAction.get(AnnotateAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowAnnotations"))); //NOI18N
+                org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             } else {
-                item = menu.add(new AnnotateAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_HideAnnotations"), ctx)); // NOI18N
-                org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_HideAnnotations"));
+                item = menu.add(new SystemActionBridge(SystemAction.get(AnnotateAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_HideAnnotations"))); //NOI18N
+                org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             }
         }
-        item = menu.add(new IncomingAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowIncoming"), ctx));
-        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowIncoming"));
+        item = menu.add(new SystemActionBridge(SystemAction.get(IncomingAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowIncoming"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
-        item = menu.add(new OutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"), ctx)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"));
+        item = menu.add(new SystemActionBridge(SystemAction.get(OutAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
-        item = menu.add(new ViewAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_View"), ctx)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_View"));
+        item = menu.add(new SystemActionBridge(SystemAction.get(ViewAction.class), NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_View"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
         return menu;
     }

@@ -105,12 +105,14 @@ implements ActionListener, Runnable, Callable<JButton> {
             }
         } else {
             if ((record.getLevel().equals(Level.CONFIG)) && record.getMessage().equals("Slowness detected")){
-                byte[] nps = (byte[]) record.getParameters()[0];
-                long time = (Long) record.getParameters()[1];
+                Object[] params = record.getParameters();
+                byte[] nps = (byte[]) params[0];
+                long time = (Long) params[1];
+                String slownessType = params.length > 2 ? params[2].toString() : null;
                 assert nps != null: "nps param should be not null";
                 assert nps.length > 0 : "nps param should not be empty";
                 assert time >= 1000 : "1s is minimal reportable time";
-                reporter.notifySlowness(nps, time);
+                reporter.notifySlowness(nps, time, slownessType);
                 return;
             }
         }

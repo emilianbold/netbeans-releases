@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.mercurial.ui.status;
 
-import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.FileStatusCache;
@@ -50,7 +49,6 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
-import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
 import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.openide.explorer.view.NodeTableModel;
@@ -80,8 +78,11 @@ import java.awt.Point;
 import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
+import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
 import org.netbeans.modules.versioning.util.SortedTable;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Controls the {@link #getComponent() tsble} that displays nodes
@@ -309,46 +310,40 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Open
         -------------------
         Diff                 (default action)
-        Update
         Commit...        
         --------------------
         Conflict Resolved    (on conflicting file)
         --------------------
-        Blame
-        Show History...
+        Show Annotations
         --------------------        
         Revert Modifications  (Revert Delete)(Delete)
         Exclude from Commit   (Include in Commit)
-        Ignore                (Unignore)
         </pre>
      */
     private JPopupMenu getPopup() {
 
         JPopupMenu menu = new JPopupMenu();
         JMenuItem item;
-        VCSContext context = HgUtils.getCurrentContext(null);
-        ResourceBundle loc = NbBundle.getBundle(Mercurial.class);
         
         item = menu.add(new OpenInEditorAction());
         Mnemonics.setLocalizedText(item, item.getText());
         menu.addSeparator();
-        item = menu.add(new DiffAction(loc.getString("CTL_PopupMenuItem_Diff"), context)); // NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class), actionString("CTL_PopupMenuItem_Diff"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new CommitAction(loc.getString("CTL_PopupMenuItem_Commit"), context)); // NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), actionString("CTL_PopupMenuItem_Commit"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         
         menu.addSeparator();
 
-        item = menu.add(new ConflictResolvedAction(loc.getString("CTL_PopupMenuItem_MarkResolved"), context)); // NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(ConflictResolvedAction.class), actionString("CTL_PopupMenuItem_MarkResolved"))); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
                 
         menu.addSeparator();
 
-        AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context); // NOI18N
-        if (tempA.visible(null)) {
-            tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_HideAnnotations"), context); // NOI18N
-        }
-        item = menu.add(tempA);
+        item = menu.add(new SystemActionBridge(SystemAction.get(AnnotateAction.class),
+                                               ((AnnotateAction)SystemAction.get(AnnotateAction.class)).visible(null) ?
+                                               actionString("CTL_PopupMenuItem_HideAnnotations") : //NOI18N
+                                               actionString("CTL_PopupMenuItem_ShowAnnotations"))); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         menu.addSeparator();
 
@@ -363,16 +358,20 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             }
         }
         if (allLocallyDeleted) {
-            item = menu.add(new RevertModificationsAction(loc.getString("CTL_PopupMenuItem_RevertDelete"), context)); // NOI18N
+            item = menu.add(new SystemActionBridge(SystemAction.get(RevertModificationsAction.class), actionString("CTL_PopupMenuItem_RevertDelete"))); //NOI18N
         } else {
-            item = menu.add(new RevertModificationsAction(loc.getString("CTL_PopupMenuItem_GetClean"), context)); // NOI18N
+            item = menu.add(new SystemActionBridge(SystemAction.get(RevertModificationsAction.class), actionString("CTL_PopupMenuItem_GetClean"))); //NOI18N
         }
         Mnemonics.setLocalizedText(item, item.getText());
 
-        ExcludeFromCommitAction exclude = new ExcludeFromCommitAction(loc.getString("CTL_PopupMenuItem_IncludeInCommit"), context); // NOI18N
-        if (exclude.getActionStatus(null) != exclude.INCLUDING)
-            exclude = new ExcludeFromCommitAction(loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context); // NOI18N
-        item = menu.add(exclude);
+        String label;
+        ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
+        if (exclude.getActionStatus(null) == ExcludeFromCommitAction.INCLUDING) {
+            label = actionString("CTL_PopupMenuItem_IncludeInCommit");  //NOI18N
+        } else {
+            label = actionString("CTL_PopupMenuItem_ExcludeFromCommit"); //NOI18N
+        }
+        item = menu.add(new SystemActionBridge(exclude, label));
         Mnemonics.setLocalizedText(item, item.getText());
 /*
         item = menu.add(new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), actionString("CTL_PopupMenuItem_SearchHistory"))); // NOI18N

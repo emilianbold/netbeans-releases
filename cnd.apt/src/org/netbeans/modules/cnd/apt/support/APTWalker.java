@@ -243,10 +243,12 @@ public abstract class APTWalker {
         return visitChild;
     }
     
-    private void pushState() {
+    protected final void pushState() {
         visits.addLast(new WalkerState(curAPT, curWasInChild));
     }
-    
+
+    protected void preInit() {}
+
     private boolean popState() {
         if (visits.isEmpty()) {
             return false;
@@ -258,6 +260,7 @@ public abstract class APTWalker {
     }
     
     private void init(boolean needStream) {
+        preInit();
         curAPT = root.getFirstChild();
         if (needStream) {
             fillTokens();        

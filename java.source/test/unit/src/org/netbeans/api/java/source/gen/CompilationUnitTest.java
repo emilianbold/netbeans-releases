@@ -312,6 +312,7 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
             "\n" +
             "public class A {\n" +
             "  public class Krtek {\n" +
+            "    @SuppressWarnings(\"a\")\n" + //#176955
             "    public void foo() {\n" +
             "        List l = null;\n" +
             "    }\n" +
@@ -342,6 +343,7 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
             "\n" +
             "public class Krtek {\n" +
             "\n" +
+            "    @SuppressWarnings(value = \"a\")\n" +
             "    public void foo() {\n" +
             "        List l = null;\n" +
             "    }\n" +

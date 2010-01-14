@@ -90,7 +90,7 @@ public class DefaultError implements Error {
     }
     
     /** Creates a new instance of DefaultError */
-    private DefaultError(
+    public DefaultError(
             @NullAllowed String key,
             @NonNull String displayName, 
             @NullAllowed String description,

@@ -299,14 +299,16 @@ public class JCProjectProperties implements PlatformAndDeviceProvider {
         }
     }
 
+    @SuppressWarnings("unchecked") //NOI18N
     private void storeRoots(SourceRoots roots, DefaultTableModel tableModel, EditableProperties props) throws MalformedURLException {
-        Vector data = tableModel.getDataVector();
+        Vector<?> data = tableModel.getDataVector();
         URL[] rootURLs = new URL[data.size()];
         String[] rootLabels = new String[data.size()];
         for (int i = 0; i < data.size(); i++) {
-            File f = (File) ((Vector<Object>) data.elementAt(i)).elementAt(0);
+            Vector<?> v = (Vector<?>) data.elementAt(i);
+            File f = (File) v.elementAt(0);
             rootURLs[i] = getRootURL(f, null);
-            rootLabels[i] = (String) ((Vector<Object>) data.elementAt(i)).elementAt(1);
+            rootLabels[i] = (String) v.elementAt(1);
         }
         roots.putRoots(rootURLs, rootLabels);
         String[] rootPropertyNames = roots.getRootProperties();

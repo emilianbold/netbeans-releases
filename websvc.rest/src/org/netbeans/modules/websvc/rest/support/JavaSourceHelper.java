@@ -593,16 +593,22 @@ public class JavaSourceHelper {
         return maker.addClassMember(tree, methodTree);
     }
 
+     public static ClassTree createInnerClass(WorkingCopy copy,
+             Modifier[] modifiers, String className, String classToExtend,
+             String[] annotations, Object[] annotationAttributes) {
+        TreeMaker maker = copy.getTreeMaker();
+
+        ModifiersTree modifiersTree = createModifiersTree(copy, modifiers, annotations, annotationAttributes);
+
+        return maker.Class(modifiersTree, className,
+                Collections.<TypeParameterTree>emptyList(),
+                createIdentifierTree(copy, classToExtend),
+                Collections.<Tree>emptyList(), Collections.<Tree>emptyList());
+    }
+
      public static ClassTree createInnerClass(WorkingCopy copy, 
              Modifier[] modifiers, String className, String classToExtend) {
-        TreeMaker maker = copy.getTreeMaker();
-        
-        ModifiersTree modifiersTree = createModifiersTree(copy, modifiers, null, null);
-        
-        return maker.Class(modifiersTree, className, 
-                Collections.<TypeParameterTree>emptyList(), 
-                createIdentifierTree(copy, classToExtend), 
-                Collections.<Tree>emptyList(), Collections.<Tree>emptyList());
+        return JavaSourceHelper.createInnerClass(copy, modifiers, className, classToExtend, null, null);
     }
      
     

@@ -54,8 +54,8 @@ made subject to such option by the copyright holder.
                         </xsd:restriction>
                     </xsd:simpleType>
                 </xsd:element>
-                <xsd:element name="use-manifest" minOccurs="0"/>
-                <xsd:element name="explicit-platform" minOccurs="0"/>
+                <xsd:element name="use-manifest" minOccurs="0"><xsd:complexType/></xsd:element>
+                <xsd:element name="explicit-platform" minOccurs="0"><xsd:complexType/></xsd:element>
             </xsd:sequence>
         </xsd:complexType>
     </xsd:element>

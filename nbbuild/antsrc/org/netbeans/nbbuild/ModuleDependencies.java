@@ -117,7 +117,7 @@ public class ModuleDependencies extends Task {
                 if (o.type == null) throw new BuildException ("<output> needs attribute type");
                 if (o.file == null) throw new BuildException ("<output> needs attribute file");
                 
-                getProject ().log ("Generating " + o.type + " to " + o.file);
+                getProject().log(o.file + ": generating " + o.type);
                 
                 if ("public-packages".equals (o.type.getValue ())) {
                     generatePublicPackages (o.file, true, false);
@@ -331,7 +331,7 @@ public class ModuleDependencies extends Task {
                 }
 
                 String s = m.publicPackages;
-                HashMap<String,Boolean> pkgs = null;
+                Map<String,Boolean> pkgs = null;
                 if (s != null) {
                     pkgs = new HashMap<String,Boolean>();
                     StringTokenizer tok = new StringTokenizer(s, ",");
@@ -425,7 +425,7 @@ public class ModuleDependencies extends Task {
         w.close();
     }
     
-    private void iterateThruPackages (File f, HashMap pkgs, TreeSet<String> packages) throws IOException {
+    private void iterateThruPackages(File f, Map<String,Boolean> pkgs, TreeSet<String> packages) throws IOException {
         JarFile file = new JarFile (f);
         Enumeration en = file.entries ();
         LOOP: while (en.hasMoreElements ()) {
@@ -443,7 +443,7 @@ public class ModuleDependencies extends Task {
                    continue;
                 }
 
-                Boolean b = (Boolean)pkgs.get (p);
+                Boolean b = pkgs.get(p);
                 if (b != null) {
                     packages.add (p);
                     continue;
@@ -458,7 +458,7 @@ public class ModuleDependencies extends Task {
                         parent = parent.substring (0, prev);
                     }
 
-                    b = (Boolean)pkgs.get (parent);
+                    b = pkgs.get(parent);
                     if (Boolean.TRUE.equals (b)) {
                         packages.add (p);
                         continue LOOP;
@@ -874,8 +874,19 @@ public class ModuleDependencies extends Task {
                 l = new TreeSet<Dependency>();
                 groups.put(m.group, l);
             }
-            l.addAll(m.depends);
+            Set<Dependency> deps = new HashSet<Dependency>();
             for (Dependency d : m.depends) {
+                if (implementationOnly && (!d.exact || d.compare == null)) {
+                    continue;
+                }
+                // special dependencies are ignored
+                if (d.isSpecial ()) {
+                    continue;
+                }
+                deps.add(d);
+            }
+            l.addAll(deps);
+            for (Dependency d : deps) {
                 Set<ModuleInfo> r = referrers.get(d);
                 if (r == null) {
                     r = new HashSet<ModuleInfo>();
@@ -892,18 +903,6 @@ public class ModuleDependencies extends Task {
             boolean first = true;
             for (Dependency d : depends) {
                 String print = "  REQUIRES ";
-                if (d.exact && d.compare != null) {
-                    // ok, impl deps
-                } else {
-                    if (implementationOnly) {
-                        continue;
-                    }
-                }
-                
-                // special dependencies are ignored
-                if (d.isSpecial ()) {
-                    continue;
-                }
                 // dependencies within one group are not important
                 Set<ModuleInfo> r = referrers.get(d);
                 ModuleInfo ref = findModuleInfo(d, r.size() == 1 ? r.iterator().next() : null);

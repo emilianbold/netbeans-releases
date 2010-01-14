@@ -270,14 +270,16 @@ final class GeneralAction {
         public void setEnabled(boolean b) {
         }
 
-        void updateState(ActionMap prev, ActionMap now) {
+        void updateState(ActionMap prev, ActionMap now, boolean fire) {
             if (key == null) {
                 return;
             }
 
+            boolean prevEnabled = false;
             if (prev != null) {
                 Action prevAction = prev.get(key);
                 if (prevAction != null) {
+                    prevEnabled = fire && prevAction.isEnabled();
                     prevAction.removePropertyChangeListener(weakL);
                 }
             }
@@ -285,6 +287,10 @@ final class GeneralAction {
                 Action nowAction = now.get(key);
                 if (nowAction != null) {
                     nowAction.addPropertyChangeListener(weakL);
+                    PropertyChangeSupport sup = fire ? support : null;
+                    if (sup != null && nowAction.isEnabled() != prevEnabled) {
+                        sup.firePropertyChange("enabled", prevEnabled, !prevEnabled); // NOI18N
+                    }
                 }
             }
         }

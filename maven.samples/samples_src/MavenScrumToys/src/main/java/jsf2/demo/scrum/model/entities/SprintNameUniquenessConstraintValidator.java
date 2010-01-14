@@ -44,27 +44,26 @@ import jsf2.demo.scrum.web.controller.SprintManager;
 public class SprintNameUniquenessConstraintValidator implements ConstraintValidator<SprintNameUniquenessConstraint, String> {
 
     public boolean isValid(String value, ConstraintValidatorContext ctx) {
-
+        
         FacesContext context = FacesContext.getCurrentInstance();
         SprintManager sprintManager = (SprintManager)
-                context.getApplication().evaluateExpressionGet(context,
+                context.getApplication().evaluateExpressionGet(context, 
                 "#{sprintManager}", SprintManager.class);
         boolean result = true;
         String message = sprintManager.
                 checkUniqueSprintNameApplicationValidatorMethod(value);
         if (null != message) {
             result = false;
-	    ConstraintValidatorContext.ErrorBuilder builder =
-		ctx.buildErrorWithMessageTemplate(message);
-	    builder.addError();
-            ctx.disableDefaultError();
+	    ConstraintValidatorContext.ConstraintViolationBuilder builder =
+		ctx.buildConstraintViolationWithTemplate(message);
+	    builder.addConstraintViolation();
         }
 
-
+        
         return result;
     }
 
     public void initialize(SprintNameUniquenessConstraint arg0) {
     }
-
+    
 }

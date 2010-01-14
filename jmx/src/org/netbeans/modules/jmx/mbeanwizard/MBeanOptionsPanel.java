@@ -644,7 +644,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
                     setErrorMsg(ioe.toString());
                 }
             }
-            setErrorMsg(WizardConstants.EMPTYSTRING);
+            setErrorMsg(null);
             return true;
         }        
         

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.java.hints.infrastructure;
 
-import java.beans.PropertyVetoException;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -82,7 +81,6 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
-import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
@@ -93,8 +91,6 @@ import org.netbeans.spi.lexer.LanguageProvider;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -148,12 +144,12 @@ public class HintsTestBase extends NbTestCase {
                 }
             }
         });
-        
+
+        clearWorkDir();
+
         if (cache == null) {
-            cache = FileUtil.normalizeFile(TestUtil.createWorkFolder());
-            cacheFO = FileUtil.toFileObject(cache);
-            
-            cache.deleteOnExit();
+            cache = FileUtil.normalizeFile(new File(getWorkDir(), "cache"));
+            cacheFO = FileUtil.createFolder(cache);
             
             IndexUtil.setCacheFolder(cache);
             
@@ -176,7 +172,14 @@ public class HintsTestBase extends NbTestCase {
     }
     
     protected void prepareTest(String capitalizedName) throws Exception {
-        FileObject workFO = makeScratchDir(this);
+        File workFolder = new File(getWorkDir(), "work");
+        FileObject workFO = FileUtil.createFolder(workFolder);
+        
+        assertNotNull(workFO);
+
+        workFO.delete();
+
+        workFO = FileUtil.createFolder(workFolder);
         
         assertNotNull(workFO);
         
@@ -243,35 +246,6 @@ public class HintsTestBase extends NbTestCase {
         task = new LazyHintComputationFactory().createTask(testSource);
     }
     
-    /**Copied from org.netbeans.api.project.
-     * Create a scratch directory for tests.
-     * Will be in /tmp or whatever, and will be empty.
-     * If you just need a java.io.File use clearWorkDir + getWorkDir.
-     */
-    public static FileObject makeScratchDir(NbTestCase test) throws IOException {
-        test.clearWorkDir();
-        File root = test.getWorkDir();
-        assert root.isDirectory() && root.list().length == 0;
-
-        FileUtil.refreshFor(File.listRoots());
-        
-        FileObject fo = FileUtil.toFileObject(root);
-        if (fo != null) {
-            // Presumably using masterfs.
-            return fo;
-        } else {
-            // For the benefit of those not using masterfs.
-            LocalFileSystem lfs = new LocalFileSystem();
-            try {
-                lfs.setRootDirectory(root);
-            } catch (PropertyVetoException e) {
-                assert false : e;
-            }
-            Repository.getDefault().addFileSystem(lfs);
-            return lfs.getRoot();
-        }
-    }
-
     private void copyFiles(File sourceDir, File destDir, String[] resourceNames) throws IOException {
         for( String resourceName : resourceNames ) {
 

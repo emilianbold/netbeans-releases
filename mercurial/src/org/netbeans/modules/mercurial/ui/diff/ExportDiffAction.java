@@ -43,8 +43,6 @@ package org.netbeans.modules.mercurial.ui.diff;
 import java.util.Set;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
 
@@ -64,6 +62,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 
 /**
  * ExportDiff action for mercurial:
@@ -73,19 +72,9 @@ import org.openide.filesystems.FileUtil;
  */
 public class ExportDiffAction extends ContextAction {
 
-    private final VCSContext context;
-
-    public ExportDiffAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
-    }
-
-    public void performAction(ActionEvent e) {
-        exportDiff(context);
-    }
-
     @Override
-    public boolean isEnabled() {
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         Set<File> roots = context.getFiles();
         if(roots == null) return false;
         if(!HgUtils.isFromHgRepository(context)) return false;
@@ -98,6 +87,16 @@ public class ExportDiffAction extends ContextAction {
             }
         }
         return true;
+    }
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_ExportDiff"; // NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        exportDiff(context);
     }
 
     private static void exportDiff(VCSContext ctx) {

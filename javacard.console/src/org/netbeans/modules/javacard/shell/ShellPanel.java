@@ -41,6 +41,7 @@
 package org.netbeans.modules.javacard.shell;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.KeyListener;
@@ -61,6 +62,7 @@ import java.util.Random;
 import java.util.Vector;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.CardState;
 import org.netbeans.modules.javacard.spi.CardStateObserver;
@@ -109,6 +111,9 @@ final class ShellPanel extends javax.swing.JPanel implements  CardStateObserver,
         },
                 KeyStroke.getKeyStroke(
                 KeyEvent.VK_V, KeyEvent.CTRL_MASK), JTextPane.WHEN_FOCUSED);
+        Font f = UIManager.getFont("controlFont"); //NOI18N
+        int size = f == null ? 13 : f.getSize();
+        shellTextPane.setFont (new Font ("Monospaced", Font.PLAIN, size)); //NOI18N
     }
 
     public CommandManager getCommandManager() {
@@ -324,7 +329,6 @@ final class ShellPanel extends javax.swing.JPanel implements  CardStateObserver,
         jScrollPane2.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, javax.swing.UIManager.getDefaults().getColor("controlShadow")));
         jScrollPane2.setViewportBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        shellTextPane.setFont(new java.awt.Font("Monospaced", 0, 11));
         shellTextPane.addKeyListener(this);
         jScrollPane2.setViewportView(shellTextPane);
 

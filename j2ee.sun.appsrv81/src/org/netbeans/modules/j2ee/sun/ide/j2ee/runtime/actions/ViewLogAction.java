@@ -122,6 +122,10 @@ public class ViewLogAction extends CookieAction {
     }
     
     protected boolean enable(Node[] nodes) {
+        return isOneLocalNodeChosen(nodes);
+    }
+
+    static boolean isOneLocalNodeChosen(Node[] nodes) {
         if( (nodes == null) || (nodes.length < 1) ) {
             return false;
         }

@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
@@ -72,7 +73,9 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListModel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -80,6 +83,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicTextFieldUI;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -101,6 +105,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -135,11 +140,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     public IssuePanel() {
         initComponents();
-        reportedField.setBackground(getBackground());
-        modifiedField.setBackground(getBackground());
-        resolutionField.setBackground(getBackground());
-        productField.setBackground(getBackground());
+        updateReadOnlyField(reportedField);
+        updateReadOnlyField(modifiedField);
+        updateReadOnlyField(resolutionField);
+        updateReadOnlyField(productField);
         messagePanel.setBackground(getBackground());
+        customFieldsPanelLeft.setBackground(getBackground());
+        customFieldsPanelRight.setBackground(getBackground());
         Font font = headerLabel.getFont();
         headerLabel.setFont(font.deriveFont((float)(font.getSize()*1.7)));
         duplicateLabel.setVisible(false);
@@ -169,6 +176,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         BugtrackingUtil.issue163946Hack(scrollPane1);
     }
 
+    private void updateReadOnlyField(JTextField field) {
+        if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
+            field.setUI(new BasicTextFieldUI());
+        }
+        field.setBackground(getBackground());
+    }
+
     void reloadFormInAWT(final boolean force) {
         if (EventQueue.isDispatchThread()) {
             reloadForm(force);
@@ -191,6 +205,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
     };
+
+    BugzillaIssue getIssue() {
+        return issue;
+    }
 
     public void setIssue(BugzillaIssue issue) {
         if (this.issue == null) {
@@ -230,6 +248,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         this.issue = issue;
         initCombos();
+        initCustomFields();
         List<String> kws = issue.getBugzillaRepository().getConfiguration().getKeywords();
         keywords.clear();
         for (String keyword : kws) {
@@ -320,7 +339,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private int oldCommentCount;
-    private void reloadForm(boolean force) {
+    void reloadForm(boolean force) {
         if (skipReload) {
             return;
         }
@@ -421,7 +440,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 if (isKenaiRepository && (reportedStatusLabel.getIcon() == null)) {
                     int index = reporter.indexOf('@');
                     String userName = (index == -1) ? reporter : reporter.substring(0,index);
-                    KenaiUserUI ku = new KenaiUserUI(userName);
+                    String host = ((KenaiRepository) issue.getRepository()).getHost();
+                    KenaiUserUI ku = new KenaiUserUI(userName + "@" + host);
                     ku.setMessage(KenaiUtil.getChatLink(issue));
                     JLabel label = ku.createUserWidget();
                     label.setText(null);
@@ -441,7 +461,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
                 int index = assignee.indexOf('@');
                 String userName = (index == -1) ? assignee : assignee.substring(0,index);
-                KenaiUserUI ku = new KenaiUserUI(userName);
+                String host = ((KenaiRepository) issue.getRepository()).getHost();
+                KenaiUserUI ku = new KenaiUserUI(userName + "@" + host);
                 ku.setMessage(KenaiUtil.getChatLink(issue));
                 JLabel label = ku.createUserWidget();
                 label.setText(null);
@@ -461,6 +482,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(force, ccField, BugzillaIssue.IssueField.CC, ccWarning, ccLabel);
             reloadField(force, dependsField, BugzillaIssue.IssueField.DEPENDS_ON, dependsOnWarning, dependsLabel);
             reloadField(force, blocksField, BugzillaIssue.IssueField.BLOCKS, blocksWarning, blocksLabel);
+            // Reload custom fields
+            for (CustomFieldInfo field : customFields) {
+                reloadField(force, field.comp, field.field, field.warning, field.label);
+            }
         }
         int newCommentCount = issue.getComments().length;
         if (!force && oldCommentCount != newCommentCount) {
@@ -470,10 +495,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         oldCommentCount = newCommentCount;
+        List<Attachment> attachments = issue.getAttachments();
         if (!isNew) {
-            commentsPanel.setIssue(issue);
+            commentsPanel.setIssue(issue, attachments);
         }
-        attachmentsPanel.setIssue(issue);
+        attachmentsPanel.setAttachments(attachments);
         BugtrackingUtil.keepFocusedComponentVisible(commentsPanel);
         BugtrackingUtil.keepFocusedComponentVisible(attachmentsPanel);
         if (force) {
@@ -506,20 +532,53 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if (component instanceof JComboBox) {
                 Object value = ((JComboBox)component).getSelectedItem();
                 currentValue  = (value == null) ? "" : value.toString(); // NOI18N
-            } else if (component instanceof JTextField) {
-                currentValue = ((JTextField)component).getText();
+            } else if (component instanceof JTextComponent) {
+                currentValue = ((JTextComponent)component).getText();
+            } else if (component instanceof JList) {
+                JList list = (JList)component;
+                StringBuilder sb = new StringBuilder();
+                for (Object value : list.getSelectedValues()) {
+                    if (sb.length()!=0) {
+                        sb.append(',');
+                    }
+                    sb.append(value);
+                }
+                currentValue = sb.toString();
             }
         }
         String initialValue = initialValues.get(field);
-        String newValue = issue.getFieldValue(field);
+        String newValue;
+        if (component instanceof JList) {
+            StringBuilder sb = new StringBuilder();
+            for (String value : issue.getFieldValues(field)) {
+                if (sb.length()!=0) {
+                    sb.append(',');
+                }
+                sb.append(value);
+            }
+            newValue = sb.toString();
+        } else {
+            newValue = issue.getFieldValue(field);
+        }
         boolean valueModifiedByUser = (currentValue != null) && (initialValue != null) && !currentValue.equals(initialValue);
         boolean valueModifiedByServer = (initialValue != null) && (newValue != null) && !initialValue.equals(newValue);
         if (force || !valueModifiedByUser) {
             if (component instanceof JComboBox) {
                 JComboBox combo = (JComboBox)component;
                 selectInCombo(combo, newValue, true);
-            } else if (component instanceof JTextField) {
-                ((JTextField)component).setText(newValue);
+            } else if (component instanceof JTextComponent) {
+                ((JTextComponent)component).setText(newValue);
+            } else if (component instanceof JList) {
+                JList list = (JList)component;
+                list.clearSelection();
+                ListModel model = list.getModel();
+                for (String value : issue.getFieldValues(field)) {
+                    for (int i=0; i<model.getSize(); i++) {
+                        if (value.equals(model.getElementAt(i))) {
+                            list.addSelectionInterval(i, i);
+                        }
+                    }
+                }
             }
             if (force) {
                 if (warningLabel != null) {
@@ -944,26 +1003,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         messagePanel.add(messageLabel);
     }
 
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        if (issue != null) {
-            // Hack - reset any previous modifications when the issue window is reopened
-            // XXX any chance to get rid of the hack?
-            reloadForm(true);
-
-            issue.opened();
-        }
-    }
-
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        if(issue != null) {
-            issue.closed();
-        }
-    }
-
     private Map<Component, Boolean> enableMap = new HashMap<Component, Boolean>();
     private void enableComponents(boolean enable) {
         enableComponents(this, enable);
@@ -1041,6 +1080,108 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         });
     }
 
+    private List<CustomFieldInfo> customFields = new LinkedList<CustomFieldInfo>();
+    private void initCustomFields() {
+        customFields.clear();
+        if (issue.isNew()) {
+            customFieldsPanelLeft.setVisible(false);
+            customFieldsPanelRight.setVisible(false);
+            return;
+        }
+        customFieldsPanelLeft.removeAll();
+        customFieldsPanelRight.removeAll();
+        GroupLayout labelLayout = new GroupLayout(customFieldsPanelLeft);
+        customFieldsPanelLeft.setLayout(labelLayout);
+        GroupLayout fieldLayout = new GroupLayout(customFieldsPanelRight);
+        customFieldsPanelRight.setLayout(fieldLayout);
+        GroupLayout.ParallelGroup labelHorizontalGroup = labelLayout.createParallelGroup(GroupLayout.LEADING);
+        GroupLayout.SequentialGroup labelVerticalGroup = labelLayout.createSequentialGroup();
+        GroupLayout.ParallelGroup fieldHorizontalGroup = fieldLayout.createParallelGroup(GroupLayout.LEADING);
+        GroupLayout.SequentialGroup fieldVerticalGroup = fieldLayout.createSequentialGroup();
+        boolean nbRepository = BugzillaUtil.isNbRepository(issue.getRepository());
+        boolean anyField = false;
+        for (BugzillaIssue.IssueField field : issue.getFields()) {
+            if (field instanceof BugzillaIssue.CustomIssueField) {
+                BugzillaIssue.CustomIssueField cField = (BugzillaIssue.CustomIssueField)field;
+                if (nbRepository && cField.getKey().equals(BugzillaIssue.IssueField.ISSUE_TYPE.getKey())) {
+                    continue; // NB Issue type is already among non-custom fields
+                }
+                JLabel label = new JLabel(cField.getDisplayName()+":"); // NOI18N
+                String type = cField.getType();
+                JComponent comp;
+                JComponent editor;
+                boolean rigid = false;
+                if ("longText".equals(type)) { // NOI18N
+                    JScrollPane scrollPane = new JScrollPane();
+                    JTextArea textArea = new JTextArea();
+                    textArea.setRows(5);
+                    scrollPane.setViewportView(textArea);
+                    comp = scrollPane;
+                    editor = textArea;
+                    label.setVerticalAlignment(SwingConstants.TOP);
+                    BugtrackingUtil.fixFocusTraversalKeys(textArea);
+                    BugtrackingUtil.issue163946Hack(scrollPane);
+                } else if ("shortText".equals(type)) { // NOI18N
+                    comp = editor = new JTextField();
+                } else if ("multiSelect".equals(type)) { // NOI18N
+                    JList list = new JList();
+                    DefaultComboBoxModel model = new DefaultComboBoxModel(cField.getOptions().keySet().toArray());
+                    list.setModel(model);
+                    if (model.getSize()<list.getVisibleRowCount()) {
+                        list.setVisibleRowCount(model.getSize());
+                    }
+                    JScrollPane scrollPane = new JScrollPane();
+                    scrollPane.setViewportView(list);
+                    comp = scrollPane;
+                    editor = list;
+                    label.setVerticalAlignment(SwingConstants.TOP);
+                    rigid = true;
+                    BugtrackingUtil.issue163946Hack(scrollPane);
+                } else if ("singleSelect".equals(type)) { // NOI18N
+                    comp = editor = new JComboBox();
+                    DefaultComboBoxModel model = new DefaultComboBoxModel(cField.getOptions().keySet().toArray());
+                    ((JComboBox)comp).setModel(model);
+                    rigid = true;
+                } else if ("dateTime".equals(type)) { // NOI18N
+                    comp = editor = new JTextField();
+                } else {
+                    Bugzilla.LOG.log(Level.INFO, "Custom field type {0} is not supported!", type); // NOI18N
+                    continue;
+                }
+                JLabel warning = new JLabel();
+                customFields.add(new CustomFieldInfo(cField, label, editor, warning));
+                label.setLabelFor(editor);
+                label.setPreferredSize(new Dimension(label.getPreferredSize().width, comp.getPreferredSize().height));
+                if (anyField) {
+                    labelVerticalGroup.addPreferredGap(LayoutStyle.RELATED);
+                    fieldVerticalGroup.addPreferredGap(LayoutStyle.RELATED);
+                }
+                labelHorizontalGroup.add(label);
+                labelVerticalGroup.add(label, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+                GroupLayout.SequentialGroup sGroup = fieldLayout.createSequentialGroup();
+                if (rigid) {
+                    sGroup.add(comp, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
+                } else {
+                    sGroup.add(comp);
+                }
+                sGroup.addPreferredGap(LayoutStyle.RELATED);
+                sGroup.add(warning);
+                fieldHorizontalGroup.add(sGroup);
+                GroupLayout.ParallelGroup pGroup = fieldLayout.createParallelGroup(GroupLayout.BASELINE);
+                pGroup.add(comp);
+                pGroup.add(warning);
+                fieldVerticalGroup.add(pGroup);
+                anyField = true;
+            }
+        }
+        labelLayout.setHorizontalGroup(labelHorizontalGroup);
+        labelLayout.setVerticalGroup(labelVerticalGroup);
+        fieldLayout.setHorizontalGroup(fieldHorizontalGroup);
+        fieldLayout.setVerticalGroup(fieldVerticalGroup);
+        customFieldsPanelLeft.setVisible(anyField);
+        customFieldsPanelRight.setVisible(anyField);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -1052,6 +1193,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         productField = new javax.swing.JTextField();
         resolutionCombo = new javax.swing.JComboBox();
         assignedCombo = new javax.swing.JComboBox();
+        customFieldsPanelLeft = new javax.swing.JPanel();
+        customFieldsPanelRight = new javax.swing.JPanel();
         reportedField = new javax.swing.JTextField();
         dependsOnWarning = new javax.swing.JLabel();
         osWarning = new javax.swing.JLabel();
@@ -1314,6 +1457,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         issueTypeCombo.addActionListener(formListener);
 
         scrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+        addCommentArea.setLineWrap(true);
         scrollPane1.setViewportView(addCommentArea);
         addCommentArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentArea.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -1362,7 +1507,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             .add(dummyLabel3)
                             .add(summaryLabel)
                             .add(attachmentsLabel)
-                            .add(addCommentLabel))
+                            .add(addCommentLabel)
+                            .add(customFieldsPanelLeft, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
@@ -1469,8 +1615,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                         .add(submitButton)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(cancelButton))
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, messagePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .add(10, 10, 10))))))
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, messagePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .add(org.jdesktop.layout.GroupLayout.LEADING, customFieldsPanelRight, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addContainerGap())))))
         );
 
         layout.linkSize(new java.awt.Component[] {osCombo, platformCombo, priorityCombo, severityCombo}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -1586,6 +1733,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         .add(dummyLabel3))
                     .add(dummyAttachmentsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(customFieldsPanelRight, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(customFieldsPanelLeft, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(summaryLabel)
                     .add(summaryField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -1606,9 +1757,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {dummyLabel1, dummyLabel2, dummyLabel3, priorityCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
-
         layout.linkSize(new java.awt.Component[] {refreshButton, reloadButton, separatorLabel, separatorLabel2}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
+        layout.linkSize(new java.awt.Component[] {dummyLabel1, dummyLabel2, dummyLabel3, priorityCombo}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         reportedField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedField.AccessibleContext.accessibleDescription")); // NOI18N
         blocksButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.blocksButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -2057,6 +2208,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             Object resolution = resolutionCombo.getSelectedItem();
                             Object issueType = issueTypeCombo.getSelectedItem();
                             initCombos();
+                            initCustomFields();
                             selectInCombo(productCombo, product, false);
                             selectInCombo(platformCombo, platform, false);
                             selectInCombo(osCombo, os, false);
@@ -2142,6 +2294,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JComboBox componentCombo;
     private javax.swing.JLabel componentLabel;
     private javax.swing.JLabel componentWarning;
+    private javax.swing.JPanel customFieldsPanelLeft;
+    private javax.swing.JPanel customFieldsPanelRight;
     private javax.swing.JTextField dependsField;
     private javax.swing.JLabel dependsLabel;
     private javax.swing.JButton dependsOnButton;
@@ -2356,6 +2510,20 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             ignoreUpdate = false;
         }
 
+    }
+
+    private static class CustomFieldInfo {
+        BugzillaIssue.CustomIssueField field;
+        JLabel label;
+        JComponent comp;
+        JLabel warning;
+
+        CustomFieldInfo(BugzillaIssue.CustomIssueField field, JLabel label, JComponent comp, JLabel warning) {
+            this.field = field;
+            this.label = label;
+            this.comp = comp;
+            this.warning = warning;
+        }
     }
 
     private static class PriorityRenderer extends DefaultListCellRenderer {

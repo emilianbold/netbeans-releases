@@ -101,31 +101,6 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
                 fireChange();
             }
         });
-        uriTextField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-                fireChange();
-            }
-            public void insertUpdate(DocumentEvent e) {
-                fireChange();
-            }
-            public void removeUpdate(DocumentEvent e) {
-                fireChange();
-            }
-        });
-        containerUriTextField.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-                containerUriOveridden = true;
-                fireChange();
-            }
-            public void insertUpdate(DocumentEvent e) {
-                containerUriOveridden = true;
-                fireChange();
-            }
-            public void removeUpdate(DocumentEvent e) {
-                containerUriOveridden = true;
-                fireChange();
-            }
-        });
         medaTypeComboBox.setModel(new DefaultComboBoxModel(GenericResourceBean.getSupportedMimeTypes()));
     }
     
@@ -732,6 +707,31 @@ private void representationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRS
                 getDefaultRepresetationClass((MimeType)medaTypeComboBox.getSelectedItem()));
             containerRepresentationClassTextField.setText(GenericResourceBean.
                 getDefaultRepresetationClass((MimeType)medaTypeComboBox.getSelectedItem()));
+            uriTextField.getDocument().addDocumentListener(new DocumentListener() {
+                public void changedUpdate(DocumentEvent e) {
+                    fireChange();
+                }
+                public void insertUpdate(DocumentEvent e) {
+                    fireChange();
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    fireChange();
+                }
+            });
+            containerUriTextField.getDocument().addDocumentListener(new DocumentListener() {
+                public void changedUpdate(DocumentEvent e) {
+                    containerUriOveridden = true;
+                    fireChange();
+                }
+                public void insertUpdate(DocumentEvent e) {
+                    containerUriOveridden = true;
+                    fireChange();
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    containerUriOveridden = true;
+                    fireChange();
+                }
+            });
         } else {
             resourceNameTextField.setText(value);
             classTextField.setText((String) settings.getProperty(WizardProperties.ITEM_RESOURCE_CLASS));

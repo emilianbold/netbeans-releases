@@ -80,6 +80,7 @@
         <folder name="MIMEResolver">
             <file name="ApduResolver.xml" url="ApduResolver.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.apdufile.Bundle#Services/MIMEResolver/ApduResolver.xml"/>
+                <attr name="position" intvalue="8738"/>
             </file>
         </folder>
     </folder>

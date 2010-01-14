@@ -214,7 +214,7 @@ public class WebAppMetadataImpl implements WebAppMetadata {
         long lastModif = dd.lastModified().getTime();
         if (lastModif > webXmlLastModification) {
             try {
-                webXml = DDProvider.getDefault().getDDRoot(dd, false);
+                webXml = DDProvider.getDefault().getDDRoot(dd, true);
                 webXmlLastModification = lastModif;
             }
             catch (IOException ex) {

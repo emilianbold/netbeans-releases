@@ -56,14 +56,14 @@ public class FmtTabsIndents extends JPanel {
         initComponents();
         freeFormatCheckBox.putClientProperty(FmtOptions.CategorySupport.OPTION_ID, FmtOptions.freeFormat);
     }
-    
+
     public static PreferencesCustomizer.Factory getController() {
         return new FmtOptions.CategorySupport.Factory(PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtTabsIndents.class,
                 org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "SAMPLE_Default"), // NOI18N
                 new String[] { FmtOptions.rightMargin, "30" }  // NOI18N
                 );
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

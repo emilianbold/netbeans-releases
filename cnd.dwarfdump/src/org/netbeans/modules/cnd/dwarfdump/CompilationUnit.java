@@ -449,10 +449,8 @@ public class CompilationUnit {
     private DwarfEntry getDebugInfo(boolean readChildren) throws IOException {
         if (root == null || (readChildren && root.getChildren().size() == 0)) {
             //getPubnamesTable();
-            long currPos = reader.getFilePointer();
             reader.seek(debugInfoOffset);
             root = readEntry(0, readChildren);
-            reader.seek(currPos);
 
             if (readChildren) {
                 setSpecializations(root);

@@ -42,7 +42,6 @@ package org.netbeans.modules.web.core.syntax.completion.api;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,23 +50,25 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 
-import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
@@ -739,7 +740,13 @@ public class ELExpression {
             if ( mirror == null ){
                 return null;
             }
-            return (TypeElement) controller.getTypes().asElement( mirror);
+            Element result = controller.getTypes().asElement( mirror);
+            if ( result instanceof TypeElement ){
+                return (TypeElement)result ;
+            }
+            else {
+                return null;
+            }
         }
 
         protected TypeMirror getTypeMirrorPreceedingCaret(CompilationInfo controller,
@@ -779,35 +786,26 @@ public class ELExpression {
                     if ( handler != null ){
                         handler.typeNotFound(parts[i-1].getIndex(), parts[i-1].getPart());
                     }
-
                     return null;
                 }
                 if (lastKnownType != null) {
                     String accessorName = getAccessorName(parts[i].getPart());
                     
-                    //resolve iterable type if possible
+                    //resolved expressions (iterating components) handling
                     //this means that once the type is iterable
                     //we cannot resolve methods of the iterable type itself,
                     //just type of its items
-                    if ( controller.getTypes().isAssignable(
-                            controller.getTypes().erasure(lastKnownType),
-                                controller.getElements().getTypeElement(
-                                        Iterable.class.getCanonicalName()).asType())) {
-                        if ( lastKnownType instanceof DeclaredType ){
-                            List<? extends TypeMirror> typeArguments =
-                                ((DeclaredType)lastKnownType).getTypeArguments();
-                            if ( typeArguments.size() != 0 ){
-                                TypeMirror typeMirror = typeArguments.get(0);
-                                if ( typeMirror.getKind() == TypeKind.DECLARED){
-                                    lastFoundType = lastKnownType = typeMirror ;
-                                }
-                            }
+                    if(isResolvedExpression()) {
+                        TypeMirror typeParameter = extractTypeParameter(controller, lastKnownType, Iterable.class);
+                        if(typeParameter != null) {
+                            lastFoundType = lastKnownType = typeParameter;
                         }
                     }
 
                     //get all methods of the type
                     Element el= controller.getTypes().asElement(
                             lastKnownType);
+                    
                     List<ExecutableElement> allMethods;
                     if ( el instanceof TypeElement ){
                         allMethods= ElementFilter.methodsIn(
@@ -818,13 +816,17 @@ public class ELExpression {
                         allMethods = Collections.emptyList();
                     }
 
+                    TypeMirror type = lastKnownType;
                     lastKnownType = null;
 
                     for (ExecutableElement method : allMethods) {
                         if (accessorName.equals(method.getSimpleName()
                                 .toString()))
                         {
-                            TypeMirror returnType = method.getReturnType();
+                            ExecutableType methodType = (ExecutableType) 
+                                controller.getTypes().asMemberOf(
+                                        (DeclaredType)type, method);
+                            TypeMirror returnType = methodType.getReturnType();
                             lastReturnType = returnType;
 
                             if (returnType.getKind() == TypeKind.ARRAY) {
@@ -928,7 +930,33 @@ public class ELExpression {
             if ( lastKnownType == null && lastReturnType == null && handler!= null){
                 handler.typeNotFound(parts[i-1].getIndex(), parts[i-1].getPart());
             }
+
+            //resolved expressions (iterating components) handling
+            //and finally process the found type for its type parameter
+            if(isResolvedExpression()) {
+                TypeMirror typeParam = extractTypeParameter(controller, lastFoundType, Iterable.class);
+                lastFoundType = typeParam != null ? typeParam : lastFoundType;
+            }
             return lastFoundType;
+        }
+
+        private TypeMirror extractTypeParameter(CompilationInfo controller, TypeMirror lastKnownType, Class clazz) {
+            if (controller.getTypes().isAssignable(
+                    controller.getTypes().erasure(lastKnownType),
+                    controller.getElements().getTypeElement(
+                    clazz.getCanonicalName()).asType())) {
+                if (lastKnownType instanceof DeclaredType) {
+                    List<? extends TypeMirror> typeArguments =
+                            ((DeclaredType) lastKnownType).getTypeArguments();
+                    if (typeArguments.size() != 0) {
+                        TypeMirror typeMirror = typeArguments.get(0);
+                        if (typeMirror.getKind() == TypeKind.DECLARED) {
+                            return typeMirror;
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         protected String getAccessorName(String propertyName) {
@@ -1076,7 +1104,15 @@ public class ELExpression {
 
                     if (propertyName != null && propertyName.startsWith(prefix)) {
                         boolean isMethod = propertyName.equals(method.getSimpleName().toString());
-                        String type = isMethod ? "" : method.getReturnType().toString(); //NOI18N
+                        String type ;
+                        if ( isMethod ){
+                            TypeMirror methodType = controller.getTypes().asMemberOf( 
+                                    (DeclaredType)bean.asType(), method);
+                            type = ((ExecutableType)methodType).getReturnType().toString();
+                        }
+                        else {
+                            type ="";
+                        }
                         CompletionItem item = ElCompletionItem.createELProperty(
                                 propertyName, getInsert( propertyName , firstChar), 
                                 anchorOffset, type);
@@ -1128,6 +1164,10 @@ public class ELExpression {
 
     public String getResolvedExpression() {
         return resolvedExpression != null ? resolvedExpression : expression;
+    }
+
+    public boolean isResolvedExpression() {
+        return !getExpression().equals(getResolvedExpression());
     }
 
     public String getReplace() {

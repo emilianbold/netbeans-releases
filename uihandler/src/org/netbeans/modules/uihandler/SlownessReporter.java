@@ -134,9 +134,9 @@ class SlownessReporter {
         return latestActionHolder[0];
     }
 
-    void notifySlowness(byte[] nps, long time) {
+    void notifySlowness(byte[] nps, long time, String slownessType) {
         String latestActionName = getLatestAction(time);
-        pending.add(new NotifySnapshot(new SlownessData(time, nps, latestActionName)));
+        pending.add(new NotifySnapshot(new SlownessData(time, nps, slownessType, latestActionName)));
         if (pending.size() > 5) {
             pending.remove().clear();
         }
@@ -152,8 +152,9 @@ class SlownessReporter {
             NotificationDisplayer.Priority priority = Priority.SILENT;
             // in dev builds use higher priority
             assert (priority = Priority.LOW) != null;
+            String message = NbBundle.getMessage(NotifySnapshot.class, data.getSlownessType());
             note = NotificationDisplayer.getDefault().notify(
-                    NbBundle.getMessage(NotifySnapshot.class, "TEQ_LowPerformance"),
+                    message,
                     ImageUtilities.loadImageIcon("org/netbeans/modules/uihandler/vilik.png", true),
                     createPanel(), createPanel(),
                     priority);
@@ -179,8 +180,8 @@ class SlownessReporter {
             JPanel result = new JPanel();
             result.setOpaque(false);
             result.setLayout(new BoxLayout(result, BoxLayout.Y_AXIS));
-            result.add(new JLabel(NbBundle.getMessage(NotifySnapshot.class, "TEQ_BlockedFor", data.getTime(), data.getTime() / 1000)));
-            result.add(createDetails(NbBundle.getMessage(NotifySnapshot.class, "TEQ_Report")));
+            result.add(new JLabel(NbBundle.getMessage(NotifySnapshot.class, "BlockedFor" + data.getSlownessType(), data.getTime(), data.getTime() / 1000)));
+            result.add(createDetails(NbBundle.getMessage(NotifySnapshot.class, "Report")));
             return result;
         }
 

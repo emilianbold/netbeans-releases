@@ -176,7 +176,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
             npp.propertyChange(new PropertyChangeEvent(source, Configurations.PROP_ACTIVE_CONFIGURATION, null, mconf));
             ConfigurationDescriptorProvider configurationDescriptorProvider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             ConfigurationDescriptor configurationDescriptor = configurationDescriptorProvider.getConfigurationDescriptor();
-            configurationDescriptor.setModified(true);
+            configurationDescriptor.setModified();
         }
         return; // false;
     }

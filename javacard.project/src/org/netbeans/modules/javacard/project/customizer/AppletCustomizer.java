@@ -45,8 +45,8 @@ import com.sun.javacard.filemodels.*;
 import org.netbeans.modules.javacard.common.JCConstants;
 import org.netbeans.modules.javacard.project.JCProject;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.netbeans.validation.api.Problems;
 import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlRenderer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -71,10 +71,12 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.validation.adapters.DialogBuilder;
 import org.netbeans.modules.javacard.project.ui.CheckboxListView;
 import org.netbeans.modules.javacard.project.ui.FileModelFactory;
 import org.netbeans.modules.javacard.project.ui.NodeCheckObserver;
-import org.netbeans.modules.javacard.project.ui.ProblemPanel;
+import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.ValidationListener;
 import org.openide.util.HelpCtx;
 
 /**
@@ -406,31 +408,50 @@ public class AppletCustomizer extends AllClassesOfTypeExplorerPanel implements N
 
     private void onCustomizeDeployment(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onCustomizeDeployment
         Node n = mgr.getSelectedNodes()[0];
-        final ProblemPanel problemPanel = new ProblemPanel();
-//        final CustomizeDeploymentPanel panel = new CustomizeDeploymentPanel(n);
         final CustomizeDeploymentPanel panel = new CustomizeDeploymentPanel(n);
 
         String name = n.getDisplayName();
-        problemPanel.setInnerComponent(panel);
-        final DialogDescriptor dlg = new DialogDescriptor(problemPanel,
-                NbBundle.getMessage(CustomizeDeploymentPanel.class,
-                "TITLE_CUSTOMIZE_DEPLOYMENT", name)); //NOI18N
+
+        class L extends ValidationListener implements ChangeListener {
+
+            @Override
+            protected boolean validate(Problems prblms) {
+                String problem = panel.getProblem();
+                boolean result = problem == null;
+                if (problem != null) {
+                    prblms.add(problem);
+                }
+                return result;
+            }
+
+            public void stateChanged(ChangeEvent e) {
+                validate();
+            }
+        }
+        L validator = new L();
+
         ChangeListener cl = new ChangeListener() {
 
             public void stateChanged(ChangeEvent e) {
-                String problem = panel.getProblem();
-                dlg.setValid(problem == null);
-                problemPanel.setProblem(problem);
-                if (problem == null) {
+                if (panel.getProblem() == null) {
                     props.setDeploymentXmlUIModel(getDeployModelFromUI());
                 }
             }
         };
         panel.addChangeListener(cl);
+        panel.addChangeListener(validator);
+        ValidationGroup gp = ValidationGroup.create();
+        DialogBuilder db = new DialogBuilder(AppletCustomizer.class).setModal(true).setTitle(
+                NbBundle.getMessage(CustomizeDeploymentPanel.class,
+                "TITLE_CUSTOMIZE_DEPLOYMENT", name)).
+                setContent(panel).setValidationGroup(gp);
+        gp.add(validator);
 
-        if (DialogDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dlg))) {
+        if (db.showDialog(DialogDescriptor.OK_OPTION)) {
+            //XXX probably same exception w/ using ValidationPanel
             panel.saveChanges();
             propertyChange(null);
+
         }
     }//GEN-LAST:event_onCustomizeDeployment
     // Variables declaration - do not modify//GEN-BEGIN:variables

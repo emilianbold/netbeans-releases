@@ -48,25 +48,18 @@ import java.util.List;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.openide.loaders.MultiDataObject;
 
-import org.netbeans.modules.cnd.execution41.org.openide.cookies.ExecCookie;
 import org.netbeans.modules.cnd.execution41.org.openide.cookies.ArgumentsCookie;
-import org.netbeans.modules.cnd.execution41.org.openide.execution.Executor;
 
 import org.openide.nodes.Sheet;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
-import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 
 /** Support for execution of a data object.
  * @author Jaroslav Tulach, Jesse Glick
  * @since 3.14
  */
-public class ExecutionSupport extends Object
-        implements ExecCookie, ArgumentsCookie {
+public class ExecutionSupport implements ArgumentsCookie {
 
-    /** extended attribute for the type of executor */
-    private static final String EA_EXECUTOR = "NetBeansAttrExecutor"; // NOI18N
     /** extended attribute for attributes */
     private static final String EA_ARGUMENTS = "NetBeansAttrArguments"; // NOI18N
     /** extended attribute for attributes */
@@ -106,24 +99,7 @@ public class ExecutionSupport extends Object
     /* Starts the class.
      */
     public void start() {
-        Executor exec = getExecutor(entry);
-        if (exec == null) {
-            exec = defaultExecutor();
-        }
-
-        try {
-            exec.execute(entry.getDataObject());
-        } catch (final IOException ex) {
-            Mutex.EVENT.readAccess(new Runnable() {
-
-                public void run() {
-                    if (startFailed(ex)) {
-                        // restart
-                        ExecutionSupport.this.start();
-                    }
-                }
-            });
-        }
+        throw new UnsupportedOperationException();
     }
 
     /** Called when invocation of the executor fails. Allows to do some
@@ -134,32 +110,6 @@ public class ExecutionSupport extends Object
      */
     protected boolean startFailed(IOException ex) {
         return false;
-    }
-
-    /** This method allows subclasses to override the default
-     * executor they want to use for debugging.
-     *
-     * @return current implementation returns Executor.getDefault ()
-     */
-    protected Executor defaultExecutor() {
-        return Executor.getDefault();
-    }
-
-    /** Set the executor for a given file object.
-     * Uses file attributes to store this information.
-     * @param entry entry to set the executor for
-     * @param exec executor to use
-     * @exception IOException if executor cannot be set
-     */
-    public static void setExecutor(MultiDataObject.Entry entry, Executor exec) throws IOException {
-    }
-
-    /** Get the executor for a given file object.
-     * @param entry entry to obtain the executor for
-     * @return executor associated with the file, or <code>null</code> if the default should be used
-     */
-    public static Executor getExecutor(MultiDataObject.Entry entry) {
-        return null;
     }
 
     /* Sets execution arguments for the associated entry.
@@ -227,7 +177,6 @@ public class ExecutionSupport extends Object
      */
     public void addProperties(Sheet.Set set) {
         set.put(createParamsProperty(PROP_FILE_PARAMS, getString("PROP_fileParams"), getString("HINT_fileParams"))); // NOI18N
-        set.put(createExecutorProperty());
     }
 
     protected PropertySupport<String> createParamsProperty(String propertyName, String displayName, String description) {
@@ -306,52 +255,6 @@ public class ExecutionSupport extends Object
         return result;
     }
 
-
-    /** Creates the executor property for entry.
-     * @return the property
-     */
-    private PropertySupport<Executor> createExecutorProperty() {
-        return new PropertySupport.ReadWrite<Executor>(
-                PROP_EXECUTION,
-                Executor.class,
-                getString("PROP_execution"),
-                getString("HINT_execution")) {
-
-            public Executor getValue() {
-                Executor e = getExecutor(entry);
-                if (e == null) {
-                    return defaultExecutor();
-                } else {
-                    return e;
-                }
-            }
-
-            public void setValue(Executor val) throws InvocationTargetException {
-                try {
-                    setExecutor(entry,val);
-                } catch (IOException ex) {
-                    throw new InvocationTargetException(ex);
-                }
-            }
-
-            @Override
-            public boolean supportsDefaultValue() {
-                return true;
-            }
-
-            @Override
-            public void restoreDefaultValue() throws InvocationTargetException {
-                setValue(null);
-            }
-
-            @Override
-            public boolean canWrite() {
-                Boolean isReadOnly = (Boolean) entry.getFile().getAttribute(READONLY_ATTRIBUTES);
-                return (isReadOnly == null) ? false : (!isReadOnly.booleanValue());
-            }
-        };
-    }
-
     protected PropertySupport<String> createEnvironmentProperty(String propertyName, String displayName, String description) {
                 PropertySupport<String> result = new PropertySupport.ReadWrite<String>(
                 propertyName, String.class, displayName, description) {
@@ -399,6 +302,6 @@ public class ExecutionSupport extends Object
 
     /** @return a localized String */
     static String getString(String s) {
-        return NbBundle.getMessage(Executor.class, s);
+        return NbBundle.getMessage(ExecutionSupport.class, s);
     }
 }

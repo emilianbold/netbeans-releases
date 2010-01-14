@@ -206,7 +206,7 @@ public abstract class FileModel<T extends FileModelEntry> {
     public boolean equals (Object o) {
         boolean result = o == null ? false : o.getClass() == getClass() ? true : false;
         if (result) {
-            FileModel other = (FileModel) o;
+            FileModel<?> other = (FileModel<?>) o;
             List <?> myData = getData();
             List <?> otherData = other.getData();
             result = myData.equals(otherData);

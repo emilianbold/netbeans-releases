@@ -56,6 +56,7 @@ import org.ini4j.Ini;
 import org.ini4j.InvalidIniFormatException;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -136,8 +137,10 @@ public class HgConfigFiles {
             setProperty(HG_UI_SECTION, HG_USERNAME, value);
         } else if (name.equals(HG_DEFAULT_PUSH)) { 
             setProperty(HG_PATHS_SECTION, HG_DEFAULT_PUSH_VALUE, value);
+            HgRepositoryContextCache.getInstance().reset();
         } else if (name.equals(HG_DEFAULT_PULL)) { 
             setProperty(HG_PATHS_SECTION, HG_DEFAULT_PULL_VALUE, value);
+            HgRepositoryContextCache.getInstance().reset();
         } else if (name.equals(HG_EXTENSIONS_HGK)) { 
             // Allow hgext.hgk to be set to some other user defined value if required
             if(getProperty(HG_EXTENSIONS, HG_EXTENSIONS_HGK).equals("")){

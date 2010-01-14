@@ -28,8 +28,10 @@
 
 package org.netbeans.modules.cnd.repository.impl;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,7 +41,6 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.execution.NativeExecutor;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
@@ -49,6 +50,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Tracer;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.util.Exceptions;
 
 /**
@@ -158,21 +162,14 @@ public class RepositoryValidationBase extends TraceModelTestBase {
                 finish.set(true);
             }
         };
-        NativeExecutor ne = null;
         File file = new File(dataPath + "/pkg-config-0.23");
         if (!file.exists()){
             file.mkdirs();
         }
         if (file.list().length == 0){
-            ne = new NativeExecutor(dataPath,"wget",
-                    "http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz",new String[0],"wget","run",false,false);
-            waitExecution(ne, listener, finish);
-            ne = new NativeExecutor(dataPath,"gzip",
-                    "-d pkg-config-0.23.tar.gz",new String[0],"gzip","run",false,false);
-            waitExecution(ne, listener, finish);
-            ne = new NativeExecutor(dataPath,"tar",
-                    "xf pkg-config-0.23.tar",new String[0],"tar","run",false,false);
-            waitExecution(ne, listener, finish);
+            execute("wget", dataPath, "http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz");
+            execute("gzip", dataPath, "-d", "pkg-config-0.23.tar.gz");
+            execute("tar", dataPath, "xf", "pkg-config-0.23.tar");
         }
 
         file = new File(dataPath + "/litesql-0.3.3");
@@ -180,15 +177,9 @@ public class RepositoryValidationBase extends TraceModelTestBase {
             file.mkdirs();
         }
         if (file.list().length == 0){
-            ne = new NativeExecutor(dataPath,"wget",
-                    "http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/li/litesql/litesql-0.3.3.tar.gz",new String[0],"wget","run",false,false);
-            waitExecution(ne, listener, finish);
-            ne = new NativeExecutor(dataPath,"gzip",
-                    "-d litesql-0.3.3.tar.gz",new String[0],"gzip","run",false,false);
-            waitExecution(ne, listener, finish);
-            ne = new NativeExecutor(dataPath,"tar",
-                    "xf litesql-0.3.3.tar",new String[0],"tar","run",false,false);
-            waitExecution(ne, listener, finish);
+            execute("wget", dataPath, "http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/li/litesql/litesql-0.3.3.tar.gz");
+            execute("gzip", dataPath, "-d", "litesql-0.3.3.tar.gz");
+            execute("tar", dataPath, "xf", "litesql-0.3.3.tar");
         }
         list.add(dataPath + "/pkg-config-0.23"); //NOI18N
         list.add(dataPath + "/litesql-0.3.3"); //NOI18N
@@ -203,20 +194,59 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         return list;
     }
 
-    private void waitExecution(NativeExecutor ne, ExecutionListener listener, AtomicBoolean finish){
-        finish.set(false);
-        ne.addExecutionListener(listener);
+    private void execute(String command, String folder, String ... arguments){
+        StringBuilder buf = new StringBuilder();
+        for(String arg : arguments) {
+            buf.append(' ');
+            buf.append(arg);
+        }
+        System.err.println(folder+"#"+command+buf.toString());
+        NativeProcessBuilder ne = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal())
+        .setWorkingDirectory(folder)
+        .setExecutable(command)
+        .setArguments(arguments);
+        waitExecution(ne);
+    }
+
+    private void waitExecution(NativeProcessBuilder ne){
         try {
-            ne.execute();
+            NativeProcess process = ne.call();
+            int rc = process.waitFor();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            try {
+                while (true) {
+                    String line = reader.readLine();
+                    if (line == null) {
+                        break;
+                    } else {
+                        System.out.println(line);
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                reader.close();
+            }
+            reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            try {
+                while (true) {
+                    String line = reader.readLine();
+                    if (line == null) {
+                        break;
+                    } else {
+                        System.out.println(line);
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                reader.close();
+            }
+
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-        }
-        while(!finish.get()){
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
         }
     }
 

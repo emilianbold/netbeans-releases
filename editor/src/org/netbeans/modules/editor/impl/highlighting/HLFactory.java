@@ -80,6 +80,13 @@ public final class HLFactory implements HighlightsLayerFactory {
             new ComposedTextHighlighting(c, d, mimeType)
         ));
 
+        layers.add(HighlightsLayer.create(
+            AnnotationsHighlighting.LAYER_TYPE_ID,
+            ZOrder.DEFAULT_RACK,
+            true,  // fixedSize
+            new AnnotationsHighlighting(d)
+        ));
+
 
         if (!new TokenHierarchyActiveRunnable(context.getDocument()).isActive()) {
             // There is no lexer yet, we will use this layer for backwards compatibility

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugtracking.dummies;
 
+import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
@@ -114,6 +115,16 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
 
     public Lookup getLookup() {
         return Lookup.EMPTY;
+    }
+
+    @Override
+    public String getID() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Image getIcon() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

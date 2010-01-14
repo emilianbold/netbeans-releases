@@ -55,10 +55,10 @@ class TypeTreeNode extends InjectableTreeNode<TypeElement> {
 
     private static final long serialVersionUID = 5945151445570825042L;
 
-    TypeTreeNode(FileObject fileObject, TypeElement typeElement,
+    TypeTreeNode(FileObject fileObject, TypeElement typeElement, boolean disabled,
         CompilationInfo compilationInfo) 
     {
-        super(fileObject, typeElement, compilationInfo);
+        super(fileObject, typeElement, null, disabled, compilationInfo);
     }
     
     boolean isAssignableFrom( TypeElement element , 

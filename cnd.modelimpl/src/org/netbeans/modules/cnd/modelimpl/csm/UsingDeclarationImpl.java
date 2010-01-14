@@ -185,7 +185,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                     referencedDeclaration = referencedDeclaration == null ? bestChoice : referencedDeclaration;
                 }
                 CsmClass cls = null;
-                if(namespace == null) {
+                if(namespace == null && rawName.length > 1) {
                     CharSequence[] partial = new CharSequence[rawName.length - 1];
                     System.arraycopy(rawName, 0, partial, 0, rawName.length - 1);
                     CsmObject result = ResolverFactory.createResolver(getContainingFile(), startOffset, resolver).resolve(partial, Resolver.CLASSIFIER);
@@ -193,7 +193,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
                         cls = (CsmClass)result;
                     }
                 }
-                if(cls != null) {
+                if(cls != null && rawName.length > 0) {
                     CharSequence lastName = rawName[rawName.length - 1];
                     CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(lastName, true, true, false);
                     Iterator<CsmMember> it = CsmSelect.getClassMembers(cls, filter);

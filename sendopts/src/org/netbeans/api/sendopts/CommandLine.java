@@ -75,8 +75,8 @@ public final class CommandLine {
     }
     
     /** Getter for the default command line processor in the system. List
-     * of {@link OptionProcessor}s is taken from default 
-     * <a href="@org-openide-util@/org/openide/util/Lookup.html">Lookup.getDefault</code>.
+     * of {@link OptionProcessor}s is taken from default
+     * {@link Lookup#getDefault() }.
      */
     public static CommandLine getDefault() {
         return new CommandLine();

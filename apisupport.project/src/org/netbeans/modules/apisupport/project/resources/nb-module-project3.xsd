@@ -50,8 +50,8 @@ made subject to such option by the copyright holder.
             <xsd:sequence>
                 <xsd:element name="code-name-base" type="javaPackageType"/>
                 <xsd:choice minOccurs="0">
-                    <xsd:element name="suite-component"/>
-                    <xsd:element name="standalone"/>
+                    <xsd:element name="suite-component"><xsd:complexType/></xsd:element>
+                    <xsd:element name="standalone"><xsd:complexType/></xsd:element>
                 </xsd:choice>
                 <xsd:element name="module-dependencies" type="moduleDependenciesType"/>
                 <xsd:element name="test-dependencies" type="testDependenciesType" minOccurs="0"/>
@@ -77,8 +77,8 @@ made subject to such option by the copyright holder.
             <!-- location in source tree is derived from code-name-base -->
             <!-- It is senseless to have *none* of the following. -->
             <!-- compile-dependency implies build-prerequisite. -->
-            <xsd:element name="build-prerequisite" minOccurs="0"/>
-            <xsd:element name="compile-dependency" minOccurs="0"/>
+            <xsd:element name="build-prerequisite" minOccurs="0"><xsd:complexType/></xsd:element>
+            <xsd:element name="compile-dependency" minOccurs="0"><xsd:complexType/></xsd:element>
             <xsd:element name="run-dependency" minOccurs="0" type="runDependencyType"/>
         </xsd:sequence>
     </xsd:complexType>
@@ -180,9 +180,9 @@ made subject to such option by the copyright holder.
    <xsd:complexType name="testDependencyType">
         <xsd:sequence>
             <xsd:element name="code-name-base" type="javaPackageType"/>
-            <xsd:element name="recursive" minOccurs="0"/>
-            <xsd:element name="compile-dependency" minOccurs="0"/>
-            <xsd:element name="test" minOccurs="0"/>
+            <xsd:element name="recursive" minOccurs="0"><xsd:complexType/></xsd:element>
+            <xsd:element name="compile-dependency" minOccurs="0"><xsd:complexType/></xsd:element>
+            <xsd:element name="test" minOccurs="0"><xsd:complexType/></xsd:element>
         </xsd:sequence>
     </xsd:complexType>
 

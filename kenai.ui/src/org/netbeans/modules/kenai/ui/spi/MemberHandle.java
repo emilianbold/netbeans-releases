@@ -49,6 +49,7 @@ public abstract class MemberHandle implements Comparable <MemberHandle> {
     public abstract String getFullName();
     public abstract String getDisplayName();
     public abstract String getName();
+    public abstract String getFQN();
     public String getRole() { return null; }
     public abstract boolean hasMessages();
     public abstract boolean isOnline();

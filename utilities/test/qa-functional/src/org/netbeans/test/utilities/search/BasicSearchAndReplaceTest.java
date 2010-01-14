@@ -39,7 +39,6 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
-import org.netbeans.jellytools.modules.web.NavigatorOperator;
 import org.netbeans.test.utilities.testcase.Utilities;
 
 /**

@@ -49,6 +49,10 @@ import org.netbeans.modules.csl.api.OffsetRange;
 public interface Parameter {
     String getName();
     String getDefaultValue();
+    /**
+     * @return false if the type information is taken from PHPDoc
+     */
+    boolean hasRawType();
     boolean isMandatory();
     /** mixed types can be documented in php doc*/
     List<QualifiedName> getTypes();

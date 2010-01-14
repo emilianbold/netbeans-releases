@@ -65,7 +65,8 @@ import org.openide.util.lookup.Lookups;
  * @author Tim Boudreau
  */
 public class CardChildren extends ChildFactory.Detachable<XListEntry> implements PropertyChangeListener {
-
+    //XXX this is a near-duplicate of org.netbeans.modules.javacard.spi - replace
+    //with that when possible
     private final CardDataObject ob;
     private ObservableProperties props;
 
@@ -128,23 +129,23 @@ public class CardChildren extends ChildFactory.Detachable<XListEntry> implements
             switch (ProjectKind.forManifestType(entry.getType())) {
                 case CLASSIC_APPLET :
                     setIconBaseWithExtension("org/netbeans/modules/javacard/" + //NOI18N
-                            "resources/capproject.png"); //NOI18N
+                            "spi/resources/capproject.png"); //NOI18N
                     break;
                 case CLASSIC_LIBRARY :
                     setIconBaseWithExtension("org/netbeans/modules/javacard/" + //NOI18N
-                            "resources/clslibproject.png"); //NOI18N
+                            "spi/resources/clslibproject.png"); //NOI18N
                     break;
                 case EXTENDED_APPLET :
                     setIconBaseWithExtension("org/netbeans/modules/javacard/" + //NOI18N
-                            "resources/eapproject.png"); //NOI18N
+                            "spi/resources/eapproject.png"); //NOI18N
                     break;
                 case EXTENSION_LIBRARY :
                     setIconBaseWithExtension("org/netbeans/modules/javacard/" + //NOI18N
-                            "resources/extlibproject.png"); //NOI18N
+                            "spi/resources/extlibproject.png"); //NOI18N
                     break;
                 case WEB :
                     setIconBaseWithExtension("org/netbeans/modules/javacard/" + //NOI18N
-                            "resources/webproject.png"); //NOI18N
+                            "spi/resources/webproject.png"); //NOI18N
                     break;
                 default :
                     break;
@@ -185,7 +186,7 @@ public class CardChildren extends ChildFactory.Detachable<XListEntry> implements
             super (Children.LEAF, Lookups.fixed (entry, instance));
             setDisplayName (instance.getContent());
             setIconBaseWithExtension("org/netbeans/modules/javacard/" + //NOI18N
-                            "resources/instance.png"); //NOI18N
+                            "ri/platform/loader/instance.png"); //NOI18N
         }
 
         @Override

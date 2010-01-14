@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.search;
 
-import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
@@ -63,7 +62,6 @@ import java.util.ResourceBundle;
 import javax.accessibility.AccessibleContext;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -78,7 +76,6 @@ import javax.swing.UIManager;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.search.TextDetail.DetailNode;
-import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -89,6 +86,22 @@ import org.openidex.search.SearchType;
  * @author kaktus
  */
 class ResultViewPanel extends JPanel{
+
+    private static final String CONTEXT_ICON =
+            "org/netbeans/modules/search/res/context.gif"; //NOI18N
+    private static final String REPLACE_ICON =
+            "org/netbeans/modules/search/res/replaceChecked.gif"; //NOI18N
+    private static final String CUSTOMIZER_ICON =
+            "org/netbeans/modules/search/res/customizeReport.png"; //NOI18N
+    private static final String STOP_ICON =
+            "org/netbeans/modules/search/res/stop.png"; //NOI18N
+    private static final String SEARCH_ICON =
+            "org/netbeans/modules/search/res/search.gif"; //NOI18N
+    private static final String PREV_ICON =
+            "org/netbeans/modules/search/res/prev.png"; //NOI18N
+    private static final String NEXT_ICON =
+            "org/netbeans/modules/search/res/next.png"; //NOI18N
+
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); //NOI18N
     
@@ -188,18 +201,19 @@ class ResultViewPanel extends JPanel{
 
         //Toolbar
         toolBar = new JToolBar(SwingConstants.VERTICAL);
-        btnDisplayContext.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/search/res/context.gif", true)); //NOI18N
+        btnDisplayContext.setIcon(
+                ImageUtilities.loadImageIcon(CONTEXT_ICON, true));
         btnDisplayContext.setToolTipText(
                 NbBundle.getMessage(getClass(), "TOOLTIP_ShowContext"));//NOI18N
         btnDisplayContext.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(getClass(), "ACSD_ShowContext"));   //NOI18N
         btnDisplayContext.setSelected(SHOW_CONTEXT_BY_DEFAULT);
         btnPrev = new JButton();
-        btnPrev.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/search/res/prev.png", true));    //NOI18N
+        btnPrev.setIcon(ImageUtilities.loadImageIcon(PREV_ICON, true));
         btnPrev.setToolTipText(
                 NbBundle.getMessage(getClass(), "TEXT_BUTTON_PREV_MATCH"));//NOI18N);
         btnNext = new JButton();
-        btnNext.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/search/res/next.png", true));    //NOI18N
+        btnNext.setIcon(ImageUtilities.loadImageIcon(NEXT_ICON, true));
         btnNext.setToolTipText(
                 NbBundle.getMessage(getClass(), "TEXT_BUTTON_NEXT_MATCH"));//NOI18N);
 
@@ -257,35 +271,31 @@ class ResultViewPanel extends JPanel{
             }
         });
 
-        Mnemonics.setLocalizedText(
-                btnStop,
-                NbBundle.getMessage(ResultView.class, "TEXT_BUTTON_STOP"));   //NOI18N
-        Mnemonics.setLocalizedText(
-                btnShowDetails,
-                NbBundle.getMessage(ResultView.class, "TEXT_BUTTON_FILL"));   //NOI18N
-        Mnemonics.setLocalizedText(
-                btnReplace,
-                NbBundle.getMessage(ResultView.class, "TEXT_BUTTON_REPLACE"));//NOI18N
-        Mnemonics.setLocalizedText(
-                btnModifySearch,
-                NbBundle.getMessage(ResultView.class, "TEXT_BUTTON_CUSTOMIZE"));          //NOI18N
+        btnStop.setToolTipText(NbBundle.getMessage(ResultView.class,
+                                                   "TEXT_BUTTON_STOP"));//NOI18N
+        btnShowDetails.setToolTipText(NbBundle.getMessage(ResultView.class,
+                                                   "TEXT_BUTTON_FILL"));//NOI18N
+        btnReplace.setToolTipText(NbBundle.getMessage(ResultView.class,
+                                                "TEXT_BUTTON_REPLACE"));//NOI18N
+        btnModifySearch.setToolTipText(NbBundle.getMessage(ResultView.class,
+                                              "TEXT_BUTTON_CUSTOMIZE"));//NOI18N
+
+        btnModifySearch.setIcon(ImageUtilities.loadImageIcon(CUSTOMIZER_ICON, true));
+        btnStop.setIcon(ImageUtilities.loadImageIcon(STOP_ICON, true));
+        btnShowDetails.setIcon(ImageUtilities.loadImageIcon(SEARCH_ICON, true));
+        btnReplace.setIcon(ImageUtilities.loadImageIcon(REPLACE_ICON, true));
 
         btnStop.setEnabled(false);
         btnShowDetails.setEnabled(false);
 
         btnReplace.setVisible(false);
 
-        JPanel buttonsPanel = new JPanel();
-        buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.X_AXIS));
-        buttonsPanel.add(btnReplace);
-        buttonsPanel.add(Box.createHorizontalGlue());
-        buttonsPanel.add(btnShowDetails);
-        buttonsPanel.add(btnModifySearch);
-        buttonsPanel.add(btnStop);
-
-        // Buttons panel separator
-        JSeparator buttonsPanelSeparator = new JSeparator();
-        buttonsPanelSeparator.setOrientation(SwingConstants.HORIZONTAL);
+        toolBar.add(new JToolBar.Separator());
+        toolBar.add(btnReplace);
+        toolBar.add(Box.createHorizontalGlue());
+        toolBar.add(btnShowDetails);
+        toolBar.add(btnModifySearch);
+        toolBar.add(btnStop);
 
         add(toolBar, getToolbarConstraints());
         add(toolbarSeparator, getToolbarSeparatorConstraints());
@@ -297,16 +307,7 @@ class ResultViewPanel extends JPanel{
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
-        add(buttonsPanelSeparator, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.ipady = 7;
-        add(buttonsPanel, gridBagConstraints);
 
         //issue #46261 - "Search Results window must be opaque under GTK"
         setOpaque(true);
@@ -320,7 +321,6 @@ class ResultViewPanel extends JPanel{
             treeView.setBackground(macBackground);
             toolBar.setBackground(macBackground);
             resultsPanel.setBackground(macBackground);
-            buttonsPanel.setBackground(macBackground);
         }
     }
 

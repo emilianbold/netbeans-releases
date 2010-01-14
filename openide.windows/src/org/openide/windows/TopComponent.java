@@ -94,6 +94,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
+import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -1174,13 +1175,33 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         return accessibleContext;
     }
 
-    /** Gets lookup which represents context of this component. By default
-     * the lookup delegates to result of <code>getActivatedNodes</code>
-     * method and result of this component <code>ActionMap</code> delegate.
-     * 
+    /**
+     * Gets a lookup which represents the "selection" of this component.
+     * <p>
+     * By default the lookup includes all nodes from {@link #getActivatedNodes},
+     * all objects from those nodes' own lookups (excepting the nodes themselves),
+     * and also the component's {@link ActionMap}.
+     * This is useful for components with explorer views.
+     * <p>
+     * The default implementation also has a special behavior when you look up
+     * {@link Node Node.class}: if {@link #getActivatedNodes} is null (as opposed to
+     * an empty array), the result will contain an extra item whose
+     * {@link org.openide.util.Lookup.Item#getId} is {@code none}
+     * and whose {@link org.openide.util.Lookup.Item#getInstance} is null.
+     * This can be used by (say) node-sensitive actions to differentiate
+     * between a component with an explorer view that currently happens to have no
+     * selected nodes (zero-length array so no {@code Lookup.Item<Node>}),
+     * vs. a component with no explorer view that would never have a node selection
+     * (null so one dummy {@code Lookup.Item<Node>});
+     * in either case {@link org.openide.util.Lookup.Result#allInstances}
+     * would return an empty collection.
+     * In particular, {@link NodeAction} relies on this behavior to avoid disabling
+     * an action just because focus is transferred from a component with a (potential)
+     * node selection to a component that does not have node selections.
+     * <p>
      * If you override the method in your subclass, the default activatedNodes<->lookup synchronization
      * will not be performed. That can influence functionality that relies on activated Nodes being present 
-     * in the TopComponent's lookup. If you want to preserve the synchronization, use <code>associateLookup</code>
+     * in the TopComponent's lookup. If you want to preserve the synchronization, use {@link #associateLookup}
      * instead.
      *
      * @return a lookup with designates context of this component

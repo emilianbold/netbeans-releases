@@ -1,0 +1,37 @@
+{ $1$;
+$0.readLock();
+$stmts$;
+$0.readUnlock();
+$2$;
+}
+:: $0 instanceof javax.swing.text.AbstractDocument
+=>
+{ $1$;
+$0.readLock();
+try {
+    $stmts$;
+} finally {
+    $0.readUnlock();
+}
+$2$;
+}
+;;
+
+{ $1$;
+$0.writeLock();
+$stmts$;
+$0.writeUnlock();
+$2$;
+}
+:: $0 instanceof javax.swing.text.AbstractDocument
+=>
+{ $1$;
+$0.writeLock();
+try {
+    $stmts$;
+} finally {
+    $0.writeUnlock();
+}
+$2$;
+}
+;;
