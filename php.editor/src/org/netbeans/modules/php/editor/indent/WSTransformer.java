@@ -39,20 +39,35 @@
 
 package org.netbeans.modules.php.editor.indent;
 
+import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
+import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
+import org.openide.util.Exceptions;
 
 /**
  * This class calculates all white-space tranformations other than
@@ -77,11 +92,14 @@ class WSTransformer extends DefaultTreePathVisitor {
     private Collection<PHPTokenId> NO_BREAK_B4_TKNS = Arrays.asList(PHPTokenId.PHP_CLOSETAG,
             PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_CATCH,
             PHPTokenId.PHP_WHILE);
+    // keep information, whether the function declaration is visited directly or from method declaration
+    private boolean isMethod;
 
     public WSTransformer(Context context) {
         this.context = context;
         String openingBraceStyle = CodeStyle.get(context.document()).getOpeningBraceStyle();
         newLineReplacement = FmtOptions.OBRACE_NEWLINE.equals(openingBraceStyle)? "\n" : " "; //NOI18N
+        isMethod = false;
     }
 
     @Override
@@ -173,6 +191,154 @@ class WSTransformer extends DefaultTreePathVisitor {
     }
 
     @Override
+    public void visit(ClassDeclaration node) {
+        int insertLines = 0;
+        ASTNode previousNode = previousNode(node);
+
+        insertLines = (previousNode == null)
+                ? CodeStyle.get(context.document()).getBlankLinesBeforeClass()
+                : insertLineBeforeAfter(astNodeToType(previousNode), astNodeToType(node));
+        checkEmptyLinesBefore(node.getStartOffset(), insertLines, true);
+
+        // lines after header of class (after {)
+        List<Statement> statements = node.getBody().getStatements();
+        if (statements.size() == 0 || !isBlankLinesInteresting(statements.get(0))) {
+            insertLines = insertLineBeforeAfter(ElemType.CLASS, ElemType.CLASS_HEADER);
+            TokenSequence<PHPTokenId> ts = tokenSequence(node.getStartOffset());
+            ts.move(node.getStartOffset());
+            if (ts.moveNext() && ts.moveNext()) {
+                LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_CURLY_OPEN));
+                checkEmptyLinesBefore(ts.offset() + 1, insertLines, true);
+            }
+        }
+
+        // line before end of class (before })
+        insertLines = (statements.size() == 0)
+                ? insertLineBeforeAfter(ElemType.CLASS_HEADER, ElemType.CLASS_BEFORE_END)
+                : insertLineBeforeAfter(astNodeToType(statements.get(statements.size() - 1)), ElemType.CLASS_BEFORE_END);
+        checkEmptyLinesBefore(node.getEndOffset() - 1, insertLines, true);
+
+        // lines after class declaration (after })
+        ASTNode nextNode = nextNode(node);
+        if (nextNode == null || !isBlankLinesInteresting(nextNode)) {
+             checkEmptyLinesBefore(node.getEndOffset() + 1,
+                     CodeStyle.get(context.document()).getBlankLinesAfterClass(), false);
+        }
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(MethodDeclaration node) {
+        visitFunctionMethod(node);
+        isMethod = true;
+        super.visit(node);
+        isMethod = false;
+    }
+
+
+    @Override
+    public void visit(FunctionDeclaration node) {
+        if (!isMethod) {  // add blank lines, only if it is not a method
+            visitFunctionMethod(node);
+        }
+        super.visit(node);
+    }
+
+    private void visitFunctionMethod(ASTNode node) {
+        int insertLines = 0;
+        ASTNode previousNode = previousNode(node);
+
+        insertLines = (previousNode == null)
+                ? CodeStyle.get(context.document()).getBlankLinesBeforeFunction()
+                : insertLineBeforeAfter(astNodeToType(previousNode), astNodeToType(node));
+        checkEmptyLinesBefore(node.getStartOffset(), insertLines, true);
+
+        // line before end of function (before })
+        List<Statement> statements = null;
+        if (node instanceof MethodDeclaration) {
+            statements = ((MethodDeclaration)node).getFunction().getBody().getStatements();
+        }
+        else if (node instanceof FunctionDeclaration) {
+            statements = ((FunctionDeclaration)node).getBody().getStatements();
+        }
+
+
+        insertLines = (statements == null || statements.size() == 0)
+                ? insertLineBeforeAfter(ElemType.FUNCTION, ElemType.FUNCTION_BEFORE_END)
+                : insertLineBeforeAfter(astNodeToType(statements.get(statements.size() - 1)), ElemType.FUNCTION_BEFORE_END);
+        checkEmptyLinesBefore(node.getEndOffset() - 1, insertLines, true);
+
+        // format the end of the function method after }
+        ASTNode nextNode = nextNode(node);
+        if (nextNode == null || !isBlankLinesInteresting(nextNode)) {
+             checkEmptyLinesBefore(node.getEndOffset(),
+                     CodeStyle.get(context.document()).getBlankLinesAfterFunction(), false);
+        }
+    }
+
+    @Override
+    public void visit(NamespaceDeclaration node) {
+        int insertLines = 0;
+        ASTNode pnode = previousNode(node);
+
+        insertLines = (pnode == null)
+                ? CodeStyle.get(context.document()).getBlankLinesBeforeNamespace()
+                : insertLineBeforeAfter(astNodeToType(pnode), astNodeToType(node));
+        checkEmptyLinesBefore(node.getStartOffset(), insertLines, true);
+
+        pnode = (node.getBody().getStatements().size() > 0) ?  node.getBody().getStatements().get(0) : null;
+        if (pnode == null || !isBlankLinesInteresting(pnode)) {
+            insertLines = CodeStyle.get(context.document()).getBlankLinesAfterNamespace();
+            TokenSequence<PHPTokenId> ts = tokenSequence(node.getStartOffset());
+            ts.move(node.getStartOffset());
+            if (ts.moveNext() && ts.moveNext()) {
+                LexUtilities.findEndOfLine(ts);
+                checkEmptyLinesBefore(ts.offset(), insertLines, true);
+            }
+        }
+
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(UseStatement node) {
+        int insertLines = 0;
+        ASTNode previousNode = previousNode(node);
+
+        insertLines = (previousNode == null)
+                ? CodeStyle.get(context.document()).getBlankLinesBeforeUse()
+                : insertLineBeforeAfter(astNodeToType(previousNode), astNodeToType(node));
+        checkEmptyLinesBefore(node.getStartOffset(), insertLines, true);
+
+        ASTNode nextNode = nextNode(node);
+        if (nextNode == null || !isBlankLinesInteresting(nextNode)) {
+             insertLines = CodeStyle.get(context.document()).getBlankLinesAfterUse();
+             checkEmptyLinesBefore(node.getEndOffset(), insertLines, false);
+        }
+
+        super.visit(node);
+    }
+
+    @Override
+    public void visit(FieldsDeclaration node) {
+        int insertLines = 0;
+        ASTNode previousNode = previousNode(node);
+
+        insertLines =  (previousNode == null)
+                ? CodeStyle.get(context.document()).getBlankLinesBeforeField()
+                : insertLineBeforeAfter(astNodeToType(previousNode), astNodeToType(node));
+        checkEmptyLinesBefore(node.getStartOffset(), insertLines, true);
+
+        ASTNode nextNode = nextNode(node);
+        if (nextNode == null || !isBlankLinesInteresting(nextNode)) {
+            insertLines = CodeStyle.get(context.document()).getBlankLinesAfterField();
+            checkEmptyLinesBefore(node.getEndOffset(), insertLines, false);
+        }
+        super.visit(node);
+    }
+
+
+    @Override
     public void visit(ForStatement node) {
         int start = node.getStartOffset();
         int end = node.getBody().getStartOffset();
@@ -212,6 +378,264 @@ class WSTransformer extends DefaultTreePathVisitor {
         //TODO: handle 'case:'
 
         return false;
+    }
+
+    /**
+     *
+     * @param offset
+     * @param countOfLines  How many lines should be plased on the offset
+     * @param checkCommentsBefore Should be the comments before the offset pressed?
+     */
+    private void checkEmptyLinesBefore(int offset, int countOfLines, boolean checkCommentsBefore) {
+        TokenSequence<PHPTokenId> ts = tokenSequence(offset);
+        ts.move(offset);
+        if (ts.moveNext() && ts.movePrevious()) {
+            int currentNewLines = 0;
+            Token<? extends PHPTokenId> token = LexUtilities.findPrevious(ts, Arrays.asList(PHPTokenId.WHITESPACE,
+                    PHPTokenId.PHP_PRIVATE, PHPTokenId.PHP_PUBLIC, PHPTokenId.PHP_PROTECTED));
+            boolean lineCommentBefore = false;
+
+            while((isComment(token) && checkCommentsBefore)
+                    || token.id() == PHPTokenId.PHP_PRIVATE
+                    || token.id() == PHPTokenId.PHP_PUBLIC
+                    || token.id() == PHPTokenId.PHP_PROTECTED) {
+
+                    currentNewLines = 0;
+                    lineCommentBefore = (token.id() == PHPTokenId.PHP_LINE_COMMENT);
+                    ts.moveNext();
+                    token = ts.token();
+                    if (token.id() == PHPTokenId.WHITESPACE) {
+                        for (int i = 0; i < token.text().length(); i++) {
+                            if (token.text().charAt(i) == '\n') {
+                                currentNewLines++;
+                            }
+                        }
+
+                        if (lineCommentBefore && currentNewLines > 0) {
+                            // remove all lines, one line is in the line comment
+                            replacements.add(new Replacement(ts.offset() + token.length(),
+                                token.length(), "")); //NOI18N
+                        }
+                        else if (currentNewLines > 1) {
+                            // keep one new line
+                            replacements.add(new Replacement(ts.offset() + token.length(),
+                                token.length(), "\n")); //NOI18N
+                        }
+                    }
+                    
+                    if (lineCommentBefore) {
+                        lineCommentBefore = false;
+                    }
+                    
+                    
+
+                if (ts.movePrevious() && ts.movePrevious()) {
+                    token = LexUtilities.findPrevious(ts, Arrays.asList(PHPTokenId.WHITESPACE,
+                        PHPTokenId.PHP_PRIVATE, PHPTokenId.PHP_PUBLIC, PHPTokenId.PHP_PROTECTED));
+                }
+                else {
+                    break;
+                }
+            }
+
+            currentNewLines = 0;
+            if (ts.moveNext()) {
+                int insertPosition = ts.offset();
+                token = ts.token();
+                if (token.id() == PHPTokenId.WHITESPACE) {
+                    for (int i = 0; i < token.text().length(); i++) {
+                        if (token.text().charAt(i) == '\n') {
+                            currentNewLines++;
+                        }
+                    }
+                }
+                String insertText = "";
+                int delta = lineCommentBefore ? 0 : 1;
+                if (currentNewLines > countOfLines) {
+                    for (int i = 0; i < countOfLines + delta; i++) {
+                        insertText = insertText + "\n";
+                    }
+                    replacements.add(new Replacement(ts.offset() + token.length(),
+                        token.length(), insertText));
+                }
+                if (currentNewLines <= countOfLines){
+                    for (int i = currentNewLines; i < countOfLines + delta; i++) {
+                        insertText = insertText + "\n";
+                    }
+                    replacements.add(new Replacement(insertPosition, 0, insertText));
+                }
+            }
+        }
+    }
+
+
+    private boolean isComment(Token<? extends PHPTokenId> token) {
+        return token.id() == PHPTokenId.PHPDOC_COMMENT
+                || token.id() == PHPTokenId.PHPDOC_COMMENT_END
+                || token.id() == PHPTokenId.PHPDOC_COMMENT_START
+                || token.id() == PHPTokenId.PHP_COMMENT
+                || token.id() == PHPTokenId.PHP_COMMENT_END
+                || token.id() == PHPTokenId.PHP_COMMENT_START
+                || token.id() == PHPTokenId.PHP_LINE_COMMENT;
+    }
+
+    private ElemType astNodeToType (ASTNode node) {
+        if (node instanceof FieldsDeclaration) return ElemType.FIELD;
+        if (node instanceof ClassDeclaration) return ElemType.CLASS;
+        if (node instanceof FunctionDeclaration) return ElemType.FUNCTION;
+        if (node instanceof MethodDeclaration) return ElemType.FUNCTION;
+        if (node instanceof UseStatement) return ElemType.USE;
+        if (node instanceof NamespaceDeclaration) return ElemType.NAMESPACE;
+        return ElemType.UNKNOWN;
+    }
+
+
+
+    private int insertLineBeforeAfter(ElemType afterElem, ElemType beforeElem) {
+
+        if (afterElem == beforeElem && (afterElem == ElemType.FIELD || afterElem == ElemType.USE)) {
+            return 0;
+        }
+
+        if (afterElem == ElemType.CLASS && beforeElem != ElemType.CLASS) {
+            afterElem = ElemType.CLASS_HEADER;
+        }
+        int after = 0;
+        int before = 0;
+
+        switch (afterElem) {
+            case CLASS : after =  CodeStyle.get(context.document()).getBlankLinesAfterClass(); break;
+            case CLASS_HEADER : after =  CodeStyle.get(context.document()).getBlankLinesAfterClassHeader(); break;
+            case NAMESPACE : after =  CodeStyle.get(context.document()).getBlankLinesAfterNamespace(); break;
+            case USE : after =  CodeStyle.get(context.document()).getBlankLinesAfterUse(); break;
+            case FIELD : after =  CodeStyle.get(context.document()).getBlankLinesAfterField(); break;
+            case FUNCTION : after =  CodeStyle.get(context.document()).getBlankLinesAfterFunction(); break;
+
+        }
+
+        switch (beforeElem) {
+            case CLASS : before =  CodeStyle.get(context.document()).getBlankLinesBeforeClass(); break;
+            // small workaround
+            case CLASS_HEADER : before =  CodeStyle.get(context.document()).getBlankLinesAfterClassHeader(); break;
+            case NAMESPACE : before =  CodeStyle.get(context.document()).getBlankLinesBeforeNamespace(); break;
+            case USE : before =  CodeStyle.get(context.document()).getBlankLinesBeforeUse(); break;
+            case FIELD : before =  CodeStyle.get(context.document()).getBlankLinesBeforeField(); break;
+            case FUNCTION : before =  CodeStyle.get(context.document()).getBlankLinesBeforeFunction(); break;
+            case FUNCTION_BEFORE_END: before =  CodeStyle.get(context.document()).getBlankLinesBeforeFunctionEnd(); break;
+            case CLASS_BEFORE_END : before =  CodeStyle.get(context.document()).getBlankLinesBeforeClassEnd(); break;
+        }
+
+        if (beforeElem == ElemType.CLASS_BEFORE_END) {
+            if (afterElem == ElemType.CLASS_HEADER) {
+                return Math.max(Math.max(after, before), 1);
+            }
+            else if (afterElem == ElemType.FUNCTION) {
+                return before;
+            }
+        }
+
+        if (beforeElem == ElemType.FUNCTION_BEFORE_END) {
+            if (afterElem == ElemType.FUNCTION) {
+                return Math.max(before, 1);
+            }
+            else {
+                return before;
+            }
+        }
+
+        return Math.max(after, before);
+    }
+
+    /**
+     *
+     * @param node
+     * @return True if the next node also influence the number of empty lines
+     */
+    private boolean isBlankLinesInteresting(ASTNode node) {
+        return node != null && (node instanceof ClassDeclaration
+                || node instanceof FunctionDeclaration
+                || node instanceof NamespaceDeclaration
+                || node instanceof UseStatement
+                || node instanceof FieldsDeclaration
+                || node instanceof MethodDeclaration);
+    }
+
+    /**
+     * Find previous sibling node
+     * @param node
+     * @return
+     */
+    private ASTNode previousNode(ASTNode node) {
+        ASTNode previous = null;
+        List<ASTNode> path = getPath();
+        if (path.get(0) instanceof Block) {
+            Block block = (Block) path.get(0);
+            List<Statement> statements = block.getStatements();
+            int index = 0;
+
+            while (index < statements.size()
+                    && statements.get(index).getEndOffset() < node.getStartOffset()) {
+                previous = statements.get(index);
+                index ++;
+            }
+            if (previous == null) {
+                index = 1;
+                while (index < path.size()
+                        && !(path.get(index) instanceof ClassDeclaration)) {
+                    index++;
+                }
+
+                if (index < path.size() && path.get(index) instanceof ClassDeclaration) {
+                    previous = path.get(index);
+                }
+            }
+        }
+        return previous;
+    }
+
+    /**
+     * Find next sibling node
+     * @param node
+     * @return The next sibling node or class declaration if it's the input node
+     * the last one in the class
+     */
+    private ASTNode nextNode(ASTNode node) {
+        ASTNode next = null;
+        List<ASTNode> path = getPath();
+        List<Statement> statements = null;
+
+        if (path.size() == 1 && (path.get(0) instanceof Program)) {
+            statements = ((Program)path.get(0)).getStatements();
+        }
+        else {
+            for (ASTNode astNode : path) {
+                if (astNode instanceof Block) {
+                    statements = ((Block)astNode).getStatements();
+                    break;
+                }
+            }
+        }
+        if (statements != null) {
+            int index = statements.size() - 1;
+
+            while (index > 0
+                    && statements.get(index).getStartOffset() > node.getEndOffset()) {
+                next = statements.get(index);
+                index --;
+            }
+            if (next == null) {
+                index = 1;
+                while (index < path.size()
+                        && !(path.get(index) instanceof ClassDeclaration)) {
+                    index++;
+                }
+
+                if (index < path.size() && path.get(index) instanceof ClassDeclaration) {
+                    next = path.get(index);
+                }
+            }
+        }
+        return next;
     }
 
     private boolean doNotSplitLine(TokenSequence<PHPTokenId> tokenSequence, boolean fwd) {
@@ -319,7 +743,20 @@ class WSTransformer extends DefaultTreePathVisitor {
 
             return r;
         }
+    }
 
-        
+    /**
+     * For better work with the nodes, which influence the blank lines algorithm
+     */
+    private enum ElemType {
+        CLASS,
+        CLASS_HEADER,
+        CLASS_BEFORE_END,
+        NAMESPACE,
+        USE,
+        FUNCTION,
+        FUNCTION_BEFORE_END,
+        FIELD,
+        UNKNOWN;
     }
 }
