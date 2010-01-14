@@ -92,10 +92,8 @@ public final class JavacardPlatformKeyNames {
     public static final String PLATFORM_TOOLS_CLASSPATH = "javacard.toolClassPath"; //NOI18N
     public static final String PLATFORM_IS_RI_WRAPPER = "javacard.wrap.ri"; //NOI18N
     public static final String PLATFORM_DEVICE_FILE_NOT_REQUIRED = "javacard.build.no.device.file"; //NOI18N
-    //public static final String PLATFORM_JAVACARD_SPECIFICATION_VERSION = "javacard.specification.version"; //NOI18N
     public static final String PLATFORM_JAVACARD_VERSION = "javacard.version"; //NOI18N
     public static final String PLATFORM_SUPPORTED_PROJECT_KINDS = "javacard.supported.project.kinds"; //NOI18N
-
     /**
      * Get the list of property names that need to be absolutized
      * @param props Contents of a platform.properties file as found in its
@@ -151,7 +149,8 @@ public final class JavacardPlatformKeyNames {
             PLATFORM_TASKS_CLASSPATH,
             PLATFORM_TOOLS_CLASSPATH,
             PLATFORM_HOME,
-            PLATFORM_RI_HOME
+            PLATFORM_RI_HOME,
+            PLATFORM_DEBUG_PROXY
         ));
     }
 

@@ -327,6 +327,16 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
                     public String getHtmlDisplayName() {
                         return "<font color='!controlShadow'>" + getDisplayName();
                     }
+
+                    @Override
+                    public Image getIcon (int icon) {
+                        return null;
+                    }
+
+                    @Override
+                    public Image getOpenedIcon(int type) {
+                        return null;
+                    }
                 };
                 nd.setDisplayName (NbBundle.getMessage(CardDataNode.class,
                         "MSG_NOT_STARTED")); //NOI18N

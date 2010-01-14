@@ -65,6 +65,7 @@ import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ClearEpromCapability;
 import org.netbeans.modules.javacard.spi.capabilities.DebugCapability;
+import org.netbeans.modules.javacard.spi.capabilities.DeleteCapability;
 import org.netbeans.modules.javacard.spi.capabilities.EpromFileCapability;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ResumeCapability;
@@ -280,9 +281,13 @@ public class CardPropertiesTest {
             return;
         }
         String winEepromFile = "org-netbeans-modules-javacard/eeproms/TestPlatform\\foo.eprom";
-        String[] got = p.getRunCommandLine(platformProps, false, 0);
+        String[] got = p.getRunCommandLine(platformProps, false, false, false);
         String[] expect = new String[] {
             win ? "C:\\Java Card\\JCDK3.0.2\\bin\\cjcre.exe" : "usr/local/java/jcdk3.0.2/bin/cjcre",
+            "-debug",
+            "false",
+            "-suspend",
+            "false",
             "-ramsize",
             "4M",
             "-e2psize",
@@ -315,10 +320,14 @@ public class CardPropertiesTest {
         }
         String winEepromFile = "org-netbeans-modules-javacard/eeproms/TestPlatform\\foo.eprom";
         assertNotNull (platformProps.get("javacard.instance.id"));
-        String[] got = p.getResumeCommandLine(platformProps);
+        String[] got = p.getRunCommandLine(platformProps, false, false, true);
         String[] expect = new String[] {
             win ? "C:\\Java Card\\JCDK3.0.2\\bin\\cjcre.exe" : "usr/local/java/jcdk3.0.2/bin/cjcre",
             "-resume",
+            "-debug",
+            "false",
+            "-suspend",
+            "false",
             "-e2pfile",
             win ? winEepromFile : "/home/user/foo/foo.eprom"
         };
@@ -501,7 +510,7 @@ public class CardPropertiesTest {
         Set <Class<? extends ICardCapability>> expect = new HashSet<Class<? extends ICardCapability>>();
         expect.addAll(Arrays.asList(StartCapability.class, StopCapability.class, ResumeCapability.class,
                 EpromFileCapability.class, ClearEpromCapability.class, DebugCapability.class, CardCustomizerProvider.class,
-                CardContentsProvider.class, AntTargetInterceptor.class, PortProvider.class, UrlCapability.class));
+                CardContentsProvider.class, AntTargetInterceptor.class, PortProvider.class, UrlCapability.class, DeleteCapability.class));
         assertSetsEquals (expect, got);
     }
 
