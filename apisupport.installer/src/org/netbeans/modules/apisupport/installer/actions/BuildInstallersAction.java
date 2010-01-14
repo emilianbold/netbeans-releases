@@ -41,7 +41,6 @@
 package org.netbeans.modules.apisupport.installer.actions;
 
 import java.awt.event.ActionEvent;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -52,8 +51,6 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
@@ -112,30 +109,6 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                 ContextBuildInstaller.actionPerformed(n);
             } else {
                 ContextBuildInstaller.actionPerformed((Node[]) null);
-            }
-        }
-
-        private static String convertToAscii(final String string) {
-            final Properties properties = new Properties();
-
-            properties.put("uberkey", string);
-
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try {
-                properties.store(baos, "");
-            } catch (IOException e) {
-                Logger.getLogger(BuildInstallersAction.class.getName()).
-                        log(Level.WARNING, "Cannot convert string " + string, e);
-                return string;
-            }
-
-            final Matcher matcher = Pattern.compile("uberkey=(.*)$", Pattern.MULTILINE).
-                    matcher(baos.toString());
-
-            if (matcher.find()) {
-                return matcher.group(1);
-            } else {
-                return string;
             }
         }
 
@@ -218,10 +191,10 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
 
                         /*
                         for (Object s : props.keySet()) {
-                            Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.INFO,
-                                    "[" + s + "] = " + props.get(s));
+                        Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.INFO,
+                        "[" + s + "] = " + props.get(s));
                         }
-                        */
+                         */
                         File tmpProps = null;
                         try {
                             tmpProps = File.createTempFile("nbi-properties-", ".properties");

@@ -37,11 +37,13 @@
 
 <wizard xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="wizard-components.xsd">
     <component 
-        class="org.netbeans.installer.wizard.components.actions.InitializeRegistryAction"/>
+        class="org.mycompany.installer.wizard.components.actions.InitializeAction"/>
     <component 
         class="org.mycompany.installer.wizard.components.panels.WelcomePanel"/>
+    <!--
     <component 
         class="org.netbeans.installer.wizard.components.panels.ComponentsSelectionPanel"/>
+    -->
     <component 
         class="org.netbeans.installer.wizard.components.sequences.MainSequence"/>
     <component 

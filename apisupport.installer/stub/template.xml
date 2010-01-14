@@ -63,6 +63,7 @@
         <replace dir="${installer.build.dir}/ext" encoding="utf-8">
             <replacefilter token="{product-name}" value="${suite.props.app.title}"/>
             <replacefilter token="{product-description}" value=""/>
+            <replacefilter token="{product-uid}"         value="${product-uid}"/>
         </replace>
 
         <replace dir="${installer.build.dir}/ext/infra/build/products" encoding="utf-8">
