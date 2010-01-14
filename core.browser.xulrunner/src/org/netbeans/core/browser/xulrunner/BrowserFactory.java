@@ -101,7 +101,7 @@ public class BrowserFactory implements HtmlBrowser.Factory {
             browserId = ""; //NOI18N
         NbPreferences.forModule(BrowserFactory.class).put("extraBrowser", browserId); //NOI18N
 
-        //force reset of URLDisplayer implementation in NbTopManager
+        //force reset of NbURLDisplayer
         Preferences idePrefs = NbPreferences.forModule(IDESettings.class);
         String wwwBrowser = idePrefs.get(IDESettings.PROP_WWWBROWSER, null);
         idePrefs.put(IDESettings.PROP_WWWBROWSER, "");

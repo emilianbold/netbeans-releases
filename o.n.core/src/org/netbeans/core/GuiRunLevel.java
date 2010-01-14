@@ -63,19 +63,18 @@ import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 
 /**
- * Most of the NetBeans startup logic that is not closely tied to the GUI.
- * The meat of the startup sequence is in {@link #run}.
+ * GUI-oriented NetBeans startup logic.
  */
 @ServiceProvider(service=RunLevel.class)
-public class NonGui implements RunLevel {
+public class GuiRunLevel implements RunLevel {
     private static int count;
     
-    public NonGui () {
+    public GuiRunLevel() {
         Lookup lookup = Lookup.getDefault();
         if (!(lookup instanceof MainLookup)) {
             throw new ClassCastException("Wrong Lookup impl found: " + lookup);
         }
-        MainLookup.startedNbTopManager();
+        MainLookup.started();
         assert count++ == 0 : "Only one instance allowed"; // NOI18N
     }
     
@@ -87,7 +86,7 @@ public class NonGui implements RunLevel {
         try {
             NbLoaderPool.load();
         } catch (IOException ioe) {
-            Logger.getLogger(NonGui.class.getName()).log(Level.INFO, null, ioe);
+            Logger.getLogger(GuiRunLevel.class.getName()).log(Level.INFO, null, ioe);
         }
         StartLog.logProgress ("LoaderPool loaded"); // NOI18N
         Splash.getInstance().increment(10);
@@ -132,7 +131,7 @@ public class NonGui implements RunLevel {
         
         // -----------------------------------------------------------------------------------------------------
         // 11. Initialization of main window
-        StatusDisplayer.getDefault().setStatusText (NbBundle.getMessage (NonGui.class, "MSG_MainWindowInit"));
+        StatusDisplayer.getDefault().setStatusText (NbBundle.getMessage (GuiRunLevel.class, "MSG_MainWindowInit"));
 
         // force to initialize timer
         // sometimes happened that the timer thread was initialized under
@@ -148,7 +147,7 @@ public class NonGui implements RunLevel {
 
     // -----------------------------------------------------------------------------------------------------
     // 14. Open main window
-        StatusDisplayer.getDefault().setStatusText (NbBundle.getMessage (NonGui.class, "MSG_WindowShowInit"));
+        StatusDisplayer.getDefault().setStatusText (NbBundle.getMessage (GuiRunLevel.class, "MSG_WindowShowInit"));
 
         // Starts GUI components to be created and shown on screen.
         // I.e. main window + current workspace components.
@@ -180,7 +179,7 @@ public class NonGui implements RunLevel {
                     }
                     windowSystem.show();
                 } else {
-                    Logger.getLogger(NonGui.class.getName()).log(Level.WARNING, "Module org.netbeans.core.windows missing, cannot start window system");
+                    Logger.getLogger(GuiRunLevel.class.getName()).log(Level.WARNING, "Module org.netbeans.core.windows missing, cannot start window system");
                 }
                 StartLog.logProgress("Window system shown");
                 if (!StartLog.willLog()) {

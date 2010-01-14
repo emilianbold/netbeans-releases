@@ -52,7 +52,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 
 /**
- * Implementation of WindowSystem interface (declared in core NbTopManager).
+ * Implementation of WindowSystem interface
  *
  * @author  Peter Zavadsky
  */
@@ -64,16 +64,11 @@ public class WindowSystemImpl implements WindowSystem {
         MainWindow.init();
     }
 
-    // Persistence
-    /** Implements <code>NbTopManager.WindowSystem</code> interface method.
-     * Loads window system persistent data. */
     public void load() {
         WindowManagerImpl.assertEventDispatchThread();
         
         PersistenceHandler.getDefault().load();
     }
-    /** Implements <code>NbTopManager.WindowSystem</code> interface method. 
-     * Saves window system persistent data. */
     public void save() {
         WindowManagerImpl.assertEventDispatchThread();
         
@@ -81,8 +76,6 @@ public class WindowSystemImpl implements WindowSystem {
     }
     
     // GUI
-    /** Implements <code>NbTopManager.WindowSystem</code> interface method. 
-     * Shows window system. */
     public void show() {
         WindowManagerImpl.assertEventDispatchThread();
         
@@ -90,8 +83,6 @@ public class WindowSystemImpl implements WindowSystem {
         ShortcutAndMenuKeyEventProcessor.install();
         WindowManagerImpl.getInstance().setVisible(true);
     }
-    /** Implements <code>NbTopManager.WindowSystem</code> interface method. 
-     * Hides window system. */
     public void hide() {
         WindowManagerImpl.assertEventDispatchThread();
         
@@ -100,7 +91,6 @@ public class WindowSystemImpl implements WindowSystem {
     }
     
 //    /**
-//     * Implements <code>NbTopManager.WindowSystem</code> interface method.
 //     * Clears the window system model - does not delete the configuration
 //     * under Windows2Local! You have to delete the folder before calling
 //     * this method to really reset the window system state.
