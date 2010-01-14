@@ -41,7 +41,10 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
@@ -114,14 +117,43 @@ public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
         if (!goldenDataFile.exists()) {
             fail("No golden file " + goldenDataFile.getAbsolutePath() + "\n to check with output file " + output.getAbsolutePath());
         }
-        if (CndCoreTestUtils.diff(output, goldenDataFile, null)) {
+        File diffErrorFile = new File(output.getAbsolutePath() + ".diff");
+        if (CndCoreTestUtils.diff(output, goldenDataFile, diffErrorFile)) {
             // copy golden
             File goldenCopyFile = new File(workDir, goldenFileName + ".golden");
             CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenCopyFile); // NOI18N
-            fail("OUTPUT Difference between diff " + output + " " + goldenCopyFile); // NOI18N
+            StringBuilder buf = new StringBuilder("OUTPUT Difference between diff " + output + " " + goldenCopyFile);
+            showDiff(diffErrorFile, buf);
+            fail(buf.toString());
         }
     }
-    
+
+    private void showDiff(File diffOutputFile, StringBuilder buf) {
+        if (diffOutputFile != null && diffOutputFile.exists()) {
+            int i = 0;
+            try {
+                BufferedReader in = new BufferedReader(new FileReader(diffOutputFile));
+                while (true) {
+                    String line = in.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    if (i > 50) {
+                        break;
+                    }
+                    if (i == 0) {
+                        buf.append("\nBeginning of diff:");
+                    }
+                    buf.append("\n\t" + line);
+                    i++;
+                }
+                in.close();
+            } catch (IOException ex) {
+                //
+            }
+        }
+    }
+
     protected CompletionTestPerformer createTestPerformer() {
         return new CompletionTestPerformer();
     }
