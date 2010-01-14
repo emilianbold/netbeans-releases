@@ -33,7 +33,7 @@
         </condition>
     </target>
     <target name="-build-zip" depends="-init-zip" unless="do.build.zip">
-        <ant dir="${suite.location}" inheritAll="false" target="build-zip"/>
+        <subant buildpath="${suite.location}" inheritAll="false" target="build-zip"/>
     </target>
 
     <target name="prepare-zip" depends="-init-zip,-build-zip"/>
