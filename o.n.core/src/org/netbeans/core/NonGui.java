@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.TopSecurityManager;
+import org.netbeans.core.startup.CLIOptions;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.RunLevel;
 import org.netbeans.core.startup.Splash;
@@ -98,12 +99,14 @@ public class NonGui implements RunLevel {
         // install java.net.ProxySelector
         java.net.ProxySelector.setDefault (new NbProxySelector ());
         
+        if (CLIOptions.isGui()) {
         //---------------------------------------------------------------------------------------------------------
         // initialize main window AFTER the setup wizard is finished
 
         initializeMainWindow ();
         StartLog.logProgress ("Main window initialized"); // NOI18N
         Splash.getInstance().increment(1);
+        }
 
         // -----------------------------------------------------------------------------------------------------
         // 8. Advance Policy
@@ -122,11 +125,7 @@ public class NonGui implements RunLevel {
 
     /** Method to initialize the main window.
     */
-    protected void initializeMainWindow () {
-        if (!org.netbeans.core.startup.CLIOptions.isGui ()) {
-            return;
-        }
-        
+    private void initializeMainWindow() {
         StartLog.logStart ("Main window initialization"); //NOI18N
 
         TimableEventQueue.initialize();
