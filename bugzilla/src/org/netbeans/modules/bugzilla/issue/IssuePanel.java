@@ -485,10 +485,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(force, ccField, IssueField.CC, ccWarning, ccLabel);
             reloadField(force, dependsField, IssueField.DEPENDS_ON, dependsOnWarning, dependsLabel);
             reloadField(force, blocksField, IssueField.BLOCKS, blocksWarning, blocksLabel);
-            // Reload custom fields
-            for (CustomFieldInfo field : customFields) {
-                reloadField(force, field.comp, field.field, field.warning, field.label);
-            }
+            reloadCustomFields(force);
         }
         int newCommentCount = issue.getComments().length;
         if (!force && oldCommentCount != newCommentCount) {
@@ -515,6 +512,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             updateMessagePanel();
         }
         reloading = false;
+    }
+
+    private void reloadCustomFields(boolean force) {
+        // Reload custom fields
+        for (CustomFieldInfo field : customFields) {
+            reloadField(force, field.comp, field.field, field.warning, field.label);
+        }
     }
 
     private static void fixPrefSize(JTextField textField) {
@@ -2248,6 +2252,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             if (BugzillaUtil.isNbRepository(issue.getRepository())) {
                                 issueTypeCombo.setSelectedItem(issueType);
                             }
+                            reloadCustomFields(true);
                         } finally {
                             reloading = false;
                             enableComponents(true);
