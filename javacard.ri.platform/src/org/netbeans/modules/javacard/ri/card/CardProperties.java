@@ -40,6 +40,7 @@
 package org.netbeans.modules.javacard.ri.card;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,7 +64,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbCollections;
-import org.openide.util.Utilities;
 
 /**
  * Bean for card properties which reads and writes to a Properties object
@@ -89,13 +89,14 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
             "PORTS,URL,DELETE"; //NOI18N
     private static final String E2P_FILE_DEF = "${javacard.device.eeprom.folder}" + //NOI18N
             "${file.separator}${javacard.device.name}.eprom"; //NOI18N
-    static final String DEFAULT_DEBUG_PROXY_COMMAND_LINE = (Utilities.isWindows() ? "cmd /c " : "") +
-        JavacardPlatformKeyNames.PLATFORM_DEBUG_PROXY + " " +//NOI18N
-        "debug " + //NOI18N
-        "--listen ${proxy.to.ide.port} " + //NOI18N
-        "--remote ${host}:${proxy.to.runtime.port} " + //NOI18N
-        "--classpath ${class.path}"; //NOI18N
-
+    static final String DEFAULT_DEBUG_PROXY_COMMAND_LINE = "${java.home}/bin/java " +
+            "-classpath ${javacard.debug.proxy.classpath} " + //NOI18N
+            "-Djc.home=${javacard.ri.home} " + //NOI18N
+            "com.sun.javacard.debugproxy.Main " + //NOI18N
+            "debug " + //NOI18N
+            "--listen ${proxy.to.ide.port} " + //NOI18N
+            "--remote ${host}:${proxy.to.runtime.port} " + //NOI18N
+            "--classpath ${class.path}"; //NOI18N
     static final String NEW_RUN_COMMAND_LINE =
             "${" + JavacardPlatformKeyNames.PLATFORM_EMULATOR_PATH +"} " + //NOI18N
             "-debug ${" + DEBUG + "} " + //NOI18N
@@ -297,7 +298,17 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
         String[] result = shellSplit (evaluated(projectInfo,
                 JavacardDeviceKeyNames.DEVICE_DEBUG_PROXY_COMMAND_LINE,
                 DEFAULT_DEBUG_PROXY_COMMAND_LINE));
-
+        //XXX Hack until we find a better way to do this
+        List<String> l = new ArrayList<String>();
+        for (String s : result) {
+            if (s.contains(".Main debug")) {
+                String[] ss = s.split(" ");
+                l.addAll(Arrays.asList(ss));
+            } else {
+                l.add (s);
+            }
+        }
+        result = l.toArray(new String[l.size()]);
         System.err.println("DEBUG PROXY LINE:\n" + Arrays.asList(result));
         return result;
     }
@@ -331,6 +342,7 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
         }
         m.put("file.separator", File.separator); //NOI18N
         m.put("java.io.tmpdir", System.getProperty("java.io.tmpdir")); //NOI18N
+        m.put("java.home", System.getProperty("java.home")); //NOI18N
         return m;
     }
 
