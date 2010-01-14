@@ -88,8 +88,8 @@ public class KenaiConnection implements PropertyChangeListener {
 
     public static final String PROP_XMPP_FINISHED = "xmpp_finished"; // NOI18N
 
-    static Iterable<KenaiConnection> getAllInstances() {
-        return instances.values();
+    static synchronized Iterable<KenaiConnection> getAllInstances() {
+        return new ArrayList<KenaiConnection>(instances.values());
     }
     //Map <kenai project name, message listener>
     private HashMap<String, PacketListener> groupListeners = new HashMap<String, PacketListener>();

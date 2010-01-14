@@ -135,8 +135,7 @@ final class KenaiTopComponent extends TopComponent {
     }
 
     Component getKenaiSwitcher() {
-        final JComboBox combo = new JComboBox(new KenaiComboModel());
-        combo.setRenderer(new KenaiListRenderer());
+        final JComboBox combo = new KenaiCombo(false);
         combo.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
