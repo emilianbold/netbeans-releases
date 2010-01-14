@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby.rubyproject.ui.customizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.gems.Gem;
@@ -60,6 +61,7 @@ public class GemsPanel extends javax.swing.JPanel {
     private static final Logger LOGGER = Logger.getLogger(GemsPanel.class.getName());
 
     private final RubyBaseProject project;
+    private RequiredGems requiredGems;
 
     /** Creates new form GemsPanel */
     public GemsPanel(RubyBaseProject project) {
@@ -69,14 +71,12 @@ public class GemsPanel extends javax.swing.JPanel {
         boolean visible = false;
         addButton.setVisible(visible);
         editButton.setVisible(visible);
-        removeButton.setVisible(visible);
+        removeButton.setVisible(true);
     }
 
     private DefaultTableModel createTableModel() {
-
-        RequiredGems requiredGems = project.getLookup().lookup(RequiredGems.class);
-
-        List<GemIndexingStatus> gems = requiredGems.getGems();
+        requiredGems = project.getLookup().lookup(RequiredGems.class);
+        List<GemIndexingStatus> gems = requiredGems.getGemIndexingStatuses();
         if (gems == null) {
             return createTestTableModel();
         }
@@ -93,25 +93,6 @@ public class GemsPanel extends javax.swing.JPanel {
         }
 
         return new DefaultTableModel(data, new Object[]{"name", "required version", "indexed version"});
-    }
-
-    private String getIndexedVersion(String gemName) {
-        GemManager gemManager = RubyPlatform.gemManagerFor(project);
-        if (gemManager == null) {
-            return "";
-        }
-        return gemManager.getLatestVersion(gemName);
-
-//        StringBuilder result = new StringBuilder();
-//        for (Iterator<GemInfo> it = gemManager.getVersions(gemName).iterator(); it.hasNext();) {
-//            GemInfo each = it.next();
-//            result.append(each.getVersion());
-//            if (it.hasNext()) {
-//                result.append(",");
-//            }
-//
-//        }
-//        return result.toString();
     }
 
     private DefaultTableModel createTestTableModel() {
@@ -154,6 +135,7 @@ public class GemsPanel extends javax.swing.JPanel {
         removeButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
 
+        gemsTable.setAutoCreateRowSorter(true);
         gemsTable.setModel(createTableModel());
         gemsTable.getTableHeader().setReorderingAllowed(false);
         runScrollPane.setViewportView(gemsTable);
@@ -163,6 +145,7 @@ public class GemsPanel extends javax.swing.JPanel {
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.runScrollPane.TabConstraints.tabTitle"), runScrollPane); // NOI18N
 
+        testGemsTable.setAutoCreateRowSorter(true);
         testGemsTable.setModel(createTestTableModel());
         testScrollPane.setViewportView(testGemsTable);
 
@@ -171,6 +154,11 @@ public class GemsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.addButton.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.removeButton.text")); // NOI18N
+        removeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeButtonActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.editButton.text")); // NOI18N
 
@@ -206,6 +194,24 @@ public class GemsPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private JTable getSelectedTable() {
+        if (jTabbedPane1.getSelectedIndex() == 0) {
+            return gemsTable;
+        }
+        return testGemsTable;
+    }
+
+    private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
+        JTable selected = getSelectedTable();
+        int row = selected.getSelectedRow();
+        if (row != -1) {
+            DefaultTableModel model = (DefaultTableModel) selected.getModel();
+            String name = (String) model.getValueAt(row, 0);
+            requiredGems.removeRequirement(name);
+            model.removeRow(row);
+
+        }
+    }//GEN-LAST:event_removeButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;

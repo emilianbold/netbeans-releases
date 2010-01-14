@@ -250,56 +250,81 @@ public final class RequiredGems implements PropertyChangeListener {
         changeSupport.removePropertyChangeListener(listener);
     }
 
-    private boolean isRailsOrRake(String name) {
+    private static boolean isRailsOrRake(String name) {
         return Gem.isRailsGem(name) || "rake".equals(name);
     }
 
-    public List<GemIndexingStatus> getGems() {
+    public synchronized List<GemIndexingStatus> getGemIndexingStatuses() {
+        // if there are no requirements, just add all the indexed gems
+        // this will also init requirements
         boolean addAll = getGemRequirements() == null;
+
         // copy since we'll be removing elements
         List<GemRequirement> requirementsCopy = new ArrayList<GemRequirement>();
         if (requirements != null) {
             requirementsCopy.addAll(requirements);
         }
-        List<GemIndexingStatus> result = new ArrayList<GemIndexingStatus>();
 
+        List<GemIndexingStatus> result = new ArrayList<GemIndexingStatus>();
         for (URL gemUrl : indexedGems) {
             String[] nameAndVersion = GemFilesParser.parseNameAndVersion(gemUrl);
             if (nameAndVersion == null) {
                 // a warning msg already logged by GemFilesParser
                 continue;
             }
+            boolean added = false;
             String name = nameAndVersion[0];
             String version = nameAndVersion[1];
-            if (addAll || isRailsOrRake(name)) { //NOI18N
+            if (addAll) { //NOI18N
                 result.add(new GemIndexingStatus(new GemRequirement(name,
                         null, null, Status.INSTALLED), version));
+                added = true;
             } else {
                 for (Iterator<GemRequirement> it = requirementsCopy.iterator(); it.hasNext();) {
                     GemRequirement req = it.next();
                     if (req.getName().equals(name)) {
                         result.add(new GemIndexingStatus(req, version));
                         it.remove();
+                        added = true;
                         break;
                     }
                 }
+            }
+            // add indexed gems that didn't have a corresponding requirement
+            if (!added) {
+                result.add(new GemIndexingStatus(new GemRequirement(name, null, null, Status.NOT_INSTALLED), version));
             }
         }
         // add in reqs that didn't have a corresponding installed gem
         if (!addAll) {
             for (GemRequirement req : requirementsCopy) {
-                if (!isRailsOrRake(req.getName())) {
-                    result.add(new GemIndexingStatus(req, null));
-                }
+                result.add(new GemIndexingStatus(req, null));
             }
         }
+        // add in gems that were indexed but don't have a corresponding req (typically rails gems)
         Collections.sort(result, new Comparator<GemIndexingStatus>() {
-
             public int compare(GemIndexingStatus o1, GemIndexingStatus o2) {
                 return o1.getRequirement().compareTo(o2.getRequirement());
             }
         });
+        
         return result;
+    }
+
+    public void removeRequirement(String name) {
+        List<GemIndexingStatus> statuses;
+        synchronized (this) {
+            statuses = new ArrayList<GemIndexingStatus>(getGemIndexingStatuses());
+        }
+        List<GemRequirement> newReqs = new ArrayList<GemRequirement>();
+        for (GemIndexingStatus each : statuses) {
+            if (!each.getRequirement().getName().equals(name)) {
+                newReqs.add(each.getRequirement());
+            }
+        }
+        if (newReqs.size() != statuses.size()) {
+            setRequiredGems(newReqs);
+        }
     }
 
     public static final class GemIndexingStatus {
