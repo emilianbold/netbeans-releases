@@ -96,6 +96,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
@@ -105,7 +106,9 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
+import org.netbeans.modules.web.jsf.editor.WebBeansModelSupport;
 import org.netbeans.modules.web.jsf.editor.completion.JsfElCompletionItem;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
@@ -144,14 +147,15 @@ public class JsfElExpression extends ELExpression {
     private static final boolean NESTING_AWARE = false;
 
     private WebModule webModule;
-    
+    MetadataModel<WebBeansModel> webBeansModel;
     protected String bundleName;
 
     public JsfElExpression(WebModule wm, Document doc){
         super(doc);
         this.webModule = wm;
+	this.webBeansModel = JsfSupport.findFor(doc).getWebBeansModel();
     }
-    
+
     @Override
     protected int findContext(final String expr) {
         int dotIndex = expr.indexOf('.');
@@ -172,7 +176,16 @@ public class JsfElExpression extends ELExpression {
                     return EL_JSF_BEAN;
                 }
             }
-            
+
+	    //go through web beans
+	    List<Element> namedElements = WebBeansModelSupport.getNamedBeans(webBeansModel);
+	    for (Element bean : namedElements) {
+		String beanName = bean.getSimpleName().toString();
+		if (first.equals(beanName)) {
+                    return EL_JSF_BEAN;
+                }
+	    }
+
             // look trhough all registered resource bundles
             List <ResourceBundle> bundles = getJSFResourceBundles(webModule);
             for (ResourceBundle bundle : bundles) {
@@ -315,13 +328,24 @@ public class JsfElExpression extends ELExpression {
         }
         
         List<FacesManagedBean> beans = JSFBeanCache.getBeans(webModule);
-        
+
+	//managed beans
         for (FacesManagedBean bean : beans){
             if (name.equals(bean.getManagedBeanName())){
                 name = bean.getManagedBeanClass();
                 break;
             }
         }
+	//web beans
+	for (Element bean : WebBeansModelSupport.getNamedBeans(webBeansModel)){
+	    String beanName = bean.getSimpleName().toString();
+            if (name.equals(beanName)){
+                name = bean.asType().toString(); //bean class
+                break;
+            }
+        }
+
+
         final String[] result= new String[1];
         InspectPropertiesTask inspectPropertiesTask = new InspectPropertiesTask(name){
 

@@ -45,6 +45,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.ui.wizard.WLInstantiatingIterator;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 
@@ -56,7 +57,7 @@ import org.openide.WizardDescriptor.InstantiatingIterator;
  *
  * @author Kirill Sorokin
  */
-public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManagerFactory {
+public class WLOptionalFactory extends OptionalDeploymentManagerFactory {
     
     /**
      * Returns an object responsible for starting a particular server instance.
@@ -69,7 +70,7 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
      */
     @Override
     public StartServer getStartServer(DeploymentManager dm) {
-        return new WLStartServer(dm);
+        return new WLStartServer((WLDeploymentManager) dm);
     }
 
     /**

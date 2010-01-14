@@ -43,6 +43,7 @@ package org.netbeans.modules.web.jsf.editor.completion;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.lang.model.element.Element;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -50,25 +51,25 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.WebBeansModelSupport;
 import org.netbeans.modules.web.jsf.editor.el.JsfElExpression;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.filesystems.FileObject;
+
 /**
  *
  * @author Petr Pisl
  * @author Po-Ting Wu
  */
-public class JsfElCompletionProvider implements CompletionProvider{
-    
-    /** Creates a new instance of JSFELCompletionProvider */
-    public JsfElCompletionProvider() {
-    }
+public class JsfElCompletionProvider implements CompletionProvider {
+
     
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if ((queryType & COMPLETION_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
-            return new AsyncCompletionTask(new CCQuery(component.getCaret().getDot()), 
+            return new AsyncCompletionTask(new CCQuery(), 
                     component);
         }
         return null;
@@ -79,12 +80,6 @@ public class JsfElCompletionProvider implements CompletionProvider{
     }
     
     static final class CCQuery extends AsyncCompletionQuery {
-        private int creationCaretOffset;
-        private JTextComponent component;
-        
-        CCQuery(int caretOffset) {
-            this.creationCaretOffset = caretOffset;
-        }
         
         protected void query(CompletionResultSet resultSet, Document doc, final int offset) {
             FileObject fObject = NbEditorUtilities.getFileObject(doc);
@@ -111,6 +106,20 @@ public class JsfElCompletionProvider implements CompletionProvider{
                                         beanName, anchor, bean.getManagedBeanClass()));
                             }
                         }
+
+			//check web beans
+			JsfSupport jsfSupport = JsfSupport.findFor(fObject);
+			List<Element> namedElements = WebBeansModelSupport.getNamedBeans(jsfSupport.getWebBeansModel());
+			for (Element bean : namedElements) {
+			    String beanName = bean.getSimpleName().toString();
+			    String className = bean.asType().toString();
+			    if ((beanName != null) && beanName.startsWith(replace)) {
+				complItems.add(new JsfElCompletionItem.JsfBean(
+					beanName, anchor, className));
+			    }
+			}
+
+
                         // check bundles properties
                         List <ResourceBundle> bundles = elExpr.
                             getJSFResourceBundles(wm);
@@ -160,10 +169,6 @@ public class JsfElCompletionProvider implements CompletionProvider{
             resultSet.finish();
         }
         
-        @Override
-        protected void prepareQuery(JTextComponent component) {
-            this.component = component;
-        }
     }
    
     

@@ -81,6 +81,8 @@ public final class WebProjectCreateData {
     private String librariesDefinition;
 
     private boolean webXmlRequired;
+
+    private boolean cdiEnabled;
     
     /**
      * Creates a new instance of WebProjectCreateData
@@ -411,6 +413,14 @@ public final class WebProjectCreateData {
 
     public void setWebXmlRequired(boolean webXmlRequired) {
         this.webXmlRequired = webXmlRequired;
+    }
+
+    public boolean isCDIEnabled() {
+        return cdiEnabled;
+    }
+
+    public void setCDIEnabled(boolean cdiEnabled) {
+        this.cdiEnabled = cdiEnabled;
     }
 
 }
