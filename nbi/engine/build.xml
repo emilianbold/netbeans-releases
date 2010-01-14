@@ -64,6 +64,7 @@
         <mkdir dir="${custom.tasks.cls}"/>
         
         <javac 
+            target="${javac.target}"
             srcdir="${custom.tasks.src}" 
             destdir="${custom.tasks.cls}" 
             debug="true" 
