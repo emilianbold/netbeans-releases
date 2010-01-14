@@ -64,14 +64,4 @@ final class ResumeCardAction extends ContextAction<ResumeCapability> {
             c.resume(mode);
         }
     }
-
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof ResumeCardAction && ((ResumeCardAction)o).mode == mode;
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode() + (11 * mode.hashCode());
-    }
 }
