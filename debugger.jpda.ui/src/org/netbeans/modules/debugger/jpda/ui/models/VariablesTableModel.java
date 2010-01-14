@@ -224,7 +224,7 @@ public class VariablesTableModel implements TableModel, Constants {
                          row instanceof Field ||
                          row instanceof JPDAWatch
                     ) {
-                        if (WatchesNodeModel.isEmptyWatch(row)) {
+                        if (WatchesNodeModelFilter.isEmptyWatch(row)) {
                             return true;
                         } else {
                             return !debugger.canBeModified();

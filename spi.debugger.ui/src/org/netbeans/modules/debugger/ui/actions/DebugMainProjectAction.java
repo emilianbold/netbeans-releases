@@ -47,13 +47,25 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.spi.debugger.ui.AttachType;
+import org.netbeans.spi.debugger.ui.Controller;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.openide.awt.Actions;
@@ -65,6 +77,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakSet;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -72,8 +85,11 @@ import org.openide.util.actions.Presenter;
  * @author Martin Entlicher
  */
 public class DebugMainProjectAction implements Action, Presenter.Toolbar {
+
+    private static WeakSet<AttachHistorySupport> ahs = null;
     
     private Action delegate;
+    private AttachHistorySupport attachHistorySupport;
     
     /** Creates a new instance of DebugMainProjectAction */
     public DebugMainProjectAction() {
@@ -81,6 +97,7 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar {
                 ActionProvider.COMMAND_DEBUG,
                 NbBundle.getMessage(DebugMainProjectAction.class, "LBL_DebugMainProjectAction_Name" ),ImageUtilities.loadImageIcon("org/netbeans/modules/debugger/resources/debugProject.png", false)); // NOI18N
         delegate.putValue("iconBase","org/netbeans/modules/debugger/resources/debugProject.png"); //NOI18N
+        attachHistorySupport = new AttachHistorySupport();
     }
     
     public Object getValue(String arg0) {
@@ -148,8 +165,155 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar {
         } catch (Exception nsee) {
             Exceptions.printStackTrace(nsee);
         }
+
+        attachHistorySupport.init(menu);
+
         Actions.connect(button, this);
         return button;
     }
+
+    static synchronized void attachHistoryChanged() {
+        if (ahs == null) return;
+        for (AttachHistorySupport support : ahs) {
+            support.computeItems();
+        }
+    }
+
+    private static synchronized void addAttachHistorySupport(AttachHistorySupport support) {
+        if (ahs == null) {
+            ahs = new WeakSet<AttachHistorySupport>();
+        }
+        ahs.add(support);
+    }
+
+    // AttachHistorySupport .....................................................
+
+    static class AttachHistorySupport implements ActionListener {
+
+        private JPopupMenu menu;
+        private JMenuItem[] items = new JMenuItem[0];
+        private JSeparator separator = new JSeparator();
+
+        public void init(JPopupMenu menu) {
+            this.menu = menu;
+            addAttachHistorySupport(this);
+
+            // clear all history slots which of attach type cannot be found
+            List types = DebuggerManager.getDebuggerManager().lookup (null, AttachType.class);
+            Set typeNamesSet = new HashSet();
+            for (Object t : types) {
+                AttachType att = (AttachType)t;
+                String dispName = att.getTypeDisplayName();
+                if (dispName != null) {
+                    typeNamesSet.add(dispName);
+                }
+            } // for
+            ArrayList<Integer> historyList = new ArrayList<Integer>();
+            Properties props = Properties.getDefault().getProperties("debugger").getProperties("last_attaches");
+            Integer[] usedSlots = (Integer[]) props.getArray("used_slots", new Integer[0]);
+            boolean somethingRemoved = false;
+            for (int x = 0; x < usedSlots.length; x++) {
+                String dispName = props.getProperties("slot_" + usedSlots[x]).getString("attach_type", "<???>"); // NOI18N
+                if (typeNamesSet.contains(dispName)) {
+                    historyList.add(usedSlots[x]);
+                } else {
+                    somethingRemoved = true;
+                }
+            } // for
+            if (somethingRemoved) {
+                props.setArray("used_slots", historyList.toArray(new Integer[historyList.size()]));
+            }
+
+            computeItems();
+        }
+
+        public void computeItems() {
+            menu.remove(separator);
+            for (int x = 0; x < items.length; x++) {
+                menu.remove(items[x]);
+            } // for
+            Properties props = Properties.getDefault().getProperties("debugger").getProperties("last_attaches");
+            Integer[] usedSlots = (Integer[]) props.getArray("used_slots", new Integer[0]);
+            if (usedSlots.length > 0) {
+                menu.add(separator);
+            }
+            items = new JMenuItem[usedSlots.length];
+            for (int x = 0; x < usedSlots.length; x++) {
+                String dispName = props.getProperties("slot_" + usedSlots[x]).getString("display_name", "<???>"); // NOI18N
+                items[x] = new JMenuItem(dispName);
+                items[x].addActionListener(this);
+                menu.add(items[x]);
+            } // for
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            JMenuItem item = (JMenuItem)e.getSource();
+            int index = -1;
+            for (int x = 0; x < items.length; x++) {
+                if (items[x] == item) {
+                    index = x;
+                    break;
+                }
+            }
+            if (index == -1) return; // should not occure
+            Properties props = Properties.getDefault().getProperties("debugger").getProperties("last_attaches");
+            Integer[] usedSlots = (Integer[]) props.getArray("used_slots", new Integer[0]);
+            String attachTypeName = props.getProperties("slot_" + usedSlots[index]).getString("attach_type", "???");
+            List types = DebuggerManager.getDebuggerManager().lookup (null, AttachType.class);
+            AttachType attachType = null;
+            for (Object t : types) {
+                AttachType att = (AttachType)t;
+                if (attachTypeName.equals(att.getTypeDisplayName())) {
+                    attachType = att;
+                    break;
+                }
+            } // for
+            if (attachType != null) {
+                JComponent customizer = attachType.getCustomizer ();
+                Controller controller = attachType.getController();
+                if (controller == null && (customizer instanceof Controller)) {
+                    Exceptions.printStackTrace(new IllegalStateException("FIXME: JComponent "+customizer+" must not implement Controller interface!"));
+                    controller = (Controller) customizer;
+                }
+                Method loadMethod = null;
+                try {
+                    loadMethod = controller.getClass().getMethod("load", Properties.class);
+                } catch (NoSuchMethodException ex) {
+                } catch (SecurityException ex) {
+                }
+                if (loadMethod == null) return;
+                try {
+                    Boolean result = (Boolean)loadMethod.invoke(controller, props.getProperties("slot_" + usedSlots[index]).getProperties("values"));
+                    if (!result) {
+                        return; // [TODO] not loaded, cannot be used to attach
+                    }
+                } catch (IllegalAccessException ex) {
+                } catch (IllegalArgumentException ex) {
+                } catch (InvocationTargetException ex) {
+                }
+                boolean passed = controller.ok();
+                if (passed) {
+                    makeFirst(index);
+                    GestureSubmitter.logAttach(attachTypeName);
+                }
+                return;
+            } // if
+        }
+
+        private void makeFirst(int index) {
+            if (index == 0) return; // nothing to do
+            Properties props = Properties.getDefault().getProperties("debugger").getProperties("last_attaches");
+            Integer[] usedSlots = (Integer[]) props.getArray("used_slots", new Integer[0]);
+            int temp = usedSlots[index];
+            for (int x = index; x > 0; x--) {
+                usedSlots[x] = usedSlots[x - 1];
+            }
+            usedSlots[0] = temp;
+            props.setArray("used_slots", usedSlots);
+            attachHistoryChanged();
+        }
+
+    } // AttachHistorySupport
+
 
 }

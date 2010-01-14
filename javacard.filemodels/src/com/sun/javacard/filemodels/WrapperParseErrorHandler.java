@@ -44,8 +44,8 @@ import java.io.IOException;
 
 final class WrapperParseErrorHandler implements ParseErrorHandler {
     private ParseErrorHandler wrapped;
-    private FileModel model;
-    WrapperParseErrorHandler(ParseErrorHandler other, FileModel mdl) {
+    private FileModel<?> model;
+    WrapperParseErrorHandler(ParseErrorHandler other, FileModel<?> mdl) {
         wrapped = other;
         this.model = mdl;
     }

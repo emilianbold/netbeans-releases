@@ -453,7 +453,8 @@ public abstract class Properties {
         private synchronized void load () {
             BufferedReader br = null;
             try {
-                FileObject fo = findSettings();
+                FileObject fo = findSettings(false);
+                if (fo == null) return ;
                 InputStream is = fo.getInputStream ();
                 br = new BufferedReader (new InputStreamReader (is));
 
@@ -503,7 +504,7 @@ public abstract class Properties {
             PrintWriter pw = null;
             FileLock lock = null;
             try {
-                FileObject fo = findSettings();
+                FileObject fo = findSettings(true);
                 lock = fo.lock ();
                 OutputStream os = fo.getOutputStream (lock);
                 pw = new PrintWriter (os);
@@ -594,14 +595,16 @@ public abstract class Properties {
             }
         }
 
-        private static FileObject findSettings() throws IOException {
+        private static FileObject findSettings(boolean create) throws IOException {
             FileObject r = FileUtil.getConfigFile("Services"); // NOI18N
             if (r == null) {
+                if (!create) return null;
                 r = FileUtil.getConfigRoot().createFolder("Services"); // NOI18N
             }
             FileObject fo = r.getFileObject
                 ("org-netbeans-modules-debugger-Settings", "properties"); // NOI18N
             if (fo == null) {
+                if (!create) return null;
                 fo = r.createData
                     ("org-netbeans-modules-debugger-Settings", "properties"); // NOI18N
             }

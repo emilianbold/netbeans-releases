@@ -153,14 +153,11 @@ public final class DialogBuilder {
 
     public Object showDialog() {
         DialogDescriptor des = createDialogDescriptor();
-        System.err.println("MODAL? " + des.isModal());
         Object dlgResult = DialogDisplayer.getDefault().notify(des);
-        System.err.println("Exit dialog descriptor notify for " + des);
         if (DialogDescriptor.YES_OPTION.equals(dlgResult) ||
                 DialogDescriptor.OK_OPTION.equals(dlgResult) ||
                 (defaultOption != null && defaultOption.equals(dlgResult)) || NbBundle.getMessage(DialogBuilder.class,
                 "BTN_CLOSE").equals(dlgResult)) { //NOI18N
-            System.err.println("DLG RESULT " + dlgResult + " " + Thread.currentThread());
         }
         return dlgResult;
     }

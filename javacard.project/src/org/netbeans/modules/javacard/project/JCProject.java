@@ -578,6 +578,7 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         synchronized (classpathClosureLock) {
             classpathClosureString = sb.toString();
         }
+        System.err.println("Classpath closure as string is " + sb);
         return sb.toString();
     }
 
@@ -662,10 +663,8 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                                             JCProject.class.getName());
 
                                     if (log.isLoggable(Level.WARNING)) {
-                                        log.log(Level.WARNING, "Project at " + //NOI18N
-                                            getProjectDirectory().getPath() +
-                                            " dependent jar missing manifest: " //NOI18N
-                                            + f.getAbsolutePath());
+                                        log.log(Level.WARNING, "Project at {0} dependent jar missing manifest: {1}",
+                                                new Object[]{getProjectDirectory().getPath(), f.getAbsolutePath()});
                                     }
                                 }
                             } finally {
@@ -678,10 +677,8 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
                             JCProject.class.getName());
 
                     if (log.isLoggable(Level.WARNING)) {
-                        log.log(Level.WARNING, "Project at " + //NOI18N
-                            getProjectDirectory().getPath() +
-                            " cannot resolve dependency path: " //NOI18N
-                            + path);
+                        log.log(Level.WARNING, "Project at {0} cannot resolve dependency path: {1}",
+                                new Object[]{getProjectDirectory().getPath(), path});
                     }
                 }
             }
@@ -1627,14 +1624,13 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
 
         @Override
         public File getTargetArtifact() {
-            String path = evaluator().evaluate("{" + ProjectPropertyNames.PROJECT_PROP_DIST_JAR + "}"); //NOI18N
-            path.replace ('/', File.separatorChar); //NOI18N
-            String projDir = FileUtil.toFile(getProjectDirectory()).getAbsolutePath();
-            if (!projDir.endsWith(File.separator)) {
-                projDir += File.separator;
+            String path = evaluator().evaluate("${" + ProjectPropertyNames.PROJECT_PROP_DIST_JAR + "}"); //NOI18N
+            if (path.contains(" ")) {
+                path = "\"" + path + "\"";
             }
-            projDir += path;
-            return new File(path);
+            path.replace ('/', File.separatorChar); //NOI18N
+            System.err.println("PATH EVALUATES TO " + path);
+            return new File(path).getAbsoluteFile();
         }
     }
 }
