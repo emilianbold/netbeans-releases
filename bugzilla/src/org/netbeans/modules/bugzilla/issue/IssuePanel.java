@@ -782,6 +782,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private void updateFieldStatuses() {
+        updateFieldStatus(IssueField.SUMMARY, summaryLabel);
         updateFieldStatus(IssueField.PRODUCT, productLabel);
         updateFieldStatus(IssueField.COMPONENT, componentLabel);
         updateFieldStatus(IssueField.VERSION, versionLabel);
@@ -802,6 +803,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updateFieldStatus(IssueField.BLOCKS, blocksLabel);
         if (BugzillaUtil.isNbRepository(issue.getRepository())) {
             updateFieldStatus(IssueField.ISSUE_TYPE, issueTypeLabel);
+        }
+        for (CustomFieldInfo field : customFields) {
+            updateFieldStatus(field.field, field.label);
         }
     }
 
