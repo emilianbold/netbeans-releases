@@ -40,7 +40,9 @@ package org.netbeans.modules.nativeexecution.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
@@ -53,6 +55,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import static org.junit.Assert.*;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
 
@@ -165,16 +168,29 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         assertEquals(0, result);
 
         if (ee.isLocal()) {
-            File dir = new File(testDir);
+            String testDir1 = testDir;
+            if (HostInfoUtils.getHostInfo(ee).getOS().getFamily() == HostInfo.OSFamily.WINDOWS){
+                testDir1 = WindowsSupport.getInstance().convertToWindowsPath(testDir);
+            }
+            File dir = new File(testDir1);
             assertTrue(dir.exists() && dir.isDirectory());
         } else {
             assertTrue(HostInfoUtils.fileExists(ee, testDir));
         }
 
-        System.out.println("Copy file /bin/ls to '" + testDir + "' with name 'copied ls'"); // NOI18N
+        String resource = "/bin/ls";
+        if (ee.isLocal()) {
+            if (HostInfoUtils.getHostInfo(ee).getOS().getFamily() == HostInfo.OSFamily.WINDOWS){
+                resource = findComand("ls.exe");
+                assertNotNull(resource, "Cannot find ls.exe in paths");
+                resource = WindowsSupport.getInstance().convertToShellPath(resource);
+            }
+        }
+
+        System.out.println("Copy file "+resource+" to '" + testDir + "' with name 'copied ls'"); // NOI18N
 
         npb = NativeProcessBuilder.newProcessBuilder(ee);
-        npb.setCommandLine("cp /bin/ls \"" + testDir + "/copied ls\""); // NOI18N
+        npb.setCommandLine("cp "+resource+" \"" + testDir + "/copied ls\""); // NOI18N
 
         try {
             result = npb.call().waitFor();
@@ -204,6 +220,30 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         assertTrue(found);
 
         System.out.println("... OK ..."); // NOI18N
+    }
+
+    private String findComand(String command){
+        ArrayList<String> list = new ArrayList<String>();
+        String path = System.getenv("PATH"); // NOI18N
+        if (path != null) {
+            StringTokenizer st = new StringTokenizer(path, File.pathSeparator); // NOI18N
+            while (st.hasMoreTokens()) {
+                String dir = st.nextToken();
+                list.add(dir);
+            }
+        } else {
+            list.add("C:/WINDOWS/System32"); // NOI18N
+            list.add("C:/WINDOWS"); // NOI18N
+            list.add("C:/cygwin/bin"); // NOI18N
+        }
+        for (String p : list) {
+            String task = p + File.separatorChar + command;
+            File tool = new File(task);
+            if (tool.exists() && tool.isFile()) {
+                return tool.getAbsolutePath();
+            }   
+        }
+        return null;
     }
 
     private void testSetExecutable(ExecutionEnvironment ee) throws IOException {
@@ -242,16 +282,29 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         assertEquals(0, result);
 
         if (ee.isLocal()) {
-            File dir = new File(testDir);
+            String testDir1 = testDir;
+            if (HostInfoUtils.getHostInfo(ee).getOS().getFamily() == HostInfo.OSFamily.WINDOWS){
+                testDir1 = WindowsSupport.getInstance().convertToWindowsPath(testDir);
+            }
+            File dir = new File(testDir1);
             assertTrue(dir.exists() && dir.isDirectory());
         } else {
             assertTrue(HostInfoUtils.fileExists(ee, testDir));
         }
 
-        System.out.println("Copy file /bin/ls to '" + testDir + "' with name 'copied ls'"); // NOI18N
+        String resource = "/bin/ls";
+        if (ee.isLocal()) {
+            if (HostInfoUtils.getHostInfo(ee).getOS().getFamily() == HostInfo.OSFamily.WINDOWS){
+                resource = findComand("ls.exe");
+                assertNotNull(resource, "Cannot find ls.exe in paths");
+                resource = WindowsSupport.getInstance().convertToShellPath(resource);
+            }
+        }
+        System.out.println("Copy file "+resource+" to '" + testDir + "' with name 'copied ls'"); // NOI18N
 
         npb = NativeProcessBuilder.newProcessBuilder(ee);
-        npb.setExecutable("cp").setArguments("/bin/ls", testDir + "/copied ls"); // NOI18N
+
+        npb.setExecutable("cp").setArguments(resource, testDir + "/copied ls"); // NOI18N
 
         try {
             result = npb.call().waitFor();

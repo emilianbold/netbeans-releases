@@ -76,6 +76,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     private CsmUID<CsmDeclaration> referencedDeclarationUID = null;
     private WeakReference<CsmDeclaration> refDeclaration;
     private boolean lastResolveFalure;
+    private int parseCount;
     private final CsmUID<CsmScope> scopeUID;
     private final CsmVisibility visibility;
     
@@ -106,6 +107,14 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         // TODO: process non-class elements
 //        if (!Boolean.getBoolean("cnd.modelimpl.resolver"))
         CsmDeclaration referencedDeclaration = _getReferencedDeclaration();
+        if (lastResolveFalure) {
+            int newCount = FileImpl.getParseCount();
+            if (newCount != parseCount) {
+                parseCount = newCount;
+                lastResolveFalure = false;
+            }
+        }
+
         if (referencedDeclaration == null && ! lastResolveFalure) {
             _setReferencedDeclaration(null);
             if (rawName != null) {
@@ -206,6 +215,9 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
             }
             _setReferencedDeclaration(referencedDeclaration);
             lastResolveFalure = referencedDeclaration == null;
+            if (lastResolveFalure) { // previously it was false, we checked this in if
+                parseCount = FileImpl.getParseCount();
+            }
         }
         return referencedDeclaration;
     }

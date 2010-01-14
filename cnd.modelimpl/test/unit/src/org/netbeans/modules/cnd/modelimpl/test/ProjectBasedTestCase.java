@@ -199,7 +199,7 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         DataObject testDataObject = DataObject.find(testFileObject);
         assertNotNull("Unresolved data object for file " + testFileObject, testDataObject);//NOI18N
         BaseDocument doc = CndCoreTestUtils.getBaseDocument(testDataObject);
-        assertNotNull("Unresolved document for data object " + testDataObject, testDataObject);//NOI18N     
+        assertNotNull("Unresolved document for data object " + testDataObject, doc);//NOI18N
         return doc;
     }
     

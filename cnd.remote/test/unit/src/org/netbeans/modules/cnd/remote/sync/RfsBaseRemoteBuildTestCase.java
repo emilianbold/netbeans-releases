@@ -39,10 +39,9 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import java.nio.charset.CoderMalfunctionError;
-import org.netbeans.modules.cnd.remote.project.*;
+import org.netbeans.modules.cnd.remote.project.RemoteBuildTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+
 /**
  *
  * @author Vladimir Kvashin
