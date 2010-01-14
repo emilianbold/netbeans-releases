@@ -53,9 +53,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -67,7 +67,6 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.MutexException;
 import org.openide.xml.XMLUtil;
@@ -512,14 +511,14 @@ public final class ProjectXMLManager {
      * supported - <code>UNIT</code> and <code>QA_FUNCTIONAL</code>. Test dependencies under 
      * test types are sorted by CNB.
      */
-    public void addTestDependency(final String testType, final TestModuleDependency newTestDep) throws IOException {
+    public boolean addTestDependency(final String testType, final TestModuleDependency newTestDep) throws IOException {
         final String UNIT = TestModuleDependency.UNIT;
         final String QA_FUNCTIONAL = TestModuleDependency.QA_FUNCTIONAL;
         assert (UNIT.equals(testType) || QA_FUNCTIONAL.equals(testType)) : "Current impl.supports only " + QA_FUNCTIONAL +
                 " or " + UNIT + " tests"; // NOI18N
 
-        final ExceptionAction<Void> action = new Mutex.ExceptionAction<Void>() {
-            public Void run() throws Exception {
+        final ExceptionAction<Boolean> action = new Mutex.ExceptionAction<Boolean>() {
+            public Boolean run() throws Exception {
                 File projectDir = FileUtil.toFile(project.getProjectDirectory());
                 ModuleList ml = ModuleList.getModuleList(projectDir);
                 Map<String, Set<TestModuleDependency>> map = new HashMap<String, Set<TestModuleDependency>>(getTestDependencies(ml));
@@ -532,7 +531,7 @@ public final class ProjectXMLManager {
                     testDependenciesSet = new TreeSet<TestModuleDependency>(testDependenciesSet);
                 }
                 if (!testDependenciesSet.add(newTestDep)) {
-                    return null; //nothing new to add, dep is already there, finished
+                    return false; //nothing new to add, dep is already there, finished
                 }
                 final Element confData = getConfData();
                 final Document doc = confData.getOwnerDocument();
@@ -593,15 +592,16 @@ public final class ProjectXMLManager {
                         project.putPrimaryConfigurationData(confData);
                     }
                 }
-                return null;
+                return true;
             }
         };
 
+        final AtomicBoolean result = new AtomicBoolean();
         project.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 try {
                     project.setRunInAtomicAction(true);
-                    ProjectManager.mutex().writeAccess(action);
+                    result.set(ProjectManager.mutex().writeAccess(action));
                 } catch (MutexException ex) {
                     throw (IOException) ex.getCause();
                 } finally {
@@ -609,6 +609,7 @@ public final class ProjectXMLManager {
                 }
             }
         });
+        return result.get();
     }
 
     private Element createNewTestTypeElement(Document doc, String testTypeName) {

@@ -49,11 +49,11 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/websvc/swdp/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/rest/jsr311-api-1.1.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jsr311-api-1.1.1.jar!/</resource>
     </volume>  
      <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/jsr311-api-1.1.1-javadoc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jsr311-api-1.1.1-javadoc.zip!/</resource>
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
