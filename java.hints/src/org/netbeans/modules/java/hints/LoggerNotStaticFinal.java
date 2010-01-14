@@ -45,6 +45,7 @@ import com.sun.source.util.TreePath;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -74,7 +75,9 @@ public class LoggerNotStaticFinal {
     })
     public static ErrorDescription checkLoggerDeclaration(HintContext ctx) {
         Element e = ctx.getInfo().getTrees().getElement(ctx.getPath());
-        if (!e.getModifiers().contains(Modifier.STATIC) || !e.getModifiers().contains(Modifier.FINAL)) {
+        if (e.getEnclosingElement().getKind() == ElementKind.CLASS &&
+            (!e.getModifiers().contains(Modifier.STATIC) || !e.getModifiers().contains(Modifier.FINAL))
+        ) {
             return ErrorDescriptionFactory.forName(
                     ctx,
                     ctx.getPath(),
