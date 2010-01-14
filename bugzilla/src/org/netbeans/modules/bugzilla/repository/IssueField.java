@@ -41,7 +41,6 @@ package org.netbeans.modules.bugzilla.repository;
 
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.openide.util.NbBundle;
 
 /**
@@ -110,7 +109,7 @@ public class IssueField {
 
     public String getDisplayName() {
         assert displayNameKey != null; // shouldn't be called for a field with a null display name
-        return NbBundle.getMessage(BugzillaIssue.class, displayNameKey);
+        return NbBundle.getMessage(IssueField.class, displayNameKey);
     }
 
 }
