@@ -70,6 +70,10 @@ public class JsfUtils {
     public static final String COMPOSITE_LIBRARY_NS = "http://java.sun.com/jsf/composite"; //NOI18N
     public static final String XHTML_NS = "http://www.w3.org/1999/xhtml"; //NOI18N
 
+    public static String getCompositeLibraryURL(String libraryFolderPath) {
+	return JsfUtils.COMPOSITE_LIBRARY_NS + "/" + libraryFolderPath;
+    }
+
     public static boolean isCompositeComponentLibrary(FaceletsLibrary library) {
         return library instanceof CompositeComponentLibrary;
     }

@@ -116,7 +116,7 @@ public class CompositeComponentModel extends JsfPageModel {
     }
 
     @Override
-    public void storeToIndex(IndexDocument document) {
+    public String storeToIndex(IndexDocument document) {
         //store library name
         String libraryName = getLibraryPath();
         document.addPair(LIBRARY_NAME_KEY, libraryName, true, true);
@@ -145,6 +145,8 @@ public class CompositeComponentModel extends JsfPageModel {
 
         //store implementation mark
         document.addPair(HAS_IMPLEMENTATION_KEY, Boolean.toString(hasImplementation), false, true);
+
+	return JsfUtils.getCompositeLibraryURL(libraryName);
 
     }
 

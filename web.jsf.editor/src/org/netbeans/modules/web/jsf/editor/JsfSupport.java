@@ -196,4 +196,8 @@ public class JsfSupport {
         return this.index;
     }
 
+    public FaceletsLibrarySupport getFaceletsLibrarySupport() {
+	return faceletsLibrarySupport;
+    }
+
 }
