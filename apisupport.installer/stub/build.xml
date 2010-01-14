@@ -37,49 +37,6 @@
     </target>
 
     <target name="-init">
-        <!--
-        <delete dir="${custom.tasks.cls}"/>
-        <mkdir dir="${custom.tasks.cls}"/>
-        -->
-        <!-- first we need to perform an "unofficial" build of the engine in order 
-             to ensure it's available in the classpath for the custom ant tasks -->
-	<!--
-        <subant buildpath="${nbi.core.dir}/engine" 
-                target="compile" 
-                failonerror="true" 
-                output="${nbi.all.dir}/core.engine.unofficial.build.output">
-            <property name="platforms.JDK_1.5.home" value="${jdk.home}"/>
-            <property name="basedir" value="${nbi.core.dir}/engine"/>
-        </subant>
-        <copy todir="${custom.tasks.cls}">
-            <fileset dir="${nbi.core.dir}/engine/build/classes">
-                <include name="**/*.*"/>
-            </fileset>
-        </copy>
-        -->
-        <!-- second we compile the required custom libraries -->
-        <!--
-        <javac 
-            srcdir="${nbi.core.dir}/infra/lib/registries-management" 
-            destdir="${custom.tasks.cls}"
-            classpath="${custom.tasks.cls}"
-            debug="true"/>
-        -->
-        <!-- then compile all the custom ant tasks -->
-        <!--
-        <javac 
-            srcdir="${custom.tasks.src.1}" 
-            destdir="${custom.tasks.cls}"
-            classpath="${custom.tasks.cls}"
-            debug="true"/>
-        <javac 
-            srcdir="${custom.tasks.src.2}" 
-            destdir="${custom.tasks.cls}"
-            classpath="${custom.tasks.cls}"
-            debug="true"/>
-        -->
-
-
         <taskdef 
             name="if" 
             classpath="${custom.tasks.cls}" 
@@ -139,24 +96,6 @@ jarsigner.enabled=${jarsigner.enabled}
         <mkdir dir="${output.dir}/components"/>
         
         <property name="engine.dist.file.name" value="nbi-engine.jar"/>
-        <!--
-        <echo message="BUILDING CORE ENGINE ======================================"/>
-        <ant dir="${nbi.core.dir}/infra/build/engine" target="release-all">
-            <property 
-                name="basedir" 
-                value="${nbi.core.dir}/infra/build/engine"/>
-            <property 
-                name="environment.properties" 
-                value="${environment.properties}"/>
-            
-            <property
-                name="build.native"
-                value="false"/>
-            <property 
-                name="cvs.module" 
-                value="${core.module.name}"/>
-        </ant>
-        -->
 
         <echo message="BUILDING HELLOWORLD EXT ENGINE =================================="/>
         <ant dir="${nbi.ext.dir}/infra/build/engine" target="release-all">
@@ -204,8 +143,6 @@ jarsigner.enabled=${jarsigner.enabled}
     </target>
 
     <target name="-generate-bundles">
-        <!--<set property="bundle.files.prefix" value="helloworld"/>-->
-
         <for-each property="platform" list="${target.platforms}" separator=" ">
 
             <condition property="bundle.extention.${platform}" value="exe">
@@ -236,14 +173,6 @@ jarsigner.enabled=${jarsigner.enabled}
 	        <delete file="${bundles.release.dir}/${bundle.files.prefix}-${platform}.zip"/>
             </if>
         </for-each>
-    </target>
-
-    <target name="replace">
-        <property file="${token.file}"/>
-        <replaceregexp file="${file.to.replace}" flags="mg">
-            <regexp pattern="${regexp.token}"/>
-            <substitution expression="${regexp.replacement}"/>
-        </replaceregexp>
     </target>
 
     <target name="zip-to-tgz">
