@@ -182,10 +182,11 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         }
                         props.put(
                                 "generator-jdk-location-forward-slashes", javaHome.getAbsolutePath().replace("\\", "/"));
+                        /*
                         props.put(
                                 "generated-installers-location-forward-slashes",
                                 new File(suiteLocation, "dist").getAbsolutePath().replace("\\", "/"));
-
+                        */
                         props.put(
                                 "pack200.enabled", "false");
 
@@ -195,6 +196,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         "[" + s + "] = " + props.get(s));
                         }
                          */
+                        /*
                         File tmpProps = null;
                         try {
                             tmpProps = File.createTempFile("nbi-properties-", ".properties");
@@ -203,7 +205,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                             fos.close();
                         } catch (IOException ex) {
                             Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "Can`t store properties", ex);
-                        }
+                        }*/
                         try {
                             final ExecutorTask executorTask = ActionUtils.runTarget(findGenXml(prj), new String[]{"build"}, props);
                             /*
@@ -228,10 +230,10 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                             ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.project").notify(ex); // NOI18N
                         }
 
-
+                        /*
                         if (tmpProps != null && !tmpProps.delete() && tmpProps.exists()) {
                             tmpProps.deleteOnExit();
-                        }
+                        }*/
                     }
                 }
 

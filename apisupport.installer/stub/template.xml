@@ -6,6 +6,7 @@
     <target name="init" depends="-clean">
         <property name="installer.build.dir" value="${suite.location}/build/installer"/>
         <property file="${suite.location}/nbproject/project.properties" prefix="suite.props."/>
+        <property name="suite.dist.directory" value="${suite.location}/dist"/>
 
         <delete dir="${installer.build.dir}" includeemptydirs="yes" failonerror="false"/>
 
@@ -28,7 +29,7 @@
 
     <target name="-init-zip">
         <condition property="do.build.zip">
-            <available file="${suite.location}/dist/${suite.props.app.name}.zip"/>
+            <available file="${suite.dist.directory}/${suite.props.app.name}.zip"/>
         </condition>
     </target>
     <target name="-build-zip" depends="-init-zip" unless="do.build.zip">
@@ -48,13 +49,14 @@
 
         <property name="product-uid"  value="${suite.nbi.product.uid}"/>
 
+
         <replace file="${installer.build.dir}/build.properties" encoding="utf-8">
             <replacefilter token="{nbi.ant.tasks.jar}"             value="${nbi.ant.tasks.jar}"/>
             <replacefilter token="{nbi.registries.management.jar}" value="${nbi.registries.management.jar}"/>
             <replacefilter token="{nbi.engine.jar}"                value="${nbi.engine.jar}"/>
             <replacefilter token="{product-platforms}"             value="${generate.installer.for.platforms}"/>
             <replacefilter token="{generator-jdk-location-forward-slashes}"         value="${generator-jdk-location-forward-slashes}"/>
-            <replacefilter token="{generated-installers-location-forward-slashes}"  value="${generated-installers-location-forward-slashes}"/>
+            <replacefilter token="{generated-installers-location-forward-slashes}"  value="${suite.dist.directory}"/>
             <replacefilter token="{pack200.enabled}"               value="${pack200.enabled}"/>
             <replacefilter token="{generated-installers-prefix}"   value="${suite.props.app.name}"/>
             <replacefilter token="{product-uid}"                   value="${product-uid}"/>
@@ -68,7 +70,7 @@
 
         <replace dir="${installer.build.dir}/ext/infra/build/products" encoding="utf-8">
             <replacefilter token="{product.platforms}"        value="${generate.installer.for.platforms}"/>
-            <replacefilter token="{product-data-path}"        value="${suite.location}/dist/${suite.props.app.name}.zip"/>
+            <replacefilter token="{product-data-path}"        value="${suite.dist.directory}/${suite.props.app.name}.zip"/>
             <replacefilter token="{product-data-sub-dir}"     value="${suite.props.app.name}"/>
             <replacefilter token="{product-uid}"              value="${product-uid}"/>
             <replacefilter token="{product-install-directory-name}"         value="${suite.props.app.name}"/>
