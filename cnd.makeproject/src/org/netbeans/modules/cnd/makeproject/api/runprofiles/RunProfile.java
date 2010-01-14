@@ -199,6 +199,13 @@ public class RunProfile implements ConfigurationAuxObject {
         String name;
         String termPath;
 
+        // Format string arguments:
+        // 0 - file to store return code
+        // 1 - executable name (quated if need, i.e. if it contains spaces, asterisks, etc.)
+        // 2 - args (quated if need, i.e. if it contains spaces, asterisks, etc.)
+        // 3 - the same as {3}, but quotes are escaped with '\'
+        // 4 - (added by VK: the same as {1}, but quotes are escaped with '\'
+        // fixing #178201 Run fails if 'Show profiling indicators' is off and the project is created in folder with space
         list.add(def);
         if (isWindows()) {
             String term = getString("TerminalType_CommandWindow"); // NOI18N
@@ -220,7 +227,7 @@ public class RunProfile implements ConfigurationAuxObject {
                 list.add(name);
                 termPaths.put(name, termPath);
                 termPaths.put(def, termPath);
-                String opts = "--disable-factory --hide-menubar " + "--title=\"{1} {3}\" " + // NOI18N
+                String opts = "--disable-factory --hide-menubar " + "--title=\"{4} {3}\" " + // NOI18N
                         "-x \"" + dorun + "\" -p \"" + getString("LBL_RunPrompt") + "\" " + // NOI18N
                         "-f \"{0}\" {1} {2}"; // NOI18N
                 termOptions.put(name, opts);

@@ -174,7 +174,18 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                                 !exe.endsWith(".exe")) { // NOI18N
                             exe = exe + ".exe"; // NOI18N
                         }
-                        args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args, args2);
+                        // fixing #178201 Run fails if 'Show profiling indicators' is off and the project is created in folder with space
+                        StringBuilder b = new StringBuilder();
+                        for (int i = 0; i < exe.length(); i++) {
+                            if (exe.charAt(i) == '"') {
+                                b.append("\\\""); // NOI18N
+                            } else {
+                                b.append(exe.charAt(i));
+                            }
+                        }
+                        String exe2 = b.toString();
+
+                        args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args, args2, exe2);
                         exe = pae.getProfile().getTerminalPath();
                     }
                 }
