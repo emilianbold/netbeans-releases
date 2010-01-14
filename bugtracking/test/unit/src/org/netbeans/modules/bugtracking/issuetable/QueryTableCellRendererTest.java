@@ -60,9 +60,8 @@ public class QueryTableCellRendererTest {
     public void testGetCellStyle() {
         JTable table = new JTable();
         RendererQuery query = new RendererQuery();
-        String propertyValue = "some value";
         RendererIssue issue = new RendererIssue();
-        IssueProperty property = new RendererNode( issue, propertyValue).createProperty();
+        IssueProperty property = new RendererNode(issue, "some value").createProperty();
 
         MessageFormat issueNewFormat       = getFormat("issueNewFormat");      // NOI18N
         MessageFormat issueObsoleteFormat  = getFormat("issueObsoleteFormat"); // NOI18N
@@ -75,96 +74,104 @@ public class QueryTableCellRendererTest {
         // issue seen, not selected
         query.containsIssue = true;
         issue.wasSeen = true;
+        issue.recentChanges = "";
         boolean selected = true;
         TableCellStyle defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
         TableCellStyle result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(null, result.getFormat());
-        assertEquals(propertyValue, result.getTooltip());
+        assertEquals("<html>some value</html>", result.getTooltip());
 
         // issue seen, selected
         query.containsIssue = true;
         issue.wasSeen = true;
+        issue.recentChanges = "";
         selected = true;
         result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(null, result.getFormat());
-        assertEquals(propertyValue, result.getTooltip());
+        assertEquals("<html>some value</html>", result.getTooltip());
 
         // obsolete issue, not selected
         query.containsIssue = false;
         issue.wasSeen = false;
+        issue.recentChanges = "";
         selected = false;
         result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(issueObsoleteFormat, result.getFormat());
-        assertEquals(propertyValue, result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#999999\"><s>Archived</s></font>- this issue doesn't belong to the query anymore</html>", result.getTooltip());
 
         // obsolete issue, selected
         query.containsIssue = false;
         selected = true;
         issue.wasSeen = false;
+        issue.recentChanges = "";
         result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
         assertEquals(obsoleteHighlightColor, result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(defaultStyle.getFormat(), result.getFormat());
-        assertEquals(propertyValue, result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#999999\"><s>Archived</s></font>- this issue doesn't belong to the query anymore</html>", result.getTooltip());
 
         // modified issue, not selected
         query.containsIssue = true;
         selected = false;
         issue.wasSeen = false;
+        issue.recentChanges = "changed";
         query.status = IssueCache.ISSUE_STATUS_MODIFIED;
         result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(issueModifiedFormat, result.getFormat());
-        assertEquals(propertyValue, result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#0000FF\">Modified</font>- this issue is modified - changed</html>", result.getTooltip());
 
 
         // modified issue, selected
         query.containsIssue = true;
         selected = true;
         issue.wasSeen = false;
+        issue.recentChanges = "changed";
         query.status = IssueCache.ISSUE_STATUS_MODIFIED;
         result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
         assertEquals(modifiedHighlightColor, result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(null, result.getFormat());
-        assertEquals(propertyValue, result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#0000FF\">Modified</font>- this issue is modified - changed</html>", result.getTooltip());
 
         // new issue, not selected
         query.containsIssue = true;
         selected = false;
         issue.wasSeen = false;
+        issue.recentChanges = "";
         query.status = IssueCache.ISSUE_STATUS_NEW;
         result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(issueNewFormat, result.getFormat());
-        assertEquals(propertyValue, result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#00b400\">New</font>- this issue is new</html>", result.getTooltip());
 
 
         // new issue, selected
         query.containsIssue = true;
         selected = true;
         issue.wasSeen = false;
+        issue.recentChanges = "";
         query.status = IssueCache.ISSUE_STATUS_NEW;
         result = QueryTableCellRenderer.getCellStyle(table, query, property, selected, 0);
         defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, selected, 0);
         assertEquals(newHighlightColor, result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(null, result.getFormat());
-        assertEquals(propertyValue, result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#00b400\">New</font>- this issue is new</html>", result.getTooltip());
 
     }
 
@@ -289,6 +296,7 @@ public class QueryTableCellRendererTest {
 
     private class RendererIssue extends Issue {
         boolean wasSeen = false;
+        private String recentChanges;
         public RendererIssue() {
             super(new RendererRepository());
             ((RendererRepository)getRepository()).setIssue(this);
@@ -349,8 +357,7 @@ public class QueryTableCellRendererTest {
         }
 
         public String getRecentChanges() {
-            fail("implement me!!!");
-            return null;
+            return recentChanges;
         }
 
         public Map<String, String> getAttributes() {
@@ -426,7 +433,7 @@ public class QueryTableCellRendererTest {
                     return issue.wasSeen;
                 }
                 public String getRecentChanges(Issue issue) {
-                    throw new UnsupportedOperationException("Not supported yet.");
+                    return ((RendererIssue) issue).getRecentChanges();
                 }
                 public long getLastModified(Issue issue) {
                     throw new UnsupportedOperationException("Not supported yet.");
