@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,13 +31,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.osgi.framework;
+
+package org.netbeans.modules.bugzilla.repository;
+
+import java.util.List;
+import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
 
 /**
- * @author Maros Sandor
+ * Information about a custom issue field.
+ *
+ * @author Jan Stola
  */
-public interface BundleContext {
-    
-    Bundle getBundle();
+public class CustomIssueField extends IssueField {
+    public enum Type {DateTime, DropDown, FreeText, LargeText, MultipleSelection, Unknown};
+    private BugzillaCustomField field;
+
+    CustomIssueField(BugzillaCustomField field) {
+        super(field.getName(), null);
+        this.field = field;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return field.getDescription();
+    }
+
+    public Type getType() {
+        Type type = Type.Unknown;
+        switch (field.getFieldType()) {
+            case DateTime: type = Type.DateTime; break;
+            case DropDown: type = Type.DropDown; break;
+            case FreeText: type = Type.FreeText; break;
+            case LargeText: type = Type.LargeText; break;
+            case MultipleSelection: type = Type.MultipleSelection; break;
+        }
+        return type;
+    }
+
+    public List<String> getOptions() {
+        return field.getOptions();
+    }
+
+    public boolean getShowOnBugCreation() {
+        return field.isEnterBug();
+    }
+
 }

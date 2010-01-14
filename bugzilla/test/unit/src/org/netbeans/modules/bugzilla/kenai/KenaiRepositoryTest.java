@@ -99,7 +99,7 @@ public class KenaiRepositoryTest extends NbTestCase implements TestConstants {
         taskRepository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
 
         trm = new TaskRepositoryManager();
-        brc = new BugzillaRepositoryConnector();
+        brc = new BugzillaRepositoryConnector(new File(getWorkDir().getAbsolutePath(), "bugzillaconfiguration"));;
 
         trm.addRepository(taskRepository);
         trm.addRepositoryConnector(brc);

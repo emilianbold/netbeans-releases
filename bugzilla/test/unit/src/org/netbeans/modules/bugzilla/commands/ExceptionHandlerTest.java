@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.bugzilla.commands;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.netbeans.modules.bugzilla.*;
@@ -81,7 +82,7 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
         }
         
         trm = new TaskRepositoryManager();
-        brc = new BugzillaRepositoryConnector();
+        brc = new BugzillaRepositoryConnector(new File(getWorkDir().getAbsolutePath(), "bugzillaconfiguration"));
 
 
         trm.addRepositoryConnector(brc);
