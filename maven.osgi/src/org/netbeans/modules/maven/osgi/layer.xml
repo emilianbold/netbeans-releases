@@ -25,7 +25,7 @@
         <folder name="org-netbeans-modules-maven">
             <folder name="Archetypes">
                 <file name="osgi-archetype">
-                    <attr name="position" intvalue="300"/>
+                    <attr name="position" intvalue="329"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.osgi.Bundle"/>
                     <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
                     <attr name="artifactId" stringvalue="osgi-archetype"/>
