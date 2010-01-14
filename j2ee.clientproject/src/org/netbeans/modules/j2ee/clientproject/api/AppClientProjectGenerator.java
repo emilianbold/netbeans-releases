@@ -70,6 +70,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
@@ -191,6 +192,9 @@ public class AppClientProjectGenerator {
         AppClient appClient = DDProvider.getDefault().getDDRoot(ddFile);
         appClient.setDisplayName(name);
         appClient.write(ddFile);
+        if (createData.isCDIEnabled()) {
+            DDHelper.createBeansXml(j2eeProfile, confRoot);
+        }
         
         final String realServerLibraryName = configureServerLibrary(createData.getLibrariesDefinition(),
                 serverInstanceID, projectDir, createData.getServerLibraryName() != null);
