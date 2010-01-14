@@ -471,17 +471,22 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
             }
         }
         if (needToRender) {
+            int newParseCount = FileImpl.getParseCount();
             if (classifier != null) {
-                int newCount = FileImpl.getParseCount();
-                if (newCount == parseCount) {
+                if (newParseCount == parseCount) {
                     return classifier;
                 }
             }
             _setClassifier(null);
+
             if (qname != null) {
-                _setClassifier(renderClassifier(qname, parent));
+                classifier = renderClassifier(qname, parent);
             } else if (classifierText.length() > 0) {
-                _setClassifier(renderClassifier(new CharSequence[] { classifierText }, parent ));
+                classifier = renderClassifier(new CharSequence[] { classifierText }, parent );
+            }
+            synchronized (this) {
+                _setClassifier(classifier);
+                parseCount = newParseCount;
             }
             classifier = _getClassifier();
         }
@@ -502,7 +507,6 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                 classifier = (CsmClassifier) obj;
             }
         }
-        parseCount = FileImpl.getParseCount();
         return classifier;
     }
 
