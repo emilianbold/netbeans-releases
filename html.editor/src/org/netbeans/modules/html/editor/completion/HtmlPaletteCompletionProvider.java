@@ -99,7 +99,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
     static final class CCQuery extends AsyncCompletionQuery {
 
         private int creationCaretOffset;
-        private int completionExpressionStartOffset;
+        private int completionExpressionStartOffset = -1;
         private JTextComponent component;
         private final Collection<PaletteCompletionItem> items = new ArrayList<PaletteCompletionItem>();
 
@@ -156,8 +156,12 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
                             if (i > 0) {
                                 prefix = prefix.substring(i, prefix.length());
                             }
+
                             //remember the start of the completion source expression for later removal
-                            completionExpressionStartOffset = creationCaretOffset - prefix.length();
+			    //do not refresh the value during subsequent queries on this query instance as user goes on typing
+                            if(completionExpressionStartOffset == -1) {
+				completionExpressionStartOffset = creationCaretOffset - prefix.length();
+			    }
 
                             TopComponent tc = NbEditorUtilities.getTopComponent(component);
                             if (tc == null) {

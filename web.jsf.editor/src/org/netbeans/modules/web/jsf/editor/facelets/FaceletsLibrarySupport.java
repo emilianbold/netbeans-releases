@@ -143,9 +143,13 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         return jsfSupport;
     }
 
+    //called by JsfIndexer when scanning finishes
     public synchronized void librariesChanged(Collection<String> librariesNamespaces) {
 	//just check if the library already exist and if not, refresh all libs
-	if(!getLibraries().keySet().containsAll(librariesNamespaces)) {
+
+	//if faceletsLibraries are null, we cannot call getLibraries() which could
+	//call back to the indexing
+	if(faceletsLibraries != null && !getLibraries().keySet().containsAll(librariesNamespaces)) {
 	    faceletsLibraries = null;
 	}
     }
