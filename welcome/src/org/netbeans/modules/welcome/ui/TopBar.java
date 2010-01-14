@@ -50,6 +50,7 @@ import java.awt.Insets;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
+import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.WebLink;
 import org.openide.util.ImageUtilities;
@@ -72,8 +73,8 @@ class TopBar extends JPanel implements Constants {
         
         setPreferredSize( new Dimension( imgCenter.getWidth(null), imgCenter.getHeight(null)) );
 
-        WebLink nbLogo = new WebLink(null, "http://www.netbeans.org", false); //NOI18N
-        Icon icon = new ImageIcon( ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/nb_logo.png")); //NOI18N
+        WebLink nbLogo = new WebLink(null, BundleSupport.getURL("TopBarLogo"), false); //NOI18N
+        Icon icon = new ImageIcon( ImageUtilities.loadImage(IMAGE_TOPBAR_LOGO, true));
         nbLogo.setIcon( icon );
         nbLogo.setPressedIcon( icon );
         add( nbLogo, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(5,5,5,5), 0, 0));
