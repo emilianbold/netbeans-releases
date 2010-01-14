@@ -91,6 +91,46 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/beans/resources/BeansXml.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.beans.wizard.BeansXmlIterator"/>
             </file>
+            <file name="Qualifier.java" url="Qualifier.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.beans.resources.Bundle"/>
+                <attr name="position" intvalue="20"/>
+                <attr name="templateCategory" stringvalue="web-types,j2ee-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/beans/resources/Qualifier.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
+            </file>
+            <file name="Stereotype.java" url="Stereotype.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.beans.resources.Bundle"/>
+                <attr name="position" intvalue="30"/>
+                <attr name="templateCategory" stringvalue="web-types,j2ee-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/beans/resources/Stereotype.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
+            </file>
+            <file name="Interceptor.java" url="Interceptor.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.beans.resources.Bundle"/>
+                <attr name="position" intvalue="40"/>
+                <attr name="templateCategory" stringvalue="web-types,j2ee-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/beans/resources/Interceptor.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
+            </file>
+            <file name="Scope.java" url="Scope.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.beans.resources.Bundle"/>
+                <attr name="position" intvalue="50"/>
+                <attr name="templateCategory" stringvalue="web-types,j2ee-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/beans/resources/Scope.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
+            </file>
         </folder>
     </folder>
 </filesystem>
