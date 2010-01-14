@@ -139,8 +139,6 @@ public class KenaiSearchPanel extends JPanel {
         panelType = type;
         multiSelection = multiSel;
         initComponents();
-        kenaiCombo.setModel(new KenaiComboModel());
-        kenaiCombo.setRenderer(new KenaiListRenderer());
         kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
 
         kenaiCombo.addActionListener(new ActionListener() {
@@ -409,7 +407,7 @@ public class KenaiSearchPanel extends JPanel {
         searchInfoLabel = new JLabel();
         projectsLabel = new JLabel();
         searchTextField = new JTextField();
-        kenaiCombo = new JComboBox();
+        kenaiCombo = new KenaiCombo(true);
         createButtonPanel = new JPanel();
         createNewProjectButton = new JButton();
         kenaiProjectsTabPane = new JTabbedPane();
