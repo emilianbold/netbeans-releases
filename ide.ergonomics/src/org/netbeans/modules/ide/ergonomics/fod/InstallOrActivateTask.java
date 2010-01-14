@@ -38,14 +38,24 @@
  */
 package org.netbeans.modules.ide.ergonomics.fod;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
+
 /** Runnable to install missing modules or activate
  * new ones.
  * 
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class InstallOrActivateTask implements Runnable {
+final class InstallOrActivateTask implements Runnable, FileChangeListener {
     private final ModulesInstaller installer;
     private final ModulesActivator activator;
+    private final List<FileObject> changed = new ArrayList<FileObject>();
 
     InstallOrActivateTask(ModulesInstaller installer) {
         this.installer = installer;
@@ -58,11 +68,42 @@ final class InstallOrActivateTask implements Runnable {
     }
 
     public void run() {
-        if (installer != null) {
-            installer.installMissingModules();
+        FileObject fo = FileUtil.getConfigFile("Modules"); // NOI18N
+        try {
+            if (fo != null) {
+                fo.addFileChangeListener(this);
+            }
+            if (installer != null) {
+                installer.installMissingModules();
+            }
+            if (activator != null) {
+                activator.enableModules();
+            }
+        } finally {
+            if (fo != null) {
+                fo.removeFileChangeListener(this);
+                FeatureManager.associateFiles(changed);
+            }
         }
-        if (activator != null) {
-            activator.enableModules();
-        }
+    }
+
+    public void fileFolderCreated(FileEvent fe) {
+    }
+
+    public void fileDataCreated(FileEvent fe) {
+        changed.add(fe.getFile());
+    }
+
+    public void fileChanged(FileEvent fe) {
+        changed.add(fe.getFile());
+    }
+
+    public void fileDeleted(FileEvent fe) {
+    }
+
+    public void fileRenamed(FileRenameEvent fe) {
+    }
+
+    public void fileAttributeChanged(FileAttributeEvent fe) {
     }
 }
