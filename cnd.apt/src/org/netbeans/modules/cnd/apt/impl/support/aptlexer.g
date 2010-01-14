@@ -56,6 +56,7 @@ options {
 
 {
 @SuppressWarnings({"unchecked", "cast", "fallthrough"})
+final /*final class attribute gives us performance */
 }
 class APTLexer extends Lexer;
 
