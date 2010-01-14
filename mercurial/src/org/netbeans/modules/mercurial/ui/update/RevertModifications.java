@@ -77,7 +77,7 @@ public class RevertModifications implements PropertyChangeListener {
     } 
     
     public boolean showDialog() {
-        File[] revertFiles = panel.getRevertFiles();
+        File[] revertFiles = panel.getRootFiles();
         DialogDescriptor dialogDescriptor;
 
         String title;

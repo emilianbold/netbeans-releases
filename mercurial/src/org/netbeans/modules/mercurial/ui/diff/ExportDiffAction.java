@@ -56,6 +56,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.RepositoryRevision;
+import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -177,7 +178,7 @@ public class ExportDiffAction extends ContextAction {
                     NbBundle.getMessage(ExportDiffAction.class,
                     "MSG_EXPORT_TITLE_SEP")); // NOI18N
 
-            if (revStr != null && NbBundle.getMessage(ExportDiffAction.class,
+            if (revStr != null && NbBundle.getMessage(ChangesetPickerPanel.class,
                     "MSG_Revision_Default").startsWith(revStr)) {
                 logger.output(
                         NbBundle.getMessage(ExportDiffAction.class,
@@ -209,7 +210,7 @@ public class ExportDiffAction extends ContextAction {
                 NbBundle.getMessage(ExportDiffAction.class,
                 "MSG_EXPORT_FILE_TITLE_SEP")); // NOI18N
 
-        if (NbBundle.getMessage(ExportDiffAction.class,
+        if (NbBundle.getMessage(ChangesetPickerPanel.class,
                 "MSG_Revision_Default").startsWith(revStr)) {
             logger.output(
                     NbBundle.getMessage(ExportDiffAction.class,

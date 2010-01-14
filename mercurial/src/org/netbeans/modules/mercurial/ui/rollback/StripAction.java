@@ -90,11 +90,10 @@ public class StripAction extends ContextAction {
         final File roots[] = HgUtils.getActionRoots(ctx);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-        File[] files = HgUtils.filterForRepository(ctx, root, false);
         
         String rev = null;
 
-        final Strip strip = new Strip(root, files);
+        final Strip strip = new Strip(root);
         if (!strip.showDialog()) {
             return;
         }
