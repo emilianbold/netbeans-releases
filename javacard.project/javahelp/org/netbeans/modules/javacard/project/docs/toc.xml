@@ -55,7 +55,7 @@
         <tocitem target="org.netbeans.modules.javacard.SettingClassicAppletRunProperties" text="Setting Classic Applet Run Properties" expand="false"></tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.RunningClassicAppletProject" text="Running a Classic Applet Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.RunningClassicAppletSamples" text="Run HelloWorld Classic Applet Sample" expand="false"></tocitem></tocitem>
-    <tocitem target="org.netbeans.modules.javacard.GetAdditonalClassicAppletSamples" text="Getting Additional Classic Applet Samples" expand="false"></tocitem>
+    <tocitem target="org.netbeans.modules.javacard.GetAdditionalClassicAppletSamples" text="Getting Additional Classic Applet Samples" expand="false"></tocitem>
     <tocitem target="org.netbeans.modules.javacard.CreatingExtendedAppletProject" text="Creating an Extended Applet Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.CreateExtendedAppletProjectFromTemplate" text="Create an Extended Applet Project From the Template" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.CreateExtendedAppletProjectFromExistingCode" text="Create an Extended Applet Project From Existing Code" expand="false"></tocitem></tocitem>
@@ -115,7 +115,7 @@
     <tocitem target="org.netbeans.modules.javacard.RunningWebAppProject" text="Running a Web Application Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.RunningWebApplicationSamples" text="Run HelloWorld Web Application Sample" expand="false"></tocitem></tocitem>
     <tocitem target="org.netbeans.modules.javacard.GetAdditionalWebAppSamples" text="Getting Additional Web Application Samples" expand="false"></tocitem>
-    <tocitem target="org.netbeans.modules.javacard.GetRefAppSample" text="Getting the Reference Application Sample" expand="false"></tocitem>
+    <tocitem target="org.netbeans.modules.javacard.GetRefAppSample" text="Getting the Transit Reference Application Sample" expand="false"></tocitem>
     <tocitem target="org.netbeans.modules.javacard.SettingUpSecurityForWebApplication" text="Setting Up Security for Your Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.AcceptingUntrustedCertificates" text="Accepting Untrusted Certificates" expand="false"></tocitem></tocitem></tocitem>
  <tocitem target="org.netbeans.modules.javacard.CustomizingJavaCardPlatform" text="Customizing a Java Card Platform" expand="true">
