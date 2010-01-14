@@ -49,13 +49,13 @@ import java.util.*;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Policy;
+import org.netbeans.core.startup.Main;
 
 import org.openide.execution.NbClassPath;
 import org.openide.execution.ExecutorTask;
 import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
-import org.netbeans.core.NbTopManager;
 
 /** Execution that provides support for starting a class with main
 *
@@ -175,7 +175,7 @@ public final class
     * @return class path to libraries
     */
     protected NbClassPath createLibraryPath() {
-        List<File> l = NbTopManager.getModuleJars();
+        List<File> l = Main.getModuleSystem().getModuleJars();
         return new NbClassPath (l.toArray (new File[l.size ()]));
     }
 

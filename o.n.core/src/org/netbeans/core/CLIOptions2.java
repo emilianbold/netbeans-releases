@@ -96,7 +96,6 @@ public class CLIOptions2 extends CLIHandler implements Runnable {
     
     
     protected void usage(java.io.PrintWriter w) {
-        //w.println(NonGui.getString("TEXT_help"));
     }
     
 }

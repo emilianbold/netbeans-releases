@@ -132,6 +132,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.core</friend>
+                <friend>org.netbeans.core.execution</friend>
                 <friend>org.netbeans.core.netigso</friend>
                 <friend>org.netbeans.core.registry</friend>
                 <friend>org.netbeans.modules.apisupport.ant</friend>
@@ -141,6 +142,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.apisupport</friend>
                 <friend>org.netbeans.modules.modulemanager</friend>
                 <friend>org.netbeans.modules.options.api</friend>
+                <friend>org.netbeans.modules.settings</friend>
                 <package>org.netbeans.core.startup</package>
                 <package>org.netbeans.core.startup.layers</package>
             </friend-packages>

@@ -39,70 +39,22 @@
  * made subject to such option by the copyright holder.
  */
 
-
-package org.netbeans.core.windows;
-
-
-import java.awt.EventQueue;
-import org.netbeans.core.WindowSystem;
-import org.netbeans.core.windows.persistence.PersistenceManager;
-import org.netbeans.core.windows.services.DialogDisplayerImpl;
-import org.netbeans.core.windows.view.ui.MainWindow;
-import org.openide.util.lookup.ServiceProvider;
-
+package org.netbeans.core;
 
 /**
- * Implementation of WindowSystem interface
- *
- * @author  Peter Zavadsky
+ * Interface describing basic control over window system.
+ * @since 1.15
  */
-@ServiceProvider(service=WindowSystem.class)
-public class WindowSystemImpl implements WindowSystem {
+public interface WindowSystem {
 
-    public void init() {
-        assert !EventQueue.isDispatchThread();
-        MainWindow.init();
-    }
+    void init();
 
-    public void load() {
-        WindowManagerImpl.assertEventDispatchThread();
-        
-        PersistenceHandler.getDefault().load();
-    }
-    public void save() {
-        WindowManagerImpl.assertEventDispatchThread();
-        
-        PersistenceHandler.getDefault().save();
-    }
-    
-    // GUI
-    public void show() {
-        WindowManagerImpl.assertEventDispatchThread();
-        
-        DialogDisplayerImpl.runDelayed();
-        ShortcutAndMenuKeyEventProcessor.install();
-        WindowManagerImpl.getInstance().setVisible(true);
-    }
-    public void hide() {
-        WindowManagerImpl.assertEventDispatchThread();
-        
-        WindowManagerImpl.getInstance().setVisible(false);
-        ShortcutAndMenuKeyEventProcessor.uninstall();
-    }
-    
-//    /**
-//     * Clears the window system model - does not delete the configuration
-//     * under Windows2Local! You have to delete the folder before calling
-//     * this method to really reset the window system state.
-//     */
-//    public void clear() {
-//        WindowManagerImpl.assertEventDispatchThread();
-//        hide();
-//        WindowManagerImpl.getInstance().resetModel();
-//        PersistenceManager.getDefault().clear();
-//        PersistenceHandler.getDefault().clear();
-//        load();
-//        show();
-//    }
-//
+    void show();
+
+    void hide();
+
+    void load();
+
+    void save();
+
 }

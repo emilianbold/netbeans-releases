@@ -51,33 +51,33 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.TopSecurityManager;
-import org.netbeans.core.startup.Main;
-import org.netbeans.core.startup.ModuleSystem;
+import org.netbeans.core.startup.CLIOptions;
+import org.netbeans.core.startup.MainLookup;
+import org.netbeans.core.startup.RunLevel;
 import org.netbeans.core.startup.Splash;
 import org.netbeans.core.startup.StartLog;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 
 /**
- * Most of the NetBeans startup logic that is not closely tied to the GUI.
- * The meat of the startup sequence is in {@link #run}.
+ * GUI-oriented NetBeans startup logic.
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.core.startup.RunLevel.class)
-public class NonGui extends NbTopManager 
-implements Runnable, org.netbeans.core.startup.RunLevel {
+@ServiceProvider(service=RunLevel.class)
+public class GuiRunLevel implements RunLevel {
     private static int count;
     
-    public NonGui () {
+    public GuiRunLevel() {
+        Lookup lookup = Lookup.getDefault();
+        if (!(lookup instanceof MainLookup)) {
+            throw new ClassCastException("Wrong Lookup impl found: " + lookup);
+        }
+        MainLookup.started();
         assert count++ == 0 : "Only one instance allowed"; // NOI18N
     }
     
-    /** Everything is interactive */
-    public boolean isInteractive (int il) {
-        return true;
-    }
-
     /** Initialization of the manager.
     */
     public void run () {
@@ -86,7 +86,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         try {
             NbLoaderPool.load();
         } catch (IOException ioe) {
-            Logger.getLogger(NonGui.class.getName()).log(Level.INFO, null, ioe);
+            Logger.getLogger(GuiRunLevel.class.getName()).log(Level.INFO, null, ioe);
         }
         StartLog.logProgress ("LoaderPool loaded"); // NOI18N
         Splash.getInstance().increment(10);
@@ -98,12 +98,14 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
         // install java.net.ProxySelector
         java.net.ProxySelector.setDefault (new NbProxySelector ());
         
+        if (CLIOptions.isGui()) {
         //---------------------------------------------------------------------------------------------------------
         // initialize main window AFTER the setup wizard is finished
 
         initializeMainWindow ();
         StartLog.logProgress ("Main window initialized"); // NOI18N
         Splash.getInstance().increment(1);
+        }
 
         // -----------------------------------------------------------------------------------------------------
         // 8. Advance Policy
@@ -122,18 +124,14 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
 
     /** Method to initialize the main window.
     */
-    protected void initializeMainWindow () {
-        if (!org.netbeans.core.startup.CLIOptions.isGui ()) {
-            return;
-        }
-        
+    private void initializeMainWindow() {
         StartLog.logStart ("Main window initialization"); //NOI18N
 
         TimableEventQueue.initialize();
         
         // -----------------------------------------------------------------------------------------------------
         // 11. Initialization of main window
-        StatusDisplayer.getDefault().setStatusText (NbBundle.getMessage (NonGui.class, "MSG_MainWindowInit"));
+        StatusDisplayer.getDefault().setStatusText (NbBundle.getMessage (GuiRunLevel.class, "MSG_MainWindowInit"));
 
         // force to initialize timer
         // sometimes happened that the timer thread was initialized under
@@ -149,7 +147,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
 
     // -----------------------------------------------------------------------------------------------------
     // 14. Open main window
-        StatusDisplayer.getDefault().setStatusText (NbBundle.getMessage (NonGui.class, "MSG_WindowShowInit"));
+        StatusDisplayer.getDefault().setStatusText (NbBundle.getMessage (GuiRunLevel.class, "MSG_WindowShowInit"));
 
         // Starts GUI components to be created and shown on screen.
         // I.e. main window + current workspace components.
@@ -157,7 +155,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
 
 
         // Access winsys from AWT thread only. In this case main thread wouldn't harm, just to be kosher.
-        final NbTopManager.WindowSystem windowSystem = Lookup.getDefault().lookup(NbTopManager.WindowSystem.class);
+        final WindowSystem windowSystem = Lookup.getDefault().lookup(WindowSystem.class);
         if (windowSystem != null) {
             windowSystem.init();
         }
@@ -181,7 +179,7 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
                     }
                     windowSystem.show();
                 } else {
-                    Logger.getLogger(NonGui.class.getName()).log(Level.WARNING, "Module org.netbeans.core.windows missing, cannot start window system");
+                    Logger.getLogger(GuiRunLevel.class.getName()).log(Level.WARNING, "Module org.netbeans.core.windows missing, cannot start window system");
                 }
                 StartLog.logProgress("Window system shown");
                 if (!StartLog.willLog()) {
@@ -238,17 +236,6 @@ implements Runnable, org.netbeans.core.startup.RunLevel {
             if(o!=null) StartLog.logMeasuredStartupTime(((Long)o).longValue());
             org.openide.LifecycleManager.getDefault().exit();
         }
-    }
-
-    /** Exits from the VM.
-    */
-    static void doExit (int code) {
-        TopSecurityManager.exit(code);
-    }
-
-    /** Get the module subsystem.  */
-    public ModuleSystem getModuleSystem() {
-        return Main.getModuleSystem ();
     }
 
 }
