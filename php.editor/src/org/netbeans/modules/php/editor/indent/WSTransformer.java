@@ -256,7 +256,14 @@ class WSTransformer extends DefaultTreePathVisitor {
         // line before end of function (before })
         List<Statement> statements = null;
         if (node instanceof MethodDeclaration) {
-            statements = ((MethodDeclaration)node).getFunction().getBody().getStatements();
+            MethodDeclaration md = (MethodDeclaration)node;
+            if (md.getFunction().getBody() != null) {
+                statements = md.getFunction().getBody().getStatements();
+            }
+            else {
+                // probably abstract method
+                return;
+            }
         }
         else if (node instanceof FunctionDeclaration) {
             statements = ((FunctionDeclaration)node).getBody().getStatements();
