@@ -52,7 +52,7 @@
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.spi.actions.CardActions.createResumeAction"/>
                         <attr name="position" intvalue="200"/>
                     </file>
-                    <file name="ResumeAction.instance">
+                    <file name="ResumeDebugAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.javacard.spi.actions.CardActions.createResumeIntoDebugModeAction"/>
                         <attr name="position" intvalue="210"/>
                     </file>
