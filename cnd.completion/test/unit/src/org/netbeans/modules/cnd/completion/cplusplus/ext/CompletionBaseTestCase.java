@@ -41,10 +41,7 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
@@ -126,32 +123,6 @@ public abstract class CompletionBaseTestCase extends ProjectBasedTestCase {
             CndCoreTestUtils.diff(output, goldenDataFile, diffErrorFile);
             showDiff(diffErrorFile, buf);
             fail(buf.toString());
-        }
-    }
-
-    private void showDiff(File diffOutputFile, StringBuilder buf) {
-        if (diffOutputFile != null && diffOutputFile.exists()) {
-            int i = 0;
-            try {
-                BufferedReader in = new BufferedReader(new FileReader(diffOutputFile));
-                while (true) {
-                    String line = in.readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    if (i > 50) {
-                        break;
-                    }
-                    if (i == 0) {
-                        buf.append("\nBeginning of diff:");
-                    }
-                    buf.append("\n\t" + line);
-                    i++;
-                }
-                in.close();
-            } catch (IOException ex) {
-                //
-            }
         }
     }
 

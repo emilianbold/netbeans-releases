@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.cnd.test;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -280,12 +282,43 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
                 // copy golden
                 File goldenDataFileCopy = new File(getWorkDir(), goldenFilename + ".golden"); // NOI18N
                 CndCoreTestUtils.copyToWorkDir(goldenFile, goldenDataFileCopy); 
-                fail("Files differ; diff " +testFile.getAbsolutePath()+ " "+ goldenDataFileCopy); // NOI18N
+
+                StringBuilder buf = new StringBuilder("Files differ; diff " +testFile.getAbsolutePath()+ " "+ goldenDataFileCopy);
+                File diffErrorFile = new File(testFile.getAbsolutePath() + ".diff");
+                CndCoreTestUtils.diff(testFile, goldenFile, diffErrorFile);
+                showDiff(diffErrorFile, buf);
+                fail(buf.toString());
             }             
         } catch (IOException ioe) {
             fail("Error comparing files: " + ioe); // NOI18N
         }
     }    
+
+    protected void showDiff(File diffOutputFile, StringBuilder buf) {
+        if (diffOutputFile != null && diffOutputFile.exists()) {
+            int i = 0;
+            try {
+                BufferedReader in = new BufferedReader(new FileReader(diffOutputFile));
+                while (true) {
+                    String line = in.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    if (i > 50) {
+                        break;
+                    }
+                    if (i == 0) {
+                        buf.append("\nBeginning of diff:");
+                    }
+                    buf.append("\n\t" + line);
+                    i++;
+                }
+                in.close();
+            } catch (IOException ex) {
+                //
+            }
+        }
+    }
     
     /** Compares default golden file and default reference log. If both files are the
      * same, test passes. If files differ, test fails and default diff (${methodname}.diff)
