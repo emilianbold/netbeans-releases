@@ -73,9 +73,24 @@ made subject to such option by the copyright holder.
     <folder name="Shortcuts">
         <file name="DO-J.shadow">
            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-InspectInjectablesAtCaretAction.instance"/>
-        </file>    
+        </file>
         <file name="DO-T.shadow">
            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-GoToInjectableAtCaretAction.instance"/>
-        </file>  
-    </folder> 
+        </file>
+    </folder>
+    <folder name="Templates">
+        <folder name="CDI">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.beans.resources.Bundle"/>
+            <attr name="position" intvalue="876"/>
+            <file name="beans.xml" url="beans-1.0.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.beans.resources.Bundle"/>
+                <attr name="position" intvalue="10"/>
+                <attr name="templateCategory" stringvalue="web-types,j2ee-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/beans/resources/BeansXml.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.beans.wizard.BeansXmlIterator"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
