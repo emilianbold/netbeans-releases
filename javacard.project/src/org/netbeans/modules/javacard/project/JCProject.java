@@ -1625,9 +1625,6 @@ public class JCProject implements Project, AntProjectListener, PropertyChangeLis
         @Override
         public File getTargetArtifact() {
             String path = evaluator().evaluate("${" + ProjectPropertyNames.PROJECT_PROP_DIST_JAR + "}"); //NOI18N
-            if (path.contains(" ")) {
-                path = "\"" + path + "\"";
-            }
             path.replace ('/', File.separatorChar); //NOI18N
             System.err.println("PATH EVALUATES TO " + path);
             return new File(path).getAbsoluteFile();

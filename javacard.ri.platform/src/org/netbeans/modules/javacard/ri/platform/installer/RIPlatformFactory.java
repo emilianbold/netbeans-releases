@@ -203,6 +203,10 @@ public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject
                     platformProps.get(JavacardPlatformKeyNames.PLATFORM_JAVACARD_VERSION),
                     MINIMUM_SUPPORTED_VERSION)); //NOI18N
         }
+        //Add properties omitted from the JC 3.0.2 platform.properties, if
+        //not present
+        //XXX check if is RI? or if not wrapper?
+        addMissingPropertiesJC302();
         //Translate UNIX-style relative paths into platform-specific absolute
         //paths usable by Ant
         translatePaths(FileUtil.toFile(baseDir), platformProps);
@@ -215,8 +219,6 @@ public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject
         //JavacardPlatform
         platformProps.setProperty(JavacardPlatformKeyNames.PLATFORM_ID, filename);
 
-        addMissingPropertiesJC302 ();
-
         progress();
         //Create the file
         FileObject fo = platformFile = platformsFolder.createData(filename,
@@ -225,6 +227,11 @@ public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject
         //Create the folder for eprom files and write its path into the platform props
         createAndStoreEepromFolder(filename);
         progress();
+        if (!platformProps.containsKey(JavacardPlatformKeyNames.PLATFORM_RI_HOME) && JavacardPlatformKeyNames.PLATFORM_KIND_RI.equals(platformProps.get(JavacardPlatformKeyNames.PLATFORM_KIND))) {
+            File f = FileUtil.toFile(baseDir);
+            String path = f == null ? /* unit tests */ baseDir.getPath() : f.getAbsolutePath();
+            platformProps.put (JavacardPlatformKeyNames.PLATFORM_RI_HOME, path);
+        }
 
         //If this platform wrappers the RI, create a properties that merges
         //values from that.  append.* and prepend.* will be resolved before
@@ -276,8 +283,24 @@ public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject
         progress();
         return fo;
     }
-    private int step;
 
+    private int step;
+    private static final String JC_302_DEBUG_PROXY_CP = 
+            "lib/api_connected.jar:" + //NOI18N
+            "lib/api.jar:" + //NOI18N
+            "lib/romizer.jar:" + //NOI18N
+            "lib/tools.jar:" + //NOI18N
+            "lib/asm-all-3.1.jar:" + //NOI18N
+            "lib/bcel-5.2.jar:" + //NOI18N
+            "lib/commons-logging-1.1.jar:" + //NOI18N
+            "lib/commons-httpclient-3.0.jar:" + //NOI18N
+            "lib/commons-codec-1.3.jar:" + //NOI18N
+            "lib/commons-cli-1.0.jar:" + //NOI18N
+            "lib/ant-contrib-1.0b3.jar"; //NOI18N
+    /**
+     * Add necessary properties missing from the Java Card 3.0.2 platform.properties -
+     * will be corrected in next release.
+     */
     private final void addMissingPropertiesJC302() {
         if (!platformProps.containsKey(JavacardPlatformKeyNames.PLATFORM_DEBUG_PROXY)) {
             FileObject fo = baseDir.getFileObject("bin/debugproxy.bat");
@@ -292,6 +315,9 @@ public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject
                 String path = file == null ? fo.getPath() /* unit tests */ : file.getAbsolutePath();
                 platformProps.put (JavacardPlatformKeyNames.PLATFORM_DEBUG_PROXY, path);
             }
+        }
+        if (!platformProps.containsKey(JavacardPlatformKeyNames.PLATFORM_DEBUG_PROXY_CLASSPATH)) {
+            platformProps.put(JavacardPlatformKeyNames.PLATFORM_DEBUG_PROXY_CLASSPATH, JC_302_DEBUG_PROXY_CP);
         }
     }
 
@@ -346,7 +372,6 @@ public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject
         }
     }
 
-
     private void storeGlobalJavacardRIPath(FileObject fo) {
         String val = globalProps.getProperty(JCConstants.GLOBAL_BUILD_PROPERTIES_RI_PROPERTIES_PATH_KEY);
         if (val != null) {
@@ -372,7 +397,6 @@ public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject
             if (key.startsWith(JCConstants.PLATFORM_FILE_DEVICE_PROTOTYPE_PREFIX)) {
                 result = true;
                 key = key.substring(JCConstants.PLATFORM_FILE_DEVICE_PROTOTYPE_PREFIX.length());
-                System.err.println("Use prototype value " + key);
                 deviceProps.put(key, e.getValue());
             }
         }
