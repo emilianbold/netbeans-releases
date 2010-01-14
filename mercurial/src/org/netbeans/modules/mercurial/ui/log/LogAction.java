@@ -41,11 +41,11 @@
 package org.netbeans.modules.mercurial.ui.log;
 
 import org.netbeans.modules.versioning.spi.VCSContext;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,18 +56,19 @@ import org.openide.util.NbBundle;
  */
 public class LogAction extends SearchHistoryAction {
 
-    public LogAction(String name, VCSContext context) {
-        super(context);
-        putValue(Action.NAME, name);
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Log";                                      //NOI18N
     }
 
-    public void performAction(ActionEvent e) {
-        openHistory(NbBundle.getMessage(LogAction.class, "MSG_Log_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(getContext())));
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        openHistory(context, NbBundle.getMessage(LogAction.class, "MSG_Log_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(context)));
     }
 
-    private void openHistory(final String title) {
-        File repositoryRoot = getRepositoryRoot();
-        File[] files = getFiles();
+    private void openHistory(VCSContext context, final String title) {
+        File repositoryRoot = getRepositoryRoot(context);
+        File[] files = getFiles(context, repositoryRoot);
         if (files == null) {
             return;
         }

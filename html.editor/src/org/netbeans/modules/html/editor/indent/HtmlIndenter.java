@@ -132,7 +132,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     @Override
     protected boolean isClosingTagOptional(String tagName) {
-        Element elem = getDTD().getElement(tagName.toUpperCase());
+        Element elem = getDTD().getElement(tagName);
         if (elem == null) {
             return false;
         }
@@ -141,7 +141,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     @Override
     protected boolean isOpeningTagOptional(String tagName) {
-        Element elem = getDTD().getElement(tagName.toUpperCase());
+        Element elem = getDTD().getElement(tagName);
         if (elem == null) {
             return false;
         }
@@ -150,7 +150,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     @Override
     protected Boolean isEmptyTag(String tagName) {
-        Element elem = getDTD().getElement(tagName.toUpperCase());
+        Element elem = getDTD().getElement(tagName);
         if (elem == null) {
             return false;
         }
@@ -171,7 +171,7 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     @Override
     protected Set<String> getTagChildren(String tagName) {
-        Element elem = getDTD().getElement(tagName.toUpperCase());
+        Element elem = getDTD().getElement(tagName);
         if (elem == null) {
             return null;
         }

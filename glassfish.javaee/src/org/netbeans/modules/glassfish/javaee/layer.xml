@@ -10,13 +10,6 @@
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.JavaEEServerModuleFactory"/>
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.glassfish.spi.GlassfishModuleFactory"/>
             </file>
-            <!-- XXX nonexistent interface, nonexistent factory method:
-            <file name="JavaEEServerModule.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.JavaEEServerModule.create"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.JavaEEServerModule"/>
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.glassfish.spi.ServerModule"/>
-            </file>
-            -->
             <file name="JavaEEDecoratorFactory.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.JavaEEDecoratorFactory.getDefault"/>
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.JavaEEDecoratorFactory"/>
@@ -26,11 +19,11 @@
     </folder>
 
     <!-- j2eeserver api support -->
-    <!--
     <folder name="J2EE">
         <folder name="DeploymentPlugins">
             <folder name="gfv3">
                 <file name="Descriptor" url="nbdep.xml"/>
+                <!-- -->
                 <file name="Factory.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory.createPrelude"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory"/>
@@ -51,6 +44,7 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2ModuleConfigFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
                 </file>
+                <!-- -->
                 <folder name="DeploymentFileNames">
                     <folder name="WAR">
                         <file name="WEB-INF\sun-web.xml"/>
@@ -60,6 +54,7 @@
             
             <folder name="gfv3ee6">
                 <file name="Descriptor" url="nbdepee6.xml"/>
+                <!-- -->
                 <file name="Factory.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory.createEe6"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2DeploymentFactory"/>
@@ -80,6 +75,7 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.javaee.Hk2ModuleConfigFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
                 </file>
+                <!-- -->
                 <folder name="DeploymentFileNames">
                     <folder name="WAR">
                         <file name="WEB-INF\sun-web.xml"/>
@@ -103,7 +99,6 @@
             
         </folder>
     </folder>
-    -->
 
     <folder name="Plugins">
       <!-- Register XML module catalog plugin -->

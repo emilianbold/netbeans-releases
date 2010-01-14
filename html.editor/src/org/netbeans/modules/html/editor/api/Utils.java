@@ -47,7 +47,9 @@ import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.css.formatting.api.LexUtilities;
@@ -173,6 +175,42 @@ public class Utils {
 
         return null;
         
+    }
+
+    /**
+     * Finds and returns a tag open token in token sequence positioned inside an html tag.
+     * If tokens sequence contains <div onclick="alert()"/> and is positioned on a token
+     * within the tag it will return OPEN_TAG token for the "div" text
+     *
+     * @param ts a TokenSequence to be used
+     * @return
+     */
+    public static Token<HTMLTokenId> findTagOpenToken(TokenSequence ts) {
+        assert ts != null;
+
+        //skip the tag close symbol if the sequence points to it
+        if(ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL) {
+            if(!ts.movePrevious()) {
+                return null;
+            }
+        }
+
+        do {
+            Token t = ts.token();
+            TokenId id = t.id();
+            if( id == HTMLTokenId.TAG_OPEN) {
+                return t;
+            }
+
+            if(id == HTMLTokenId.TAG_OPEN_SYMBOL || id == HTMLTokenId.TAG_CLOSE_SYMBOL ||
+                    id == HTMLTokenId.TEXT) {
+                break;
+            }
+
+
+        } while (ts.movePrevious());
+
+        return null;
     }
 
 }

@@ -125,7 +125,7 @@ public class KenaiRepositoryUtils {
      * @return
      */
     Repository getRepository(ProjectHandle ph, boolean forceCreate) {
-        KenaiProject kp = KenaiUtil.getKenaiProject(ph);
+        KenaiProject kp = ph.getKenaiProject();
         if(kp == null) {
             BugtrackingManager.LOG.warning("No issue tracking repository available for ProjectHandle [" + ph.getId() + "," + ph.getDisplayName() + "]"); // NOI18N
             return null;

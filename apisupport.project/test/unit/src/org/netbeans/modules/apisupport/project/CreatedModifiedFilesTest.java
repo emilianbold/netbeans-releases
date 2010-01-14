@@ -64,6 +64,7 @@ import junit.framework.TestCase;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.Operation;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;

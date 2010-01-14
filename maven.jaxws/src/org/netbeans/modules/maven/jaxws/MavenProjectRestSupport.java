@@ -56,6 +56,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -126,7 +127,25 @@ public class MavenProjectRestSupport extends WebRestSupport {
                 // Starting with jersey 0.8, the adaptor class is under 
                 // com.sun.jersey package instead of com.sun.we.rest package.
                 if (REST_SERVLET_ADAPTOR_CLASS_OLD.equals(adaptorServlet.getServletClass())) {
-                    adaptorServlet.setServletClass(this.getServletAdapterClass());
+                    boolean isSpring = hasSpringSupport();
+                    if (isSpring) {
+                        adaptorServlet.setServletClass(REST_SPRING_SERVLET_ADAPTOR_CLASS);
+                        InitParam initParam =
+                                (InitParam) adaptorServlet.findBeanByName("InitParam", //NOI18N
+                                "ParamName", //NOI18N
+                                JERSEY_PROP_PACKAGES);
+                        if (initParam == null) {
+                            try {
+                                initParam = (InitParam) adaptorServlet.createBean("InitParam"); //NOI18N
+                                initParam.setParamName(JERSEY_PROP_PACKAGES);
+                                initParam.setParamValue("."); //NOI18N
+                                initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
+                                adaptorServlet.addInitParam(initParam);
+                            } catch (ClassNotFoundException ex) {}
+                        }
+                    } else {
+                        adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                    }
                     webApp.write(ddFO);
                 }
             }

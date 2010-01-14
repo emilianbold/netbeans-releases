@@ -561,10 +561,6 @@ public class MakeConfiguration extends Configuration {
         return clone;
     }
 
-//    /** @deprecated Use org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration.getBuildSheet() instead */
-//    public Sheet getGeneralSheet(Project project) {
-//        return getBuildSheet(project);
-//    }
     public Sheet getBuildSheet(Project project, MakeCustomizer makeCustomizer) {
         Sheet sheet = new Sheet();
 

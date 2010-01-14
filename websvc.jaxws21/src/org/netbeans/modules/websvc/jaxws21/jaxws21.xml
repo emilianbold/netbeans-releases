@@ -54,26 +54,26 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst:///modules/ext/jaxb/jaxb-impl.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxb/jaxb-xjc.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxb/api/jsr173_api.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/FastInfoset.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/gmbal.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/http.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/api/jaxws-api.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/jaxws-rt.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/jaxws-tools.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/api/jsr181-api.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/api/jsr250-api.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/mimepull.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/policy.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/api/saaj-api.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/saaj-impl.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/sjsxp.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/stax-ex.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/streambuffer.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/woodstox.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/FastInfoset.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/gmbal-api-only.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/http.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/api/jaxws-api.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/jaxws-rt.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/jaxws-tools.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/api/jsr181-api.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/api/jsr250-api.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/management-api.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/mimepull.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/policy.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/api/saaj-api.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/saaj-impl.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/stax-ex.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/streambuffer.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws22/woodstox.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/jaxws-2_1-api-doc.zip!/</resource>
+        <resource>jar:nbinst:///docs/jaxws-api-doc.zip!/</resource>
     </volume>
     <volume>
         <type>maven-pom</type>

@@ -152,7 +152,7 @@ public class AppletProjectProperties extends JCProjectProperties {
         if (result) {
             group.store(props);
             if (!scriptsPathBad) {
-                if (SEND_SCRIPT.isSelected()) {
+                if (SEND_SCRIPT.isSelected() && SCRIPTS.getSelectedItem() != null) {
                     props.setProperty(ProjectPropertyNames.PROJECT_PROP_MAIN_SCRIPT_FILE,
                             (String) SCRIPTS.getSelectedItem());
                 } else {

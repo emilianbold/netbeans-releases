@@ -46,6 +46,7 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.DeclaredType;
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -70,20 +71,29 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
     private static final long serialVersionUID = -6398205566811265151L;
     
     InjectableTreeNode(FileObject fileObject,
-        T element, CompilationInfo compilationInfo) 
+        T element, DeclaredType parentType, boolean disabled , 
+        CompilationInfo compilationInfo) 
     {
         myFileObject = fileObject;
         myElementHandle = ElementHandle.create(element);
         myElementKind = element.getKind();
         myModifiers = element.getModifiers();
         myCpInfo = compilationInfo.getClasspathInfo();
+        isDisabled = disabled;
 
         setName(element.getSimpleName().toString());
         setIcon(ElementIcons.getElementIcon(element.getKind(), element.getModifiers()));
-        setLabel(Utils.format(element));
-        setFQNLabel(Utils.format(element, false, true));
-        setToolTip(Utils.format(element, true, 
+        setLabel(Utils.format(element, parentType, compilationInfo));
+        setFQNLabel(Utils.format(element, parentType, compilationInfo , false, true));
+        setToolTip(Utils.format(element, parentType, compilationInfo, true, 
                 WebBeansNavigationOptions.isShowFQN()));            
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.beans.navigation.JavaElement#isDisabled()
+     */
+    public boolean isDisabled() {
+        return isDisabled;
     }
 
     public FileObject getFileObject() {
@@ -185,7 +195,7 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
     protected void openElementHandle() {
     	if (myFileObject == null) {
             StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(AmbiguousInjectablesModel.class, 
+                    NbBundle.getMessage(InjectablesModel.class, 
                             "MSG_CouldNotOpenElement", getFQNLabel())); // NOI18N
             return;
         }
@@ -196,7 +206,7 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
 
         if (!ElementOpen.open(myCpInfo, myElementHandle)) {
             StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(AmbiguousInjectablesModel.class, 
+                    NbBundle.getMessage(InjectablesModel.class, 
                             "MSG_CouldNotOpenElement", getFQNLabel()));// NOI18N
         }
     }
@@ -212,5 +222,6 @@ class InjectableTreeNode<T extends Element> extends DefaultMutableTreeNode
     private Icon myIcon ;
     private ElementJavadoc myJavaDoc;
     private final ClasspathInfo myCpInfo;
+    private boolean isDisabled;
 
 }

@@ -102,7 +102,7 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
         //String str = NbBundle.getMessage(MBeanOperationPanel.class,"LBL_Operation_Panel");// NOI18N
         String str = bundle.getString("LBL_Operation_Panel");// NOI18N
         setName(str);
-        wiz.setErrorMsg(" ");// NOI18N
+        wiz.setErrorMsg(null);
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
@@ -294,7 +294,7 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
             
             boolean attrValid = true;
             boolean opValid = true;
-            String msg = WizardConstants.EMPTY_STRING;
+            String msg = null;
             
             if (getPanel() != null) {
                 if (getPanel().OperationAlreadyContained()) {
@@ -405,7 +405,7 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
                 
             }
         
-            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");// NOI18N
+            setErrorMsg(null);
         }
         
         /**

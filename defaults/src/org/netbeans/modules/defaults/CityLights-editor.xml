@@ -47,6 +47,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="code-folding" foreColor="white"/>
     <fontcolor name="code-folding-bar" foreColor="white"/>
     <fontcolor name="guarded" bgColor="darkGray"/>
+    <fontcolor name="readonly-files" bgColor="darkGray"/>
     <fontcolor name="highlight-caret-row" bgColor="darkGray"/>
     <fontcolor name="nbeditor-bracesMatching-match" bgColor="green" foreColor="white" />
     <fontcolor name="nbeditor-bracesMatching-mismatch" bgColor="red" foreColor="white"/>

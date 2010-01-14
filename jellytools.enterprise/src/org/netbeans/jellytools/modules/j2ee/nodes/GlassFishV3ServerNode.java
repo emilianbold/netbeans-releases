@@ -60,8 +60,8 @@ import org.netbeans.jemmy.operators.JTreeOperator;
 public class GlassFishV3ServerNode extends J2eeServerNode {
 
     public GlassFishV3ServerNode() {
-        super(Bundle.getString("org.netbeans.modules.glassfish.common.wizards.Bundle",
-                "V3_EE6_NAME"));
+        super(Bundle.getString("org.netbeans.modules.glassfish.common.Bundle",
+                "STR_V3_SERVER_NAME"));
     }
 
     public static GlassFishV3ServerNode invoke() {

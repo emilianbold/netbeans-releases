@@ -178,17 +178,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
             }
         }
 
-        // Attach listeners to all disk folders
-        boolean currentState = configurationDescriptor.getModified();
-        Vector<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
-        for (Folder f : firstLevelFolders) {
-            if (f.isDiskFolder()) {
-                f.refreshDiskFolder();
-                f.attachListeners();
-            }
-        }
-        configurationDescriptor.setModified(currentState);
-
+        attachListeners(configurationDescriptor);
         configurationDescriptor.setState(State.READY);
 
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then
@@ -209,7 +199,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                             null, NotifyDescriptor.YES_OPTION);
                     Object ret = DialogDisplayer.getDefault().notify(nd);
                     if (ret == NotifyDescriptor.YES_OPTION) {
-                        configurationDescriptor.setModified(true);
+                        configurationDescriptor.setModified();
                     }
                 }
             };
@@ -228,6 +218,28 @@ public class ConfigurationXMLReader extends XMLDocReader {
     private void displayErrorDialog() {
         //String errormsg = NbBundle.getMessage(ConfigurationXMLReader.class, "CANTREADDESCRIPTOR", projectDirectory.getName());
         //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+    }
+
+    // Attach listeners to all disk folders
+    private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor){
+        //final long time = System.currentTimeMillis();
+        //System.err.println("Start attach folder listeners");
+        Task task = RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                //boolean currentState = configurationDescriptor.getModified();
+                Vector<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
+                for (Folder f : firstLevelFolders) {
+                    if (f.isDiskFolder()) {
+                        f.refreshDiskFolder(false);
+                        f.attachListeners();
+                    }
+                }
+                //configurationDescriptor.setModified(currentState);
+                //System.err.println("End attach folder listeners, time "+(System.currentTimeMillis()-time)+"ms.");
+            }
+        });
+        // Refresh disk folders in background process
+        //task.waitFinished();
     }
 
 

@@ -63,9 +63,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -124,8 +124,9 @@ public class MakeSampleProjectGenerator {
             FileObject fo = prjLoc.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
             File projXml = FileUtil.toFile(fo);
             Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
-            if (name != null)
+            if (name != null) {
                 changeXmlFileByNameNS(doc, PROJECT_CONFIGURATION_NAMESPACE, "name", name, null); // NOI18N
+            }
             saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
             
             // Change working dir and default conf in 'projectDescriptor.xml'
@@ -147,7 +148,7 @@ public class MakeSampleProjectGenerator {
             if (compilerSet != null) {
                 variant = MakeConfiguration.getVariant(compilerSet, platform);
             }
-            if (platform == Platform.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
+            if (platform == PlatformTypes.PLATFORM_WINDOWS) { // Utilities.isWindows()) {
                 changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "dll", "X-LIBSUFFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
@@ -156,7 +157,7 @@ public class MakeSampleProjectGenerator {
                     changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", variant, "X-PLATFORM-X"); // NOI18N
                 }
             }
-            if (platform == Platform.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            if (platform == PlatformTypes.PLATFORM_MACOSX) { //Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                 changeXmlFileByTagName(doc, "output", "lib", "X-LIBPREFIX-X"); // NOI18N
                 changeXmlFileByTagName(doc, "output", "dylib", "X-LIBSUFFIX-X"); // NOI18N
                 changeXmlFileByTagAttrName(doc, "makeArtifact", "OP", "lib", "X-LIBPREFIX-X"); // NOI18N
@@ -262,8 +263,9 @@ public class MakeSampleProjectGenerator {
         unzip(inputStream, projectLocation);
         addToSet(set, mainProjectLocation);
         if (subProjectLocations != null) {
-            for (int i = 0; i < subProjectLocations.length; i++)
+            for (int i = 0; i < subProjectLocations.length; i++) {
                 addToSet(set, subProjectLocations[i]);
+            }
         }
         return new LinkedHashSet<DataObject>(set);
     }
@@ -304,8 +306,9 @@ public class MakeSampleProjectGenerator {
                 }
                 Element e = (Element)n;
                 Attr attr = e.getAttributeNode(attrName);
-                if (attr != null)
+                if (attr != null) {
                     attr.setValue(attr.getValue().replaceAll(regex, newText));
+                }
             }
         }
     }
@@ -400,11 +403,12 @@ public class MakeSampleProjectGenerator {
         String osname = System.getProperty("os.name"); // NOI18N
         String osarch = System.getProperty("os.arch"); // NOI18N
         
-        if (osname.toLowerCase().indexOf("linux") >= 0) // NOI18N
+        if (osname.toLowerCase().indexOf("linux") >= 0) { // NOI18N
             return "2"; // NOI18N
-        else if (osarch.indexOf("86") >= 0) // NOI18N
+        } else if (osarch.indexOf("86") >= 0) { // NOI18N
             return "1"; // NOI18N
-        else
+        } else {
             return "0"; // NOI18N
+        }
     }
 }

@@ -130,7 +130,7 @@ public class EjbJarMultiViewDataNode extends DataNode {
     }
     
     protected Sheet createSheet() {
-        Sheet s = new Sheet();
+        Sheet s = super.createSheet();
         Sheet.Set ss = new Sheet.Set();
         ss.setName(DEPLOYMENT);
         ss.setDisplayName(NbBundle.getMessage(EjbJarMultiViewDataNode.class, "PROP_deploymentSet"));

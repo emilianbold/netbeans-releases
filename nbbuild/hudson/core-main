@@ -38,6 +38,7 @@ if [ "$action" = "build" ]; then
     testmodule java.platform
     testmodule java.project
     testmodule javahelp
+    testmodule keyring
     testmodule masterfs
     testmodule nbjunit
     testmodule o.apache.tools.ant.module

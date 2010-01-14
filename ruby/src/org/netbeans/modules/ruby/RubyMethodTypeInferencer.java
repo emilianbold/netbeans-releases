@@ -159,7 +159,14 @@ final class RubyMethodTypeInferencer {
                 if (clazz == null) {
                     break;
                 }
-                receiverType = RubyType.create(AstUtilities.getClassOrModuleName(clazz));
+                String className = AstUtilities.getClassOrModuleName(clazz);
+                // check whether it is a call to a method in the same file that 
+                // we've already analyzed (so we don't have to use the index for such cases)
+                RubyType methodInSameFile = knowledge.getTypeForMethod(className, name);
+                if (methodInSameFile != null) {
+                    return methodInSameFile;
+                }
+                receiverType = RubyType.create(className);
                 break;
             default:
                 throw new IllegalArgumentException("Illegal node passed: " + callNodeToInfer);

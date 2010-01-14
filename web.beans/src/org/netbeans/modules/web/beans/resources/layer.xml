@@ -47,10 +47,10 @@ made subject to such option by the copyright holder.
             <folder name="x-java">
                 <folder name="Popup">
                     <folder name="goto">
-                        <!--file name="SeparatorNavigationGoTo.instance">
+                        <file name="SeparatorInjectable.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                             <attr name="position" intvalue="3000"/>
-                        </file-->
+                        </file>
                         <file name="org-netbeans-modules-web-beans-navigation-actions-GoToInjectableAtCaretAction.shadow">
                             <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-GoToInjectableAtCaretAction.instance"/>
                             <attr name="position" intvalue="3100"/>
@@ -70,11 +70,12 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-web-beans-navigation-actions-InspectInjectablesAtCaretAction.instance"/>
         </folder>
     </folder>
-        <folder name="Shortcuts">
-
-        <file name="SD-J.shadow">
+    <folder name="Shortcuts">
+        <file name="DO-J.shadow">
            <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-InspectInjectablesAtCaretAction.instance"/>
-        </file>      
-
+        </file>    
+        <file name="DO-T.shadow">
+           <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-web-beans-navigation-actions-GoToInjectableAtCaretAction.instance"/>
+        </file>  
     </folder> 
 </filesystem>

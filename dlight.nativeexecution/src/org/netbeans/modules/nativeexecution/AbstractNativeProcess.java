@@ -292,11 +292,12 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 return;
             }
 
+            this.exitValue = Integer.valueOf(exitValue);
+
             if (state == State.CANCELLED || state == State.ERROR) {
                 return;
             }
 
-            this.exitValue = Integer.valueOf(exitValue);
             setState(State.FINISHED);
         }
     }

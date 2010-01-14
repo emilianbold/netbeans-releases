@@ -42,8 +42,6 @@ package org.netbeans.modules.cnd.loaders;
 
 import java.io.IOException;
 
-import org.netbeans.modules.cnd.execution41.org.openide.cookies.ExecCookie;
-
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
@@ -77,23 +75,6 @@ public class CoreElfObject extends ExeObject {
     @Override
     protected Node createNodeDelegate() {
         return new CoreElfNode(this);
-    }
-
-    /** Implement parent's getCookie, except disable execution.
-    <p>
-    ExecSupport includes both execution and debugging. We don't want
-    that.  From http://www.netbeans.org/www-nbdev/msg07823.html: A
-    workaround would be to override getCookie on your DataObject to
-    check for DebuggerCookie.class, return null if so, else return
-    super.getCookie.
-     */
-    @Override
-    public <T extends Node.Cookie> T getCookie(Class<T> c) {
-        if (c.isAssignableFrom(ExecCookie.class)) {
-            return null;
-        } else {
-            return super.getCookie(c);
-        }
     }
 
     /*

@@ -41,17 +41,15 @@ package org.netbeans.modules.dlight.procfs.reader.api;
 
 import java.io.IOException;
 import junit.framework.Test;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.netbeans.modules.dlight.procfs.api.PStatus;
 import org.netbeans.modules.dlight.procfs.api.PStatus.ThreadsInfo;
 import org.netbeans.modules.dlight.procfs.api.PUsage;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.openide.util.Exceptions;
@@ -71,25 +69,9 @@ public class ProcReaderTest extends NativeExecutionBaseTestCase {
     }
 
     public static Test suite() {
-        return new NativeExecutionBaseTestSuite(ProcReaderTest.class);
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Before
-    @Override
-    public void setUp() {
-    }
-
-    @After
-    @Override
-    public void tearDown() {
+        NativeExecutionBaseTestSuite suite = new NativeExecutionBaseTestSuite();
+        suite.addTestSuite(ProcReaderTest.class);
+        return suite;
     }
 
     /**
@@ -97,12 +79,16 @@ public class ProcReaderTest extends NativeExecutionBaseTestCase {
      */
     @org.junit.Test
     public void testGetProcessStatus() throws Exception {
-        System.out.println("getProcessStatus - local");
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
+        HostInfo hostinfo = HostInfoUtils.getHostInfo(execEnv);
+        if (hostinfo.getOSFamily() != HostInfo.OSFamily.SUNOS) {
+            // this test is valid only on Solaris
+            return;
+        }
 
         NativeProcess p = null;
         try {
             System.out.println("getProcessInfo");
-            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
             NativeProcessBuilder npb = NativeProcessBuilder.newLocalProcessBuilder();
             npb.setExecutable("/usr/bin/amd64/pwait").setArguments("1");
             p = npb.call();
@@ -126,6 +112,7 @@ public class ProcReaderTest extends NativeExecutionBaseTestCase {
             assertTrue("Time of process creation is not more than 2 seconds ago", sysNanoTime - usage.getUsageInfo().pr_create < 2 * 1000 * 1000 * 1000);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+            fail(ex.getMessage());
         } finally {
             if (p != null) {
                 p.destroy();

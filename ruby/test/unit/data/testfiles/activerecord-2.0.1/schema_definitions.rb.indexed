@@ -9,13 +9,14 @@ Searchable Keys:
   field : columns|PRIVATE;;Array;
   fqn : ActiveRecord::ConnectionAdapters::TableDefinition
   method : [](name)|DOCUMENTED|
+  method : belongs_to
   method : column(name,type,options)|DOCUMENTED|;;TableDefinition;
   method : initialize(base)|PRIVATE|
   method : native|PRIVATE|
   method : new(base)|PRIVATE|STATIC|
   method : primary_key(name)|DOCUMENTED|
   method : references(*args)
-  method : timestamps|DOCUMENTED|
+  method : timestamps|DOCUMENTED|;;TableDefinition;
   method : to_sql|DOCUMENTED|
   require : schema_definitions
 
@@ -49,7 +50,7 @@ Searchable Keys:
   field : type|PRIVATE
   fqn : ActiveRecord::ConnectionAdapters::Column
   method : binary_to_string(value)|DOCUMENTED|STATIC|
-  method : extract_default(default)
+  method : extract_default(default);;NilClass|Integer|Float;
   method : extract_limit(sql_type)|PRIVATE|;;Integer;
   method : extract_precision(sql_type)|PRIVATE|;;Integer;
   method : extract_scale(sql_type)|PRIVATE|;;Fixnum|Integer;
@@ -104,6 +105,7 @@ Searchable Keys:
   method : add_column_options!(sql,options)|PRIVATE|NODOC|
   method : sql_type|NODOC|
   method : to_sql|NODOC|;;String;
+  method : to_s|NODOC|;;String;
   require : schema_definitions
 
 Not Searchable Keys:

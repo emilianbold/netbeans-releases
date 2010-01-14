@@ -156,7 +156,7 @@ public class JavacParser extends Parser {
     private static final PrintWriter DEV_NULL = new PrintWriter(new NullWriter(), false);
     
     //Max number of dump files
-    private static final int MAX_DUMPS = 255;
+    private static final int MAX_DUMPS = Integer.getInteger("org.netbeans.modules.java.source.parsing.JavacParser.maxDumps", 255);
     
     /**
      * Helper map mapping the {@link Phase} to message for performance logger
@@ -652,12 +652,7 @@ public class JavacParser extends Parser {
         }
         JavacTaskImpl javacTask = createJavacTask(cpInfo, diagnosticListener, sourceLevel, false, oraculum, parser == null ? null : new DefaultCancelService(parser));
         Context context = javacTask.getContext();
-        JavacFlowListener.preRegister(context);
         TreeLoader.preRegister(context, cpInfo);
-        Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
-        ErrorHandlingJavadocEnter.preRegister(context);
-        JavadocMemberEnter.preRegister(context);       
-        JavadocEnv.preRegister(context, cpInfo);
         com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
         return javacTask;
     }
@@ -669,7 +664,7 @@ public class JavacParser extends Parser {
         return createJavacTask(cpInfo, diagnosticListener, sourceLevel, true, cnih, cancelService);
     }
     
-    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, ClassNamesForFileOraculum cnih, CancelService cancelService) {
+    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, final ClassNamesForFileOraculum cnih, final CancelService cancelService) {
         final List<String> options = new ArrayList<String>();
         String lintOptions = CompilerSettings.getCommandLine();
         com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel, cpInfo);
@@ -704,14 +699,27 @@ public class JavacParser extends Parser {
             JavacTaskImpl task = (JavacTaskImpl)tool.getTask(null, 
                     ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo),
                     diagnosticListener, options, null, Collections.<JavaFileObject>emptySet());
+            Context.Registrator registrator = new Context.Registrator() {
+                public void register(Context context) {
+                    JavadocClassReader.preRegister(context, !backgroundCompilation);
+                    if (cnih != null) {
+                        context.put(ClassNamesForFileOraculum.class, cnih);
+                    }
+                    if (cancelService != null) {
+                        DefaultCancelService.preRegister(context, cancelService);
+                    }
+                    if (!backgroundCompilation) {
+                        JavacFlowListener.preRegister(context);
+                        Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
+                        ErrorHandlingJavadocEnter.preRegister(context);
+                        JavadocMemberEnter.preRegister(context);
+                        JavadocEnv.preRegister(context, cpInfo);
+                    }
+                }
+            };
             Context context = task.getContext();
-            JavadocClassReader.preRegister(context, !backgroundCompilation);
-            if (cnih != null) {
-                context.put(ClassNamesForFileOraculum.class, cnih);
-            }
-            if (cancelService != null) {
-                DefaultCancelService.preRegister(context, cancelService);
-            }
+            context.put(Context.Registrator.class, registrator);
+            registrator.register(context);
             return task;
         } finally {
             Thread.currentThread().setContextClassLoader(orig);

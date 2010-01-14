@@ -60,11 +60,12 @@ import org.netbeans.modules.javacard.spi.ICardCapability;
 import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.modules.javacard.spi.capabilities.AntTargetInterceptor;
-import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ClearEpromCapability;
 import org.netbeans.modules.javacard.spi.capabilities.DebugCapability;
+import org.netbeans.modules.javacard.spi.capabilities.DeleteCapability;
 import org.netbeans.modules.javacard.spi.capabilities.EpromFileCapability;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
 import org.netbeans.modules.javacard.spi.capabilities.ResumeCapability;
@@ -198,10 +199,10 @@ public class CardPropertiesTest {
 
     @Test
     public void testIsNoSuspend() {
-        assertEquals (true, p.isNoSuspend());
-        p.setNoSuspend(false);
-        assertEquals(false, p.isNoSuspend());
-        opa.assertChanged(JavacardDeviceKeyNames.DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP);
+        assertEquals (false, p.isSuspend());
+        p.setSuspend(false);
+        assertEquals(false, p.isSuspend());
+        opa.assertChanged(JavacardDeviceKeyNames.DEVICE_SUSPEND_THREADS_ON_STARTUP);
     }
 
     @Test
@@ -279,20 +280,22 @@ public class CardPropertiesTest {
         if (!Utilities.isWindows()) { //FIXME
             return;
         }
-        String[] got = p.getRunCommandLine(platformProps, true, true);
+        String winEepromFile = "org-netbeans-modules-javacard/eeproms/TestPlatform\\foo.eprom";
+        String[] got = p.getRunCommandLine(platformProps, false, false, false);
         String[] expect = new String[] {
             win ? "C:\\Java Card\\JCDK3.0.2\\bin\\cjcre.exe" : "usr/local/java/jcdk3.0.2/bin/cjcre",
+            "-debug",
+            "false",
+            "-suspend",
+            "false",
             "-ramsize",
             "4M",
             "-e2psize",
             "3M",
             "-corsize",
             "3K",
-            "-debugger",
-            "-debugport",
-            "9017",
             "-e2pfile",
-            win ? "C:\\foo\\foo.eprom" : "/home/user/foo/foo.eprom",
+            win ? winEepromFile : "/home/user/foo/foo.eprom",
             "-loggerlevel",
             "severe",
             "-httpport",
@@ -303,8 +306,7 @@ public class CardPropertiesTest {
             "T=0",
             "-contactlessport",
             "3215",
-            "-nosuspend",
-            };
+        };
         for (int i = 0; i < Math.min(expect.length, got.length); i++) {
             assertEquals("Expected '" + expect[i] + "' at " + i + " got '" + got[i] + "' :" + Arrays.asList(got), expect[i], got[i]);
         }
@@ -316,13 +318,18 @@ public class CardPropertiesTest {
         if (!Utilities.isWindows()) { //FIXME
             return;
         }
+        String winEepromFile = "org-netbeans-modules-javacard/eeproms/TestPlatform\\foo.eprom";
         assertNotNull (platformProps.get("javacard.instance.id"));
-        String[] got = p.getResumeCommandLine(platformProps);
+        String[] got = p.getRunCommandLine(platformProps, false, false, true);
         String[] expect = new String[] {
             win ? "C:\\Java Card\\JCDK3.0.2\\bin\\cjcre.exe" : "usr/local/java/jcdk3.0.2/bin/cjcre",
             "-resume",
+            "-debug",
+            "false",
+            "-suspend",
+            "false",
             "-e2pfile",
-            win ? "C:\\foo\\foo.eprom" : "/home/user/foo/foo.eprom"
+            win ? winEepromFile : "/home/user/foo/foo.eprom"
         };
         for (int i = 0; i < Math.min(expect.length, got.length); i++) {
             assertEquals("Expected '" + expect[i] + "' at " + i + " got '" + got[i] + "' :" + Arrays.asList(got), expect[i], got[i]);
@@ -340,7 +347,7 @@ public class CardPropertiesTest {
                 + "-e2psize 2K "
                 + "-corsize 1K "
                 + "-e2pfile c:\\bar\\foo.eeprom "
-                + "-debug "
+                + "-debug false "
                 + "-loggerlevel SEVERE "
                 + "-httpport 8080 "
                 + "-contactedport 2650 "
@@ -348,7 +355,7 @@ public class CardPropertiesTest {
                 + "-contactlessport 2651 "
                 + "-bogus C:\\Progam Files\\foo\\bar.foo "
                 + "-debuggerport 2652 "
-                + "-nosuspend";
+                + "-suspend false ";
 
         String[] expect = new String[]{
             "cmd",
@@ -363,6 +370,7 @@ public class CardPropertiesTest {
             "-e2pfile",
             "c:\\bar\\foo.eeprom",
             "-debug",
+            "false",
             "-loggerlevel",
             "SEVERE",
             "-httpport",
@@ -377,7 +385,8 @@ public class CardPropertiesTest {
             "C:\\Progam Files\\foo\\bar.foo",
             "-debuggerport",
             "2652",
-            "-nosuspend"
+            "-suspend",
+            "false",
         };
 
         String[] got = shellSplit(cmdline);
@@ -501,8 +510,21 @@ public class CardPropertiesTest {
         Set <Class<? extends ICardCapability>> expect = new HashSet<Class<? extends ICardCapability>>();
         expect.addAll(Arrays.asList(StartCapability.class, StopCapability.class, ResumeCapability.class,
                 EpromFileCapability.class, ClearEpromCapability.class, DebugCapability.class, CardCustomizerProvider.class,
-                CardContentsProvider.class, AntTargetInterceptor.class, PortProvider.class, ApduSupport.class));
-        assertEquals (expect, got);
+                CardContentsProvider.class, AntTargetInterceptor.class, PortProvider.class, UrlCapability.class, DeleteCapability.class));
+        assertSetsEquals (expect, got);
+    }
+
+    private void assertSetsEquals (Set<?> expect, Set<?> got) {
+        if (!expect.equals(got)) {
+            Set expect1 = new HashSet<Object> (expect);
+            Set got1 = new HashSet<Object> (got);
+            Set expect2 = new HashSet<Object> (expect);
+            Set got2 = new HashSet<Object> (got);
+            got1.removeAll(expect1);
+            expect2.removeAll(got2);
+            assertTrue ("Unexpected objects: " + got1, got1.isEmpty());
+            assertTrue ("Missing objects: " + expect2, expect2.isEmpty());
+        }
     }
 
     @Test

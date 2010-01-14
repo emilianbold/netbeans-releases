@@ -239,7 +239,7 @@ public class SummaryWizardPanelGUI extends javax.swing.JPanel {
                 settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_TITLE),
                 settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_LICENSE))
         );
-        projectURL.setText("<html><b>" + NameAndLicenseWizardPanelGUI.getPreviewPrefix() + settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME)+"</b></html>");
+        projectURL.setText("<html><b>" + NameAndLicenseWizardPanelGUI.getPreviewPrefix(panel.getKenai()) + settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME)+"</b></html>");
 
         boolean autoCommit = Boolean.valueOf((String) settings.getProperty(NewKenaiProjectWizardIterator.PROP_AUTO_COMMIT));
         commitedLabel.setText(NbBundle.getMessage(SummaryWizardPanelGUI.class, "SummaryWizardPanelGUI.commitedLabel.text",

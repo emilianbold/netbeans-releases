@@ -237,7 +237,7 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
     }
 
     public void windowLostFocus(WindowEvent e) {
-        if (contentWindow != null && e.getOppositeWindow() != contentWindow && e.getOppositeWindow() != contentWindow.getOwner()) {
+        if (contentWindow != null && e.getOppositeWindow() == null) {
             shutdown();
         }
     }
@@ -271,8 +271,8 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                                 authorStyle,
                                 doc,
                                 author, 
-                                kenaiUser.getChatLink(
-                                    master.getdDocument(),
+                                KenaiUser.getChatLink(
+                                    master.getCurrentFileObject(),
                                     annotateLine.getLineNum()));
                         linkerSupport.add(l, 0);
                     }                    

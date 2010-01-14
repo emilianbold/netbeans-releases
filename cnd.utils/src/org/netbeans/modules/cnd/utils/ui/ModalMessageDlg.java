@@ -86,19 +86,8 @@ public class ModalMessageDlg extends javax.swing.JPanel {
     private static boolean runLongTaskImpl(Window parent, final Runnable workTask, final Runnable postEDTTask,
             String title, String message, final Cancellable canceller) {
 
-        final JDialog dialog;
+        final JDialog dialog = createDialog(parent, title);
         final AtomicBoolean cancelled = new AtomicBoolean(false);
-
-        if (parent == null) {
-            dialog = new JDialog();
-        } else if (parent instanceof Frame) {
-            dialog = new JDialog((Frame)parent);
-        } else {
-            assert (parent instanceof Dialog);
-            dialog = new JDialog((Dialog)parent);
-        }
-        dialog.setTitle(title);
-        dialog.setModal(true);
 
         final Runnable finalizer = new Runnable() {
             public void run() {
@@ -129,20 +118,7 @@ public class ModalMessageDlg extends javax.swing.JPanel {
             };
             panel = new ModalMessageDlgCancellablePane(message, wrapper);
         }
-
-        dialog.getContentPane().add(panel);
-        dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
-        dialog.pack();
-
-        Rectangle bounds = (parent == null) ?
-            new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()) : parent.getBounds();
-
-        int middleX = bounds.x + bounds.width / 2;
-        int middleY = bounds.y + bounds.height / 2;
-
-        Dimension size = dialog.getPreferredSize();
-
-        dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
+        addPanel(parent, dialog, panel);
 
         RequestProcessor.getDefault().post(new NamedRunnable(title) {
             public void runImpl() {
@@ -158,4 +134,95 @@ public class ModalMessageDlg extends javax.swing.JPanel {
         }
         return !cancelled.get();
     }    
+
+    /**
+     *
+     * @param parent
+     * @param title
+     * @param message
+     * @param workTask if workTask is Cancellable => dialog will have Cancel button
+     *                 if not => no Cancel button is shown
+     */
+    public static void runLongTask(Window parent, String title, String message,
+            final LongWorker workTask, final Cancellable canceller) {
+
+        final JDialog dialog = createDialog(parent, title);
+
+        final Runnable finalizer = new Runnable() {
+            public void run() {
+                // hide dialog and run action if successfully connected
+                dialog.setVisible(false);
+                dialog.dispose();
+                workTask.doPostRunInEDT();
+            }
+        };
+
+        JPanel panel;
+        if (canceller != null) {
+            panel = new ModalMessageDlgPane(message);
+        } else {
+            Cancellable wrapper = new Cancellable() {
+                /** is invoked from a separate cancellation thread */
+                public boolean cancel() {
+                    if (canceller.cancel()) {
+                        // remember for return value
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            };
+            panel = new ModalMessageDlgCancellablePane(message, wrapper);
+        }
+        addPanel(parent, dialog, panel);
+
+        RequestProcessor.getDefault().post(new NamedRunnable(title) {
+            public void runImpl() {
+                try {
+                    workTask.doWork();
+                } finally {
+                    SwingUtilities.invokeLater(finalizer);
+                }
+            }
+        });
+        if (!CndUtils.isStandalone()) { // this means we run in tests
+            dialog.setVisible(true);
+        }
+    }
+
+    private static JDialog createDialog(Window parent, String title) {
+        JDialog dialog;
+        if (parent == null) {
+            dialog = new JDialog();
+        } else if (parent instanceof Frame) {
+            dialog = new JDialog((Frame)parent);
+        } else {
+            assert (parent instanceof Dialog);
+            dialog = new JDialog((Dialog)parent);
+        }
+        dialog.setTitle(title);
+        dialog.setModal(true);
+        return dialog;
+    }
+
+    private static void addPanel(Window parent, JDialog dialog, JPanel panel){
+        dialog.getContentPane().add(panel);
+        dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
+        dialog.pack();
+
+        Rectangle bounds = (parent == null) ?
+            new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()) : parent.getBounds();
+
+        int middleX = bounds.x + bounds.width / 2;
+        int middleY = bounds.y + bounds.height / 2;
+
+        Dimension size = dialog.getPreferredSize();
+
+        dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
+    }
+
+    public interface LongWorker {
+        void doWork();
+        void doPostRunInEDT();
+    }
 }

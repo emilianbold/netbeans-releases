@@ -73,6 +73,10 @@ public class FunctionImpl implements Function {
     }
 
     public String getQuilifiedName() {
+        if (longName.startsWith("<")) { // NOI18N
+            return longName;
+        }
+        
         return FunctionNameUtils.getFunctionQName(longName);
     }
 

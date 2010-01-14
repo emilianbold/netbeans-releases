@@ -48,6 +48,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.LinkedList;
 import javax.swing.JFrame;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.explorer.propertysheet.ExtTestCase.WaitWindow;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -60,6 +61,7 @@ import org.openide.util.HelpCtx;
  * @author Jesse Glick
  * @see "#14701"
  */
+@RandomlyFails // NB-Core-Build #3747
 public class FindHelpTest extends ExtTestCase {
     
     public FindHelpTest(String name) {

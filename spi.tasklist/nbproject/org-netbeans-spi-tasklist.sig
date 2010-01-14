@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.4.1
+#Signature file v4.1
+#Version 1.9.0
 
 CLSS public abstract interface java.lang.Iterable<%0 extends java.lang.Object>
 meth public abstract java.util.Iterator<{java.lang.Iterable%0}> iterator()
@@ -44,6 +44,7 @@ hfds description,displayName,optionsPath
 CLSS public final static org.netbeans.spi.tasklist.PushTaskScanner$Callback
 meth public void clearAllTasks()
 meth public void finished()
+meth public void setTasks(java.util.List<? extends org.netbeans.spi.tasklist.Task>)
 meth public void setTasks(org.openide.filesystems.FileObject,java.util.List<? extends org.netbeans.spi.tasklist.Task>)
 meth public void started()
 supr java.lang.Object
@@ -53,10 +54,12 @@ CLSS public final org.netbeans.spi.tasklist.Task
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
 meth public java.lang.String toString()
+meth public static org.netbeans.spi.tasklist.Task create(java.net.URL,java.lang.String,java.lang.String)
+meth public static org.netbeans.spi.tasklist.Task create(java.net.URL,java.lang.String,java.lang.String,java.awt.event.ActionListener,javax.swing.Action[])
 meth public static org.netbeans.spi.tasklist.Task create(org.openide.filesystems.FileObject,java.lang.String,java.lang.String,int)
 meth public static org.netbeans.spi.tasklist.Task create(org.openide.filesystems.FileObject,java.lang.String,java.lang.String,java.awt.event.ActionListener)
 supr java.lang.Object
-hfds al,description,group,line,resource,unknownTaskGroups
+hfds actions,defaultAction,description,file,group,line,unknownTaskGroups,url
 
 CLSS public abstract org.netbeans.spi.tasklist.TaskScanningScope
 cons public TaskScanningScope(java.lang.String,java.lang.String,java.awt.Image)

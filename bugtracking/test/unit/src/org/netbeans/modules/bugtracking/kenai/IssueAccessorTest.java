@@ -64,6 +64,7 @@ import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
@@ -75,6 +76,7 @@ import org.openide.util.Lookup;
  * @author tomas
  */
 public class IssueAccessorTest extends NbTestCase {
+    private static Kenai kenai;
 
     public IssueAccessorTest(String arg0) {
         super(arg0);
@@ -91,7 +93,7 @@ public class IssueAccessorTest extends NbTestCase {
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         try {
             System.setProperty("kenai.com.url","https://testkenai.com");
-            Kenai kenai = Kenai.getDefault();
+            kenai = KenaiManager.getDefault().createKenai("testkenai", "https://testkenai.com");
             BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
             String username = br.readLine();
             String password = br.readLine();
@@ -192,7 +194,7 @@ public class IssueAccessorTest extends NbTestCase {
     }
 
     private static KenaiProject getKenaiProject(String name) throws KenaiException {
-        return Kenai.getDefault().getProject(name);
+        return kenai.getProject(name);
     }
 
     private static Repository getKenaiRepository(KenaiProject kp) throws KenaiException {
@@ -303,6 +305,16 @@ public class IssueAccessorTest extends NbTestCase {
             return new Repository[] {kolibaRepository, goldenProjectRepository};
         }
         public Lookup getLookup() {
+            return Lookup.EMPTY;
+        }
+
+        @Override
+        public String getID() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Image getIcon() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }  

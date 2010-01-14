@@ -69,7 +69,7 @@ made subject to such option by the copyright holder.
             <folder name="Output">
                 <file name="AnalyzerAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-hints-analyzer-ui-AnalyzerAction.instance"/>
-                    <attr name="position" intvalue="2467" />
+                    <attr name="position" intvalue="2467"/>
                 </file>
             </folder>
         </folder>
@@ -137,8 +137,9 @@ made subject to such option by the copyright holder.
                 <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-java-hints-infrastructure-JavaUpToDateStateProviderFactory.instance"/>
                 </folder>
-                <file name="org-netbeans-modules-java-hints-infrastructure-ErrorHintsFactory.instance" />
+                <file name="org-netbeans-modules-java-hints-infrastructure-ErrorHintsFactory.instance"/>
                 <file name="org-netbeans-modules-java-hints-infrastructure-JavaHintsPositionRefresher.instance"/>
+                <file name="org-netbeans-modules-java-hints-introduce-IntroduceHint$HLFImpl.instance"/>
             </folder>
         </folder>
     </folder>
@@ -185,6 +186,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-java-hints-CollectionRemove.instance"/>
                     <file name="org-netbeans-modules-java-hints-FieldForUnusedParam.instance"/>
                     <file name="org-netbeans-modules-java-hints-SerialVersionUID.instance"/>
+                    <file name="org-netbeans-modules-java-hints-ThisInAnonymous.instance"/>
                 </folder>
 
                 <folder name="errors">
@@ -204,6 +206,7 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>                    
                     <file name="org-netbeans-modules-java-hints-AddOverrideAnnotation.instance"/>
                     <file name="org-netbeans-modules-java-hints-AnnotationAsSuperInterface.instance"/>
+                    <file name="org-netbeans-modules-java-hints-StaticImport.instance"/>
                 </folder>
                 
                 <folder name="imports">
@@ -326,6 +329,10 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
 
+                <folder name="performance">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
                 <!--
                 <folder name="typos">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java-hints.resources.Bundle"/>                    
@@ -339,7 +346,16 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-java-hints-DeclarationForInstanceOf.instance"/>
             </folder>
          </folder>
-        
+
+        <folder name="declarative">
+            <file name="assert2if.hint" url="../jackpot/hintsimpl/assert2if.hint" />
+            <file name="variable-decl-assignment.hint" url="../jackpot/hintsimpl/variable-decl-assignment.hint" />
+            <file name="double-checked-locking.hint" url="../jackpot/hintsimpl/double-checked-locking.hint" />
+            <file name="sync-on-non-final.hint" url="../jackpot/hintsimpl/sync-on-non-final.hint" />
+            <file name="abstract-document.hint" url="../jackpot/hintsimpl/abstract-document.hint" />
+            <file name="array.hint" url="../perf/array.hint" />
+            <file name="Bundle.properties" url="../perf/Bundle.properties" /> <!--XXX-->
+        </folder>
     </folder>
     
     <folder name="OptionsDialog">

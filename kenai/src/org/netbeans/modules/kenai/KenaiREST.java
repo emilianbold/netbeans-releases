@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.AbstractCollection;
@@ -76,14 +77,14 @@ public class KenaiREST extends KenaiImpl {
     }
 
     @Override
-    public boolean isAuthorized(String projectName, String feature, String activity) throws KenaiException {
+    public boolean isAuthorized(String projectName, String feature, String activity, PasswordAuthentication pa) throws KenaiException {
         String [][] params = {
             new String [] { "feature_id", feature },
             new String [] { "activity_id", activity },
-            new String [] { "person_id", Kenai.getDefault().getPasswordAuthentication().getUserName()},
+            new String [] { "person_id", pa.getUserName()},
             new String [] { "project_id", projectName }
         };
-        RestConnection conn = new RestConnection(baseURL.toString() + "/api/login/authorize", params);
+        RestConnection conn = new RestConnection(baseURL.toString() + "/api/login/authorize", params, pa);
         long start = 0;
         if (TIMER.isLoggable(Level.FINE)) {
             start = System.currentTimeMillis();
@@ -103,8 +104,8 @@ public class KenaiREST extends KenaiImpl {
     }
 
     @Override
-    public ProjectData getProject(String name) throws KenaiException {
-        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects/" + name + ".json");
+    public ProjectData getProject(String name, PasswordAuthentication pa) throws KenaiException {
+        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects/" + name + ".json", pa);
         RestResponse resp = null;
         long start = 0;
         if (TIMER.isLoggable(Level.FINE)) {
@@ -130,7 +131,7 @@ public class KenaiREST extends KenaiImpl {
     }
 
     @Override
-    public Collection<ProjectData> searchProjects(String pattern) throws KenaiException {
+    public Collection<ProjectData> searchProjects(String pattern, PasswordAuthentication pa) throws KenaiException {
         try {
             String m = "/api/projects.json?full=true";
             if (pattern.length()>0) {
@@ -140,8 +141,8 @@ public class KenaiREST extends KenaiImpl {
                     m+="&q=" + URLEncoder.encode(pattern, "UTF-8");
                 }
             }
-            ProjectsListData pld = loadPage(baseURL.toString() + m, ProjectsListData.class);
-            return new LazyList(pld, ProjectsListData.class);
+            ProjectsListData pld = loadPage(baseURL.toString() + m, ProjectsListData.class, null);
+            return new LazyList(pld, ProjectsListData.class, pa);
         } catch (UnsupportedEncodingException ex) {
             throw new RuntimeException(ex);
         }
@@ -149,12 +150,12 @@ public class KenaiREST extends KenaiImpl {
     }
 
     @Override
-    public Collection<ProjectData> getMyProjects() throws KenaiException {
-        ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects/mine.json?full=true", ProjectsListData.class);
-        return new LazyList(pld, ProjectsListData.class);
+    public Collection<ProjectData> getMyProjects(PasswordAuthentication pa) throws KenaiException {
+        ProjectsListData pld = loadPage(baseURL.toString() + "/api/projects/mine.json?full=true", ProjectsListData.class, pa);
+        return new LazyList(pld, ProjectsListData.class, pa);
     }
 
-    private static <T> T loadPage(String url, Class<T> clazz) throws KenaiException {
+    private static <T> T loadPage(String url, Class<T> clazz, PasswordAuthentication pa) throws KenaiException {
 
         long start = 0;
         if (TIMER.isLoggable(Level.FINE)) {
@@ -164,7 +165,7 @@ public class KenaiREST extends KenaiImpl {
         if (url==null) {
             System.out.println("");
         }
-        RestConnection conn = new RestConnection(url);
+        RestConnection conn = new RestConnection(url, pa);
         RestResponse resp = null;
         try {
             resp = conn.get(null);
@@ -186,26 +187,26 @@ public class KenaiREST extends KenaiImpl {
 
     @Override
     public Collection<LicensesListData.LicensesListItem> getLicenses() throws KenaiException {
-        LicensesListData pld = loadPage(baseURL.toString() + "/api/licenses.json", LicensesListData.class);
-        return new LazyList(pld, LicensesListData.class);
+        LicensesListData pld = loadPage(baseURL.toString() + "/api/licenses.json", LicensesListData.class, null);
+        return new LazyList(pld, LicensesListData.class, null);
     }
 
     @Override
     public Collection<ServicesListData.ServicesListItem> getServices() throws KenaiException {
-        ServicesListData pld = loadPage(baseURL.toString() + "/api/services.json", ServicesListData.class);
-        return new LazyList(pld, ServicesListData.class);
+        ServicesListData pld = loadPage(baseURL.toString() + "/api/services.json", ServicesListData.class, null);
+        return new LazyList(pld, ServicesListData.class, null);
     }
 
     @Override
     public String checkName(String name) throws KenaiException {
-        CheckNameData cnd = loadPage(baseURL.toString() + "/api/projects/check_unique.json?name="+name, CheckNameData.class);
+        CheckNameData cnd = loadPage(baseURL.toString() + "/api/projects/check_unique.json?name="+name, CheckNameData.class, null);
         return cnd.is_unique?null:cnd.message;
     }
 
     @Override
-    public Collection<UserData> getProjectMembers(String name) throws KenaiException {
-        MembersListData members = loadPage(baseURL.toString() + "/api/projects/"+name+"/members.json", MembersListData.class);
-        return new LazyList(members, MembersListData.class);
+    public Collection<UserData> getProjectMembers(String name, PasswordAuthentication pa) throws KenaiException {
+        MembersListData members = loadPage(baseURL.toString() + "/api/projects/"+name+"/members.json", MembersListData.class, pa);
+        return new LazyList(members, MembersListData.class, pa);
     }
 
     @Override
@@ -217,16 +218,18 @@ public class KenaiREST extends KenaiImpl {
 
         private COLLECTION col;
         private Class<COLLECTION> clazz;
+        private PasswordAuthentication pa;
 
 
-        public LazyList(COLLECTION col, Class<COLLECTION> clazz) {
+        public LazyList(COLLECTION col, Class<COLLECTION> clazz, PasswordAuthentication pa) {
             this.col=col;
             this.clazz=clazz;
+            this.pa = pa;
         }
 
         @Override
         public Iterator<ITEM> iterator() {
-            return new LazyIterator<COLLECTION, ITEM>(col, clazz);
+            return new LazyIterator<COLLECTION, ITEM>(col, clazz, pa);
         }
 
         @Override
@@ -240,10 +243,12 @@ public class KenaiREST extends KenaiImpl {
         private COLLECTION col;
         private int currentIndex = 0;
         private Class<COLLECTION> clazz;
+        private PasswordAuthentication pa;
 
-        public LazyIterator(COLLECTION col, Class<COLLECTION> clazz) {
+        public LazyIterator(COLLECTION col, Class<COLLECTION> clazz, PasswordAuthentication pa) {
             this.col = col;
             this.clazz = clazz;
+            this. pa = pa;
         }
 
 
@@ -258,7 +263,7 @@ public class KenaiREST extends KenaiImpl {
                 if (currentIndex==col.size()) {
                     currentIndex-=col.size();
                     try {
-                        col = loadPage(col.next, clazz);
+                        col = loadPage(col.next, clazz, pa);
                     } catch (KenaiException ex) {
                         throw new RuntimeException("Error loading " + col.next, ex);
                     }
@@ -292,9 +297,10 @@ public class KenaiREST extends KenaiImpl {
             String displayName,
             String description,
             String[] licenses,
-            String tags
+            String tags,
+            PasswordAuthentication pa
             ) throws KenaiException {
-        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects.json");
+        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects.json", pa);
         RestResponse resp = null;
         PojsonSave<ProjectCreateData> save = PojsonSave.create(ProjectCreateData.class);
         ProjectCreateData prdata = new ProjectCreateData();
@@ -336,10 +342,11 @@ public class KenaiREST extends KenaiImpl {
             String url,
             String repository_url,
             String browse_url,
-            String service
+            String service,
+            PasswordAuthentication pa
             ) throws KenaiException {
         
-        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects/"+projectName+"/features.json");
+        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects/"+projectName+"/features.json", pa);
         RestResponse resp = null;
         PojsonSave<ProjectFeatureCreateData> save = PojsonSave.create(ProjectFeatureCreateData.class);
         ProjectFeatureCreateData fdata = new ProjectFeatureCreateData();
@@ -385,7 +392,7 @@ public class KenaiREST extends KenaiImpl {
         auth.password = new String(password);
         PojsonSave<AuthenticationData> save = PojsonSave.create(AuthenticationData.class);
 
-        RestConnection conn = new RestConnection(baseURL.toString() + "/api/login/authenticate.json");
+        RestConnection conn = new RestConnection(baseURL.toString() + "/api/login/authenticate.json", null);
         RestResponse resp = null;
         
         long start = 0;

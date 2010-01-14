@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.javacard.common;
 
+import java.util.Map;
 import org.openide.WizardDescriptor;
 import java.util.Properties;
 

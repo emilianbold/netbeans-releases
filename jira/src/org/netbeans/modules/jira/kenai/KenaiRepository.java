@@ -63,6 +63,7 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -83,12 +84,12 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     public KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String project) {
         // use name for id, can't be changed anyway
-        super(getRepositoryId(repoName, url), repoName, url, getKenaiUser(), getKenaiPassword(), null, null);
+        super(getRepositoryId(repoName, url), repoName, url, getKenaiUser(kenaiProject), getKenaiPassword(kenaiProject), null, null);
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.projectName = project;
         this.host = host;
         this.kenaiProject = kenaiProject;
-        Kenai.getDefault().addPropertyChangeListener(this);
+        KenaiManager.getDefault().addPropertyChangeListener(this);
     }
 
     @Override
@@ -133,7 +134,11 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         obj2[obj2.length - 2] = Jira.getInstance().getKenaiSupport();
         return obj2;
     }
-    
+
+    public String getHost() {
+        return host;
+    }
+
     private Query[] getDefinedQueries() {
         List<Query> queries = new ArrayList<Query>();
 
@@ -244,7 +249,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     protected void getRemoteFilters() {
-        if(!KenaiUtil.isLoggedIn()) {
+        if(!KenaiUtil.isLoggedIn(kenaiProject.getWebLocation())) {
             return;
         }
         super.getRemoteFilters();
@@ -252,7 +257,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     public boolean authenticate(String errroMsg) {
-        PasswordAuthentication pa = org.netbeans.modules.bugtracking.util.KenaiUtil.getPasswordAuthentication(true);
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getKenai(), true);
         if(pa == null) {
             return false;
         }
@@ -265,16 +270,16 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return true;
     }
 
-    private static String getKenaiUser() {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+    private static String getKenaiUser(KenaiProject kenaiProject) {
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getKenai(), false);
         if(pa != null) {
             return pa.getUserName();
         }
         return "";                                                              // NOI18N
     }
 
-    private static String getKenaiPassword() {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+    private static String getKenaiPassword(KenaiProject kenaiProject) {
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getKenai(), false);
         if(pa != null) {
             return new String(pa.getPassword());
         }
@@ -317,7 +322,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     public Collection<RepositoryUser> getUsers() {
-         Collection<RepositoryUser> users = KenaiUtil.getProjectMembers(projectName.toLowerCase());
+         Collection<RepositoryUser> users = KenaiUtil.getProjectMembers(kenaiProject);
          if (users.isEmpty()) {
              // fallback - try cache
              users = super.getUsers();
@@ -336,11 +341,17 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 //                c.populate(getQueryUrl());
 //            }
 
+            Kenai notifiedKenai = (Kenai) evt.getSource();            
+            if(!notifiedKenai.equals(kenaiProject.getKenai())) {
+                return;
+            }
+            
             // XXX move to spi?
             // get kenai credentials
             String user;
             String psswd;
-            PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+            PasswordAuthentication pa =
+                KenaiUtil.getPasswordAuthentication(kenaiProject.getKenai(), false); // do not force login
             if(pa != null) {
                 user = pa.getUserName();
                 psswd = new String(pa.getPassword());

@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.LoggingPermission;
 import org.openide.util.Lookup;
 
 /** NetBeans security manager implementation.
@@ -272,7 +273,6 @@ public class TopSecurityManager extends SecurityManager {
     static {
         warnedClassesNH.add("org.netbeans.MainImpl"); // NOI18N
         warnedClassesNH.add("org.netbeans.Stamps"); // NOI18N
-        warnedClassesNH.add ("org.netbeans.core.LookupCache"); // NOI18N
         warnedClassesNH.add ("org.netbeans.updater.UpdateTracking"); // NOI18N
         warnedClassesNH.add("org.netbeans.core.ui.ProductInformationPanel"); // #47429; NOI18N
         warnedClassesNH.add("org.netbeans.lib.uihandler.LogFormatter");
@@ -364,6 +364,7 @@ public class TopSecurityManager extends SecurityManager {
     }
 
     public @Override void checkPermission(Permission perm) {
+//        assert checkLogger(perm); //#178013 & JDK bug 1694855
         checkSetSecurityManager(perm);
         
         //
@@ -392,8 +393,36 @@ public class TopSecurityManager extends SecurityManager {
     }
     
     public @Override void checkPermission(Permission perm, Object context) {
+//        assert checkLogger(perm); //#178013 & JDK bug 1694855
         checkSetSecurityManager(perm);
         return;
+    }
+
+    private boolean checkLogger(Permission perm) {
+        //Do not allow foreign code to replace NetBeans logger with its own
+        //(particularly java.util.logging.FileLogger, which will deadlock)
+        //see http://netbeans.org/bugzilla/show_bug.cgi?id=178013
+        if (LoggingPermission.class.isInstance(perm)) {
+            //This code will run every time a logger is created;  if this
+            //proves too performance-degrading, replace the assertion test
+            //with a system property so that mysterious logger-related deadlocks
+            //can still be done, but leave it off by default
+            Throwable t = new Exception().fillInStackTrace();
+            for (StackTraceElement e : t.getStackTrace()) {
+                //Currently no other reliable way to determine that the call
+                //is to reset the logging infrastructure, not just create
+                //a logger - see JDK bug 1694855
+                if ("java.util.logging.LogManager".equals(e.getClassName()) && "reset".equals(e.getMethodName())) { //NOI18N
+                    SecurityException se = new SecurityException("Illegal attempt to reset system logger"); //NOI18N
+                    throw se;
+                }
+                if ("java.util.logging.LogManager".equals(e.getClassName()) && "readConfiguration".equals(e.getMethodName())) { //NOI18N
+                    SecurityException se = new SecurityException("Illegal attempt to replace system logger configuration"); //NOI18N
+                    throw se;
+                }
+            }
+        }
+        return true;
     }
     
     public static void install() {

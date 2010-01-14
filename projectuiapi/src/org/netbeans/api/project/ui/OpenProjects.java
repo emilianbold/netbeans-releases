@@ -56,7 +56,7 @@ import org.netbeans.spi.project.ui.support.CommonProjectActions;
  * For example, you may wish to display a chooser letting the user select a
  * file from among the top-level source folders of any open project.
  * For many cases, however, this API is not the correct approach, so use it as
- * a last resort. Consider <a href="@JAVA/API@/org/netbeans/api/java/classpath/GlobalPathRegistry.html"><code>GlobalPathRegistry</code></a>,
+ * a last resort. Consider <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/GlobalPathRegistry.html"><code>GlobalPathRegistry</code></a>,
  * {@link org.netbeans.spi.project.ui.ProjectOpenedHook},
  * and {@link org.netbeans.spi.project.ui.support.ProjectSensitiveActions}
  * (or {@link org.netbeans.spi.project.ui.support.MainProjectSensitiveActions})

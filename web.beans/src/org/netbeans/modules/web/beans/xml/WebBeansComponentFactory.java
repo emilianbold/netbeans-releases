@@ -52,6 +52,9 @@ public interface WebBeansComponentFactory {
     WebBeansComponent createComponent( Element element, WebBeansComponent context);
     
     Beans createBeans();
-    Deploy createDeploy();
-    Type createType();
+    Decorators createDecorators();
+    Interceptors createInterceptors();
+    Alternatives createAlternatives();
+    BeanClass createBeanClass();
+    Stereotype createStereotype();
 }

@@ -41,7 +41,6 @@ package org.netbeans.modules.php.project.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -52,13 +51,10 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -122,39 +118,16 @@ public class BrowseTestSources extends JPanel {
         assert notificationLineSupport != null;
 
         String testSources = testSourcesTextField.getText();
-        if (testSources.length() == 0) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_FolderEmpty"));
+        String error = Utils.validateTestSources(phpProject, testSources);
+        if (error != null) {
+            notificationLineSupport.setErrorMessage(error);
             dialogDescriptor.setValid(false);
             return;
         }
 
-        File testSourcesFile = new File(testSources);
-        if (!testSourcesFile.isAbsolute()) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotAbsolute"));
-            dialogDescriptor.setValid(false);
-            return;
-        } else if (!testSourcesFile.isDirectory()) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotDirectory"));
-            dialogDescriptor.setValid(false);
-            return;
-        }
-        FileObject nbproject = phpProject.getProjectDirectory().getFileObject("nbproject"); // NOI18N
-        FileObject testSourcesFo = FileUtil.toFileObject(testSourcesFile);
-        if (testSourcesFile.equals(FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(phpProject)))) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestEqualsSources"));
-            dialogDescriptor.setValid(false);
-            return;
-        } else if (FileUtil.isParentOf(nbproject, testSourcesFo)
-                || nbproject.equals(testSourcesFo)) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestUnderneathNBMetadata"));
-            dialogDescriptor.setValid(false);
-            return;
-        } else if (!Utils.isFolderWritable(testSourcesFile)) {
-            notificationLineSupport.setErrorMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotWritable"));
-            dialogDescriptor.setValid(false);
-            return;
-        } else if (!FileUtil.isParentOf(phpProject.getProjectDirectory(), testSourcesFo)) {
-            notificationLineSupport.setWarningMessage(NbBundle.getMessage(BrowseTestSources.class, "MSG_TestNotUnderneathProjectFolder"));
+        String warning = Utils.warnTestSources(phpProject, testSources);
+        if (warning != null) {
+            notificationLineSupport.setWarningMessage(warning);
             dialogDescriptor.setValid(true);
             return;
         }

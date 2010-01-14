@@ -72,6 +72,7 @@ public class WebServicesRulesEngine extends RulesEngine {
         classRules.add(new HandlerChainAndSoapMessageHandlers());
         classRules.add(new RPCStyleWrappedParameterStyle());
         //operation rules
+        operationRules.add(new InvalidWebMethodAnnotation());
         operationRules.add(new OnewayOperationReturnType());
         operationRules.add(new OnewayOperationParameterMode());
         operationRules.add(new OnewayOperationExceptions());

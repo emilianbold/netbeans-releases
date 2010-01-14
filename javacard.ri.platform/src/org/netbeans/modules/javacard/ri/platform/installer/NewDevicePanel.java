@@ -63,6 +63,7 @@ public class NewDevicePanel extends javax.swing.JPanel {
 
     private final DevicePropertiesPanel pnl = new DevicePropertiesPanel();
 
+    @SuppressWarnings("unchecked")
     public NewDevicePanel(FileObject targetFolder) {
         initComponents();
         jPanel1.add(pnl, BorderLayout.CENTER);
@@ -149,6 +150,10 @@ public class NewDevicePanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 
+
+    public void read (KeysAndValues<?> data) {
+        pnl.read(data);
+    }
 
     public void write (KeysAndValues<?> data) {
         pnl.write(data);

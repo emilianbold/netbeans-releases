@@ -284,13 +284,30 @@ public class ByteStreamReader implements DataInput {
     
     public String readString() throws IOException {
         StringBuilder str = new StringBuilder();
-        byte b = -1;
-        
+        long beg = getFilePointer();
+        int b = -1;
+        boolean isUTF = false;
         while (b != 0) {
-            b = readByte();
+            b = readByte() & 0xFF;
             
             if (b != 0) {
                 str.append((char)b);
+            }
+            if (b > 127) {
+                isUTF = true;
+            }
+        }
+
+        if (isUTF) {
+            long end = getFilePointer();
+            seek(beg);
+            try {
+                String s = readUTF(str.length());
+                return s;
+            } catch (IOException ex) {
+                return str.toString();
+            } finally {
+                seek(end);
             }
         }
         

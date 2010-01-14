@@ -48,18 +48,24 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -227,5 +233,22 @@ public class JSFUtils {
 
         return (tmpPath != null ? path + tmpPath : null);
     }
-  
+
+    public static boolean isJSF20(WebModule wm) {
+        if (wm == null)
+            return false;
+        ClassPath classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+        boolean isJSF20 = classpath.findResource(JSF_2_0__API_SPECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
+        return isJSF20;
+    }
+
+    public static boolean isJavaEE5(TemplateWizard wizard) {
+        Project project = Templates.getProject(wizard);
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        if (wm != null) {
+            Profile profile = wm.getJ2eeProfile();
+            return (profile == Profile.JAVA_EE_5);
+        }
+        return false;
+    }
 }

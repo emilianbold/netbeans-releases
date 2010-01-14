@@ -43,9 +43,8 @@ package org.netbeans.modules.jmx.test.actions;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jemmy.operators.JMenuItemOperator;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
@@ -56,37 +55,29 @@ import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
  * Check components and created files.
  */
 public class ImplementMBeanRegistrationActions extends ActionsTestCase {
+    private static boolean initialized;
     
     /** Need to be defined because of JUnit */
     public ImplementMBeanRegistrationActions(String name) {
         super(name);
         popupPath = ACTION_JMX + "|" + ACTION_IMPLEMENT_MBEAN_REGISTRATION;
     }
-    
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        if (!initialized) {
+            init();
+            initialized = true;
+        }
     }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ImplementMBeanRegistrationActions("init"));
-        suite.addTest(new ImplementMBeanRegistrationActions("test1"));
-        suite.addTest(new ImplementMBeanRegistrationActions("test2"));
-        suite.addTest(new ImplementMBeanRegistrationActions("test3"));
-        suite.addTest(new ImplementMBeanRegistrationActions("test4"));
-        suite.addTest(new ImplementMBeanRegistrationActions("test5"));
-        suite.addTest(new ImplementMBeanRegistrationActions("test6"));
-        return suite;
-    }
-    
+
     /**
      * Create all needed files for running next tests
      */
     public void init() {
-        
-        System.out.println("====================  init  ====================");
+
+        System.out.println("====================  setup ImplementMBeanRegistrationActions  ====================");
         
         System.out.println("Create new java class " + SIMPLE_1);
         createJavaFile(SIMPLE_1);
@@ -183,7 +174,7 @@ public class ImplementMBeanRegistrationActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
         System.out.println("Open java file " + SIMPLE_1);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(SIMPLE_1);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
@@ -198,7 +189,7 @@ public class ImplementMBeanRegistrationActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_2);
         System.out.println("Open java file " + DYNAMIC_2);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         EditorOperator eo = new EditorOperator(DYNAMIC_2);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
@@ -215,7 +206,7 @@ public class ImplementMBeanRegistrationActions extends ActionsTestCase {
         Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         System.out.println("Open java file " + className);
-        new Action(null, "Open").perform(node);
+        new OpenAction().perform(node);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
         assertTrue(jmio.isEnabled());

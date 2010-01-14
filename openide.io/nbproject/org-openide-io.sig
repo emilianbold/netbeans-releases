@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.16.1
+#Signature file v4.1
+#Version 1.20
 
 CLSS public abstract interface java.io.Closeable
 meth public abstract void close() throws java.io.IOException
@@ -134,6 +134,14 @@ meth protected abstract void println(java.lang.CharSequence,org.openide.windows.
 meth public static boolean isSupported(org.openide.windows.InputOutput)
 meth public static void println(org.openide.windows.InputOutput,java.lang.CharSequence,java.awt.Color) throws java.io.IOException
 meth public static void println(org.openide.windows.InputOutput,java.lang.CharSequence,org.openide.windows.OutputListener,boolean,java.awt.Color) throws java.io.IOException
+supr java.lang.Object
+
+CLSS public abstract org.openide.windows.IOColorPrint
+cons public IOColorPrint()
+meth protected abstract void print(java.lang.CharSequence,org.openide.windows.OutputListener,boolean,java.awt.Color) throws java.io.IOException
+meth public static boolean isSupported(org.openide.windows.InputOutput)
+meth public static void print(org.openide.windows.InputOutput,java.lang.CharSequence,java.awt.Color) throws java.io.IOException
+meth public static void print(org.openide.windows.InputOutput,java.lang.CharSequence,org.openide.windows.OutputListener,boolean,java.awt.Color) throws java.io.IOException
 supr java.lang.Object
 
 CLSS public abstract org.openide.windows.IOColors

@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -160,7 +161,8 @@ public class GdbProxyEngine {
 
         final NativeProcess proc = npb.call();
         debuggerPid = proc.getPID();
-        toGdb = gdbReader(proc.getInputStream(), proc.getOutputStream());
+        // for remote execution we need to convert encoding
+        toGdb = toGdbWriter(proc.getInputStream(), proc.getOutputStream());
 
         new RequestProcessor("GdbReaperThread").post(new Runnable() { // NOI18N
             public void run() {
@@ -205,10 +207,30 @@ public class GdbProxyEngine {
         DialogDisplayer.getDefault().notify(nd);
         debugger.finish(false);
     }
+
+    private static BufferedReader getReader(final InputStream is, String charSet) {
+        // set charset
+        try {
+            return new BufferedReader(new InputStreamReader(is, charSet));
+        } catch (UnsupportedEncodingException ex) {
+            // this is possible situation
+        }
+        return new BufferedReader(new InputStreamReader(is));
+    }
     
-    private PrintStream gdbReader(InputStream is, OutputStream os) {
-        final BufferedReader fromGdb = new BufferedReader(new InputStreamReader(is));
-        PrintStream togdb = new PrintStream(os, true);
+    private static PrintStream getPrintStream(final OutputStream os, String charSet) {
+        // set charset
+        try {
+            return new PrintStream(os, true, charSet);
+        } catch (UnsupportedEncodingException ex) {
+            // this is possible situation
+        }
+        return new PrintStream(os, true);
+    }
+
+    private PrintStream toGdbWriter(InputStream is, OutputStream os) {
+        PrintStream togdb = getPrintStream(os, debugger.getCharSetEncoding());
+        final BufferedReader fromGdb = getReader(is, debugger.getCharSetEncoding());
 
         gdbReader = new RequestProcessor("GdbReaderRP").post(new Runnable() { // NOI18N
             public void run() {

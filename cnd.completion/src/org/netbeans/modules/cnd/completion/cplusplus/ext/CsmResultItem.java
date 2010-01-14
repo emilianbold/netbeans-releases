@@ -277,10 +277,7 @@ public abstract class CsmResultItem implements CompletionItem {
 
     public CompletionTask createDocumentationTask() {
         CompletionDocumentationProvider p = Lookup.getDefault().lookup(CompletionDocumentationProvider.class);
-
         return p != null ? p.createDocumentationTask(this) : null;
-//        return new AsyncCompletionTask(new JavaCompletionProvider.DocQuery(this),
-//            org.netbeans.editor.Registry.getMostActiveComponent());
     }
 
     public CompletionTask createToolTipTask() {

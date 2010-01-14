@@ -38,11 +38,11 @@ CND_ARTIFACT_PATH_Release64=../release/bin/SunOS-x86_64/rfs_controller
 CND_PACKAGE_DIR_Release64=dist/Release64/GNU-Solaris-x86/package
 CND_PACKAGE_NAME_Release64=tools.tar
 CND_PACKAGE_PATH_Release64=dist/Release64/GNU-Solaris-x86/package/tools.tar
-# Test32 configuration
-CND_PLATFORM_Test32=GNU-Solaris-x86
-CND_ARTIFACT_DIR_Test32=build/SunOS-x86
-CND_ARTIFACT_NAME_Test32=test_pkg_client
-CND_ARTIFACT_PATH_Test32=build/SunOS-x86/test_pkg_client
-CND_PACKAGE_DIR_Test32=dist/Test32/GNU-Solaris-x86/package
-CND_PACKAGE_NAME_Test32=tools.tar
-CND_PACKAGE_PATH_Test32=dist/Test32/GNU-Solaris-x86/package/tools.tar
+# Test_filedata_32 configuration
+CND_PLATFORM_Test_filedata_32=GNU-Solaris-x86
+CND_ARTIFACT_DIR_Test_filedata_32=build/SunOS-x86
+CND_ARTIFACT_NAME_Test_filedata_32=test_rfs_filedata
+CND_ARTIFACT_PATH_Test_filedata_32=build/SunOS-x86/test_rfs_filedata
+CND_PACKAGE_DIR_Test_filedata_32=dist/Test_filedata_32/GNU-Solaris-x86/package
+CND_PACKAGE_NAME_Test_filedata_32=tools.tar
+CND_PACKAGE_PATH_Test_filedata_32=dist/Test_filedata_32/GNU-Solaris-x86/package/tools.tar

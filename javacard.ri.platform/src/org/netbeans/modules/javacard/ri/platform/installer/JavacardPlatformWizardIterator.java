@@ -64,9 +64,11 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.JDialog;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
+import org.netbeans.modules.propdos.AntStyleResolvingProperties;
 
 /**
  *
@@ -168,24 +170,24 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
         }
     private int ix = 0;
 
-    //PENDING:  Could include second panel of the wizard and let the
-    //user configure the default device
-
+    private boolean isRi() {
+        return firstPanel == null ? true : firstPanel.isRi;
+    }
 
     public boolean hasNext() {
-        return ix == 0;
+        return isRi() ? ix == 0 : false;
     }
 
     public boolean hasPrevious() {
-        return ix == 1;
+        return isRi() ? ix == 1 : false;
     }
 
     public void nextPanel() {
-        ix++;
+        ix = 1;
     }
 
     public void previousPanel() {
-        ix--;
+        ix = 0;
     }
     private final ChangeSupport supp = new ChangeSupport(this);
 
@@ -210,6 +212,10 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
         }
     }
 
+    void change() {
+        stateChanged(null);
+    }
+
     private final class DetectionPanel implements FinishablePanel<WizardDescriptor>, ChangeListener, PropertyChangeListener {
         private PlatformPanel comp;
         private PlatformPanel createComponent() {
@@ -226,13 +232,19 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
                 comp.addChangeListener(JavacardPlatformWizardIterator.this);
                 comp.addChangeListener(this);
                 comp.addPropertyChangeListener(this);
+            }
                 String stepName = NbBundle.getMessage (JavacardPlatformWizardIterator.class,
                         "STEP_TITLE_VALIDATE_PLATFORM");
-                String nextStepName = NbBundle.getMessage (JavacardPlatformWizardIterator.class,
-                        "STEP_TITLE_DEFINE_DEVICE");
-
-                comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, new
+                if (isRi) {
+                    String nextStepName = NbBundle.getMessage (JavacardPlatformWizardIterator.class,
+                            "STEP_TITLE_DEFINE_DEVICE");
+                    comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, new
                         String[] { stepName, nextStepName }); //NOI18N
+                } else {
+                    comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, new
+                        String[] { stepName }); //NOI18N
+                }
+
                 comp.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); //NOI18N
                 // Turn on numbering of all steps
                 comp.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); //NOI18N
@@ -242,7 +254,6 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
                 comp.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); //NOI18N
                 // Turn on numbering of all steps
                 comp.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); //NOI18N
-            }
             return comp;
         }
 
@@ -250,10 +261,16 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
             return HelpCtx.DEFAULT_HELP;
         }
 
+        boolean isRi = true;
         public void readSettings(WizardDescriptor w) {
             info = (PlatformInfo) w.getProperty(PROP_INFO);
+            boolean wasRi = isRi;
             if (displayName == null) {
                 displayName = info.getTitle();
+                isRi = info.isRi();
+                if (wasRi != isRi) {
+                    change();
+                }
             }
             if (info != null) {
                 supp.fireChange();
@@ -319,7 +336,27 @@ final class JavacardPlatformWizardIterator implements ProgressInstantiatingItera
         public void readSettings(WizardDescriptor wiz) {
             getComponent();
             comp.setWizardDescriptor(wiz);
-            comp.read(new KeysAndValues.WizardDescriptorAdapter(wiz));
+            PlatformInfo info = (PlatformInfo) wiz.getProperty(PROP_INFO);
+            EditableProperties prototypeValues = info.getDeviceDefaults();
+            if (prototypeValues != null) {
+                AntStyleResolvingProperties a = new AntStyleResolvingProperties(true);
+                a.putAll(prototypeValues);
+                comp.read(new KeysAndValues.PropertiesAdapter(a));
+            }
+            //#177744 resolve urls like http://${javacard.device.host} which
+            //the UI validation in the panel will not like.  Only happens
+            //if the user backs up and returns to the step, in which
+            //case the properties are loaded from the WizardDescriptor which
+            //does not understand Ant-style syntax
+            AntStyleResolvingProperties a = new AntStyleResolvingProperties(true);
+            for (Map.Entry<String,Object> e : wiz.getProperties().entrySet()) {
+                //Properties does not handle nulls;  anything that is a
+                //null, we're not interested in anyway
+                if (e.getKey() != null && e.getValue() != null) {
+                    a.put(e.getKey(), e.getValue());
+                }
+            }
+            comp.read(new KeysAndValues.PropertiesAdapter(a));
         }
 
         public void storeSettings(WizardDescriptor wiz) {

@@ -1,0 +1,14 @@
+'Double checked locking':
+if ($var == null) {
+   synchronized ($lock) {
+       if ($var == null) {
+           $s2$;
+       }
+   }
+} :: !hasModifier($var, Modifier.VOLATILE)
+=>
+synchronized ($lock) {
+   if ($var == null) {
+       $s2$;
+   }
+};;

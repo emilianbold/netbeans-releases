@@ -55,6 +55,7 @@ import javax.swing.event.DocumentListener;
 //import org.jivesoftware.smack.RosterGroup;
 //import org.jivesoftware.smack.RosterListener;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
  *
@@ -93,11 +94,11 @@ public class ContactList extends javax.swing.JPanel {
 
 
     public void updateFilter() {
-        roster = new FakeRoster(Kenai.getDefault().getXMPPConnection());
+        roster = new FakeRoster();
         filterModel.removeAllElements();
         filterModel.addElement(new FilterItem());
         for (FakeRosterGroup group : roster.getGroups()) {
-            filterModel.addElement(new FilterItem(group.getName()));
+            filterModel.addElement(new FilterItem(group.getName(), group.getKenaiProject()));
         }
         filterCombo.setSelectedIndex(0);
         
@@ -258,7 +259,8 @@ public class ContactList extends javax.swing.JPanel {
             }
         } else {
             String group = ((FilterItem) filterCombo.getSelectedItem()).getName();
-            FakeRosterGroup g = roster.getGroup(group);
+            Kenai k = ((FilterItem) filterCombo.getSelectedItem()).getKenaiProject().getKenai();
+            FakeRosterGroup g = roster.getGroup(k, group);
             listModel.addElement(new GroupListItem(g));
             for (FakeRosterEntry entry:g.getEntries()) {
                 listModel.addElement(new UserListItem(entry));
@@ -283,14 +285,18 @@ public class ContactList extends javax.swing.JPanel {
 
     private void contactJListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_contactJListMouseClicked
         if (evt.getClickCount()==2 && !evt.isPopupTrigger()) {
-            ((ContactListItem) contactJList.getSelectedValue()).openChat();
+            final ContactListItem cl = (ContactListItem) contactJList.getSelectedValue();
+            if (cl!=null)
+                cl.openChat();
         }
     }//GEN-LAST:event_contactJListMouseClicked
 
     private void searchFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_searchFieldKeyPressed
         if (evt.getKeyCode()==KeyEvent.VK_ENTER) {
             contactJList.requestFocus();
-            ((ContactListItem) contactJList.getSelectedValue()).openChat();
+            final ContactListItem cl = (ContactListItem) contactJList.getSelectedValue();
+            if (cl!=null)
+                cl.openChat();
             searchPanel.setVisible(false);
             searchField.setText("");
         } else if (evt.getKeyCode()==KeyEvent.VK_DOWN) {

@@ -1,2 +1,0 @@
-# XXX probably no longer necessary, since MIMEResolver's and DataLoader's both OK from unit tests -jglick
-org.netbeans.modules.cnd.loaders.CndDataLoaderPool

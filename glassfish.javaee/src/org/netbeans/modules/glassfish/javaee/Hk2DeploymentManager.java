@@ -115,7 +115,7 @@ public class Hk2DeploymentManager implements DeploymentManager {
     public ProgressObject distribute(Target[] targetList, final File moduleArchive, File deploymentPlan)
             throws IllegalStateException {
         String t = moduleArchive.getName();
-        final String moduleName = t.substring(0, t.length() - 4);
+        final String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(t.substring(0, t.length() - 4));
         // 
         Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) targetList[0], moduleName,
                 null, moduleArchive.getAbsolutePath());

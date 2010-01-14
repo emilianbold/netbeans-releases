@@ -60,6 +60,7 @@ public class CheckDTDAction extends CookieAction implements CollectDTDAction.DTD
     /** serialVersionUID */
     private static final long serialVersionUID = -8772119268950444992L;
 
+/***********
     public static synchronized CheckDTDAction getInstance() {
         CheckDTDAction actionInstance = null;
         String thisClassName = CheckDTDAction.class.getName();
@@ -71,6 +72,7 @@ public class CheckDTDAction extends CookieAction implements CollectDTDAction.DTD
         }
         return actionInstance;
     }
+***********/
 
     /** Be hooked on XMLDataObjectLook narking XML nodes. */
     protected Class[] cookieClasses () {

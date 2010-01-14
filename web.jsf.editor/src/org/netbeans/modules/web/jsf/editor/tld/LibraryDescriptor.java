@@ -214,14 +214,27 @@ public abstract class LibraryDescriptor {
         return nodes;
     }
 
-    public class Tag {
+    public static interface Tag {
+        
+        public String getName();
+
+        public String getDescription();
+
+        public boolean hasNonGenenericAttributes();
+
+        public Collection<Attribute> getAttributes();
+
+        public Attribute getAttribute(String name);
+    }
+
+    public static class TagImpl implements Tag {
 
         private static final String ID_ATTR_NAME = "id"; //NOI18N
         private String name;
         private String description;
         private Map<String, Attribute> attrs;
 
-        public Tag(String name, String description, Map<String, Attribute> attrs) {
+        public TagImpl(String name, String description, Map<String, Attribute> attrs) {
             this.name = name;
             this.description = description;
             this.attrs = attrs;
@@ -264,7 +277,7 @@ public abstract class LibraryDescriptor {
         }
     }
 
-    public class Attribute {
+    public static class Attribute {
 
         private String name;
         private String description;

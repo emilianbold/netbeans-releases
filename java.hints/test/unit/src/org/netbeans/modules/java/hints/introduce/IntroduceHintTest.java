@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.Document;
+import junit.framework.TestSuite;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -58,6 +59,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.hints.TestUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -89,7 +91,9 @@ public class IntroduceHintTest extends NbTestCase {
 //    public static TestSuite suite() {
 //        TestSuite s = new NbTestSuite();
 //
-//        s.addTest(new IntroduceHintTest("testCorrectSelection7"));
+//        s.addTest(new IntroduceHintTest("testIntroduceMethodReplaceDuplicatesNoRemap"));
+//        s.addTest(new IntroduceHintTest("testIntroduceMethodReplaceDuplicatesSimpleRemap"));
+//        s.addTest(new IntroduceHintTest("testIntroduceMethodReplaceDuplicatesRemapExpression"));
 //
 //        return s;
 //    }
@@ -994,6 +998,77 @@ public class IntroduceHintTest extends NbTestCase {
                        1, 0);
     }
 
+    public void testIntroduceMethodReplaceDuplicatesNoRemap() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static int i;\n" +
+                       "    public static void test1() {\n" +
+                       "        |i++;|\n"+
+                       "    }\n" +
+                       "    public static void test2() {\n" +
+                       "        i++;\n"+
+                       "    }\n" +
+                       "}",
+                       "package test; public class Test { private static int i; public static void test1() { name(); } private static void name() { i++; } public static void test2() { name(); } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
+
+    public void testIntroduceMethodReplaceDuplicatesSimpleRemap() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void test1() {\n" +
+                       "        int i = 0;\n" +
+                       "        |i++;|\n" +
+                       "        System.err.println(i);\n"+
+                       "    }\n" +
+                       "    public static void test2() {\n" +
+                       "        int a = 0;\n" +
+                       "        a++;\n"+
+                       "        System.err.println(a);\n"+
+                       "    }\n" +
+                       "}",
+                       "package test; public class Test { public static void test1() { int i = 0; i = name(i); System.err.println(i); } private static int name(int i) { i++; return i; } public static void test2() { int a = 0; a = name(a); System.err.println(a); } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
+
+    public void testIntroduceMethodReplaceDuplicatesSimpleRemapNotUseAfterMethod() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void test1() {\n" +
+                       "        int i = 0;\n" +
+                       "        |System.err.println(i);|\n"+
+                       "    }\n" +
+                       "    public static void test2() {\n" +
+                       "        int a = 0;\n" +
+                       "        System.err.println(a);\n"+
+                       "    }\n" +
+                       "}",
+                       "package test; public class Test { public static void test1() { int i = 0; name(i); } private static void name(int i) { System.err.println(i); } public static void test2() { int a = 0; name(a); } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
+
+    public void testIntroduceMethodReplaceDuplicatesRemapExpression() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void test1() {\n" +
+                       "        int i = 0;\n" +
+                       "        |i++;|\n" +
+                       "        System.err.println(i);\n"+
+                       "    }\n" +
+                       "    public static void test2() {\n" +
+                       "        int[] a = {0};\n" +
+                       "        a[0]++;\n"+
+                       "        System.err.println(a[0]);\n"+
+                       "    }\n" +
+                       "}",
+                       "package test; public class Test { public static void test1() { int i = 0; i = name(i); System.err.println(i); } private static int name(int i) { i++; return i; } public static void test2() { int[] a = {0}; a[0] = name(a[0]); System.err.println(a[0]); } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
+
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         
@@ -1275,6 +1350,11 @@ public class IntroduceHintTest extends NbTestCase {
         }
 
         public Object notify(NotifyDescriptor descriptor) {
+            if (descriptor.getMessage() instanceof String) {
+                //check that this is the "do replace" dialog
+                return NotifyDescriptor.YES_OPTION;
+            }
+            
             IntroduceMethodPanel panel = (IntroduceMethodPanel) descriptor.getMessage();
             
             if (methodName != null) {

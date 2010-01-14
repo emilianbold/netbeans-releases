@@ -941,9 +941,8 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             // Issue #168849
             Installer.log.severe(
                "Unable to find a JavaHelp Content Viewer component."); // NOI18N
-            Installer.log.severe("JavaHelp manifest: " +
-                                 getCodeLocation(jh.getClass()) +
-                                 "/META-INF/MANIFEST.MF"); // NOI18N
+            Installer.log.severe("JavaHelp loaded from: " +
+                                 getCodeLocation(jh.getClass())); // NOI18N
             Installer.log.severe("Current thread: " +
                                  Thread.currentThread().toString()); // NOI18N
             return;

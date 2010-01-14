@@ -48,7 +48,6 @@ import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.DiffProvider;
@@ -59,14 +58,14 @@ import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
-import javax.swing.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
-import java.awt.event.ActionEvent;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
+import org.openide.nodes.Node;
 
 /**
  * Exports diff to file:
@@ -83,27 +82,27 @@ import org.netbeans.modules.versioning.util.ExportDiffSupport;
  */
 public class ExportDiffChangesAction extends ContextAction {
 
-    private final VCSContext context;
-
-    public ExportDiffChangesAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
-    }
-
     @Override
-    public boolean isEnabled () {
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         if(!HgUtils.isFromHgRepository(context)) {
             return false;
-        }  
+        }
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
             return true;
         }
-        return super.isEnabled() && Lookup.getDefault().lookup(DiffProvider.class) != null;                
+        return Lookup.getDefault().lookup(DiffProvider.class) != null;
     }
 
-    public void performAction(ActionEvent e) {
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_ExportDiffChanges"; // NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
         boolean noop;
+        final VCSContext context = HgUtils.getCurrentContext(nodes);
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
             noop = ((DiffSetupSource) activated).getSetups().isEmpty();
@@ -137,10 +136,6 @@ public class ExportDiffChangesAction extends ContextAction {
         };
         exportDiffSupport.export();
 
-    }
-
-    protected boolean asynchronous() {
-        return false;
     }
     
     @SuppressWarnings("unchecked")

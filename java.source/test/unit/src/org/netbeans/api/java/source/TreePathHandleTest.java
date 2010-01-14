@@ -50,7 +50,6 @@ import java.security.Permission;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.source.TestUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -70,7 +69,7 @@ public class TreePathHandleTest extends NbTestCase {
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
         
-        File work = FileUtil.normalizeFile(TestUtil.createWorkFolder());
+        File work = FileUtil.normalizeFile(getWorkDir());
         FileObject workFO = FileUtil.toFileObject(work);
         
         assertNotNull(workFO);
