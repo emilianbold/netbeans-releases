@@ -77,4 +77,8 @@ public class CustomIssueField extends IssueField {
         return field.getOptions();
     }
 
+    public boolean getShowOnBugCreation() {
+        return field.isEnterBug();
+    }
+
 }

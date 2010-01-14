@@ -1094,11 +1094,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private List<CustomFieldInfo> customFields = new LinkedList<CustomFieldInfo>();
     private void initCustomFields() {
         customFields.clear();
-        if (issue.isNew()) {
-            customFieldsPanelLeft.setVisible(false);
-            customFieldsPanelRight.setVisible(false);
-            return;
-        }
         customFieldsPanelLeft.removeAll();
         customFieldsPanelRight.removeAll();
         GroupLayout labelLayout = new GroupLayout(customFieldsPanelLeft);
@@ -1110,12 +1105,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         GroupLayout.ParallelGroup fieldHorizontalGroup = fieldLayout.createParallelGroup(GroupLayout.LEADING);
         GroupLayout.SequentialGroup fieldVerticalGroup = fieldLayout.createSequentialGroup();
         boolean nbRepository = BugzillaUtil.isNbRepository(issue.getRepository());
+        boolean newIssue = issue.isNew();
         boolean anyField = false;
         for (IssueField field : issue.getBugzillaRepository().getConfiguration().getFields()) {
             if (field instanceof CustomIssueField) {
                 CustomIssueField cField = (CustomIssueField)field;
-                if (nbRepository && cField.getKey().equals(IssueField.ISSUE_TYPE.getKey())) {
-                    continue; // NB Issue type is already among non-custom fields
+                if ((nbRepository && cField.getKey().equals(IssueField.ISSUE_TYPE.getKey()))
+                        || (newIssue && !cField.getShowOnBugCreation())) { // NB Issue type is already among non-custom fields
+                    continue;
                 }
                 JLabel label = new JLabel(cField.getDisplayName()+":"); // NOI18N
                 JComponent comp;
@@ -1967,7 +1964,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
-        boolean isNew = issue.getTaskData().isNew();
+        final boolean isNew = issue.getTaskData().isNew();
         if (isNew) {
             storeFieldValue(IssueField.DESCRIPTION, addCommentArea);
         }
@@ -2057,6 +2054,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     });
                     handle.finish();
                     if(ret) {
+                        if (isNew) {
+                            // Show all custom fields, not only the ones shown on bug creation
+                            initCustomFields();
+                        }
                         reloadFormInAWT(true);
                     }
                 }
