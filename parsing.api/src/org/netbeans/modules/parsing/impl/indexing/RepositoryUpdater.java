@@ -1564,6 +1564,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 Indexers indexers,
                 Map<SourceIndexerFactory,Boolean> votes
         ) throws IOException {
+            if (getShuttdownRequest().isRaised()) {
+                //Do not call the expensive recursive listener if exiting
+                return false;
+            }
             RepositoryUpdater.getDefault().rootsListeners.add(root, true);
 
             final LinkedList<Context> transactionContexts = new LinkedList<Context>();
