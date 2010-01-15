@@ -59,7 +59,9 @@ public abstract class BaseSyncFactory extends RemoteSyncFactory {
        if (execEnv.isRemote()) {
                    File privateStorageFile = RemoteProjectSupport.getPrivateStorage(project);
                    if (!privateStorageFile.exists()) {
-                       privateStorageFile.mkdirs();
+                       if (!privateStorageFile.mkdirs()) {
+                           System.err.printf("Error creating directory %s\n", privateStorageFile.getAbsolutePath());
+                       }
                    }
                    File[] sourceRoots = RemoteProjectSupport.getProjectSourceDirs(project);
                    return createNew(execEnv, out, err, privateStorageFile, sourceRoots);

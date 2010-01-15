@@ -224,10 +224,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             JLabel out = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            ServerRecord rec = (ServerRecord) value;
-            out.setText(rec.getDisplayName());
-            if (value != null && value.equals(getDefaultRecord())) {
-                out.setFont(out.getFont().deriveFont(Font.BOLD));
+            if (value != null) {
+                ServerRecord rec = (ServerRecord) value;
+                out.setText(rec.getDisplayName());
+                if (rec.equals(getDefaultRecord())) {
+                    out.setFont(out.getFont().deriveFont(Font.BOLD));
+                }
             }
             return out;
         }

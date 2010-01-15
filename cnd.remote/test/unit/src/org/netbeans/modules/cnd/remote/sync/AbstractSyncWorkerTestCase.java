@@ -104,6 +104,7 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
         removeDirectory(privProjectStorageDir);
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     private File createTestDir() throws IOException {
         File src = createTempFile("test-sync-worker-dir", null, true);
         File subdir1 = new File(src, "dir1");

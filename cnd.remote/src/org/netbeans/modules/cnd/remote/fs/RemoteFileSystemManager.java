@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.fs;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -64,8 +65,12 @@ public class RemoteFileSystemManager {
         synchronized(this) {
             RemoteFileSystem result = fileSystems.get(execEnv);
             if (result == null) {
-                result = new RemoteFileSystem(execEnv);
-                fileSystems.put(execEnv, result);
+                try {
+                    result = new RemoteFileSystem(execEnv);
+                    fileSystems.put(execEnv, result);
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                }
             }
             return result;
         }
