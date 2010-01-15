@@ -93,16 +93,6 @@ public class MacroExpansionDocProviderImplBaseTestCase extends TraceModelTestBas
         log("Test " + getName() + "started"); // NOI18N
     }
 
-    protected static BaseDocument getBaseDocument(File testSourceFile) throws Exception {
-        FileObject testFileObject = FileUtil.toFileObject(testSourceFile);
-        assertNotNull("Unresolved test file " + testSourceFile, testFileObject);//NOI18N
-        DataObject testDataObject = DataObject.find(testFileObject);
-        assertNotNull("Unresolved data object for file " + testFileObject, testDataObject);//NOI18N
-        BaseDocument doc = CndCoreTestUtils.getBaseDocument(testDataObject);
-        assertNotNull("Unresolved document for data object " + testDataObject, testDataObject);//NOI18N
-        return doc;
-    }
-
     public static Document createExpandedContextDocument(Document mainDoc, CsmFile csmFile) {
         FileObject fobj = createMemoryFile(CsmUtilities.getFile(mainDoc).getName());
         if (fobj == null) {

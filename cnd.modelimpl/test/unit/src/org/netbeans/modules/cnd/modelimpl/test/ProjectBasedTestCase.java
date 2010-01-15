@@ -194,23 +194,6 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         return projectHelper.getProject();
     }
     
-    protected BaseDocument getBaseDocument(File testSourceFile) throws Exception {
-        FileObject testFileObject = FileUtil.toFileObject(testSourceFile);
-        assertNotNull("Unresolved test file " + testSourceFile, testFileObject);//NOI18N
-        DataObject testDataObject = DataObject.find(testFileObject);
-        assertNotNull("Unresolved data object for file " + testFileObject, testDataObject);//NOI18N
-        BaseDocument doc = CndCoreTestUtils.getBaseDocument(testDataObject);
-        if (doc == null) {
-            // on Mac somtimes doc == null for first file in the sute
-            // To investigate get thread dump
-            CndUtils.threadsDump();
-            // next try to reget doc
-            doc = CndCoreTestUtils.getBaseDocument(testDataObject);
-        }
-        assertNotNull("Unresolved document for data object " + testDataObject, doc);//NOI18N
-        return doc;
-    }
-    
     protected CsmFile getCsmFile(File testSourceFile) throws Exception {
         CsmFile csmFile = CsmModelAccessor.getModel().findFile(testSourceFile.getAbsolutePath());
         assertNotNull("Unresolved CsmFile for test file " + testSourceFile, csmFile);//NOI18N     
