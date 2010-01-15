@@ -144,12 +144,12 @@ public class CppSymbolDemanglerImplTestCase extends NativeExecutionBaseTestCase 
         List<String> list = new ArrayList<String>();
         addMangled(list, data);
         addUnmangled(list);
-        for (int i = 0; i < data.size(); i += 2) {
-            String sym = data.get(i);
+        for (int i = 0; i < list.size(); i += 2) {
+            String sym = list.get(i);
             if (dtrace) {
                 sym = dtrace(sym);
             }
-            assertEquals(data.get(i + 1), d.demangle(sym));
+            assertEquals(list.get(i + 1), d.demangle(sym));
         }
     }
 
@@ -158,8 +158,8 @@ public class CppSymbolDemanglerImplTestCase extends NativeExecutionBaseTestCase 
         List<String> list = new ArrayList<String>();
         addMangled(list, data);
         addUnmangled(list);
-        List<String> input = prepareInput(data, dtrace);
-        List<String> output = prepareOutput(data, true);
+        List<String> input = prepareInput(list, dtrace);
+        List<String> output = prepareOutput(list, true);
         assertEquals(output, d.demangle(input));
     }
 
