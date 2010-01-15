@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author vita
  */
-@Hint(category="logging")
+@Hint(category="logging", enabled=false)
 public final class NoLoggers {
 
     public NoLoggers() {
