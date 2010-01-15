@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -199,6 +200,13 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         DataObject testDataObject = DataObject.find(testFileObject);
         assertNotNull("Unresolved data object for file " + testFileObject, testDataObject);//NOI18N
         BaseDocument doc = CndCoreTestUtils.getBaseDocument(testDataObject);
+        if (doc == null) {
+            // on Mac somtimes doc == null for first file in the sute
+            // To investigate get thread dump
+            CndUtils.threadsDump();
+            // next try to reget doc
+            doc = CndCoreTestUtils.getBaseDocument(testDataObject);
+        }
         assertNotNull("Unresolved document for data object " + testDataObject, doc);//NOI18N
         return doc;
     }
