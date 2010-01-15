@@ -35,12 +35,10 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -72,7 +70,7 @@ public class ElementsTest extends NbTestCase {
     private FileObject testFO;
         
     private void prepareTest() throws Exception {
-        File work = TestUtil.createWorkFolder();
+        File work = getWorkDir();
         FileObject workFO = FileUtil.toFileObject(work);
         
         assertNotNull(workFO);

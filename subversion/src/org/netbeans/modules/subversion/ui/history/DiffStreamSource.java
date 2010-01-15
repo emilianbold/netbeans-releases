@@ -49,16 +49,13 @@ import org.netbeans.modules.versioning.util.Utils;
 import java.io.*;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.netbeans.modules.subversion.util.FileUtils;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**

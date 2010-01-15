@@ -554,6 +554,9 @@ class AutoUpdateCatalogParser extends DefaultHandler {
             this.targetcluster = targetcluster;
         }
 
+        ModuleItem changeDistribution(URL u) {
+            return new ModuleItem(moduleCodeName, specVersion, u, targetcluster);
+        }
 
 
         static ModuleItem createModule(

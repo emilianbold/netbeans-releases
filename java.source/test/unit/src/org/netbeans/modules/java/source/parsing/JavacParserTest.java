@@ -49,7 +49,6 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.source.TestUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -103,7 +102,7 @@ public class JavacParserTest extends NbTestCase {
     }
 
     private void prepareTest() throws Exception {
-        File work = TestUtil.createWorkFolder();
+        File work = getWorkDir();
         FileObject workFO = FileUtil.toFileObject(work);
 
         assertNotNull(workFO);

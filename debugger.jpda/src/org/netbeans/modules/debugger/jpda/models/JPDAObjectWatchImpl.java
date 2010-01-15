@@ -79,7 +79,7 @@ import org.openide.util.NbBundle;
  */
 
 class JPDAObjectWatchImpl extends AbstractObjectVariable implements JPDAWatch,
-ObjectVariable {
+ObjectVariable/*, Watch.Provider*/ {
 
     private JPDADebuggerImpl    debugger;
     private Watch               watch;
@@ -108,6 +108,10 @@ ObjectVariable {
         this.exceptionDescription = exceptionDescription;
     }
     
+    public Watch getWatch() {
+        return watch;
+    }
+
     /**
      * Watched expression.
      *

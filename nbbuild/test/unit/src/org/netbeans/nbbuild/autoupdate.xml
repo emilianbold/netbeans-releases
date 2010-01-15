@@ -42,4 +42,21 @@
         </autoupdate>
 
     </target>
+
+    <target name="all-nbms">
+        <echo message="${root}"/>
+
+        <taskdef classname="org.netbeans.nbbuild.AutoUpdate" name="autoupdate" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+
+        <autoupdate
+            todir="${target}"
+            force="${force}"
+        >
+            <nbms dir="${dir}">
+                <include name="*.nbm"/>
+            </nbms>
+            <modules includes="${includes}"/>
+        </autoupdate>
+
+    </target>
 </project>

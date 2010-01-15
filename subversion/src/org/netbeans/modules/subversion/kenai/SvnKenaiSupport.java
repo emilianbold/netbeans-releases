@@ -92,8 +92,8 @@ public class SvnKenaiSupport {
         return kenaiSupport != null && kenaiSupport.isUserOnline(user);
     }
 
-    public KenaiUser forName(String user) {
-        return kenaiSupport != null ? kenaiSupport.forName(user) : null;
+    public KenaiUser forName(String user, String url) {
+        return kenaiSupport != null ? kenaiSupport.forName(user, url) : null;
     }
 
     public boolean isLogged (String url) {

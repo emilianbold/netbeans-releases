@@ -1127,6 +1127,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    void progress(String issueDesc) {
+        if(refreshTask != null) {
+            refreshTask.progress(issueDesc);
+        }
+    }
+
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private int counter;
@@ -1167,6 +1173,14 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     enableFields(true);
                 }
             });
+        }
+
+        synchronized void progress(String issueDesc) {
+            if(handle != null) {
+                handle.progress(
+                    NbBundle.getMessage(
+                        QueryController.class, "LBL_RetrievingIssue", new Object[] {issueDesc}));
+            }
         }
 
         public void executeQuery() {

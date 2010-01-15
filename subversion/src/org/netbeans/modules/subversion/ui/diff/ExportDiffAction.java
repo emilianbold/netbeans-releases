@@ -99,6 +99,7 @@ public class ExportDiffAction extends ContextAction {
     /**
      * First look for DiffSetupSource name then for super (context name).
      */
+    @Override
     public String getName() {
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
@@ -111,6 +112,7 @@ public class ExportDiffAction extends ContextAction {
         return super.getName();
     }
     
+    @Override
     public boolean enable(Node[] nodes) {
         Context ctx = getCachedContext(nodes);
         if(!Subversion.getInstance().getStatusCache().containsFiles(ctx, enabledForStatus, true)) {
@@ -160,6 +162,7 @@ public class ExportDiffAction extends ContextAction {
         exportDiffSupport.export();
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

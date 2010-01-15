@@ -51,6 +51,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
@@ -290,7 +292,20 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             FieldBreakpoint fb = (FieldBreakpoint) b;
             String className = fb.getClassName();
             String fieldName = fb.getFieldName();
-            int line = EditorContextImpl.getFieldLineNumber(fo, className, fieldName);
+            Future<Integer> fi = EditorContextImpl.getFieldLineNumber(fo, className, fieldName);
+            int line;
+            if (fi != null) {
+                try {
+                    line = fi.get();
+                } catch (InterruptedException ex) {
+                    return null;
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return null;
+                }
+            } else {
+                return null;
+            }
             return new int[] { line };
         } else if (b instanceof MethodBreakpoint) {
             MethodBreakpoint mb = (MethodBreakpoint) b;
@@ -299,17 +314,26 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             for (int i = 0; i < filters.length; i++) {
                 // TODO: annotate also other matched classes
                 if (!filters[i].startsWith("*") && !filters[i].endsWith("*")) {
-                    int[] newlns = EditorContextImpl.getMethodLineNumbers(
+                    Future<int[]> futurelns = EditorContextImpl.getMethodLineNumbers(
                             fo, filters[i], mb.getClassExclusionFilters(),
                             mb.getMethodName(),
                             mb.getMethodSignature());
-                    if (lns.length == 0) {
-                        lns = newlns;
-                    } else {
-                        int[] ln = new int[lns.length + newlns.length];
-                        System.arraycopy(lns, 0, ln, 0, lns.length);
-                        System.arraycopy(newlns, 0, ln, lns.length, newlns.length);
-                        lns = ln;
+                    int[] newlns;
+                    if (futurelns != null) {
+                        try {
+                            newlns = futurelns.get();
+                            if (lns.length == 0) {
+                                lns = newlns;
+                            } else {
+                                int[] ln = new int[lns.length + newlns.length];
+                                System.arraycopy(lns, 0, ln, 0, lns.length);
+                                System.arraycopy(newlns, 0, ln, lns.length, newlns.length);
+                                lns = ln;
+                            }
+                        } catch (InterruptedException ex) {
+                        } catch (ExecutionException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
             }

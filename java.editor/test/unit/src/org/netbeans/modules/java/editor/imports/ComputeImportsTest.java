@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -63,7 +63,6 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.test.support.MemoryValidator;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.editor.overridden.IsOverriddenAnnotationCreatorTest;
 import org.netbeans.modules.java.editor.imports.ComputeImports.Pair;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -109,14 +108,14 @@ public class ComputeImportsTest extends NbTestCase {
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
         
+        clearWorkDir();
+        
         if (cache == null) {
-            cache = TestUtil.createWorkFolder();
-            cacheFO = FileUtil.toFileObject(cache);
-            
-            cache.deleteOnExit();
-            
+            cache = new File(getWorkDir(), "cache");
+            cacheFO = FileUtil.createFolder(cache);
+
             IndexUtil.setCacheFolder(cache);
-            
+
             TestUtilities.analyzeBinaries(SourceUtilsTestUtil.getBootClassPath());
         }
     }
@@ -194,7 +193,7 @@ public class ComputeImportsTest extends NbTestCase {
     }
     
     private void prepareTest(String capitalizedName) throws Exception {
-        FileObject workFO = SourceUtilsTestUtil.makeScratchDir(this);
+        FileObject workFO = FileUtil.toFileObject(getWorkDir());
         
         assertNotNull(workFO);
         

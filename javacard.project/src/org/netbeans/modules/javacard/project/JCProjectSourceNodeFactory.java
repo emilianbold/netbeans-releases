@@ -86,7 +86,7 @@ import org.openide.windows.WindowManager;
 
 public class JCProjectSourceNodeFactory implements NodeFactory {
 
-    public NodeList createNodes(Project p) {
+    public NodeList<?> createNodes(Project p) {
         JCProject project =
                 p.getLookup().lookup(JCProject.class);
         assert project != null;

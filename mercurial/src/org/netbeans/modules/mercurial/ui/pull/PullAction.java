@@ -245,6 +245,16 @@ public class PullAction extends ContextAction {
                 new DialogDescriptor.Message(msg));
     }
 
+    /**
+     *
+     * @param type
+     * @param ctx
+     * @param root
+     * @param pullSource password is nulled
+     * @param fromPrjName
+     * @param toPrjName
+     * @param logger
+     */
     static void performPull(PullType type, VCSContext ctx, File root, HgURL pullSource, String fromPrjName, String toPrjName, OutputLogger logger) {
         if(root == null || pullSource == null) return;
         File bundleFile = null; 
@@ -362,6 +372,7 @@ public class PullAction extends ContextAction {
             }
             logger.outputInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_DONE")); // NOI18N
             logger.output(""); // NOI18N
+            pullSource.clearPassword();
         }
     }
 

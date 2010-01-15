@@ -138,6 +138,11 @@ public interface TypeProvider {
                 public Result createResult(List<? super TypeDescriptor> result, String[] message) {
                     return new Result(result, message);
                 }
+
+                @Override
+                public int getRetry(Result result) {
+                    return result.retry;
+                }
             };
         }
         
@@ -182,6 +187,7 @@ public interface TypeProvider {
         
         private List<? super TypeDescriptor> result;
         private String[] message;
+        private int retry;
 
         Result(List<? super TypeDescriptor> result, String[] message) {
             this.result = result;
@@ -215,6 +221,19 @@ public interface TypeProvider {
         @SuppressWarnings("unchecked")
         public void addResult(List<? extends TypeDescriptor> typeDescriptor) {
             ((List)result).addAll(typeDescriptor);  //workaround javac issue http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6507334
+        }
+
+        /**
+         * Notify caller that a provider should be called again because
+         * of incomplete or inaccurate results.
+         *
+         * Method can be used when long running task blocks the provider
+         * to complete the data.
+         * 
+         * @since 1.14
+         */
+        public void pendingResult() {
+            retry = 2000;
         }
     }
 

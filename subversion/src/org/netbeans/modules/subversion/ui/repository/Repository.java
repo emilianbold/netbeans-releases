@@ -46,6 +46,7 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -127,7 +128,7 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         repositoryPanel.titleLabel.setText(titleLabel);
                                         
         repositoryPanel.urlComboBox.setEditable(isSet(FLAG_URL_EDITABLE));
-        repositoryPanel.urlComboBox.setEnabled(isSet(FLAG_URL_ENABLED));        
+        repositoryPanel.urlComboBox.setEnabled(isSet(FLAG_URL_ENABLED));
         
         repositoryPanel.tipLabel.setVisible(isSet(FLAG_SHOW_HINTS));
         repositoryPanel.removeButton.setVisible(isSet(FLAG_SHOW_REMOVE));        
@@ -189,40 +190,60 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         
         onSelectedRepositoryChange();
     }
-    
+
+    /**
+     * Performs its body outside of AWT. Runs asynchronously if called in AWT
+     */
     public void refreshUrlHistory() {
-        
-        List<RepositoryConnection> recentUrls = SvnModuleConfig.getDefault().getRecentUrls();
-                
-        Set<RepositoryConnection> recentRoots = new LinkedHashSet<RepositoryConnection>();
-        recentRoots.addAll(recentUrls);                               
-        
-        if(repositoryPanel.urlComboBox.isEditable()) {
-            // templates for supported connection methods        
-            recentRoots.add(new RepositoryConnection("file:///"));      // NOI18N
-            recentRoots.add(new RepositoryConnection("http://"));       // NOI18N
-            recentRoots.add(new RepositoryConnection("https://"));      // NOI18N
-            recentRoots.add(new RepositoryConnection("svn://"));        // NOI18N
-            recentRoots.add(new RepositoryConnection("svn+ssh://"));    // NOI18N
+        repositoryPanel.urlComboBox.setEnabled(false);
+        Runnable notInAWT = new Runnable() {
+            public void run() {
+                List<RepositoryConnection> recentUrls = SvnModuleConfig.getDefault().getRecentUrls();
+                final Set<RepositoryConnection> recentRoots = new LinkedHashSet<RepositoryConnection>();
+                recentRoots.addAll(recentUrls);
+                if (repositoryPanel.urlComboBox.isEditable()) {
+                    // templates for supported connection methods
+                    recentRoots.add(new RepositoryConnection("file:///"));      // NOI18N
+                    recentRoots.add(new RepositoryConnection("http://"));       // NOI18N
+                    recentRoots.add(new RepositoryConnection("https://"));      // NOI18N
+                    recentRoots.add(new RepositoryConnection("svn://"));        // NOI18N
+                    recentRoots.add(new RepositoryConnection("svn+ssh://"));    // NOI18N
+                }
+
+                ComboBoxModel rootsModel = new RepositoryModel(new Vector<RepositoryConnection>(recentRoots));
+                repositoryPanel.urlComboBox.setModel(rootsModel);
+                if (recentRoots.size() > 0) {
+                    repositoryPanel.urlComboBox.setSelectedIndex(0);
+                    onSelectedRepositoryChange();
+                    currentPanel.refresh(getSelectedRCIntern());
+                }
+                repositoryPanel.urlComboBox.setEnabled(isSet(FLAG_URL_ENABLED));
+
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        if (repositoryPanel.urlComboBox.isEditable()) {
+                            JTextComponent textEditor = getUrlComboEditor();
+                            textEditor.selectAll();
+                        }
+                        updateVisibility();
+                    }
+                });
+            }
         };
-        
-        ComboBoxModel rootsModel = new RepositoryModel(new Vector<RepositoryConnection>(recentRoots));                        
-        repositoryPanel.urlComboBox.setModel(rootsModel);
-        
-        if (recentRoots.size() > 0 ) {         
-            repositoryPanel.urlComboBox.setSelectedIndex(0);
-            currentPanel.refresh(getSelectedRCIntern());
-        }         
-        
-        if(repositoryPanel.urlComboBox.isEditable()) {
-            JTextComponent textEditor = getUrlComboEditor();
-            textEditor.selectAll();            
-        }         
-        updateVisibility();
+        if (EventQueue.isDispatchThread()) {
+            Subversion.getInstance().getRequestProcessor().post(notInAWT);
+        } else {
+            notInAWT.run();
+        }
     }
 
     public void storeRecentUrls() {
-        SvnModuleConfig.getDefault().setRecentUrls(getRecentUrls());
+        final List<RepositoryConnection> recentUrls = getRecentUrls();
+        Subversion.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                SvnModuleConfig.getDefault().setRecentUrls(recentUrls);
+            }
+        });
     }
     
     public boolean isChanged() {

@@ -44,7 +44,6 @@ package org.netbeans.editor;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Position;
 
 /**
 * Support class for chain of MarkBlocks
@@ -354,33 +353,7 @@ public class MarkBlockChain {
         return pos;
     }
 
-    public static class LayerChain extends MarkBlockChain {
-
-        private String layerName;
-
-        public LayerChain(BaseDocument doc, String layerName) {
-            super(doc);
-            this.layerName = layerName;
-        }
-
-        public final String getLayerName() {
-            return layerName;
-        }
-
-        protected Mark createBlockStartMark() {
-            MarkFactory.DrawMark startMark = new MarkFactory.DrawMark(layerName, null);
-            startMark.activateLayer = true;
-            return startMark;
-        }
-
-        protected Mark createBlockEndMark() {
-            MarkFactory.DrawMark endMark = new MarkFactory.DrawMark(layerName, null, Position.Bias.Backward);
-            return endMark;
-        }
-
-    }
-
-    public String toString() {
+    public @Override String toString() {
         return "MarkBlockChain: currentBlock=" + currentBlock + "\nblock chain: " // NOI18N
                + (chain != null ? ("\n" + chain.toStringChain()) : " Empty"); // NOI18N
     }

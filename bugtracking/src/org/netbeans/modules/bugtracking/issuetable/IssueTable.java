@@ -164,7 +164,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
 
         tableModel = new NodeTableModel();
         sorter = new TableSorter(tableModel);
-
+        
         sorter.setColumnComparator(Node.Property.class, NodeComparator);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
@@ -411,13 +411,14 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
      */
     public final void initColumns() {
         setModelProperties(query);
-        for (int i = 0; i < descriptors.length; i++) {
-            sorter.setColumnComparator(i, null);
-            sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
-//            if (IssueNode.COLUMN_NAME_STATUS.equals(tableColumns[i])) {
-//                sorter.setSortingStatus(i, TableSorter.ASCENDING);
-//                break;
-//            }
+        if(descriptors.length > 0) {
+            sorter.setSortingStatus(0, TableSorter.ASCENDING); // default sorting by first column
+            if(descriptors.length > 1) {
+                for (int i = 1; i < descriptors.length; i++) {
+                    sorter.setColumnComparator(i, null);
+                    sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
+                }
+            }
         }
         setDefaultColumnSizes();
     }

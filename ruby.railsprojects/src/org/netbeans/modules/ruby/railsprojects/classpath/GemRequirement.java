@@ -40,6 +40,7 @@ package org.netbeans.modules.ruby.railsprojects.classpath;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.Util;
 
 /**
@@ -91,6 +92,16 @@ final class GemRequirement {
      * <code>=, !=, >=, <=, >, <, ~></code>.
      */
     private final String operator;
+
+    static GemRequirement fromString(String gemRequirement) {
+        String[] parts = gemRequirement.split(" ");
+        if (parts.length == 1) {
+            // contains just the name
+            return new GemRequirement(gemRequirement, "", "", Status.UNKNOWN);
+        }
+        assert parts.length == 3;
+        return new GemRequirement(parts[0], parts[2], parts[1], Status.UNKNOWN);
+    }
 
     GemRequirement(String name, String version, String operator, Status status) {
         this.name = name;
@@ -220,6 +231,22 @@ final class GemRequirement {
             return new GemRequirement(name, version, operator, Status.statusFor(status));
         }
         return null;
+    }
+
+    /**
+     * @return this in a string format, e.g. <code>some-gem >= 1.2.3</code>.
+     */
+    String asString() {
+        StringBuilder result = new StringBuilder(name);
+        if (!isEmpty(operator) && !isEmpty(version)) {
+            result.append(" " + operator);
+            result.append(" " + version);
+        }
+        return result.toString();
+    }
+
+    private static boolean isEmpty(String str) {
+        return str == null || "".equals(str.trim());
     }
 
     @Override

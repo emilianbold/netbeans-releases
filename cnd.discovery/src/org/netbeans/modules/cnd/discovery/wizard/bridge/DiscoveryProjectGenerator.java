@@ -160,7 +160,7 @@ public class DiscoveryProjectGenerator {
             //    added.setRoot(IpeUtils.toRelativePath(folder.getConfigurationDescriptor().getBaseDir(), additionalPath));
             //    projectBridge.addSourceRoot(additionalPath);
             //}
-            folder.addFolder(added);
+            folder.addFolder(added, true);
         } else {
             if (added.isDiskFolder()) {
                 String additionalPath = used.getFolder();
@@ -184,7 +184,7 @@ public class DiscoveryProjectGenerator {
                         added = projectBridge.createFolder(folder, name);
                         //added.setRoot(IpeUtils.toRelativePath(folder.getConfigurationDescriptor().getBaseDir(), additionalPath));
                         //projectBridge.addSourceRoot(additionalPath);
-                        folder.addFolder(added);
+                        folder.addFolder(added, true);
                     } else {
                         added = logicalCandidate;
                     }
@@ -444,7 +444,7 @@ public class DiscoveryProjectGenerator {
         Folder added = getOrCreateFolder(folder, name, used);
         if (added == null) {
             added = projectBridge.createFolder(folder, name);
-            folder.addFolder(added);
+            folder.addFolder(added, true);
         }
         for(AbstractRoot sub : used.getChildren()){
             addAdditionalFolder(added, sub);

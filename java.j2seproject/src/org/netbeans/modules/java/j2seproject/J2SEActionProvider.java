@@ -733,7 +733,7 @@ class J2SEActionProvider implements ActionProvider {
             if (doJavaChecks) {
                 final Collection<ElementHandle<TypeElement>> mainClasses = J2SEProjectUtil.getMainMethods (file);
                 if (!hasMainClassFromTest && mainClasses.isEmpty()) {
-                    if (AppletSupport.isApplet(file)) {
+                    if (!isTest && AppletSupport.isApplet(file)) {
 
                         EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         String jvmargs = ep.getProperty(J2SEProjectProperties.RUN_JVM_ARGS);

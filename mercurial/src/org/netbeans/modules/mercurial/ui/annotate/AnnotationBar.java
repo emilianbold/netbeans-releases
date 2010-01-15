@@ -335,7 +335,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                         if(isKenaiRepository) {
                             String author = line.getAuthor();
                             if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
-                                KenaiUser ku = HgKenaiSupport.getInstance().forName(author);
+                                KenaiUser ku = HgKenaiSupport.getInstance().forName(author, url);
                                 if(ku != null) {
                                     kenaiUsersMap.put(author, ku);
                                 }

@@ -71,14 +71,14 @@ public abstract class RuntimeAnnotationChecker {
     public boolean check() {
         List<? extends AnnotationMirror> annotations = getElement()
                 .getAnnotationMirrors();
-        boolean isQualifierType = getHelper().hasAnnotation(annotations,
+        boolean hasAnnotation = getHelper().hasAnnotation(annotations,
                 getAnnotation());
         boolean hasRequiredRetention = getHelper().hasAnnotation(annotations,
                 Retention.class.getCanonicalName());
         boolean hasRequiredTarget = getHelper().hasAnnotation(annotations,
                 Target.class.getCanonicalName());
 
-        if (!isQualifierType) {
+        if (!hasAnnotation) {
             // this is not qualifier , just return false
             return false;
         }
@@ -86,14 +86,14 @@ public abstract class RuntimeAnnotationChecker {
         if (!hasRequiredRetention) {
             getLogger().log(Level.WARNING, "Annotation "
                     + getElement().getQualifiedName()
-                    + "declared as Qualifier but has no Retention");// NOI18N
+                    + "declared as " +getAnnotation()+" but has no Retention");// NOI18N
             return false;
         }
 
         if (!hasRequiredTarget) {
             getLogger().log(Level.WARNING, "Annotation "
                     + getElement().getQualifiedName()
-                    + "declared as Qualifier but has no Target");// NOI18N
+                    + "declared as " +getAnnotation()+" but has no Target");// NOI18N
             return false;
         }
 
@@ -111,7 +111,7 @@ public abstract class RuntimeAnnotationChecker {
         if (!hasRequiredRetention) {
             getLogger().log(Level.WARNING, "Annotation "
                     + getElement().getQualifiedName()
-                    + " declared as Qualifier but has wrong retention policy."
+                    + " declared as " +getAnnotation()+" but has wrong retention policy."
                     + " Correct retention policy is "
                     + RetentionPolicy.RUNTIME.toString());// NOI18N
             return false;

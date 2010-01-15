@@ -308,17 +308,34 @@
                   to="${product.logic.length}" 
                   property="i">
             <!-- set the properties relevant to the current file -->
-            <set 
-                property="current.uri" 
-                source="product.logic.${i}.uri"/>
+            
             <set 
                 property="current.file" 
                 value="${product.logic.dir}/${product.logic.file.name}"/>
+
+            <condition property="product.logic.${i}.is.local" value="true" else="false">
+                <isset property="product.logic.${i}.path"/>
+            </condition>
             
-            <get 
-                src="${current.uri}" 
-                dest="${current.file}" 
-                usetimestamp="true"/>
+            <if property="product.logic.${i}.is.local" value="false">
+                <set 
+                    property="current.uri" 
+                    source="product.logic.${i}.uri"/>
+                <get 
+                    src="${current.uri}" 
+                    dest="${current.file}" 
+                    usetimestamp="true"/>
+            </if>
+
+            <if property="product.logic.${i}.is.local" value="true">
+                <set 
+                    property="current.path" 
+                    source="product.logic.${i}.path"/>
+                <copy
+                    file="${current.path}" 
+                    tofile="${current.file}" 
+                    preservelastmodified="true"/>
+            </if>
             
             <!-- sign the current jar file -->
 	    <if property="jarsigner.enabled" value="true">
@@ -350,12 +367,6 @@
             <!-- define the path to the current working file and the temporary
                  directory which should be used for repackaging -->
             <set 
-                property="current.uri" 
-                source="product.data.${i}.uri"/>
-            <uri-to-path 
-                property="current.downloaded.path" 
-                uri="${current.uri}"/>
-            <set 
                 property="current.zip" 
                 value="${product.data.${i}.zip}"/>
 
@@ -377,9 +388,6 @@
             <set 
                 property="current.file" 
                 value="${product.data.dir}/${product.data.file.name}"/>
-            <set 
-                property="current.download" 
-                value="${downloads.cache.dir}/${current.downloaded.path}"/>
             <set 
                 property="current.temp.dir" 
                 value="${work.dir}/temp"/>
@@ -426,19 +434,41 @@
             
             <!-- if the data needs to be packaged -->
             <if property="do.package.data.${i}" value="true">
-                <dirname 
-                    property="current.download.${i}.dir" 
-                    file="${current.download}"/>
-                <set 
-                    property="current.download.dir"
-                    source="current.download.${i}.dir"/>
-                <mkdir 
-                    dir="${current.download.dir}"/>
-                
-                <get 
-                    src="${current.uri}" 
-                    dest="${current.download}"
-                    usetimestamp="true"/>
+
+                <condition property="product.data.${i}.is.local" value="true" else="false">
+                    <isset property="product.data.${i}.path"/>
+                </condition>
+
+                <if property="product.data.${i}.is.local" value="false">               
+                    <set 
+                        property="current.uri" 
+                        source="product.data.${i}.uri"/>
+                    <uri-to-path 
+                        property="current.downloaded.path" 
+                        uri="${current.uri}"/>
+                    <set 
+                        property="current.download" 
+                        value="${downloads.cache.dir}/${current.downloaded.path}"/>
+               
+                    <dirname 
+                        property="current.download.${i}.dir" 
+                        file="${current.download}"/>
+                    <set 
+                        property="current.download.dir"
+                        source="current.download.${i}.dir"/>
+                    <mkdir 
+                        dir="${current.download.dir}"/>
+                    
+                    <get 
+                        src="${current.uri}" 
+                        dest="${current.download}"
+                        usetimestamp="true"/>
+                </if>
+
+                <if property="product.data.${i}.is.local" value="true">
+                    <set property="current.download"
+                         source="product.data.${i}.path"/>
+                </if>
                 
                 <!-- extract the zip file to a temporary directory, if it's a 
                      zip file, or simply move it there if it is the data we 

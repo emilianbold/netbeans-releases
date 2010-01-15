@@ -48,7 +48,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -63,12 +65,13 @@ import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jiri Rechtacek
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.modules.InstalledFileLocator.class)
+@ServiceProvider(service=InstalledFileLocator.class)
 public class InstallManager extends InstalledFileLocator{
     
     // special directories in NB files layout
@@ -324,6 +327,18 @@ public class InstallManager extends InstalledFileLocator{
     }
 
     public File locate(String relativePath, String codeNameBase, boolean localized) {
+        // Rarely returns anything so don't bother optimizing.
+        Set<File> files = locateAll(relativePath, codeNameBase, localized);
+        return files.isEmpty() ? null : files.iterator().next();
+    }
+
+    public @Override Set<File> locateAll(String relativePath, String codeNameBase, boolean localized) {
+        synchronized (InstallManager.class) {
+            if (clusters.isEmpty()) {
+                return Collections.<File>emptySet();
+            }
+        }
+        // XXX #28729: use codeNameBase to search only in the appropriate places
         if (relativePath.length() == 0) {
             throw new IllegalArgumentException("Cannot look up \"\" in InstalledFileLocator.locate"); // NOI18N
         }
@@ -355,32 +370,31 @@ public class InstallManager extends InstalledFileLocator{
                     ext = name.substring(i);
                 }
                 String[] suffixes = org.netbeans.Util.getLocalizingSuffixesFast();
+                Set<File> files = new HashSet<File>();
                 for (int j = 0; j < suffixes.length; j++) {
                     String locName = baseName + suffixes[j] + ext;
-                    File f = locateExactPath(prefix, locName);
-                    if (f != null) {
-                        return f;
-                    }
+                    files.addAll(locateExactPath(prefix, locName));
                 }
-                return null;
+                return files;
             } else {
                 return locateExactPath(prefix, name);
             }
         
     }
-    
+
     /** Search all top dirs for a file. */
-    private static File locateExactPath(String prefix, String name) {
+    private static Set<File> locateExactPath(String prefix, String name) {
+        Set<File> files = new HashSet<File>();
         synchronized(InstallManager.class) {
             File[] dirs = clusters.toArray(new File[clusters.size()]);
             for (int i = 0; i < dirs.length; i++) {
                 File f = makeFile(dirs[i], prefix, name);
                 if (f.exists()) {                    
-                    return f;
+                    files.add(f);
                 }
             }            
         }        
-        return null;
+        return files;
     }
     
     private static File makeFile(File dir, String prefix, String name) {        

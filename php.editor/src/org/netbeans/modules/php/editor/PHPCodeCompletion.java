@@ -454,6 +454,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private void autoCompleteNewClass(List<CompletionProposal> proposals, PHPCompletionItem.CompletionRequest request) {
         Collection<IndexedClassMember<IndexedFunction>> members = getAllConstructorsForCC(request.index, request.result, QualifiedName.create(request.prefix), nameKind);
         for (IndexedClassMember<IndexedFunction> element : members) {
+            IndexedType type = element.getType();
+            if (type instanceof IndexedClass && type.isAbstract()) {
+                continue;
+            }
             if (element.getMember() != null) {
                 IndexedFunction fnc = element.getMember();
                 int[] optionalArgs = fnc.getOptionalArgs();

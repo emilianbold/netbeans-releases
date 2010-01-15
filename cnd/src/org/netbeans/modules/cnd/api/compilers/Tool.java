@@ -40,12 +40,10 @@
  */
 package org.netbeans.modules.cnd.api.compilers;
 
-import java.io.File;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -204,14 +202,6 @@ public class Tool {
         return displayName;
     }
 
-//    public String getGenericName() {
-//        String name = getName();
-//        if (name.length() > 0) {
-//            return TOOL_NAMES[getKind()] + " - " + getName(); // NOI18N
-//        } else {
-//           return TOOL_NAMES[getKind()]; 
-//        }
-//    }
     public static String getToolDisplayName(int kind) {
         return TOOL_NAMES[kind];
     }

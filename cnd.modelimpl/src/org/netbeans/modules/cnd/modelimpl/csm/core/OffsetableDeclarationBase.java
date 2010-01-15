@@ -233,4 +233,17 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     public String toString() {
         return "" + getKind() + ' ' + getName()  + getOffsetString(); // NOI18N
     }    
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)){
+            return false;
+        }
+        return getName().equals(((OffsetableDeclarationBase<?>)obj).getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return  31*super.hashCode() + getName().hashCode();
+    }
 }

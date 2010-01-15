@@ -218,6 +218,20 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         return (beforeInitialScanStarted && openingProjects) || getWorker().isWorking() || !PathRegistry.getDefault().isFinished();
     }
 
+    public boolean isIndexer() {
+        return inIndexer.get() == Boolean.TRUE;
+    }
+
+    public void runIndexer(final Runnable indexer) {
+        assert indexer != null;
+        inIndexer.set(Boolean.TRUE);
+        try {
+            indexer.run();
+        } finally {
+            inIndexer.remove();
+        }
+    }
+
     // returns false when timed out
     public boolean waitUntilFinished(long timeout) throws InterruptedException {
         long ts1 = System.currentTimeMillis();
@@ -795,7 +809,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     private final RootsListeners rootsListeners = new RootsListeners();
     private final FileChangeListener sourceRootsListener = new FCL(true);
     private final FileChangeListener binaryRootsListener = new FCL(false);
-    
+    private final ThreadLocal<Boolean> inIndexer = new ThreadLocal<Boolean>();
+
     private RepositoryUpdater () {
         // no-op
     }
@@ -1669,6 +1684,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     return true;
                 } finally {
                     for(Context ctx : transactionContexts) {
+                        if (getShuttdownRequest().isRaised()) {
+                            return false;
+                        }
                         IndexImpl index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
                         if (index != null) {
                             index.store(isSteady(), new ProxyIterable<Indexable>(allIndexblesSentToIndexers, false));
@@ -1694,22 +1712,21 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             LOGGER.fine("InvalidateSources took: " + (et-st));  //NOI18N
         }
        
-        protected final void indexBinary(URL root) throws IOException {
+        protected final boolean indexBinary(URL root) throws IOException {
             LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
 
             RepositoryUpdater.getDefault().rootsListeners.add(root, false);
-            
+            FileObjectCrawler crawler = null;
             boolean isFolder = false;
             boolean isUpToDate = false;
             if ("file".equals(root.getProtocol())) { //NOI18N
                 FileObject rootFo = URLMapper.findFileObject(root);
                 if (rootFo != null && rootFo.isFolder()) {
                     isFolder = true;
-                    FileObjectCrawler crawler = new FileObjectCrawler(rootFo, true, null, getShuttdownRequest());
+                    crawler = new FileObjectCrawler(rootFo, true, null, getShuttdownRequest());
                     Collection<IndexableImpl> modified = crawler.getResources();
                     Collection<IndexableImpl> deleted = crawler.getDeletedResources();
                     if (crawler.isFinished()) {
-                        crawler.storeTimestamps();
                         if (deleted.size() == 0 && modified.size() == 0) {
                             // no files have been deleted or modified since we have seen the folder
                             isUpToDate = true;
@@ -1728,9 +1745,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
 
                 for(BinaryIndexerFactory f : factories) {
+                    if (getShuttdownRequest().isRaised()) {
+                        break;
+                    }
                     final Context ctx = SPIAccessor.getInstance().createContext(
-                            cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false,                            
-                            false, null);
+                            cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false,
+                            false, getShuttdownRequest());
                     SPIAccessor.getInstance().setAllFilesJob(ctx, !isFolder || !isUpToDate // XXX: I am abusing this parameter to signal that the binary folder is up-to-date and does not have to be rescanned
                             );
                     transactionContexts.add(ctx);
@@ -1741,7 +1761,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                     SPIAccessor.getInstance().index(indexer, ctx);
                 }
+                return true;
             } finally {
+                if (getShuttdownRequest().isRaised()) {
+                    return false;
+                }
+                if (crawler != null && crawler.isFinished()) {
+                    crawler.storeTimestamps();
+                }
                 for(Context ctx : transactionContexts) {
                     IndexImpl index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
                     if (index != null) {

@@ -144,6 +144,7 @@ final class KenaiTopComponent extends TopComponent {
                     DashboardImpl.getInstance().setKenai((Kenai) combo.getSelectedItem());
                 } else {
                     new AddInstanceAction().actionPerformed(e);
+                    DashboardImpl.getInstance().setKenai((Kenai) combo.getSelectedItem());
                 }
             }
         });

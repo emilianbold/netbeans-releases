@@ -45,9 +45,8 @@
                 <friend>org.netbeans.modules.dlight.threadmap</friend>
                 <friend>org.netbeans.modules.dlight.threadmap.support</friend>
                 <friend>org.netbeans.modules.dlight.visualizers</friend>
-                <package>org.netbeans.module.dlight.threads.api</package>
-                <package>org.netbeans.module.dlight.threads.api.storage</package>
-                <package>org.netbeans.module.dlight.threads.dataprovider</package>
+                <package>org.netbeans.modules.dlight.threads.api</package>
+                <package>org.netbeans.modules.dlight.threads.dataprovider</package>
             </friend-packages>
         </data>
     </configuration>

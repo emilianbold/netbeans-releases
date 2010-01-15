@@ -155,7 +155,8 @@ public final class Main extends Object {
 
             StartLog.logStart ("Modules initialization"); // NOI18N
             try {
-                moduleSystem = new ModuleSystem(FileUtil.getConfigRoot().getFileSystem());
+                moduleSystem = new ModuleSystem();
+                moduleSystem.init(FileUtil.getConfigRoot().getFileSystem());
             } catch (IOException ioe) {
                 // System will be screwed up.
                 throw (IllegalStateException) new IllegalStateException("Module system cannot be created").initCause(ioe); // NOI18N

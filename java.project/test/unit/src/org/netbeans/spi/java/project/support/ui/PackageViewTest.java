@@ -341,7 +341,8 @@ public class PackageViewTest extends NbTestCase {
                      
                      
     }
-    
+
+    @RandomlyFails // NB-Core-Build #3802
     public void testDefaultPackage() throws Exception {
 	// Create children        
         SourceGroup group = new SimpleSourceGroup( FileUtil.createFolder( root, "src" ) );
@@ -1009,7 +1010,7 @@ public class PackageViewTest extends NbTestCase {
                 }
                 return !path.matches(".+/(" + (sense ? "bad" : "contemporary") + "(/|$)|" + (sense ? "Ugly" : "Pretty") + ".*\\.java$)");
             }
-            PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+            PropertyChangeSupport pcs = new PropertyChangeSupport(Grp.this);
             public void addPropertyChangeListener(PropertyChangeListener listener) {
                 pcs.addPropertyChangeListener(listener);
             }

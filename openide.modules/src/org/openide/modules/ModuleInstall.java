@@ -45,25 +45,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.SharedClassObject;
 
 /**
-* Provides hooks for a custom module that may be inserted into NetBeans.
-* If needed this class should be extended by the main class of a module.
-*
-* <p>Simple modules will likely not need a main class--just a few entries in the manifest file.
-* Even modules with a main class need not do anything in it that is already covered by manifest entries;
-* only additional special functionality need be handled here.
-*
+ * Optional custom module lifecycle hooks.
+ * Most modules should not need this.
 * <p>Specify this class in the manifest file with <code>OpenIDE-Module-Install</code>.
-*
-* <p>Modules wishing to keep state associated with the installation of the module
-* may do so by implementing not only this class but also {@link java.io.Externalizable}.
-* In this case, they are responsible for reading and writing their own state
-* properly (probably using {@link java.io.ObjectOutput#writeObject} and {@link java.io.ObjectInput#readObject}).
-* Note that state which is logically connected to the user's configuration of the module on
-* a possibly project-specific basis should <em>not</em> be stored this way, but rather
-* using a system option. (Even if this information is not to be displayed, it should
-* still be stored as hidden properties of the system option, so as to be switched properly
-* during project switches.)
- * <strong>Storing externalizable state in a <code>ModuleInstall</code> is deprecated.</strong>
 * @author Petr Hamernik, Jaroslav Tulach, Jesse Glick
 */
 public class ModuleInstall extends SharedClassObject {

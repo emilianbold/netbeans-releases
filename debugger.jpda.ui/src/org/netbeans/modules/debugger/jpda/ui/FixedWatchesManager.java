@@ -57,7 +57,7 @@ import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.debugger.jpda.ui.models.WatchesNodeModel;
+import org.netbeans.modules.debugger.jpda.ui.models.WatchesNodeModelFilter;
 import org.openide.util.NbPreferences;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.Mode;
@@ -81,7 +81,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
             ("CTL_DeleteFixedWatch_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                return !WatchesNodeModel.isEmptyWatch(node);
+                return !WatchesNodeModelFilter.isEmptyWatch(node);
             }
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;
@@ -106,7 +106,7 @@ NodeActionsProviderFilter, ExtendedNodeModelFilter, TableModelFilter {
             ("CTL_CreateFixedWatch_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                return !WatchesNodeModel.isEmptyWatch(node) && !isPrimitive(node);
+                return !WatchesNodeModelFilter.isEmptyWatch(node) && !isPrimitive(node);
             }
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;

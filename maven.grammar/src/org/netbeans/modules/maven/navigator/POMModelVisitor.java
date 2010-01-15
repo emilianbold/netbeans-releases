@@ -158,7 +158,9 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         checkChildString(names.MODELVERSION, NbBundle.getMessage(POMModelVisitor.class, "MODEL_VERSION"), t != null ? t.getModelVersion() : null);
         checkChildString(names.GROUPID, NbBundle.getMessage(POMModelVisitor.class, "GROUPID"), t != null ? t.getGroupId() : null);
         checkChildString(names.ARTIFACTID, NbBundle.getMessage(POMModelVisitor.class, "ARTIFACTID"), t != null ? t.getArtifactId() : null);
-        checkChildString(names.PACKAGING, NbBundle.getMessage(POMModelVisitor.class, "PACKAGING"), t != null ? t.getPackaging() : null);
+        if (count == 0 && t.getPackaging() != null) {
+            checkChildString(names.PACKAGING, NbBundle.getMessage(POMModelVisitor.class, "PACKAGING"), t != null ? t.getPackaging() : null);
+        }
         checkChildString(names.NAME, NbBundle.getMessage(POMModelVisitor.class, "NAME"), t != null ? t.getName() : null);
         checkChildString(names.VERSION, NbBundle.getMessage(POMModelVisitor.class, "VERSION"), t != null ? t.getVersion() : null);
         checkChildString(names.DESCRIPTION, NbBundle.getMessage(POMModelVisitor.class, "DESCRIPTION"), t != null ? t.getDescription() : null);

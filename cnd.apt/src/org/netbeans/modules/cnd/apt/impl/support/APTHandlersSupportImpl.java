@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  * utilities for working with APT states (macro-state, include-state, preproc-state)
@@ -81,7 +81,17 @@ public class APTHandlersSupportImpl {
     }
     
     public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths) {
-        return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths);
+        // user paths could contain "-include file" elements
+        List<IncludeDirEntry> fileEntries = new ArrayList<IncludeDirEntry>(0);
+        for (IncludeDirEntry includeDirEntry : userIncludePaths) {
+            if (!includeDirEntry.isExistingDirectory()) {
+                // check if this is file
+                if (CndFileUtils.isExistingFile(includeDirEntry.getFile(), includeDirEntry.getAsSharedCharSequence().toString())) {
+                    fileEntries.add(includeDirEntry);
+                }
+            }
+        }
+        return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries);
     }
 
     public static APTMacroMap createMacroMap(APTMacroMap sysMap, List<String> userMacros) {
@@ -96,7 +106,23 @@ public class APTHandlersSupportImpl {
     public static APTPreprocHandler.State createInvalidPreprocState(APTPreprocHandler.State orig) {
         return ((APTPreprocHandlerImpl.StateImpl)orig).copyInvalid();
     }
-    
+
+    public static boolean isFirstLevel(APTIncludeHandler includeHandler) {
+        if (includeHandler != null) {
+            return ((APTIncludeHandlerImpl) includeHandler).isFirstLevel();
+        } else {
+            return false;
+        }
+    }
+
+    public static Collection<IncludeDirEntry> extractIncludeFileEntries(APTIncludeHandler includeHandler) {
+        Collection<IncludeDirEntry> out = new ArrayList<IncludeDirEntry>(0);
+        if (includeHandler != null) {
+            return ((APTIncludeHandlerImpl) includeHandler).getUserIncludeFilePaths();
+        }
+        return out;
+    }
+
     public static Map<CharSequence, APTMacro> extractMacroMap(APTPreprocHandler.State state){
         assert state != null;
         APTBaseMacroMap.StateImpl macro = (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;

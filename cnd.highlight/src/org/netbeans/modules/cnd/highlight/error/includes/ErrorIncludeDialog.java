@@ -672,9 +672,9 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         Dwarf dump = null;
         try {
             dump = new Dwarf(objFileName);
-            List <CompilationUnit> units = dump.getCompilationUnits();
-            if (units.size()>0){
-                CompilationUnit cu = units.get(0);
+            Iterator<CompilationUnit> units = dump.iteratorCompilationUnits();
+            if (units.hasNext()){
+                CompilationUnit cu = units.next();
                 String fullName = getRightName(cu.getSourceFileAbsolutePath());
                 if (unit.equals(fullName)){
                     List<String> includes = cu.getStatementList().getPathsForFile(found);

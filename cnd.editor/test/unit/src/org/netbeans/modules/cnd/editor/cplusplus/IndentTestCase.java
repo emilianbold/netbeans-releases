@@ -1049,4 +1049,170 @@ public class IndentTestCase extends EditorBase {
                   "|"
                 );
     }
+
+    public void testNestedFor() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++)\n"+
+            "        for (int j=0; j<n; j++)\n"+
+            "            a[i][j]=0;|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of nested if/for",
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++)\n"+
+            "        for (int j=0; j<n; j++)\n"+
+            "            a[i][j]=0;\n"+
+            "    \n"+
+            "}\n"
+            );
+    }
+
+    public void testNestedIf() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    if (i==0)\n"+
+            "        if (j==0)\n"+
+            "            a[i][j]=0;|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of nested if/for",
+            "int main() {\n"+
+            "    if (i==0)\n"+
+            "        if (j==0)\n"+
+            "            a[i][j]=0;\n"+
+            "    \n"+
+            "}\n"
+            );
+    }
+
+    public void testNestedForIf() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++)\n"+
+            "        if (j==0)\n"+
+            "            a[i][j]=0;|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of nested if/for",
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++)\n"+
+            "        if (j==0)\n"+
+            "            a[i][j]=0;\n"+
+            "    \n"+
+            "}\n"
+            );
+    }
+
+    public void testNestedForIf1() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++)\n"+
+            "        if (j==0)|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of nested if/for",
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++)\n"+
+            "        if (j==0)\n"+
+            "            \n"+
+            "}\n"
+            );
+    }
+
+    public void testNestedIfFor() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    if (j==0)\n"+
+            "        for (int i=0; i<n; i++)\n"+
+            "            a[i][j]=0;|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of nested if/for",
+            "int main() {\n"+
+            "    if (j==0)\n"+
+            "        for (int i=0; i<n; i++)\n"+
+            "            a[i][j]=0;\n"+
+            "    \n"+
+            "}\n"
+            );
+    }
+
+    public void testNestedIfFor1() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    if (j==0)\n"+
+            "        for (int i=0; i<n; i++)|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of nested if/for",
+            "int main() {\n"+
+            "    if (j==0)\n"+
+            "        for (int i=0; i<n; i++)\n"+
+            "            \n"+
+            "}\n"
+            );
+    }
+
+    public void testEmptyFor() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++);|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of empty for",
+            "int main() {\n"+
+            "    for (int i=0; i<n; i++);\n"+
+            "    \n"+
+            "}\n"
+            );
+    }
+
+    public void testNestedFor2() {
+        setCppEditorKit(false);
+        setDefaultsOptions();
+        setLoadDocumentText(
+            "int main() {\n"+
+            "    for(i=0;i<10;i++)\n"+
+            "        for(j=0;j<10;j++)\n"+
+            "            for(k=0;k<10;k++)\n"+
+            "                {\n"+
+            "                    //contents of the last loop\n"+
+            "                }|\n"+
+            "}\n"
+            );
+        indentNewLine();
+        assertDocumentText("Incorrect identing of empty for",
+            "int main() {\n"+
+            "    for(i=0;i<10;i++)\n"+
+            "        for(j=0;j<10;j++)\n"+
+            "            for(k=0;k<10;k++)\n"+
+            "                {\n"+
+            "                    //contents of the last loop\n"+
+            "                }\n"+
+            "    \n"+
+            "}\n"
+            );
+    }
 }

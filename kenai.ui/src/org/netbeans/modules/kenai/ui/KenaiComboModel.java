@@ -52,7 +52,7 @@ import org.netbeans.modules.kenai.api.KenaiManager;
  */
 public class KenaiComboModel extends AbstractListModel implements ComboBoxModel {
 
-    private Object selected = KenaiManager.getDefault().getKenai("https://kenai.com");
+    private Object selected = getElementAt(0);
     private Kenai.Status status;
 
     public KenaiComboModel(Kenai.Status status) {
@@ -80,7 +80,10 @@ public class KenaiComboModel extends AbstractListModel implements ComboBoxModel 
     public Object getElementAt(int index) {
         int i = 0;
         for (Kenai k: KenaiManager.getDefault().getKenais()) {
-            if (i++ == index) {
+            if (status==null || k.getStatus()==status) {
+                i++;
+            }
+            if (i -1 == index) {
                 return k;
             }
         }

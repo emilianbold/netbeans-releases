@@ -1406,7 +1406,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (Utils.LOG.isLoggable(Level.INFO)) {
             // since file container can return empty container the entry can be null.
             StringBuilder buf = new StringBuilder("File container does not have file "); //NOI18N
-            buf.append("[" + file + "]"); //NOI18N
+            buf.append("[").append(file).append("]"); //NOI18N
             if (getFileContainer() == FileContainer.empty()) {
                 buf.append(" because file container is EMPTY."); //NOI18N
             } else {
@@ -1420,7 +1420,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             Status st = getStatus();
             if (st != null) {
-                buf.append("\n\tProject " + toString() + " has status " + st + "."); //NOI18N
+                buf.append("\n\tProject ").append(toString()).append(" has status ").append(st).append("."); //NOI18N
             }
             Utils.LOG.info(buf.toString());
         }

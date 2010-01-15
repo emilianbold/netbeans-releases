@@ -120,7 +120,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
             if (platformManager == null) {
                 platformManager = JavaPlatformManager.getDefault();
                 platformManager.addPropertyChangeListener(WeakListeners.propertyChange(this, platformManager));
-                NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
+                NbMavenProject watch = project.getProjectWatcher();
                 watch.addPropertyChangeListener(this);
             }
 

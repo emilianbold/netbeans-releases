@@ -63,6 +63,7 @@ public class NewDevicePanel extends javax.swing.JPanel {
 
     private final DevicePropertiesPanel pnl = new DevicePropertiesPanel();
 
+    @SuppressWarnings("unchecked")
     public NewDevicePanel(FileObject targetFolder) {
         initComponents();
         jPanel1.add(pnl, BorderLayout.CENTER);

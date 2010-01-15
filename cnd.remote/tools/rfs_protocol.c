@@ -85,7 +85,13 @@ enum sr_result pkg_recv(int sd, struct package* p, short max_data_size) {
     unsigned char header[3];
     int received;
     received = recv(sd, header, 3, 0); // 3-rd is for kind
-    if (received != 3) {
+    if (received == 0) { // normal peer shutdown
+        return sr_reset; 
+    } else if (received == -1) { // abnormal peer shutdown
+        perror("Protocol error: error receiving package");
+        return sr_reset;
+    } else if (received != 3) {
+        report_error("Protocol error: received %d bytes instead of 3\n", received);
         return (received == 0) ? sr_reset : sr_failure;
     }
     p->kind = (enum kind) header[0];
@@ -93,6 +99,7 @@ enum sr_result pkg_recv(int sd, struct package* p, short max_data_size) {
     if (size > max_data_size) {
         //trace("pkg_recv: packet too large: %d\n", size);
         errno = EMSGSIZE;
+        report_error("Protocol error: size too large: %d \n", size);
         return sr_failure;
     }
     received = recv(sd, p->data, size, 0);
@@ -101,6 +108,7 @@ enum sr_result pkg_recv(int sd, struct package* p, short max_data_size) {
     }
     if (received != size) {
         //trace("pkg_recv: received %d instead of %d\n", received, size);
+        report_error("Protocol error: received %d bytes instead of %d\n", received, size);
         return sr_failure;
     }
     return sr_success;

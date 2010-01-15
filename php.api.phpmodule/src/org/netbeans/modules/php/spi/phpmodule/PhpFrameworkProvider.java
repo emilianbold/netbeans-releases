@@ -183,4 +183,26 @@ public abstract class PhpFrameworkProvider {
      * @since 1.13
      */
     public abstract EditorExtender getEditorExtender(PhpModule phpModule);
+
+    /**
+     * This method is called when the PHP module is opened in the IDE but only if is is extended by this framework.
+     * It is suitable to make any initialization of this framework here but usually it is not needed to override this method.
+     * @param phpModule the PHP module that is being opened in the IDE
+     * @see #isInPhpModule(PhpModule)
+     * @see #phpModuleClosed(PhpModule)
+     * @since 1.24
+     */
+    public void phpModuleOpened(PhpModule phpModule) {
+    }
+
+    /**
+     * This method is called when the PHP module is closed in the IDE but only if is is extended by this framework.
+     * It is suitable to make any clean up of this framework here but usually it is not needed to override this method.
+     * @param phpModule the PHP module that is being closed in the IDE
+     * @see #isInPhpModule(PhpModule)
+     * @see #phpModuleOpened(PhpModule)
+     * @since 1.24
+     */
+    public void phpModuleClosed(PhpModule phpModule) {
+    }
 }

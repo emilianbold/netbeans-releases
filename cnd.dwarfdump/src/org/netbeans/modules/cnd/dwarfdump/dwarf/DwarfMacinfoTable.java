@@ -46,6 +46,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.MACINFO;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfMacroInfoSection;
 
 /**
@@ -58,8 +59,10 @@ public class DwarfMacinfoTable {
     private DwarfMacroInfoSection section;
     ArrayList<DwarfMacinfoEntry> baseSourceTable = new ArrayList<DwarfMacinfoEntry>();
     ArrayList<DwarfMacinfoEntry> fileSourceTable = new ArrayList<DwarfMacinfoEntry>();
+    List<Integer> commandIncludedFilesTable;
     private boolean baseSourceTableRead;
     private boolean fileSourceTableRead;
+    private boolean commandIncludedFilesRead;
     
     public DwarfMacinfoTable(DwarfMacroInfoSection section, long offset) {
         this.section = section;
@@ -116,6 +119,14 @@ public class DwarfMacinfoTable {
         fileSourceTableRead = true;
     }
     
+    public List<Integer> getCommandLineIncludedFiles() throws IOException{
+        if (!commandIncludedFilesRead) {
+            commandIncludedFilesTable = section.getCommandIncudedFiles(this, fileSourceTableOffset);
+            commandIncludedFilesRead = true;
+        }
+        return commandIncludedFilesTable;
+    }
+
     public ArrayList<DwarfMacinfoEntry> getCommandLineMarcos() {
         ArrayList<DwarfMacinfoEntry> entries = getBaseSourceTable();
         int size = entries.size();
@@ -177,17 +188,6 @@ public class DwarfMacinfoTable {
             currLine = entry.lineNum;
             idx++;
         } while (idx < size && (entry = entries.get(idx)).lineNum - currLine == 1);
-        
-        return result;
-    }
-    
-    public ArrayList<String> getCommandLineDefines() {
-        ArrayList<String> result = new ArrayList<String>();
-        ArrayList<DwarfMacinfoEntry> macros = getCommandLineMarcos();
-        
-        for (DwarfMacinfoEntry macro : macros) {
-            result.add(macro.definition.replaceFirst(" ", "=")); // NOI18N
-        }
         
         return result;
     }

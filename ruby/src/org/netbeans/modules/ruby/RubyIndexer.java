@@ -1046,12 +1046,6 @@ public class RubyIndexer extends EmbeddingIndexer {
                         break;
                     }
 
-                        case CALL: {
-                            System.out.println("Huh: " + child);
-                            break;
-                        }
-
-
                     case CONSTRUCTOR:
                     case METHOD: {
                         indexMethod(child, document, false, nodoc);

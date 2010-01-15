@@ -62,7 +62,9 @@ made subject to such option by the copyright holder.
         <folder name="text">
 
             <folder name="x-cnd-sourcefile">
-                <file name="org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance" />
+                <file name="org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
             </folder>
 
             <folder name="x-h">

@@ -272,9 +272,11 @@ public class CustomIconEditor extends javax.swing.JPanel {
     private FileObject findSourceRootOf(FileObject[] roots, String resName) {
         for (FileObject root : roots) {
             ClassPath resCP = ClassPath.getClassPath(root, ClassPath.SOURCE);
-            FileObject res = resCP.findResource(resName);
-            if (res != null) {
-                return res;
+            if (resCP != null) {
+                FileObject res = resCP.findResource(resName);
+                if (res != null) {
+                    return res;
+                }
             }
         }
         return null;

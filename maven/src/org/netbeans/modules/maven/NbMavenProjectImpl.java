@@ -170,6 +170,7 @@ public final class NbMavenProjectImpl implements Project {
     private final NbMavenProject watcher;
     private final ProjectState state;
     private final M2ConfigProvider configProvider;
+    private final ClassPathProviderImpl cppProvider;
 
 //    private ConfigurationProviderEnabler configEnabler;
     private final M2AuxilaryConfigImpl auxiliary;
@@ -217,6 +218,7 @@ public final class NbMavenProjectImpl implements Project {
         auxprops = new MavenProjectPropsImpl(auxiliary, watcher);
         profileHandler = new ProjectProfileHandlerImpl(this,auxiliary);
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
+        cppProvider = new ClassPathProviderImpl(this);
 //        configEnabler = new ConfigurationProviderEnabler(this, auxiliary, profileHandler);
 //        if (!SwingUtilities.isEventDispatchThread()) {
 //            //#155766 sor of ugly, as not all (but the majority for sure) projects need
@@ -334,8 +336,7 @@ public final class NbMavenProjectImpl implements Project {
     // the properties of the platform to properly resolve stuff like com.sun.boot.class.path
     public Properties createSystemPropsForPropertyExpressions() {
         Properties props = cloneStaticProps();
-        ActiveJ2SEPlatformProvider prov = getLookup().lookup(ActiveJ2SEPlatformProvider.class);
-        props.putAll(prov.getJavaPlatform().getSystemProperties());
+        props.putAll(cppProvider.getJavaPlatform().getSystemProperties());
         props.putAll(configProvider.getActiveConfiguration().getProperties());
         return props;
     }
@@ -926,7 +927,7 @@ public final class NbMavenProjectImpl implements Project {
                     configProvider,
                     new CustomizerProviderImpl(this),
                     new LogicalViewProviderImpl(this),
-                    new ClassPathProviderImpl(this),
+                    cppProvider,
                     sharability,
                     new MavenTestForSourceImpl(this),
                     ////            new MavenFileBuiltQueryImpl(this),

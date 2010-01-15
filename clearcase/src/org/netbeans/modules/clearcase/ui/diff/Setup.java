@@ -236,6 +236,7 @@ public final class Setup extends AbstractDiffSetup {
         return node;
     }
     
+    @Override
     public String toString() {
         return title;
     }

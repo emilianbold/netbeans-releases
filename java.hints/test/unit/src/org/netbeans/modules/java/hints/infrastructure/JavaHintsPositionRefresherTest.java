@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.infrastructure;
@@ -66,7 +66,6 @@ import static org.junit.Assert.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -93,8 +92,8 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     private FileObject sourceRoot;
     private CompilationInfo info;
     private Document doc;
-    private File cache;
-    private FileObject cacheFO;
+    private static File cache;
+    private static FileObject cacheFO;
 
     public JavaHintsPositionRefresherTest(String name) {
         super(name);
@@ -126,11 +125,11 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
             }
         });
 
-        if (cache == null) {
-            cache = FileUtil.normalizeFile(TestUtil.createWorkFolder());
-            cacheFO = FileUtil.toFileObject(cache);
+        clearWorkDir();
 
-            cache.deleteOnExit();
+        if (cache == null) {
+            cache = FileUtil.normalizeFile(new File(getWorkDir(), "cache"));
+            cacheFO = FileUtil.createFolder(cache);
 
             IndexUtil.setCacheFolder(cache);
 
@@ -139,8 +138,6 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     }
 
     private void prepareTest(String fileName, String code) throws Exception {
-        clearWorkDir();
-
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
 
         assertNotNull(workFO);
@@ -214,6 +211,10 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
                 new String[] {"1:1-1:2:verifier:Empty statement"});
     }
 
+    public void testPatternBasedHint() throws Exception {
+        performTest("test/Test.java", "class Test { public void method(String g) {\n java.util.|logging.Logger.global.fine(g + g); \n} }",
+                new String[] {"1:38-1:43:verifier:Inefficient to use string concat in logger"});
+    }
 
     private void performTest(String fileName , String code, String[] expected) throws Exception {
         int[] caretPosition = new int[1];
@@ -235,7 +236,7 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
                 eds.add(ed.toString().replace(":  ", "  :"));
             }
         }
-        assertTrue("Provided error messages differ. ", eds.containsAll(Arrays.asList(expected)));
+        assertTrue("Provided error messages differ. " + eds, eds.containsAll(Arrays.asList(expected)));
     }
    
 

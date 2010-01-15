@@ -45,6 +45,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -148,7 +149,9 @@ public class FindNameTest extends NbTestCase {
             if (full) {
                 Dwarf dwarf = new Dwarf(executable);
                 try {
-                    loop:for (CompilationUnit unit : dwarf.getCompilationUnits()){
+                    Iterator<CompilationUnit> iterator = dwarf.iteratorCompilationUnits();
+                    loop:while(iterator.hasNext()) {
+                        CompilationUnit unit = iterator.next();
                         //System.err.println("Unit:"+unit.getSourceFileFullName());
                         for (DwarfEntry entry : unit.getDeclarations(false)){
                             if (entry.getKind() == TAG.DW_TAG_subprogram){
