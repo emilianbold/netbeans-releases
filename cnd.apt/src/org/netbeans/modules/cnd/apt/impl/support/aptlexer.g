@@ -55,6 +55,7 @@ options {
 } 
 
 {
+@org.netbeans.api.annotations.common.SuppressWarnings("DLS")
 @SuppressWarnings({"unchecked", "cast", "fallthrough"})
 final /*final class attribute gives us performance */
 }
