@@ -47,4 +47,11 @@ public interface OSGIConstants {
     public static final String ARTIFACTID_BUNDLE_PLUGIN = "maven-bundle-plugin"; //NOI18N
     public static final String GROUPID_FELIX = "org.apache.felix"; //NOI18N
 
+    public static final String GOAL_MANIFEST = "manifest"; //NOI18N
+    public static final String PARAM_INSTRUCTIONS = "instructions"; //NOI18N
+
+    public static final String BUNDLE_ACTIVATOR = "Bundle-Activator"; //NOI18N
+    public static final String PRIVATE_PACKAGE = "Private-Package"; //NOI18N
+    public static final String EXPORT_PACKAGE = "Export-Package"; //NOI18N
+
 }

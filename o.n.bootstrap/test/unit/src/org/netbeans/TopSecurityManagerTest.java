@@ -39,9 +39,6 @@
 
 package org.netbeans;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.logging.LogManager;
 import junit.framework.TestCase;
 
 /**
@@ -77,6 +74,7 @@ public class TopSecurityManagerTest extends TestCase {
         fail("Associating own security manager when one is already installed shall not be allowed");
     }
 
+    /* Reenable when assert checkLogger(perm) is added back:
     public void testLoggerCannotBeReset() {
         boolean asserts = false;
         assert asserts = true;
@@ -108,6 +106,7 @@ public class TopSecurityManagerTest extends TestCase {
                     ex);
         }
     }
+     */
 
 
     private static final class SecMan extends SecurityManager {
