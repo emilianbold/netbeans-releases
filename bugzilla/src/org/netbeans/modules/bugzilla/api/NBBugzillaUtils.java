@@ -40,7 +40,6 @@
 package org.netbeans.modules.bugzilla.api;
 
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepository;
@@ -55,8 +54,10 @@ public class NBBugzillaUtils {
      * Opens in the IDE the given issue from the netbeans repository
      *
      * @param issueID issue identifier
+     * @param username the user to connect with. Use null if none available.
+     * @param password the given users password. Use null if none available.
      */
-    public static void openIssue(String issueID) {
+    public static void openIssue(String issueID, String username, String password) {
         BugzillaRepository nbRepo = null;
 
         BugzillaRepository[] repos = Bugzilla.getInstance().getRepositories();
