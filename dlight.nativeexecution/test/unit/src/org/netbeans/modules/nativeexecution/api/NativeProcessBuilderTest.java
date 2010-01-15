@@ -200,6 +200,11 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
 
         assertEquals(0, result);
 
+        if (ee.isLocal() && HostInfoUtils.getHostInfo(ee).getOS().getFamily() == HostInfo.OSFamily.WINDOWS) {
+            System.out.println("setCommandLine is not currently supported...."); // NOI18N
+            return;
+        }
+
         System.out.println("Invoke copied ls and ensure that it works"); // NOI18N
 
         npb = NativeProcessBuilder.newProcessBuilder(ee);
@@ -241,7 +246,7 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
             File tool = new File(task);
             if (tool.exists() && tool.isFile()) {
                 return tool.getAbsolutePath();
-            }   
+            }
         }
         return null;
     }
@@ -317,8 +322,18 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         System.out.println("Invoke copied ls and ensure that it works"); // NOI18N
 
         npb = NativeProcessBuilder.newProcessBuilder(ee);
-        npb.setExecutable(testDir + "/copied ls"); // NOI18N
-        npb.setArguments(testDir);
+
+        if (ee.isLocal() && HostInfoUtils.getHostInfo(ee).getOS().getFamily() == HostInfo.OSFamily.WINDOWS) {
+            String shExecutable = findComand("sh.exe"); // NOI18N
+            assertNotNull(resource, "Cannot find sh.exe in paths"); // NOI18N
+            npb.setExecutable(shExecutable);
+            String dir = testDir.replaceAll(" ", "\\ "); // NOI18N
+            String ls = dir + "/copied\\ ls"; // NOI18N
+            npb.setArguments("-c", ls, dir); // NOI18N
+        } else {
+            npb.setExecutable(testDir + "/copied ls"); // NOI18N
+            npb.setArguments(testDir);
+        }
 
         NativeProcess ls = npb.call();
         List<String> out = ProcessUtils.readProcessOutput(ls);
