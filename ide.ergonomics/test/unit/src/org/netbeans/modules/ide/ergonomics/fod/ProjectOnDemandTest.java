@@ -49,13 +49,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import junit.framework.Test;
-import org.netbeans.Module;
-import org.netbeans.ModuleManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -99,8 +96,6 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         return NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
             addTest(ProjectOnDemandTest.class).
-            clusters("ergonomics[0-9]*").
-            clusters("ide[0-9]*|java[0-9]*").
             gui(false)
         );
     }
@@ -119,7 +114,25 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         boolean found = false;
         Exception ex2 = null;
         for (ModuleInfo info : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            if (info.getCodeNameBase().equals("org.netbeans.modules.java.kit")) {
+            if (info.getCodeNameBase().equals("org.netbeans.modules.subversion")) {
+             Method m = null;
+                Class<?> c = info.getClass();
+                for (;;) {
+                    if (c == null) {
+                        throw ex2;
+                    }
+                    try {
+                        m = c.getDeclaredMethod("setEnabled", Boolean.TYPE);
+                    } catch (Exception ex) {
+                        ex2 = ex;
+                    }
+                    if (m != null) {
+                        break;
+                    }
+                    c = c.getSuperclass();
+                }
+                m.setAccessible(true);
+                m.invoke(info, false);
                 assertFalse("Module is disabled", info.isEnabled());
                 found = true;
             }
@@ -188,15 +201,9 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         assertNull("No test factory in project", p.getLookup().lookup(TestFactory.class));
         assertNull("No test factory in project", p2.getLookup().lookup(TestFactory.class));
 
-        long before = System.currentTimeMillis();
-        Thread.sleep(1000);
-
         TestFactory.recognize.add(prjFO1);
         TestFactory.recognize.add(prjFO2);
         OpenProjects.getDefault().open(new Project[] { p }, false);
-
-        Thread.sleep(1000);
-        long after = System.currentTimeMillis();
         
         assertEquals("No Dialog currently created", 0, DD.cnt);
         
@@ -235,18 +242,6 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
 
         assertNotNull("Test factory in opened project", p.getLookup().lookup(TestFactory.class));
         assertNotNull("Test factory in not yet opened project", p2.getLookup().lookup(TestFactory.class));
-
-        FileObject sub = FileUtil.getConfigFile("Modules/org-netbeans-modules-subversion.xml");
-        assertNotNull("Module config file found", sub);
-        final Object when = sub.getAttribute("ergonomicsEnabled");
-        final Object cnt = sub.getAttribute("ergonomicsUnused");
-        assertNotNull("Not enabled manually", cnt);
-        assertNotNull("Not enabled manually", when);
-        assertEquals("Integer", Integer.class, cnt.getClass());
-        assertEquals("Set to zero", Integer.valueOf(0), cnt);
-
-        Long modified = sub.lastModified().getTime();
-        assertEquals("enabled attribute is same as modification day", when, modified);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
