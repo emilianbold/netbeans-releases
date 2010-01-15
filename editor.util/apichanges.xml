@@ -104,6 +104,20 @@ is the proper place.
 
   <changes>
 
+    <change id="DocumentUtilities.getDocumentTimestamp-added">
+      <summary>Added DocumentUtilities.getDocumentTimestamp(Document)</summary>
+        <version major="1" minor="34"/>
+        <date day="14" month="1" year="2010"/>
+        <author login="vstejskal"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            Adding DocumentUtilities.getDocumentTimestamp(Document) to provide access
+            to documents' timestamp property.
+        </p>
+        </description>
+    </change>
+
     <change id="DocumentUtilities.getDocumentVersion-added">
       <summary>Added DocumentUtilities.getDocumentVersion(Document)</summary>
         <version major="1" minor="28"/>
