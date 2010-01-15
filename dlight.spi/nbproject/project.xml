@@ -31,6 +31,8 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.sun.dlight.bridge</friend>
+                <friend>com.sun.dlight.spi.impl</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
