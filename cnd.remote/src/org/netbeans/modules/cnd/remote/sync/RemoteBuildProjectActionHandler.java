@@ -68,7 +68,6 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
 
     private ProjectActionHandler delegate;
     private ProjectActionEvent pae;
-    private ProjectActionEvent[] paes;
     private ExecutionEnvironment execEnv;
     private final List<ExecutionListener> listeners = new CopyOnWriteArrayList<ExecutionListener>();
 
@@ -82,7 +81,6 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
     @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
         this.pae = pae;
-        this.paes = paes;
         this.delegate = RemoteBuildProjectActionHandlerFactory.createDelegateHandler(pae);
         this.delegate.init(pae, paes);
         this.execEnv = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();

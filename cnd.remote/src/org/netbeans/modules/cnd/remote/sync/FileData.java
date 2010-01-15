@@ -149,11 +149,14 @@ public final class FileData {
     public FileInfo getFileInfo(File file) {
         return getFileInfo(getFileKey(file));
     }
-    
+
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     public void store()  {
         File dir = dataFile.getParentFile();
         if (!dir.exists()) {
-            dir.mkdirs(); // no ret value check - the code below will throw exception
+            if (!dir.mkdirs()) {
+                System.err.printf("Error creating directory %s\n", dir.getAbsolutePath());
+            }
         }
         try {
             OutputStream os = new BufferedOutputStream(new FileOutputStream(dataFile));
@@ -162,7 +165,9 @@ public final class FileData {
             os.close();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            dataFile.delete();
+            if (!dataFile.delete()) {
+                System.err.printf("Error deleting file %s\n", dataFile.getAbsolutePath());
+            }
         }
     }
 
@@ -178,8 +183,12 @@ public final class FileData {
         if (dataFile.exists()) {
             long time = System.currentTimeMillis();
             final FileInputStream is = new FileInputStream(dataFile);
-            data.load(new BufferedInputStream(is));
-            is.close();
+            BufferedInputStream bs = new BufferedInputStream(is);
+            try {
+                data.load(bs);
+            } finally {
+                bs.close();
+            }
             if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
                 time = System.currentTimeMillis() - time;
                 System.out.printf("reading %d timestamps from %s took %d ms\n", data.size(), dataFile.getAbsolutePath(), time); // NOI18N

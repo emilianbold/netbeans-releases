@@ -358,6 +358,7 @@ public abstract class RemotePathMap extends PathMap {
      * @return
      */
     // TODO: move to a more appropriate place
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV") // FindBugs warns that validationFile.delete() ret. value is ignored
     public static boolean isTheSame(ExecutionEnvironment execEnv, String rpath, File path) throws InterruptedException {
         if (path.exists() && path.isDirectory()) {
             File validationFile = null;
@@ -386,7 +387,7 @@ public abstract class RemotePathMap extends PathMap {
                 // directory is write protected
             } finally {
                 if (validationFile != null && validationFile.exists()) {
-                    validationFile.delete();
+                    validationFile.delete(); // it isn\t worth removing RV FindBugs violation here
                 }
             }
         }
