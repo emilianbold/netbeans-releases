@@ -698,8 +698,8 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testIZ144679() throws Exception {
         // IZ#144679 : IDE highlights static constants in class as wrong code
-        performTest("IZ144679.cc", 11, 21, "IZ144679.cc", 10, 1);
-        performTest("IZ144679.cc", 12, 22, "IZ144679.cc", 11, 1);
+        performTest("IZ144679.cc", 11, 40, "IZ144679.cc", 10, 1);
+        performTest("IZ144679.cc", 12, 40, "IZ144679.cc", 11, 1);
     }
 
     public void testIZ145077() throws Exception {
