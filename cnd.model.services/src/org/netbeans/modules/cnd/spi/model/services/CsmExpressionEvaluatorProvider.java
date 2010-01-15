@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,57 +34,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.spi.model.services;
 
-package org.netbeans.modules.cnd.modelutil;
-
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
- * Analog of Set<CsmClass> used for anti loop checks
- * @author Vladimir Kvashin
+ * Provider for expression evaluator.
+ *
+ * @author Nick Krasilnikov
  */
-public class AntiLoop {
-    
-    private Set<Object> set;
+public interface CsmExpressionEvaluatorProvider {
 
-    private static final int MAX_INHERITANCE_DEPTH = 20;
+    /**
+     * Evaluates expression.
+     *
+     * @param expr - expression as string
+     * @return result object
+     */
+    public Object eval(String expr);
 
-    public AntiLoop() {
-        set = new HashSet<Object>();
-    }
-    
-    public AntiLoop(int capacity) {
-        set = new HashSet<Object>(capacity);
-    }
-    
-    
-    public boolean add(CsmClassifier cls) {
-        return set.add(cls);
-    }
-
-    public boolean contains(CsmClassifier cls) {
-        if(CsmKindUtilities.isInstantiation(cls)) {
-            int instLevel = MAX_INHERITANCE_DEPTH;
-            CsmInstantiation inst = (CsmInstantiation) cls;
-            while(instLevel > 0 && CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
-                inst = (CsmInstantiation) inst.getTemplateDeclaration();
-                instLevel--;
-            }
-            if(instLevel <= 0) {
-                return true;
-            }
-        }
-        return set.contains(cls);
-    }
-
-    @Override
-    public String toString() {
-        return set.toString();
-    }
+    /**
+     * Evaluates expression.
+     *
+     * @param expr - expression as string
+     * @param inst - instantiation
+     * @return result object
+     */
+    public Object eval(String expr, CsmInstantiation inst);
 }

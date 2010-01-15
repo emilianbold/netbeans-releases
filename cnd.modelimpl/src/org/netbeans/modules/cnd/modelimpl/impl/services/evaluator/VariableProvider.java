@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,57 +34,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.modelimpl.impl.services.evaluator;
 
-package org.netbeans.modules.cnd.modelutil;
-
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.services.CsmExpressionEvaluator;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
- * Analog of Set<CsmClass> used for anti loop checks
- * @author Vladimir Kvashin
+ *
+ * @author nk220367
  */
-public class AntiLoop {
-    
-    private Set<Object> set;
+public class VariableProvider {
 
-    private static final int MAX_INHERITANCE_DEPTH = 20;
+    CsmOffsetableDeclaration decl;
+    Map<CsmTemplateParameter, CsmSpecializationParameter> mapping;
 
-    public AntiLoop() {
-        set = new HashSet<Object>();
-    }
-    
-    public AntiLoop(int capacity) {
-        set = new HashSet<Object>(capacity);
-    }
-    
-    
-    public boolean add(CsmClassifier cls) {
-        return set.add(cls);
+    public VariableProvider() {
     }
 
-    public boolean contains(CsmClassifier cls) {
-        if(CsmKindUtilities.isInstantiation(cls)) {
-            int instLevel = MAX_INHERITANCE_DEPTH;
-            CsmInstantiation inst = (CsmInstantiation) cls;
-            while(instLevel > 0 && CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
-                inst = (CsmInstantiation) inst.getTemplateDeclaration();
-                instLevel--;
-            }
-            if(instLevel <= 0) {
-                return true;
+    public VariableProvider(CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        this.decl = decl;
+        this.mapping = mapping;
+    }
+
+    public int getValue(String variableName) {
+
+        if (decl != null) {
+            for (CsmTemplateParameter param : mapping.keySet()) {
+                if (variableName.equals(param.getQualifiedName().toString()) ||
+                        (decl.getQualifiedName() + "::" + variableName).equals(param.getQualifiedName().toString())) { // NOI18N
+                    CsmSpecializationParameter spec = mapping.get(param);
+                    if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
+                        Object eval = CsmExpressionEvaluator.eval(((CsmExpressionBasedSpecializationParameter) spec).getText().toString());
+                        if (eval instanceof Integer) {
+                            return (Integer) eval;
+                        }
+                    }
+                }
+
             }
         }
-        return set.contains(cls);
-    }
+//        CsmFile file = null;
+//        Resolver3 r = new Resolver3(file, 0, null);
+//
+//
+//        CsmObject o = r.resolve(variableName, Resolver3.ALL);
 
-    @Override
-    public String toString() {
-        return set.toString();
+        return 0;
     }
 }
