@@ -12,8 +12,8 @@
         <folder name="text">
             <folder name="x-apduscr">
                 <folder name="Actions">
-                    <file name="org-netbeans-modules-javacard-apdufile-SendAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/JavaCard3/org-netbeans-modules-javacard-apdufile-SendAction.shadow"/>
+                    <file name="SendAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JavaCard3/org-netbeans-modules-javacard-apdufile-SendAction.instance"/>
                         <attr name="position" intvalue="150"/>
                     </file>
                     <file name="org-openide-actions-CopyAction.shadow">
