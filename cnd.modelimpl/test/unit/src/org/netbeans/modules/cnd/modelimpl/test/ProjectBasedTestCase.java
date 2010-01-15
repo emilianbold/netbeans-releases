@@ -51,10 +51,6 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
 /**
  * IMPORTANT NOTE:
