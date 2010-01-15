@@ -2725,7 +2725,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public static List<String> testGetRestoredFiles() {
         return testRestoredFiles;
     }
-    private static List<String> testRestoredFiles = null;
+    private static volatile List<String> testRestoredFiles = null;
     ////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////

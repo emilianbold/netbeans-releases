@@ -70,6 +70,7 @@ public class TraceModelBase {
     // to be based on the file that we currently compile rather then current dir
     private boolean pathsRelCurFile = false;
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("LG")
     public TraceModelBase(boolean clearCache) {
         Logger openideLogger = Logger.getLogger("org.openide.loaders"); // NOI18N
         // reduce log level to prevent unnecessary messages in tests
