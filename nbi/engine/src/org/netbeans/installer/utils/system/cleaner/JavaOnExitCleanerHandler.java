@@ -37,7 +37,7 @@
 package org.netbeans.installer.utils.system.cleaner;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -45,14 +45,19 @@ import java.util.List;
  * @author Dmitry Lipin
  */
 public class JavaOnExitCleanerHandler extends OnExitCleanerHandler {
+    private List <File> filesList = new ArrayList <File> ();
+
     @Override
     public void addDeleteOnExitFile(File file) {
-        file.deleteOnExit();
+        filesList.add(file);
     }
     @Override
     public void removeDeleteOnExitFile(File file) {
-        //not supported
+        filesList.remove(file);
     }
-    public void run()  {        
+    public void run()  {
+        for(File f : filesList) {
+            f.delete();
+        }
     }
 }
