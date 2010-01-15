@@ -180,27 +180,27 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         }
 
         public int getChannel() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public void setChannel(int arg0) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public int getTokenIndex() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public void setTokenIndex(int arg0) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public CharStream getInputStream() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public void setInputStream(CharStream arg0) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
     }
@@ -246,31 +246,31 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         }
 
         public Token get(int arg0) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public TokenSource getTokenSource() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public String toString(int arg0, int arg1) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public String toString(Token arg0, Token arg1) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public void release(int arg0) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public int size() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
         public String getSourceName() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
     }
 
