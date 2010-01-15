@@ -92,7 +92,7 @@ public class MavenOSGILookupProvider implements LookupProvider {
             if (packaging == null) {
                 packaging = NbMavenProject.TYPE_JAR;
             }
-            if (NbMavenProject.TYPE_NBM.equals(packaging) && !lastType.equals(packaging)) {
+            if (NbMavenProject.TYPE_OSGI.equals(packaging) && !lastType.equals(packaging)) {
                 if (lastAccess == null) {
                     lastAccess = new AccessQueryImpl(project);
                 }
