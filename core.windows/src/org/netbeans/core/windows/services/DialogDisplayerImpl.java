@@ -39,9 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.core.windows.services;
-
 
 import java.awt.Component;
 import java.awt.Container;
@@ -61,15 +59,14 @@ import java.util.List;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.view.ui.DefaultSeparateContainer;
+import org.openide.util.lookup.ServiceProvider;
 
-
-// Extracted from core/NbTopManager.
 /**
  * Implementation of <code>org.openide.DialogDisplayer</code>.
  *
  * @author  Jesse Glick
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.DialogDisplayer.class)
+@ServiceProvider(service=DialogDisplayer.class)
 public class DialogDisplayerImpl extends DialogDisplayer {
     /** delayed runnables */
     private static List<Runnable> run = Collections.synchronizedList(new ArrayList<Runnable>());

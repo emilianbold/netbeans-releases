@@ -1,0 +1,31 @@
+'Wrong string comparison':
+$left == $right ::    $left instanceof java.lang.String
+                   && $right instanceof java.lang.String
+                   && !isNullLiteral($left)
+                   && !isNullLiteral($right)
+=>$left == null ? $right == null : $left.equals($right)
+=>$left.equals($right)
+;;
+
+'Wrong string comparison':
+$left != $right ::    $left instanceof java.lang.String
+                   && $right instanceof java.lang.String
+                   && !isNullLiteral($left)
+                   && !isNullLiteral($right)
+                   && !acceptGenerated($left, $right)
+=>!($left == null ? $right == null : $left.equals($right))
+=>!$left.equals($right)
+;;
+
+<?
+private boolean acceptGenerated(Variable left, Variable right) {
+    Variable parent = left;
+
+    while ((parent = context.parent(parent)) != null) {
+        if (matcher.matches(parent, "$left != $right && ($left == null || $left.equals($right))"))
+            return true;
+    }
+
+    return false;
+}
+?>

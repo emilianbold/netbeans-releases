@@ -54,7 +54,9 @@ made subject to such option by the copyright holder.
 
     <folder name="Actions">
         <folder name="Build">
-            <file name="org-apache-tools-ant-module-nodes-RunTargetsAction.instance"/>
+            <file name="org-apache-tools-ant-module-nodes-RunTargetsAction.instance">
+                <attr name="instanceClass" stringvalue="org.apache.tools.ant.module.run.RunTargetsAction"/>
+            </file>
         </folder>
     </folder>
 

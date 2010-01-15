@@ -76,5 +76,7 @@ define
 //    -*- C++ -*-
         ]]>
         </file>
+        <file name="cplusplus.C"/>
+        <file name="c.c"/>
     </folder>
 </filesystem>

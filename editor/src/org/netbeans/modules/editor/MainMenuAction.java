@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.editor;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
@@ -60,7 +62,6 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Registry;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -197,7 +198,11 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
         if (kbs == null) {
             // needs to listen on Registry - resultChanged event is fired before
             // TopComponent is really focused - this causes problems in getComponent method
-            Registry.addChangeListener(this);
+            EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    setMenu();
+                }
+            });
             kbs = MimeLookup.getLookup(MimePath.EMPTY).lookupResult(KeyBindingSettings.class);
             kbs.addLookupListener(WeakListeners.create(LookupListener.class, this, kbs));
             kbs.allInstances();

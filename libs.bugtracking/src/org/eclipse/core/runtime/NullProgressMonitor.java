@@ -63,4 +63,12 @@ public class NullProgressMonitor implements IProgressMonitor {
 
     public void setTaskName(String name) {
     }
+
+    public void internalWorked(double internalWorked) {
+        
+    }
+
+    public void setCanceled(boolean canceled) {
+
+    }
 }

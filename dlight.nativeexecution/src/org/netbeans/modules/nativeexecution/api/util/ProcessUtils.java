@@ -43,11 +43,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 
 public final class ProcessUtils {
 
@@ -128,9 +137,14 @@ public final class ProcessUtils {
 
         try {
             String line;
+            boolean first = true;
 
             while ((line = br.readLine()) != null) {
+                if (!first) {
+                    result.append('\n');
+                }
                 result.append(line);
+                first = false;
             }
         } finally {
             if (br != null) {
@@ -145,6 +159,155 @@ public final class ProcessUtils {
         List<String> err = readProcessError(p);
         for (String line : err) {
             error.write(line);
+        }
+    }
+
+    /**
+     * This method tries to destroy the process in two attempts. First attempt
+     * is simply calling process' destroy() method. But in some cases this could
+     * fail to terminate the process - so in case first attempt fails, send
+     * SIGKILL to the process.
+     *
+     * @param process - process to terminate (not necessarily NativeProcess)
+     */
+    public static void destroy(Process process) {
+        // First attempt is just call destroy() on the process
+        process.destroy();
+
+        // But in case the process is in system call (sleep, read, for example)
+        // this will not have a desired effect - in this case
+        // will send SIGTERM signal..
+
+        try {
+            process.exitValue();
+            // No exception means successful termination
+            return;
+        } catch (java.lang.IllegalThreadStateException ex) {
+        }
+
+        ExecutionEnvironment execEnv;
+
+        if (process instanceof NativeProcess) {
+            execEnv = ((NativeProcess) process).getExecutionEnvironment();
+        } else {
+            execEnv = ExecutionEnvironmentFactory.getLocal();
+        }
+
+        int pid = getPID(process);
+
+        if (pid > 0) {
+            try {
+                CommonTasksSupport.sendSignal(execEnv, pid, Signal.SIGKILL, null).get();
+            } catch (InterruptedException ex) {
+            } catch (ExecutionException ex) {
+            }
+        }
+    }
+
+    private static int getPID(Process process) {
+        int pid = -1;
+
+        try {
+            if (process instanceof NativeProcess) {
+                pid = ((NativeProcess) process).getPID();
+            } else {
+                String className = process.getClass().getName();
+                // TODO: windows?...
+                if ("java.lang.UNIXProcess".equals(className)) { // NOI18N
+                    Field f = process.getClass().getDeclaredField("pid"); // NOI18N
+                    f.setAccessible(true);
+                    pid = f.getInt(process);
+                }
+            }
+        } catch (Throwable e) {
+        }
+
+        return pid;
+    }
+
+    public static ExitStatus execute(final ExecutionEnvironment execEnv, final String executable, final String... args) {
+        return execute(NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(executable).setArguments(args));
+    }
+
+    public static ExitStatus executeInDir(final String workingDir, final ExecutionEnvironment execEnv,  final String executable, final String... args) {
+        return execute(NativeProcessBuilder.newProcessBuilder(execEnv).setExecutable(executable).setArguments(args).setWorkingDirectory(workingDir));
+    }
+
+    /**
+     * This method can be used to start a process without additional handling
+     * of exceptions/streams reading, etc.
+     *
+     * Usage pattern:
+     *        ExitStatus status = ProcessUtils.execute(
+     *            NativeProcessBuilder.newProcessBuilder(execEnv).
+     *            setExecutable("/bin/ls").setArguments("/home"));
+     * 
+     *        if (status.isOK()) {
+     *            do something...
+     *        } else {
+     *            System.out.println("Error! " + status.error);
+     *        }
+     *
+     * This method WILL modify passed ProcessBuilder:
+     *   - X11 forwarding will be switched off
+     *   - initial suspend will be switched off
+     *   - unbuffering will be switched off
+     *   - usage of external terminal will be switched off
+     * 
+     * @param processBuilder
+     * @return
+     */
+    private static ExitStatus execute(final NativeProcessBuilder processBuilder) {
+        ExitStatus result;
+        Future<String> error;
+        Future<String> output;
+
+        if (processBuilder == null) {
+            throw new NullPointerException("NULL process builder!"); // NOI18N
+        }
+
+        processBuilder.setX11Forwarding(false);
+        processBuilder.setInitialSuspend(false);
+        processBuilder.unbufferOutput(false);
+        processBuilder.useExternalTerminal(null);
+
+        try {
+            final Process process = processBuilder.call();
+            error = NativeTaskExecutorService.submit(new Callable<String>() {
+
+                public String call() throws Exception {
+                    return readProcessErrorLine(process);
+                }
+            }, "e"); // NOI18N
+            output = NativeTaskExecutorService.submit(new Callable<String>() {
+
+                public String call() throws Exception {
+                    return readProcessOutputLine(process);
+                }
+            }, "o"); // NOI18N
+
+            result = new ExitStatus(process.waitFor(), output.get(), error.get());
+        } catch (Throwable th) {
+            result = new ExitStatus(-100, "", th.getMessage());
+        }
+
+        return result;
+    }
+
+    public static final class ExitStatus {
+
+        public final int exitCode;
+        public final String error;
+        public final String output;
+
+        private ExitStatus(int exitCode, String output, String error) {
+            this.exitCode = exitCode;
+            this.error = error;
+            this.output = output;
+        }
+
+        public boolean isOK() {
+            return exitCode == 0;
         }
     }
 }

@@ -1,0 +1,21 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGE_NAME};
+
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
+
+/**
+ * Manages a bundle's lifecycle. Remember that activator is optional and
+ * often not needed at all.
+ */
+public class ${CLASS_NAME} implements BundleActivator {
+    public void start(BundleContext c) throws Exception {
+    }
+
+    public void stop(BundleContext c) throws Exception {
+    }
+}

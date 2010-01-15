@@ -43,6 +43,7 @@ import org.netbeans.modules.javacard.spi.Cards;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -50,9 +51,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.Profile;
 import org.netbeans.api.java.platform.Specification;
@@ -101,7 +104,7 @@ public class RIPlatform extends JavacardPlatform {
         getDefault();
     }
     private Cards cards = new CardsImpl();
-    public RIPlatform(Properties props) {
+    public RIPlatform(Properties props) {        
         this.props = props;
         if (props instanceof ObservableProperties) {
             pcl = new PCL();
@@ -119,6 +122,18 @@ public class RIPlatform extends JavacardPlatform {
         //created from the written file which will be able to track changes
         //in the platform properties
         this (props(root, name, info));
+    }
+
+    @Override
+    public void onDelete() throws IOException {
+        FileObject fo = Utils.sfsFolderForDeviceConfigsForPlatformNamed(getSystemName(), false);
+        if (fo != null) {
+            fo.delete();
+        }
+        fo = Utils.sfsFolderForDeviceEepromsForPlatformNamed(getSystemName(), false);
+        if (fo != null) {
+            fo.delete();
+        }
     }
 
     @Override
@@ -140,6 +155,16 @@ public class RIPlatform extends JavacardPlatform {
         return p;
     }
 
+    private final Set<ProjectKind> suppKinds = new HashSet<ProjectKind>(5);
+    public Set<ProjectKind> supportedProjectKinds() {
+        if (suppKinds.isEmpty()) {
+            String prop = props.getProperty(
+                    JavacardPlatformKeyNames.PLATFORM_SUPPORTED_PROJECT_KINDS);
+            suppKinds.addAll(ProjectKind.kindsFor(prop, true));
+        }
+        return suppKinds;
+    }
+
     private static EditableProperties toProperties (File root, String name, PlatformInfo info) {
         EditableProperties result = new EditableProperties(true);
         info.writeTo(result);
@@ -156,7 +181,8 @@ public class RIPlatform extends JavacardPlatform {
     }
 
 
-    public static DataObject findDefaultPlatform() throws DataObjectNotFoundException {
+    static boolean inFindDefaultPlatform;
+    public static DataObject findDefaultPlatform(DataObject caller) throws IOException {
         //Pending - always use whatever is the default, or somehow make
         //it explicit what platform is delegated to
         FileObject res = null;
@@ -166,7 +192,10 @@ public class RIPlatform extends JavacardPlatform {
                 break;
             } else {
                 DataObject ob = DataObject.find(fo);
-                JavacardPlatform p = ob.getNodeDelegate().getLookup().lookup(JavacardPlatform.class);
+                if (caller == ob) {
+                    continue;
+                }
+                JavacardPlatform p = ob.getNodeDelegate().getLookup().lookup(RIPlatform.class);
                 if (p != null && JavacardPlatformKeyNames.PLATFORM_KIND_RI.equals(p.getPlatformKind())) {
                     res = fo;
                 }
@@ -374,7 +403,12 @@ public class RIPlatform extends JavacardPlatform {
     @Override
     public boolean isValid() {
         File home = getHome();
-        return home != null && home.exists() && home.isDirectory();
+        boolean result = home != null && home.exists() && home.isDirectory();
+        if (!result) {
+            System.err.println("INVALID PLATFORM - home: " + home);
+            System.err.println("Is RI? " + this.isReferenceImplementation());
+        }
+        return result;
     }
 
     @Override

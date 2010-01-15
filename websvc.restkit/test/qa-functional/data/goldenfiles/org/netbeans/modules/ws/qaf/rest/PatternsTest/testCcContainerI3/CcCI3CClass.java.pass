@@ -7,6 +7,7 @@ package o.n.m.ws.qaf.rest.patterns;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
@@ -38,10 +39,11 @@ public class CcCI3CClass {
     }
 
     /**
-     * Sub-resource locator method for  {CcCI3URI}
+     * Sub-resource locator method for {CcCI3URI}
      */
     @Path("{CcCI3URI}")
-    public CcCI3Cl getCcCI3Cl() {
-        return new CcCI3Cl();
+    public CcCI3Cl getCcCI3Cl(@PathParam("CcCI3URI")
+    String CcCI3URI) {
+        return CcCI3Cl.getInstance(CcCI3URI);
     }
 }

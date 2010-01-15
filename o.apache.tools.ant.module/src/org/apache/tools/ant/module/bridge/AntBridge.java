@@ -121,7 +121,8 @@ public final class AntBridge {
     private static Reference<AntInstance> antInstance = null;
     
     private static final ChangeSupport cs = new ChangeSupport(AntBridge.class);
-    
+
+    public static boolean NO_MODULE_SYSTEM; // for use from tests only
     private static final class MiscListener implements PropertyChangeListener, LookupListener {
         MiscListener() {}
         private ModuleInfo[] modules = null;
@@ -150,6 +151,9 @@ public final class AntBridge {
             fireChange();
         }
         public synchronized ModuleInfo[] getEnabledModules() {
+            if (NO_MODULE_SYSTEM) {
+                return new ModuleInfo[0];
+            }
             if (modules == null) {
                 Collection<? extends ModuleInfo> c = modulesResult.allInstances();
                 modules = c.toArray(new ModuleInfo[c.size()]);

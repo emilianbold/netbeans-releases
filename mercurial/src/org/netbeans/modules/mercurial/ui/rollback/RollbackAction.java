@@ -43,7 +43,6 @@ package org.netbeans.modules.mercurial.ui.rollback;
 import org.netbeans.modules.versioning.spi.VCSContext;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
 import org.netbeans.modules.mercurial.FileInformation;
@@ -60,6 +59,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 
 /**
  * Pull action for mercurial: 
@@ -69,14 +69,18 @@ import org.openide.NotifyDescriptor;
  */
 public class RollbackAction extends ContextAction {
     
-    private final VCSContext context;
-            
-    public RollbackAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
-    
-    public void performAction(ActionEvent e) {
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Rollback";                                 //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         rollback(context);
     }
     
@@ -175,9 +179,5 @@ public class RollbackAction extends ContextAction {
             }
         };
         support.start(rp, root,org.openide.util.NbBundle.getMessage(RollbackAction.class, "MSG_ROLLBACK_PROGRESS")); // NOI18N
-    }
-    
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
     }
 }

@@ -63,6 +63,7 @@ public class GenerateDOMScannerAction extends XMLGenerateAction implements Colle
     /** generated Serialized Version UID */
     private static final long serialVersionUID = 2567846356902367312L;
 
+/**********
     public static synchronized GenerateDOMScannerAction getInstance() {
         GenerateDOMScannerAction actionInstance = null;
         String thisClassName = GenerateDOMScannerAction.class.getName();
@@ -74,6 +75,7 @@ public class GenerateDOMScannerAction extends XMLGenerateAction implements Colle
         }
         return actionInstance;
     }
+**********/
 
     /* Human presentable name of the action. This should be
      * presented as an item in a menu.

@@ -172,7 +172,7 @@ public class SvnClientFactory {
      * @return the configured SvnClient
      *
      */
-    public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support, String username, String password, int handledExceptions) throws SVNClientException {
+    public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support, String username, char[] password, int handledExceptions) throws SVNClientException {
         if(exception != null) {
             throw exception;
         }
@@ -590,7 +590,7 @@ public class SvnClientFactory {
          * @return the created SvnClientInvocationHandler instance
          *
          */
-        public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support, String username, String password, int handledExceptions) {
+        public SvnClient createSvnClient(SVNUrl repositoryUrl, SvnProgressSupport support, String username, char[] password, int handledExceptions) {
             ISVNClientAdapter adapter = createAdapter();
             SvnClientInvocationHandler handler = getInvocationHandler(adapter, createDescriptor(repositoryUrl), support, handledExceptions);
             setupAdapter(adapter, username, password, createCallback(repositoryUrl, handledExceptions));
@@ -616,12 +616,12 @@ public class SvnClientFactory {
             return null;
         }
 
-        protected void setupAdapter(ISVNClientAdapter adapter, String username, String password, ISVNPromptUserPassword callback) {
+        protected void setupAdapter(ISVNClientAdapter adapter, String username, char[] password, ISVNPromptUserPassword callback) {
             adapter.setUsername(username);
             if(callback != null) {
                 adapter.addPasswordCallback(callback);
             } else {
-                adapter.setPassword(password);
+                adapter.setPassword(password == null ? "" : new String(password)); //NOI18N
             }
             try {
                 File configDir = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigPath()));

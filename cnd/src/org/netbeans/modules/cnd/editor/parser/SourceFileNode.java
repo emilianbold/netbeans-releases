@@ -41,18 +41,22 @@
 
 package  org.netbeans.modules.cnd.editor.parser;
 
+import java.awt.Image;
 import org.openide.loaders.DataObject;
-import org.netbeans.modules.cnd.loaders.FortranDataObject;
+import org.openide.nodes.Node;
 
 public class SourceFileNode extends ViewNode {
+
+    private final Node delegate;
 
     public SourceFileNode(DataObject dao, String name, int lineno,
 		char kind, String scope, int scopeCluster, int cluster) {
         super(name, dao, lineno, kind, scope, scopeCluster, cluster);
-        if (dao instanceof FortranDataObject) {
-            setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/FortranSrcIcon.gif"); // NOI18N
-        } else {
-            setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/CSrcIcon.gif"); // NOI18N 
-	}
+        this.delegate = dao.getNodeDelegate();
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        return delegate.getIcon(type);
     }
 }

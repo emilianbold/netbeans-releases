@@ -106,18 +106,6 @@ public class LocalHistoryFileView implements VersioningListener {
         return tablePanel.getExplorerManager();
     }
     
-    public StoreEntry[] getSelectedEntries() {
-        Node[] nodes = tablePanel.getExplorerManager().getSelectedNodes();
-        if(nodes != null && nodes.length > 0) {
-            List<StoreEntry> entries = new ArrayList<StoreEntry>();            
-            for(Node node : nodes) {                
-                entries.add(node.getLookup().lookup(StoreEntry.class));    
-            }
-            return entries.toArray(new StoreEntry[entries.size()]);
-        } 
-        return new StoreEntry[0];        
-    }
-    
     public JPanel getPanel() {
         return tablePanel;
     }

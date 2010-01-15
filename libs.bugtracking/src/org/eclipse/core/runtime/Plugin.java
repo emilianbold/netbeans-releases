@@ -49,8 +49,9 @@ import org.osgi.framework.BundleContext;
 /**
  * @author Maros Sandor
  */
-public class Plugin implements ILog {
+public class Plugin {
     private IPath stateLocation;
+    private ILog log;
 
     public final Bundle getBundle() {
         return null;
@@ -69,7 +70,30 @@ public class Plugin implements ILog {
     }
     
     public final ILog getLog() {
-        return this;
+        if(log == null) {
+            log = new ILog() {
+                public void log(IStatus status) {
+                    Level l = null;
+                    switch (status.getSeverity()) {
+                        case IStatus.CANCEL:
+                            l = Level.OFF; break;
+                        case IStatus.ERROR:
+                            l = Level.SEVERE; break;
+                        case IStatus.INFO:
+                            l = Level.INFO; break;
+                        case IStatus.OK:
+                            l = Level.INFO; break;
+                        case IStatus.WARNING:
+                            l = Level.WARNING; break;
+                        default:
+                            l = Level.INFO;
+                    }
+                    BugtrackingRuntime.LOG.log(l, status.getMessage() + " code: " + status.getCode());
+                    BugtrackingRuntime.LOG.log(Level.INFO, null, status.getException());
+                }
+            };
+        }
+        return log;
     }
     
     public final IPath getStateLocation() throws IllegalStateException {
@@ -78,26 +102,6 @@ public class Plugin implements ILog {
             stateLocation = new StateLocation(f);
         }
         return stateLocation;
-    }
-
-    public void log(IStatus status) {
-        Level l = null;
-        switch (status.getSeverity()) {
-            case IStatus.CANCEL:
-                l = Level.OFF; break;
-            case IStatus.ERROR:
-                l = Level.SEVERE; break;
-            case IStatus.INFO:
-                l = Level.INFO; break;
-            case IStatus.OK:
-                l = Level.INFO; break;
-            case IStatus.WARNING:
-                l = Level.WARNING; break;
-            default:
-                l = Level.INFO;
-        }
-        BugtrackingRuntime.LOG.log(l, status.getMessage() + " code: " + status.getCode());
-        BugtrackingRuntime.LOG.log(Level.INFO, null, status.getException());
     }
 
     private class StateLocation implements IPath {

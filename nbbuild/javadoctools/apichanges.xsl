@@ -86,7 +86,7 @@ committed to the repository for legal reasons. You need to download it:
     <xsl:output method="html"/>
 
     <!-- Overridable parameters: -->
-    <xsl:param name="issue-url-base" select="'http://www.netbeans.org/issues/show_bug.cgi?id='"/>
+    <xsl:param name="issue-url-base" select="'https://netbeans.org/bugzilla/show_bug.cgi?id='"/>
     <xsl:param name="javadoc-url-base" select="'???'"/>
 
     <!-- Main document structure: -->

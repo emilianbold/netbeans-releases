@@ -42,6 +42,8 @@
 package org.netbeans.modules.exceptions;
 
 import java.util.prefs.Preferences;
+import org.netbeans.api.keyring.Keyring;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -52,6 +54,7 @@ public class ExceptionsSettings {
     
     private static final String userProp = "UserName";       // NOI18N
     private static final String passwdProp = "Passwd";
+    private static final String passwdKey = "exceptionreporter"; // NOI18N
     private static final String guestProp = "Guest";
     private static final String rememberProp = "RememberPasswd";
 
@@ -73,11 +76,18 @@ public class ExceptionsSettings {
     }
         
     public String getPasswd() {
-        return prefs().get(passwdProp, "");
+        String old = prefs().get(passwdProp, null);
+        if (old != null) {
+            setPasswd(old);
+            prefs().remove(passwdProp);
+        }
+        char[] pwd = Keyring.read(passwdKey);
+        return pwd != null ? new String(pwd) : "";
     }
 
     public void setPasswd(String passwd) {
-        prefs().put(passwdProp, passwd);
+        Keyring.save(passwdKey, passwd.toCharArray(),
+                NbBundle.getMessage(ExceptionsSettings.class, "ExceptionsSettings.password.description"));
     }
     
     public boolean isGuest() {

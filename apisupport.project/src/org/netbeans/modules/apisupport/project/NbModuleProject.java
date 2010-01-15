@@ -426,6 +426,18 @@ public final class NbModuleProject implements Project {
         String testClassesDir = evaluator().getProperty("build.test." + type + ".classes.dir"); // NOI18N
         return testClassesDir != null ? helper.resolveFile(testClassesDir) : null;
     }
+
+    public File getGeneratedClassesDirectory() {
+        return gensrc(getClassesDirectory());
+    }
+
+    public File getTestGeneratedClassesDirectory(String type) {
+        return gensrc(getTestClassesDirectory(type));
+    }
+
+    private File gensrc(File clazz) {
+        return new File(clazz.getParentFile(), clazz.getName() + "-generated"); // NOI18N
+    }
     
     public FileObject getJavaHelpDirectory() {
         if (helper.resolveFileObject("javahelp/manifest.mf") != null) { // NOI18N

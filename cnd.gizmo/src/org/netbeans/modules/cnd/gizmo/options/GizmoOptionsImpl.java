@@ -118,6 +118,9 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
     }
 
     public DLightConfiguration getConfigurationByDisplayName(List<DLightConfiguration> list, String displayName) {
+        if (list == null) {
+            return null;
+        }
         for (DLightConfiguration dlightConf : list) {
             if (dlightConf.getDisplayedName().equals(displayName)) {
                 return dlightConf;
@@ -323,9 +326,11 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         setMakeConfiguration(gizmoOptions.getMakeConfiguration());
         preferredConfigurationName = null;
         List<DLightConfiguration> list = getValidConfigurations();
-        DLightConfiguration conf = getConfigurationByDisplayName(list, getDlightConfigurationName().getValue());
-        if (conf != null) {
-            preferredConfigurationName = conf.getConfigurationName();
+        if (list != null) {
+            DLightConfiguration conf = getConfigurationByDisplayName(list, getDlightConfigurationName().getValue());
+            if (conf != null) {
+                preferredConfigurationName = conf.getConfigurationName();
+            }
         }
     }
 

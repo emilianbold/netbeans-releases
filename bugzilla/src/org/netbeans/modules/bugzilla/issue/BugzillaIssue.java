@@ -39,10 +39,13 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
@@ -68,11 +72,15 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
+import org.netbeans.api.diff.PatchUtils;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -80,17 +88,25 @@ import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.openide.awt.HtmlBrowser;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Tomas Stupka
  * @author Jan Stola
  */
-public class BugzillaIssue extends Issue {
+public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
 
     public static final String RESOLVE_FIXED = "FIXED";                         // NOI18N
     public static final String RESOLVE_DUPLICATE = "DUPLICATE";         //NOI18N
@@ -136,70 +152,6 @@ public class BugzillaIssue extends Issue {
     private Map<String, String> seenAtributes;
     private String initialProduct = null;
 
-    enum IssueField {
-        SUMMARY(BugzillaAttribute.SHORT_DESC.getKey(), "LBL_SUMMARY"),
-        WHITEBOARD(BugzillaAttribute.STATUS_WHITEBOARD.getKey(), "LBL_WHITEBOARD"),
-        STATUS(TaskAttribute.STATUS, "LBL_STATUS"),
-        PRIORITY(BugzillaAttribute.PRIORITY.getKey(), "LBL_PRIORITY"),
-        RESOLUTION(TaskAttribute.RESOLUTION, "LBL_RESOLUTION"),
-        PRODUCT(BugzillaAttribute.PRODUCT.getKey(), "LBL_PRODUCT"),
-        COMPONENT(BugzillaAttribute.COMPONENT.getKey(), "LBL_COMPONENT"),
-        VERSION(BugzillaAttribute.VERSION.getKey(), "LBL_VERSION"),
-        PLATFORM(BugzillaAttribute.REP_PLATFORM.getKey(), "LBL_PLATFORM"),
-        OS(BugzillaAttribute.OP_SYS.getKey(), "LBL_OS"),
-        MILESTONE(BugzillaAttribute.TARGET_MILESTONE.getKey(), "LBL_MILESTONE"),
-        REPORTER(BugzillaAttribute.REPORTER.getKey(), "LBL_REPORTER"),
-        REPORTER_NAME(BugzillaAttribute.REPORTER_NAME.getKey(), "LBL_REPORTER_NAME"),
-        ASSIGNED_TO(BugzillaAttribute.ASSIGNED_TO.getKey(), "LBL_ASSIGNED_TO"),
-        ASSIGNED_TO_NAME(BugzillaAttribute.ASSIGNED_TO_NAME.getKey(), "LBL_ASSIGNED_TO_NAME"),
-        QA_CONTACT(BugzillaAttribute.QA_CONTACT.getKey(), "LBL_QA_CONTACT"),
-        QA_CONTACT_NAME(BugzillaAttribute.QA_CONTACT_NAME.getKey(), "LBL_QA_CONTACT_NAME"),
-        DEPENDS_ON(BugzillaAttribute.DEPENDSON.getKey(), "LBL_DEPENDS_ON"),
-        BLOCKS(BugzillaAttribute.BLOCKED.getKey(), "LBL_BLOCKS"),
-        URL(BugzillaAttribute.BUG_FILE_LOC.getKey(), "LBL_URL"),
-        KEYWORDS(BugzillaAttribute.KEYWORDS.getKey(), "LBL_KEYWORDS"),
-        SEVERITY(BugzillaAttribute.BUG_SEVERITY.getKey(), "LBL_SEVERITY"),
-        ISSUE_TYPE("cf_bug_type", "LBL_ISSUE_TYPE"),
-        DESCRIPTION(BugzillaAttribute.LONG_DESC.getKey(), "LBL_DESCRIPTION"),
-        CREATION(TaskAttribute.DATE_CREATION, "LBL_CREATION"),
-        CC(BugzillaAttribute.CC.getKey(), "LBL_CC"),
-        MODIFICATION(TaskAttribute.DATE_MODIFICATION, null),
-        NEWCC(BugzillaAttribute.NEWCC.getKey(), null),
-        REMOVECC(BugzillaAttribute.REMOVECC.getKey(), null),
-        COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, null, false),
-        ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, null, false);
-
-        private final String key;
-        private final String displayNameKey;
-        private boolean singleAttribute;
-
-        IssueField(String key, String displayNameKey) {
-            this(key, displayNameKey, true);
-        }
-
-        IssueField(String key, String displayNameKey, boolean singleAttribute) {
-            this.key = key;
-            this.singleAttribute = singleAttribute;
-            this.displayNameKey = displayNameKey;
-        }
-
-        public String getKey() {
-            return key;
-        }
-        public boolean isSingleAttribute() {
-            return singleAttribute;
-        }
-        public boolean isReadOnly() {
-            return !singleAttribute;
-        }
-
-        public String getDisplayName() {
-            assert displayNameKey != null; // shouldn't be called for a field with a null display name
-            return NbBundle.getMessage(BugzillaIssue.class, displayNameKey);
-        }
-
-    }
-
     private Map<String, String> attributes;
     private Map<String, TaskOperation> availableOperations;
 
@@ -239,9 +191,13 @@ public class BugzillaIssue extends Issue {
 
     @Override
     public String getDisplayName() {
-        return data.isNew() ?
+        return getDisplayName(data);
+    }
+
+    public static String getDisplayName(TaskData taskData) {
+        return taskData.isNew() ?
                 NbBundle.getMessage(BugzillaIssue.class, "CTL_NewIssue") : // NOI18N
-                NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(), getSummary()}); // NOI18N
+                NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(taskData), getSummary(taskData)}); // NOI18N
     }
 
     @Override
@@ -332,15 +288,14 @@ public class BugzillaIssue extends Issue {
         return super.getSelection();
     }
 
-    @Override
     public Map<String, String> getAttributes() {
         if(attributes == null) {
             attributes = new HashMap<String, String>();
             String value;
-            for (IssueField field : IssueField.values()) {
+            for (IssueField field : getBugzillaRepository().getConfiguration().getFields()) {
                 value = getFieldValue(field);
                 if(value != null && !value.trim().equals("")) {                 // NOI18N
-                    attributes.put(field.key, value);
+                    attributes.put(field.getKey(), value);
                 }
             }
         }
@@ -407,13 +362,12 @@ public class BugzillaIssue extends Issue {
         } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             assert getSeenAttributes() != null;
-            for (IssueField f : IssueField.values()) {
-                switch(f) {
-                    case MODIFICATION :
-                    case REPORTER_NAME :
-                    case QA_CONTACT_NAME :
-                    case ASSIGNED_TO_NAME :
-                        continue;
+            for (IssueField f : getBugzillaRepository().getConfiguration().getFields()) {
+                if (f==IssueField.MODIFICATION
+                        || f==IssueField.REPORTER_NAME
+                        || f==IssueField.QA_CONTACT_NAME
+                        || f==IssueField.ASSIGNED_TO_NAME) {
+                    continue;
                 }
                 String value = getFieldValue(f);
                 String seenValue = getSeenValue(f);
@@ -425,93 +379,70 @@ public class BugzillaIssue extends Issue {
             if(changedCount == 1) {
                 String ret = null;
                 for (IssueField changedField : changedFields) {
-                    switch(changedField) {
-                        case SUMMARY :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_SUMMARY_CHANGED_STATUS");
-                            break;
-                        case CC :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CC_FIELD_CHANGED_STATUS");
-                            break;
-                        case KEYWORDS :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_KEYWORDS_CHANGED_STATUS");
-                            break;
-                        case DEPENDS_ON :
-                        case BLOCKS :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_DEPENDENCE_CHANGED_STATUS");
-                            break;
-                        case COMMENT_COUNT :
-                            String value = getFieldValue(changedField);
-                            String seenValue = getSeenValue(changedField);
-                            if(seenValue.equals("")) {
-                                seenValue = "0";
-                            }
-                            int count = 0;
-                            try {
-                                count = Integer.parseInt(value) - Integer.parseInt(seenValue);
-                            } catch(NumberFormatException ex) {
-                                Bugzilla.LOG.log(Level.WARNING, ret, ex);
-                            }
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_COMMENTS_CHANGED", new Object[] {count});
-                            break;
-                        case ATTACHEMENT_COUNT :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_ATTACHMENTS_CHANGED");
-                            break;
-                        default :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldValue(changedField)});
+                    if (changedField == IssueField.SUMMARY) {
+                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_SUMMARY_CHANGED_STATUS"); // NOI18N
+                    } else if (changedField == IssueField.CC) {
+                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CC_FIELD_CHANGED_STATUS"); // NOI18N
+                    } else if (changedField == IssueField.KEYWORDS) {
+                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_KEYWORDS_CHANGED_STATUS"); // NOI18N
+                    } else if (changedField == IssueField.DEPENDS_ON || changedField == IssueField.BLOCKS) {
+                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_DEPENDENCE_CHANGED_STATUS"); // NOI18N
+                    } else if (changedField == IssueField.COMMENT_COUNT) {
+                        String value = getFieldValue(changedField);
+                        String seenValue = getSeenValue(changedField);
+                        if(seenValue.equals("")) { // NOI18N
+                            seenValue = "0"; // NOI18N
+                        }
+                        int count = 0;
+                        try {
+                            count = Integer.parseInt(value) - Integer.parseInt(seenValue);
+                        } catch(NumberFormatException ex) {
+                            Bugzilla.LOG.log(Level.WARNING, ret, ex);
+                        }
+                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_COMMENTS_CHANGED", new Object[] {count}); // NOI18N
+                    } else if (changedField == IssueField.ATTACHEMENT_COUNT) {
+                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_ATTACHMENTS_CHANGED"); // NOI18N
+                    } else {
+                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldValue(changedField)}); // NOI18N
                     }
                 }
                 return ret;
             } else {
                 String ret = null;
                 for (IssueField changedField : changedFields) {
-                    switch(changedField) {
-                        case SUMMARY :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SUMMARY", new Object[] {changedCount});
-                            break;
-                        case PRIORITY :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRIORITY", new Object[] {changedCount});
-                            break;
-                        case SEVERITY :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_SEVERITY", new Object[] {changedCount});
-                            break;
-                        case ISSUE_TYPE :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_ISSUE_TYPE", new Object[] {changedCount});
-                            break;
-                        case PRODUCT :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PRODUCT", new Object[] {changedCount});
-                            break;
-                        case COMPONENT :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_COMPONENT", new Object[] {changedCount});
-                            break;
-                        case PLATFORM :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_PLATFORM", new Object[] {changedCount});
-                            break;
-                        case VERSION :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_VERSION", new Object[] {changedCount});
-                            break;
-                        case MILESTONE :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_MILESTONE", new Object[] {changedCount});
-                            break;
-                        case KEYWORDS :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_KEYWORDS", new Object[] {changedCount});
-                            break;
-                        case URL :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_URL", new Object[] {changedCount});
-                            break;
-                        case ASSIGNED_TO :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_ASSIGNEE", new Object[] {changedCount});
-                            break;
-                        case QA_CONTACT :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCL_QA_CONTACT", new Object[] {changedCount});
-                            break;
-                        case DEPENDS_ON :
-                        case BLOCKS :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES_INCLUSIVE_DEPENDENCE", new Object[] {changedCount});
-                            break;
-                        default :
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGES", new Object[] {changedCount});
+                    String key;
+                    if (changedField == IssueField.SUMMARY) {
+                        key = "LBL_CHANGES_INCL_SUMMARY"; // NOI18N
+                    } else if (changedField == IssueField.PRIORITY) {
+                        key = "LBL_CHANGES_INCL_PRIORITY"; // NOI18N
+                    } else if (changedField == IssueField.SEVERITY) {
+                        key = "LBL_CHANGES_INCL_SEVERITY"; // NOI18N
+                    } else if (changedField == IssueField.ISSUE_TYPE) {
+                        key = "LBL_CHANGES_INCL_ISSUE_TYPE"; // NOI18N
+                    } else if (changedField == IssueField.PRODUCT) {
+                        key = "LBL_CHANGES_INCL_PRODUCT"; // NOI18N
+                    } else if (changedField == IssueField.COMPONENT) {
+                        key = "LBL_CHANGES_INCL_COMPONENT"; // NOI18N
+                    } else if (changedField == IssueField.PLATFORM) {
+                        key = "LBL_CHANGES_INCL_PLATFORM"; // NOI18N
+                    } else if (changedField == IssueField.VERSION) {
+                        key = "LBL_CHANGES_INCL_VERSION"; // NOI18N
+                    } else if (changedField == IssueField.MILESTONE) {
+                        key = "LBL_CHANGES_INCL_MILESTONE"; // NOI18N
+                    } else if (changedField == IssueField.KEYWORDS) {
+                        key = "LBL_CHANGES_INCL_KEYWORDS"; // NOI18N
+                    } else if (changedField == IssueField.URL) {
+                        key = "LBL_CHANGES_INCL_URL"; // NOI18N
+                    } else if (changedField == IssueField.ASSIGNED_TO) {
+                        key = "LBL_CHANGES_INCL_ASSIGNEE"; // NOI18N
+                    } else if (changedField == IssueField.QA_CONTACT) {
+                        key = "LBL_CHANGES_INCL_QA_CONTACT"; // NOI18N
+                    } else if (changedField == IssueField.DEPENDS_ON || changedField == IssueField.BLOCKS) {
+                        key = "LBL_CHANGES_INCLUSIVE_DEPENDENCE"; // NOI18N
+                    } else {
+                        key = "LBL_CHANGES"; // NOI18N
                     }
-                    return ret;
+                    return NbBundle.getMessage(BugzillaIssue.class, key, new Object[] {changedCount});
                 }
             }
         }
@@ -528,6 +459,18 @@ public class BugzillaIssue extends Issue {
             return null;
         }
         return taskData.getTaskId();
+    }
+
+    /**
+     * Returns the id from the given taskData or null if taskData.isNew()
+     * @param taskData
+     * @return id or null
+     */
+    public static String getSummary(TaskData taskData) {
+        if(taskData.isNew()) {
+            return null;
+        }
+        return getFieldValue(IssueField.SUMMARY, taskData);
     }
 
     TaskRepository getTaskRepository() {
@@ -570,14 +513,18 @@ public class BugzillaIssue extends Issue {
      * @return
      */
     String getFieldValue(IssueField f) {
+        return getFieldValue(f, data);
+    }
+
+    private static String getFieldValue(IssueField f, TaskData taskData) {
         if(f.isSingleAttribute()) {
-            TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+            TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
             if(a != null && a.getValues().size() > 1) {
                 return listValues(a);
             }
             return a != null ? a.getValue() : ""; // NOI18N
         } else {
-            List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, f.key);
+            List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, f.getKey());
             // returning 0 would set status MODIFIED instead of NEW
             return "" + ( attrs != null && attrs.size() > 0 ?  attrs.size() : ""); // NOI18N
         }
@@ -590,7 +537,7 @@ public class BugzillaIssue extends Issue {
      * @param a
      * @return
      */
-    private String listValues(TaskAttribute a) {
+    private static String listValues(TaskAttribute a) {
         if(a == null) {
             return "";                                                          // NOI18N
         }
@@ -608,12 +555,12 @@ public class BugzillaIssue extends Issue {
 
     void setFieldValue(IssueField f, String value) {
         if(f.isReadOnly()) {
-            assert false : "can't set value into IssueField " + f.name();       // NOI18N
+            assert false : "can't set value into IssueField " + f.getKey();       // NOI18N
             return;
         }
-        TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
         if(a == null) {
-            a = new TaskAttribute(data.getRoot(), f.key);
+            a = new TaskAttribute(data.getRoot(), f.getKey());
         }
         if(f == IssueField.PRODUCT) {
             handleProductChange(a);
@@ -622,16 +569,16 @@ public class BugzillaIssue extends Issue {
     }
 
     void setFieldValues(IssueField f, List<String> ccs) {
-        TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
         if(a == null) {
-            a = new TaskAttribute(data.getRoot(), f.key);
+            a = new TaskAttribute(data.getRoot(), f.getKey());
         }
         a.setValues(ccs);
     }
 
     List<String> getFieldValues(IssueField f) {
         if(f.isSingleAttribute()) {
-            TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+            TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
             if(a != null) {
                 return a.getValues();
             } else {
@@ -738,16 +685,16 @@ public class BugzillaIssue extends Issue {
         ta.setValue(operation.name());
     }
 
-    Attachment[] getAttachments() {
+    List<Attachment> getAttachments() {
         List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);
         if (attrs == null) {
-            return new Attachment[0];
+            return Collections.emptyList();
         }
         List<Attachment> attachments = new ArrayList<Attachment>(attrs.size());
         for (TaskAttribute taskAttribute : attrs) {
             attachments.add(new Attachment(taskAttribute));
         }
-        return attachments.toArray(new Attachment[attachments.size()]);
+        return attachments;
     }
 
     void addAttachment(File file, final String comment, final String desc, String contentType, final boolean patch) {
@@ -968,7 +915,7 @@ public class BugzillaIssue extends Issue {
 
     String getSeenValue(IssueField f) {
         Map<String, String> attr = getSeenAttributes();
-        String seenValue = attr != null ? attr.get(f.key) : null;
+        String seenValue = attr != null ? attr.get(f.getKey()) : null;
         if(seenValue == null) {
             seenValue = "";                                                     // NOI18N
         }
@@ -1130,6 +1077,147 @@ public class BugzillaIssue extends Issue {
             };
             repository.getExecutor().execute(cmd);
         }
+
+        void open() {
+            String progressFormat = NbBundle.getMessage(
+                                        DefaultAttachmentAction.class,
+                                        "Attachment.open.progress");    //NOI18N
+            String progressMessage = MessageFormat.format(progressFormat, getFilename());
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+            handle.start();
+            handle.switchToIndeterminate();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        File file = saveToTempFile();
+                        String contentType = getContentType();
+                        if ("image/png".equals(contentType)             //NOI18N
+                                || "image/gif".equals(contentType)      //NOI18N
+                                || "image/jpeg".equals(contentType)) {  //NOI18N
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURI().toURL());
+                        } else {
+                            file = FileUtil.normalizeFile(file);
+                            FileObject fob = FileUtil.toFileObject(file);
+                            DataObject dob = DataObject.find(fob);
+                            OpenCookie open = dob.getCookie(OpenCookie.class);
+                            if (open != null) {
+                                open.open();
+                            } else {
+                                // PENDING
+                            }
+                        }
+                    } catch (DataObjectNotFoundException dnfex) {
+                        dnfex.printStackTrace();
+                    } catch (IOException ioex) {
+                        ioex.printStackTrace();
+                    } finally {
+                        handle.finish();
+                    }
+                }
+            });
+        }
+
+        void saveToFile() {
+            final File file = new FileChooserBuilder(AttachmentsPanel.class)
+                    .setFilesOnly(true).showSaveDialog();
+            if (file != null) {
+                String progressFormat = NbBundle.getMessage(
+                                            SaveAttachmentAction.class,
+                                            "Attachment.saveToFile.progress"); //NOI18N
+                String progressMessage = MessageFormat.format(progressFormat, getFilename());
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+                handle.start();
+                handle.switchToIndeterminate();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            getAttachementData(new FileOutputStream(file));
+                        } catch (IOException ioex) {
+                            ioex.printStackTrace();
+                        } finally {
+                            handle.finish();
+                        }
+                    }
+                });
+            }
+        }
+
+        void applyPatch() {
+            final File context = BugtrackingUtil.selectPatchContext();
+            if (context != null) {
+                String progressFormat = NbBundle.getMessage(
+                                            ApplyPatchAction.class,
+                                            "Attachment.applyPatch.progress"); //NOI18N
+                String progressMessage = MessageFormat.format(progressFormat, getFilename());
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+                handle.start();
+                handle.switchToIndeterminate();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            File file = saveToTempFile();
+                            PatchUtils.applyPatch(file, context);
+                        } catch (IOException ioex) {
+                            ioex.printStackTrace();
+                        } finally {
+                            handle.finish();
+                        }
+                    }
+                });
+            }
+        }
+
+        private File saveToTempFile() throws IOException {
+            int index = filename.lastIndexOf('.'); // NOI18N
+            String prefix = (index == -1) ? filename : filename.substring(0, index);
+            String suffix = (index == -1) ? null : filename.substring(index);
+            if (prefix.length()<3) {
+                prefix = prefix + "tmp";                                //NOI18N
+            }
+            File file = File.createTempFile(prefix, suffix);
+            getAttachementData(new FileOutputStream(file));
+            return file;
+        }
+
+        class DefaultAttachmentAction extends AbstractAction {
+
+            public DefaultAttachmentAction() {
+                putValue(NAME, NbBundle.getMessage(
+                                   DefaultAttachmentAction.class,
+                                   "Attachment.DefaultAction.name"));   //NOI18N
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                Attachment.this.open();
+            }
+        }
+
+        class SaveAttachmentAction extends AbstractAction {
+
+            public SaveAttachmentAction() {
+                putValue(NAME, NbBundle.getMessage(
+                                   SaveAttachmentAction.class,
+                                   "Attachment.SaveAction.name"));      //NOI18N
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                Attachment.this.saveToFile();
+            }
+        }
+
+        class ApplyPatchAction extends AbstractAction {
+
+            public ApplyPatchAction() {
+                putValue(NAME, NbBundle.getMessage(
+                                   ApplyPatchAction.class,
+                                   "Attachment.ApplyPatchAction.name"));//NOI18N
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                Attachment.this.applyPatch();
+            }
+        }
+
     }
 
 }

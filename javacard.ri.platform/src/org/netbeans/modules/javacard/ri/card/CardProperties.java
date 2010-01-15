@@ -40,6 +40,8 @@
 package org.netbeans.modules.javacard.ri.card;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -62,7 +64,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbCollections;
-import org.openide.util.Utilities;
 
 /**
  * Bean for card properties which reads and writes to a Properties object
@@ -70,6 +71,8 @@ import org.openide.util.Utilities;
  * @author Tim Boudreau
  */
 final class CardProperties implements ICardCapability, CapabilitiesProvider {
+    public static final String DEBUG = "debug";
+    public static final String SUSPEND = "suspend";
     private static final String DEFAULT_RAM_SIZE = "24K"; //NOI18N
     private static final String DEFAULT_E2P_SIZE = "128K"; //NOI18N
     private static final String DEFULT_COR_SIZE = "2K"; //NOI18N
@@ -81,20 +84,23 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
     private static final String DEFAULT_CONTACTED_PROTOCOL = "T=1"; //NOI18N
     private static final String DEFAULT_CONTACTLESS_PORT = "9026"; //NOI18N
     private static final String DEFAULT_HOST = "127.0.0.1"; //NOI18N
-    private static final String DEFAULT_CAPABILITIES = "DEBUG,START,STOP,RESUME";
-    private static final String E2P_FILE_DEF = "${javacard.device.eeprom.folder}${file.separator}${javacard.device.name}.eprom";
-    static final String DEFAULT_DEBUG_PROXY_COMMAND_LINE = Utilities.isWindows() ?
-        "cmd /c ${debug.proxy.binary} " + //NOI18N
-        "--listen ${proxy.to.ide.port} " + //NOI18N
-        "--remote ${host}:${proxy.to.runtime.port} " + //NOI18N
-        "--classpath ${class.path}" :  //NOI18N
-
-        "${debug.proxy.binary} " + //NOI18N
-        "--listen ${proxy.to.ide.port} " + //NOI18N
-        "--remote ${host}:${proxy.to.runtime.port} " + //NOI18N
-        "--classpath ${class.path}"; //NOI18N
-    static final String DEFAULT_RUN_COMMAND_LINE =
+    private static final String DEFAULT_CAPABILITIES = "START,STOP,RESUME," + //NOI18N
+            "DEBUG,EPROM_FILE,CLEAR_EPROM,CONTENTS,CUSTOMIZER,INTERCEPTOR," + //NOI18N
+            "PORTS,URL,DELETE"; //NOI18N
+    private static final String E2P_FILE_DEF = "${javacard.device.eeprom.folder}" + //NOI18N
+            "${file.separator}${javacard.device.name}.eprom"; //NOI18N
+    static final String DEFAULT_DEBUG_PROXY_COMMAND_LINE = "${java.home}/bin/java " +
+            "-classpath ${javacard.debug.proxy.classpath} " + //NOI18N
+            "-Djc.home=${javacard.ri.home} " + //NOI18N
+            "com.sun.javacard.debugproxy.Main " + //NOI18N
+            "debug " + //NOI18N
+            "--listen ${proxy.to.ide.port} " + //NOI18N
+            "--remote ${host}:${proxy.to.runtime.port} " + //NOI18N
+            "--classpath ${class.path}"; //NOI18N
+    static final String NEW_RUN_COMMAND_LINE =
             "${" + JavacardPlatformKeyNames.PLATFORM_EMULATOR_PATH +"} " + //NOI18N
+            "-debug ${" + DEBUG + "} " + //NOI18N
+            "-suspend ${" + SUSPEND + "} " + //NOI18N
             "-ramsize ${" + JavacardDeviceKeyNames.DEVICE_RAMSIZE + "} " + //NOI18N
             "-e2psize ${" + JavacardDeviceKeyNames.DEVICE_E2PSIZE + "} " + //NOI18N
             "-corsize ${" + JavacardDeviceKeyNames.DEVICE_CORSIZE + "} " + //NOI18N
@@ -104,49 +110,13 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
             "-contactedport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPORT +"} " + //NOI18N
             "-contactedprotocol ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPROTOCOL + "} " + //NOI18N
             "-contactlessport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTLESSPORT + "}"; //NOI18N
-    static final String DEFAULT_RUN_COMMAND_LINE_NOSUSPEND =
-            "${" + JavacardPlatformKeyNames.PLATFORM_EMULATOR_PATH +"} " + //NOI18N
-            "-ramsize ${" + JavacardDeviceKeyNames.DEVICE_RAMSIZE + "} " + //NOI18N
-            "-e2psize ${" + JavacardDeviceKeyNames.DEVICE_E2PSIZE + "} " + //NOI18N
-            "-corsize ${" + JavacardDeviceKeyNames.DEVICE_CORSIZE + "} " + //NOI18N
-            "-e2pfile " + E2P_FILE_DEF + " " + //NOI18N
-            "-loggerlevel ${" + JavacardDeviceKeyNames.DEVICE_LOGGERLEVEL + "} " + //NOI18N
-            "-httpport ${" + JavacardDeviceKeyNames.DEVICE_HTTPPORT + "} " + //NOI18N
-            "-contactedport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPORT +"} " + //NOI18N
-            "-contactedprotocol ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPROTOCOL + "} " + //NOI18N
-            "-contactlessport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTLESSPORT + "} " + //NOI18N
-            "-nosuspend"; //NOI18N
-    static final String DEFAULT_RUN_COMMAND_LINE_DEBUG =
-            "${" + JavacardPlatformKeyNames.PLATFORM_EMULATOR_PATH +"} " + //NOI18N
-            "-ramsize ${" + JavacardDeviceKeyNames.DEVICE_RAMSIZE + "} " + //NOI18N
-            "-e2psize ${" + JavacardDeviceKeyNames.DEVICE_E2PSIZE + "} " + //NOI18N
-            "-corsize ${" + JavacardDeviceKeyNames.DEVICE_CORSIZE + "} " + //NOI18N
-            "-debugger " + //NOI18N
-            "-debugport ${" + JavacardDeviceKeyNames.DEVICE_PROXY2CJCREPORT + "} " + //NOI18N
-            "-e2pfile " + E2P_FILE_DEF + " " + //NOI18N
-            "-loggerlevel ${" + JavacardDeviceKeyNames.DEVICE_LOGGERLEVEL + "} " + //NOI18N
-            "-httpport ${" + JavacardDeviceKeyNames.DEVICE_HTTPPORT + "} " + //NOI18N
-            "-contactedport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPORT +"} " + //NOI18N
-            "-contactedprotocol ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPROTOCOL + "} " + //NOI18N
-            "-contactlessport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTLESSPORT + "}"; //NOI18N
 
-    static final String DEFAULT_RUN_COMMAND_LINE_DEBUG_NOSUSPEND =
-            "${" + JavacardPlatformKeyNames.PLATFORM_EMULATOR_PATH +"} " + //NOI18N
-            "-ramsize ${" + JavacardDeviceKeyNames.DEVICE_RAMSIZE + "} " + //NOI18N
-            "-e2psize ${" + JavacardDeviceKeyNames.DEVICE_E2PSIZE + "} " + //NOI18N
-            "-corsize ${" + JavacardDeviceKeyNames.DEVICE_CORSIZE + "} " + //NOI18N
-            "-debugger " + //NOI18N
-            "-debugport ${" + JavacardDeviceKeyNames.DEVICE_PROXY2CJCREPORT + "} " + //NOI18N
-            "-e2pfile " + E2P_FILE_DEF + " " + //NOI18N
-            "-loggerlevel ${" + JavacardDeviceKeyNames.DEVICE_LOGGERLEVEL + "} " + //NOI18N
-            "-httpport ${" + JavacardDeviceKeyNames.DEVICE_HTTPPORT + "} " + //NOI18N
-            "-contactedport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPORT +"} " + //NOI18N
-            "-contactedprotocol ${" + JavacardDeviceKeyNames.DEVICE_CONTACTEDPROTOCOL + "} " + //NOI18N
-            "-contactlessport ${" + JavacardDeviceKeyNames.DEVICE_CONTACTLESSPORT + "} " + //NOI18N
-            "-nosuspend"; //NOI18N
     static final String DEFAULT_RESUME_COMMAND_LINE = "${javacard.emulator} " + //NOI18N
+            "-debug ${debug} " +
+            "-suspend ${suspend} " +
             "-resume " + //NOI18N
             "-e2pfile " + E2P_FILE_DEF; //NOI18N
+
     private PropertiesAdapter props;
     private static final Logger LOGGER = Logger.getLogger(CardProperties.class.getPackage().getName());
     CardProperties(PropertiesAdapter props) {
@@ -213,13 +183,13 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
         setProp(JavacardDeviceKeyNames.DEVICE_LOGGERLEVEL, loggerLevel);
     }
 
-    public boolean isNoSuspend() {
-        String val = getProp(JavacardDeviceKeyNames.DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP, "true"); //NOI18N
-        return val == null ? true : Boolean.parseBoolean(val);
+    public boolean isSuspend() {
+        String val = getProp(JavacardDeviceKeyNames.DEVICE_SUSPEND_THREADS_ON_STARTUP, "false"); //NOI18N
+        return val == null ? false : Boolean.parseBoolean(val);
     }
 
-    public void setNoSuspend(boolean noSuspend) {
-        setProp (JavacardDeviceKeyNames.DEVICE_DONT_SUSPEND_THREADS_ON_STARTUP, "" + noSuspend); //NOI18N
+    public void setSuspend(boolean suspend) {
+        setProp (JavacardDeviceKeyNames.DEVICE_SUSPEND_THREADS_ON_STARTUP, "" + suspend); //NOI18N
     }
 
     public String getProxy2cjcrePort() {
@@ -290,8 +260,9 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
     private String getProp(String key, String defawlt) {
         String result = props.asProperties().getProperty(key);
         if (result == null) {
-            Logger.getLogger(CardProperties.class.getName()).log(Level.SEVERE,
-                    "Property " + key + " not found in " + props); //NOI18N
+            Logger.getLogger(CardProperties.class.getName()).log(Level.SEVERE, 
+                    "Property {0} not found in {1}",
+                    new Object[]{key, props}); //NOI18N
             result = defawlt;
         }
         return result;
@@ -307,8 +278,9 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
                         key + ": " + val); //NOI18N
             }
         } catch (NumberFormatException nfe) {
-            Logger.getLogger(CardProperties.class.getName()).log(Level.SEVERE,
-                    "Property " + key + " has non integer value in " + props); //NOI18N
+            Logger.getLogger(CardProperties.class.getName()).log(Level.SEVERE, 
+                    "Property {0} has non integer value in {1}",
+                    new Object[]{key, props}); //NOI18N
             result = Integer.parseInt(defawlt);
         }
         return result;
@@ -323,30 +295,33 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
     public String[] getDebugProxyCommandLine(Properties platformProps, String classpathClosure) {
         Map<String,String> projectInfo = prepPlatformProps(platformProps, true);
         projectInfo.put ("class.path", classpathClosure); //NOi18N
-        return shellSplit (evaluated(projectInfo,
+        String[] result = shellSplit (evaluated(projectInfo,
                 JavacardDeviceKeyNames.DEVICE_DEBUG_PROXY_COMMAND_LINE,
                 DEFAULT_DEBUG_PROXY_COMMAND_LINE));
+        //XXX Hack until we find a better way to do this
+        List<String> l = new ArrayList<String>();
+        for (String s : result) {
+            if (s.contains(".Main debug")) {
+                String[] ss = s.split(" ");
+                l.addAll(Arrays.asList(ss));
+            } else {
+                l.add (s);
+            }
+        }
+        result = l.toArray(new String[l.size()]);
+        System.err.println("DEBUG PROXY LINE:\n" + Arrays.asList(result));
+        return result;
     }
 
-    public String[] getRunCommandLine(Properties platformProps, boolean noSuspend, boolean forDebug) {
+    public String[] getRunCommandLine(Properties platformProps, boolean forDebug, boolean suspend, boolean resume) {
         Map<String,String> platform = prepPlatformProps(platformProps, true);
-        //XXX if debug false, nosuspend should be suppressed?
-        String key;
-        String def;
-        if (!forDebug && !noSuspend) {
-            key = JavacardDeviceKeyNames.DEVICE_RUN_COMMAND_LINE;
-            def = DEFAULT_RUN_COMMAND_LINE;
-        } else if (forDebug && !noSuspend) {
-            key = JavacardDeviceKeyNames.DEVICE_RUN_COMMAND_LINE_DEBUG;
-            def = DEFAULT_RUN_COMMAND_LINE_DEBUG;
-        } else if (forDebug && noSuspend) {
-            key = JavacardDeviceKeyNames.DEVICE_RUN_COMMAND_LINE_DEBUG_NOSUSPEND;
-            def = DEFAULT_RUN_COMMAND_LINE_DEBUG_NOSUSPEND;
-        } else {
-            key = JavacardDeviceKeyNames.DEVICE_RUN_COMMAND_LINE_NOSUSPEND;
-            def = DEFAULT_RUN_COMMAND_LINE_NOSUSPEND;
-        }
-        String[] result = shellSplit(evaluated (platform, key, def));
+        platform.put (DEBUG, forDebug ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
+        platform.put (SUSPEND, suspend ? Boolean.TRUE.toString() : Boolean.FALSE.toString());
+        String key = !resume ? JavacardDeviceKeyNames.DEVICE_RUN_COMMAND_LINE : JavacardDeviceKeyNames.DEVICE_RESUME_COMMAND_LINE;
+        String defawlt = !resume ? NEW_RUN_COMMAND_LINE : DEFAULT_RESUME_COMMAND_LINE;
+        String cmdline = evaluated (platform, key, defawlt);
+        String[] result = shellSplit (cmdline);
+        System.err.println("RUN COMMAND LINE:\n" + Arrays.asList(result));
         return result;
     }
 
@@ -367,13 +342,8 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
         }
         m.put("file.separator", File.separator); //NOI18N
         m.put("java.io.tmpdir", System.getProperty("java.io.tmpdir")); //NOI18N
+        m.put("java.home", System.getProperty("java.home")); //NOI18N
         return m;
-    }
-
-    public String[] getResumeCommandLine (Properties platformProps) {
-        return shellSplit(evaluated (prepPlatformProps(platformProps, true),
-                JavacardDeviceKeyNames.DEVICE_RESUME_COMMAND_LINE,
-                DEFAULT_RESUME_COMMAND_LINE));
     }
 
     private String evaluated(Map<String,String> pre, String key, String defawlt) {

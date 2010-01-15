@@ -1,0 +1,5 @@
+'Synchronizing on non-final field':
+synchronized($var) {
+    $stmts$;
+} :: !hasModifier($var, Modifier.FINAL) && elementKindMatches($var, ElementKind.FIELD)
+;;

@@ -95,11 +95,13 @@ class DiffTreeTable extends OutlineView {
     private void setDefaultColumnSizes() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                int width = getWidth();
-                getOutline().getColumnModel().getColumn(0).setPreferredWidth(width * 25 / 100);
-                getOutline().getColumnModel().getColumn(1).setPreferredWidth(width * 15 / 100);
-                getOutline().getColumnModel().getColumn(2).setPreferredWidth(width * 10 / 100);
-                getOutline().getColumnModel().getColumn(3).setPreferredWidth(width * 50 / 100);
+                if (getOutline().getColumnCount() == 4) {
+                    int width = getWidth();
+                    getOutline().getColumnModel().getColumn(0).setPreferredWidth(width * 25 / 100);
+                    getOutline().getColumnModel().getColumn(1).setPreferredWidth(width * 15 / 100);
+                    getOutline().getColumnModel().getColumn(2).setPreferredWidth(width * 10 / 100);
+                    getOutline().getColumnModel().getColumn(3).setPreferredWidth(width * 50 / 100);
+                }
             }
         });
     }

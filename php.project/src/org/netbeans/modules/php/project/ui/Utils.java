@@ -63,6 +63,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
@@ -71,8 +72,6 @@ import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -222,6 +221,39 @@ public final class Utils {
             File testsDirectory = FileUtil.normalizeFile(chooser.getSelectedFile());
             textField.setText(testsDirectory.getAbsolutePath());
         }
+    }
+
+    public static String validateTestSources(PhpProject project, String testDirPath) {
+        if (!StringUtils.hasText(testDirPath)) {
+            return NbBundle.getMessage(Utils.class, "MSG_FolderEmpty");
+        }
+
+        File testSourcesFile = new File(testDirPath);
+        if (!testSourcesFile.isAbsolute()) {
+            return NbBundle.getMessage(Utils.class, "MSG_TestNotAbsolute");
+        } else if (!testSourcesFile.isDirectory()) {
+            return NbBundle.getMessage(Utils.class, "MSG_TestNotDirectory");
+        }
+        FileObject nbproject = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+        FileObject testSourcesFo = FileUtil.toFileObject(testSourcesFile);
+        if (testSourcesFile.equals(FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)))) {
+            return NbBundle.getMessage(Utils.class, "MSG_TestEqualsSources");
+        } else if (FileUtil.isParentOf(nbproject, testSourcesFo)
+                || nbproject.equals(testSourcesFo)) {
+            return NbBundle.getMessage(Utils.class, "MSG_TestUnderneathNBMetadata");
+        } else if (!Utils.isFolderWritable(testSourcesFile)) {
+            return NbBundle.getMessage(Utils.class, "MSG_TestNotWritable");
+        }
+        return null;
+    }
+
+    public static String warnTestSources(PhpProject project, String testDirPath) {
+        File testSourcesFile = new File(testDirPath);
+        FileObject testSourcesFo = FileUtil.toFileObject(testSourcesFile);
+        if (!FileUtil.isParentOf(project.getProjectDirectory(), testSourcesFo)) {
+            return NbBundle.getMessage(Utils.class, "MSG_TestNotUnderneathProjectFolder");
+        }
+        return null;
     }
 
     public static List getAllItems(final JComboBox comboBox) {

@@ -42,16 +42,17 @@ package org.netbeans.modules.mercurial.ui.clone;
 
 import java.io.IOException;
 import java.net.PasswordAuthentication;
+import java.net.URISyntaxException;
 import java.util.MissingResourceException;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -71,6 +72,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -86,14 +88,30 @@ import static org.netbeans.modules.mercurial.ui.properties.HgProperties.HGPROPNA
  * @author John Rice
  */
 public class CloneAction extends ContextAction {
-    private final VCSContext context;
-
-    public CloneAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        return HgUtils.isFromHgRepository(context);
     }
-    
-    public void performAction(ActionEvent ev){
+
+    protected String getBaseName(Node[] nodes) {
+        VCSContext ctx = HgUtils.getCurrentContext(nodes);
+        Set<File> roots = HgUtils.getRepositoryRoots(ctx);
+        return roots.size() == 1 ? "CTL_MenuItem_CloneLocal" : "CTL_MenuItem_CloneRepository"; // NOI18N
+    }
+
+    @Override
+    public String getName(String role, Node[] activatedNodes) {
+        VCSContext ctx = HgUtils.getCurrentContext(activatedNodes);
+        Set<File> roots = HgUtils.getRepositoryRoots(ctx);
+        String name = getBaseName(activatedNodes);
+        return roots.size() == 1 ? NbBundle.getMessage(CloneAction.class, name, roots.iterator().next().getName())
+                : NbBundle.getMessage(CloneAction.class, name);
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(context);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
@@ -120,6 +138,17 @@ public class CloneAction extends ContextAction {
         performClone(new HgURL(root), clone.getTargetDir(), projIsRepos, projFile, true, null, null, true);
     }
 
+    /**
+     * 
+     * @param source password is nulled
+     * @param target
+     * @param projIsRepos
+     * @param projFile
+     * @param pullPath password is nulled
+     * @param pushPath password is nulled
+     * @param scanForProjects
+     * @return
+     */
     public static RequestProcessor.Task performClone(final HgURL source, final File target, boolean projIsRepos,
             File projFile, final HgURL pullPath, final HgURL pushPath, boolean scanForProjects) {
         return performClone(source, target, projIsRepos, projFile, false, pullPath, pushPath, scanForProjects);
@@ -185,16 +214,11 @@ public class CloneAction extends ContextAction {
                             openProject(cloneProjFile, projectManager, hg);
                         } else if (scanForProjects) {
                             CloneCompleted cc = new CloneCompleted(target);
-                            if (isCanceled()) {
-                                return;
+                            if (!isCanceled()) {
+                                cc.scanForProjects(this);
                             }
-                            cc.scanForProjects(this);
                         }
                     }
-                } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
-                }finally {
                     HgConfigFiles hgConfigFiles = new HgConfigFiles(target);
                     if (hgConfigFiles.getException() == null) {
                         if (source.isKenaiURL()) {
@@ -210,10 +234,20 @@ public class CloneAction extends ContextAction {
                         Mercurial.LOG.log(Level.WARNING, this.getClass().getName() + ": Cannot set default push and pull path"); // NOI18N
                         Mercurial.LOG.log(Level.INFO, null, hgConfigFiles.getException());
                     }
-                        
+                } catch (HgException ex) {
+                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+                    DialogDisplayer.getDefault().notifyLater(e);
+                }finally {    
                     if(!isLocalClone){
                         logger.outputInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
                         logger.output(""); // NOI18N
+                    }
+                    source.clearPassword();
+                    if (pullPath != null) {
+                        pullPath.clearPassword();
+                    }
+                    if (pushPath != null) {
+                        pushPath.clearPassword();
                     }
                 }
             }
@@ -225,24 +259,31 @@ public class CloneAction extends ContextAction {
                  * bug #125835 ("default-push should be set
                  * automatically").
                  */
-                if ((pullPath == null) && (pushPath == null)) {
-                    String defaultPull = hgConfigFiles.getDefaultPull(false);
-                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
-
-                } else if ((pullPath != null) && (pushPath == null)) {
-                    String defaultPull = pullPath.toHgCommandUrlString();
-                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
-                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
-
-                } else if ((pullPath == null) && (pushPath != null)) {
-                    String defaultPush = pushPath.toHgCommandUrlString();
-                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
-
-                } else if ((pullPath != null) && (pushPath != null)) {
-                    String defaultPull = pullPath.toHgCommandUrlString();
-                    String defaultPush = pushPath.toHgCommandUrlString();
-                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
-                    hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
+                String defaultPull = hgConfigFiles.getDefaultPull(false);
+                HgURL defaultPullURL;
+                try {
+                    defaultPullURL = new HgURL(defaultPull);
+                    if ((pullPath == null) && (pushPath == null)) {
+                        hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
+                    } else if ((pullPath != null) && (pushPath == null)) {
+                        defaultPull = new HgURL(pullPath.toHgCommandUrlStringWithoutUserInfo(),
+                                defaultPullURL.getUserInfo(), null).toHgCommandUrlString();
+                        hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
+                        hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPull);
+                    } else if ((pullPath == null) && (pushPath != null)) {
+                        String defaultPush = new HgURL(pushPath.toHgCommandUrlStringWithoutUserInfo(),
+                                defaultPullURL.getUserInfo(), null).toHgCommandUrlString();
+                        hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
+                    } else if ((pullPath != null) && (pushPath != null)) {
+                        defaultPull = new HgURL(pullPath.toHgCommandUrlStringWithoutUserInfo(),
+                                defaultPullURL.getUserInfo(), null).toHgCommandUrlString();
+                        String defaultPush = new HgURL(pushPath.toHgCommandUrlStringWithoutUserInfo(),
+                                defaultPullURL.getUserInfo(), null).toHgCommandUrlString();
+                        hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PULL, defaultPull);
+                        hgConfigFiles.setProperty(HGPROPNAME_DEFAULT_PUSH, defaultPush);
+                    }
+                } catch (URISyntaxException ex) {
+                    Mercurial.LOG.log(Level.INFO, null, ex);
                 }
             }
 
@@ -336,10 +377,6 @@ public class CloneAction extends ContextAction {
             }
         });
         return support.start(rp, source, org.openide.util.NbBundle.getMessage(CloneAction.class, "LBL_Clone_Progress", source)); // NOI18N
-    }
-
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
     }
    
     private static final String HG_PATHS_SECTION_ENCLOSED = "[" + HgConfigFiles.HG_PATHS_SECTION + "]";// NOI18N

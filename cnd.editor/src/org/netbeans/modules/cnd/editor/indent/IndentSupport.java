@@ -1050,6 +1050,10 @@ public class IndentSupport {
         return getCodeStyle().indentCasesFromSwitch();
     }
 
+    protected boolean indentNamespace() {
+        return getCodeStyle().indentNamespace();
+    }
+
     protected boolean isHalfIndentNewlineBeforeBrace() {
         return getCodeStyle().getFormatNewlineBeforeBrace() == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED;
     }
@@ -1060,6 +1064,10 @@ public class IndentSupport {
 
     protected boolean isHalfIndentNewlineBeforeBraceDeclaration() {
         return getCodeStyle().getFormatNewlineBeforeBraceDeclaration() == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED;
+    }
+
+    protected boolean isHalfIndentVisibility() {
+        return getCodeStyle().indentVisibility() == CodeStyle.VisibilityIndent.HALF_INDENT;
     }
 
     protected boolean getFormatLeadingStarInComment() {

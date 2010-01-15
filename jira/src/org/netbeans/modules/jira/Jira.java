@@ -42,6 +42,7 @@ package org.netbeans.modules.jira;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.JiraClientFactory;
@@ -55,7 +56,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.libs.bugtracking.BugtrackingRuntime;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
-import org.netbeans.modules.jira.repository.JiraConfigurationCacheManager;
 import org.netbeans.modules.jira.issue.JiraIssueProvider;
 import org.netbeans.modules.jira.kenai.KenaiSupportImpl;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -75,22 +75,21 @@ public class Jira {
 
     private JiraRepositoryConnector jrc;
     private static Jira instance;
-    private Set<TaskRepository> refreshedRepos = new HashSet<TaskRepository>(1);
-    private JiraConfigurationCacheManager cacheManager;
     private JiraStorageManager storageManager;
 
     public static Logger LOG = Logger.getLogger("org.netbeans.modules.jira.Jira");
     private RequestProcessor rp;
 
     private KenaiSupport kenaiSupport;
+    private final JiraCorePlugin jcp;
     
     private Jira() {
         ModuleLifecycleManager.instantiated = true;
-        JiraCorePlugin jcp = new JiraCorePlugin();
+        jcp = new JiraCorePlugin();
         try {
             jcp.start(null);
         } catch (Exception ex) {
-            throw new RuntimeException(ex); // XXX thisiscrap
+            LOG.log(Level.WARNING, "Error while starting jira client", ex);
         }
         BugtrackingRuntime.getInstance().addRepositoryConnector(getRepositoryConnector());
     }
@@ -209,15 +208,12 @@ public class Jira {
     }
 
     void shutdown () {
-        getConfigurationCacheManager().shutdown();
-        getStorageManager().shutdown();
-    }
-
-    public JiraConfigurationCacheManager getConfigurationCacheManager () {
-        if (cacheManager == null) {
-            cacheManager = JiraConfigurationCacheManager.getInstance();
+        try {
+            jcp.stop(null);
+        } catch (Exception ex) {
+            LOG.log(Level.WARNING, "Error while stoping jira client", ex);
         }
-        return cacheManager;
+        getStorageManager().shutdown();
     }
 
     public JiraStorageManager getStorageManager () {

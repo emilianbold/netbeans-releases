@@ -44,22 +44,7 @@ package org.netbeans.core.lookup;
 import org.netbeans.junit.*;
 import junit.textui.TestRunner;
 
-import java.io.File;
-import org.netbeans.Module;
-import org.netbeans.ModuleManager;
-import org.netbeans.core.NbTopManager;
-import org.netbeans.core.startup.ModuleHistory;
-import org.openide.util.Lookup;
 import javax.swing.Action;
-import java.util.Iterator;
-import org.openide.loaders.DataObject;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.util.Mutex;
-import org.openide.cookies.InstanceCookie;
-import org.openide.util.MutexException;
-import org.openide.util.LookupListener;
-import org.openide.util.LookupEvent;
 
 /** A test.
  * @author Jesse Glick

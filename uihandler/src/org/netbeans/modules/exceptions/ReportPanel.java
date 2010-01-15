@@ -54,10 +54,18 @@ import org.openide.awt.HtmlBrowser;
 
 public class ReportPanel extends javax.swing.JPanel {
     private final ExceptionsSettings exSettings = new ExceptionsSettings();
-    
+
     /** Creates new form ReportPanel */
     public ReportPanel() {
+        this(false);
+    }
+    public ReportPanel(boolean isOOM) {
         initComponents();
+        if (isOOM){
+            oomInfo.setVisible(true);
+        }else{
+            oomInfo.setVisible(false);
+        }
         jLabel10.setVisible(false);
         asAGuestCheckBoxActionPerformed(null);
     }
@@ -89,6 +97,7 @@ public class ReportPanel extends javax.swing.JPanel {
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         asAGuestCheckBox = new javax.swing.JCheckBox();
+        oomInfo = new javax.swing.JLabel();
 
         setPreferredSize(new java.awt.Dimension(630, 430));
 
@@ -152,6 +161,8 @@ public class ReportPanel extends javax.swing.JPanel {
             }
         });
 
+        oomInfo.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.oomInfo.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -198,7 +209,10 @@ public class ReportPanel extends javax.swing.JPanel {
                         .add(11, 11, 11))
                     .add(layout.createSequentialGroup()
                         .add(jLabel8)
-                        .addContainerGap(211, Short.MAX_VALUE))))
+                        .addContainerGap(211, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(oomInfo)
+                        .addContainerGap(114, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -217,7 +231,7 @@ public class ReportPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel4)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -234,8 +248,10 @@ public class ReportPanel extends javax.swing.JPanel {
                 .add(rememberCheckBox)
                 .add(3, 3, 3)
                 .add(asAGuestCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jLabel8))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel8)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(oomInfo))
         );
 
         loginField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.loginField.AccessibleContext.accessibleName")); // NOI18N
@@ -332,6 +348,10 @@ public class ReportPanel extends javax.swing.JPanel {
             jLabel10.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.checking_password")); // NOI18N
             jLabel10.setVisible(true);
         }
+
+        public void setInitialFocus(){
+            commentArea.requestFocusInWindow();
+        }
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox asAGuestCheckBox;
@@ -351,6 +371,7 @@ public class ReportPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextField loginField;
+    private javax.swing.JLabel oomInfo;
     private javax.swing.JCheckBox rememberCheckBox;
     private javax.swing.JTextField summaryField;
     // End of variables declaration//GEN-END:variables

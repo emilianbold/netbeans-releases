@@ -110,7 +110,7 @@ public final class GetSourcesFromKenaiAction extends AbstractAction {
         
         if (options[0].equals(option)) {
             
-            final PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
+            final PasswordAuthentication passwdAuth = prjAndFeature.projectName.getKenai().getPasswordAuthentication();
             final GetSourcesInfo sourcesInfo = getSourcesPanel.getSelectedSourcesInfo();
             if (sourcesInfo == null) {
                 return;

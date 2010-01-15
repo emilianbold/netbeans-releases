@@ -45,6 +45,7 @@ import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.util.Exceptions;
+import static org.netbeans.spi.jumpto.symbol.SymbolProvider.*;
 
 /**
  *
@@ -65,4 +66,6 @@ public abstract class SymbolProviderAccessor {
     public abstract SymbolProvider.Context createContext(Project p, String text, SearchType t);
 
     public abstract SymbolProvider.Result createResult(List<? super SymbolDescriptor> result, String[] message);
+
+    public abstract int getRetry(Result result);
 }

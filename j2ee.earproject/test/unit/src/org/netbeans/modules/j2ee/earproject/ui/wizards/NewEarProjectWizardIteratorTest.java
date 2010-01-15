@@ -85,7 +85,7 @@ public class NewEarProjectWizardIteratorTest extends EarTestCase {
             String platformName, String sourceLevel) throws IOException {
         NewEarProjectWizardIterator.testableInstantiate(prjDirF, name,
                 j2eeProfile, serverInstanceID, warName, jarName,
-                carName, mainClass, platformName, sourceLevel, null, null, null);
+                carName, mainClass, platformName, sourceLevel, null, null, null, false);
     }
     
     /**
@@ -133,7 +133,7 @@ public class NewEarProjectWizardIteratorTest extends EarTestCase {
         
         Set result = NewEarProjectWizardIterator.testableInstantiate(dirF, name,
                 j2eeProfile, TestUtil.SERVER_URL, warName, jarName,
-                carName, mainClass, platformName, sourceLevel, null, null, null);
+                carName, mainClass, platformName, sourceLevel, null, null, null, false);
         
         Set<FileObject> expResult = new HashSet<FileObject>();
         FileObject testEAFO = FileUtil.toFileObject(new File(getWorkDir(), "testEA"));
@@ -161,7 +161,7 @@ public class NewEarProjectWizardIteratorTest extends EarTestCase {
         
         Set result = NewEarProjectWizardIterator.testableInstantiate(dirF, name,
                 j2eeProfile, TestUtil.SERVER_URL, warName, jarName,
-                carName, mainClass, platformName, sourceLevel, null, null, null);
+                carName, mainClass, platformName, sourceLevel, null, null, null,false);
         
         Set<FileObject> expResult = new HashSet<FileObject>();
         File testEA = new File(getWorkDir(), "testEA");
@@ -193,7 +193,7 @@ public class NewEarProjectWizardIteratorTest extends EarTestCase {
         
         Set result = NewEarProjectWizardIterator.testableInstantiate(dirF, name,
                 j2eeProfile, TestUtil.SERVER_URL, warName, jarName,
-                carName, mainClass, platformName, sourceLevel, null, null, null);
+                carName, mainClass, platformName, sourceLevel, null, null, null,false);
         
         Set<FileObject> expResult = new HashSet<FileObject>();
         File testEA = new File(getWorkDir(), "testEA");

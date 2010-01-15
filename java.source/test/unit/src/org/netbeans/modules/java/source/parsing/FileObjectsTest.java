@@ -40,10 +40,10 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
@@ -55,7 +55,8 @@ import javax.swing.event.ChangeListener;
 import javax.tools.JavaFileObject;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
-import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -123,7 +124,47 @@ public class FileObjectsTest extends NbTestCase {
         assertNotNull(uri2);
         assertEquals("jar:file:/tmp/00/foo.jar!/a/b/c/SIAPI%20query%20syntax.html", uri2.toString());   //NOI18N
     }
-    
+
+    public void testFileObjectNotCreated() throws Exception {
+        final File workDir = getWorkDir();
+        final FileObject wd = FileUtil.toFileObject(workDir);
+        final FileObject existing = FileUtil.createData(wd, "test/foo/existing.java");
+        assertNotNull(existing);
+        final javax.tools.FileObject existingFo = FileObjects.nbFileObject(existing.getURL(), wd);
+        assertEquals ("test.foo.existing",((FileObjects.InferableJavaFileObject)existingFo).inferBinaryName());
+        try {
+            final InputStream in = existingFo.openInputStream();
+            in.close();
+        } catch (IOException e) {
+           assertFalse("InputSream should exist for existing file",true);
+        }
+        try {
+            final OutputStream out = existingFo.openOutputStream();
+            out.close();
+        } catch (IOException e) {
+           assertFalse("OutputStream should exist for existing file",true);
+        }
+        File nonExistring = new File (new File(new File (workDir,"test"),"foo"),"nonexisting.java");
+        final javax.tools.FileObject nonExistingFo = FileObjects.nbFileObject(nonExistring.toURI().toURL(), wd);
+        assertEquals ("test.foo.nonexisting",((FileObjects.InferableJavaFileObject)nonExistingFo).inferBinaryName());
+        try {
+            final InputStream in = nonExistingFo.openInputStream();
+            assertFalse("InputSream should not exist for non existing file",true);
+        } catch (IOException e) {}
+        try {
+            final OutputStream out = nonExistingFo.openOutputStream();
+            out.close();
+        } catch (IOException e) {
+           assertFalse("OutputStream should exist for existing file",true);
+        }
+        try {
+            final InputStream in = nonExistingFo.openInputStream();
+            in.close();
+        } catch (IOException e) {
+            assertFalse("InputSream should exist for non existing file after OutputStream taken",true);
+        }
+
+    }
     private static enum Call {
         READER,
         WRITER,

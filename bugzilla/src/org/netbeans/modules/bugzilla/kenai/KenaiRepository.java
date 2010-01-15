@@ -60,6 +60,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
 import org.openide.nodes.Node;
@@ -80,7 +81,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     private KenaiQuery myIssues;
     private KenaiQuery allIssues;
     private String host;
-    private final Object kenaiProject;
+    private final KenaiProject kenaiProject;
 
     KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String userName, String password, String urlParam, String product) {
         super(getRepositoryId(repoName, url), repoName, url, userName, password, null, null); // use name as id - can't be changed anyway
@@ -90,11 +91,11 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         this.host = host;
         assert kenaiProject != null;
         this.kenaiProject = kenaiProject;
-        Kenai.getDefault().addPropertyChangeListener(this);
+        KenaiManager.getDefault().addPropertyChangeListener(this);
     }
 
     public KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String urlParam, String product) {
-        this(kenaiProject, repoName, url, host, getKenaiUser(), getKenaiPassword(), urlParam, product);
+        this(kenaiProject, repoName, url, host, getKenaiUser(kenaiProject), getKenaiPassword(kenaiProject), urlParam, product);
     }
 
     @Override
@@ -171,7 +172,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     private String getQueryUrl() {
         StringBuffer url = new StringBuffer();
         url.append(urlParam);
-        String user = getKenaiUser();
+        String user = getKenaiUser(kenaiProject);
         if (user == null) {
             user = ""; // NOI18N
         }
@@ -203,7 +204,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
 
     @Override
     public boolean authenticate(String errroMsg) {
-        PasswordAuthentication pa = org.netbeans.modules.bugtracking.util.KenaiUtil.getPasswordAuthentication(true);
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getKenai(), true);
         if(pa == null) {
             return false;
         }
@@ -234,16 +235,16 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return product;
     }
 
-    private static String getKenaiUser() {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+    private static String getKenaiUser(KenaiProject kenaiProject) {
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getKenai(), false);
         if(pa != null) {
             return pa.getUserName();
         }
         return "";                                                              // NOI18N
     }
 
-    private static String getKenaiPassword() {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+    private static String getKenaiPassword(KenaiProject kenaiProject) {
+        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getKenai(), false);
         if(pa != null) {
             return new String(pa.getPassword());
         }
@@ -271,7 +272,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
 
     @Override
     public Collection<RepositoryUser> getUsers() {
-        return KenaiUtil.getProjectMembers(product.toLowerCase());
+        return KenaiUtil.getProjectMembers(kenaiProject);
     }
 
     public String getHost() {
@@ -284,11 +285,18 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
 
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+
+            Kenai notifiedKenai = (Kenai) evt.getSource();
+            if(!notifiedKenai.equals(kenaiProject.getKenai())) {
+                return;
+            }
+
             // XXX move to spi?
             // get kenai credentials
             String user;
             String psswd;
-            PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
+            PasswordAuthentication pa = 
+                    KenaiUtil.getPasswordAuthentication(kenaiProject.getKenai(), false); // do not force login
             if(pa != null) {
                 user = pa.getUserName();
                 psswd = new String(pa.getPassword());

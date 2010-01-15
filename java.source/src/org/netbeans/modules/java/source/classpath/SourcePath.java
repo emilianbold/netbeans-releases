@@ -44,6 +44,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -55,6 +56,7 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -68,15 +70,17 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
     private final ClassPath delegate;
     private final ClassIndexManager manager;
     private final boolean forcePrefSources;
+    private final boolean apt;
     private List<PathResourceImplementation> resources;
     private long eventId;
     
-    private SourcePath (final ClassPath delegate, final boolean bkgComp) {
+    private SourcePath (final ClassPath delegate, final boolean bkgComp, final boolean apt) {
         this.delegate = delegate;
         this.manager = ClassIndexManager.getDefault();
         manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, this, manager));
         delegate.addPropertyChangeListener(WeakListeners.propertyChange(this, delegate));
         this.forcePrefSources = bkgComp;
+        this.apt = apt;
     }
     
     public List<? extends PathResourceImplementation> getResources() {
@@ -91,9 +95,16 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>();
         for (ClassPath.Entry entry : delegate.entries()) {
             if (forcePrefSources || !JavaIndex.isLibrary(entry.getURL())) {
-                res.add(new FR (entry));
+                if (!apt) {
+                    res.add(new FR (entry));
+                } else {
+                    final URL aptRoot = AptCacheForSourceQuery.getAptFolder(entry.getURL());
+                    if (aptRoot != null) {
+                        res.add(ClassPathSupport.createResource(aptRoot));
+                    }
+                }
             }
-        }
+        }                
         synchronized (this) {
             if (currentEventId == this.eventId) {
                 if (this.resources == null) {
@@ -197,9 +208,14 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         
     }
     
-    public static ClassPath create (final ClassPath cp, final boolean bkgComp) {
+    public static ClassPath sources (final ClassPath cp, final boolean bkgComp) {
         assert cp != null;
-        return ClassPathFactory.createClassPath(new SourcePath(cp, bkgComp));
+        return ClassPathFactory.createClassPath(new SourcePath(cp, bkgComp, false));
+    }
+
+    public static ClassPath apt (final ClassPath cp, final boolean bkgComp) {
+        assert cp != null;
+        return ClassPathFactory.createClassPath(new SourcePath(cp, bkgComp, true));
     }
 
 }

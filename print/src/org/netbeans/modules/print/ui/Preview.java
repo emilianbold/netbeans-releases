@@ -79,7 +79,7 @@ import org.netbeans.spi.print.PrintPage;
 import org.netbeans.spi.print.PrintProvider;
 import org.netbeans.modules.print.util.Config;
 import org.netbeans.modules.print.util.Percent;
-import static org.netbeans.modules.print.ui.UI.*;
+import static org.netbeans.modules.print.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -97,12 +97,25 @@ public final class Preview extends Dialog implements Percent.Listener {
 
             public void keyPressed(KeyEvent event) {
                 char ch = event.getKeyChar();
+                int modifiers = event.getModifiers();
 
                 if (ch == '+' || ch == '=') {
-                    myScale.increaseValue();
+                    if (isCtrl(modifiers)) {
+                        increaseZoom();
+                        updated();
+                    }
+                    else {
+                        myScale.increaseValue();
+                    }
                 }
                 else if (ch == '-' || ch == '_') {
-                    myScale.decreaseValue();
+                    if (isCtrl(modifiers)) {
+                        decreaseZoom();
+                        updated();
+                    }
+                    else {
+                        myScale.decreaseValue();
+                    }
                 }
                 else if (ch == '/') {
                     myScale.normalValue();
@@ -174,6 +187,7 @@ public final class Preview extends Dialog implements Percent.Listener {
         c.fill = GridBagConstraints.BOTH;
         c.insets = new Insets(0, 0, 0, 0);
         panel.add(createScrollPanel(), c);
+//      panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
 
         toggle();
 
@@ -388,14 +402,14 @@ public final class Preview extends Dialog implements Percent.Listener {
         panel.setBackground(Color.lightGray);
         panel.add(myPaperPanel, c);
 
-//      panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.yellow));
-//      optionPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
-//      myPaperPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
-
         // scroll
         c.fill = GridBagConstraints.BOTH;
         myScrollPane = new MyScrollPane(panel);
         myScrollPane.setFocusable(true);
+//      panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.yellow));
+//      optionPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
+//      myPaperPanel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.green));
+//      myScrollPane.setBorder(new javax.swing.border.LineBorder(java.awt.Color.red));
 
         myScrollPane.addWheelListener(new MouseWheelListener() {
             public void mouseWheelMoved(MouseWheelEvent event) {
@@ -736,7 +750,7 @@ public final class Preview extends Dialog implements Percent.Listener {
         Object[] leftButtons = getLeftButtons();
 
         DialogDescriptor descriptor = new DialogDescriptor(
-            getResizable(createPanel()),
+            getResizableXY(createPanel()),
             i18n("LBL_Print_Preview"), // NOI18N
             true,
             rightButtons,

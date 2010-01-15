@@ -114,48 +114,6 @@ public class UtilitiesActiveQueueTest extends NbTestCase {
         }
     }
     
-    public void testMemoryLeak() throws Exception {
-        final Class<?> u1 = Utilities.class;
-        class L extends URLClassLoader {
-            public L() {
-                super(new URL[] {u1.getProtectionDomain().getCodeSource().getLocation()}, u1.getClassLoader().getParent());
-            }
-            protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-                if (name.equals(u1.getName()) || name.startsWith(u1.getName() + "$")) {
-                    Class c = findLoadedClass(name);
-                    if (c == null) {
-                        c = findClass(name);
-                    }
-                    if (resolve) {
-                        resolveClass(c);
-                    }
-                    return c;
-                } else {
-                    return super.loadClass(name, resolve);
-                }
-            }
-        }
-        ClassLoader l = new L();
-        Class<?> u2 = l.loadClass(u1.getName());
-        assertEquals(l, u2.getClassLoader());
-        Object obj = new Object();
-        @SuppressWarnings("unchecked")
-        ReferenceQueue<Object> q = (ReferenceQueue<Object>) u2.getMethod("activeReferenceQueue").invoke(null);
-        RunnableRef ref = new RunnableRef(obj, q);
-        synchronized (ref) {
-            obj = null;
-            assertGC("Ref should be GC'ed as usual", ref);
-            ref.wait();
-            assertTrue("Run method has been executed", ref.executed);
-        }
-        Reference<?> r = new WeakReference<Object>(u2);
-        q = null;
-        u2 = null;
-        l = null;
-        assertGC("#86625: Utilities.class can also be collected now", r);
-    }
-
-    
     private static class RunnableRef extends WeakReference<Object>
     implements Runnable {
         public boolean wait;

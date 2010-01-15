@@ -61,7 +61,7 @@ import org.openide.util.Parameters;
 /**
  * Makes it easier to implement <code>org.netbeans.spi.project.ActionProvider</code> in a standard way
  * by running targets in Ant scripts.
- * @see <a href="@PROJECTS/PROJECTAPI@/org/netbeans/spi/project/ActionProvider.html"><code>ActionProvider</code></a>
+ * @see <a href="@org-netbeans-modules-projectapi@/org/netbeans/spi/project/ActionProvider.html"><code>ActionProvider</code></a>
  * @author Jesse Glick
  */
 public final class ActionUtils {
@@ -120,7 +120,7 @@ public final class ActionUtils {
      *               or null to not check suffixes
      * @param strict if true, all files in the selection have to be accepted
      * @return a nonempty selection of disk files, or null
-     * @see <a href="@PROJECTS/PROJECTAPI@/org/netbeans/spi/project/ActionProvider.html#isActionEnabled(java.lang.String,%20org.openide.util.Lookup)"><code>ActionProvider.isActionEnabled(...)</code></a>
+     * @see <a href="@org-netbeans-modules-projectapi@/org/netbeans/spi/project/ActionProvider.html#isActionEnabled(java.lang.String,%20org.openide.util.Lookup)"><code>ActionProvider.isActionEnabled(...)</code></a>
      */
     public static FileObject[] findSelectedFiles(Lookup context, FileObject dir, String suffix, boolean strict) {
         if (dir != null && !dir.isFolder()) {

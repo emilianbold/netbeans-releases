@@ -55,4 +55,6 @@ public class MultiStatus extends Status {
     
     public void add(IStatus status) {
     }
+    public void addAll(IStatus status) {
+    }
 }

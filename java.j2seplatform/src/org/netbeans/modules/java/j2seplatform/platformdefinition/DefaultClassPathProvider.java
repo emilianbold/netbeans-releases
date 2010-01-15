@@ -564,115 +564,128 @@ public class DefaultClassPathProvider implements ClassPathProvider {
     private static class RecursionException extends IllegalStateException {}
     
     private static class CompileClassPathImpl implements ClassPathImplementation, GlobalPathRegistryListener {
-        
+
         private List<? extends PathResourceImplementation> cachedCompiledClassPath;
         private PropertyChangeSupport support;
         private final ThreadLocal<Boolean> active = new ThreadLocal<Boolean> ();
-        
+        private long eventId;
+
         public CompileClassPathImpl () {
             this.support = new PropertyChangeSupport (this);
         }
-        
-        public synchronized List<? extends PathResourceImplementation> getResources () {
-            
-            if (this.cachedCompiledClassPath == null) {
-                Boolean _active = active.get();
-                if (_active == Boolean.TRUE) {
-                    throw new RecursionException ();
+
+        public List<? extends PathResourceImplementation> getResources () {
+            long myEventId;
+            synchronized (this) {
+                if (this.cachedCompiledClassPath != null) {
+                    return this.cachedCompiledClassPath;
                 }
-                active.set(true);
-                try {
-                    GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
-                    regs.addGlobalPathRegistryListener(this);
-                    Set<URL> roots = new HashSet<URL> ();
-                    //Add compile classpath
-                    Set<ClassPath> paths = regs.getPaths (ClassPath.COMPILE);
-                    for (Iterator<ClassPath> it = paths.iterator(); it.hasNext();) {
-                        ClassPath cp =  it.next();
-                        try {
-                            for (ClassPath.Entry entry : cp.entries()) {
-                                roots.add (entry.getURL());
-                            }                    
-                        } catch (RecursionException e) {/*Recover from recursion*/}
-                    }
-                    //Add entries from Exec CP which has sources on Sources CP and are not on the Compile CP
-                    Set<ClassPath> sources = regs.getPaths(ClassPath.SOURCE);
-                    Set<URL> sroots = new HashSet<URL> ();
-                    for (Iterator<ClassPath> it = sources.iterator(); it.hasNext();) {
-                        ClassPath cp = it.next();
-                        try {
-                            for (Iterator<ClassPath.Entry> eit = cp.entries().iterator(); eit.hasNext();) {
-                                ClassPath.Entry entry = eit.next();
-                                sroots.add (entry.getURL());
-                            }                    
-                        } catch (RecursionException e) {/*Recover from recursion*/}
-                    }                
-                    Set<ClassPath> exec = regs.getPaths(ClassPath.EXECUTE);
-                    for (Iterator<ClassPath> it = exec.iterator(); it.hasNext();) {
-                        ClassPath cp = it.next ();
-                        try {
-                            for (Iterator<ClassPath.Entry> eit = cp.entries().iterator(); eit.hasNext();) {
-                                ClassPath.Entry entry = eit.next ();
-                                Result result = SourceForBinaryQuery.findSourceRoots(entry.getURL());
-                                FileObject[] fos = result.getRoots();
-                                for (int i=0; i< fos.length; i++) {
-                                    if (fos[i] == null)
-                                        ErrorManager.getDefault().notify (
-                                            new NullPointerException (result + " returns null root for " + entry.getURL())
-                                        );
-                                    else
-                                        try {
-                                            if (sroots.contains(fos[i].getURL())) {
-                                                roots.add (entry.getURL());
-                                            }
-                                        } catch (FileStateInvalidException e) {
-                                            ErrorManager.getDefault().notify(e);
+                myEventId=eventId;
+            }
+            Boolean _active = active.get();
+            if (_active == Boolean.TRUE) {
+                throw new RecursionException ();
+            }
+            active.set(true);
+            final List<PathResourceImplementation> l =  new ArrayList<PathResourceImplementation> ();
+            try {
+                GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
+                regs.addGlobalPathRegistryListener(this);
+                Set<URL> roots = new HashSet<URL> ();
+                //Add compile classpath
+                Set<ClassPath> paths = regs.getPaths (ClassPath.COMPILE);
+                for (Iterator<ClassPath> it = paths.iterator(); it.hasNext();) {
+                    ClassPath cp =  it.next();
+                    try {
+                        for (ClassPath.Entry entry : cp.entries()) {
+                            roots.add (entry.getURL());
+                        }
+                    } catch (RecursionException e) {/*Recover from recursion*/}
+                }
+                //Add entries from Exec CP which has sources on Sources CP and are not on the Compile CP
+                Set<ClassPath> sources = regs.getPaths(ClassPath.SOURCE);
+                Set<URL> sroots = new HashSet<URL> ();
+                for (Iterator<ClassPath> it = sources.iterator(); it.hasNext();) {
+                    ClassPath cp = it.next();
+                    try {
+                        for (Iterator<ClassPath.Entry> eit = cp.entries().iterator(); eit.hasNext();) {
+                            ClassPath.Entry entry = eit.next();
+                            sroots.add (entry.getURL());
+                        }
+                    } catch (RecursionException e) {/*Recover from recursion*/}
+                }
+                Set<ClassPath> exec = regs.getPaths(ClassPath.EXECUTE);
+                for (Iterator<ClassPath> it = exec.iterator(); it.hasNext();) {
+                    ClassPath cp = it.next ();
+                    try {
+                        for (Iterator<ClassPath.Entry> eit = cp.entries().iterator(); eit.hasNext();) {
+                            ClassPath.Entry entry = eit.next ();
+                            Result result = SourceForBinaryQuery.findSourceRoots(entry.getURL());
+                            FileObject[] fos = result.getRoots();
+                            for (int i=0; i< fos.length; i++) {
+                                if (fos[i] == null)
+                                    ErrorManager.getDefault().notify (
+                                        new NullPointerException (result + " returns null root for " + entry.getURL())
+                                    );
+                                else
+                                    try {
+                                        if (sroots.contains(fos[i].getURL())) {
+                                            roots.add (entry.getURL());
                                         }
-                                }
+                                    } catch (FileStateInvalidException e) {
+                                        ErrorManager.getDefault().notify(e);
+                                    }
                             }
-                        } catch (RecursionException e) {/*Recover from recursion*/}
-                    }
-                    List<PathResourceImplementation> l =  new ArrayList<PathResourceImplementation> ();
-                    for (Iterator it = roots.iterator(); it.hasNext();) {
-                        l.add (ClassPathSupport.createResource((URL)it.next()));
-                    }
+                        }
+                    } catch (RecursionException e) {/*Recover from recursion*/}
+                }
+                for (Iterator it = roots.iterator(); it.hasNext();) {
+                    l.add (ClassPathSupport.createResource((URL)it.next()));
+                }
+            } finally {
+                active.remove();
+            }
+            synchronized (this) {
+                if (myEventId == this.eventId) {
                     this.cachedCompiledClassPath = Collections.unmodifiableList(l);
-                } finally {
-                    active.remove();
+                    return this.cachedCompiledClassPath;
+                }
+                else {
+                    return Collections.unmodifiableList(l);
                 }
             }
-            return this.cachedCompiledClassPath;
-            
         }
-        
+
         public void addPropertyChangeListener (PropertyChangeListener l) {
             this.support.addPropertyChangeListener (l);
         }
-        
+
         public void removePropertyChangeListener (PropertyChangeListener l) {
             this.support.removePropertyChangeListener (l);
         }
-        
+
         public void pathsAdded(org.netbeans.api.java.classpath.GlobalPathRegistryEvent event) {
             synchronized (this) {
                 if (ClassPath.COMPILE.equals(event.getId()) || ClassPath.SOURCE.equals(event.getId())) {
                     GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
                     this.cachedCompiledClassPath = null;
+                    this.eventId++;
                 }
             }
             this.support.firePropertyChange(PROP_RESOURCES,null,null);
-        }    
-    
+        }
+
         public void pathsRemoved(org.netbeans.api.java.classpath.GlobalPathRegistryEvent event) {
             synchronized (this) {
                 if (ClassPath.COMPILE.equals(event.getId()) || ClassPath.SOURCE.equals(event.getId())) {
                     GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
                     this.cachedCompiledClassPath = null;
+                    this.eventId++;
                 }
             }
             this.support.firePropertyChange(PROP_RESOURCES,null,null);
         }
-        
+
     }
-    
+
 }

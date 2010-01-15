@@ -179,6 +179,8 @@ public abstract class J2eeModuleHelper {
                 result = ASDDVersion.SUN_APPSERVER_8_1;
             } else if (ServletVersion.SERVLET_2_5.equals(servletVersion)) {
                 result = ASDDVersion.SUN_APPSERVER_9_0;
+            } else if (ServletVersion.SERVLET_3_0.equals(servletVersion)) {
+                result = ASDDVersion.SUN_APPSERVER_10_0;
             }
             return result;
         }
@@ -205,6 +207,8 @@ public abstract class J2eeModuleHelper {
                 result = ASDDVersion.SUN_APPSERVER_8_1;
             } else if (ServletVersion.SERVLET_2_5.equals(servletVersion)) {
                 result = ASDDVersion.SUN_APPSERVER_9_0;
+            } else if (ServletVersion.SERVLET_3_0.equals(servletVersion)) {
+                result = ASDDVersion.SUN_APPSERVER_10_0;
             }
             return result;
         }
@@ -232,6 +236,8 @@ public abstract class J2eeModuleHelper {
                 result = ASDDVersion.SUN_APPSERVER_8_1;
             } else if (EjbJarVersion.EJBJAR_3_0.equals(ejbJarVersion)) {
                 result = ASDDVersion.SUN_APPSERVER_9_0;
+            } else if (EjbJarVersion.EJBJAR_3_1.equals(ejbJarVersion)) {
+                result = ASDDVersion.SUN_APPSERVER_10_0;
             }
             return result;
         }
@@ -258,6 +264,8 @@ public abstract class J2eeModuleHelper {
                 result = ASDDVersion.SUN_APPSERVER_8_1;
             } else if (ApplicationVersion.APPLICATION_5_0.equals(applicationVersion)) {
                 result = ASDDVersion.SUN_APPSERVER_9_0;
+            } else if (ApplicationVersion.APPLICATION_6_0.equals(applicationVersion)) {
+                result = ASDDVersion.SUN_APPSERVER_10_0;
             }
             return result;
         }
@@ -284,6 +292,8 @@ public abstract class J2eeModuleHelper {
                 result = ASDDVersion.SUN_APPSERVER_8_1;
             } else if (AppClientVersion.APP_CLIENT_5_0.equals(appClientVersion)) {
                 result = ASDDVersion.SUN_APPSERVER_9_0;
+            } else if (AppClientVersion.APP_CLIENT_6_0.equals(appClientVersion)) {
+                result = ASDDVersion.SUN_APPSERVER_10_0;
             }
             return result;
         }

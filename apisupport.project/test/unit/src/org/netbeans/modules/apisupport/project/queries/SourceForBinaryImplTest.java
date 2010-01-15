@@ -43,8 +43,10 @@ package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.jar.Manifest;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -139,7 +141,7 @@ public class SourceForBinaryImplTest extends TestBase {
         URL u = FileUtil.getArchiveRoot(jarF.toURI().toURL());
         assertEquals("right results for " + u,
             Collections.singletonList(src),
-            Arrays.asList(SourceForBinaryQuery.findSourceRoots(u).getRoots()));
+            trimGenerated(Arrays.asList(SourceForBinaryQuery.findSourceRoots(u).getRoots())));
     }
     
     private void check(String srcS, String jarS) throws Exception {
@@ -154,7 +156,17 @@ public class SourceForBinaryImplTest extends TestBase {
         URL u = FileUtil.urlForArchiveOrDir(classesF);
         assertEquals("right source root for " + u,
             Collections.singletonList(src),
-            Arrays.asList(SourceForBinaryQuery.findSourceRoots(u).getRoots()));
+            trimGenerated(Arrays.asList(SourceForBinaryQuery.findSourceRoots(u).getRoots())));
+    }
+
+    private List<FileObject> trimGenerated(List<FileObject> dirs) {
+        List<FileObject> result = new ArrayList<FileObject>();
+        for (FileObject dir : dirs) {
+            if (!dir.getName().endsWith("-generated")) {
+                result.add(dir);
+            }
+        }
+        return result;
     }
     
 }

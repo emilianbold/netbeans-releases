@@ -168,7 +168,7 @@ test_filedata: test_filedata_build
 
 test_filedata_build: all
 	${CC} ${CFLAGS} -DTRACE=1 -o ${BUILD}/test_rfs_filedata.o test/test_rfs_filedata.c
-	${LINKER} ${LDFLAGS_APP} -o ${BUILD}/test_rfs_filedata ${BUILD}/rfs_filedata.o ${BUILD}/test_rfs_filedata.o
+	${LINKER} ${LDFLAGS_APP} -o ${BUILD}/test_rfs_filedata ${BUILD}/rfs_filedata.o ${BUILD}/rfs_util.o ${BUILD}/test_rfs_filedata.o
 
 test_pkg: test_pkg_build
 	${BUILD}/test_pkg_client

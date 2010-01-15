@@ -58,10 +58,11 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.bugzilla</friend>
                 <package>org.eclipse.mylyn.internal.bugzilla.core</package>
+                <package>org.eclipse.mylyn.internal.bugzilla.core.history</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/org.eclipse.mylyn.bugzilla.core_3.1.1.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.mylyn.bugzilla.core_3.1.1.jar</binary-origin>
+                <runtime-relative-path>ext/org.eclipse.mylyn.bugzilla.core_3.3.1.jar</runtime-relative-path>
+                <binary-origin>external/org.eclipse.mylyn.bugzilla.core_3.3.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

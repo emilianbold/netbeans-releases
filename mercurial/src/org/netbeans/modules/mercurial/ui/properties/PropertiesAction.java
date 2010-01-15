@@ -48,10 +48,10 @@ import javax.swing.*;
 import java.io.File;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.event.ActionEvent;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
 /**
@@ -62,14 +62,18 @@ import org.openide.util.HelpCtx;
  */
 public class PropertiesAction extends ContextAction {
     
-    private final VCSContext context;
-
-    public PropertiesAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
-    
-    public void performAction(ActionEvent e) {
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Properties";                               //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(context);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
@@ -112,8 +116,4 @@ public class PropertiesAction extends ContextAction {
             hgProperties.setProperties();
         }
     }
-
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
-    } 
 }

@@ -167,6 +167,8 @@ public abstract class Repository implements Lookup.Provider {
      * Runs a query against the bugtracking repository to get all issues
      * which applies that their ID or summary contains the given criteria string
      *
+     * XXX move to siple search
+     *
      * @param criteria
      */
     public abstract Issue[] simpleSearch(String criteria);

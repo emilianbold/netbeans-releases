@@ -563,11 +563,11 @@ public class ModuleDependenciesTest extends NbTestCase {
             "    <input name=\"ignore\" >" +
             "      <jars dir='" + parent + "' > " +
             "        <include name='" + ignoreModule.getName () + "' />" +
-            "        <include name='" + hugeModule.getName () + "' />" +
             "      </jars>" +
             "    </input>" +
             "    <input name=\"ahoj\" >" +
             "      <jars dir='" + parent + "' > " +
+            "        <include name='" + hugeModule.getName () + "' />" +
             "        <include name='" + withoutPkgs.getName () + "' />" +
             "      </jars>" +
             "    </input>" +
@@ -1390,7 +1390,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         
     }
     
-    public void testPrintNamesOfPackagesSharedBetweenMoreModules () throws Exception {
+    public void testPrintNamesOfPackagesSharedBetweenMoreModules() throws Exception {
         File notAModule = generateJar (new String[] { "org/shared/not/X.class", "org/shared/yes/X.html" }, createManifest ());
         
         Manifest m = createManifest ();
@@ -1434,7 +1434,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         
         String res = readFile (output);
         
-        assertEquals ("No not package", -1, res.indexOf ("not"));
+        assertEquals("No not package: '" + res + "'", -1, res.indexOf("org.shared.not"));
         assertEquals ("No default pkg", -1, res.indexOf ("\n\n"));
         assertEquals ("No ork pkg", -1, res.indexOf ("org\n"));
         assertEquals ("No ork pkg", -1, res.indexOf ("org/shared\n"));

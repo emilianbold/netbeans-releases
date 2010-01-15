@@ -53,12 +53,13 @@ import java.util.prefs.Preferences;
  */
 public class OverridePreferences extends AbstractPreferences {
     
-    private Preferences delegateTo;
-    private Map<String, String> data;
-    private Set<String> removed;
+    private final Preferences delegateTo;
+    private final Map<String, String> data;
+    private final Set<String> removed;
     
     public OverridePreferences(Preferences delegateTo) {
         super(null, "");
+        this.delegateTo = delegateTo;
         this.data = new HashMap<String, String>();
         this.removed = new HashSet<String>();
     }
@@ -81,6 +82,7 @@ public class OverridePreferences extends AbstractPreferences {
     }
 
     protected void removeSpi(String key) {
+        data.remove(key);
         removed.add(key);
     }
 
@@ -93,7 +95,7 @@ public class OverridePreferences extends AbstractPreferences {
         
         keys.removeAll(removed);
         keys.addAll(data.keySet());
-        
+
         return keys.toArray(new String[0]);
     }
 

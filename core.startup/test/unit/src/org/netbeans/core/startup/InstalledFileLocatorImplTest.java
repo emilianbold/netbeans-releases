@@ -45,6 +45,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Locale;
 import org.netbeans.junit.NbTestCase;
 import org.openide.modules.InstalledFileLocator;
@@ -148,6 +151,20 @@ public class InstalledFileLocatorImplTest extends NbTestCase {
         assertEquals("[no cache] nbdirs can override location of a branded resource", file(nbdir2, "loc/y_foo.html"), ifl.locate("loc/y.html", null, true));
         assertEquals("[no cache] but look in all dirs for most specific resource first", file(nbhome, "h_ja"), ifl.locate("h", null, true));
         assertEquals("[no cache] localized lookup a no-op for nonlocalized files", file(nbuser, "a/b"), ifl.locate("a/b", null, true));
+    }
+
+    public void testLocateAll() throws Exception {
+        InstalledFileLocatorImpl.prepareCache();
+        doTestLocateAll();
+        InstalledFileLocatorImpl.discardCache();
+        doTestLocateAll();
+    }
+    private void doTestLocateAll() {
+        assertEquals(new HashSet<File>(Arrays.asList(file(nbuser, "a/b"), file(nbhome, "a/b"))), ifl.locateAll("a/b", null, false));
+        assertEquals(Collections.emptySet(), ifl.locateAll("nonexistent", null, false));
+        assertEquals(Collections.emptySet(), ifl.locateAll("nonexistent", null, true));
+        assertEquals(new HashSet<File>(Arrays.asList(file(nbhome, "loc/y.html"), file(nbdir2, "loc/y_foo.html"))), ifl.locateAll("loc/y.html", null, true));
+        assertEquals(new HashSet<File>(Arrays.asList(file(nbdir1, "e/f"), file(nbhome, "e/f"))), ifl.locateAll("e/f", null, false));
     }
     
 }

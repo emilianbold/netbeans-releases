@@ -132,7 +132,6 @@ public class Mercurial {
      */
     private boolean gotVersion;
 
-    private Result<? extends HgHook> hooksResult;
     private Result<? extends HyperlinkProvider> hpResult;
 
     private Mercurial() {
@@ -142,7 +141,7 @@ public class Mercurial {
 
     private void init() {
         setDefaultPath();
-        fileStatusCache = "false".equals(System.getProperty("mercurial.newGenerationCache", "true")) ? new FileStatusCache() : new FileStatusCacheNewGeneration(); //NOI18N
+        fileStatusCache = new FileStatusCache();
         mercurialAnnotator = new MercurialAnnotator();
         mercurialInterceptor = new MercurialInterceptor();
         fileStatusCache.addPropertyChangeListener(mvcs);
@@ -281,6 +280,14 @@ public class Mercurial {
         return fileStatusCache;
     }
 
+    /**
+     * Refreshes cached modification timestamp of the repository's hg folder
+     * @param repository owner of the hg folder to refresh
+     */
+    public void refreshWorkingCopyTimestamp(File repository) {
+        getMercurialInterceptor().refreshHgFolderTimestamp(repository);
+    }
+
    /**
      * Tests whether a file or directory should receive the STATUS_NOTVERSIONED_NOTMANAGED status.
      * All files and folders that have a parent with CVS/Repository file are considered versioned.
@@ -382,6 +389,13 @@ public class Mercurial {
                      "  cached access count     = " + cachedAccesCount + "\n" +                     // NOI18N
                      "  not cached access count = " + (accesCount - cachedAccesCount) + "\n");      // NOI18N
         }
+
+        synchronized void clear () {
+            order.clear();
+            files.clear();
+            cachedAccesCount = 0;
+            accesCount = 0;
+        }
     }
 
    /**
@@ -409,6 +423,7 @@ public class Mercurial {
     }
 
     public void versionedFilesChanged() {
+        rootsToFile.clear();
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
 
@@ -501,23 +516,6 @@ public class Mercurial {
 
     public Boolean isRefreshScheduled(File file) {
         return mercurialInterceptor.isRefreshScheduled(file);
-    }
-
-    public List<HgHook> getHooks() {
-        if (hooksResult == null) {
-            hooksResult = (Result<? extends HgHook>) Lookup.getDefault().lookupResult(HgHook.class);
-        }
-        if(hooksResult == null) {
-            return Collections.EMPTY_LIST;
-        }
-        List<HgHook> ret = new ArrayList<HgHook>();
-        Collection<? extends HgHook> hooks = hooksResult.allInstances();
-        if (hooks.size() > 0) {
-            for (HgHook hook : hooks) {
-                ret.add(hook);
-            }
-        }
-        return ret;
     }
 
     /**

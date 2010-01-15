@@ -49,9 +49,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -96,7 +96,7 @@ public class SunCCCCompilerTest {
         if (TRACE) {
             System.out.println("Parse Compiler Output of SunStudio CC on Solaris");
         }
-        CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", Platform.PLATFORM_SOLARIS_INTEL);
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         MySunCCCompiler instance = new MySunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin");
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
@@ -131,7 +131,7 @@ public class SunCCCCompilerTest {
         if (TRACE) {
             System.out.println("Parse Compiler Output of SunStudio C on Solaris");
         }
-        CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", Platform.PLATFORM_SOLARIS_INTEL);
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", PlatformTypes.PLATFORM_SOLARIS_INTEL);
         MySunCCCompiler instance = new MySunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin");
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;
@@ -169,7 +169,7 @@ public class SunCCCCompilerTest {
         if (TRACE) {
             System.out.println("Parse Compiler Output of SunStudio C on Lunix");
         }
-        CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", Platform.PLATFORM_LINUX);
+        CompilerFlavor flavor = CompilerFlavor.toFlavor("SunStudio", PlatformTypes.PLATFORM_LINUX);
         MySunCCCompiler instance = new MySunCCCompiler(ExecutionEnvironmentFactory.getLocal(), flavor, Tool.CCompiler, "SunStudio", "SunStudio", "/opt/SUNWspro/bin");
         instance.parseCompilerOutput(buf, instance.pair);
         List<String> out = instance.pair.systemIncludeDirectoriesList;

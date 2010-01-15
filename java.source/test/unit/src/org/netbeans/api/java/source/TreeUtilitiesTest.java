@@ -53,7 +53,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.source.TestUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -75,7 +74,7 @@ public class TreeUtilitiesTest extends NbTestCase {
     private CompilationInfo info;
     
     private void prepareTest(String filename, String code) throws Exception {
-        File work = TestUtil.createWorkFolder();
+        File work = getWorkDir();
         FileObject workFO = FileUtil.toFileObject(work);
         
         assertNotNull(workFO);

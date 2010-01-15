@@ -519,11 +519,33 @@ Alternatively use "zip -yr ${app.name}.app" to create a simple zipped distributi
         </subant>
     </target>
 
+    <target name="update" depends="-init" description="Updates modules in the suite from an update center.">
+        <sortsuitemodules unsortedmodules="${modules}" sortedmodulesproperty="modules.test.sorted"/>
+        <subant target="update" buildpath="${modules.test.sorted}" inheritrefs="false" inheritall="false">
+            <property name="cluster.path.evaluated" value="${cluster.path.evaluated}"/> <!-- Just for speed of pre-7.0 projects -->
+            <property name="autoupdate.catalog.url" value="${autoupdate.catalog.url}"/>
+        </subant>
+    </target>
+
     <target name="display-coverage-report" depends="coverage-report"
         description="Generates and displays test coverage report for entire suite">
         <fail unless="testcoverage.report.dir">
 Property testcoverage.report.dir not set. Test coverage script may be missing in ${harness.dir}.
         </fail>
         <nbbrowse file="${testcoverage.report.dir}/index.html"/>
+    </target>
+
+    <target 
+        name="clusterize" depends="-taskdefs"
+        description="Scans a directory for list of NetBeans module JARs or OSGi bundles and generates necessary config files to make that look like NetBeans cluster"
+    >
+        <fail unless="cluster" message="You have to specify -Dcluster=... as a path to the root of your JAR tree"/>
+        <property name="config.dir" location="${cluster}/config/Modules"/>
+        <mkdir dir="${config.dir}"/>
+        <createmodulexml xmldir="${config.dir}" updatetrackingroot="${cluster}" failonmissingmanifest="false">
+            <autoload dir="${cluster}">
+                <include name="${includes}"/>
+            </autoload>
+        </createmodulexml>
     </target>
 </project>

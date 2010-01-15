@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.platform;
 
-import com.sun.org.apache.bcel.internal.classfile.SourceFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -141,7 +140,6 @@ public class FileBufferDoc extends AbstractFileBuffer {
 
     public InputStream getInputStream() throws IOException {
         final Object[] res = new Object[]{null, null};
-        SourceFile sf;
         doc.render(new Runnable() {
             public void run() {
                 try {

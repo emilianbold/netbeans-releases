@@ -72,6 +72,7 @@ public final class RepositoryPreferences {
     
 
     static final String KEY_TYPE = "provider";//NOI18N
+    static final String KEY_DISPLAY_NAME = "displayName";//NOI18N
     static final String KEY_PATH = "path";//NOI18N
     static final String KEY_INDEX_URL = "repoIndexUrl";//NOI18N
     static final String KEY_REPO_URL = "repoUrl";//NOI18N
@@ -163,6 +164,7 @@ public final class RepositoryPreferences {
                 fo.setAttribute("position", position); //NOI18N
             }
             fo.setAttribute(KEY_TYPE, info.getType());
+            fo.setAttribute(KEY_DISPLAY_NAME, info.getName());
             if (info.getRepositoryPath() != null) {
                 fo.setAttribute(KEY_PATH, info.getRepositoryPath());
             }

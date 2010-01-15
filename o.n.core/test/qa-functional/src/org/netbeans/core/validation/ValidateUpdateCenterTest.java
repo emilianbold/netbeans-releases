@@ -51,8 +51,8 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.netbeans.core.NbTopManager;
 import org.netbeans.core.startup.ConsistencyVerifier;
+import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 
@@ -170,7 +170,7 @@ public class ValidateUpdateCenterTest extends NbTestCase {
     }
 
     private static Set<Manifest> loadManifests() throws Exception {
-        ModuleManager mgr = NbTopManager.get().getModuleSystem().getManager();
+        ModuleManager mgr = Main.getModuleSystem().getManager();
         Set<Manifest> manifests = new HashSet<Manifest>();
         for (Module m : mgr.getModules()) {
             Manifest manifest = m.getManifest();

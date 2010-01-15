@@ -73,6 +73,7 @@ import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleInstaller;
 import org.netbeans.ModuleManager;
+import org.netbeans.ProxyClassLoader;
 import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
@@ -214,7 +215,8 @@ final class NbInstaller extends ModuleInstaller {
         // For layer & help set, validate only that the base-locale resource
         // exists, not its contents or anything.
         String layerResource = m.getManifest().getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
-        if (layerResource != null) {
+        String osgi = m.getManifest().getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
+        if (layerResource != null && osgi == null) {
             URL layer = m.getClassLoader().getResource(layerResource);
             if (layer == null) throw new InvalidException(m, "Layer not found: " + layerResource); // NOI18N
         }
@@ -417,47 +419,11 @@ final class NbInstaller extends ModuleInstaller {
         if (instClazz != null) {
             ModuleInstall inst = SharedClassObject.findObject(instClazz, true);
             if (load) {
-                if (moduleList != null) {
-                    moduleList.installPrepare(m, inst);
-                }
-                // restore, install, or upgrade as appropriate
-                Object history = m.getHistory();
-                if (history instanceof ModuleHistory) {
-                    ModuleHistory h = (ModuleHistory)history;
-                    if (h.isPreviouslyInstalled()) {
-                        // Check whether we have changed versions.
-                        SpecificationVersion oldSpec = h.getOldSpecificationVersion();
-                        SpecificationVersion nueSpec = m.getSpecificationVersion();
-                        if (m.getCodeNameRelease() != h.getOldMajorVersion() ||
-                                (oldSpec == null ^ nueSpec == null) ||
-                                (oldSpec != null && nueSpec != null && oldSpec.compareTo(nueSpec) != 0)) {
-                            // Yes, different version; upgrade from the old one.
-                            ev.log(Events.UPDATE, m);
-                            inst.updated(h.getOldMajorVersion(), oldSpec == null ? null : oldSpec.toString());
-                        } else {
-                            // Same version as before.
-                            ev.log(Events.RESTORE, m);
-                            inst.restored();
-                        }
-                    } else {
-                        // First time.
-                        ev.log(Events.INSTALL, m);
-                        inst.installed();
-                    }
-                } else {
-                    // Probably fixed module. Just restore.
-                    ev.log(Events.RESTORE, m);
-                    inst.restored();
-                }
-                if (moduleList != null) {
-                    moduleList.installPostpare(m, inst);
-                }
+                ev.log(Events.RESTORE, m);
+                inst.restored();
             } else {
                 ev.log(Events.UNINSTALL, m);
                 inst.uninstalled();
-                if (m.getHistory() instanceof ModuleHistory) {
-                    ((ModuleHistory)m.getHistory()).resetHistory();
-                }
             }
         }
     }
@@ -595,7 +561,12 @@ final class NbInstaller extends ModuleInstaller {
                 boolean foundSomething = false;
                 for (String suffix : NbCollections.iterable(NbBundle.getLocalizingSuffixes())) {
                     String resource = base + suffix + ext;
-                    URL u = cl.getResource(resource);
+                    URL u;
+                    if (cl instanceof ProxyClassLoader) {
+                        u = ((ProxyClassLoader)cl).findResource(resource);
+                    } else {
+                        u = cl.getResource(resource);
+                    }
                     if (u != null) {
                         theseurls.add(u);
                         foundSomething = true;
@@ -784,7 +755,7 @@ final class NbInstaller extends ModuleInstaller {
         }
         AutomaticDependencies.Report rep = autoDepsHandler.refineDependenciesAndReport(m.getCodeNameBase(), dependencies);
         if (rep.isModified()) {
-            Util.err.warning("had to upgrade dependencies for module " + m.getCodeNameBase() + ": added = " + rep.getAdded() + " removed = " + rep.getRemoved() + "; details: " + rep.getMessages());
+            Util.err.warning(rep.toString());
         }
     }
     

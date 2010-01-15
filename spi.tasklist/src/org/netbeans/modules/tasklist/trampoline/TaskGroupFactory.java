@@ -173,16 +173,20 @@ public final class TaskGroupFactory {
      */
     public TaskGroup getGroup( String groupName ) {
         assert null != groupName;
-        initGroups();
-        return name2group.get( groupName );
+        synchronized( this ) {
+            initGroups();
+            return name2group.get( groupName );
+        }
     }
     
     /**
      * @return List of all available groups
      */
     public List<? extends TaskGroup> getGroups() {
-        initGroups();
-        return groups;
+        synchronized( this ) {
+            initGroups();
+            return groups;
+        }
     }
     
     private Lookup.Result<TaskGroup> initLookup() {

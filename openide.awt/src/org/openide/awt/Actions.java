@@ -333,7 +333,7 @@ public class Actions {
      *   &lt;attr name="delegate" methodvalue="your.pkg.YourAction.factoryMethod"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
-     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="true"/&gt; --&gt;
      *   &lt;!-- if desired: &lt;attr name="asynchronous" boolvalue="true"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
@@ -381,7 +381,7 @@ public class Actions {
      *   &lt;attr name="instanceCreate" methodvalue="org.openide.awt.Actions.checkbox"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
-     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="true"/&gt; --&gt;
      *   &lt;!-- if desired: &lt;attr name="asynchronous" boolvalue="true"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
@@ -430,7 +430,7 @@ public class Actions {
      *   &lt;attr name="fallback" newvalue="action.pkg.DefaultAction"/&gt; &lt;!-- may be missing --&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
-     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="true"/&gt; --&gt;
      *   &lt;!-- if desired: &lt;attr name="asynchronous" boolvalue="true"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
@@ -488,7 +488,7 @@ public class Actions {
      *   &lt;attr name="surviveFocusChange" boolvalue="false"/&gt; 
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
-     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="true"/&gt; --&gt;
      *   &lt;!-- if desired: &lt;attr name="asynchronous" boolvalue="true"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
@@ -510,7 +510,7 @@ public class Actions {
      *   &lt;attr name="injectable" stringvalue="pkg.YourClass"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
-     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="true"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
      * where <code>pkg.YourClass</code> is defined with public constructor taking
@@ -542,7 +542,7 @@ public class Actions {
      *   &lt;attr name="injectable" stringvalue="pkg.YourClass"/&gt;
      *   &lt;attr name="displayName" bundlevalue="your.pkg.Bundle#key"/&gt;
      *   &lt;attr name="iconBase" stringvalue="your/pkg/YourImage.png"/&gt;
-     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="false"/&gt; --&gt;
+     *   &lt;!-- if desired: &lt;attr name="noIconInMenu" boolvalue="true"/&gt; --&gt;
      * &lt;/file&gt;
      * </pre>
      * Now the constructor of <code>YourClass</code> needs to have following

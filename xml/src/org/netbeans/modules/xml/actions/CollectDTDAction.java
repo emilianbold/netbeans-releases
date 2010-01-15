@@ -55,6 +55,7 @@ public class CollectDTDAction extends CollectSystemAction {
 
     public CollectDTDAction() {}
 
+/**********
     public static synchronized CollectDTDAction getInstance() {
         CollectDTDAction actionInstance = null;
         String thisClassName = CollectDTDAction.class.getName();
@@ -66,6 +67,7 @@ public class CollectDTDAction extends CollectSystemAction {
         }
         return actionInstance;
     }
+**********/
 
     /**
      * Getter for action class

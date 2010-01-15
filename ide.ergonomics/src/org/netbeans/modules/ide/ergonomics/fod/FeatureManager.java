@@ -124,6 +124,18 @@ implements PropertyChangeListener, LookupListener {
         return featureTypesLookup().lookupAll(FeatureInfo.class);
     }
 
+    /** @return feature info that contains given cnb in its cnbs or null if
+     * not found
+     */
+    static FeatureInfo findInfo(String cnb) {
+        for (FeatureInfo fi : features()) {
+            if (fi.getCodeNames().contains(cnb)) {
+                return fi;
+            }
+        }
+        return null;
+    }
+
     /** Returns the amount of (partially) enabled clusters, or -1 if not
      * computed.
      * @return

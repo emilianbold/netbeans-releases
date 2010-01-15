@@ -139,7 +139,7 @@ made subject to such option by the copyright holder.
    <ul>
     <li><api name="org.netbeans.core.ModuleNode.ModuleNewType" category="friend" group="java" type="export" url="http://core.netbeans.org/source/browse/core/src/org/netbeans/core/ModuleNode.java" /></li>
     <li><api name="org.netbeans.core.modules.AutomaticDependencies" category="friend" group="java" type="export" url="http://core.netbeans.org/source/browse/core/src/org/netbeans/core/modules/AutomaticDependencies.java" /></li>
-    <li><api name="NbTopManager.WindowSystem" category="friend" group="java" type="export" url="http://core.netbeans.org/source/browse/core/src/org/netbeans/core/NbTopManager.java" /></li>
+    <li><api name="WindowSystem" category="friend" group="java" type="export" /></li>
     <li><api name="org.netbeans.core.StatusLineElementProvider" type="export" group="lookup" category="friend" /></li>
    </ul>
  </answer>

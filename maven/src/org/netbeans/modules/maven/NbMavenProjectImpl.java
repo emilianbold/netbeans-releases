@@ -170,6 +170,7 @@ public final class NbMavenProjectImpl implements Project {
     private final NbMavenProject watcher;
     private final ProjectState state;
     private final M2ConfigProvider configProvider;
+    private final ClassPathProviderImpl cppProvider;
 
 //    private ConfigurationProviderEnabler configEnabler;
     private final M2AuxilaryConfigImpl auxiliary;
@@ -217,6 +218,7 @@ public final class NbMavenProjectImpl implements Project {
         auxprops = new MavenProjectPropsImpl(auxiliary, watcher);
         profileHandler = new ProjectProfileHandlerImpl(this,auxiliary);
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
+        cppProvider = new ClassPathProviderImpl(this);
 //        configEnabler = new ConfigurationProviderEnabler(this, auxiliary, profileHandler);
 //        if (!SwingUtilities.isEventDispatchThread()) {
 //            //#155766 sor of ugly, as not all (but the majority for sure) projects need
@@ -334,8 +336,7 @@ public final class NbMavenProjectImpl implements Project {
     // the properties of the platform to properly resolve stuff like com.sun.boot.class.path
     public Properties createSystemPropsForPropertyExpressions() {
         Properties props = cloneStaticProps();
-        ActiveJ2SEPlatformProvider prov = getLookup().lookup(ActiveJ2SEPlatformProvider.class);
-        props.putAll(prov.getJavaPlatform().getSystemProperties());
+        props.putAll(cppProvider.getJavaPlatform().getSystemProperties());
         props.putAll(configProvider.getActiveConfiguration().getProperties());
         return props;
     }
@@ -603,6 +604,7 @@ public final class NbMavenProjectImpl implements Project {
         put("ear", "org/netbeans/modules/maven/resources/earicon.gif"); //NOI18N
         put("pom", "org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
         put("nbm", "org/netbeans/modules/maven/resources/nbmicon.png"); //NOI18N
+        put("nbm-application", "org/netbeans/modules/maven/resources/suiteicon.png"); //NOI18N
     }};
 
     public static Image getIcon (MavenProject mPrj) {
@@ -925,7 +927,7 @@ public final class NbMavenProjectImpl implements Project {
                     configProvider,
                     new CustomizerProviderImpl(this),
                     new LogicalViewProviderImpl(this),
-                    new ClassPathProviderImpl(this),
+                    cppProvider,
                     sharability,
                     new MavenTestForSourceImpl(this),
                     ////            new MavenFileBuiltQueryImpl(this),
@@ -1261,6 +1263,7 @@ public final class NbMavenProjectImpl implements Project {
             prohibited.add(NbMavenProject.TYPE_EJB);
             prohibited.add(NbMavenProject.TYPE_WAR);
             prohibited.add(NbMavenProject.TYPE_NBM);
+            prohibited.add(NbMavenProject.TYPE_OSGI);
         }
 
         public String[] getRecommendedTypes() {
@@ -1273,11 +1276,6 @@ public final class NbMavenProjectImpl implements Project {
                 return POM_APPLICATION_TYPES;
             }
             if (NbMavenProject.TYPE_JAR.equals(packaging)) {
-                return JAR_APPLICATION_TYPES;
-            }
-            //TODO when apisupport module becomes 'non-experimental', delete this block..
-            //NBM also fall under this I guess..
-            if (NbMavenProject.TYPE_NBM.equals(packaging)) {
                 return JAR_APPLICATION_TYPES;
             }
 

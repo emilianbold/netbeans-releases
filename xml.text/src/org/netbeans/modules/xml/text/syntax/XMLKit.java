@@ -348,14 +348,5 @@ public class XMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         public XMLEditorDocument(String mimeType) {
             super(mimeType);
         }
-        
-        public @Override boolean addLayer(DrawLayer layer, int visibility) {
-            //filter out the syntax layer adding
-            if(!(layer instanceof DrawLayerFactory.SyntaxLayer)) {
-                return super.addLayer(layer, visibility);
-            } else {
-                return false;
-            }
-        }
     }
 }

@@ -57,6 +57,7 @@ import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.ri.platform.MergeProperties;
 import org.netbeans.modules.javacard.ri.platform.RIPlatform;
 import org.netbeans.modules.javacard.spi.JavacardDeviceKeyNames;
+import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.modules.propdos.AntStyleResolvingProperties;
 import org.netbeans.modules.propdos.ObservableProperties;
@@ -80,7 +81,7 @@ import org.openide.util.Parameters;
  *
  * @author Tim Boudreau
  */
-final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
+public final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
 
     private final EditableProperties platformProps;
     private final EditableProperties deviceSettings;
@@ -199,9 +200,13 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
         if (!canInstall(platformProps)) {
             throw new IOException (NbBundle.getMessage(RIPlatformFactory.class,
                     "ERR_TOO_OLD", //NOI18N
-                    platformProps.get(JavacardPlatformKeyNames.PLATFORM_JAVACARD_SPECIFICATION_VERSION),
+                    platformProps.get(JavacardPlatformKeyNames.PLATFORM_JAVACARD_VERSION),
                     MINIMUM_SUPPORTED_VERSION)); //NOI18N
         }
+        //Add properties omitted from the JC 3.0.2 platform.properties, if
+        //not present
+        //XXX check if is RI? or if not wrapper?
+        addMissingPropertiesJC302();
         //Translate UNIX-style relative paths into platform-specific absolute
         //paths usable by Ant
         translatePaths(FileUtil.toFile(baseDir), platformProps);
@@ -213,6 +218,7 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
         //have to iterate all platform DataObjects to find the one for this
         //JavacardPlatform
         platformProps.setProperty(JavacardPlatformKeyNames.PLATFORM_ID, filename);
+
         progress();
         //Create the file
         FileObject fo = platformFile = platformsFolder.createData(filename,
@@ -221,6 +227,11 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
         //Create the folder for eprom files and write its path into the platform props
         createAndStoreEepromFolder(filename);
         progress();
+        if (!platformProps.containsKey(JavacardPlatformKeyNames.PLATFORM_RI_HOME) && JavacardPlatformKeyNames.PLATFORM_KIND_RI.equals(platformProps.get(JavacardPlatformKeyNames.PLATFORM_KIND))) {
+            File f = FileUtil.toFile(baseDir);
+            String path = f == null ? /* unit tests */ baseDir.getPath() : f.getAbsolutePath();
+            platformProps.put (JavacardPlatformKeyNames.PLATFORM_RI_HOME, path);
+        }
 
         //If this platform wrappers the RI, create a properties that merges
         //values from that.  append.* and prepend.* will be resolved before
@@ -272,7 +283,43 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
         progress();
         return fo;
     }
+
     private int step;
+    private static final String JC_302_DEBUG_PROXY_CP = 
+            "lib/api_connected.jar:" + //NOI18N
+            "lib/api.jar:" + //NOI18N
+            "lib/romizer.jar:" + //NOI18N
+            "lib/tools.jar:" + //NOI18N
+            "lib/asm-all-3.1.jar:" + //NOI18N
+            "lib/bcel-5.2.jar:" + //NOI18N
+            "lib/commons-logging-1.1.jar:" + //NOI18N
+            "lib/commons-httpclient-3.0.jar:" + //NOI18N
+            "lib/commons-codec-1.3.jar:" + //NOI18N
+            "lib/commons-cli-1.0.jar:" + //NOI18N
+            "lib/ant-contrib-1.0b3.jar"; //NOI18N
+    /**
+     * Add necessary properties missing from the Java Card 3.0.2 platform.properties -
+     * will be corrected in next release.
+     */
+    private final void addMissingPropertiesJC302() {
+        if (!platformProps.containsKey(JavacardPlatformKeyNames.PLATFORM_DEBUG_PROXY)) {
+            FileObject fo = baseDir.getFileObject("bin/debugproxy.bat");
+            if (fo == null) {
+                fo = baseDir.getFileObject("bin/debugproxy");
+            }
+            if (fo == null) {
+                fo = baseDir.getFileObject("bin/debugproxy.sh");
+            }
+            if (fo != null) {
+                File file = FileUtil.toFile(fo);
+                String path = file == null ? fo.getPath() /* unit tests */ : file.getAbsolutePath();
+                platformProps.put (JavacardPlatformKeyNames.PLATFORM_DEBUG_PROXY, path);
+            }
+        }
+        if (!platformProps.containsKey(JavacardPlatformKeyNames.PLATFORM_DEBUG_PROXY_CLASSPATH)) {
+            platformProps.put(JavacardPlatformKeyNames.PLATFORM_DEBUG_PROXY_CLASSPATH, JC_302_DEBUG_PROXY_CP);
+        }
+    }
 
     private void progress() {
         if (h != null) {
@@ -325,7 +372,6 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
         }
     }
 
-
     private void storeGlobalJavacardRIPath(FileObject fo) {
         String val = globalProps.getProperty(JCConstants.GLOBAL_BUILD_PROPERTIES_RI_PROPERTIES_PATH_KEY);
         if (val != null) {
@@ -341,6 +387,10 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
     }
 
     private boolean addPrototypeValues(EditableProperties deviceProps) {
+        return addPrototypeValues(deviceProps, platformProps);
+    }
+
+    static boolean addPrototypeValues(EditableProperties deviceProps, EditableProperties platformProps) {
         boolean result = false;
         for (Map.Entry<String, String> e : platformProps.entrySet()) {
             String key = e.getKey();
@@ -477,14 +527,48 @@ final class RIPlatformFactory implements Mutex.ExceptionAction<FileObject> {
         p.putAll(this.platformProps);
         String riWrapperProp = platformProps.getProperty(JavacardPlatformKeyNames.PLATFORM_IS_RI_WRAPPER);
         if (riWrapperProp != null && "true".equals(riWrapperProp) || "yes".equals(riWrapperProp)) { //NOI18N
-            DataObject defPlatform = RIPlatform.findDefaultPlatform();
+            DataObject defPlatform = RIPlatform.findDefaultPlatform(null);
             if (defPlatform == null) {
                 throw new IOException("No copy of the Java Card RI installed"); //NOI18N
             }
+            File defPlatformFile = FileUtil.toFile(defPlatform.getPrimaryFile());
+            JavacardPlatform defPform = defPlatform.getLookup().lookup(RIPlatform.class);
+            if (defPform == null && !Boolean.getBoolean("PlatformDataObjectTest")) { //NOI18N
+                throw new IOException ("Default Platform is not an instance of RIPlatform"); //NOI18N
+            } else if (Boolean.getBoolean("PlatformDataObjectTest")) { //XXX get this out of here
+                Iterable<DataObject> i = Utils.findAllRegisteredJavacardPlatformDataObjects();
+                if (i.iterator().hasNext()) {
+                    for (DataObject d : i) {
+                        if (d.getLookup().lookup(JavacardPlatform.class) != null) {
+                            defPform = d.getLookup().lookup(JavacardPlatform.class);
+                        }
+                    }
+                }
+            }
+            p.put(JavacardPlatformKeyNames.PLATFORM_RI_PROPERTIES_PATH, defPlatformFile.getAbsolutePath());
+            if (defPform instanceof RIPlatform) {
+                p.put(JavacardPlatformKeyNames.PLATFORM_RI_HOME, ((RIPlatform) defPform).getHome().getAbsolutePath());
+            }
+            
             PropertiesAdapter adap = defPlatform.getLookup().lookup(PropertiesAdapter.class);
             assert adap != null : "No properties adapter from default javacard platform"; //NOI18N
             p = new MergeProperties(adap.asProperties(), p);
         }
         return p;
+    }
+
+    public static RIPlatform createPlatform (ObservableProperties p, DataObject caller) throws IOException {
+//        String riWrapperProp = p.getProperty(JavacardPlatformKeyNames.PLATFORM_IS_RI_WRAPPER);
+//        if (riWrapperProp != null && "true".equals(riWrapperProp) || "yes".equals(riWrapperProp)) { //NOI18N
+//            System.err.println("Creating a wrapper platform for " + p.getProperty(JavacardPlatformKeyNames.PLATFORM_DISPLAYNAME));
+//            DataObject defPlatform = RIPlatform.findDefaultPlatform(caller);
+//            if (defPlatform == null) {
+//                throw new IOException("No copy of the Java Card RI installed"); //NOI18N
+//            }
+//            PropertiesAdapter adap = defPlatform.getLookup().lookup(PropertiesAdapter.class);
+//            assert adap != null : "No properties adapter from default javacard platform"; //NOI18N
+//            p = new MergeProperties(adap.asProperties(), p);
+//        }
+        return new RIPlatform(p);
     }
 }

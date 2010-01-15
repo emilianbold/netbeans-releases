@@ -50,6 +50,7 @@ import java.io.StringReader;
 import java.net.URI;
 import java.net.URL;
 import java.util.Hashtable;
+import java.util.Locale;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.openide.ErrorManager;
@@ -290,7 +291,7 @@ public class HelpManager {
     public TagHelpItem findHelpItem(String key){
         if (key == null) return null;
         init();
-        Object o = helpMap.get(key.toUpperCase());
+        Object o = helpMap.get(key.toUpperCase(Locale.ENGLISH));
         if (o != null){
             TagHelpItem helpItem = (TagHelpItem)o;
             

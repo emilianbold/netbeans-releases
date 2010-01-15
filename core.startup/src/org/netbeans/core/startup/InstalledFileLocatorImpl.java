@@ -44,8 +44,10 @@ package org.netbeans.core.startup;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +55,7 @@ import java.util.StringTokenizer;
 import org.netbeans.Util;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Ability to locate NBM-installed files.
@@ -60,14 +63,11 @@ import org.openide.modules.InstalledFileLocator;
  * and finally ${netbeans.home}.
  * @author Jesse Glick
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.modules.InstalledFileLocator.class)
+@ServiceProvider(service=InstalledFileLocator.class)
 public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     
-    /** Default constructor for lookup. */
-    public InstalledFileLocatorImpl() {}
-    
-    private static final File[] dirs;
-    static {
+    private final File[] dirs;
+    public InstalledFileLocatorImpl() {
         List<File> _dirs = new ArrayList<File>();
         addDir(_dirs, System.getProperty("netbeans.user"));
         String nbdirs = System.getProperty("netbeans.dirs"); // #27151
@@ -100,7 +100,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     private static Map<String,Map<File,Set<String>>> fileCache = null;
     
     /**
-     * Called from <code>NonGui.run</code> early in the startup sequence to indicate
+     * Called from <code>Main.run</code> early in the startup sequence to indicate
      * that available files should be cached from now on. Should be matched by a call to
      * {@link #discardCache} since the cache will be invalid if the user
      * e.g. installs a new NBM without restarting.
@@ -123,30 +123,21 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     }
     
     /**
-     * Currently just searches user dir and install dir(s).
-     * @see "#28729 for a suggested better impl in AU"
+     * Searches user dir and install dir(s).
      */
     public File locate(String relativePath, String codeNameBase, boolean localized) {
-        if (relativePath.length() == 0) {
-            throw new IllegalArgumentException("Cannot look up \"\" in InstalledFileLocator.locate"); // NOI18N
-        }
-        if (relativePath.charAt(0) == '/') {
-            throw new IllegalArgumentException("Paths passed to InstalledFileLocator.locate should not start with '/': " + relativePath); // NOI18N
-        }
-        int slashIdx = relativePath.lastIndexOf('/');
-        if (slashIdx == relativePath.length() - 1) {
-            throw new IllegalArgumentException("Paths passed to InstalledFileLocator.locate should not end in '/': " + relativePath); // NOI18N
-        }
-        
-        String prefix, name;
-        if (slashIdx != -1) {
-            prefix = relativePath.substring(0, slashIdx + 1);
-            name = relativePath.substring(slashIdx + 1);
-            assert name.length() > 0;
-        } else {
-            prefix = "";
-            name = relativePath;
-        }
+        Set<File> files = doLocate(relativePath, localized, true);
+        return files.isEmpty() ? null : files.iterator().next();
+    }
+    
+    public @Override Set<File> locateAll(String relativePath, String codeNameBase, boolean localized) {
+        return doLocate(relativePath, localized, false);
+    }
+
+    private Set<File> doLocate(String relativePath, boolean localized, boolean single) {
+        String[] prefixAndName = prefixAndName(relativePath);
+        String prefix = prefixAndName[0];
+        String name = prefixAndName[1];
         synchronized (InstalledFileLocatorImpl.class) {
             if (localized) {
                 int i = name.lastIndexOf('.');
@@ -158,63 +149,116 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
                     baseName = name.substring(0, i);
                     ext = name.substring(i);
                 }
-                String[] suffixes = org.netbeans.Util.getLocalizingSuffixesFast();
-                for (int j = 0; j < suffixes.length; j++) {
-                    String locName = baseName + suffixes[j] + ext;
-                    File f = locateExactPath(prefix, locName);
-                    if (f != null) {
-                        return f;
-                    }
-                }
-                return null;
-            } else {
-                return locateExactPath(prefix, name);
-            }
-        }
-    }
-    
-    /** Search all top dirs for a file. */
-    private static File locateExactPath(String prefix, String name) {
-        assert Thread.holdsLock(InstalledFileLocatorImpl.class);
-        if (fileCache != null) {
-            Map<File,Set<String>> fileCachePerPrefix = fileCache.get(prefix);
-            if (fileCachePerPrefix == null) {
-                fileCachePerPrefix = new HashMap<File,Set<String>>(dirs.length * 2);
-                for (int i = 0; i < dirs.length; i++) {
-                    File root = dirs[i];
-                    File d;
-                    if (prefix.length() > 0) {
-                        assert prefix.charAt(prefix.length() - 1) == '/';
-                        d = new File(root, prefix.substring(0, prefix.length() - 1).replace('/', File.separatorChar));
-                    } else {
-                        d = root;
-                    }
-                    if (d.isDirectory()) {
-                        String[] kids = d.list();
-                        if (kids != null) {
-                            fileCachePerPrefix.put(root, new HashSet<String>(Arrays.asList(kids)));
+                Set<File> files = null;
+                for (String suffix : org.netbeans.Util.getLocalizingSuffixesFast()) {
+                    String locName = baseName + suffix + ext;
+                    Set<File> f = locateExactPath(prefix, locName, single);
+                    if (!f.isEmpty()) {
+                        if (single) {
+                            return f;
+                        } else if (files == null) {
+                            files = f;
                         } else {
-                            Util.err.warning("could not read files in " + d);
+                            files = new LinkedHashSet<File>(files);
+                            files.addAll(f);
                         }
                     }
                 }
-                fileCache.put(prefix, fileCachePerPrefix);
+                return files != null ? files : Collections.<File>emptySet();
+            } else {
+                return locateExactPath(prefix, name, single);
             }
+        }
+    }
+
+    /** Search all top dirs for a file. */
+    private Set<File> locateExactPath(String prefix, String name, boolean single) {
+        assert Thread.holdsLock(InstalledFileLocatorImpl.class);
+        Set<File> files = null;
+        if (fileCache != null) {
+            Map<File,Set<String>> fileCachePerPrefix = fileCachePerPrefix(prefix);
             for (int i = 0; i < dirs.length; i++) {
                 Set<String> names = fileCachePerPrefix.get(dirs[i]);
                 if (names != null && names.contains(name)) {
-                    return makeFile(dirs[i], prefix, name);
+                    File f = makeFile(dirs[i], prefix, name);
+                    if (single) {
+                        return Collections.singleton(f);
+                    } else if (files == null) {
+                        files = Collections.singleton(f);
+                    } else {
+                        files = new LinkedHashSet<File>(files);
+                        files.add(f);
+                    }
                 }
             }
         } else {
             for (int i = 0; i < dirs.length; i++) {
                 File f = makeFile(dirs[i], prefix, name);
                 if (f.exists()) {
-                    return f;
+                    if (single) {
+                        return Collections.singleton(f);
+                    } else if (files == null) {
+                        files = Collections.singleton(f);
+                    } else {
+                        files = new LinkedHashSet<File>(files);
+                        files.add(f);
+                    }
                 }
             }
         }
-        return null;
+        return files != null ? files : Collections.<File>emptySet();
+    }
+
+    private static String[] prefixAndName(String relativePath) {
+        if (relativePath.length() == 0) {
+            throw new IllegalArgumentException("Cannot look up \"\" in InstalledFileLocator.locate"); // NOI18N
+        }
+        if (relativePath.charAt(0) == '/') {
+            throw new IllegalArgumentException("Paths passed to InstalledFileLocator.locate should not start with '/': " + relativePath); // NOI18N
+        }
+        int slashIdx = relativePath.lastIndexOf('/');
+        if (slashIdx == relativePath.length() - 1) {
+            throw new IllegalArgumentException("Paths passed to InstalledFileLocator.locate should not end in '/': " + relativePath); // NOI18N
+        }
+
+        String prefix, name;
+        if (slashIdx != -1) {
+            prefix = relativePath.substring(0, slashIdx + 1);
+            name = relativePath.substring(slashIdx + 1);
+            assert name.length() > 0;
+        } else {
+            prefix = "";
+            name = relativePath;
+        }
+        return new String[] {prefix, name};
+    }
+
+    private Map<File,Set<String>> fileCachePerPrefix(String prefix) {
+        assert Thread.holdsLock(InstalledFileLocatorImpl.class);
+        Map<File,Set<String>> fileCachePerPrefix = fileCache.get(prefix);
+        if (fileCachePerPrefix == null) {
+            fileCachePerPrefix = new HashMap<File,Set<String>>(dirs.length * 2);
+            for (int i = 0; i < dirs.length; i++) {
+                File root = dirs[i];
+                File d;
+                if (prefix.length() > 0) {
+                    assert prefix.charAt(prefix.length() - 1) == '/';
+                    d = new File(root, prefix.substring(0, prefix.length() - 1).replace('/', File.separatorChar));
+                } else {
+                    d = root;
+                }
+                if (d.isDirectory()) {
+                    String[] kids = d.list();
+                    if (kids != null) {
+                        fileCachePerPrefix.put(root, new HashSet<String>(Arrays.asList(kids)));
+                    } else {
+                        Util.err.warning("could not read files in " + d);
+                    }
+                }
+            }
+            fileCache.put(prefix, fileCachePerPrefix);
+        }
+        return fileCachePerPrefix;
     }
     
     private static File makeFile(File dir, String prefix, String name) {

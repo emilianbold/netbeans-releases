@@ -2,6 +2,7 @@ Code completion result for source line:
 puts Outer::Inner::|INNER_CONST
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 CONSTANT   INNER_CONST                                null
+CONSTANT   OUTER_CONST                                null
 ------------------------------------
 METHOD     alias_attribute(new_name, old_             Module
 METHOD     alias_method(new_name, old_nam             Module

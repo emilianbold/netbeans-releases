@@ -45,7 +45,9 @@ import junit.framework.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.masterfs.filebasedfs.BaseFileObjectTestHid;
@@ -145,24 +147,11 @@ public class MercurialFileSystemTest extends FileSystemFactoryHid {
     private void commit(List<File> files) throws HgException {       
         
         List<File> filesToAdd = new ArrayList<File>();
-        FileInformation status;
         for (File file : files) {
-
-            status = HgCommand.getSingleStatus(getWorkDir(), file.getParentFile().getAbsolutePath(), file.getName());
-            if(status.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {                   
+            if(findStatus(HgCommand.getStatus(getWorkDir(), Collections.singletonList(file)),
+                    FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
                 filesToAdd.add(file);
-
-                File parent = file.getParentFile();
-                while (!getWorkDir().equals(parent)) {
-                    status = HgCommand.getSingleStatus(getWorkDir(), parent.getParentFile().getAbsolutePath(), parent.getName());
-                    if(status.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
-                        filesToAdd.add(0, parent);
-                        parent = parent.getParentFile();
-                    } else {
-                        break;
-                    }
-                }                                    
-            }    
+            }
         }            
             
         HgCommand.doAdd(getWorkDir(), filesToAdd, null);
@@ -178,15 +167,17 @@ public class MercurialFileSystemTest extends FileSystemFactoryHid {
 //            assertStatus(file);
 //        }        
     }
-
-    private void assertStatus(File f) throws HgException {
-        FileInformation status;
-        status = HgCommand.getSingleStatus(getWorkDir(), f.getParentFile().getAbsolutePath(), f.getName());
-        assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, status.getStatus());
-    }    
     
     private void init() throws HgException {
         HgCommand.doCreate(getWorkDir(), null);
     }    
 
+    private boolean findStatus(Map<File, FileInformation> statuses, int status) {
+        for (Map.Entry<File, FileInformation> e : statuses.entrySet()) {
+            if (e.getValue().getStatus() == status) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

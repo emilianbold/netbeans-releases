@@ -47,6 +47,7 @@ import java.io.File;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.*;
+import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 
 /**
  * Base class for a versioning system that integrates into IDE.
@@ -178,6 +179,16 @@ public abstract class VersioningSystem {
     public CollocationQueryImplementation getCollocationQueryImplementation() {
         return null;
     }    
+
+    /**
+     * Retrieves a VCSVisibilityQuery implementation if this versioning system provides one.
+     *
+     * @return VCSVisibilityQuery a VCSVisibilityQuery instance or null if the system does not provide the service
+     * @since 1.10
+     */
+    public VCSVisibilityQuery getVisibilityQuery() {
+        return null;
+    }
 
     /**
      * Adds a listener for change events.

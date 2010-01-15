@@ -447,7 +447,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                 }
                 sb.append(param.getText());
             }
-            sb.append('>');
+            TemplateUtils.addGREATERTHAN(sb);
         }
 	return sb;
     }
