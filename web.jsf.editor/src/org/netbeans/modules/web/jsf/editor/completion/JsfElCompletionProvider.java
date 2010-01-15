@@ -43,7 +43,6 @@ package org.netbeans.modules.web.jsf.editor.completion;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.lang.model.element.Element;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -53,6 +52,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.WebBeansModelSupport;
+import org.netbeans.modules.web.jsf.editor.WebBeansModelSupport.WebBean;
 import org.netbeans.modules.web.jsf.editor.el.JsfElExpression;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -109,10 +109,10 @@ public class JsfElCompletionProvider implements CompletionProvider {
 
 			//check web beans
 			JsfSupport jsfSupport = JsfSupport.findFor(fObject);
-			List<Element> namedElements = WebBeansModelSupport.getNamedBeans(jsfSupport.getWebBeansModel());
-			for (Element bean : namedElements) {
-			    String beanName = bean.getSimpleName().toString();
-			    String className = bean.asType().toString();
+			List<WebBean> namedElements = WebBeansModelSupport.getNamedBeans(jsfSupport.getWebBeansModel());
+			for (WebBean bean : namedElements) {
+			    String beanName = bean.getName();
+			    String className = bean.getBeanClassName();
 			    if ((beanName != null) && beanName.startsWith(replace)) {
 				complItems.add(new JsfElCompletionItem.JsfBean(
 					beanName, anchor, className));
