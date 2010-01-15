@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import org.netbeans.core.startup.CoreBridge;
+import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.ManifestSection;
 import org.netbeans.core.startup.StartLog;
 import org.openide.filesystems.FileObject;
@@ -52,14 +54,14 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /** Implements necessary callbacks from module system.
  *
  * @author Jaroslav Tulach
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.core.startup.CoreBridge.class)
-public final class CoreBridgeImpl extends org.netbeans.core.startup.CoreBridge
-implements Runnable {
+@ServiceProvider(service=CoreBridge.class)
+public final class CoreBridgeImpl extends CoreBridge implements Runnable {
     /** counts the number of CLI invocations */
     private int numberOfCLIInvocations;
 
@@ -75,15 +77,15 @@ implements Runnable {
     ) {
         if (load) {
             if (convertor != null) {
-                NbTopManager.get().register(s, convertor);
+                MainLookup.register(s, convertor);
             } else {
-                NbTopManager.get().register(s);
+                MainLookup.register(s);
             }
         } else {
             if (convertor != null) {
-                NbTopManager.get().unregister(s, convertor);
+                MainLookup.unregister(s, convertor);
             } else {
-                NbTopManager.get().unregister(s);
+                MainLookup.unregister(s);
             }
         }
     }

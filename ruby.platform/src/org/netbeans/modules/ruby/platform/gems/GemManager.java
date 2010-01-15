@@ -379,6 +379,7 @@ public final class GemManager {
         if (versions == null || versions.isEmpty()) {
             return Collections.<GemInfo>emptyList();
         }
+        Collections.sort(versions);
         return versions;
     }
 

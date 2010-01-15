@@ -187,16 +187,23 @@ public class ChatTopComponent extends TopComponent {
                 }
             }
         });
-        //TODO: tady zatim nevim
-//        if (kec.isConnected()) {
-//            putChatsScreen();
-//        } else {
-//            if (kec.isConnectionFailed()) {
-//                putErrorScreen();
-//            } else {
-//                putLoginScreen();
-//            }
-//        }
+
+        boolean chatsdone = false;
+        boolean failed = false;
+        for (KenaiConnection kec : KenaiConnection.getAllInstances()) {
+            if (kec.isConnected()) {
+                putChatsScreen(kec);
+                chatsdone = true;
+            }
+            if (kec.isConnectionFailed()) {
+                failed = true;
+            }
+        }
+        if (!chatsdone && failed) {
+            putErrorScreen();
+        } else if (!chatsdone) {
+            putLoginScreen();
+        }
         if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             chats.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
             chats.setOpaque(true);

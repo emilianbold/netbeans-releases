@@ -53,7 +53,7 @@ import org.openide.filesystems.FileUtil;
  */
 public final class TimeSeriesDescriptorFactory {
 
-    static Collection<TimeSeriesDescriptor> createList(Map map) {
+    static Collection<TimeSeriesDescriptor> createList(Map<?,?> map) {
         Collection<TimeSeriesDescriptor> result = new ArrayList<TimeSeriesDescriptor>();
         FileObject rootFolder = FileUtil.getConfigRoot();
         String itemsPath = (String) map.get("items");//NOI18N
@@ -68,13 +68,21 @@ public final class TimeSeriesDescriptorFactory {
         return result;
     }
 
-    static TimeSeriesDescriptor create(Map map) {
+    private static int getColor(String c) {
+        if (c.startsWith("0x")) { //NOI18N
+            return Integer.parseInt(c.substring(2),16);
+        } else {
+            return Integer.parseInt(c);
+        }
+    }
+
+    static TimeSeriesDescriptor create(Map<?,?> map) {
         String colorString = getStringValue(map, "color");//NOI18N
         String[] rgb = colorString.split(":");//NOI18N
         Color color = Color.BLACK;
         if (rgb != null && rgb.length == 3){
             try{
-                color = new Color( Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]), Integer.parseInt(rgb[2]));
+                color = new Color( getColor(rgb[0]), getColor(rgb[1]), getColor(rgb[2]));
             }catch(Throwable e){
                 e.printStackTrace();
             }
@@ -84,7 +92,10 @@ public final class TimeSeriesDescriptorFactory {
         return  new TimeSeriesDescriptor(color, displayName, kind);
     }
 
-    private static String getStringValue(Map map, String key) {
+    private static String getStringValue(Map<?,?> map, String key) {
         return (String) map.get(key);
+    }
+
+    private TimeSeriesDescriptorFactory() {
     }
 }

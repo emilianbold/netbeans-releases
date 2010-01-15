@@ -52,11 +52,13 @@ public class QueryTopComponentScrollPane extends JScrollPane {
     public QueryTopComponentScrollPane() {
         super();
         setLayout(new QueryTopComponentScrollPaneLayout());
+        setBorder(null);
     }
 
     public QueryTopComponentScrollPane(Component view) {
         super(view);
         setLayout(new QueryTopComponentScrollPaneLayout());
+        setBorder(null);
     }
 
     @Override

@@ -1263,6 +1263,7 @@ public final class NbMavenProjectImpl implements Project {
             prohibited.add(NbMavenProject.TYPE_EJB);
             prohibited.add(NbMavenProject.TYPE_WAR);
             prohibited.add(NbMavenProject.TYPE_NBM);
+            prohibited.add(NbMavenProject.TYPE_OSGI);
         }
 
         public String[] getRecommendedTypes() {
@@ -1275,11 +1276,6 @@ public final class NbMavenProjectImpl implements Project {
                 return POM_APPLICATION_TYPES;
             }
             if (NbMavenProject.TYPE_JAR.equals(packaging)) {
-                return JAR_APPLICATION_TYPES;
-            }
-            //TODO when apisupport module becomes 'non-experimental', delete this block..
-            //NBM also fall under this I guess..
-            if (NbMavenProject.TYPE_NBM.equals(packaging)) {
                 return JAR_APPLICATION_TYPES;
             }
 

@@ -41,12 +41,15 @@ package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 import java.net.URI;
 import java.net.URL;
 import java.text.DateFormat;
@@ -89,6 +92,7 @@ import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
@@ -114,10 +118,25 @@ public class CommentsPanel extends JPanel {
     private List<BugzillaIssue.Attachment> attachments;
     private List<String> attachmentIds;
     private MouseAdapter listener;
+    private MouseMotionListener motionListener;
     private NewCommentHandler newCommentHandler;
 
     public CommentsPanel() {
         setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
+        motionListener = new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                JTextPane pane = (JTextPane)e.getSource();
+                StyledDocument doc = pane.getStyledDocument();
+                Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
+                AttributeSet as = elem.getAttributes();
+                if (StyleConstants.isUnderline(as)) {
+                    pane.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                } else {
+                    pane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+            }
+        };
         listener = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -179,7 +198,7 @@ public class CommentsPanel extends JPanel {
         verticalGroup.addContainerGap();
         layout.setVerticalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(verticalGroup));
         DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT);
-        String creationTxt = issue.getFieldValue(BugzillaIssue.IssueField.CREATION);
+        String creationTxt = issue.getFieldValue(IssueField.CREATION);
         try {
             Date creation = dateTimeFormat.parse(creationTxt);
             creationTxt = format.format(creation);
@@ -187,9 +206,9 @@ public class CommentsPanel extends JPanel {
             Bugzilla.LOG.log(Level.INFO, null, pex);
         }
         addSection(layout,
-            issue.getFieldValue(BugzillaIssue.IssueField.DESCRIPTION),
-            issue.getFieldValue(BugzillaIssue.IssueField.REPORTER),
-            issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME),
+            issue.getFieldValue(IssueField.DESCRIPTION),
+            issue.getFieldValue(IssueField.REPORTER),
+            issue.getFieldValue(IssueField.REPORTER_NAME),
             creationTxt, horizontalGroup, verticalGroup, true);
         for (BugzillaIssue.Comment comment : issue.getComments()) {
             String when = format.format(comment.getWhen());
@@ -383,6 +402,7 @@ public class CommentsPanel extends JPanel {
                 BorderFactory.createEmptyBorder(3,3,3,3)));
         textPane.setEditable(false);
         textPane.addMouseListener(listener);
+        textPane.addMouseMotionListener(motionListener);
         textPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
         textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
     }

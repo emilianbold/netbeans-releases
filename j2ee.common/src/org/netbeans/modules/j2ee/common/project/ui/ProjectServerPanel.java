@@ -169,6 +169,7 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
         mainClassLabel1 = new javax.swing.JLabel();
         mainClassTextFieldWithinEar = new javax.swing.JTextField();
         serverLibraryCheckbox = new javax.swing.JCheckBox();
+        cdiCheckbox = new javax.swing.JCheckBox();
 
         jLabelEnterprise.setLabelFor(jComboBoxEnterprise);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelEnterprise, NbBundle.getMessage(ProjectServerPanel.class, "LBL_NWP1_AddToEnterprise_Label")); // NOI18N
@@ -256,36 +257,16 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
             }
         });
 
+        cdiCheckbox.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(cdiCheckbox, org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "PanelSharabilityVisual.cdiCheckbox.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabelContextPath)
-                    .add(serverInstanceLabel)
-                    .add(j2eeSpecLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
-                        .add(74, 74, 74))
-                    .add(layout.createSequentialGroup()
-                        .add(jTextFieldContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
-                        .add(74, 74, 74))
-                    .add(layout.createSequentialGroup()
-                        .add(serverInstanceComboBox, 0, 350, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(addServerButton))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(serverLibraryCheckbox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
-                        .add(74, 74, 74))
-                    .add(layout.createSequentialGroup()
-                        .add(j2eeSpecComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
-            .add(layout.createSequentialGroup()
                 .add(mainClassLabel)
-                .addContainerGap(463, Short.MAX_VALUE))
+                .addContainerGap(495, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -295,16 +276,40 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                     .add(mainClassLabel1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jTextFieldEjbModuleName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
-                    .add(jTextFieldWebAppName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
-                    .add(jTextFieldCarName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
-                    .add(mainClassTextFieldWithinEar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE))
+                    .add(jTextFieldEjbModuleName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
+                    .add(jTextFieldWebAppName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
+                    .add(jTextFieldCarName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE)
+                    .add(mainClassTextFieldWithinEar, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 246, Short.MAX_VALUE))
                 .add(74, 74, 74))
-            .add(warningPlaceHolderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
+            .add(warningPlaceHolderPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(jLabelEnterprise)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jComboBoxEnterprise, 0, 342, Short.MAX_VALUE))
+                .add(jComboBoxEnterprise, 0, 366, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabelContextPath)
+                    .add(serverInstanceLabel)
+                    .add(j2eeSpecLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(cdiCheckbox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
+                        .add(74, 74, 74))
+                    .add(layout.createSequentialGroup()
+                        .add(jTextFieldContextPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
+                        .add(74, 74, 74))
+                    .add(layout.createSequentialGroup()
+                        .add(serverInstanceComboBox, 0, 398, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(addServerButton))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(serverLibraryCheckbox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 379, Short.MAX_VALUE)
+                        .add(74, 74, 74))
+                    .add(j2eeSpecComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -324,6 +329,8 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(j2eeSpecLabel)
                     .add(j2eeSpecComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cdiCheckbox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(warningPlaceHolderPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -350,7 +357,7 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(mainClassLabel1)
                     .add(mainClassTextFieldWithinEar, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(67, 67, 67))
+                .add(174, 174, 174))
         );
 
         jLabelEnterprise.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
@@ -379,6 +386,7 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
         mainClassLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
         mainClassTextFieldWithinEar.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
         serverLibraryCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
+        cdiCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectServerPanel.class, "ACSD_ProjectServerPanel_NA")); // NOI18N
@@ -572,6 +580,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         d.putProperty(ProjectServerWizardPanel.CREATE_WAR, Boolean.valueOf(createWARCheckBox.isVisible() ? createWARCheckBox.isSelected() : false));
         d.putProperty(ProjectServerWizardPanel.CREATE_JAR, Boolean.valueOf(createEjbCheckBox.isVisible() ? createEjbCheckBox.isSelected() : false));
         d.putProperty(ProjectServerWizardPanel.CREATE_CAR, Boolean.valueOf(createCarCheckBox.isVisible() ? createCarCheckBox.isSelected() : false));
+        d.putProperty(ProjectServerWizardPanel.CDI, Boolean.valueOf(cdiCheckbox.isVisible() ? cdiCheckbox.isSelected() : false));
     
         // #119052
         String sourceLevel = "1.5"; // NOI18N
@@ -642,6 +651,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addServerButton;
+    private javax.swing.JCheckBox cdiCheckbox;
     private javax.swing.JCheckBox createCarCheckBox;
     private javax.swing.JCheckBox createEjbCheckBox;
     private javax.swing.JCheckBox createWARCheckBox;
@@ -769,8 +779,10 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         Profile j2ee = getSelectedJ2eeProfile();
         if (j2ee == null) {
             warningPlaceHolderPanel.setVisible(false);
+            cdiCheckbox.setVisible(false);
             return;
         }
+        cdiCheckbox.setVisible(j2ee.equals(Profile.JAVA_EE_6_FULL) || j2ee.equals(Profile.JAVA_EE_6_WEB));
         String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
         if (warningType == null && warningPanel == null) {
             warningPlaceHolderPanel.setVisible(false);

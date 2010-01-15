@@ -183,7 +183,7 @@ final class MainImpl extends Object {
             MainImpl.class.getClassLoader()
         });
 
-        // Needed for Lookup.getDefault to find NbTopManager.Lkp.
+        // Needed for Lookup.getDefault to find MainLookup.
         // Note that ModuleManager.updateContextClassLoaders will later change
         // the loader on this and other threads to be MM.SystemClassLoader anyway.
         Thread.currentThread().setContextClassLoader (loader);

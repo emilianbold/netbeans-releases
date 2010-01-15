@@ -151,6 +151,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
         String platformName = (String)wiz.getProperty(ProjectServerWizardPanel.JAVA_PLATFORM);
         String sourceLevel = (String)wiz.getProperty(ProjectServerWizardPanel.SOURCE_LEVEL);
+        Boolean cdi = (Boolean)wiz.getProperty(ProjectServerWizardPanel.CDI);
         // remember last used server
         UserProjectSettings.getDefault().setLastUsedServer(serverInstanceID);
         
@@ -160,14 +161,14 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         String serverLibraryName = (String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY);
         return testableInstantiate(dirF,name,j2eeLevel, serverInstanceID, warName,
                 ejbJarName, carName, mainClass, platformName, sourceLevel, handle, 
-                librariesDefinition, serverLibraryName);
+                librariesDefinition, serverLibraryName, cdi);
     }
     
     /** <strong>Package private for unit test only</strong>. */
     static Set<FileObject> testableInstantiate(File dirF, String name, Profile j2eeProfile,
             String serverInstanceID, String warName, String ejbJarName, String carName,
             String mainClass, String platformName, String sourceLevel, ProgressHandle handle,
-            String librariesDefinition, String serverLibraryName) throws IOException {
+            String librariesDefinition, String serverLibraryName, Boolean cdi) throws IOException {
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
         AntProjectHelper h = EarProjectGenerator.createProject(dirF, name, j2eeProfile,
                 serverInstanceID, sourceLevel, librariesDefinition, serverLibraryName);
@@ -215,6 +216,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             createData.setSourceLevel(sourceLevel);
             createData.setLibrariesDefinition(librariesDefinition);
             createData.setServerLibraryName(serverLibraryName);
+            createData.setCDIEnabled(cdi);
 
             if (handle != null)
                 handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_WAR"), 3);
@@ -242,6 +244,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             createData.setServerInstanceID(serverInstanceID);
             createData.setLibrariesDefinition(librariesDefinition);
             createData.setServerLibraryName(serverLibraryName);
+            createData.setCDIEnabled(cdi);
 
             if (handle != null)
                 handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_AppClient"), 5);
@@ -268,6 +271,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             createData.setServerInstanceID(serverInstanceID);
             createData.setLibrariesDefinition(librariesDefinition);
             createData.setServerLibraryName(serverLibraryName);
+            createData.setCDIEnabled(cdi);
 
             if (handle != null)
                 handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_EJB"), 7);

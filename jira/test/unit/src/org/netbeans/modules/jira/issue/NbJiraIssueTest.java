@@ -131,12 +131,7 @@ public class NbJiraIssueTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        JiraCorePlugin jcp = new JiraCorePlugin();
-        try {
-            jcp.start(null);
-        } catch (Exception ex) {
-            throw ex;
-        }
+        Jira.getInstance(); // force JiraCorePlugin init
         if (config == null) {
             config = getRepository().getConfiguration();
         }

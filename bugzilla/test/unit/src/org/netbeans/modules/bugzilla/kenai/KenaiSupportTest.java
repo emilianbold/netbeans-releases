@@ -102,7 +102,7 @@ public class KenaiSupportTest extends NbTestCase implements TestConstants {
         }
 
         trm = new TaskRepositoryManager();
-        brc = new BugzillaRepositoryConnector();
+        brc = new BugzillaRepositoryConnector(new File(getWorkDir().getAbsolutePath(), "bugzillaconfiguration"));
 
         trm.addRepositoryConnector(brc);
 

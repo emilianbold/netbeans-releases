@@ -57,7 +57,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +77,6 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -630,7 +628,7 @@ public final class ClassPath {
                     b.append(u);
                     break;
                 case WARN:
-                    LOG.warning("Encountered untranslatable classpath entry: " + u);
+                    LOG.log(Level.WARNING, "Encountered untranslatable classpath entry: {0}", u);
                     break;
                 case FAIL:
                     throw new IllegalArgumentException("Encountered untranslatable classpath entry: " + u); // NOI18N
@@ -990,7 +988,7 @@ public final class ClassPath {
             if (ClassPathImplementation.PROP_RESOURCES.equals(prop)) {
                 final List<? extends PathResourceImplementation> resources = impl.getResources();
                 if (resources == null) {
-                    LOG.warning("ClassPathImplementation.getResources cannot return null; impl class: " + impl.getClass().getName());
+                    LOG.log(Level.WARNING, "ClassPathImplementation.getResources cannot return null; impl class: {0}", impl.getClass().getName());
                     return;
                 }
                 for (PathResourceImplementation pri : resources) {
@@ -1026,10 +1024,10 @@ public final class ClassPath {
                 try {
                     newRoots.add(new File(url.toURI()));
                 } catch (IllegalArgumentException e) {
-                    LOG.warning(e.getLocalizedMessage());
+                    LOG.log(Level.WARNING, "Unexpected URL <{0}>: {1}", new Object[] {url, e});
                     //pass
                 } catch (URISyntaxException e) {
-                    LOG.warning("Invalid URL: " + url); //NOI18N
+                    LOG.log(Level.WARNING, "Invalid URL: {0}", url);
                     //pass
                 }
             }

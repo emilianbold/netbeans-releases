@@ -91,12 +91,13 @@ public class CLIOptions extends CLIHandler {
     protected int cli(Args arguments) {
         return cli(arguments.getArguments());
     }
-    
+
+    private static boolean gui = true;
     
     /** Checks whether we are supposed to use GUI features or not.
      */
     public static boolean isGui () {
-        return "true".equals (System.getProperty ("org.openide.TopManager.GUI")); // NOI18N
+        return gui;
     }
     
     private static boolean isOption (String value, String optionName) {
@@ -118,8 +119,7 @@ public class CLIOptions extends CLIHandler {
             }
             boolean used = true;
             if (isOption (args[i], "nogui")) { // NOI18N
-                System.getProperties().put("org.openide.TopManager", "org.netbeans.core.NonGui"); // NOI18N
-                System.setProperty ("org.openide.TopManager.GUI", "false"); // NOI18N
+                gui = false;
             } else if (isOption (args[i], "nosplash")) { // NOI18N
                 noSplash = true;
             } else if (isOption (args[i], "noinfo")) { // NOI18N

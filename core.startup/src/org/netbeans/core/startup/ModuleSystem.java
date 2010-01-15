@@ -72,7 +72,7 @@ import org.openide.util.Exceptions;
  * Contains higher-level convenience methods to
  * access the basic functionality and procedural
  * stages of the module system.
- * The NbTopManager should hold a reference to one instance.
+ * Main should hold a reference to one instance.
  * Methods are thread-safe.
  * @author Jesse Glick
  */

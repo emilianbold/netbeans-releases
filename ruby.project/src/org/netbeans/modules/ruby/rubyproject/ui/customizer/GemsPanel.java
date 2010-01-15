@@ -40,19 +40,16 @@
 package org.netbeans.modules.ruby.rubyproject.ui.customizer;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import javax.swing.table.AbstractTableModel;
+import java.util.logging.Logger;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
-import org.netbeans.modules.ruby.RubyIndex;
-import org.netbeans.modules.ruby.RubyIndexer;
 import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.rubyproject.RequiredGems;
+import org.netbeans.modules.ruby.rubyproject.RequiredGems.GemIndexingStatus;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
-import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -60,19 +57,66 @@ import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
  */
 public class GemsPanel extends javax.swing.JPanel {
 
-    private final SharedRubyProjectProperties properties;
+    private static final Logger LOGGER = Logger.getLogger(GemsPanel.class.getName());
+
     private final RubyBaseProject project;
 
     /** Creates new form GemsPanel */
-    public GemsPanel(SharedRubyProjectProperties properties, RubyBaseProject project) {
-        this.properties = properties;
+    public GemsPanel(RubyBaseProject project) {
         this.project = project;
         initComponents();
+        // hide buttons until they actually do something
+        boolean visible = false;
+        addButton.setVisible(visible);
+        editButton.setVisible(visible);
+        removeButton.setVisible(visible);
     }
 
     private DefaultTableModel createTableModel() {
 
-        RubyPlatform platform = properties.getPlatform();
+        RequiredGems requiredGems = project.getLookup().lookup(RequiredGems.class);
+
+        List<GemIndexingStatus> gems = requiredGems.getGems();
+        if (gems == null) {
+            return createTestTableModel();
+        }
+
+        Object[][] data = new Object[gems.size()][3];
+        for (int i = 0; i < gems.size(); i++) {
+            GemIndexingStatus indexedGem = gems.get(i);
+            data[i][0] = indexedGem.getRequirement().getName();
+            data[i][1] = indexedGem.getRequirement().getVersionRequirement();
+            String indexedVersion = indexedGem.getIndexedVersion();
+            data[i][2] = indexedVersion != null 
+                    ? indexedVersion
+                    : NbBundle.getMessage(GemsPanel.class, "NoVersionInstalled");
+        }
+
+        return new DefaultTableModel(data, new Object[]{"name", "required version", "indexed version"});
+    }
+
+    private String getIndexedVersion(String gemName) {
+        GemManager gemManager = RubyPlatform.gemManagerFor(project);
+        if (gemManager == null) {
+            return "";
+        }
+        return gemManager.getLatestVersion(gemName);
+
+//        StringBuilder result = new StringBuilder();
+//        for (Iterator<GemInfo> it = gemManager.getVersions(gemName).iterator(); it.hasNext();) {
+//            GemInfo each = it.next();
+//            result.append(each.getVersion());
+//            if (it.hasNext()) {
+//                result.append(",");
+//            }
+//
+//        }
+//        return result.toString();
+    }
+
+    private DefaultTableModel createTestTableModel() {
+
+        RubyPlatform platform = project.getPlatform();
         if (platform == null) {
             return new DefaultTableModel();
         }
@@ -82,26 +126,16 @@ public class GemsPanel extends javax.swing.JPanel {
         }
         List<Gem> gems = gemManager.getInstalledGems(new ArrayList<String>());
 
-        Object[][] data = new Object[gems.size()][2];
+        Object[][] data = new Object[gems.size()][3];
         for (int i = 0; i < gems.size(); i++) {
             Gem gem = gems.get(i);
             data[i][0] = gem.getName();
-            data[i][1] = gem.getInstalledVersionsAsString();
+            data[i][1] = "";
+            data[i][2] = gemManager.getLatestVersion(gem.getName());
         }
 
-        RubyIndex index = RubyIndex.get(project.getProjectDirectory());
-        if (index != null) {
-            Collection<String> requires = index.getRequires();
-            for (String e : requires) {
-                System.out.println(e);
-            }
-        }
-
-        return new DefaultTableModel(data, new Object[]{"name", "version"});
-//        gemsTable.getModel().
-
+        return new DefaultTableModel(data, new Object[]{"Name", "Required Version", "Indexed Version"});
     }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -112,32 +146,33 @@ public class GemsPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jTabbedPane1 = new javax.swing.JTabbedPane();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        runScrollPane = new javax.swing.JScrollPane();
         gemsTable = new javax.swing.JTable();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        testScrollPane = new javax.swing.JScrollPane();
+        testGemsTable = new javax.swing.JTable();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        editButton = new javax.swing.JButton();
 
         gemsTable.setModel(createTableModel());
         gemsTable.getTableHeader().setReorderingAllowed(false);
-        jScrollPane1.setViewportView(gemsTable);
+        runScrollPane.setViewportView(gemsTable);
         gemsTable.getColumnModel().getColumn(0).setHeaderValue(org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title0")); // NOI18N
         gemsTable.getColumnModel().getColumn(1).setHeaderValue(org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title1")); // NOI18N
+        gemsTable.getColumnModel().getColumn(2).setHeaderValue(org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title2")); // NOI18N
 
-        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.jScrollPane1.TabConstraints.tabTitle"), jScrollPane1); // NOI18N
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.runScrollPane.TabConstraints.tabTitle"), runScrollPane); // NOI18N
 
-        jTable1.setModel(createTableModel());
-        jScrollPane2.setViewportView(jTable1);
+        testGemsTable.setModel(createTestTableModel());
+        testScrollPane.setViewportView(testGemsTable);
 
-        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.jScrollPane2.TabConstraints.tabTitle"), jScrollPane2); // NOI18N
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.testScrollPane.TabConstraints.tabTitle"), testScrollPane); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.addButton.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.removeButton.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.jButton1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.editButton.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -149,7 +184,7 @@ public class GemsPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jButton1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE)
+                    .add(editButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE)
                     .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -164,7 +199,7 @@ public class GemsPanel extends javax.swing.JPanel {
                         .add(42, 42, 42)
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jButton1)
+                        .add(editButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeButton)))
                 .addContainerGap())
@@ -174,13 +209,13 @@ public class GemsPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
+    private javax.swing.JButton editButton;
     private javax.swing.JTable gemsTable;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTable jTable1;
     private javax.swing.JButton removeButton;
+    private javax.swing.JScrollPane runScrollPane;
+    private javax.swing.JTable testGemsTable;
+    private javax.swing.JScrollPane testScrollPane;
     // End of variables declaration//GEN-END:variables
 
     private static class GemTableModel extends DefaultTableModel {

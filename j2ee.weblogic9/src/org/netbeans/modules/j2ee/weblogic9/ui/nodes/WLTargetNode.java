@@ -43,7 +43,9 @@ package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * A node that represents a concrete target for a particuler server instance.
@@ -62,6 +64,8 @@ public class WLTargetNode extends AbstractNode {
      */
     public WLTargetNode(Lookup lookup) {
         super(new Children.Array());
+        getChildren().add(new Node[] {new WLItemNode(
+                new WLApplicationsChildren(lookup), NbBundle.getMessage(WLTargetNode.class, "LBL_Apps"))});
     }
     
     /**

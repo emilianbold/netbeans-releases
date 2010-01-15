@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfigurat
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.openide.util.NbPreferences;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -69,26 +70,34 @@ public class PackageConfigTestCase extends CndBaseTestCase {
     }
 
     @Test
-    public void testGtkPackage() {
-        // Test requires cygwin on Windows platform
-        // Test requires package gtk+-2.0
-        // I do not know how the test will work on Mac. Help me to make test working on Mac.
-        // If you computer do not have a needed software, install it. It help us to find bugs.
+    public void testLibxmlPackage() {
         Logger logger = Logger.getLogger(NbPreferences.class.getName());
         logger.setLevel(Level.SEVERE);
         PkgConfigImpl pc = (PkgConfigImpl) new PkgConfigManagerImpl().getPkgConfig(null);
-        basicTest(pc);
+        basicTest(pc, "libxml-2.0", "libxml/tree.h");
     }
 
-    private void basicTest(PkgConfigImpl pc) {
-        String packageName = "gtk+-2.0";
+    @Test
+    public void testGtkPackage() {
+        // Test requires cygwin on Windows platform
+        // Test requires package gtk+-2.0
+        if (Utilities.isMac()) {
+            // It seems problematic to install gtk on mac
+            return;
+        }
+        Logger logger = Logger.getLogger(NbPreferences.class.getName());
+        logger.setLevel(Level.SEVERE);
+        PkgConfigImpl pc = (PkgConfigImpl) new PkgConfigManagerImpl().getPkgConfig(null);
+        basicTest(pc, "gtk+-2.0", "gtk/gtk.h");
+    }
+
+    private void basicTest(PkgConfigImpl pc, String packageName, String include) {
         if (TRACE) {
             pc.traceConfig(packageName, true);
             pc.traceRecursiveConfig(packageName);
         }
         //pc.trace();
         assert pc.getPkgConfig(packageName) != null;
-        String include = "gtk/gtk.h";
         ResolvedPath rp = pc.getResolvedPath(include);
         assert rp != null;
         if (TRACE) {

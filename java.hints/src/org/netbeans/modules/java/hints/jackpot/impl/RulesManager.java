@@ -147,6 +147,7 @@ public class RulesManager {
      * @param profile Profile to get the node for. May be null for current profile
      * @return Preferences node for given hint.
      */
+    //XXX: move to HintsSettings
     public static Preferences getPreferences(String hintId, String profile) {
         Map<String, Preferences> override = HintsSettings.getPreferencesOverride();
 

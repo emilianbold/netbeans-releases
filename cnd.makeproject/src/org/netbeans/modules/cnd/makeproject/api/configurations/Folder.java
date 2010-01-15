@@ -404,7 +404,11 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public Item addItemAction(Item item) {
-        if (addItem(item) == null) {
+        return addItemAction(item, true);
+    }
+    
+    public Item addItemAction(Item item, boolean setModified) {
+        if (addItem(item, true, setModified) == null) {
             return null; // Nothing added
         }
         ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
@@ -558,12 +562,16 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public boolean removeItemAction(Item item) {
+        return removeItemAction(item, true);
+    }
+
+    public boolean removeItemAction(Item item, boolean setModified) {
         ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
         list.add(item);
         if (isProjectFiles()) {
             configurationDescriptor.fireFilesRemoved(list);
         }
-        return removeItem(item);
+        return removeItem(item, setModified);
     }
 
     public void renameItemAction(String oldPath, Item newItem) {
@@ -624,8 +632,12 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public boolean removeFolderAction(Folder folder) {
+        return removeFolderAction(folder, true);
+    }
+
+    public boolean removeFolderAction(Folder folder, boolean setModified) {
         configurationDescriptor.fireFilesRemoved(folder.getAllItemsAsList());
-        return removeFolder(folder, true);
+        return removeFolder(folder, setModified);
     }
 
     private boolean removeFolder(Folder folder, boolean setModified) {
@@ -890,7 +902,6 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public void fileDataCreated(FileEvent fe) {
-        boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
         if (log.isLoggable(Level.FINE)) {
@@ -907,12 +918,10 @@ public class Folder implements FileChangeListener, ChangeListener {
         itemPath = IpeUtils.toRelativePath(getConfigurationDescriptor().getBaseDir(), itemPath);
         itemPath = FilePathAdaptor.normalize(itemPath);
         Item item = new Item(itemPath);
-        addItemAction(item);
-        getConfigurationDescriptor().setModified(currentState);
+        addItemAction(item, false);
     }
 
     public void fileFolderCreated(FileEvent fe) {
-        boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
         if (log.isLoggable(Level.FINE)) {
@@ -923,12 +932,10 @@ public class Folder implements FileChangeListener, ChangeListener {
             assert false;
             return;
         }
-        Folder top = getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true, true);
-        getConfigurationDescriptor().setModified(currentState);
+        /*Folder top =*/ getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true, false);
     }
 
     public void fileDeleted(FileEvent fe) {
-        boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
         if (log.isLoggable(Level.FINE)) {
@@ -942,15 +949,13 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Try item first
         Item item = findItemByPath(path);
         if (item != null) {
-            removeItemAction(item);
-            getConfigurationDescriptor().setModified(currentState);
+            removeItemAction(item, false);
             return;
         }
         // then folder
         Folder folder = findFolderByName(file.getName());
         if (folder != null) {
-            removeFolderAction(folder);
-            getConfigurationDescriptor().setModified(currentState);
+            removeFolderAction(folder, false);
             return;
         }
     }
@@ -991,7 +996,6 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public void fileRenamed(FileRenameEvent fe) {
-        boolean currentState = getConfigurationDescriptor().getModified();
         FileObject fileObject = fe.getFile();
         File file = FileUtil.toFile(fileObject);
         if (log.isLoggable(Level.FINE)) {
@@ -1001,13 +1005,11 @@ public class Folder implements FileChangeListener, ChangeListener {
         Folder folder = findFolderByName(fe.getName());
         if (folder != null && folder.isDiskFolder()) {
             // Add new Folder
-            Folder top = getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true, true);
+            Folder top = getConfigurationDescriptor().addSourceFilesFromFolder(this, file, true, false);
             // Copy all configurations
             copyConfigurations(folder, top);
             // Remove old folder
-            removeFolderAction(folder);
-            getConfigurationDescriptor().setModified(currentState);
-            return;
+            removeFolderAction(folder, false);
         }
     }
 

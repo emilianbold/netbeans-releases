@@ -111,7 +111,7 @@ public class BackoutAction extends ContextAction {
         String rev = null;
         String commitMsg = null;
 
-        final Backout backout = new Backout(root, repoRev, files);
+        final Backout backout = new Backout(root, repoRev);
         if (!backout.showDialog()) {
             return;
         }
