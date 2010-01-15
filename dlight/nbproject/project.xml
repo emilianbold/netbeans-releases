@@ -96,6 +96,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>com.sun.dlight.bridge</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.paralleladviser</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
