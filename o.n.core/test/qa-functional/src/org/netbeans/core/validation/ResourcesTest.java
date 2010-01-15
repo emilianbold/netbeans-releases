@@ -39,7 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.perftest;
+// XXX rewrite to NbModuleSuite
+
+package org.netbeans.core.validation;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
