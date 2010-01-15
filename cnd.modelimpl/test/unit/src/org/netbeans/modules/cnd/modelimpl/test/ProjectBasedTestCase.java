@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.trace.TestModelHelper;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -191,16 +192,6 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
     
     protected CsmProject getProject() {
         return projectHelper.getProject();
-    }
-    
-    protected BaseDocument getBaseDocument(File testSourceFile) throws Exception {
-        FileObject testFileObject = FileUtil.toFileObject(testSourceFile);
-        assertNotNull("Unresolved test file " + testSourceFile, testFileObject);//NOI18N
-        DataObject testDataObject = DataObject.find(testFileObject);
-        assertNotNull("Unresolved data object for file " + testFileObject, testDataObject);//NOI18N
-        BaseDocument doc = CndCoreTestUtils.getBaseDocument(testDataObject);
-        assertNotNull("Unresolved document for data object " + testDataObject, doc);//NOI18N
-        return doc;
     }
     
     protected CsmFile getCsmFile(File testSourceFile) throws Exception {

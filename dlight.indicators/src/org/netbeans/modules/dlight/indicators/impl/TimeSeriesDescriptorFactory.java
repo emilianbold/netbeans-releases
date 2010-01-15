@@ -69,7 +69,7 @@ public final class TimeSeriesDescriptorFactory {
     }
 
     private static int getColor(String c) {
-        if (c.startsWith("0x")) {
+        if (c.startsWith("0x")) { //NOI18N
             return Integer.parseInt(c.substring(2),16);
         } else {
             return Integer.parseInt(c);

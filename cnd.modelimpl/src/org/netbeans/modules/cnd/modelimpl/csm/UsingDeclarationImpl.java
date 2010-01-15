@@ -75,8 +75,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
     // TODO: don't store declaration here since the instance might change
     private CsmUID<CsmDeclaration> referencedDeclarationUID = null;
     private WeakReference<CsmDeclaration> refDeclaration;
-    private boolean lastResolveFalure;
-    private int parseCount;
+    private int lastParseCount = -1;
     private final CsmUID<CsmScope> scopeUID;
     private final CsmVisibility visibility;
     
@@ -98,6 +97,107 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         }
     }
 
+    private CsmDeclaration renderReferencedDeclaration(Resolver resolver) {
+        CsmDeclaration referencedDeclaration = null;
+        if (rawName != null) {
+            ProjectBase prjBase = (ProjectBase)getProject();
+            CsmNamespace namespace = null;
+            if (rawName.length == 1) {
+                namespace = prjBase.getGlobalNamespace();
+            } else if (rawName.length > 1) {
+                CharSequence[] partial = new CharSequence[rawName.length - 1];
+                System.arraycopy(rawName, 0, partial, 0, rawName.length - 1);
+                CsmObject result = ResolverFactory.createResolver(getContainingFile(), startOffset, resolver).resolve(partial, Resolver.NAMESPACE);
+                if (CsmKindUtilities.isNamespace(result)) {
+                    namespace = (CsmNamespace)result;
+                }
+            }
+            if (namespace != null) {
+                CharSequence lastName = rawName[rawName.length - 1];
+                CsmDeclaration bestChoice = null;
+                CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(lastName, true, true, false);
+
+                // we should try searching not only in namespace resolved found,
+                // but in numspaces with the same name in required projects
+                // iz #140787 cout, endl unresolved in some Loki files
+                Collection<CsmNamespace> namespacesToSearch = new LinkedHashSet<CsmNamespace>();
+                namespacesToSearch.add(namespace);
+                CharSequence nspQName = namespace.getQualifiedName();
+                final Collection<CsmProject> libraries;
+                if (resolver != null) {
+                    libraries = resolver.getLibraries();
+                } else {
+                    libraries = Resolver3.getSearchLibraries(prjBase);
+                }
+                for (CsmProject lib : libraries) {
+                    CsmNamespace libNs = lib.findNamespace(nspQName);
+                    if (libNs != null) {
+                        namespacesToSearch.add(libNs);
+                    }
+                }
+
+                outer:
+                for (CsmNamespace curr : namespacesToSearch) {
+                    Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(curr, filter);
+                    while (it.hasNext()) {
+                        CsmDeclaration elem = it.next();
+                        if (CharSequenceKey.Comparator.compare(lastName,elem.getName())==0) {
+                            if (!CsmKindUtilities.isExternVariable(elem)) {
+                                referencedDeclaration = elem;
+                                break outer;
+                            } else {
+                                bestChoice = elem;
+                            }
+                        }
+                    }
+                }
+
+                // search for enumerators
+                if (referencedDeclaration == null && bestChoice == null) {
+                    CsmFilter filter2 = CsmSelect.getFilterBuilder().createKindFilter(new Kind[]{Kind.ENUM});
+                    outer2:
+                    for (CsmNamespace curr : namespacesToSearch) {
+                        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(curr, filter2);
+                        while (it.hasNext()) {
+                            CsmDeclaration elem = it.next();
+                            if (CsmKindUtilities.isEnum(elem)) {
+                                CsmEnum e = (CsmEnum) elem;
+                                for (CsmEnumerator enumerator : e.getEnumerators()) {
+                                    if(lastName.toString().equals(enumerator.getName().toString())) {
+                                        referencedDeclaration = enumerator;
+                                        break outer2;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                referencedDeclaration = referencedDeclaration == null ? bestChoice : referencedDeclaration;
+            }
+            CsmClass cls = null;
+            if(namespace == null && rawName.length > 1) {
+                CharSequence[] partial = new CharSequence[rawName.length - 1];
+                System.arraycopy(rawName, 0, partial, 0, rawName.length - 1);
+                CsmObject result = ResolverFactory.createResolver(getContainingFile(), startOffset, resolver).resolve(partial, Resolver.CLASSIFIER);
+                if (CsmKindUtilities.isClass(result)) {
+                    cls = (CsmClass)result;
+                }
+            }
+            if(cls != null && rawName.length > 0) {
+                CharSequence lastName = rawName[rawName.length - 1];
+                CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(lastName, true, true, false);
+                Iterator<CsmMember> it = CsmSelect.getClassMembers(cls, filter);
+                if (it.hasNext()) {
+                    CsmMember member = it.next();
+                    referencedDeclaration = member;
+                }
+            }
+
+        }
+        return referencedDeclaration;
+    }
+
     public CsmDeclaration getReferencedDeclaration() {
         return getReferencedDeclaration(null);
     }
@@ -107,117 +207,16 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
         // TODO: process non-class elements
 //        if (!Boolean.getBoolean("cnd.modelimpl.resolver"))
         CsmDeclaration referencedDeclaration = _getReferencedDeclaration();
-        if (lastResolveFalure) {
-            int newCount = FileImpl.getParseCount();
-            if (newCount != parseCount) {
-                parseCount = newCount;
-                lastResolveFalure = false;
-            }
-        }
-
-        if (referencedDeclaration == null && ! lastResolveFalure) {
-            _setReferencedDeclaration(null);
-            if (rawName != null) {
-                ProjectBase prjBase = (ProjectBase)getProject();
-                CsmNamespace namespace = null;
-                if (rawName.length == 1) {
-                    namespace = prjBase.getGlobalNamespace();
-                } else if (rawName.length > 1) {
-                    CharSequence[] partial = new CharSequence[rawName.length - 1];
-                    System.arraycopy(rawName, 0, partial, 0, rawName.length - 1);
-                    CsmObject result = ResolverFactory.createResolver(getContainingFile(), startOffset, resolver).resolve(partial, Resolver.NAMESPACE);
-                    if (CsmKindUtilities.isNamespace(result)) {
-                        namespace = (CsmNamespace)result;
-                    }
+        if (referencedDeclaration == null) {
+            int newParseCount = FileImpl.getParseCount();
+            if (lastParseCount != newParseCount) {
+                _setReferencedDeclaration(null);
+                referencedDeclaration = renderReferencedDeclaration(resolver);
+                synchronized (this) {
+                    lastParseCount = newParseCount;
+                    _setReferencedDeclaration(referencedDeclaration);
                 }
-                if (namespace != null) {
-                    CharSequence lastName = rawName[rawName.length - 1];
-                    CsmDeclaration bestChoice = null;
-                    CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(lastName, true, true, false);
-
-                    // we should try searching not only in namespace resolved found,
-                    // but in numspaces with the same name in required projects
-                    // iz #140787 cout, endl unresolved in some Loki files
-                    Collection<CsmNamespace> namespacesToSearch = new LinkedHashSet<CsmNamespace>();
-                    namespacesToSearch.add(namespace);
-                    CharSequence nspQName = namespace.getQualifiedName();
-                    final Collection<CsmProject> libraries;
-                    if (resolver != null) {
-                        libraries = resolver.getLibraries();
-                    } else {
-                        libraries = Resolver3.getSearchLibraries(prjBase);
-                    }
-                    for (CsmProject lib : libraries) {
-                        CsmNamespace libNs = lib.findNamespace(nspQName);
-                        if (libNs != null) {
-                            namespacesToSearch.add(libNs);
-                        }
-                    }
-
-                    outer:
-                    for (CsmNamespace curr : namespacesToSearch) {
-                        Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(curr, filter);
-                        while (it.hasNext()) {
-                            CsmDeclaration elem = it.next();
-                            if (CharSequenceKey.Comparator.compare(lastName,elem.getName())==0) {
-                                if (!CsmKindUtilities.isExternVariable(elem)) {
-                                    referencedDeclaration = elem;
-                                    break outer;
-                                } else {
-                                    bestChoice = elem;
-                                }
-                            }
-                        }
-                    }
-
-                    // search for enumerators
-                    if (referencedDeclaration == null && bestChoice == null) {
-                        CsmFilter filter2 = CsmSelect.getFilterBuilder().createKindFilter(new Kind[]{Kind.ENUM});
-                        outer2:
-                        for (CsmNamespace curr : namespacesToSearch) {
-                            Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(curr, filter2);
-                            while (it.hasNext()) {
-                                CsmDeclaration elem = it.next();
-                                if (CsmKindUtilities.isEnum(elem)) {
-                                    CsmEnum e = (CsmEnum) elem;
-                                    for (CsmEnumerator enumerator : e.getEnumerators()) {
-                                        if(lastName.toString().equals(enumerator.getName().toString())) {
-                                            referencedDeclaration = enumerator;
-                                            break outer2;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    referencedDeclaration = referencedDeclaration == null ? bestChoice : referencedDeclaration;
-                }
-                CsmClass cls = null;
-                if(namespace == null && rawName.length > 1) {
-                    CharSequence[] partial = new CharSequence[rawName.length - 1];
-                    System.arraycopy(rawName, 0, partial, 0, rawName.length - 1);
-                    CsmObject result = ResolverFactory.createResolver(getContainingFile(), startOffset, resolver).resolve(partial, Resolver.CLASSIFIER);
-                    if (CsmKindUtilities.isClass(result)) {
-                        cls = (CsmClass)result;
-                    }
-                }
-                if(cls != null && rawName.length > 0) {
-                    CharSequence lastName = rawName[rawName.length - 1];
-                    CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(lastName, true, true, false);
-                    Iterator<CsmMember> it = CsmSelect.getClassMembers(cls, filter);
-                    if (it.hasNext()) {
-                        CsmMember member = it.next();
-                        referencedDeclaration = member;
-                    }
-                }
-
-            }
-            _setReferencedDeclaration(referencedDeclaration);
-            lastResolveFalure = referencedDeclaration == null;
-            if (lastResolveFalure) { // previously it was false, we checked this in if
-                parseCount = FileImpl.getParseCount();
-            }
+            }            
         }
         return referencedDeclaration;
     }
