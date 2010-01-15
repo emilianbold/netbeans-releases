@@ -172,25 +172,25 @@ public class ActivatorIterator implements TemplateWizard.AsynchronousInstantiati
         List<POMExtensibilityElement> elems = conf.getConfigurationElements();
         POMExtensibilityElement instructions = null;
         for (POMExtensibilityElement el : elems) {
-            if ("instructions".equals(el.getQName().getLocalPart())) {
+            if (OSGIConstants.PARAM_INSTRUCTIONS.equals(el.getQName().getLocalPart())) {
                 instructions = el;
                 break;
             }
         }
         if (instructions == null) {
-            instructions = mdl.getFactory().createPOMExtensibilityElement(POMQName.createQName("instructions", mdl.getPOMQNames().isNSAware()));
+            instructions = mdl.getFactory().createPOMExtensibilityElement(POMQName.createQName(OSGIConstants.PARAM_INSTRUCTIONS, mdl.getPOMQNames().isNSAware()));
             conf.addExtensibilityElement(instructions);
         }
         elems = instructions.getExtensibilityElements();
         POMExtensibilityElement activator = null;
         for (POMExtensibilityElement el : elems) {
-            if ("Bundle-Activator".equals(el.getQName().getLocalPart())) {
+            if (OSGIConstants.BUNDLE_ACTIVATOR.equals(el.getQName().getLocalPart())) {
                 activator = el;
                 break;
             }
         }
         if (activator == null) {
-            activator = mdl.getFactory().createPOMExtensibilityElement(POMQName.createQName("Bundle-Activator", mdl.getPOMQNames().isNSAware()));
+            activator = mdl.getFactory().createPOMExtensibilityElement(POMQName.createQName(OSGIConstants.BUNDLE_ACTIVATOR, mdl.getPOMQNames().isNSAware()));
             instructions.addExtensibilityElement(activator);
         }
         activator.setElementText(path);
