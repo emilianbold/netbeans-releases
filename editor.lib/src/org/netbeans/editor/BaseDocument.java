@@ -514,6 +514,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         putProperty("supportsModificationListener", Boolean.TRUE); // NOI18N
         putProperty(MIME_TYPE_PROP, new MimeTypePropertyEvaluator(this));
         putProperty(VERSION_PROP, new AtomicLong());
+        putProperty(LAST_MODIFICATION_TIMESTAMP_PROP, new AtomicLong());
 
         lineRootElement = new LineRootElement(this);
 
