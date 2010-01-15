@@ -87,12 +87,12 @@ public class WLModuleChildFactory
                     toPopulate.add(new WLModuleNode(module.getModuleID(), lookup, moduleType));
                 }
             }
-            return modules != null && modules.length > 0;
         } catch (IllegalStateException ex) {
             LOGGER.log(Level.INFO, null, ex);
         } catch (TargetException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
-        return false;
+        // perhaps we should return false on exception, however it would most likely fail again
+        return true;
     }
 }
