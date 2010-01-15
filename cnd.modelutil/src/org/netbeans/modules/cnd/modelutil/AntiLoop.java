@@ -53,7 +53,7 @@ public class AntiLoop {
     
     private Set<Object> set;
 
-    private static final int MAX_INHERITANCE_DEPTH = 20;
+    private static final int MAX_INHERITANCE_DEPTH = 15;
 
     public AntiLoop() {
         set = new HashSet<Object>();
@@ -65,10 +65,20 @@ public class AntiLoop {
     
     
     public boolean add(CsmClassifier cls) {
+        if (isRecursion(cls)) {
+            return false;
+        }
         return set.add(cls);
     }
 
     public boolean contains(CsmClassifier cls) {
+        if (isRecursion(cls)) {
+            return true;
+        }
+        return set.contains(cls);
+    }
+
+    private static boolean isRecursion(CsmClassifier cls) {
         if(CsmKindUtilities.isInstantiation(cls)) {
             int instLevel = MAX_INHERITANCE_DEPTH;
             CsmInstantiation inst = (CsmInstantiation) cls;
@@ -80,7 +90,7 @@ public class AntiLoop {
                 return true;
             }
         }
-        return set.contains(cls);
+        return false;
     }
 
     @Override
