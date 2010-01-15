@@ -1250,7 +1250,10 @@ public class FileStatusCache {
             }
             if (VERSIONING_ASYNC_ANNOTATOR) {
                 labelInfo = fileLabels.get(file);
-                assert labelInfo != null;
+                assert labelInfo != null : "null label info for " + file.getAbsolutePath();
+                if (labelInfo == null) {
+                    labelInfo = FAKE_LABEL_INFO;
+                }
             }
             return labelInfo;
         }
@@ -1287,18 +1290,16 @@ public class FileStatusCache {
                     filesForLabelRefresh.clear();
                 }
                 if (!filesToRefresh.isEmpty()) {
-                    File[] files = filesToRefresh.toArray(new File[filesToRefresh.size()]);
-                    try {
-                        SvnClient client = Subversion.getInstance().getClient(false);
-                        // get status for all files
-                        ISVNStatus[] statuses = client.getStatus(files);
-                        // labels are accummulated in a temporary map so their timestamp can be later set to a more accurate value
-                        // initialization for many files can be time-consuming and labels initialized in first cycles can grow old even before
-                        // their annotations are refreshed through refreshAnnotations()
-                        HashMap<File, FileLabelInfo> labels = new HashMap<File, FileLabelInfo>(filesToRefresh.size());
-                        for (ISVNStatus status : statuses) {
-                            File file = status.getFile();
-                            SVNRevision rev = status.getRevision();
+                    // labels are accummulated in a temporary map so their timestamp can be later set to a more accurate value
+                    // initialization for many files can be time-consuming and labels initialized in first cycles can grow old even before
+                    // their annotations are refreshed through refreshAnnotations()
+                    HashMap<File, FileLabelInfo> labels = new HashMap<File, FileLabelInfo>(filesToRefresh.size());
+                    for (File file : filesToRefresh) {
+                        try {
+                            SvnClient client = Subversion.getInstance().getClient(false);
+                            // get status for all files
+                            ISVNInfo info = client.getInfoFromWorkingCopy(file);
+                            SVNRevision rev = info.getRevision();
                             String revisionString, stickyString, binaryString = null;
                             revisionString = rev != null && !"-1".equals(rev.toString()) ? rev.toString() : ""; //NOI18N
                             if (mimeTypeFlag) {
@@ -1311,34 +1312,37 @@ public class FileStatusCache {
                                 }
                             }
                             // copy name
-                            if (status != null && status.getUrl() != null) {
-                                stickyString = SvnUtils.getCopy(status.getUrl());
+                            if (info.getUrl() != null) {
+                                stickyString = SvnUtils.getCopy(info.getUrl());
                             } else {
                                 // slower
                                 stickyString = SvnUtils.getCopy(file);
                             }
                             labels.put(file, new FileLabelInfo(revisionString, binaryString, stickyString));
-                        }
-                        synchronized (fileLabels) {
-                            for (Map.Entry<File, FileLabelInfo> e : labels.entrySet()) {
-                                e.getValue().updateTimestamp(); // after a possible slow initialization for many files update all timestamps, so they remain in cache longer
-                                FileLabelInfo oldInfo = fileLabels.remove(e.getKey()); // fileLabels is a LinkedHashSet, so in order to move the item to the back in the chain, it must be removed before inserting
-                                fileLabels.put(e.getKey(), e.getValue());
-                                if (e.getValue().equals(oldInfo)) {
-                                    filesToRefresh.remove(e.getKey());
+                        } catch (SVNClientException ex) {
+                            if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
+                                try {
+                                    WorkingCopyAttributesCache.getInstance().logUnsupportedWC(ex, file);
+                                } catch (SVNClientException ex1) {
+                                    // do not log again
                                 }
+                            } else {
+                                if (!SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+                                    LABELS_CACHE_LOG.log(Level.WARNING, "LabelInfoRefreshTask: failed getting info and info for {0}", file.getAbsolutePath());
+                                    LABELS_CACHE_LOG.log(Level.INFO, null, ex);
+                                }
+                                labels.put(file, FAKE_LABEL_INFO);
                             }
                         }
-                    } catch (SVNClientException ex) {
-                        if (SvnClientExceptionHandler.isTooOldClientForWC(ex.getMessage())) {
-                            try {
-                                WorkingCopyAttributesCache.getInstance().logUnsupportedWC(ex, files[0]);
-                            } catch (SVNClientException ex1) {
-                                // do not log again
+                    }
+                    synchronized (fileLabels) {
+                        for (Map.Entry<File, FileLabelInfo> e : labels.entrySet()) {
+                            e.getValue().updateTimestamp(); // after a possible slow initialization for many files update all timestamps, so they remain in cache longer
+                            FileLabelInfo oldInfo = fileLabels.remove(e.getKey()); // fileLabels is a LinkedHashSet, so in order to move the item to the back in the chain, it must be removed before inserting
+                            fileLabels.put(e.getKey(), e.getValue());
+                            if (e.getValue().equals(oldInfo)) {
+                                filesToRefresh.remove(e.getKey());
                             }
-                        } else {
-                            LABELS_CACHE_LOG.log(Level.WARNING, "LabelInfoRefreshTask: failed getting status and info for " + filesToRefresh.toString());
-                            LABELS_CACHE_LOG.log(Level.INFO, null, ex);
                         }
                     }
                     if (!VERSIONING_ASYNC_ANNOTATOR) {
