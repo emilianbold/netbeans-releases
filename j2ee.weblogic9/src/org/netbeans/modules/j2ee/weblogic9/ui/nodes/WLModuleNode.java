@@ -50,6 +50,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -61,10 +62,16 @@ public class WLModuleNode extends AbstractNode {
 
     private final ModuleType moduleType;
 
-    public WLModuleNode(String name, Lookup lookup, ModuleType moduleType) {
+    public WLModuleNode(String name, Lookup lookup, ModuleType moduleType, boolean stopped) {
         super(Children.LEAF);
         this.moduleType = moduleType;
-        setDisplayName(name);
+        if (stopped) {
+            setDisplayName(name + " " + "[" // NOI18N
+                    + NbBundle.getMessage(WLModuleNode.class, "LBL_Stopped")
+                    + "]"); // NOI18N
+        } else {
+            setDisplayName(name);
+        }
     }
 
     @Override
