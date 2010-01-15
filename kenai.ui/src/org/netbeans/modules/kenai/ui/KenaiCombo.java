@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,70 +34,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.api;
+package org.netbeans.modules.kenai.ui;
 
-import org.netbeans.modules.kenai.UserData;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.JComboBox;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
+import org.openide.util.WeakListeners;
 
 /**
- * Represents member of project.
- * It contains reference to KenaiUser and his Role.
  *
  * @author Jan Becicka
  */
-public final class KenaiProjectMember {
+public class KenaiCombo extends JComboBox {
 
-    private final KenaiUser user;
-    private Role role;
-    KenaiProjectMember(Kenai kenai, UserData userData) {
-        if ("registered".equals(userData.role)) {
-            this.role = Role.OBSERVER;
-        } else {
-            try {
-                this.role = Role.valueOf(userData.role.toUpperCase());
-            } catch (IllegalArgumentException iae) {
-                this.role = Role.UNKNOWN;
-            }
+    private PropertyChangeListener listener;
+    public KenaiCombo(boolean alwaysVisible) {
+        super(new KenaiComboModel());
+        init(alwaysVisible);
+    }
+
+    public KenaiCombo(Kenai.Status status, boolean alwaysVisible) {
+        super(new KenaiComboModel(status));
+        init(alwaysVisible);
+    }
+
+    private void init(boolean alwaysVisible) {
+        setRenderer(new KenaiListRenderer());
+        if (!alwaysVisible) {
+            final KenaiManager manager = KenaiManager.getDefault();
+            listener = new PropertyChangeListener() {
+
+                public void propertyChange(PropertyChangeEvent evt) {
+                    setVisible(manager.getKenais().size()>1);
+                }
+            };
+            manager.addPropertyChangeListener(WeakListeners.propertyChange(listener, manager));
+            setVisible(manager.getKenais().size()>1);
         }
-        this.user = KenaiUser.get(kenai, userData);
     }
 
-    /**
-     * member's short user name
-     * @return
-     */
-    public String getUserName() {
-        return user.data.user_name;
-
-    }
-
-    /**
-     * reference to KenaiUser
-     * @return
-     */
-    public KenaiUser getKenaiUser() {
-        return user;
-    }
-
-    /**
-     * Members role in project
-     * @return
-     */
-    public Role getRole() {
-        return role;
-    }
-
-    /**
-     * user role in projects
-     */
-    public static enum Role {
-        ADMIN,
-        DEVELOPER,
-        CONTENT,
-        OBSERVER,
-        TESTER,
-        UNKNOWN
-    }
 }
