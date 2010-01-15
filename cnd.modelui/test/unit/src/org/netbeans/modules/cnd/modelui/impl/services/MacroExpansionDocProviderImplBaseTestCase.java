@@ -51,7 +51,6 @@
  */
 package org.netbeans.modules.cnd.modelui.impl.services;
 
-import java.io.File;
 import java.io.IOException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -61,7 +60,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.openide.cookies.EditorCookie;
