@@ -1039,7 +1039,7 @@ public final class ClassPath {
                 } catch (URISyntaxException e) {
                     LOG.log(Level.WARNING, "Invalid URL: {0}", url);
                     //pass
-            }
+                }
             }
             synchronized (this) {
                 final Set<File> toRemove = new HashSet<File>(roots);
