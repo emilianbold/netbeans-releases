@@ -242,9 +242,9 @@ final class LibrariesNode extends AbstractNode {
         }
 
         protected Node[] createNodes(Object key) {
-            Node node;
+            List<Node> nodes = new ArrayList<Node>(2);
             if (key == JDK_PLATFORM_NAME) {
-                node = PlatformNode.create(project, project.evaluator(), "nbjdk.home"); // NOI18N
+                nodes.add(PlatformNode.create(project, project.evaluator(), "nbjdk.home")); // NOI18N
             } else if (key instanceof ModuleDependency) {
                 ModuleDependency dep = (ModuleDependency) key;
                 File srcF = dep.getModuleEntry().getSourceLocation();
@@ -258,24 +258,33 @@ final class LibrariesNode extends AbstractNode {
                     Icon icon = getLibrariesIcon();
                     Node pvNode = ActionFilterNode.create(
                             PackageView.createPackageView(new LibrariesSourceGroup(root, name, icon, icon)));
-                    node = new LibraryDependencyNode(dep, project, pvNode);
+                    nodes.add(new LibraryDependencyNode(dep, project, pvNode));
+                    for (String cpext : me.getClassPathExtensions().split(File.pathSeparator)) {
+                        if (cpext.length() > 0) {
+                            FileObject jar = FileUtil.toFileObject(new File(cpext));
+                            if (jar != null) {
+                                nodes.add(createLibraryPackageViewNode(jar));
+                            }
+                        }
+                    }
                 } else {
-                    node = new ProjectDependencyNode(dep, project);
+                    nodes.add(new ProjectDependencyNode(dep, project));
                 }
             } else {
                 // binary origin path
-                File jarFile = project.getHelper().resolveFile((String) key);
-                FileObject jfo = FileUtil.toFileObject(jarFile);
-                if (jfo == null)
-                    return null;
-                Icon icon = getLibrariesIcon();
-                FileObject root = FileUtil.getArchiveRoot(jfo);
-                String name = String.format(getMessage("LBL_WrappedLibraryFmt"), FileUtil.toFile(jfo).getName());
-                node = ActionFilterNode.create(
-                        PackageView.createPackageView(new LibrariesSourceGroup(root, name, icon, icon)));
+                FileObject jar = project.getHelper().resolveFileObject((String) key);
+                if (jar != null) {
+                    nodes.add(createLibraryPackageViewNode(jar));
+                }
             }
-            assert node != null;
-            return new Node[]{node};
+            return nodes.toArray(new Node[nodes.size()]);
+        }
+
+        private Node createLibraryPackageViewNode(FileObject jfo) {
+            Icon icon = getLibrariesIcon();
+            FileObject root = FileUtil.getArchiveRoot(jfo);
+            String name = String.format(getMessage("LBL_WrappedLibraryFmt"), FileUtil.toFile(jfo).getName());
+            return ActionFilterNode.create(PackageView.createPackageView(new LibrariesSourceGroup(root, name, icon, icon)));
         }
 
         public void configurationXmlChanged(AntProjectEvent ev) {

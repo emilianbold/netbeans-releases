@@ -1021,6 +1021,16 @@ public final class ClassPath {
                 if ("jar".equals(url.getProtocol())) { //NOI18N
                     url = FileUtil.getArchiveFile(url);
                 }
+                if (!"file".equals(url.getProtocol())) { // NOI18N
+                    // Try to convert nbinst to file
+                    FileObject file = URLMapper.findFileObject(url);
+                    if (file != null) {
+                        URL external = URLMapper.findURL(file, URLMapper.EXTERNAL);
+                        if (external != null) {
+                            url = external;
+                        }
+                    }
+                }
                 try {
                     newRoots.add(new File(url.toURI()));
                 } catch (IllegalArgumentException e) {
