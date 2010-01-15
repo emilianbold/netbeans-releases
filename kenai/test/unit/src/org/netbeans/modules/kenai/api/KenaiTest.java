@@ -661,6 +661,32 @@ public class KenaiTest extends NbTestCase {
         }
     }
 
+    @Test
+    /**
+     * Test of getMyProjects method of class Kenai
+     */
+    public void testJoinLeaveProject() throws Exception {
+        KenaiProject prj = instance.getProject("eduni-hearts");
+        KenaiUser user = KenaiUser.forName(instance.getPasswordAuthentication().getUserName() + "@" + instance.getName());
+        prj.addMember(user, KenaiProjectMember.Role.OBSERVER);
+        assert instance.getMyProjects().contains(prj);
+        boolean found = false;
+        int i=0;
+        KenaiProjectMember members[] = prj.getMembers();
+        while (!found) {
+            KenaiProjectMember m = members[i++];
+            if (m.getUserName().equals(user.getUserName())) {
+                found=true;
+                user = m.getKenaiUser();
+            }
+        }
+        assert found : "User was not added";
+
+        prj.deleteMember(user);
+        assert !instance.getMyProjects().contains(prj);
+    }
+
+
     static public junit.framework.Test suite() {
         junit.framework.TestSuite _suite = new junit.framework.TestSuite();
         _suite.addTest(new KenaiTest("testSearchProjects"));
