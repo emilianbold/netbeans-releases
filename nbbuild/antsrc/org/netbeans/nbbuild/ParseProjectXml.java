@@ -1009,9 +1009,9 @@ public final class ParseProjectXml extends Task {
         if (!skipCnb.add(cnb)) {
             return;
         }
-        log("Processing for recursive deps: " + cnb, Project.MSG_VERBOSE); // NO18N
+        log("Processing for recursive deps: " + cnb, Project.MSG_DEBUG);
         for (String nextModule : modules.findByCodeNameBase(cnb).getRuntimeDependencies()) {
-            log("  Added dep: " + nextModule, Project.MSG_VERBOSE); // NO18N
+            log("  Added dep: " + nextModule, Project.MSG_DEBUG);
             File depJar = computeClasspathModuleLocation(modules, nextModule, clusterPath, excludedModules, true);
 
             if (!additions.contains(depJar)) {
