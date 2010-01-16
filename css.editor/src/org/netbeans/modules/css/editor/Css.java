@@ -52,6 +52,9 @@ public class Css {
 
     /** finds first ResultIterator of the given mimetype */
     public static ResultIterator getResultIterator(ResultIterator ri, String mimetype) {
+	if(ri.getSnapshot().getMimeType().equals(mimetype)) {
+	    return ri;
+	}
         for(Embedding e : ri.getEmbeddings() ) {
             ResultIterator eri = ri.getResultIterator(e);
             if(e.getMimeType().equals(mimetype)) {
