@@ -81,12 +81,12 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=HintProvider.class)
 public class CodeHintProviderImpl implements HintProvider {
 
-    public Map<HintMetadata, Collection<? extends HintDescription>> computeHints() {
+    public Map<HintMetadata, ? extends Collection<? extends HintDescription>> computeHints() {
         return computeHints(findLoader(), "META-INF/nb-hints/hints");
     }
 
-    private Map<HintMetadata, Collection<? extends HintDescription>> computeHints(ClassLoader l, String path) {
-        Map<HintMetadata, Collection<? extends HintDescription>> result = new HashMap<HintMetadata, Collection<? extends HintDescription>>();
+    private Map<HintMetadata, ? extends Collection<? extends HintDescription>> computeHints(ClassLoader l, String path) {
+        Map<HintMetadata, Collection<HintDescription>> result = new HashMap<HintMetadata, Collection<HintDescription>>();
         
         try {
             Set<String> classes = new HashSet<String>();
@@ -136,7 +136,7 @@ public class CodeHintProviderImpl implements HintProvider {
         return l;
     }
 
-    public static void processClass(Class<?> clazz, Map<HintMetadata, Collection<? extends HintDescription>> result) throws SecurityException {
+    public static void processClass(Class<?> clazz, Map<HintMetadata, Collection<HintDescription>> result) throws SecurityException {
         Hint metadata = clazz.getAnnotation(Hint.class);
 
         if (metadata == null) {
@@ -150,22 +150,34 @@ public class CodeHintProviderImpl implements HintProvider {
         }
 
         HintMetadata hm = HintMetadata.create(id, clazz, metadata.category(), metadata.enabled(), /*metadata.severity()*/HintSeverity.WARNING, metadata.suppressWarnings());
-        List<HintDescription> descs = new LinkedList<HintDescription>();
         
         for (Method m : clazz.getDeclaredMethods()) {
-            processMethod(descs, m, hm);
-        }
+            Hint localMetadataAnnotation = clazz.getAnnotation(Hint.class);
+            HintMetadata localMetadata;
 
-        result.put(hm, descs);
+            if (localMetadataAnnotation != null) {
+                String localID = localMetadataAnnotation.id();
+
+                if (localID == null || localID.length() == 0) {
+                    localID = clazz.getName() + "." + m.getName();
+                }
+
+                localMetadata = HintMetadata.create(id, clazz, localMetadataAnnotation.category(), localMetadataAnnotation.enabled(), /*localMetadataAnnotation.severity()*/ HintSeverity.WARNING, localMetadataAnnotation.suppressWarnings());
+            } else {
+                localMetadata = hm;
+            }
+
+            processMethod(result, m, localMetadata);
+        }
     }
 
-    static void processMethod(List<HintDescription> hints, Method m, HintMetadata metadata) {
+    static void processMethod(Map<HintMetadata, Collection<HintDescription>> hints, Method m, HintMetadata metadata) {
         //XXX: combinations of TriggerTreeKind and TriggerPattern?
         processTreeKindHint(hints, m, metadata);
         processPatternHint(hints, m, metadata);
     }
     
-    private static void processTreeKindHint(List<HintDescription> hints, Method m, HintMetadata metadata) {
+    private static void processTreeKindHint(Map<HintMetadata, Collection<HintDescription>> hints, Method m, HintMetadata metadata) {
         TriggerTreeKind kindTrigger = m.getAnnotation(TriggerTreeKind.class);
 
         if (kindTrigger == null) {
@@ -175,15 +187,15 @@ public class CodeHintProviderImpl implements HintProvider {
         Worker w = new WorkerImpl(m);
 
         for (Kind k : new HashSet<Kind>(Arrays.asList(kindTrigger.value()))) {
-            hints.add(HintDescriptionFactory.create()
-                                            .setTriggerKind(k)
-                                            .setWorker(w)
-                                            .setMetadata(metadata)
-                                            .produce());
+            addHint(hints, metadata, HintDescriptionFactory.create()
+                                                           .setTriggerKind(k)
+                                                           .setWorker(w)
+                                                           .setMetadata(metadata)
+                                                           .produce());
         }
     }
     
-    private static void processPatternHint(List<HintDescription> hints, Method m, HintMetadata metadata) {
+    private static void processPatternHint(Map<HintMetadata, Collection<HintDescription>> hints, Method m, HintMetadata metadata) {
         TriggerPattern patternTrigger = m.getAnnotation(TriggerPattern.class);
 
         if (patternTrigger != null) {
@@ -201,7 +213,7 @@ public class CodeHintProviderImpl implements HintProvider {
         }
     }
 
-    private static void processPatternHint(List<HintDescription> hints, TriggerPattern patternTrigger, Method m, HintMetadata metadata) {
+    private static void processPatternHint(Map<HintMetadata, Collection<HintDescription>> hints, TriggerPattern patternTrigger, Method m, HintMetadata metadata) {
         String pattern = patternTrigger.value();
         Map<String, String> constraints = new HashMap<String, String>();
 
@@ -211,11 +223,21 @@ public class CodeHintProviderImpl implements HintProvider {
 
         PatternDescription pd = PatternDescription.create(pattern, constraints);
 
-        hints.add(HintDescriptionFactory.create()
-                                        .setTriggerPattern(pd)
-                                        .setWorker(new WorkerImpl(m))
-                                        .setMetadata(metadata)
-                                        .produce());
+        addHint(hints, metadata, HintDescriptionFactory.create()
+                                                       .setTriggerPattern(pd)
+                                                       .setWorker(new WorkerImpl(m))
+                                                       .setMetadata(metadata)
+                                                       .produce());
+    }
+
+    private static void addHint(Map<HintMetadata, Collection<HintDescription>> hints, HintMetadata metadata, HintDescription hint) {
+        Collection<HintDescription> list = hints.get(metadata);
+
+        if (list == null) {
+            hints.put(metadata, list = new LinkedList<HintDescription>());
+        }
+
+        list.add(hint);
     }
 
     //accessed by tests:

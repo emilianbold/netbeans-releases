@@ -49,7 +49,7 @@ import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
  *
  * @author lahvac
  */
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Hint {
     public String id() default "";

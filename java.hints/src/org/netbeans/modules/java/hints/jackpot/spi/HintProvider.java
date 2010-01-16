@@ -44,6 +44,6 @@ import java.util.Map;
 
 public interface HintProvider {
 
-    public Map<HintMetadata, Collection<? extends HintDescription>> computeHints();
+    public Map<HintMetadata, ? extends Collection<? extends HintDescription>> computeHints();
 
 }

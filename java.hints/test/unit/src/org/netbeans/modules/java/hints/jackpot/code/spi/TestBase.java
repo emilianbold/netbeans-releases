@@ -141,7 +141,7 @@ public abstract class TestBase extends NbTestCase {
     private Document doc;
 
     private List<ErrorDescription> computeErrors(CompilationInfo info) {
-        Map<HintMetadata, Collection<? extends HintDescription>> hints = new HashMap<HintMetadata, Collection<? extends HintDescription>>();
+        Map<HintMetadata, Collection<HintDescription>> hints = new HashMap<HintMetadata, Collection<HintDescription>>();
         
         CodeHintProviderImpl.processClass(hintClass, hints);
 

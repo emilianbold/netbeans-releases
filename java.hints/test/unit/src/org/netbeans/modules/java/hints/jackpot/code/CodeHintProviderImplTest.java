@@ -70,7 +70,7 @@ public class CodeHintProviderImplTest {
 
     @Test
     public void testComputeHints() {
-        Map<HintMetadata, Collection<? extends HintDescription>> hints = new CodeHintProviderImpl().computeHints();
+        Map<HintMetadata, ? extends Collection<? extends HintDescription>> hints = new CodeHintProviderImpl().computeHints();
 
         Set<String> golden = new HashSet<String>(Arrays.asList(
             "null:$1.toURL():public static org.netbeans.spi.editor.hints.ErrorDescription org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImplTest.hintPattern1(org.netbeans.modules.java.hints.jackpot.spi.HintContext)",
