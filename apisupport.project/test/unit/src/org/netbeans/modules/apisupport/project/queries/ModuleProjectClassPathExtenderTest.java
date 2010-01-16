@@ -52,10 +52,13 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.test.MockLookup;
 import org.xml.sax.InputSource;
 
@@ -87,9 +90,34 @@ public class ModuleProjectClassPathExtenderTest extends NbTestCase {
         assertFalse(ProjectClassPathModifier.addLibraries(new Library[] {testlib}, testsrc, ClassPath.COMPILE));
         InputSource input = new InputSource(clientprj.getProjectDirectory().getFileObject("nbproject/project.xml").getURL().toString());
         XPath xpath = XPathFactory.newInstance().newXPath();
-        assertEquals("org.example.client", xpath.evaluate("//*[local-name()='data']/*[local-name()='code-name-base']", input)); // control
-        assertEquals("org.example.lib", xpath.evaluate("//*[local-name()='module-dependencies']/*/*[local-name()='code-name-base']", input));
-        assertEquals("org.example.testlib", xpath.evaluate("//*[local-name()='test-dependencies']/*/*/*[local-name()='code-name-base']", input));
+        xpath.setNamespaceContext(Util.nbmNamespaceContext());
+        assertEquals("org.example.client", xpath.evaluate("//nbm:data/nbm:code-name-base", input)); // control
+        assertEquals("org.example.lib", xpath.evaluate("//nbm:module-dependencies/*/nbm:code-name-base", input));
+        assertEquals("org.example.testlib", xpath.evaluate("//nbm:test-dependencies/*/*/nbm:code-name-base", input));
+    }
+
+    public void testAddRoots() throws Exception {
+        NbModuleProject prj = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        FileObject src = prj.getSourceDirectory();
+        FileObject jar = TestFileUtils.writeZipFile(FileUtil.toFileObject(getWorkDir()), "a.jar", "entry:contents");
+        URL root = FileUtil.getArchiveRoot(jar.getURL());
+        assertTrue(ProjectClassPathModifier.addRoots(new URL[] {root}, src, ClassPath.COMPILE));
+        assertFalse(ProjectClassPathModifier.addRoots(new URL[] {root}, src, ClassPath.COMPILE));
+        FileObject releaseModulesExt = prj.getProjectDirectory().getFileObject("release/modules/ext");
+        assertNotNull(releaseModulesExt);
+        assertNotNull(releaseModulesExt.getFileObject("a.jar"));
+        jar = TestFileUtils.writeZipFile(releaseModulesExt, "b.jar", "entry2:contents");
+        root = FileUtil.getArchiveRoot(jar.getURL());
+        assertTrue(ProjectClassPathModifier.addRoots(new URL[] {root}, src, ClassPath.COMPILE));
+        assertFalse(ProjectClassPathModifier.addRoots(new URL[] {root}, src, ClassPath.COMPILE));
+        assertEquals(2, releaseModulesExt.getChildren().length);
+        InputSource input = new InputSource(prj.getProjectDirectory().getFileObject("nbproject/project.xml").getURL().toString());
+        XPath xpath = XPathFactory.newInstance().newXPath();
+        xpath.setNamespaceContext(Util.nbmNamespaceContext());
+        assertEquals("ext/a.jar", xpath.evaluate("//nbm:class-path-extension[1]/nbm:runtime-relative-path", input));
+        assertEquals("release/modules/ext/a.jar", xpath.evaluate("//nbm:class-path-extension[1]/nbm:binary-origin", input));
+        assertEquals("ext/b.jar", xpath.evaluate("//nbm:class-path-extension[2]/nbm:runtime-relative-path", input));
+        assertEquals("release/modules/ext/b.jar", xpath.evaluate("//nbm:class-path-extension[2]/nbm:binary-origin", input));
     }
 
     private static class LibImpl implements LibraryImplementation {
