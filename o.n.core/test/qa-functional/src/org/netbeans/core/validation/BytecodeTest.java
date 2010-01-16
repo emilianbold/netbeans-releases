@@ -39,11 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.perftest;
+// XXX rewrite to NbModuleSuite
+
+package org.netbeans.core.validation;
 
 import java.io.File;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -66,10 +67,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.*;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 
@@ -104,91 +103,6 @@ public class BytecodeTest extends NbTestCase {
     
     // TODO test for ModuleInstall subclasses - they should override at least one important method
 
-    /** Verification that classfiles built in production build do not contain 
-     * variable information to reduce their size and improve performance.
-     * Line table and source info are OK.
-     * Likely to fail for custom CVS unless they used -Dbuild.compiler.debuglevel=source,lines
-     */
-    @RandomlyFails
-    public void testBytecode() throws Exception {
-        JavaClass clz = 
-                new ClassParser(Main.class.getResourceAsStream("Main.class"), "Main.class").parse();
-        assertNotNull("classfile of Main parsed", clz);
-        
-        Set<Violation> violations = new HashSet<Violation>();
-        MyVisitor v = new MyVisitor();
-        new DescendingVisitor(clz,v).visit();
-        if (v.foundLocalVarTable()) {
-            violations.add(new Violation(Main.class.getName(), "startup classpath", "local var table found"));
-        }
-        for (File f: org.netbeans.core.startup.Main.getModuleSystem().getModuleJars()) {
-            if (!f.getName().endsWith(".jar"))
-                continue;
-            
-            // list of 3rd party libs
-            // perhaps we can strip this debug info from these
-            if ("commons-logging-1.1.jar".equals(f.getName())
-            ||  "servlet-2.2.jar".equals(f.getName())
-            ||  "servlet2.5-jsp2.1-api.jar".equals(f.getName())
-            ||  "jaxws-tools.jar".equals(f.getName())
-            ||  "jaxws-rt.jar".equals(f.getName())
-            ||  "jaxb-impl.jar".equals(f.getName())
-            ||  "jaxb-xjc.jar".equals(f.getName())
-            ||  "jaxb-api.jar".equals(f.getName())
-            ||  "saaj-impl.jar".equals(f.getName())
-            ||  "activation.jar".equals(f.getName())
-            ||  "streambuffer.jar".equals(f.getName())
-            ||  "sjsxp.jar".equals(f.getName())
-            ||  "resolver-1_1_nb.jar".equals(f.getName())
-            ||  "webserver.jar".equals(f.getName())
-            ||  "swing-layout-1.0.2.jar".equals(f.getName())
-            ||  "beansbinding-0.5.jar".equals(f.getName())
-            ||  f.getName().matches("appframework-.*\\.jar")
-//            ||  "jmi.jar".equals(f.getName())
-            ||  "persistence-tool-support.jar".equals(f.getName())
-            ||  "ini4j.jar".equals(f.getName())
-            ||  "svnClientAdapter.jar".equals(f.getName())
-            ||  "lucene-core-2.1.0.jar".equals(f.getName())
-            ||  "javac-impl-nb-7.0-b07.jar".equals(f.getName())
-            ||  "java-parser.jar".equals(f.getName())) 
-                continue;
-            
-            // #97282 - profiler
-            if (f.getName().contains("profiler")) {
-                continue;
-            }
-            
-            JarFile jar = new JarFile(f);
-            Enumeration<JarEntry> entries = jar.entries();
-            JarEntry entry;
-            while (entries.hasMoreElements()) {
-                entry = entries.nextElement();
-                if (entry.getName().endsWith(".class")) {
-                    LOG.log(Level.FINE, "testing entry {0}", entry);
-                    clz = new ClassParser(jar.getInputStream(entry), entry.getName()).parse();
-                    assertNotNull("classfile of "+entry.toString()+" parsed");
-                    
-                    v = new MyVisitor();
-                    new DescendingVisitor(clz,v).visit();
-                    if (v.foundLocalVarTable()) {
-                        violations.add(new Violation(entry.toString(), jar.getName(), "local var table found"));
-                    }
-                    
-                    break;
-                }
-            }
-        }
-        if (!violations.isEmpty()) {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Some classes in IDE contain variable table information:\n");
-            for (Violation viol: violations) {
-                msg.append(viol.entry).append(" in ").append(viol.jarFile).append('\n');
-            }
-            fail(msg.toString());
-        }
-        //                    assertTrue (entry.toString()+" should have line number table", v.foundLineNumberTable());
-    }
-    
     private static class Violation implements Comparable<Violation> {
         String entry;
         String jarFile;
