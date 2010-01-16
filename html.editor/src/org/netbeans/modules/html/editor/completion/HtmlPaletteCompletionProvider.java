@@ -203,7 +203,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
                     public void run() {
                         try {
                             int offset = component.getCaretPosition();
-                            if (offset < completionExpressionStartOffset) {
+                            if (completionExpressionStartOffset == -1 || offset < completionExpressionStartOffset) {
                                 retval.set(false);
                                 return;
                             }

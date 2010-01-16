@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.css.editor;
 
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ResultIterator;
+
 /**
  *
  * @author marek
@@ -46,5 +49,24 @@ package org.netbeans.modules.css.editor;
 public class Css {
     
     public static final String CSS_MIME_TYPE = "text/x-css";
+
+    /** finds first ResultIterator of the given mimetype */
+    public static ResultIterator getResultIterator(ResultIterator ri, String mimetype) {
+	if(ri.getSnapshot().getMimeType().equals(mimetype)) {
+	    return ri;
+	}
+        for(Embedding e : ri.getEmbeddings() ) {
+            ResultIterator eri = ri.getResultIterator(e);
+            if(e.getMimeType().equals(mimetype)) {
+                return eri;
+            } else {
+                ResultIterator eeri = getResultIterator(eri, mimetype);
+                if(eeri != null) {
+                    return eeri;
+                }
+            }
+        }
+        return null;
+    }
 
 }
