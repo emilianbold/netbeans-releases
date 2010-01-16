@@ -91,11 +91,11 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
             "${file.separator}${javacard.device.name}.eprom"; //NOI18N
     static final String DEFAULT_DEBUG_PROXY_COMMAND_LINE = "${java.home}/bin/java " +
             "-classpath ${javacard.debug.proxy.classpath} " + //NOI18N
-            "-Djc.home=${javacard.ri.home} " + //NOI18N
+            "{{{-Djc.home=${javacard.ri.home}}}} " + //NOI18N
             "com.sun.javacard.debugproxy.Main " + //NOI18N
-            "debug " + //NOI18N
-            "--listen ${proxy.to.ide.port} " + //NOI18N
-            "--remote ${host}:${proxy.to.runtime.port} " + //NOI18N
+            "{{{debug}}} " + //NOI18N
+            "--listen ${javacard.device.proxy2idePort} " + //NOI18N
+            "--remote ${javacard.device.host}:${javacard.device.proxy2cjcrePort} " + //NOI18N
             "--classpath ${class.path}"; //NOI18N
     static final String NEW_RUN_COMMAND_LINE =
             "${" + JavacardPlatformKeyNames.PLATFORM_EMULATOR_PATH +"} " + //NOI18N
@@ -245,7 +245,8 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
 
     private void setProp (String key, String value) {
         if (LOGGER.isLoggable(Level.FINE))
-            LOGGER.log(Level.FINE, "Set javacard device property '" + key + "' to '" + value +"'"); //NOI18N
+            LOGGER.log(Level.FINE, "Set javacard device property \'{0}\' to \'{1}\'",
+                    new Object[]{key, value}); //NOI18N
         props.asProperties().setProperty(key, value);
     }
 
@@ -295,20 +296,9 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
     public String[] getDebugProxyCommandLine(Properties platformProps, String classpathClosure) {
         Map<String,String> projectInfo = prepPlatformProps(platformProps, true);
         projectInfo.put ("class.path", classpathClosure); //NOi18N
-        String[] result = shellSplit (evaluated(projectInfo,
+        String[] result = Utils.shellSplit (evaluated(projectInfo,
                 JavacardDeviceKeyNames.DEVICE_DEBUG_PROXY_COMMAND_LINE,
                 DEFAULT_DEBUG_PROXY_COMMAND_LINE));
-        //XXX Hack until we find a better way to do this
-        List<String> l = new ArrayList<String>();
-        for (String s : result) {
-            if (s.contains(".Main debug")) {
-                String[] ss = s.split(" ");
-                l.addAll(Arrays.asList(ss));
-            } else {
-                l.add (s);
-            }
-        }
-        result = l.toArray(new String[l.size()]);
         System.err.println("DEBUG PROXY LINE:\n" + Arrays.asList(result));
         return result;
     }
@@ -320,7 +310,7 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
         String key = !resume ? JavacardDeviceKeyNames.DEVICE_RUN_COMMAND_LINE : JavacardDeviceKeyNames.DEVICE_RESUME_COMMAND_LINE;
         String defawlt = !resume ? NEW_RUN_COMMAND_LINE : DEFAULT_RESUME_COMMAND_LINE;
         String cmdline = evaluated (platform, key, defawlt);
-        String[] result = shellSplit (cmdline);
+        String[] result = Utils.shellSplit (cmdline);
         System.err.println("RUN COMMAND LINE:\n" + Arrays.asList(result));
         return result;
     }
@@ -356,13 +346,4 @@ final class CardProperties implements ICardCapability, CapabilitiesProvider {
                 PropertyUtils.fixedPropertyProvider(pre), prov);
         return eval.evaluate(value);
     }
-
-    static final String[] shellSplit(String s) {
-       return Utils.shellSplit (s);
-    }
-
-    static boolean splitArgs(String argsPart, List<String> result) {
-        return Utils.splitArgs(argsPart, result);
-    }
-
 }
