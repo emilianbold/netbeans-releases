@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.java.hints.jackpot.hintsimpl;
 
-import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -50,8 +49,6 @@ import com.sun.source.util.TreePath;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
@@ -62,6 +59,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
@@ -156,7 +154,7 @@ public class LoggerStringConcat {
 
     private static ErrorDescription compute(HintContext ctx, String methodName) {
         TreePath message = ctx.getVariables().get("$message");
-        List<List<TreePath>> sorted = sortOut(ctx.getInfo(), linearize(message));
+        List<List<TreePath>> sorted = Utilities.splitStringConcatenationToElements(ctx.getInfo(), message);
 
         if (sorted.size() <= 1) {
             return null;
@@ -168,7 +166,7 @@ public class LoggerStringConcat {
     }
 
     private static void rewrite(WorkingCopy wc, ExpressionTree level, MethodInvocationTree invocation, TreePath message) {
-        List<List<TreePath>> sorted = sortOut(wc, linearize(message));
+        List<List<TreePath>> sorted = Utilities.splitStringConcatenationToElements(wc, message);
         StringBuilder workingLiteral = new StringBuilder();
         List<Tree> newMessage = new LinkedList<Tree>();
         List<ExpressionTree> newParams = new LinkedList<ExpressionTree>();
@@ -179,7 +177,7 @@ public class LoggerStringConcat {
             if (element.size() == 1 && element.get(0).getLeaf().getKind() == Kind.STRING_LITERAL) {
                 workingLiteral.append((String) ((LiteralTree) element.get(0).getLeaf()).getValue());
             } else {
-                if (element.size() == 1 && !constant(wc, element.get(0))) {
+                if (element.size() == 1 && !Utilities.isConstantString(wc, element.get(0))) {
                     workingLiteral.append("{");
                     workingLiteral.append(Integer.toString(variablesCount++));
                     workingLiteral.append("}");
@@ -288,60 +286,4 @@ public class LoggerStringConcat {
 
     }
 
-
-
-    //XXX: copied from StringBuilderAppend from java.hints:
-    private static List<TreePath> linearize(TreePath tree) {
-        List<TreePath> todo = new LinkedList<TreePath>();
-        List<TreePath> result = new LinkedList<TreePath>();
-
-        todo.add(tree);
-
-        while (!todo.isEmpty()) {
-            TreePath tp = todo.remove(0);
-
-            if (tp.getLeaf().getKind() != Kind.PLUS) {
-                result.add(tp);
-                continue;
-            }
-
-            BinaryTree bt = (BinaryTree) tp.getLeaf();
-
-            todo.add(0, new TreePath(tp, bt.getRightOperand()));
-            todo.add(0, new TreePath(tp, bt.getLeftOperand()));
-        }
-
-        return result;
-    }
-
-    private static List<List<TreePath>> sortOut(CompilationInfo info, List<TreePath> trees) {
-        List<List<TreePath>> result = new LinkedList<List<TreePath>>();
-        List<TreePath> currentCluster = new LinkedList<TreePath>();
-
-        for (TreePath t : trees) {
-            if (constant(info, t)) {
-                currentCluster.add(t);
-            } else {
-                if (!currentCluster.isEmpty()) {
-                    result.add(currentCluster);
-                    currentCluster = new LinkedList<TreePath>();
-                }
-                result.add(new LinkedList<TreePath>(Collections.singletonList(t)));
-            }
-        }
-
-        if (!currentCluster.isEmpty()) {
-            result.add(currentCluster);
-        }
-
-        return result;
-    }
-
-    private static boolean constant(CompilationInfo info, TreePath tp) {
-        if (tp.getLeaf().getKind() == Kind.STRING_LITERAL) return true;
-
-        Element el = info.getTrees().getElement(tp);
-
-        return el != null && el.getKind() == ElementKind.FIELD && ((VariableElement) el).getConstantValue() instanceof String;
-    }
 }
