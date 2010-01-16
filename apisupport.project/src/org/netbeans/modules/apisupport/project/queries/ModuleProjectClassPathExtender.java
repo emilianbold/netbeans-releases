@@ -47,7 +47,9 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
@@ -61,9 +63,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -142,17 +142,40 @@ public final class ModuleProjectClassPathExtender extends ProjectClassPathModifi
     }
 
     protected boolean addRoots(URL[] classPathRoots, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException {
-        UnsupportedOperationException e = new UnsupportedOperationException("not implemented: " + Arrays.asList(classPathRoots)); // NOI18N
-        // XXX handle >1 args
-        String displayName = "<nothing>";
-        if (classPathRoots.length == 1) {
-            FileObject f = URLMapper.findFileObject(classPathRoots[0]);
-            if (f != null) {
-                displayName = FileUtil.getFileDisplayName(f);
+        if (sourceGroup.getRootFolder() != project.getSourceDirectory()) {
+            throw new UnsupportedOperationException("cannot add raw JARs to test roots");
+        }
+        ProjectXMLManager pxm = new ProjectXMLManager(project);
+        Map<String,String> origCpexts = pxm.getClassPathExtensions();
+        Map<String,String> cpexts = new HashMap<String,String>(origCpexts);
+        boolean cpChanged = false;
+        for (URL root : classPathRoots) {
+            File jar = FileUtil.archiveOrDirForURL(root);
+            if (jar == null || !jar.isFile()) {
+                throw new UnsupportedOperationException("cannot add: " + root);
+            }
+            String relativePath = Util.CPEXT_RUNTIME_RELATIVE_PATH + jar.getName();
+            String binaryOrigin = Util.CPEXT_BINARY_PATH + jar.getName();
+            File target = project.getHelper().resolveFile(binaryOrigin);
+            if (jar.equals(target)) { // already in place
+                cpexts.put(relativePath, binaryOrigin);
+            } else {
+                if (!target.isFile() || target.length() != jar.length()) {
+                    cpChanged = true; // probably fresh JAR; XXX check contents
+                }
+                String[] result = Util.copyClassPathExtensionJar(FileUtil.toFile(project.getProjectDirectory()), jar);
+                assert result != null : jar;
+                assert result[0].equals(relativePath) : result[0];
+                assert result[1].equals(binaryOrigin) : result[1];
+                cpexts.put(relativePath, binaryOrigin);
             }
         }
-        Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_jar", displayName));
-        throw e;
+        if (!cpexts.equals(origCpexts)) {
+            pxm.replaceClassPathExtensions(cpexts);
+            ProjectManager.getDefault().saveProject(project);
+            cpChanged = true;
+        }
+        return cpChanged;
     }
 
     protected boolean removeRoots(URL[] classPathRoots, SourceGroup sourceGroup, String type) throws IOException, UnsupportedOperationException {
