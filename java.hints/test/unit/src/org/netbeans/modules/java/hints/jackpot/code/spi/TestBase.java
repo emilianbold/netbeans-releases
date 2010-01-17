@@ -71,6 +71,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -237,4 +238,7 @@ public abstract class TestBase extends NbTestCase {
         return new FileObject[0];
     }
 
+    static {
+        NbBundle.setBranding("test");
+    }
 }

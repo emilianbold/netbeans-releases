@@ -40,7 +40,6 @@
 package org.netbeans.modules.java.hints;
 
 import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -89,8 +88,5 @@ public class NoLoggersTest extends TestBase {
                             "    }\n" +
                             "}"
                             );
-    }
-    static {
-        NbBundle.setBranding("test");
     }
 }

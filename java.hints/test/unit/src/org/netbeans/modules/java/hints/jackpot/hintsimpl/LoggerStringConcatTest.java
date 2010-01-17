@@ -40,7 +40,6 @@
 package org.netbeans.modules.java.hints.jackpot.hintsimpl;
 
 import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -96,7 +95,4 @@ public class LoggerStringConcatTest extends TestBase {
                         "}\n").replaceAll("[ \t\n]+", " "));
     }
 
-    static {
-        NbBundle.setBranding("test");
-    }
 }

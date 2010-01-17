@@ -41,7 +41,6 @@ package org.netbeans.modules.java.hints;
 
 import org.junit.Test;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -140,7 +139,4 @@ public class LoggerNotStaticFinalTest extends TestBase {
                             "}");
     }
 
-    static {
-        NbBundle.setBranding("test");
-    }
 }
