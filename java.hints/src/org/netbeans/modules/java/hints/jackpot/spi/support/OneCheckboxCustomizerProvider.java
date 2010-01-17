@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,28 +34,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.jackpot.code.spi;
+package org.netbeans.modules.java.hints.jackpot.spi.support;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import org.netbeans.modules.java.hints.jackpot.spi.CustomizerProvider;
 
 /**
  *
  * @author lahvac
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Hint {
-    public String id() default "";
-    public String category();
-    public boolean enabled() default true;
-//    public HintSeverity severity() default HintSeverity.WARNING;
-    public String[] suppressWarnings() default {};
-    public Class<?> customizerProvider() default Void.class;
+public class OneCheckboxCustomizerProvider implements CustomizerProvider {
+
+    private final String checkboxLabel;
+    private final String checkboxTooltip;
+    private final String preferencesKey;
+    private final boolean defaultValue;
+
+    public OneCheckboxCustomizerProvider(String checkboxLabel, String checkboxTooltip, String preferencesKey, boolean defaultValue) {
+        this.checkboxLabel = checkboxLabel;
+        this.checkboxTooltip = checkboxTooltip;
+        this.preferencesKey = preferencesKey;
+        this.defaultValue = defaultValue;
+    }
+
+    public final JComponent getCustomizer(Preferences prefs) {
+        return new OneCheckboxCustomizer(prefs, checkboxLabel, checkboxTooltip, preferencesKey, defaultValue);
+    }
+
 }

@@ -99,7 +99,7 @@ public class HintMetadata {
             bundle = null;
         }
 
-        return create(id, bundle, category, enabled, severity, null, suppressWarnings);
+        return create(id, bundle, category, enabled, severity, customizer, suppressWarnings);
     }
 
     public static HintMetadata create(String id, ResourceBundle bundle, String category, boolean enabled, HintSeverity severity, CustomizerProvider customizer, String... suppressWarnings) {

@@ -56,11 +56,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
+import org.netbeans.modules.java.hints.jackpot.spi.CustomizerProvider;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
@@ -149,10 +152,10 @@ public class CodeHintProviderImpl implements HintProvider {
             id = clazz.getName();
         }
 
-        HintMetadata hm = HintMetadata.create(id, clazz, metadata.category(), metadata.enabled(), /*metadata.severity()*/HintSeverity.WARNING, metadata.suppressWarnings());
+        HintMetadata hm = HintMetadata.create(id, clazz, metadata.category(), metadata.enabled(), /*metadata.severity()*/HintSeverity.WARNING, createCustomizerProvider(metadata), metadata.suppressWarnings());
         
         for (Method m : clazz.getDeclaredMethods()) {
-            Hint localMetadataAnnotation = clazz.getAnnotation(Hint.class);
+            Hint localMetadataAnnotation = m.getAnnotation(Hint.class);
             HintMetadata localMetadata;
 
             if (localMetadataAnnotation != null) {
@@ -162,13 +165,37 @@ public class CodeHintProviderImpl implements HintProvider {
                     localID = clazz.getName() + "." + m.getName();
                 }
 
-                localMetadata = HintMetadata.create(id, clazz, localMetadataAnnotation.category(), localMetadataAnnotation.enabled(), /*localMetadataAnnotation.severity()*/ HintSeverity.WARNING, localMetadataAnnotation.suppressWarnings());
+                localMetadata = HintMetadata.create(localID, clazz, localMetadataAnnotation.category(), localMetadataAnnotation.enabled(), /*localMetadataAnnotation.severity()*/ HintSeverity.WARNING, createCustomizerProvider(localMetadataAnnotation), localMetadataAnnotation.suppressWarnings());
             } else {
                 localMetadata = hm;
             }
 
             processMethod(result, m, localMetadata);
         }
+    }
+
+    private static CustomizerProvider createCustomizerProvider(Hint hint) {
+        Class<?> clazz = hint.customizerProvider();
+
+        if (CustomizerProvider.class.isAssignableFrom(clazz)) {
+            try {
+                return CustomizerProvider.class.cast(clazz.getConstructor().newInstance());
+            } catch (InstantiationException ex) {
+                Logger.getLogger(CodeHintProviderImpl.class.getName()).log(Level.INFO, null, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(CodeHintProviderImpl.class.getName()).log(Level.INFO, null, ex);
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(CodeHintProviderImpl.class.getName()).log(Level.INFO, null, ex);
+            } catch (InvocationTargetException ex) {
+                Logger.getLogger(CodeHintProviderImpl.class.getName()).log(Level.INFO, null, ex);
+            } catch (NoSuchMethodException ex) {
+                Logger.getLogger(CodeHintProviderImpl.class.getName()).log(Level.INFO, null, ex);
+            } catch (SecurityException ex) {
+                Logger.getLogger(CodeHintProviderImpl.class.getName()).log(Level.INFO, null, ex);
+            }
+        }
+
+        return null;
     }
 
     static void processMethod(Map<HintMetadata, Collection<HintDescription>> hints, Method m, HintMetadata metadata) {
@@ -316,6 +343,10 @@ public class CodeHintProviderImpl implements HintProvider {
 
         public Class<? extends Annotation> annotationType() {
             return Hint.class;
+        }
+
+        public Class<?> customizerProvider() {
+            return Void.class;
         }
 
     }
