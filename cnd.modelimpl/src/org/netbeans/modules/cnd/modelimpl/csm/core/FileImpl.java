@@ -1754,7 +1754,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                 incParseCount();
                                 if (((FunctionImplEx) curElem).fixFakeRegistration(projectParsedMode, fakePair.tree)) {
                                     fakeRegistrationPairs.set(i, new FakePair(fakePair.uid, null));
-                                    fakeRegistrationPairs.set(i, null);
+//                                    fakeRegistrationPairs.set(i, null);
                                 }
                                 incParseCount();
                             } else {
