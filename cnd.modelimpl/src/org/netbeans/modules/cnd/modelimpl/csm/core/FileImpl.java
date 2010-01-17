@@ -213,7 +213,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private FileType fileType = FileType.UNDEFINED_FILE;
     private static final class StateLock {}
     private final Object stateLock = new StateLock();
-    private final Collection<FakePair> fakeRegistrationPairs = new CopyOnWriteArrayList<FakePair>();
+    private final List<FakePair> fakeRegistrationPairs = new CopyOnWriteArrayList<FakePair>();
 
     private static final class FakePair {
 
@@ -1740,14 +1740,22 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     return false;
                 }
                 if (fakeRegistrationPairs.size() > 0) {
-                    for (FakePair fakePair : fakeRegistrationPairs) {
+                    for (int i = 0; i < fakeRegistrationPairs.size(); i++) {
+//                    for (int i = fakeRegistrationPairs.size()-1; i >= 0; i--) {
+                        FakePair fakePair = fakeRegistrationPairs.get(i);
+                        if (fakePair == null) {
+                            continue;
+                        }
                         CsmUID<? extends CsmDeclaration> fakeUid = fakePair.uid;
                         CsmDeclaration curElem = fakeUid.getObject();
                         if (curElem != null) {
                             if (curElem instanceof FunctionImplEx) {
                                 wereFakes = true;
                                 incParseCount();
-                                ((FunctionImplEx) curElem).fixFakeRegistration(projectParsedMode, fakePair.tree);
+                                if (((FunctionImplEx) curElem).fixFakeRegistration(projectParsedMode, fakePair.tree)) {
+                                    fakeRegistrationPairs.set(i, new FakePair(fakePair.uid, null));
+                                    fakeRegistrationPairs.set(i, null);
+                                }
                                 incParseCount();
                             } else {
                                 DiagnosticExceptoins.register(new Exception("Incorrect fake registration class: " + curElem.getClass() + " for fake UID:" + fakeUid)); // NOI18N
