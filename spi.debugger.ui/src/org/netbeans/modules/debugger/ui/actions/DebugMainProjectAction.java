@@ -70,6 +70,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.openide.awt.Actions;
 import org.openide.awt.DropDownButtonFactory;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -192,38 +193,11 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar {
 
         private JPopupMenu menu;
         private JMenuItem[] items = new JMenuItem[0];
-        private JSeparator separator = new JSeparator();
+        private JSeparator separator = new JPopupMenu.Separator();
 
         public void init(JPopupMenu menu) {
             this.menu = menu;
             addAttachHistorySupport(this);
-
-            // clear all history slots which of attach type cannot be found
-            List types = DebuggerManager.getDebuggerManager().lookup (null, AttachType.class);
-            Set typeNamesSet = new HashSet();
-            for (Object t : types) {
-                AttachType att = (AttachType)t;
-                String dispName = att.getTypeDisplayName();
-                if (dispName != null) {
-                    typeNamesSet.add(dispName);
-                }
-            } // for
-            ArrayList<Integer> historyList = new ArrayList<Integer>();
-            Properties props = Properties.getDefault().getProperties("debugger").getProperties("last_attaches");
-            Integer[] usedSlots = (Integer[]) props.getArray("used_slots", new Integer[0]);
-            boolean somethingRemoved = false;
-            for (int x = 0; x < usedSlots.length; x++) {
-                String dispName = props.getProperties("slot_" + usedSlots[x]).getString("attach_type", "<???>"); // NOI18N
-                if (typeNamesSet.contains(dispName)) {
-                    historyList.add(usedSlots[x]);
-                } else {
-                    somethingRemoved = true;
-                }
-            } // for
-            if (somethingRemoved) {
-                props.setArray("used_slots", historyList.toArray(new Integer[historyList.size()]));
-            }
-
             computeItems();
         }
 
@@ -297,7 +271,10 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar {
                     GestureSubmitter.logAttach(attachTypeName);
                 }
                 return;
-            } // if
+            } else {
+                // report failure - attach type not found
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DebugMainProjectAction.class, "CTL_Attach_Type_Not_Found"));
+            }
         }
 
         private void makeFirst(int index) {
