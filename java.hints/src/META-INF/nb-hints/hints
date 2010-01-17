@@ -4,6 +4,7 @@ org.netbeans.modules.java.hints.jackpot.hintsimpl.FileToURL
 org.netbeans.modules.java.hints.bugs.AnnotationsNotRuntime
 org.netbeans.modules.java.hints.bugs.CastVSInstanceOf
 org.netbeans.modules.java.hints.bugs.Regexp
+org.netbeans.modules.java.hints.perf.SizeEqualsZero
 org.netbeans.modules.java.hints.StringBuilderAppend
 org.netbeans.modules.java.hints.LoggerNotStaticFinal
 org.netbeans.modules.java.hints.MultipleLoggers
