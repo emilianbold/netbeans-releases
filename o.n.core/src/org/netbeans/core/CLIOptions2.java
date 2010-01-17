@@ -41,7 +41,12 @@
 
 package org.netbeans.core;
 
+import java.awt.Frame;
+import java.io.PrintWriter;
+import javax.swing.SwingUtilities;
 import org.netbeans.CLIHandler;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.WindowManager;
 
 /**
  * Shows the main window, so it is fronted when second instance of
@@ -49,7 +54,7 @@ import org.netbeans.CLIHandler;
  *
  * @author Jaroslav Tulach
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.CLIHandler.class)
+@ServiceProvider(service=CLIHandler.class)
 public class CLIOptions2 extends CLIHandler implements Runnable {
     /** number of invocations */
     private int cnt;
@@ -75,19 +80,19 @@ public class CLIOptions2 extends CLIHandler implements Runnable {
             }
         }
          */
-        javax.swing.SwingUtilities.invokeLater (this);
+        SwingUtilities.invokeLater(this);
         
         return 0;
     }
     
     public void run () {
-        java.awt.Frame f = org.openide.windows.WindowManager.getDefault ().getMainWindow ();
+        Frame f = WindowManager.getDefault().getMainWindow();
 
         // makes sure the frame is visible
         f.setVisible(true);
         // uniconifies the frame if it is inconified
-        if ((f.getExtendedState () & java.awt.Frame.ICONIFIED) != 0) {
-            f.setExtendedState (~java.awt.Frame.ICONIFIED & f.getExtendedState ());
+        if ((f.getExtendedState() & Frame.ICONIFIED) != 0) {
+            f.setExtendedState(~Frame.ICONIFIED & f.getExtendedState());
         }
         // moves it to front and requests focus
         f.toFront ();
@@ -95,7 +100,6 @@ public class CLIOptions2 extends CLIHandler implements Runnable {
     }
     
     
-    protected void usage(java.io.PrintWriter w) {
-    }
+    protected void usage(PrintWriter w) {}
     
 }
