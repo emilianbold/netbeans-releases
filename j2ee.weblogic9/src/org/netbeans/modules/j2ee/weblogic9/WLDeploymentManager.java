@@ -255,8 +255,8 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        // FIXME
-        return new FinishedProgressObject(ActionType.EXECUTE, CommandType.START, "FIXME", targetModuleID, false);
+        WLCommandDeployer wlDeployer = new WLCommandDeployer(InstanceProperties.getInstanceProperties(getUri()));
+        return wlDeployer.stop(targetModuleID);
     }
 
     public ProgressObject start(TargetModuleID[] targetModuleID) throws IllegalStateException {
@@ -426,80 +426,6 @@ public class WLDeploymentManager implements DeploymentManager {
             }
 
             return super.getResources(name);
-        }
-    }
-
-    private static final class FinishedProgressObject implements ProgressObject {
-
-        private final TargetModuleID[] moduleIds;
-        private final DeploymentStatus status;
-
-        public FinishedProgressObject(final ActionType action, final CommandType command, final String message, final TargetModuleID[] moduleIds, final boolean failed) {
-            this.moduleIds = moduleIds == null ? new TargetModuleID[0] : moduleIds;
-            status = new DeploymentStatus() {
-
-                public ActionType getAction() {
-                    return action;
-                }
-
-                public CommandType getCommand() {
-                    return command;
-                }
-
-                public String getMessage() {
-                    return message;
-                }
-
-                public StateType getState() {
-                    return failed ? StateType.FAILED : StateType.COMPLETED;
-                }
-
-                public boolean isCompleted() {
-                    return false;
-                }
-
-                public boolean isFailed() {
-                    return true;
-                }
-
-                public boolean isRunning() {
-                    return false;
-                }
-            };
-        }
-
-        public ClientConfiguration getClientConfiguration(TargetModuleID arg0) {
-            throw new UnsupportedOperationException("Not supported.");
-        }
-
-        public DeploymentStatus getDeploymentStatus() {
-            return status;
-        }
-
-        public TargetModuleID[] getResultTargetModuleIDs() {
-            return moduleIds;
-        }
-
-        public boolean isCancelSupported() {
-            return false;
-        }
-
-        public boolean isStopSupported() {
-            return false;
-        }
-
-        public void cancel() throws OperationUnsupportedException {
-            throw new UnsupportedOperationException("Not supported.");
-        }
-
-        public void stop() throws OperationUnsupportedException {
-            throw new UnsupportedOperationException("Not supported.");
-        }
-
-        public void addProgressListener(ProgressListener arg0) {
-        }
-
-        public void removeProgressListener(ProgressListener arg0) {
         }
     }
 }
