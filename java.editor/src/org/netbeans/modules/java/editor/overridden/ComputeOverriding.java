@@ -174,7 +174,9 @@ public class ComputeOverriding {
                     }
                 }
 
-                result.put(methodHandle, descriptions);
+                if (!descriptions.isEmpty()) {
+                    result.put(methodHandle, descriptions);
+                }
             }
         }
         
