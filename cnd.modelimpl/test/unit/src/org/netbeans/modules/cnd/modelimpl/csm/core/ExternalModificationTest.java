@@ -88,9 +88,10 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         project.waitParse();
         assertNotNull(oldName + " should be found", findDeclaration(oldName, project));
 
+        sleep(2000);
         writeFile(sourceFile, "void " + newName + "() {};");
 
-        sleep(1000);
+        sleep(2000);
         FileUtil.refreshAll();
         sleep(2000);
 
@@ -120,9 +121,10 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         // so that subsequent creation of test.h will be noticed.
         FileUtil.toFileObject(workDir).getChildren();
 
+        sleep(2000);
         writeFile(headerFile, "void foo();\n");
 
-        sleep(1000);
+        sleep(2000);
         FileUtil.refreshAll();
         sleep(2000);
 
@@ -153,9 +155,9 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         // so that subsequent creation of test2.h will be noticed.
         FileUtil.toFileObject(workDir).getChildren();
 
+        sleep(2000);
         writeFile(headerFile2, "void foo();\n");
-
-        sleep(1000);
+        sleep(2000);
         FileUtil.refreshAll();
         sleep(2000);
 
