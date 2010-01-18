@@ -166,7 +166,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	    if (cssri != null) {
 		CssParserResult result = (CssParserResult) cssri.getParserResult();
 		CssElementContext context = new CssElementContext.Editor(result, caretOffset, selectionStart, selectionEnd);
-		ui = createRefactoringUI(context);
+		ui = context.isRefactoringAllowed() ? createRefactoringUI(context) : null;
 	    }
 	}
 

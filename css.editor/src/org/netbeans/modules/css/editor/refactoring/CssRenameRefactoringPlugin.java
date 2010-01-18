@@ -39,82 +39,34 @@
 
 package org.netbeans.modules.css.editor.refactoring;
 
-import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.parser.CssParserTreeConstants;
-import org.netbeans.modules.css.parser.SimpleNode;
-import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 
 /**
  *
  * @author marekfukala
  */
-public class CssElementContext {
+public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
-    private CssParserResult result;
-
-    public CssElementContext(CssParserResult result) {
-	this.result = result;
+    public Problem preCheck() {
+	throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public CssParserResult getResult() {
-	return result;
+    public Problem checkParameters() {
+	throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public String getElementName() {
-	return result.getSnapshot().getSource().getFileObject().getName();
+    public Problem fastCheckParameters() {
+	throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public boolean isRefactoringAllowed() {
-	return true;
+    public void cancelRequest() {
+	throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public static class Editor extends CssElementContext {
-	private int caretOffset;
-	private int selectionFrom, selectionTo;
-	private SimpleNode element;
-
-	public Editor(CssParserResult result, int caretOffset, int selectionFrom, int selectionTo) {
-	    super(result);
-	    this.caretOffset = caretOffset;
-	    this.selectionFrom = selectionFrom;
-	    this.selectionTo = selectionTo;
-	    this.element = findCurrentElement();
-
-	    assert element != null; //at least the root node should always be found
-	}
-
-	//XXX make it only caret position sensitive for now
-	private SimpleNode findCurrentElement() {
-	    SimpleNode root = super.getResult().root();
-	    return SimpleNodeUtil.findDescendant(root, caretOffset);
-	}
-
-	public int getCaret() {
-	    return caretOffset;
-	}
-
-	public int getSelectionFrom() {
-	    return selectionFrom;
-	}
-
-	public int getSelectionTo() {
-	    return selectionTo;
-	}
-
-	public SimpleNode getElement() {
-	    return element;
-	}
-
-	@Override
-	public String getElementName() {
-	    return getElement().image();
-	}
-
-	@Override
-	public boolean isRefactoringAllowed() {
-	    return null != SimpleNodeUtil.getAncestorByType(getElement(), CssParserTreeConstants.JJTSIMPLESELECTOR);
-	}
-	
+    public Problem prepare(RefactoringElementsBag refactoringElements) {
+	throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

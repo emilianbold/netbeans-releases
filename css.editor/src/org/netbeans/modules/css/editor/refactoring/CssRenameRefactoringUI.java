@@ -89,7 +89,6 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
 	String newName = panel.getNameValue();
 	if (refactoring instanceof RenameRefactoring) {
 	    ((RenameRefactoring) refactoring).setNewName(newName);
-	    ((RenameRefactoring) refactoring).setSearchInComments(false);
 	}
 	return refactoring.checkParameters();
     }
