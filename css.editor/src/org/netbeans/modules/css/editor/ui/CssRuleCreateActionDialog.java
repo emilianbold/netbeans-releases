@@ -45,7 +45,7 @@
  * Created on February 3, 2005, 9:16 AM
  */
 
-package org.netbeans.modules.css.actions;
+package org.netbeans.modules.css.editor.ui;
 
 import org.netbeans.modules.css.editor.model.HtmlTags;
 import java.awt.event.ActionEvent;
