@@ -41,7 +41,17 @@
 
 package org.netbeans.core;
 
+import java.awt.EventQueue;
+import java.awt.Frame;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.CLIHandler;
+import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.WindowManager;
 
 /**
  * Shows the main window, so it is fronted when second instance of
@@ -49,16 +59,23 @@ import org.netbeans.CLIHandler;
  *
  * @author Jaroslav Tulach
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.CLIHandler.class)
+@ServiceProvider(service=CLIHandler.class)
 public class CLIOptions2 extends CLIHandler implements Runnable {
     /** number of invocations */
     private int cnt;
+    private static final Logger LOG = Logger.getLogger(CLIOptions2.class.getName());
+    /** Time (in milliseconds) to wait for the event queue to become active. */
+    private static final int EQ_TIMEOUT = 10 * 1000;
+    private final RequestProcessor.Task task;
+    static CLIOptions2 INSTANCE;
 
     /**
      * Create a default handler.
      */
     public CLIOptions2 () {
         super(WHEN_INIT);
+        INSTANCE = this;
+        task = RequestProcessor.getDefault().create(this);
     }
 
     protected int cli(Args arguments) {
@@ -75,27 +92,60 @@ public class CLIOptions2 extends CLIHandler implements Runnable {
             }
         }
          */
-        javax.swing.SwingUtilities.invokeLater (this);
+        LOG.fine("CLI running");
+        SwingUtilities.invokeLater(this);
+        task.schedule(EQ_TIMEOUT);
         
         return 0;
     }
     
     public void run () {
-        java.awt.Frame f = org.openide.windows.WindowManager.getDefault ().getMainWindow ();
+        if (!EventQueue.isDispatchThread()) {
+            eqStuck();
+            return;
+        }
+        LOG.fine("running in EQ");
+        task.cancel();
+
+        Frame f = WindowManager.getDefault().getMainWindow();
 
         // makes sure the frame is visible
         f.setVisible(true);
         // uniconifies the frame if it is inconified
-        if ((f.getExtendedState () & java.awt.Frame.ICONIFIED) != 0) {
-            f.setExtendedState (~java.awt.Frame.ICONIFIED & f.getExtendedState ());
+        if ((f.getExtendedState() & Frame.ICONIFIED) != 0) {
+            f.setExtendedState(~Frame.ICONIFIED & f.getExtendedState());
         }
         // moves it to front and requests focus
         f.toFront ();
         
     }
-    
-    
-    protected void usage(java.io.PrintWriter w) {
+
+    @SuppressWarnings("deprecation") // Thread.stop
+    private void eqStuck() {
+        Thread eq = TimableEventQueue.eq;
+        if (eq == null) {
+            LOG.warning("event queue thread not determined");
+            return;
+        }
+        LOG.log(Level.FINE, "EQ stuck in {0}", eq);
+        LOG.log(Level.WARNING, null, new EQStuck(eq));
+        eq.stop();
     }
+    private static class EQStuck extends Throwable {
+        EQStuck(Thread eq) {
+            super("GUI is not responsive"); // NOI18N
+            StackTraceElement[] stack = Thread.getAllStackTraces().get(eq);
+            if (stack != null) {
+                setStackTrace(stack);
+            } else {
+                LOG.log(Level.WARNING, "no stack trace available for {0}", eq);
+            }
+        }
+        public @Override synchronized Throwable fillInStackTrace() {
+            return this;
+        }
+    }
+    
+    protected void usage(PrintWriter w) {}
     
 }

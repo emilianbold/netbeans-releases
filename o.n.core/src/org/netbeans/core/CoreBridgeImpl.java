@@ -61,10 +61,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jaroslav Tulach
  */
 @ServiceProvider(service=CoreBridge.class)
-public final class CoreBridgeImpl extends CoreBridge implements Runnable {
-    /** counts the number of CLI invocations */
-    private int numberOfCLIInvocations;
-
+public final class CoreBridgeImpl extends CoreBridge {
 
     protected void attachToCategory (Object category) {
         ModuleActions.attachTo(category);
@@ -122,6 +119,7 @@ public final class CoreBridgeImpl extends CoreBridge implements Runnable {
           org.netbeans.swing.plaf.Startup.run(uiClass, uiFontSize, themeURL);
     }
 
+    @SuppressWarnings("deprecation")
     public org.openide.util.Lookup lookupCacheLoad () {
         FileObject services = FileUtil.getConfigFile("Services"); // NOI18N
         if (services != null) {
@@ -146,7 +144,7 @@ public final class CoreBridgeImpl extends CoreBridge implements Runnable {
     }
 
     public int cli(
-        String[] string, 
+        String[] args,
         InputStream inputStream, 
         OutputStream outputStream, 
         OutputStream errorStream, 
@@ -165,35 +163,9 @@ public final class CoreBridgeImpl extends CoreBridge implements Runnable {
             return ex.getExitCode();
         }
          */
-        
-        if (numberOfCLIInvocations++ == 0) return 0;
-        
-        /*
-        for (int i = 0; i < args.length; i++) {
-            if ("--nofront".equals (args[i])) {
-                return 0;
-            }
-        }
-         */
-        javax.swing.SwingUtilities.invokeLater (this);
-        
-        return 0;
+        return CLIOptions2.INSTANCE.cli(args);
     }
     
-    public void run () {
-        java.awt.Frame f = org.openide.windows.WindowManager.getDefault ().getMainWindow ();
-
-        // makes sure the frame is visible
-        f.setVisible(true);
-        // uniconifies the frame if it is inconified
-        if ((f.getExtendedState () & java.awt.Frame.ICONIFIED) != 0) {
-            f.setExtendedState (~java.awt.Frame.ICONIFIED & f.getExtendedState ());
-        }
-        // moves it to front and requests focus
-        f.toFront ();
-        
-    }
-
     public void registerPropertyEditors() {
         doRegisterPropertyEditors();
     }
