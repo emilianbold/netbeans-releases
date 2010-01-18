@@ -41,6 +41,8 @@ package org.netbeans.modules.cnd.utils;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -94,8 +96,9 @@ public class CndUtils {
     }
 
     public static void threadsDump(){
+        final Set<Entry<Thread, StackTraceElement[]>> stack = Thread.getAllStackTraces().entrySet();
         System.err.println("-----Start Thread Dump-----");
-        for (Map.Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
+        for (Map.Entry<Thread, StackTraceElement[]> entry : stack) {
             System.err.println(entry.getKey().getName());
             for (StackTraceElement element : entry.getValue()) {
                 System.err.println("\tat " + element.toString());

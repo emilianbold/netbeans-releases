@@ -268,13 +268,17 @@ public class RemoteServerSetup {
     private String getLocalChecksum(String remotePath) throws NoSuchAlgorithmException, FileNotFoundException, IOException {
         String localFileName = binarySetupMap.get(remotePath);
         File file = InstalledFileLocator.getDefault().locate(localFileName, null, false);
-        if (file != null || file.exists()) {
+        if (file != null && file.exists()) {
             MessageDigest md5 = MessageDigest.getInstance("MD5"); // NOI18N
             InputStream is = new BufferedInputStream(new FileInputStream(file));
-            byte[] buf = new byte[8192];
-            int read;
-            while ((read = is.read(buf)) != -1) {
-                md5.update(buf, 0, read);
+            try {
+                byte[] buf = new byte[8192];
+                int read;
+                while ((read = is.read(buf)) != -1) {
+                    md5.update(buf, 0, read);
+                }
+            } finally {
+                is.close();
             }
             byte[] checkSum = md5.digest();
             return toHexString(checkSum);

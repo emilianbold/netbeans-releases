@@ -102,6 +102,7 @@ public class HostPropertiesDialog extends JPanel {
 
 
     /** Creates new form HostPropertiesDialog */
+    @org.netbeans.api.annotations.common.SuppressWarnings("Se") // it's never serialized!
     private HostPropertiesDialog(RemoteServerRecord serverRecord) {
         this.serverRecord = serverRecord;
         initComponents();

@@ -72,9 +72,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
 /**
  * Tests for IncludeResolver
@@ -232,17 +229,6 @@ public class IncludeResolverImplTestCase extends TraceModelTestBase {
             assert true; // Bad test params
         }
     }
-    
-    protected BaseDocument getBaseDocument(File testSourceFile) throws Exception {
-        FileObject testFileObject = FileUtil.toFileObject(testSourceFile);
-        assertNotNull("Unresolved test file " + testSourceFile, testFileObject);//NOI18N
-        DataObject testDataObject = DataObject.find(testFileObject);
-        assertNotNull("Unresolved data object for file " + testFileObject, testDataObject);//NOI18N
-        BaseDocument doc = CndCoreTestUtils.getBaseDocument(testDataObject);
-        assertNotNull("Unresolved document for data object " + testDataObject, testDataObject);//NOI18N     
-        return doc;
-    }
-
     
     private void performTest(String source, int line, int column) throws Exception {
         super.performTest(source, getName(), null, line, column);

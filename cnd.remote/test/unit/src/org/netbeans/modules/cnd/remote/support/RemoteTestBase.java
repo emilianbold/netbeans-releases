@@ -145,6 +145,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         setSysProps();
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("LG")
     private void setSysProps() {
         try {
             addPropertyFromRcFile(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "cnd.remote.logger.level");
@@ -152,8 +153,8 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
             addPropertyFromRcFile(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "cnd.remote.force.setup", "true");
             addPropertyFromRcFile(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "socket.connection.timeout", "10000");
             if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "logging.finest")) {
-                Logger.getLogger("cnd.remote.logger").setLevel(Level.ALL);
                 Logger.getLogger("nativeexecution.support.logger.level").setLevel(Level.FINEST);
+                Logger.getLogger("cnd.remote.logger").setLevel(Level.ALL);
             }
         } catch (IOException ex) {
             ex.printStackTrace();

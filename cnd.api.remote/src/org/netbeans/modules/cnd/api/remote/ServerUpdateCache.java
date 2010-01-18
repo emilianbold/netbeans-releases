@@ -61,7 +61,7 @@ public final class ServerUpdateCache {
         defaultRecord = null;
     }
     
-    public List<ServerRecord> getHosts() {
+    public synchronized List<ServerRecord> getHosts() {
         List<ServerRecord> h = hosts;
         if (h == null) {
             throw new IllegalStateException("hosts should not be null"); //NOI18N
@@ -76,14 +76,14 @@ public final class ServerUpdateCache {
         }
     }
 
-    public ServerRecord getDefaultRecord() {
+    public synchronized ServerRecord getDefaultRecord() {
         if (defaultRecord == null) {
             log.warning("ServerUpdateCache.getDefaultRecord: Forcing negative index to 0");
         }
         return defaultRecord;
     }
 
-    public void setDefaultRecord(ServerRecord record) {
+    public synchronized void setDefaultRecord(ServerRecord record) {
         assert hosts.contains(record);
         defaultRecord = record;
     }

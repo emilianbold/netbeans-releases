@@ -56,6 +56,7 @@ public class DownloadTest extends RemoteTestBase {
     }
 
     @ForAllEnvironments
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     public void testCopyFrom() throws Exception {
         File localFile = File.createTempFile("cnd", ".cnd");
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();

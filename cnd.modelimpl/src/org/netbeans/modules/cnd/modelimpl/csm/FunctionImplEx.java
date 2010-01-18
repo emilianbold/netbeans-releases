@@ -72,7 +72,6 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     private CharSequence qualifiedName;
     private static final byte QUALIFIED_NAME = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
     private final CharSequence[] classOrNspNames;   
-    private AST fixFakeRegistrationAst = null; // AST for fixing fake registrations
     
     public FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
         super(ast, file, scope, false, global);
@@ -80,11 +79,6 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         if (register) {
             registerInProject();
         }
-    }
-
-    public FunctionImplEx(AST ast, CsmFile file, CsmScope scope, AST fakeRegistrationAst, boolean register, boolean global) throws AstRendererException {
-        this(ast, file, scope, register, global);
-        fixFakeRegistrationAst = fakeRegistrationAst;
     }
 
     /** @return either class or namespace */
@@ -196,16 +190,16 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         sb.append(getQualifiedNamePostfix());
         return sb.toString();
     }
-    
+
     @Override
     protected void registerInProject() {
         super.registerInProject();
         if( hasFlags(QUALIFIED_NAME) ) {
-            ((FileImpl) getContainingFile()).onFakeRegisration(this);
+            ((FileImpl) getContainingFile()).onFakeRegisration(this, null);
         }
     }
     
-    public final boolean fixFakeRegistration(boolean projectParsedMode) {
+    public final boolean fixFakeRegistration(boolean projectParsedMode, AST fixFakeRegistrationAst) {
         boolean fixed = false;
         if (fixFakeRegistrationAst != null) {
             CsmObject owner = findOwner(null);

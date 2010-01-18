@@ -60,6 +60,7 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
  */
 public class RemoteFileTest extends RemoteTestBase {
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("LG")
     public RemoteFileTest(String name, ExecutionEnvironment testExecutionEnvironment) {
         super(name, testExecutionEnvironment);
         if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "logging.finest")) {
@@ -68,6 +69,7 @@ public class RemoteFileTest extends RemoteTestBase {
     }
 
     @ForAllEnvironments(section="remote.platforms")
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     public void testPlainFile() throws Exception {
         final String tmpFile = getTempName();
         ProcessUtils.execute(getTestExecutionEnvironment(), "rm", tmpFile);
@@ -89,6 +91,7 @@ public class RemoteFileTest extends RemoteTestBase {
     }
 
     @ForAllEnvironments(section="remote.platforms")
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     public void testDirectoryStructure() throws Exception {
         final String tempDir = getTempName();
         String script = String.format("rm -rf %1$s; mkdir %1$s; touch %1$s/1; touch %1$s/2; touch %1$s/3", tempDir);
@@ -122,13 +125,17 @@ public class RemoteFileTest extends RemoteTestBase {
         assertEquals("The return code of a script " + script, 0, es.exitCode);
         BufferedReader in = new BufferedReader(RemoteFile.createReader( RemoteFile.create(getTestExecutionEnvironment(), tempFile) ));
         int i = 1;
-        while (true) {
-            String line = in.readLine();
-            if (line == null) {
-                break;
+        try {
+            while (true) {
+                String line = in.readLine();
+                if (line == null) {
+                    break;
+                }
+                assert (line.equals("" + i));
+                i++;
             }
-            assert (line.equals("" + i));
-            i++;
+        } finally {
+            in.close();
         }
         assert i == 5;
     }

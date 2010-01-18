@@ -236,8 +236,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                     if (row >= 0 && tblPathMappings.getSelectionModel().isSelectionEmpty()) {
                         tblPathMappings.getSelectionModel().setSelectionInterval(row, row);
                     }
+                    menu.show(evt.getComponent(), evt.getX(), evt.getY());
                 }
-                menu.show(evt.getComponent(), evt.getX(), evt.getY());
             }
 
             @Override

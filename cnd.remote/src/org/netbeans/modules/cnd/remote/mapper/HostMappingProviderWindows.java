@@ -68,7 +68,7 @@ public class HostMappingProviderWindows implements HostMappingProvider {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return mappings != null ? mappings : Collections.<String, String>emptyMap();
+        return Collections.<String, String>emptyMap();
     }
 
     public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {

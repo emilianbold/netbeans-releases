@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -153,7 +154,7 @@ public class ProjectActionSupport {
     private HandleEvents mainTabHandler = null;
     private ArrayList<String> tabNames = new ArrayList<String>();
 
-    private class HandleEvents implements ExecutionListener {
+    private final class HandleEvents implements ExecutionListener {
 
         private InputOutput ioTab = null;
         private ProjectActionEvent[] paes;
@@ -311,6 +312,7 @@ public class ProjectActionSupport {
         }
 
         private void go() {
+            LifecycleManager.getDefault().saveAll();
             currentHandler = null;
             sa.setEnabled(false);
             ra.setEnabled(false);

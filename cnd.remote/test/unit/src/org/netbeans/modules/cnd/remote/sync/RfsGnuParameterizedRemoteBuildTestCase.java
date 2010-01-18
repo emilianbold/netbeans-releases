@@ -113,6 +113,7 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsBaseRemoteBuildTe
 
     @If(section=SECTION, key = "measure.plain.copy")
     @ForAllEnvironments(section = SECTION)
+    @org.netbeans.api.annotations.common.SuppressWarnings("OBL")
     public void testPlainCopy() throws Exception {
         setLoggersLevel(Level.OFF);
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
@@ -121,7 +122,12 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RfsBaseRemoteBuildTe
         File timestampsFile = new File(timestampsPath);
         assertTrue(timestampsFile.exists());
         Properties props = new Properties();
-        props.load(new FileInputStream(timestampsFile));
+        FileInputStream is = new FileInputStream(timestampsFile);
+        try {
+            props.load(is);
+        } finally {
+            is.close();
+        }
         List<File> files = new ArrayList<File>();
         for (Object key : props.keySet()) {
             assertTrue(key instanceof String);
