@@ -1482,7 +1482,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         protected final void scanStarted(final URL root, final boolean sourceForBinaryRoot,
-                                   final Indexers indexers, final Map<SourceIndexerFactory,Boolean> votes,
+                                   final SourceIndexers indexers, final Map<SourceIndexerFactory,Boolean> votes,
                                    final Map<SourceIndexerFactory,Context> ctxToFinish) throws IOException {
             final FileObject cacheRoot = CacheFolder.getDataFolder(root);
             for(IndexerCache.IndexerInfo<CustomIndexerFactory> cifInfo : indexers.cifInfos) {
@@ -1561,7 +1561,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 final URL root,
 //                final boolean allFiles,
                 final boolean sourceForBinaryRoot,
-                Indexers indexers,
+                SourceIndexers indexers,
                 Map<SourceIndexerFactory,Boolean> votes
         ) throws IOException {
             if (getShuttdownRequest().isRaised()) {
@@ -1715,8 +1715,35 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             final long et = System.currentTimeMillis();
             LOGGER.fine("InvalidateSources took: " + (et-st));  //NOI18N
         }
-       
-        protected final boolean indexBinary(URL root) throws IOException {
+
+        protected final void binaryScanStarted(URL root, BinaryIndexers indexers, Map<BinaryIndexerFactory, Context> contexts, Map<BinaryIndexerFactory, Boolean> votes) throws IOException {
+            final FileObject cacheRoot = CacheFolder.getDataFolder(root);
+            for(BinaryIndexerFactory bif : indexers.bifs) {
+                final Context ctx = SPIAccessor.getInstance().createContext(
+                    cacheRoot, root, bif.getIndexerName(), bif.getIndexVersion(), null, false, false,
+                    false, getShuttdownRequest());
+                contexts.put(bif, ctx);
+                boolean vote = bif.scanStarted(ctx);
+                votes.put(bif, vote);
+            }
+        }
+
+        protected final void binaryScanFinished(BinaryIndexers indexers, Map<BinaryIndexerFactory, Context> contexts) throws IOException {
+            try {
+                for (Map.Entry<BinaryIndexerFactory, Context> entry : contexts.entrySet()) {
+                    entry.getKey().scanFinished(entry.getValue());
+                }
+            } finally {
+                for(Context ctx : contexts.values()) {
+                    IndexImpl index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
+                    if (index != null) {
+                        index.store(isSteady(), null);
+                    }
+                }
+            }
+        }
+
+        protected final boolean indexBinary(URL root, BinaryIndexers indexers, Map<BinaryIndexerFactory, Boolean> votes) throws IOException {
             LOGGER.log(Level.FINE, "Scanning binary root: {0}", root); //NOI18N
 
             RepositoryUpdater.getDefault().rootsListeners.add(root, false);
@@ -1743,20 +1770,18 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             List<Context> transactionContexts = new LinkedList<Context>();
             try {
                 final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                final Collection<? extends BinaryIndexerFactory> factories = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(BinaryIndexerFactory.class);
                 if (LOGGER.isLoggable(Level.FINER)) {
-                    LOGGER.fine("Using BinaryIndexerFactories: " + factories); //NOI18N
+                    LOGGER.fine("Using BinaryIndexerFactories: " + indexers.bifs); //NOI18N
                 }
 
-                for(BinaryIndexerFactory f : factories) {
+                for(BinaryIndexerFactory f : indexers.bifs) {
                     if (getShuttdownRequest().isRaised()) {
                         break;
                     }
                     final Context ctx = SPIAccessor.getInstance().createContext(
                             cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false,
                             false, getShuttdownRequest());
-                    SPIAccessor.getInstance().setAllFilesJob(ctx, !isFolder || !isUpToDate // XXX: I am abusing this parameter to signal that the binary folder is up-to-date and does not have to be rescanned
-                            );
+                    SPIAccessor.getInstance().setAllFilesJob(ctx, !isFolder || !isUpToDate || !votes.get(f)); // XXX: I am abusing this parameter to signal that the binary folder is up-to-date and does not have to be rescanned
                     transactionContexts.add(ctx);
 
                     final BinaryIndexer indexer = f.createIndexer();
@@ -1878,7 +1903,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     if (crawler.isFinished()) {
                         final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
                         final Map<SourceIndexerFactory,Context> ctxToFinish = new IdentityHashMap<SourceIndexerFactory, Context>();
-                        final Indexers indexers = Indexers.load(false);
+                        final SourceIndexers indexers = SourceIndexers.load(false);
                         scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
                         try {
                             if (index(resources, files.isEmpty() && forceRefresh ? resources : null, root, sourceForBinaryRoot, indexers, invalidatedMap)) {
@@ -2103,22 +2128,17 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     } // End of FileListWork class
 
 
-    private static final class BinaryWork extends Work {
+    private static final class BinaryWork extends AbstractRootsWork {
 
         private final URL root;
 
         public BinaryWork(URL root) {
-            super(false, false, true, true);
+            super(false);
             this.root = root;
         }
 
         protected @Override boolean getDone() {
-            try {
-                indexBinary(root);
-            } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, null, ioe);
-            }
-            return true;
+            return scanBinary(root, BinaryIndexers.load(), null, null);
         }
 
         @Override
@@ -2666,7 +2686,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         private boolean useInitialState;
 
         private DependenciesContext depCtx;
-        protected Indexers indexers = null; // is only ever filled by InitialRootsWork
+        protected SourceIndexers indexers = null; // is only ever filled by InitialRootsWork
 
         public RootsWork(Map<URL, List<URL>> scannedRoots2Depencencies, Map<URL,List<URL>> scannedBinaries2InvDependencies, Set<URL> sourcesForBinaryRoots, boolean useInitialState) {
             super(false);
@@ -2947,45 +2967,73 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         protected final boolean scanBinaries(final DependenciesContext ctx) {
             assert ctx != null;
-            long scannedRootsCnt = 0;
-            long completeTime = 0;
+            long [] scannedRootsCnt = new long [] { 0 };
+            long [] completeTime = new long [] { 0 };
             boolean finished = true;
+            BinaryIndexers binaryIndexers = null;
 
             for (URL binary : ctx.newBinariesToScan) {
                 if (isCancelled()) {
                     finished = false;
                     break;
                 }
-                
-                final long tmStart = System.currentTimeMillis();
-                try {
-                    updateProgress(binary);
-                    indexBinary (binary);
+
+                if (binaryIndexers == null) {
+                    binaryIndexers = BinaryIndexers.load();
+                }
+
+                if (scanBinary(binary, binaryIndexers, scannedRootsCnt, completeTime)) {
                     ctx.scannedBinaries.add(binary);
-                } catch (IOException ioe) {
-                    LOGGER.log(Level.WARNING, null, ioe);
-                } finally {
-                    final long time = System.currentTimeMillis() - tmStart;
-                    completeTime += time;
-                    scannedRootsCnt++;
-                    if (PERF_TEST) {
-                        reportRootScan(binary, time);
-                    }
-                    if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine(String.format("Indexing of: %s took: %d ms", binary.toExternalForm(), time)); //NOI18N
-                    }
+                } else {
+                    finished = true;
+                    break;
                 }
             }
 
             if (LOGGER.isLoggable(Level.INFO)) {
-                LOGGER.info(String.format("Complete indexing of %d binary roots took: %d ms", scannedRootsCnt, completeTime)); //NOI18N
+                LOGGER.info(String.format("Complete indexing of %d binary roots took: %d ms", scannedRootsCnt[0], completeTime[0])); //NOI18N
             }
             TEST_LOGGER.log(Level.FINEST, "scanBinary", ctx.newBinariesToScan);       //NOI18N
 
             return finished;
         }
 
-        protected final boolean scanSources(DependenciesContext ctx, Indexers indexers, Map<URL, List<URL>> preregisterIn) {
+        protected final boolean scanBinary(URL root, BinaryIndexers binaryIndexers, long [] scannedRootsCnt, long [] completeTime) {
+            final long tmStart = System.currentTimeMillis();
+            final Map<BinaryIndexerFactory, Context> contexts = new HashMap<BinaryIndexerFactory, Context>();
+            final Map<BinaryIndexerFactory, Boolean> votes = new HashMap<BinaryIndexerFactory, Boolean>();
+            try {
+                binaryScanStarted(root, binaryIndexers, contexts, votes);
+                try {
+                    updateProgress(root);
+                    indexBinary(root, binaryIndexers, votes);
+                    return true;
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.WARNING, null, ioe);
+                } finally {
+                    binaryScanFinished(binaryIndexers, contexts);
+                }
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, null, ioe);
+            } finally {
+                final long time = System.currentTimeMillis() - tmStart;
+                if (completeTime != null) {
+                    completeTime[0] += time;
+                }
+                if (scannedRootsCnt != null) {
+                    scannedRootsCnt[0]++;
+                }
+                if (PERF_TEST) {
+                    reportRootScan(root, time);
+                }
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(String.format("Indexing of: %s took: %d ms", root.toExternalForm(), time)); //NOI18N
+                }
+            }
+            return false;
+        }
+
+        protected final boolean scanSources(DependenciesContext ctx, SourceIndexers indexers, Map<URL, List<URL>> preregisterIn) {
             assert ctx != null;
             long scannedRootsCnt = 0;
             long completeTime = 0;
@@ -2994,7 +3042,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             boolean finished = true;
 
             if (indexers == null) {
-                indexers = Indexers.load(false);
+                indexers = SourceIndexers.load(false);
             }
 
             for (URL source : ctx.newRootsToScan) {
@@ -3058,7 +3106,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return Boolean.getBoolean("netbeans.indexing.noRootsScan"); //NOI18N
         }
 
-        private boolean scanSource (URL root, boolean fullRescan, boolean sourceForBinaryRoot, Indexers indexers, int [] outOfDateFiles, int [] deletedFiles) throws IOException {
+        private boolean scanSource (URL root, boolean fullRescan, boolean sourceForBinaryRoot, SourceIndexers indexers, int [] outOfDateFiles, int [] deletedFiles) throws IOException {
             LOGGER.log(Level.FINE, "Scanning sources root: {0}", root); //NOI18N
 
             if (isNoRootsScan() && !fullRescan && TimeStamps.existForRoot(root)) {
@@ -3166,7 +3214,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         public @Override boolean getDone() {
             try {
                 if (indexers == null) {
-                    indexers = Indexers.load(true);
+                    indexers = SourceIndexers.load(true);
                 }
 
                 if (waitForProjects) {
@@ -3601,10 +3649,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
     } // End of DependenciesContext class
 
-    private static final class Indexers {
+    private static final class SourceIndexers {
 
-        public static Indexers load(boolean detectChanges) {
-            return new Indexers(detectChanges);
+        public static SourceIndexers load(boolean detectChanges) {
+            return new SourceIndexers(detectChanges);
         }
 
         public final Set<IndexerCache.IndexerInfo<CustomIndexerFactory>> changedCifs;
@@ -3612,7 +3660,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         public final Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> changedEifs;
         public final Map<String, Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap;
 
-        private Indexers(boolean detectChanges) {
+        private SourceIndexers(boolean detectChanges) {
             final long start = System.currentTimeMillis();
             if (detectChanges) {
                 changedCifs = new HashSet<IndexerCache.IndexerInfo<CustomIndexerFactory>>();
@@ -3627,7 +3675,19 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             final long delta = System.currentTimeMillis() - start;
             LOGGER.log(Level.FINE, "Loading indexers took {0} ms.", delta); // NOI18N
         }
-    }
+    } // End of SourceIndexers class
+
+    private static final class BinaryIndexers {
+        public static BinaryIndexers load() {
+            return new BinaryIndexers();
+        }
+
+        public final Collection<? extends BinaryIndexerFactory> bifs;
+
+        private BinaryIndexers() {
+            bifs = MimeLookup.getLookup(MimePath.EMPTY).lookupAll(BinaryIndexerFactory.class);
+        }
+    } // End of BinaryIndexers class
 
     private final class Controller extends IndexingController {
 
