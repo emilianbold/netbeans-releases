@@ -118,17 +118,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-css-actions-CopyStyleAction$XML.instance">
                         <attr name="position" intvalue="4500"/>
                     </file>
-                    <file name="SeparatorFolding.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="4600"/>
-                    </file>
-                    <file name="generate-fold-popup">
-                        <attr name="position" intvalue="4700"/>
-                    </file>
-                    <file name="format">
-                        <attr name="position" intvalue="4800"/>
-                    </file>
-                    </folder>
+		</folder>
                 <folder name="Toolbars">
                     <folder name="Default">
                         <file name="org-netbeans-modules-css-actions-CssRuleCreateAction.instance">
