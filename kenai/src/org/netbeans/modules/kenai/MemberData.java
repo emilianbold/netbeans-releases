@@ -37,75 +37,21 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.api;
+package org.netbeans.modules.kenai;
 
-import org.netbeans.modules.kenai.UserData;
+import org.codeviation.pojson.Pojson.IgnoreNonExisting;
 
 /**
- * Represents member of project.
- * It contains reference to KenaiUser and his Role.
  *
  * @author Jan Becicka
  */
-public final class KenaiProjectMember {
+@IgnoreNonExisting
+public class MemberData {
+    public Member member = new Member();
 
-    private final KenaiUser user;
-    private Role role;
-    KenaiProjectMember(Kenai kenai, UserData userData) {
-        if ("registered".equals(userData.role)) {
-            this.role = Role.OBSERVER;
-        } else {
-            try {
-                this.role = Role.valueOf(userData.role.toUpperCase());
-            } catch (IllegalArgumentException iae) {
-                this.role = Role.UNKNOWN;
-            }
-        }
-        this.user = KenaiUser.get(kenai, userData);
-    }
-
-    /**
-     * member's short user name
-     * @return
-     */
-    public String getUserName() {
-        return user.data.user_name;
-
-    }
-
-    /**
-     * reference to KenaiUser
-     * @return
-     */
-    public KenaiUser getKenaiUser() {
-        return user;
-    }
-
-    /**
-     * Members role in project
-     * @return
-     */
-    public Role getRole() {
-        return role;
-    }
-
-    /**
-     * user role in projects
-     */
-    public static enum Role {
-        ADMIN,
-        DEVELOPER,
-        CONTENT,
-        OBSERVER,
-        TESTER,
-        UNKNOWN;
-
-        @Override
-        public String toString() {
-            if (this==OBSERVER) {
-                return "registered";
-            }
-            return super.toString().toLowerCase();
-        }
+    @IgnoreNonExisting
+    public static class Member {
+        public String username;
+        public String role;
     }
 }
