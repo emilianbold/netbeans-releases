@@ -113,7 +113,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
 
         label.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         label.setLabelFor(nameField);
-        label.setText(org.openide.util.NbBundle.getMessage(RenamePanel.class, "LBL_NewName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(RenamePanel.class, "LBL_NewName")); // NOI18N
         add(label, new java.awt.GridBagConstraints());
 
         nameField.setText(oldName);
@@ -129,7 +129,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         jPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
         jPanel1.setLayout(new java.awt.BorderLayout());
 
-        warningLabel.setText(org.openide.util.NbBundle.getMessage(RenamePanel.class, "LBL_NonAccurateRefactoringWarning")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(RenamePanel.class, "LBL_NonAccurateRefactoringWarning")); // NOI18N
         jPanel1.add(warningLabel, java.awt.BorderLayout.NORTH);
         warningLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RenamePanel.class, "LBL_NonAccurateRefactoringWarning")); // NOI18N
 
@@ -143,7 +143,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jPanel1, gridBagConstraints);
 
-        textCheckBox.setText(org.openide.util.NbBundle.getBundle(RenamePanel.class).getString("LBL_RenameComments")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(textCheckBox, org.openide.util.NbBundle.getBundle(RenamePanel.class).getString("LBL_RenameComments")); // NOI18N
         textCheckBox.setActionCommand(org.openide.util.NbBundle.getMessage(RenamePanel.class, "LBL_RenameComments")); // NOI18N
         textCheckBox.setEnabled(false);
         textCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -164,7 +164,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         add(textCheckBox, gridBagConstraints);
         textCheckBox.getAccessibleContext().setAccessibleDescription(textCheckBox.getText());
 
-        updateReferencesCheckBox.setText(org.openide.util.NbBundle.getBundle(RenamePanel.class).getString("LBL_RenameWithoutRefactoring")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(updateReferencesCheckBox, org.openide.util.NbBundle.getBundle(RenamePanel.class).getString("LBL_RenameWithoutRefactoring")); // NOI18N
         updateReferencesCheckBox.setMargin(new java.awt.Insets(2, 2, 0, 2));
         updateReferencesCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
