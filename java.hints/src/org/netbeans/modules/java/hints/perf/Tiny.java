@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.java.hints.perf;
 
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import javax.lang.model.SourceVersion;
@@ -49,6 +50,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.MatcherUtilities;
@@ -126,4 +128,47 @@ public class Tiny {
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_StringEqualsEmpty");
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, f);
     }
+
+
+    @Hint(category="performance", enabled=false)
+    @TriggerPatterns({
+        @TriggerPattern(value="$string.indexOf($toSearch)",
+                        constraints={@Constraint(variable="$string", type="java.lang.String"),
+                                     @Constraint(variable="$toSeach", type="java.lang.String")}),
+        @TriggerPattern(value="$string.lastIndexOf($toSearch)",
+                        constraints={@Constraint(variable="$string", type="java.lang.String"),
+                                     @Constraint(variable="$toSeach", type="java.lang.String")}),
+        @TriggerPattern(value="$string.indexOf($toSearch, $index)",
+                        constraints={@Constraint(variable="$string", type="java.lang.String"),
+                                     @Constraint(variable="$toSeach", type="java.lang.String"),
+                                     @Constraint(variable="$index", type="int")}),
+        @TriggerPattern(value="$string.lastIndexOf($toSearch, $index)",
+                        constraints={@Constraint(variable="$string", type="java.lang.String"),
+                                     @Constraint(variable="$toSeach", type="java.lang.String"),
+                                     @Constraint(variable="$index", type="int")})
+    })
+    public static ErrorDescription lengthOneStringIndexOf(HintContext ctx) {
+        TreePath toSearch = ctx.getVariables().get("$toSearch");
+
+        if (toSearch.getLeaf().getKind() != Kind.STRING_LITERAL) {
+            return null;
+        }
+
+        LiteralTree lt = (LiteralTree) toSearch.getLeaf();
+        String data = (String) lt.getValue();
+
+        if (data.length() != 1) {
+            return null;
+        }
+
+        String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_LengthOneStringIndexOf");
+        Fix f = JavaFix.rewriteFix(ctx, fixDisplayName, toSearch, "'" + (data.equals("'") ? "\\" : "") + data + "'");
+        int start = (int) ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getInfo().getCompilationUnit(), toSearch.getLeaf());
+        int end   = (int) ctx.getInfo().getTrees().getSourcePositions().getEndPosition(ctx.getInfo().getCompilationUnit(), toSearch.getLeaf());
+        String literal = ctx.getInfo().getText().substring(start, end);
+        String displayName = NbBundle.getMessage(Tiny.class, "ERR_LengthOneStringIndexOf", literal);
+        
+        return ErrorDescriptionFactory.forTree(ctx, toSearch, displayName, f);
+    }
+
 }

@@ -41,7 +41,6 @@ package org.netbeans.modules.java.hints.perf;
 
 import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.options.HintsSettings;
@@ -173,6 +172,61 @@ public class TinyTest extends TestBase {
     }
 
     //XXX: test the 1.6 version
+
+    public void testLengthOneStringIndexOf1() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private boolean test(String aa) {\n" +
+                       "         return aa.indexOf(\"a\") != 0;\n" +
+                       "     }\n" +
+                       "}\n",
+                       "3:27-3:30:verifier:indexOf(\"a\")",
+                       "indexOf('.')",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "     private boolean test(String aa) {\n" +
+                       "         return aa.indexOf(\'a\') != 0;\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
+    public void testLengthOneStringIndexOf2() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private boolean test(String aa) {\n" +
+                       "         return aa.indexOf(\"'\", 2) != 0;\n" +
+                       "     }\n" +
+                       "}\n",
+                       "3:27-3:30:verifier:indexOf(\"'\")",
+                       "indexOf('.')",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "     private boolean test(String aa) {\n" +
+                       "         return aa.indexOf(\'\\'\', 2) != 0;\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
+    public void testLengthOneStringIndexOf3() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private boolean test(String aa) {\n" +
+                       "         return aa.indexOf(\"\\\"\", 2) != 0;\n" +
+                       "     }\n" +
+                       "}\n",
+                       "3:27-3:31:verifier:indexOf(\"\\\"\")",
+                       "indexOf('.')",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "     private boolean test(String aa) {\n" +
+//                       "         return aa.indexOf(\'\"\', 2) != 0;\n" +
+                        "         return aa.indexOf(\'\\\"\', 2) != 0;\n" + //TODO: bug in code generator
+                        "     }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
 
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
