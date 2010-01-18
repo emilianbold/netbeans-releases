@@ -562,7 +562,7 @@ public final class ParserQueue {
             notifyListeners = lastFileInProject && data.notifyListeners;
             if (TraceFlags.TIMING && stopWatch != null && !stopWatch.isRunning()) {
                 stopWatch.start();
-                System.err.println("=== Starting parser queue stopwatch"); // NOI18N
+                System.err.println("=== Starting parser queue stopwatch " + project.getName()); // NOI18N
             }
         }
         // TODO: think over, whether this should be under if( notifyListeners
@@ -793,7 +793,7 @@ public final class ParserQueue {
                 // but on the other hand in the case of multiple projects such measuring will never work
                 // since project files might be shuffled in queue
                 if (TraceFlags.TIMING && stopWatch != null && stopWatch.isRunning()) {
-                    stopWatch.stopAndReport("=== Stopping parser queue stopwatch: \t"); // NOI18N
+                    stopWatch.stopAndReport("=== Stopping parser queue stopwatch " + project.getName() + ": \t"); // NOI18N
                 }
             }
             lock.notifyAll();

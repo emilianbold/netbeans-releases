@@ -38,7 +38,7 @@ public class InputBuffer {
     private int p = 0;
     
     // buffer data
-    public static final int INITIAL_BUFFER_SIZE = Integer.getInteger("antlr.input.buffer", 2048).intValue(); // NOI18N
+    public static final int INITIAL_BUFFER_SIZE = 8192*Integer.getInteger("antlr.input.buffer", 1).intValue(); // NOI18N
     public static final int READ_BUFFER_SIZE = INITIAL_BUFFER_SIZE;
     private char[] data = new char[INITIAL_BUFFER_SIZE];
 
