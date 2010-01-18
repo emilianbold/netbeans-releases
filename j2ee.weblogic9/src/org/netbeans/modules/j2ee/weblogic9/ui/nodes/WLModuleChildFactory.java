@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
@@ -82,17 +84,27 @@ public class WLModuleChildFactory
         WLDeploymentManager dm = lookup.lookup(WLDeploymentManager.class);
         try {
             TargetModuleID[] modules = dm.getAvailableModules(moduleType, dm.getTargets());
-            if (modules != null) {
+            TargetModuleID[] stopped = dm.getNonRunningModules(moduleType, dm.getTargets());
+            Set<String> stoopedByName = new HashSet<String>();
+            if (stopped != null) {
                 for (TargetModuleID module : modules) {
-                    toPopulate.add(new WLModuleNode(module.getModuleID(), lookup, moduleType));
+                    stoopedByName.add(module.getModuleID());
                 }
             }
-            return modules != null && modules.length > 0;
+
+            if (modules != null) {
+                for (TargetModuleID module : modules) {
+                    toPopulate.add(new WLModuleNode(module.getModuleID(), lookup, moduleType,
+                            stoopedByName.contains(module.getModuleID())));
+                }
+            }
+
         } catch (IllegalStateException ex) {
             LOGGER.log(Level.INFO, null, ex);
         } catch (TargetException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
-        return false;
+        // perhaps we should return false on exception, however it would most likely fail again
+        return true;
     }
 }

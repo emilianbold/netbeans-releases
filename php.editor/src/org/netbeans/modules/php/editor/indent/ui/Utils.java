@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,52 +31,35 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.lib.html.lexer;
+package org.netbeans.modules.php.editor.indent.ui;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Set;
-import junit.framework.TestCase;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.lib.lexer.test.LexerTestUtilities;
-import org.netbeans.modules.el.lexer.api.ELTokenId;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
- * Expression Language test
  *
- * @author Marek Fukala
+ * @author Petr Pisl
  */
-public class ELLanguageTest extends TestCase {
-    
-    private static final int IDS_SIZE = 10;
-    
-    public ELLanguageTest(String testName) {
-        super(testName);
-    }
-    
-    protected void setUp() throws java.lang.Exception {
-    }
-    
-    protected void tearDown() throws java.lang.Exception {
-    }
-    
-    public void testTokenIds() {
-        // Check that token ids are all present and correctly ordered
-//        Language language = ELTokenId.language();
-//        
-//        // Check token categories
-//        Set testTids = language.tokenCategories();
-//        Collection tids = Arrays.asList(new String[] {
-//                    "numeric-literals", "whitespace", "tag-lib-prefix",
-//                    "double-literal", "operator", "invalid-octal-literal",
-//                    "keyword", "int-literal", "octal-literal", "string",
-//                    "char-literal", "hex-literal", "float-literal",
-//                    "el-delimiter", "long-literal", "invalid-char", "identifier"
-//        });
-//        LexerTestUtilities.assertCollectionsEqual("Invalid token ids", tids, testTids);
-        
-    }
-    
+public class Utils {
+
+    public static String loadPreviewText(InputStream is) throws IOException {
+            BufferedReader r = new BufferedReader(new InputStreamReader(is));
+            try {
+                StringBuilder sb = new StringBuilder();
+                for (String line = r.readLine(); line != null; line = r.readLine()) {
+                    sb.append(line).append('\n'); //NOI18N
+                }
+                return sb.toString();
+            } finally {
+                r.close();
+            }
+        }
 }

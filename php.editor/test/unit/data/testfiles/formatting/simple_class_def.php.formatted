@@ -1,4 +1,5 @@
 <?php
+
 class class_name {
   
   public $var;
@@ -11,4 +12,5 @@ class class_name {
     ;
   }
 }
+
 ?>

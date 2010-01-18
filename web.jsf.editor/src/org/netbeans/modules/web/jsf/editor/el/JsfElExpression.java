@@ -109,6 +109,7 @@ import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
 import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.WebBeansModelSupport;
+import org.netbeans.modules.web.jsf.editor.WebBeansModelSupport.WebBean;
 import org.netbeans.modules.web.jsf.editor.completion.JsfElCompletionItem;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
@@ -178,9 +179,9 @@ public class JsfElExpression extends ELExpression {
             }
 
 	    //go through web beans
-	    List<Element> namedElements = WebBeansModelSupport.getNamedBeans(webBeansModel);
-	    for (Element bean : namedElements) {
-		String beanName = bean.getSimpleName().toString();
+	    List<WebBean> namedElements = WebBeansModelSupport.getNamedBeans(webBeansModel);
+	    for (WebBean bean : namedElements) {
+		String beanName = bean.getName();
 		if (first.equals(beanName)) {
                     return EL_JSF_BEAN;
                 }
@@ -337,10 +338,10 @@ public class JsfElExpression extends ELExpression {
             }
         }
 	//web beans
-	for (Element bean : WebBeansModelSupport.getNamedBeans(webBeansModel)){
-	    String beanName = bean.getSimpleName().toString();
+	for (WebBean bean : WebBeansModelSupport.getNamedBeans(webBeansModel)){
+	    String beanName = bean.getName();
             if (name.equals(beanName)){
-                name = bean.asType().toString(); //bean class
+                name = bean.getBeanClassName(); //bean class
                 break;
             }
         }

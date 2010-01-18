@@ -1,6 +1,7 @@
 <?php
 
 class Test {
+  
   public function test() {
     try {
       if(true) {
@@ -14,4 +15,5 @@ class Test {
     }
   }
 }
+
 ?>

@@ -40,7 +40,6 @@ package org.netbeans.modules.web.jsf.editor;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import javax.lang.model.element.Element;
@@ -69,25 +68,23 @@ import org.openide.util.Exceptions;
 public class WebBeansModelSupport {
 
     //XXX error reporting ... the exceptions are just logged and an empty list is returned.
-    public static List<Element> getNamedBeans(MetadataModel<WebBeansModel> webBeansModel) {
+    public static List<WebBean> getNamedBeans(MetadataModel<WebBeansModel> webBeansModel) {
 	try {
-	    List<Element> filtered = new LinkedList<Element>(webBeansModel.runReadAction(new MetadataModelAction<WebBeansModel, List<Element>>() {
+	    return webBeansModel.runReadAction(new MetadataModelAction<WebBeansModel, List<WebBean>>() {
 
-		public List<Element> run(WebBeansModel metadata) throws Exception {
-		    return metadata.getNamedElements();
+		public List<WebBean> run(WebBeansModel metadata) throws Exception {
+		    List<Element> namedElements = metadata.getNamedElements();
+		    List<WebBean> webBeans = new LinkedList<WebBean>();
+		    for(Element e : namedElements) {
+			//filter out null elements - probably a WebBeansModel bug,
+			//happens under some circumstances when renaming/deleting beans
+			if(e != null) {
+			    webBeans.add(new WebBean(e, metadata.getName(e)));
+			}
+		    }
+		    return webBeans;
 		}
-	    }));
-
-	    //filter out null elements:
-	    //probably a WebBeansModel bug, happens under some circumstances when renaming/deleting beans
-	    Iterator<Element> filtering = filtered.iterator();
-	    while(filtering.hasNext()) {
-		if(null == filtering.next()) {
-		    filtering.remove();
-		}
-	    }
-
-	    return filtered;
+	    });
 	} catch (MetadataModelException ex) {
 	    Exceptions.printStackTrace(ex);
 	} catch (IOException ex) {
@@ -164,4 +161,28 @@ public class WebBeansModelSupport {
 	return null;
     }
     //<<< end of copied code
+
+    public static class WebBean {
+	private Element element;
+	private String name;
+
+	public WebBean(Element element, String name) {
+	    this.element = element;
+	    this.name = name;
+	}
+
+	private Element getElement() {
+	    return element;
+	}
+
+	public String getBeanClassName() {
+	    return getElement().asType().toString();
+	}
+
+	public String getName() {
+	    return name;
+	}
+
+	
+    }
 }

@@ -285,6 +285,69 @@ public final class WLCommandDeployer {
         return progress;
     }
 
+    public ProgressObject stop(final TargetModuleID[] targetModuleID) {
+        final WLProgressObject progress = new WLProgressObject(targetModuleID);
+
+        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
+                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Started")));
+
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            public void run() {
+                boolean failed = false;
+                for (TargetModuleID module : targetModuleID) {
+                    String name = module.getModuleID();
+                    ExecutionService service = createService("-stop", null, "-name", name);
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
+                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stopping", name)));
+
+                    Future<Integer> result = service.run();
+                    try {
+                        Integer value = result.get(TIMEOUT, TimeUnit.MILLISECONDS);
+                        if (value.intValue() != 0) {
+                            failed = true;
+                            progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                    ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                                    NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Failed")));
+                            break;
+                        } else {
+                            continue;
+                        }
+                    } catch (InterruptedException ex) {
+                        failed = true;
+                        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Failed_Interrupted")));
+                        result.cancel(true);
+                        Thread.currentThread().interrupt();
+                        break;
+                    } catch (TimeoutException ex) {
+                        failed = true;
+                        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Failed_Timeout")));
+                        result.cancel(true);
+                        break;
+                    } catch (ExecutionException ex) {
+                        failed = true;
+                        progress.fireProgressEvent(null, new WLDeploymentStatus(
+                                ActionType.EXECUTE, CommandType.STOP, StateType.FAILED,
+                                NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Failed_With_Message")));
+                        break;
+                    }
+                }
+                if (!failed) {
+                    progress.fireProgressEvent(null, new WLDeploymentStatus(
+                            ActionType.EXECUTE, CommandType.STOP, StateType.COMPLETED,
+                            NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Completed")));
+                }
+            }
+        }, 0, Thread.NORM_PRIORITY);
+
+        return progress;
+    }
 
     public TargetModuleID[] getAvailableModules(ModuleType moduleType, Target[] target) {
 
