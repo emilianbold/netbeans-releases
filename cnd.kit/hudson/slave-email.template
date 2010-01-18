@@ -17,31 +17,42 @@ pre { font-family: "Courier New", monospace; font-size: 10pt; }
 </head>
 <body>
 
-<h1 class="${build.result}">Build Result &mdash; $BUILD_STATUS</h1>
+<%
+def rootUrl = hudson.model.Hudson.instance.rootUrl
+def upstreamProject = hudson.model.Hudson.instance.itemMap.get("cnd-build")
+
+def currBuild = build
+def prevBuild = build.previousNotFailedBuild
+
+def currUpstreamBuild = upstreamProject.getBuildByNumber(currBuild.upstreamBuilds.get(upstreamProject))
+def prevUpstreamBuild = upstreamProject.getBuildByNumber(prevBuild.upstreamBuilds.get(upstreamProject))
+%>
+
+<h1 class="${currBuild.result}">Build Result &mdash; ${currBuild.result}</h1>
 
 <h2>Build Information</h2>
 <ul>
-<li>Build <a href="$PROJECT_URL">$PROJECT_NAME</a> <a href="$BUILD_URL">#$BUILD_NUMBER</a></li>
+<li>Build <a href="${rootUrl}${currBuild.project.url}">${currBuild.project.name}</a>
+    #<a href="${rootUrl}${currBuild.url}">${currBuild.number}</a></li>
+<li>Upstream build <a href="${rootUrl}${currUpstreamBuild.project.url}">${currUpstreamBuild.project.name}</a>
+    #<a href="${rootUrl}${currUpstreamBuild.url}">${currUpstreamBuild.number}</a></li>
 <li>Build started at ${build.timestampString2}</li>
 <li>Build took ${build.durationString}</li>
 </ul>
 
 <%
-def currBuild = build
-def prevBuild = build.previousNotFailedBuild
-
 def buildsSincePrev = []
 def changesSincePrev = []
 
-if (prevBuild) {
-    def it = prevBuild
-    while (it != currBuild) {
+if (prevUpstreamBuild) {
+    def it = prevUpstreamBuild
+    while (it != currUpstreamBuild) {
         buildsSincePrev << it
         it = it.nextBuild
         changesSincePrev += it.changeSet.items as List
     }
 } else {
-    def it = currBuild
+    def it = currUpstreamBuild
     while (it) {
         buildsSincePrev << it
         changesSincePrev += it.changeSet.items.reverse() as List
@@ -51,20 +62,18 @@ if (prevBuild) {
     changesSincePrev = changesSincePrev.reverse()
 }
 
-def currTestResult = currBuild.getAction(hudson.tasks.junit.TestResultAction.class)
+def currTestResult = currBuild.testResultAction
 if (currTestResult) {
-
-    def rootUrl = hudson.model.Hudson.instance.rootUrl
 
     def currFailedTests = currTestResult.failedTests.collect {
         [displayName: "${it.className}.${it.displayName}",
-            url: "${rootUrl}${build.url}${currTestResult.urlName}${it.url}",
+            url: "${rootUrl}${currBuild.url}${currTestResult.urlName}${it.url}",
             age: it.age]
     }
     currFailedTests = currFailedTests.sort { String.format("%06d-", it.age) + it.displayName }
     def currFailedTestNames = new HashSet(currFailedTests.collect { it.displayName })
 
-    def prevTestResult = prevBuild?.getAction(hudson.tasks.junit.TestResultAction.class)
+    def prevTestResult = prevBuild?.testResultAction
     def prevFailedTestNames = new HashSet(
         prevTestResult?.failedTests.collect { "${it.className}.${it.displayName}" } ?: [])
 

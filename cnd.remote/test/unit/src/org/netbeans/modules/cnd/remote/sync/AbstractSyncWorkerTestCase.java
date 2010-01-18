@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Base test for different RemoteSyncWorker implementations
@@ -103,6 +104,7 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
         removeDirectory(privProjectStorageDir);
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     private File createTestDir() throws IOException {
         File src = createTempFile("test-sync-worker-dir", null, true);
         File subdir1 = new File(src, "dir1");
@@ -128,7 +130,7 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
         File file3 = new File(deeper, "file3");
         writeFile(file3, "this is file3\n");
         file3.deleteOnExit();
-        return src;
+        return FileUtil.normalizeFile(src);
     }
 
     public static Test suite() {

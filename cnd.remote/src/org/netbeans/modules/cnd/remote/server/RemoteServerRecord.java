@@ -84,6 +84,7 @@ public class RemoteServerRecord implements ServerRecord {
      * in the AWT Event thread if called while adding a node from ToolsPanel, or in a different
      * thread if called during startup from cached information.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings("Dm")
     /*package-local*/ RemoteServerRecord(final ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean connect) {
         CndUtils.assertTrue(env != null);
         CndUtils.assertTrue(syncFactory != null);

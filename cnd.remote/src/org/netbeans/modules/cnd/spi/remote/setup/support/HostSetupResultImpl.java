@@ -77,6 +77,7 @@ public class HostSetupResultImpl implements HostSetupWorker.Result {
         this.displayName = displayName;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("ST")
     public void setExecutionEnvironment(ExecutionEnvironment executionEnvironment) {
         this.executionEnvironment = lastExecutionEnvironment = executionEnvironment;
     }

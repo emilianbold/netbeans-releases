@@ -229,5 +229,16 @@ public class MacroExpandedToken implements APTToken, Serializable {
         public int getEndColumn() {
             return endColumn;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            return super.equals(obj);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+        
     }
 }

@@ -98,6 +98,7 @@ public class UploadTest extends RemoteTestBase {
     }
 
     @ForAllEnvironments
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     public void testCopyManyFilesTo() throws Exception {
         File dir = new File(getNetBeansPlatformDir(), "modules");
         assertTrue(dir.exists());

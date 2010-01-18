@@ -206,6 +206,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV") // it's ok to ignore File.createNewFile() return value
     private void syncDirStruct(final File dir, final String remoteDir) throws IOException, CancellationException {
         if (dir.exists()) {
             CndUtils.assertTrue(dir.isDirectory(), dir.getAbsolutePath() + " is not a directory"); //NOI18N
