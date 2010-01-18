@@ -620,8 +620,8 @@ public class AstRenderer {
                         } else {
                             if (isScopedId(next)) {
                                 try {
-                                    FunctionImplEx fi = new FunctionImplEx(ast, file, currentNamespace, false, !isRenderingLocalContext());
-                                    file.onFakeRegisration(fi, ast);
+                                    FunctionImplEx fi = new FunctionImplEx(ast, file, currentNamespace, ast, false, !isRenderingLocalContext());
+                                    file.onFakeRegisration(fi);
                                 } catch (AstRendererException e) {
                                     DiagnosticExceptoins.register(e);
                                 }
