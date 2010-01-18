@@ -81,7 +81,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         final TraceModelBase traceModel = new TraceModelBase(true);
         //traceModel.setUseSysPredefined(true);
         traceModel.processArguments(sourceFile.getAbsolutePath());
-        ModelImpl model = traceModel.getModel();
+        //ModelImpl model = traceModel.getModel();
         //ModelSupport.instance().setModel(model);
         final CsmProject project = traceModel.getProject();
 
@@ -129,6 +129,8 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         sleep(2000);
 
         project.waitParse();
+
+        assertTrue("CsmFile is invalid", csmFile.isValid());
         assertNotNull(csmFile.getIncludes().iterator().next().getIncludeFile());
     }
 
@@ -162,6 +164,8 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         sleep(2000);
 
         project.waitParse();
+
+        assertTrue("CsmFile is invalid", csmFile.isValid());
         assertNotNull(csmFile.getIncludes().iterator().next().getIncludeFile());
     }
 
