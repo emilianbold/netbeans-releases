@@ -65,7 +65,7 @@ public final class SwitchProjectAction extends NodeAction {
     
     private JCheckBoxMenuItem presenter;
     private ModelImpl model;
-    private AtomicBoolean running = new AtomicBoolean(false);
+    private final AtomicBoolean running = new AtomicBoolean(false);
     
     private enum State {
         Enabled, Disabled, Indeterminate
