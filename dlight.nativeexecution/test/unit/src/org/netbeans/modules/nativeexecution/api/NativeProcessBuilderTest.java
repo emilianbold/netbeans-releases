@@ -340,7 +340,7 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         boolean found = false;
 
         for (String line : out) {
-            if ("copied ls".equals(line)) { // NOI18N
+            if (line.indexOf("copied ls")>=0) { // NOI18N
                 found = true;
                 break;
             }
