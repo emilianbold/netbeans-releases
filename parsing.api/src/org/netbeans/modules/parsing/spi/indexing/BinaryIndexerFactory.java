@@ -84,4 +84,28 @@ public abstract class BinaryIndexerFactory {
      * @return The version stamp of the current index.
      */
     public abstract int getIndexVersion ();
+
+    /**
+     * Notifies the indexer that a binary root is going to be scanned.
+     *
+     * @param context The indexed binary root.
+     *
+     * @return <code>false</code> means that the whole root should be rescanned
+     *   (eg. no up to date check is done, etc)
+     * @since 1.29
+     */
+    public boolean scanStarted (final Context context) {
+        return true;
+    }
+
+    /**
+     * Notifies the indexer that scanning of a binary root just finished.
+     *
+     * @param context The indexed binary root.
+     *
+     * @since 1.29
+     */
+    public void scanFinished (final Context context) {
+
+    }
 }
