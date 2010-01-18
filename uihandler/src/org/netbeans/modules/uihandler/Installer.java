@@ -1979,6 +1979,7 @@ public class Installer extends ModuleInstall implements Runnable {
             reportPanel.saveUserData();
             dd.setValue(DialogDescriptor.CLOSED_OPTION);
             d.setVisible(false);
+            d.dispose(); // fix the issue #137714
             d = null;
         }
 
