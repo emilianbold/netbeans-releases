@@ -41,15 +41,25 @@ package org.netbeans.modules.ruby.rubyproject.ui.customizer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.gems.Gem;
+import org.netbeans.modules.ruby.platform.gems.GemAction;
+import org.netbeans.modules.ruby.platform.gems.GemListPanel;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.rubyproject.GemRequirement;
 import org.netbeans.modules.ruby.rubyproject.RequiredGems;
 import org.netbeans.modules.ruby.rubyproject.RequiredGems.GemIndexingStatus;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,19 +71,27 @@ public class GemsPanel extends javax.swing.JPanel {
     private static final Logger LOGGER = Logger.getLogger(GemsPanel.class.getName());
 
     private final RubyBaseProject project;
+    private final SharedRubyProjectProperties properties;
     private RequiredGems requiredGems;
 
-    /** Creates new form GemsPanel */
-    public GemsPanel(RubyBaseProject project) {
+    GemsPanel(RubyBaseProject project, SharedRubyProjectProperties uiProps) {
         this.project = project;
+        this.properties = uiProps;
         initComponents();
-        // hide buttons until they actually do something
-        boolean visible = false;
-        addButton.setVisible(visible);
-        editButton.setVisible(visible);
-        removeButton.setVisible(true);
+        enableButtons(true);
+
     }
 
+    private void enableButtons(boolean enabled) {
+        addButton.setEnabled(enabled);
+        removeButton.setEnabled(enabled);
+
+        editButton.setVisible(false);
+    }
+
+    private void refreshIndexedGems() {
+        gemsTable.setModel(createTableModel());
+    }
     private DefaultTableModel createTableModel() {
         requiredGems = project.getLookup().lookup(RequiredGems.class);
         List<GemIndexingStatus> gems = requiredGems.getGemIndexingStatuses();
@@ -134,6 +152,7 @@ public class GemsPanel extends javax.swing.JPanel {
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
+        gemManagerButton = new javax.swing.JButton();
 
         gemsTable.setAutoCreateRowSorter(true);
         gemsTable.setModel(createTableModel());
@@ -152,6 +171,11 @@ public class GemsPanel extends javax.swing.JPanel {
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.testScrollPane.TabConstraints.tabTitle"), testScrollPane); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.addButton.text")); // NOI18N
+        addButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addButtonActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.removeButton.text")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
@@ -162,34 +186,43 @@ public class GemsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.editButton.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(gemManagerButton, org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemManagerButton.text")); // NOI18N
+        gemManagerButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                gemManagerButtonActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 465, Short.MAX_VALUE)
+                .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 403, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(editButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE)
-                    .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 64, Short.MAX_VALUE))
-                .addContainerGap())
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                    .add(gemManagerButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 108, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, editButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .addContainerGap()
                         .add(jTabbedPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
-                        .add(42, 42, 42)
+                        .add(43, 43, 43)
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(editButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeButton)))
+                        .add(removeButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 114, Short.MAX_VALUE)
+                        .add(gemManagerButton)))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -213,9 +246,55 @@ public class GemsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_removeButtonActionPerformed
 
+
+    private GemManager getGemManager() {
+        return project.getPlatform().getGemManager();
+    }
+
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+        AtomicBoolean cancelled = new AtomicBoolean();
+        final List<Gem> gems = new ArrayList<Gem>();
+        Runnable fetchGemsTask = new Runnable() {
+
+            public void run() {
+                GemManager gemManager = getGemManager();
+                if (gemManager == null) {
+                    return;
+                }
+                gems.addAll(gemManager.getInstalledGems(new ArrayList<String>()));
+            }
+        };
+
+        ProgressUtils.runOffEventDispatchThread(fetchGemsTask, "Fetch Gems", cancelled, true);
+        if (cancelled.get()) {
+            return;
+        }
+
+        final GemListPanel gemListPanel = new GemListPanel(gems);
+        DialogDescriptor dd = new DialogDescriptor(gemListPanel, "Choose Gems");
+        dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+        dd.setModal(true);
+        dd.setHelpCtx(new HelpCtx(GemsPanel.class));
+        Object result = DialogDisplayer.getDefault().notify(dd);
+        if (result.equals(NotifyDescriptor.OK_OPTION)) {
+            List<GemRequirement> reqsToAdd = new ArrayList<GemRequirement>();
+            for (Gem each : gemListPanel.getSelectedGems()) {
+                reqsToAdd.add(GemRequirement.forGem(each));
+            }
+            requiredGems.addRequirements(reqsToAdd);
+            gemsTable.setModel(createTableModel());
+        }
+        // TODO add your handling code here:
+    }//GEN-LAST:event_addButtonActionPerformed
+
+    private void gemManagerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gemManagerButtonActionPerformed
+        GemAction.showGemManager(project.getPlatform(), false);
+    }//GEN-LAST:event_gemManagerButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton editButton;
+    private javax.swing.JButton gemManagerButton;
     private javax.swing.JTable gemsTable;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JButton removeButton;
@@ -224,8 +303,13 @@ public class GemsPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane testScrollPane;
     // End of variables declaration//GEN-END:variables
 
-    private static class GemTableModel extends DefaultTableModel {
-
-
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        properties.setGemRequirements(requiredGems.getGemRequirements());
     }
+
+
 }
+
+

@@ -45,6 +45,7 @@ import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -108,7 +109,7 @@ public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCa
             return new CustomizerRun(uiProps);
         } else if (GEMS.equals(nm)) {
             RubyBaseProject project = context.lookup(RubyBaseProject.class);
-            return new GemsPanel(project);
+            return new GemsPanel(project, context.lookup(SharedRubyProjectProperties.class));
         }
         return new JPanel();
 

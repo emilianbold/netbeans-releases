@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby.rubyproject;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.ruby.platform.Util;
+import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.openide.util.Parameters;
 
 /**
@@ -111,6 +112,10 @@ public final class GemRequirement implements Comparable<GemRequirement>{
         this.version = version;
         this.operator = operator;
         this.status = status;
+    }
+
+    public static GemRequirement forGem(Gem gem) {
+        return new GemRequirement(gem.getName(), null, null, Status.INSTALLED);
     }
 
     Status getStatus() {

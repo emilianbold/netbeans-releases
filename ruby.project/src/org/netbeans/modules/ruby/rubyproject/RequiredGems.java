@@ -38,10 +38,7 @@
  */
 package org.netbeans.modules.ruby.rubyproject;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,31 +48,24 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
 import org.netbeans.modules.ruby.rubyproject.GemRequirement.Status;
-import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
-import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.openide.util.EditableProperties;
-import org.openide.util.Exceptions;
-import org.openide.util.WeakListeners;
 
 /**
  * Represents the explicit gem requirements of a Ruby/Rails application.
  *
  * @author Erno Mononen
  */
-public final class RequiredGems implements PropertyChangeListener {
+public final class RequiredGems  {
 
     /**
      * The project property for required gems.
      */
-    private static final String REQUIRED_GEMS_PROPERTY = "required.gems"; //NOI18N
+    public static final String REQUIRED_GEMS_PROPERTY = "required.gems"; //NOI18N
     /**
      * Name of the property fired when there are changes in the required gems.
      */
-    public static final String REQUIRED_GEMS_CHANGED_PROPERTY = "required.gems.changed"; //NOI18N
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     private List<GemRequirement> requirements;
     private final List<URL> indexedGems = new ArrayList<URL>();
@@ -83,8 +73,6 @@ public final class RequiredGems implements PropertyChangeListener {
 
     public static RequiredGems create(RubyBaseProject project) {
         RequiredGems result = new RequiredGems(project);
-        PropertyEvaluator evaluator = project.evaluator();
-        evaluator.addPropertyChangeListener(WeakListeners.propertyChange(result, evaluator));
         return result;
     }
 
@@ -111,7 +99,20 @@ public final class RequiredGems implements PropertyChangeListener {
         return result;
     }
 
-    public synchronized String asString() {
+    public void addRequirements(Collection<GemRequirement> gemRequirements) {
+        List<GemRequirement> newReqs = null;
+        synchronized (this) {
+            newReqs = new ArrayList<GemRequirement>(requirements);
+        }
+        for (GemRequirement each : gemRequirements) {
+            if (!newReqs.contains(each)) {
+                newReqs.add(each);
+            }
+        }
+        setRequiredGems(newReqs);
+    }
+
+    public static String asString(List<GemRequirement> requirements) {
         if (requirements == null || requirements.isEmpty()) {
             return "";
         }
@@ -126,35 +127,6 @@ public final class RequiredGems implements PropertyChangeListener {
         return result.toString();
     }
 
-    private static List<GemRequirement> mergeVersions(List<GemRequirement> requirements) {
-        // XXX: performs a very basic version comparison; doesn't take into account the operator etc.
-        Map<String, GemRequirement> map = new HashMap<String, GemRequirement>();
-        for (GemRequirement each : requirements) {
-            GemRequirement existing = map.get(each.getName());
-            if (existing != null) {
-                if (existing.compareTo(each) < 0) {
-                    map.put(each.getName(), each);
-                }
-            } else {
-                map.put(each.getName(), each);
-            }
-        }
-
-        return new ArrayList(map.values());
-    }
-
-    static List<GemRequirement> fromString(String str) {
-        String[] gems = str.split(",");
-        List<GemRequirement> result = new ArrayList<GemRequirement>();
-        for (String gem : gems) {
-            GemRequirement requirement = GemRequirement.fromString(gem.trim());
-            if (!result.contains(requirement)) {
-                result.add(requirement);
-            }
-        }
-        return result;
-    }
-
     /**
      * Sets the required gems. If <code>requirements</code> is <code>null</code>,
      * clears the list of required gems.
@@ -162,34 +134,15 @@ public final class RequiredGems implements PropertyChangeListener {
      * @param requirements
      */
     public synchronized void setRequiredGems(List<GemRequirement> requirements) {
-        internalSetRequiredGems(requirements);
-
-        UpdateHelper helper = project.getUpdateHelper();
-        EditableProperties projectProperties = helper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
-        if (requirements == null) {
-            projectProperties.remove(REQUIRED_GEMS_PROPERTY);
-        } else {
-            projectProperties.put(REQUIRED_GEMS_PROPERTY, asString());
-        }
-        helper.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-
-        try {
-            ProjectManager.getDefault().saveProject(project);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    private synchronized void internalSetRequiredGems(List<GemRequirement> requirements) {
-        List<GemRequirement> old = this.requirements;
-        this.requirements = requirements;
-        changeSupport.firePropertyChange(REQUIRED_GEMS_CHANGED_PROPERTY, old, requirements);
+        this.requirements = Collections.unmodifiableList(requirements);
     }
 
     public synchronized List<URL> getIndexedGems() {
         return indexedGems;
+    }
+
+    public synchronized void reset() {
+        requirements = null;
     }
 
     public synchronized void setIndexedGems(Collection<URL> gemUrls) {
@@ -228,30 +181,6 @@ public final class RequiredGems implements PropertyChangeListener {
             }
         }
         return result;
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (REQUIRED_GEMS_PROPERTY.equals(evt.getPropertyName())) {
-            Object newValue = evt.getNewValue();
-            if (newValue instanceof String) {
-                internalSetRequiredGems(fromString((String) evt.getNewValue()));
-            } else {
-                internalSetRequiredGems(null);
-            }
-
-        }
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.removePropertyChangeListener(listener);
-    }
-
-    private static boolean isRailsOrRake(String name) {
-        return Gem.isRailsGem(name) || "rake".equals(name);
     }
 
     public synchronized List<GemIndexingStatus> getGemIndexingStatuses() {
@@ -312,10 +241,7 @@ public final class RequiredGems implements PropertyChangeListener {
     }
 
     public void removeRequirement(String name) {
-        List<GemIndexingStatus> statuses;
-        synchronized (this) {
-            statuses = new ArrayList<GemIndexingStatus>(getGemIndexingStatuses());
-        }
+        List<GemIndexingStatus> statuses = new ArrayList<GemIndexingStatus>(getGemIndexingStatuses());
         List<GemRequirement> newReqs = new ArrayList<GemRequirement>();
         for (GemIndexingStatus each : statuses) {
             if (!each.getRequirement().getName().equals(name)) {
@@ -325,6 +251,42 @@ public final class RequiredGems implements PropertyChangeListener {
         if (newReqs.size() != statuses.size()) {
             setRequiredGems(newReqs);
         }
+    }
+
+    public static List<GemRequirement> fromString(String str) {
+        if (str == null) {
+            return null;
+        }
+        String[] gems = str.split(",");
+        List<GemRequirement> result = new ArrayList<GemRequirement>();
+        for (String gem : gems) {
+            GemRequirement requirement = GemRequirement.fromString(gem.trim());
+            if (!result.contains(requirement)) {
+                result.add(requirement);
+            }
+        }
+        return result;
+    }
+
+    private static boolean isRailsOrRake(String name) {
+        return Gem.isRailsGem(name) || "rake".equals(name);
+    }
+
+    private static List<GemRequirement> mergeVersions(List<GemRequirement> requirements) {
+        // XXX: performs a very basic version comparison; doesn't take into account the operator etc.
+        Map<String, GemRequirement> map = new HashMap<String, GemRequirement>();
+        for (GemRequirement each : requirements) {
+            GemRequirement existing = map.get(each.getName());
+            if (existing != null) {
+                if (existing.compareTo(each) < 0) {
+                    map.put(each.getName(), each);
+                }
+            } else {
+                map.put(each.getName(), each);
+            }
+        }
+
+        return new ArrayList(map.values());
     }
 
     public static final class GemIndexingStatus {

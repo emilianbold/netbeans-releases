@@ -56,6 +56,8 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
@@ -67,6 +69,7 @@ import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -93,6 +96,8 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private final RequiredGems requiredGems;
     private final boolean forTests;
     private final GemFilter gemFilter;
+    private RubyPlatform platform;
+
 
     public BootClassPathImplementation(RailsProject project, File projectDirectory, PropertyEvaluator evaluator, boolean forTests) {
         this.project = project;
@@ -102,9 +107,10 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
         RubyPreferences.addPropertyChangeListener(WeakListeners.propertyChange(this, RubyPreferences.getInstance()));
         this.requiredGems = project.getLookup().lookup(RequiredGems.class);
-        this.requiredGems.addPropertyChangeListener(WeakListeners.propertyChange(this, this.requiredGems));
+//        this.requiredGems.addPropertyChangeListener(WeakListeners.propertyChange(this, this.requiredGems));
         this.forTests = forTests;
         this.gemFilter = new GemFilter(evaluator);
+        this.platform = new RubyPlatformProvider(evaluator).getPlatform();
     }
 
     public synchronized List<PathResourceImplementation> getResources() {
@@ -118,7 +124,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 Exceptions.printStackTrace(ex);
             }
 
-            RubyPlatform platform = new RubyPlatformProvider(evaluator).getPlatform();
+//            RubyPlatform platform = new RubyPlatformProvider(evaluator).getPlatform();
             if (platform == null) {
                 LOGGER.severe("Cannot resolve platform for project: " + projectDirectory);
                 return Collections.emptyList();
@@ -285,7 +291,12 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 || evt.getSource() == RubyPreferences.getInstance() && evt.getPropertyName().equals(RubyPreferences.VENDOR_GEMS_PROPERTY)) {
             resetCache();
         }
-        if (evt.getPropertyName().equals(RequiredGems.REQUIRED_GEMS_CHANGED_PROPERTY)) {
+        if (evt.getPropertyName().equals(SharedRubyProjectProperties.PLATFORM_ACTIVE)) {
+            platform = RubyPlatformProvider.getPlatform((String) evt.getNewValue());
+            resetCache();
+        }
+        if (evt.getPropertyName().equals(RequiredGems.REQUIRED_GEMS_PROPERTY)) {
+            requiredGems.setRequiredGems(RequiredGems.fromString((String) evt.getNewValue()));
             resetCache();
         }
 //        if (evt.getSource() == this.evaluator && evt.getPropertyName().equals(PLATFORM_ACTIVE)) {

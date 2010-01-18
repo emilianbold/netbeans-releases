@@ -115,6 +115,8 @@ public abstract class SharedRubyProjectProperties {
 
     private String activeConfig;
     private Map<String, Map<String, String>> runConfigs;
+
+    private List<GemRequirement> gemRequirements;
     
     public static final String[] WELL_KNOWN_PATHS = new String[]{
         "${" + JAVAC_CLASSPATH + "}", // NOI18N
@@ -218,7 +220,15 @@ public abstract class SharedRubyProjectProperties {
     public void setActiveConfig(String activeConfig) {
         this.activeConfig = activeConfig;
     }
-    
+
+    public List<GemRequirement> getGemRequirements() {
+        return gemRequirements;
+    }
+
+    public void setGemRequirements(List<GemRequirement> gemRequirements) {
+        this.gemRequirements = gemRequirements;
+    }
+
     public Map<String, Map<String, String>> getRunConfigs() {
         return runConfigs;
     }
@@ -360,6 +370,11 @@ public abstract class SharedRubyProjectProperties {
         }
         getUpdateHelper().putProperties("nbproject/private/config.properties", configProperties); // NOI18N
 
+        if (gemRequirements == null) {
+            projectProperties.remove(RequiredGems.REQUIRED_GEMS_PROPERTY);
+        } else {
+            projectProperties.put(RequiredGems.REQUIRED_GEMS_PROPERTY, RequiredGems.asString(gemRequirements));
+        }
         // Save all paths
         projectProperties.setProperty(JAVAC_CLASSPATH, javac_cp);
 

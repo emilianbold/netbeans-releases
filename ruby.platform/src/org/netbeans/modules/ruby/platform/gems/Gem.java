@@ -120,7 +120,7 @@ public final class Gem implements Comparable<Gem> {
         return Arrays.asList(installedVersions.trim().split(","));//NOI18N
     }
 
-    String getLatestInstalled() {
+    public String getLatestInstalled() {
         return getLatestVersion(installedVersions);
     }
 
