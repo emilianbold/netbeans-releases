@@ -45,6 +45,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -77,6 +79,8 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.spi.editor.completion.*;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -206,6 +210,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     private String completionShortcut = null;
     
     private Lookup.Result<KeyBindingSettings> kbs;
+    private Profile profile;
+    
     private final LookupListener shortcutsTracker = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
             Utilities.runInEventDispatchThread(new Runnable(){
@@ -263,7 +269,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                 }
                 layout.showCompletion(Collections.singletonList(waitText),
                         null, -1, CompletionImpl.this, null, null, 0);
-                pleaseWaitDisplayed = true;                
+                pleaseWaitDisplayed = true;
+                initializeProfiling();
             }
         });
         pleaseWaitTimer.setRepeats(false);
@@ -648,6 +655,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             if (explicitQuery)
                 layout.showCompletion(Collections.singletonList(NO_SUGGESTIONS), null, -1, CompletionImpl.this, null, null, 0);
             pleaseWaitDisplayed = false;
+            stopProfiling();
         }
     }
 
@@ -934,6 +942,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 c.putClientProperty("completion-visible", Boolean.TRUE);
                 layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, displayAdditionalItems ? hasAdditionalItemsText.toString() : null, displayAdditionalItems ? completionShortcut : null, selectedIndex);
                 pleaseWaitDisplayed = false;
+                stopProfiling();
 
                 // Show documentation as well if set by default
                 if (cs.documentationAutoPopup()) {
@@ -1002,6 +1011,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         pleaseWaitTimer.stop();
         boolean hidePerformed = layout.hideCompletion();
         pleaseWaitDisplayed = false;
+        stopProfiling();
         JTextComponent jtc = getActiveComponent();
         if (!completionOnly && hidePerformed && CompletionSettings.getInstance(jtc).documentationAutoPopup()) {
             hideDocumentation(true);
@@ -1718,5 +1728,71 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         rec.setResourceBundleName(CompletionImpl.class.getPackage().getName() + ".Bundle"); // NOI18N
         rec.setLoggerName(UI_LOG.getName());
         UI_LOG.log(rec);
+    }
+
+    private void initializeProfiling() {
+        if (profile != null)
+            return;
+        FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance");
+        if (fo == null) return;
+        Action a = (Action)fo.getAttribute("delegate"); // NOI18N
+        if (a == null) return;
+        profile = new Profile(a.getValue("logger-completion")); // NOI18N
+    }
+
+    private class Profile implements Runnable {
+        Object profiler;
+        boolean profiling;
+        private final long time;
+
+        public Profile(Object profiler) {
+            time = System.currentTimeMillis();
+            this.profiler = profiler;
+            run();
+        }
+
+        public synchronized void run() {
+            profiling = true;
+            if (profiler instanceof Runnable) {
+                Runnable r = (Runnable)profiler;
+                r.run();
+            }
+        }
+
+        private synchronized void stop() throws Exception {
+            long delta = System.currentTimeMillis() - time;
+
+            ActionListener ss = (ActionListener)profiler;
+            profiler = null;
+            if (!profiling) {
+                return;
+            }
+            try {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                DataOutputStream dos = new DataOutputStream(out);
+                ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+                dos.close();
+                if (dos.size() > 0) {
+                    Object[] params = new Object[]{out.toByteArray(), delta, "CodeCompletion"};
+                    Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Slowness detected", params);
+                } else {
+                    LOG.log(Level.WARNING, "no snapshot taken"); // NOI18N
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+    }
+
+    private synchronized void stopProfiling() {
+        if (profile != null) {
+            try {
+                profile.stop();
+                profile = null;
+            } catch (Exception ex) {
+                LOG.log(Level.INFO, "Cannot stop profiling", ex);
+            }
+        }
     }
 }
