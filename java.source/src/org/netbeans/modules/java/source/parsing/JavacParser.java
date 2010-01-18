@@ -156,7 +156,7 @@ public class JavacParser extends Parser {
     private static final PrintWriter DEV_NULL = new PrintWriter(new NullWriter(), false);
     
     //Max number of dump files
-    private static final int MAX_DUMPS = 255;
+    private static final int MAX_DUMPS = Integer.getInteger("org.netbeans.modules.java.source.parsing.JavacParser.maxDumps", 255);
     
     /**
      * Helper map mapping the {@link Phase} to message for performance logger
