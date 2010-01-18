@@ -39,82 +39,30 @@
 
 package org.netbeans.modules.css.editor.refactoring;
 
-import org.netbeans.modules.css.gsf.api.CssParserResult;
-import org.netbeans.modules.css.parser.CssParserTreeConstants;
-import org.netbeans.modules.css.parser.SimpleNode;
-import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 
 /**
  *
  * @author marekfukala
  */
-public class CssElementContext {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=120)
+public class CssRefactoringPluginFactory implements RefactoringPluginFactory {
 
-    private CssParserResult result;
+    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+//	if (refactoring instanceof RenameRefactoring) {
+//		if(null != refactoring.getRefactoringSource().lookup(CssElementContext.class)) {
+//
+//
+//		}
+//
+//
+//        }
+//
+        return null;
 
-    public CssElementContext(CssParserResult result) {
-	this.result = result;
-    }
-
-    public CssParserResult getResult() {
-	return result;
-    }
-
-    public String getElementName() {
-	return result.getSnapshot().getSource().getFileObject().getName();
-    }
-
-    public boolean isRefactoringAllowed() {
-	return true;
-    }
-
-    public static class Editor extends CssElementContext {
-	private int caretOffset;
-	private int selectionFrom, selectionTo;
-	private SimpleNode element;
-
-	public Editor(CssParserResult result, int caretOffset, int selectionFrom, int selectionTo) {
-	    super(result);
-	    this.caretOffset = caretOffset;
-	    this.selectionFrom = selectionFrom;
-	    this.selectionTo = selectionTo;
-	    this.element = findCurrentElement();
-
-	    assert element != null; //at least the root node should always be found
-	}
-
-	//XXX make it only caret position sensitive for now
-	private SimpleNode findCurrentElement() {
-	    SimpleNode root = super.getResult().root();
-	    return SimpleNodeUtil.findDescendant(root, caretOffset);
-	}
-
-	public int getCaret() {
-	    return caretOffset;
-	}
-
-	public int getSelectionFrom() {
-	    return selectionFrom;
-	}
-
-	public int getSelectionTo() {
-	    return selectionTo;
-	}
-
-	public SimpleNode getElement() {
-	    return element;
-	}
-
-	@Override
-	public String getElementName() {
-	    return getElement().image();
-	}
-
-	@Override
-	public boolean isRefactoringAllowed() {
-	    return null != SimpleNodeUtil.getAncestorByType(getElement(), CssParserTreeConstants.JJTSIMPLESELECTOR);
-	}
-	
     }
 
 }
