@@ -54,6 +54,8 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
+import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.openide.util.Exceptions;
@@ -68,6 +70,38 @@ public class DwarfSourceReaderTest extends NbTestCase {
     public DwarfSourceReaderTest() {
         super("DwarfSourceReaderTest");
         Logger.getLogger("cnd.logger").setLevel(Level.SEVERE);
+    }
+
+    public void testSunStudioCompiler(){
+        TreeMap<String, String> golden = new TreeMap<String, String>();
+        golden.put("TEXT_DOMAIN", "\"SUNW_OST_OSCMD\"");
+        golden.put("_TS_ERRNO", "null");
+        golden.put("_iBCS2", "null");
+        TreeMap<String, String> ignore = new TreeMap<String, String>();
+        List<String> system = new ArrayList<String>();
+        String prefix = "";
+        if (Utilities.isWindows()) {
+            prefix = new File("/usr/include").getAbsolutePath();
+            prefix = prefix.substring(0,prefix.indexOf('\\'));
+        }
+        Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/echo", system, ignore, grepBase);
+        assertNotNull(source);
+        TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
+        assertTrue(compareMap(map, golden));
+        assertTrue(source.getUserInludePaths().size()==1);
+        assertEquals(source.getUserInludePaths().get(0), prefix+"/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include");
+        printInclidePaths(source);
+        List<SourceFile> list = CompileLineService.getSourceFileProperties(getDataDir().getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/echo");
+        assertTrue(list.size()==1);
+        SourceFile sf = list.get(0);
+        assertEquals(sf.getCompileDir(), "/export1/sside/pomona/java_cp/wsb131/usr/src/cmd/echo");
+        assertEquals(sf.getSource(), "echo.c");
+//      /export/opt/sunstudio/12ml/SUNWspro/prod/bin/cc -O -xspace -Xa -xildoff -errtags=yes -errwarn=%all -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_STATEMENT_NOT_REACHED -xc99=%none -W0,-xglobalstatic -v -D_iBCS2 -DTEXT_DOMAIN='"SUNW_OST_OSCMD"' -D_TS_ERRNO -I/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include -Bdirect -M/export1/sside/pomona/java_cp/wsb131/usr/src/common/mapfiles/common/map.noexstk -M/export1/sside/pomona/java_cp/wsb131/usr/src/common/mapfiles/i386/map.pagealign -M/export1/sside/pomona/java_cp/wsb131/usr/src/common/mapfiles/i386/map.noexdata -L/export1/sside/pomona/java_cp/wsb131/proto/root_i386/lib -L/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/lib -c  echo.c
+        //System.err.println(sf.getCompileLine());
+        map = new TreeMap<String, String>(sf.getUserMacros());
+        assertTrue(compareMap(map, golden));
+        assertEquals(sf.getUserPaths().get(0), "/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include");
     }
 
     public void testLeopard(){
