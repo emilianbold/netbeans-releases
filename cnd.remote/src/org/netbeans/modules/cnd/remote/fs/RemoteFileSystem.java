@@ -76,7 +76,7 @@ public class RemoteFileSystem extends FileSystem {
         this.filePrefix = BasicCompiler.getIncludeFilePrefix(execEnv);
         cache = new File(filePrefix);
         if (! cache.exists() && ! cache.mkdirs()) {
-            throw new IOException("Error creating directory " + cache.getAbsolutePath());
+            throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath())); 
         }
         this.root = new RootFileObject(this, execEnv, cache); // NOI18N
     }
