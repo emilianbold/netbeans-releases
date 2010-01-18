@@ -7019,3 +7019,23 @@ javax.xml.xpath.XPathExpression
 # Bundles loaded - broken references?
 org/netbeans/modules/java/project/Bundle_en
 org/netbeans/modules/java/project/Bundle_en_US
+
+# OK on Jan 18, 2010:
+org.netbeans.ModuleFactory
+org.netbeans.ProxyClassLoader
+org.netbeans.core.GuiRunLevel
+org.netbeans.core.NbStatusDisplayer
+org.netbeans.core.NbStatusDisplayer$MessageImpl
+org.netbeans.core.WindowSystem
+org.netbeans.core.netigso.Installer
+org.netbeans.core.netigso.NetigsoModuleFactory
+org.netbeans.core.startup.Splash$SplashPainter
+org.netbeans.modules.ide.ergonomics.Installer
+org.netbeans.modules.parsing.impl.indexing.Pair
+org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$FCL
+org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$RefreshCifIndices
+org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$RootsListeners
+org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$URLCache
+org.netbeans.modules.parsing.spi.indexing.support.QuerySupport$IndexerQuery
+org.openide.explorer.ExplorerManager$1SetExploredContextAndSelection
+org.openide.explorer.view.Visualizer
