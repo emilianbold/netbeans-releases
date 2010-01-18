@@ -132,15 +132,15 @@ public class CompileLineService {
         private SourceFile(CompilationUnit cu) throws IOException, Exception {
             compileLine = cu.getCommandLine();
             if (compileLine == null) {
-                throw new Exception("Dwarf information dies not contain compile line");
+                throw new Exception("Dwarf information dies not contain compile line");  // NOI18N
             }
             compileDir = cu.getCompilationDir();
             if (compileDir == null) {
-                throw new Exception("Dwarf information dies not contain compile dir");
+                throw new Exception("Dwarf information dies not contain compile dir");  // NOI18N
             }
             sourceFile = cu.getSourceFileName();
             if (sourceFile == null) {
-                throw new Exception("Dwarf information dies not contain source file name");
+                throw new Exception("Dwarf information dies not contain source file name");  // NOI18N
             }
         }
 
