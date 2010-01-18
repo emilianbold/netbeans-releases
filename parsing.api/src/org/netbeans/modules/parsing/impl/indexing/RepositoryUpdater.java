@@ -3860,14 +3860,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 } else {
                     assert this.sourcesListener != null : "RootsListeners are already dormant"; //NOI18N
                     for(Map.Entry<URL, File> entry : sourceRoots.entrySet()) {
-                        FileUtil.removeRecursiveListener(this.sourcesListener, entry.getValue());
+                        safeRemoveRecursiveListener(this.sourcesListener, entry.getValue());
                     }
                     sourceRoots.clear();
                     for(Map.Entry<URL, Pair<File, Boolean>> entry : binaryRoots.entrySet()) {
                         if (entry.getValue().second) {
                             FileUtil.removeFileChangeListener(this.binariesListener, entry.getValue().first);
                         } else {
-                            FileUtil.removeRecursiveListener(this.binariesListener, entry.getValue().first);
+                            safeRemoveRecursiveListener(this.binariesListener, entry.getValue().first);
                         }
                     }
                     binaryRoots.clear();
@@ -3924,7 +3924,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     if (sourcesListener != null) {
                         File f = sourceRoots.remove(root);
                         if (f != null) {
-                            FileUtil.removeRecursiveListener(sourcesListener, f);
+                            safeRemoveRecursiveListener(sourcesListener, f);
                         }
                     }
                 } else {
@@ -3934,7 +3934,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             if (pair.second) {
                                 FileUtil.removeFileChangeListener(binariesListener, pair.first);
                             } else {
-                                FileUtil.removeRecursiveListener(binariesListener, pair.first);
+                                safeRemoveRecursiveListener(binariesListener, pair.first);
                             }
                         }
                     }
@@ -3942,6 +3942,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
 
+        private void safeRemoveRecursiveListener(FileChangeListener listener, File path) {
+            try {
+                FileUtil.removeRecursiveListener(listener, path);
+            } catch (Exception e) {
+                // ignore
+                LOGGER.log(Level.FINE, null, e);
+            }
+        }
     } // End of RootsListeners class
 
     private final class FCL extends FileChangeAdapter {
