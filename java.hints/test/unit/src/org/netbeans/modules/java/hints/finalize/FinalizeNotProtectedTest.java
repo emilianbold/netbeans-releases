@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.java.hints.finalize;
 
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.spi.editor.hints.Fix;
 
 /**
  *
@@ -87,6 +89,27 @@ public class FinalizeNotProtectedTest extends TestBase {
                             "    public final void finalize() {\n" +
                             "    }\n" +
                             "}");
+    }
+
+    public void testFix() throws Exception {
+        performFixTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public final void finalize() {\n" +
+                            "    }\n" +
+                            "}",
+                            "2:22-2:30:verifier:finalize() not declared protected",
+                            "Make pretected",
+                            ("package test;\n" +
+                            "public class Test {\n" +
+                            "    protected final void finalize() {\n" +
+                            "    }\n" +
+                            "}").replaceAll("[ \t\n]+", " "));
+    }
+
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return f.getText();
     }
 
 }
