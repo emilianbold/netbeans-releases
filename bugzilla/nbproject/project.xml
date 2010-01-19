@@ -211,7 +211,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.uihandler</friend>
+                <package>org.netbeans.modules.bugzilla.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
