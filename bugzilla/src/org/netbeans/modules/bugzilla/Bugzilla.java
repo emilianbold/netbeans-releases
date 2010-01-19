@@ -58,6 +58,7 @@ import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.kenai.KenaiSupportImpl;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -79,6 +80,7 @@ public class Bugzilla {
     private BugzillaClientManager clientManager;
 
     private KenaiSupport kenaiSupport;
+    private BugzillaConnector connector;
 
     private Bugzilla() {
         ModuleLifecycleManager.instantiated = true;
@@ -158,6 +160,14 @@ public class Bugzilla {
             getStoredRepositories().add(repository);
             BugzillaConfig.getInstance().putRepository(repository.getID(), repository);
         }
+        getConnector().fireRepositoriesChanged();
+    }
+
+    public BugzillaConnector getConnector() {
+        if (connector == null) {
+            connector = Lookup.getDefault().lookup(BugzillaConnector.class);
+        }
+        return connector;
     }
 
     public void removeRepository(BugzillaRepository repository) {
@@ -165,6 +175,7 @@ public class Bugzilla {
             getStoredRepositories().remove(repository);
             BugzillaConfig.getInstance().removeRepository(repository.getID());
         }
+        getConnector().fireRepositoriesChanged();
     }
 
     public BugzillaRepository[] getRepositories() {

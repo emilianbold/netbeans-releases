@@ -40,7 +40,6 @@
 package org.netbeans.modules.bugzilla.api;
 
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepository;
 
@@ -58,22 +57,7 @@ public class NBBugzillaUtils {
      * @param password the given users password. Use null if none available.
      */
     public static void openIssue(String issueID, String username, String password) {
-        BugzillaRepository nbRepo = null;
-
-        BugzillaRepository[] repos = Bugzilla.getInstance().getRepositories();
-        for (BugzillaRepository repo : repos) {
-            if(repo.getUrl().startsWith(NBRepository.NB_BUGZILLA_URL)) {
-                nbRepo = repo;
-                break;
-            }
-        }
-
-        // XXX do we also want to look between kenai repositories?
-
-        if(nbRepo == null) {
-            nbRepo = NBRepository.getInstance();
-        }
-
+        BugzillaRepository nbRepo = NBRepository.findInstance();
         Issue.open(nbRepo, issueID);
     }
     

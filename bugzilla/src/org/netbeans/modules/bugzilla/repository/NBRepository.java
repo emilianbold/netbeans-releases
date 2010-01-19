@@ -39,6 +39,13 @@
 
 package org.netbeans.modules.bugzilla.repository;
 
+import java.net.URL;
+import java.util.Collection;
+import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiManager;
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author Tomas Stupka
@@ -47,16 +54,41 @@ public class NBRepository extends BugzillaRepository {
 
     public static final String NB_BUGZILLA_URL = "https://netbeans.org/bugzilla";  // NOI18N
 
-    private static NBRepository instance;
+    private static BugzillaRepository instance;
 
     private NBRepository() {
-        super("NetbeansRepository" + System.currentTimeMillis(), "Netbeans", NB_BUGZILLA_URL, null, null, null, null);
+        super("NetbeansRepository" + System.currentTimeMillis(), NbBundle.getMessage(NBRepository.class, "LBL_NBRepository"), NB_BUGZILLA_URL, null, null, null, null); // NOI18N
+        // XXX get credentials from kenai or ex reporter
     }
 
-    public static NBRepository getInstance() {
-        if(instance == null) {
-            instance = new NBRepository();
+    public static BugzillaRepository findInstance() {
+
+        BugzillaRepository[] repos = Bugzilla.getInstance().getRepositories();
+        for (BugzillaRepository repo : repos) {
+            if(repo.getUrl().startsWith(NBRepository.NB_BUGZILLA_URL)) {
+                return repo;
+            }
         }
+
+        Collection<Kenai> kenais = KenaiManager.getDefault().getKenais();
+        for (Kenai kenai : kenais) {
+            URL url = kenai.getUrl();
+            if(NB_BUGZILLA_URL.startsWith(url.getProtocol() + "://" + url.getHost())) { // NOI18N
+                // there is a nb kenai registered in the ide
+                // create a new repo but _do not register_ in services
+                instance = new NBRepository(); // XXX for now we keep a repository for each
+                                               //     nb kenai project. there will be no need
+                                               //     to create a new instance as soon as we will
+                                               //     have only one repository instance for all
+                                               //     kenai projects. see also issue #177578
+            }
+        }
+
+        if(instance == null) {                              // no nb repo yet ...
+            instance = new NBRepository();                  // ... create ...
+            Bugzilla.getInstance().addRepository(instance); // ... and register in services/bugtracking
+        }
+
         return instance;
     }
 

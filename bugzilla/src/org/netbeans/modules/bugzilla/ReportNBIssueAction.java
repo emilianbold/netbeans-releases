@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.bugzilla;
 
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
@@ -68,7 +69,7 @@ public class ReportNBIssueAction extends SystemAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
-        NBRepository repo = NBRepository.getInstance();
+        BugzillaRepository repo = NBRepository.findInstance();
         Issue.open(repo, null);        
     }
     
