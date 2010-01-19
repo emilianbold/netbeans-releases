@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,8 +31,12 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.script.loaders;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -46,76 +44,61 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import javax.swing.JEditorPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.editor.BaseDocument;
-
-import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.DataObjectExistsException;
+import org.openide.util.Exceptions;
 
 /**
- *  Recognizes single files in the Repository as being of a certain type.
+ *
+ * @author Sergey Grinev
  */
-public class ShellDataLoader extends CndAbstractDataLoaderExt {
+public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader {
 
-    /** Serial version number */
-    static final long serialVersionUID = -7173746465817543299L;
-
-    /**
-     *  Default constructor
-     */
-    public ShellDataLoader() {
-        super("org.netbeans.modules.cnd.loaders.ShellDataObject"); // NOI18N
-    }
-
-    @Override
-    protected String actionsContext() {
-        return "Loaders/text/sh/Actions/"; // NOI18N
-    }
-
-    @Override
-    protected String getMimeType() {
-        return MIMENames.SHELL_MIME_TYPE;
-    }
-
-    /**
-     *  Create the DataObject.
-     */
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new ShellDataObject(primaryFile, this);
+    protected CndAbstractDataLoaderExt(String representationClassName) {
+        super(representationClassName);
     }
 
     @Override
     protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
-        return new ShellFormat(obj, primaryFile);
+        return new CndFormatExt(obj, primaryFile);
     }
 
-    // Inner class: Substitute important template parameters...
-    private static class ShellFormat extends CndFormat {
+    private static class CndFormatExt extends CndFormat {
 
-        public ShellFormat(MultiDataObject obj, FileObject primaryFile) {
+        public CndFormatExt(MultiDataObject obj, FileObject primaryFile) {
             super(obj, primaryFile);
         }
 
-        // This method was taken fom base class to replace "new line" string.
-        // Shell scripts shouldn't contains "\r"
-        // API doesn't provide method to replace platform dependant "new line" string.
         @Override
         public FileObject createFromTemplate(FileObject f, String name) throws IOException {
-
-            // passed name already contains extension, don't append another one
-            String ext = FileUtil.getExtension(name);
-            if (ext.length() != 0) {
-                name = name.substring(0, name.length() - ext.length() - 1);
+            // we don't want extension to be taken from template filename for our customized dialog
+            String ext;
+            if (MIMEExtensions.isCustomizableExtensions(getFile().getMIMEType())) {
+                ext = FileUtil.getExtension(name);
+                if (ext.length() != 0) {
+                    name = name.substring(0, name.length() - ext.length() - 1);
+                }
             } else {
+                // use default
                 ext = getFile().getExt();
             }
 
             FileObject fo = f.createData(name, ext);
+
             java.text.Format frm = createFormat(f, name, ext);
+
+            EditorKit kit = createEditorKit(getFile().getMIMEType());
+            Document doc = kit.createDefaultDocument();
+
             BufferedReader r = new BufferedReader(new InputStreamReader(
                     getFile().getInputStream(), FileEncodingQuery.getEncoding(getFile())));
             try {
@@ -126,10 +109,29 @@ public class ShellDataLoader extends CndAbstractDataLoaderExt {
                             fo.getOutputStream(lock), encoding));
                     try {
                         String current;
+                        String line = null;
+                        int offset = 0;
                         while ((current = r.readLine()) != null) {
-                            w.write(frm.format(current));
-                            w.write(BaseDocument.LS_LF);
+                            if (line != null) {
+                                doc.insertString(offset, "\n", null); // NOI18N
+                                offset++;
+                            }
+                            line = frm.format(current);
+                            doc.insertString(offset, line, null);
+                            offset += line.length();
                         }
+                        doc.insertString(doc.getLength(), "\n", null); // NOI18N
+                        offset++;
+                        Reformat reformat = Reformat.get(doc);
+                        reformat.lock();
+                        try {
+                            reformat.reformat(0, doc.getLength());
+                        } finally {
+                            reformat.unlock();
+                        }
+                        w.write(doc.getText(0, doc.getLength()));
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
                     } finally {
                         w.close();
                     }
@@ -139,10 +141,23 @@ public class ShellDataLoader extends CndAbstractDataLoaderExt {
             } finally {
                 r.close();
             }
+
+            // copy attributes
             FileUtil.copyAttributes(getFile(), fo);
+
+            // unmark template state
             setTemplate(fo, false);
+
             return fo;
         }
 
+        private EditorKit createEditorKit(String mimeType) {
+            EditorKit kit;
+            kit = JEditorPane.createEditorKitForContentType(mimeType);
+            if (kit == null) {
+                kit = new javax.swing.text.DefaultEditorKit();
+            }
+            return kit;
+        }
     }
 }

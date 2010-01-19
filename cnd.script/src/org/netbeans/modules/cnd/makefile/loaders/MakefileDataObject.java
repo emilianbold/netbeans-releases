@@ -38,55 +38,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.loaders;
 
-import javax.swing.Action;
-import org.openide.nodes.Children;
-import org.openide.nodes.Sheet;
-import org.openide.util.actions.SystemAction;
-import org.openide.actions.OpenAction;
+package org.netbeans.modules.cnd.makefile.loaders;
 
-import org.netbeans.modules.cnd.execution.ShellExecSupport;
 
-/** A node to represent a Shell data object */
-public class ShellDataNode extends CndDataNode {
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.nodes.Node;
+import org.openide.nodes.CookieSet;
 
-    /** We need this in several places */
-    private ShellExecSupport mes;
+import org.netbeans.modules.cnd.builds.MakeExecSupport;
+import org.netbeans.modules.cnd.script.loaders.CndDataObject;
+import org.openide.text.DataEditorSupport;
 
-    /** Construct the DataNode */
-    public ShellDataNode(ShellDataObject obj) {
-        this(obj, Children.LEAF);
+/**
+ *  Represents a Makefile object in the Repository.
+ */
+public class MakefileDataObject extends CndDataObject {
+
+    /** Serial version number */
+    static final long serialVersionUID = -5853234372530618782L;
+
+
+    /** Constructor for this class */
+    public MakefileDataObject(FileObject pf, MultiFileLoader loader)
+		throws DataObjectExistsException {
+	super(pf, loader);
     }
 
-    /** Construct the DataNode */
-    public ShellDataNode(ShellDataObject obj, Children ch) {
-        super(obj, ch, "org/netbeans/modules/cnd/loaders/ShellDataIcon.gif"); // NOI18N
+    /**
+     *  The init method is called from CndDataObject's constructor.
+     */
+    protected void init() {
+	CookieSet cookies = getCookieSet();
 
-        getCookieSet().add(getSupport());
+        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+	cookies.add(new MakeExecSupport(getPrimaryEntry()));
     }
 
-    /** Get the support for methods which need it */
-    private final ShellExecSupport getSupport() {
-        if (mes == null) {
-            mes = getCookie(ShellExecSupport.class);
-        }
 
-        return mes;
-    }
-
-    /** Create the properties sheet for the node */
-    @Override
-    protected Sheet createSheet() {
-        // Just add properties to default property tab (they used to be in a special 'Building Tab')
-        Sheet defaultSheet = super.createSheet();
-        Sheet.Set defaultSet = defaultSheet.get(Sheet.PROPERTIES);
-        getSupport().addProperties(defaultSet);
-        return defaultSheet;
-    }
-
-    @Override
-    public Action getPreferredAction() {
-        return SystemAction.get(OpenAction.class);
+    /** Create the delegate node */
+    protected Node createNodeDelegate() {
+	return new MakefileDataNode(this);
     }
 }

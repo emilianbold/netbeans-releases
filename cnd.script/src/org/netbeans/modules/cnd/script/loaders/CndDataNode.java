@@ -38,75 +38,67 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.loaders;
 
+package org.netbeans.modules.cnd.script.loaders;
 
+import java.util.ResourceBundle;
+import javax.swing.Action;
+
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Children;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
+import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.nodes.Node;
-import org.openide.nodes.CookieSet;
-
-import org.netbeans.modules.cnd.execution.ShellExecSupport;
-import org.openide.text.DataEditorSupport;
 
 /**
- *  Represents a Shell object in the Repository.
+ *  A base class for C/C++/Fortran (C-C-F) nodes. The functionality from
+ *  this base class is the renaming of the PROP_name property to show an extension.
  */
-public class ShellDataObject extends CndDataObject {
+public class CndDataNode extends DataNode {
 
-    /** Serial version number */
-    static final long serialVersionUID = -5853234372530618782L;
+    /** The name property */
+    //private static final String PROP_NAME = "name"; // NOI18N
+
+    /** Cache the bundle */
+    private static ResourceBundle bundle = NbBundle.getBundle(CndDataNode.class);
+
+    /** Primary File */
+    private FileObject primary;
+
 
     /** Constructor for this class */
-    public ShellDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
-        super(pf, loader);
+    public CndDataNode(DataObject obj, Children ch) {
+	super(obj, ch);
+	primary = getDataObject().getPrimaryFile();
     }
 
-//    /*
-//     * Return name with extension so renaming etc works
-//     * But this breaks creating makefile with names xxx.mk from templates, so
-//     * check if name starts with "__", then return name without the 'extension'
-//     * (4899051)
-//     */
-//    public String getName() {
-//	String ename = null;
-//	ename = super.getName();
-//	if (!ename.startsWith("__")) // NOI18N
-//	    ename = getPrimaryFile().getNameExt();
-//	return ename;
-//    }
-//
-//    protected FileObject handleRename(String name) throws IOException {
-//        FileLock lock = getPrimaryFile().lock();
-//        int pos = name.lastIndexOf('.');
-//
-//        try {
-//            if (pos <= 0){
-//                // file without separator
-//                getPrimaryFile().rename(lock, name, null);
-//            } else {
-//		getPrimaryFile().rename(lock, name.substring(0, pos), 
-//                        name.substring(pos + 1, name.length()));
-//            }
-//        } finally {
-//            lock.releaseLock ();
-//        }
-//        return getPrimaryFile ();
-//    }
+    public CndDataNode(DataObject obj, Children ch, String icon) {
+	super(obj, ch);
+	setIconBaseWithExtension(icon);
+    }
+
     /**
-     *  The init method is called from CndDataObject's constructor.
+     *  Overrides default action from DataNode.
+     *  Instantiate a template, if isTemplate() returns true.
+     *  Opens otherwise.
      */
     @Override
-    protected void init() {
-        CookieSet cookies = getCookieSet();
-
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
-        cookies.add(new ShellExecSupport(getPrimaryEntry()));
+    public Action getPreferredAction() {
+	Action result = super.getPreferredAction();
+	return result == null ? SystemAction.get(OpenAction.class) : result;
     }
 
-    /** Create the delegate node */
-    protected Node createNodeDelegate() {
-        return new ShellDataNode(this);
+    /** Getter for bundle strings */
+    protected static String getString(String prop) {
+	return bundle.getString(prop);
     }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+	return new HelpCtx("Welcome_cpp_home"); // NOI18N
+    }
+    
 }

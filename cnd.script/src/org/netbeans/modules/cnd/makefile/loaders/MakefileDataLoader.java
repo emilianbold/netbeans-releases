@@ -38,47 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.makefile.loaders;
 
-package org.netbeans.modules.cnd.loaders;
+import java.io.IOException;
+import org.netbeans.modules.cnd.script.loaders.CndAbstractDataLoader;
 
-
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.MultiFileLoader;
+import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.nodes.Node;
-import org.openide.nodes.CookieSet;
 
-import org.netbeans.modules.cnd.builds.MakeExecSupport;
-import org.openide.text.DataEditorSupport;
-
-/**
- *  Represents a Makefile object in the Repository.
- */
-public class MakefileDataObject extends CndDataObject {
+/** Recognizes single files in the Repository as being of a certain type */
+public class MakefileDataLoader extends CndAbstractDataLoader {
 
     /** Serial version number */
-    static final long serialVersionUID = -5853234372530618782L;
+    static final long serialVersionUID = -7148711275717543299L;
 
-
-    /** Constructor for this class */
-    public MakefileDataObject(FileObject pf, MultiFileLoader loader)
-		throws DataObjectExistsException {
-	super(pf, loader);
+    public MakefileDataLoader() {
+        super("org.netbeans.modules.cnd.makefile.loaders.MakefileDataObject"); // NOI18N
     }
 
-    /**
-     *  The init method is called from CndDataObject's constructor.
-     */
-    protected void init() {
-	CookieSet cookies = getCookieSet();
-
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
-	cookies.add(new MakeExecSupport(getPrimaryEntry()));
+    @Override
+    protected String actionsContext() {
+        return "Loaders/text/x-make/Actions/"; // NOI18N
     }
 
+    /** Create the DataObject */
+    protected MultiDataObject createMultiObject(FileObject primaryFile)
+            throws DataObjectExistsException, IOException {
+        return new MakefileDataObject(primaryFile, this);
+    }
 
-    /** Create the delegate node */
-    protected Node createNodeDelegate() {
-	return new MakefileDataNode(this);
+    @Override
+    protected String getMimeType() {
+        return MIMENames.MAKEFILE_MIME_TYPE;
     }
 }
+

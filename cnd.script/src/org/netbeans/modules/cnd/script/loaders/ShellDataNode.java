@@ -38,34 +38,38 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.script.loaders;
 
-import org.netbeans.modules.cnd.builds.MakeExecSupport;
+import javax.swing.Action;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
+import org.openide.util.actions.SystemAction;
+import org.openide.actions.OpenAction;
 
-/** A node to represent a Makefile data object */
-public class MakefileDataNode extends CndDataNode {
+import org.netbeans.modules.cnd.execution.ShellExecSupport;
+
+/** A node to represent a Shell data object */
+public class ShellDataNode extends CndDataNode {
 
     /** We need this in several places */
-    private MakeExecSupport mes;
+    private ShellExecSupport mes;
 
     /** Construct the DataNode */
-    public MakefileDataNode(MakefileDataObject obj) {
+    public ShellDataNode(ShellDataObject obj) {
         this(obj, Children.LEAF);
     }
 
     /** Construct the DataNode */
-    public MakefileDataNode(MakefileDataObject obj, Children ch) {
-        super(obj, ch, MakefileDataIcon);
+    public ShellDataNode(ShellDataObject obj, Children ch) {
+        super(obj, ch, "org/netbeans/modules/cnd/script/resources/ShellDataIcon.gif"); // NOI18N
 
         getCookieSet().add(getSupport());
     }
 
     /** Get the support for methods which need it */
-    private final MakeExecSupport getSupport() {
+    private final ShellExecSupport getSupport() {
         if (mes == null) {
-            mes = getCookie(MakeExecSupport.class);
+            mes = getCookie(ShellExecSupport.class);
         }
 
         return mes;
@@ -80,7 +84,9 @@ public class MakefileDataNode extends CndDataNode {
         getSupport().addProperties(defaultSet);
         return defaultSheet;
     }
-    private static final String MakefileDataIcon =
-            "org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif"; // NOI18N
-}
 
+    @Override
+    public Action getPreferredAction() {
+        return SystemAction.get(OpenAction.class);
+    }
+}

@@ -38,32 +38,75 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.script.loaders;
 
 
-import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.MultiFileLoader;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.nodes.Node;
+import org.openide.nodes.CookieSet;
+
+import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.openide.text.DataEditorSupport;
 
 /**
- *  Recognizes single files in the Repository as being of a certain type.
+ *  Represents a Shell object in the Repository.
  */
-public final class BatDataLoader extends ShellDataLoader {
+public class ShellDataObject extends CndDataObject {
 
     /** Serial version number */
-    static final long serialVersionUID = 1L;
+    static final long serialVersionUID = -5853234372530618782L;
 
+    /** Constructor for this class */
+    public ShellDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
+        super(pf, loader);
+    }
+
+//    /*
+//     * Return name with extension so renaming etc works
+//     * But this breaks creating makefile with names xxx.mk from templates, so
+//     * check if name starts with "__", then return name without the 'extension'
+//     * (4899051)
+//     */
+//    public String getName() {
+//	String ename = null;
+//	ename = super.getName();
+//	if (!ename.startsWith("__")) // NOI18N
+//	    ename = getPrimaryFile().getNameExt();
+//	return ename;
+//    }
+//
+//    protected FileObject handleRename(String name) throws IOException {
+//        FileLock lock = getPrimaryFile().lock();
+//        int pos = name.lastIndexOf('.');
+//
+//        try {
+//            if (pos <= 0){
+//                // file without separator
+//                getPrimaryFile().rename(lock, name, null);
+//            } else {
+//		getPrimaryFile().rename(lock, name.substring(0, pos), 
+//                        name.substring(pos + 1, name.length()));
+//            }
+//        } finally {
+//            lock.releaseLock ();
+//        }
+//        return getPrimaryFile ();
+//    }
     /**
-     *  Default constructor
+     *  The init method is called from CndDataObject's constructor.
      */
-    public BatDataLoader() {
+    @Override
+    protected void init() {
+        CookieSet cookies = getCookieSet();
+
+        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
+        cookies.add(new ShellExecSupport(getPrimaryEntry()));
     }
 
-    @Override
-    protected String actionsContext() {
-        return "Loaders/text/bat/Actions/"; // NOI18N
-    }
-
-    @Override
-    protected String getMimeType() {
-        return MIMENames.BAT_MIME_TYPE;
+    /** Create the delegate node */
+    protected Node createNodeDelegate() {
+        return new ShellDataNode(this);
     }
 }

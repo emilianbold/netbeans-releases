@@ -38,39 +38,32 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.cnd.script.loaders;
 
-import java.io.IOException;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.DataObjectExistsException;
 
-/** Recognizes single files in the Repository as being of a certain type */
-public class MakefileDataLoader extends CndAbstractDataLoader {
+/**
+ *  Recognizes single files in the Repository as being of a certain type.
+ */
+public final class BatDataLoader extends ShellDataLoader {
 
     /** Serial version number */
-    static final long serialVersionUID = -7148711275717543299L;
+    static final long serialVersionUID = 1L;
 
-    public MakefileDataLoader() {
-        super("org.netbeans.modules.cnd.loaders.MakefileDataObject"); // NOI18N
+    /**
+     *  Default constructor
+     */
+    public BatDataLoader() {
     }
 
     @Override
     protected String actionsContext() {
-        return "Loaders/text/x-make/Actions/"; // NOI18N
-    }
-
-    /** Create the DataObject */
-    protected MultiDataObject createMultiObject(FileObject primaryFile)
-            throws DataObjectExistsException, IOException {
-        return new MakefileDataObject(primaryFile, this);
+        return "Loaders/text/bat/Actions/"; // NOI18N
     }
 
     @Override
     protected String getMimeType() {
-        return MIMENames.MAKEFILE_MIME_TYPE;
+        return MIMENames.BAT_MIME_TYPE;
     }
 }
-
