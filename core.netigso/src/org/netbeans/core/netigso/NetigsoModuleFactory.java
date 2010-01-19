@@ -68,7 +68,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
@@ -117,11 +116,15 @@ implements Stamps.Updater {
 
         startContainer();
         for (NetigsoModule nm : turnOn) {
-            nm.start();
+            try {
+                nm.start();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
-    static synchronized void classLoaderUp(NetigsoModule nm) {
+    static synchronized void classLoaderUp(NetigsoModule nm) throws IOException {
         if (toInit != null) {
             toInit.add(nm);
             return;
@@ -244,9 +247,7 @@ implements Stamps.Updater {
             configMap.put("felix.cache.dir", cache);
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
             activator = new NetigsoActivator();
-            List<BundleActivator> activators = new ArrayList<BundleActivator>();
-            activators.add(activator);
-            configMap.put("felix.systembundle.activators", activators);
+            configMap.put("felix.bootdelegation.classloaders", activator);
             FrameworkFactory frameworkFactory = Lookup.getDefault().lookup(FrameworkFactory.class);
             framework = frameworkFactory.newFramework(configMap);
             framework.init();
@@ -330,8 +331,8 @@ implements Stamps.Updater {
         InputStream is = fakeBundle(m);
         if (is != null) {
             try {
+                NetigsoActivator.register(m);
                 getContainer().getBundleContext().installBundle("netigso://" + m.getCodeNameBase(), is);
-                activator.register(m);
                 is.close();
             } catch (BundleException ex) {
                 throw new IOException(ex.getMessage());
