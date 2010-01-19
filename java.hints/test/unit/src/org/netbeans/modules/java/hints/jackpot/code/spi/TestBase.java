@@ -43,6 +43,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -162,6 +163,7 @@ public abstract class TestBase extends NbTestCase {
         prepareTest(fileName, code);
 
         List<ErrorDescription> errors = computeErrors(info);
+        Collections.sort (errors, ERRORS_COMPARATOR);
         List<String> errorsNames = new LinkedList<String>();
 
         errors = errors != null ? errors : Collections.<ErrorDescription>emptyList();
@@ -181,6 +183,7 @@ public abstract class TestBase extends NbTestCase {
         prepareTest(fileName, code);
 
         List<ErrorDescription> errors = computeErrors(info);
+        Collections.sort (errors, ERRORS_COMPARATOR);
 
         ErrorDescription toFix = null;
 
@@ -237,4 +240,11 @@ public abstract class TestBase extends NbTestCase {
         return new FileObject[0];
     }
 
+
+    private static final Comparator<ErrorDescription> ERRORS_COMPARATOR = new Comparator<ErrorDescription> () {
+
+        public int compare (ErrorDescription e1, ErrorDescription e2) {
+            return e1.getRange ().getBegin ().getOffset () - e2.getRange ().getBegin ().getOffset ();
+        }
+    };
 }
