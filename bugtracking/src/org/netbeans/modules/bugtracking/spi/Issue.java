@@ -171,13 +171,18 @@ public abstract class Issue {
     public abstract BugtrackingController getController();
 
     /**
-     * Opens the issue with the given issueId in the IDE
+     * Opens the issue with the given issueId in the IDE. In case that issueId
+     * is null a new issue wil be created.
      *
      * @param repository
      * @param issueId
      */
     public static void open(final Repository repository, final String issueId) {
-        IssueAction.openIssue(repository, issueId);
+        if(issueId == null) {
+            IssueAction.createIssue(repository);
+        } else {            
+            IssueAction.openIssue(repository, issueId);
+        }
     }
 
     /**
