@@ -117,6 +117,7 @@ public abstract class SharedRubyProjectProperties {
     private Map<String, Map<String, String>> runConfigs;
 
     private List<GemRequirement> gemRequirements;
+    private List<GemRequirement> gemRequirementsTests;
     
     public static final String[] WELL_KNOWN_PATHS = new String[]{
         "${" + JAVAC_CLASSPATH + "}", // NOI18N
@@ -227,6 +228,14 @@ public abstract class SharedRubyProjectProperties {
 
     public void setGemRequirements(List<GemRequirement> gemRequirements) {
         this.gemRequirements = gemRequirements;
+    }
+
+    public List<GemRequirement> getGemRequirementsForTests() {
+        return gemRequirementsTests;
+    }
+
+    public void setGemRequirementsForTests(List<GemRequirement> gemRequirements) {
+        this.gemRequirementsTests = gemRequirements;
     }
 
     public Map<String, Map<String, String>> getRunConfigs() {
@@ -370,11 +379,7 @@ public abstract class SharedRubyProjectProperties {
         }
         getUpdateHelper().putProperties("nbproject/private/config.properties", configProperties); // NOI18N
 
-        if (gemRequirements == null) {
-            projectProperties.remove(RequiredGems.REQUIRED_GEMS_PROPERTY);
-        } else {
-            projectProperties.put(RequiredGems.REQUIRED_GEMS_PROPERTY, RequiredGems.asString(gemRequirements));
-        }
+        putGemRequirements(projectProperties);
         // Save all paths
         projectProperties.setProperty(JAVAC_CLASSPATH, javac_cp);
 
@@ -392,6 +397,19 @@ public abstract class SharedRubyProjectProperties {
             } catch (UnsupportedCharsetException e) {
                 //When the encoding is not supported by JVM do not set it as default
             }
+        }
+    }
+
+    private void putGemRequirements(EditableProperties projectProperties) {
+        if (gemRequirements == null) {
+            projectProperties.remove(RequiredGems.REQUIRED_GEMS_PROPERTY);
+        } else {
+            projectProperties.put(RequiredGems.REQUIRED_GEMS_PROPERTY, RequiredGems.asString(gemRequirements));
+        }
+        if (gemRequirementsTests == null) {
+            projectProperties.remove(RequiredGems.REQUIRED_GEMS_TESTS_PROPERTY);
+        } else {
+            projectProperties.put(RequiredGems.REQUIRED_GEMS_TESTS_PROPERTY, RequiredGems.asString(gemRequirementsTests));
         }
     }
 

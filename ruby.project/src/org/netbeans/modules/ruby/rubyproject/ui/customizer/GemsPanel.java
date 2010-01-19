@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.ruby.rubyproject.ui.customizer;
 
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.RegularExpression;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -73,13 +74,17 @@ public class GemsPanel extends javax.swing.JPanel {
     private final RubyBaseProject project;
     private final SharedRubyProjectProperties properties;
     private RequiredGems requiredGems;
+    private RequiredGems requiredGemsTest;
 
     GemsPanel(RubyBaseProject project, SharedRubyProjectProperties uiProps) {
         this.project = project;
         this.properties = uiProps;
-        requiredGems = project.getLookup().lookup(RequiredGems.class);
+        RequiredGems[] reqs = RequiredGems.lookup(project);
+        this.requiredGems = reqs[0];
+        this.requiredGemsTest = reqs[1];
         //XXX need to init this somewhere else
         requiredGems.setRequiredGems(project.evaluator().getProperty(RequiredGems.REQUIRED_GEMS_PROPERTY));
+        requiredGemsTest.setRequiredGems(project.evaluator().getProperty(RequiredGems.REQUIRED_GEMS_TESTS_PROPERTY));
         initComponents();
         enableButtons(true);
     }
@@ -92,9 +97,17 @@ public class GemsPanel extends javax.swing.JPanel {
     }
 
     private DefaultTableModel createTableModel() {
+        return createTableModelFor(requiredGems);
+    }
+
+    private DefaultTableModel createTestTableModel() {
+        return createTableModelFor(requiredGemsTest);
+    }
+
+    private DefaultTableModel createTableModelFor(RequiredGems requiredGems) {
         List<GemIndexingStatus> gems = requiredGems.getGemIndexingStatuses();
         if (gems == null) {
-            return createTestTableModel();
+            return createTableModelWithDefaultGems();
         }
 
         GemManager gemManager = getGemManager();
@@ -108,19 +121,19 @@ public class GemsPanel extends javax.swing.JPanel {
             if (indexedVersion == null) {
                 indexedVersion = gemManager.getLatestVersion(indexedGem.getRequirement().getName());
             }
-            data[i][2] = indexedVersion != null 
+            data[i][2] = indexedVersion != null
                     ? indexedVersion
                     : NbBundle.getMessage(GemsPanel.class, "NoVersionInstalled");
         }
 
         NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title0");
-        return new DefaultTableModel(data, 
+        return new DefaultTableModel(data,
                 new Object[]{NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title0"),
                 NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title1"),
                 NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title2")});
     }
 
-    private DefaultTableModel createTestTableModel() {
+    private DefaultTableModel createTableModelWithDefaultGems() {
 
         RubyPlatform platform = project.getPlatform();
         if (platform == null) {
@@ -140,7 +153,10 @@ public class GemsPanel extends javax.swing.JPanel {
             data[i][2] = gemManager.getLatestVersion(gem.getName());
         }
 
-        return new DefaultTableModel(data, new Object[]{"Name", "Required Version", "Indexed Version"});
+        return new DefaultTableModel(data,
+                new Object[]{NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title0"),
+                NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title1"),
+                NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title2")});
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -245,12 +261,17 @@ public class GemsPanel extends javax.swing.JPanel {
         if (row != -1) {
             DefaultTableModel model = (DefaultTableModel) selected.getModel();
             String name = (String) model.getValueAt(row, 0);
-            requiredGems.removeRequirement(name);
+            getSelectedRequiredGems().removeRequirement(name);
             model.removeRow(row);
-
         }
     }//GEN-LAST:event_removeButtonActionPerformed
 
+    private RequiredGems getSelectedRequiredGems() {
+        if (jTabbedPane1.getSelectedIndex() == 0) {
+            return requiredGems;
+        }
+        return requiredGemsTest;
+    }
 
     private GemManager getGemManager() {
         return project.getPlatform().getGemManager();
@@ -290,8 +311,8 @@ public class GemsPanel extends javax.swing.JPanel {
             for (Gem each : gemListPanel.getSelectedGems()) {
                 reqsToAdd.add(GemRequirement.forGem(each));
             }
-            requiredGems.addRequirements(reqsToAdd);
-            gemsTable.setModel(createTableModel());
+            getSelectedRequiredGems().addRequirements(reqsToAdd);
+            getSelectedTable().setModel(createTableModel());
         }
         // TODO add your handling code here:
     }//GEN-LAST:event_addButtonActionPerformed
@@ -316,6 +337,7 @@ public class GemsPanel extends javax.swing.JPanel {
     public void removeNotify() {
         super.removeNotify();
         properties.setGemRequirements(requiredGems.getGemRequirements());
+        properties.setGemRequirementsForTests(requiredGemsTest.getGemRequirements());
     }
 
 

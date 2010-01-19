@@ -56,8 +56,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
@@ -106,9 +104,9 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         this.evaluator = evaluator;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
         RubyPreferences.addPropertyChangeListener(WeakListeners.propertyChange(this, RubyPreferences.getInstance()));
-        this.requiredGems = project.getLookup().lookup(RequiredGems.class);
-//        this.requiredGems.addPropertyChangeListener(WeakListeners.propertyChange(this, this.requiredGems));
         this.forTests = forTests;
+        RequiredGems[] reqs = RequiredGems.lookup(project);
+        this.requiredGems = forTests ? reqs[1] : reqs[0];
         this.gemFilter = new GemFilter(evaluator);
         this.platform = new RubyPlatformProvider(evaluator).getPlatform();
     }
@@ -179,7 +177,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     }
 
     private void filterAndAddGems(Collection<URL> gemsToAdd, List<PathResourceImplementation> result) {
-        Collection<URL> filtered = forTests ? gemsToAdd : requiredGems.filterNotRequiredGems(gemsToAdd);
+        Collection<URL> filtered = requiredGems.filterNotRequiredGems(gemsToAdd);
         for (URL url : filtered) {
             String gem = Gem.getGemName(url);
             if (gemFilter.include(gem)) {
@@ -191,9 +189,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             }
             result.add(ClassPathSupport.createResource(url));
         }
-        if (!forTests) {
-            requiredGems.setIndexedGems(filtered);
-        }
+        requiredGems.setIndexedGems(filtered);
     }
 
     private boolean useVendorGemsOnly() {
@@ -295,28 +291,14 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             platform = RubyPlatformProvider.getPlatform((String) evt.getNewValue());
             resetCache();
         }
-        if (evt.getPropertyName().equals(RequiredGems.REQUIRED_GEMS_PROPERTY)) {
+        if (evt.getPropertyName().equals(RequiredGems.REQUIRED_GEMS_TESTS_PROPERTY) && forTests) {
             requiredGems.setRequiredGems((String) evt.getNewValue());
             resetCache();
         }
-//        if (evt.getSource() == this.evaluator && evt.getPropertyName().equals(PLATFORM_ACTIVE)) {
-//            //Active platform was changed
-//            resetCache ();
-//        }
-//        else if (evt.getSource() == this.platformManager && JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(evt.getPropertyName()) && activePlatformName != null) {
-//            //Platform definitions were changed, check if the platform was not resolved or deleted
-//            if (this.isActivePlatformValid) {
-//                if (RubyProjectUtil.getActivePlatform (this.activePlatformName) == null) {
-//                    //the platform was not removed
-//                    this.resetCache();
-//                }
-//            }
-//            else {
-//                if (RubyProjectUtil.getActivePlatform (this.activePlatformName) != null) {
-//                    this.resetCache();
-//                }
-//            }
-//        }
+        if (evt.getPropertyName().equals(RequiredGems.REQUIRED_GEMS_PROPERTY) && !forTests) {
+            requiredGems.setRequiredGems((String) evt.getNewValue());
+            resetCache();
+        }
     }
 
     /**

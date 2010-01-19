@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
 import org.netbeans.modules.ruby.rubyproject.GemRequirement.Status;
@@ -66,19 +67,60 @@ public final class RequiredGems  {
      * The project property for required gems.
      */
     public static final String REQUIRED_GEMS_PROPERTY = "required.gems"; //NOI18N
+    /**
+     * The project property for the gems required in tests.
+     */
+    public static final String REQUIRED_GEMS_TESTS_PROPERTY = "required.gems.tests"; //NOI18N
 
     /** @GuardedBy("this") */
     private List<GemRequirement> requirements;
     /** @GuardedBy("this") */
     private final List<URL> indexedGems = new ArrayList<URL>();
 
-    private RequiredGems() {
+    private final boolean forTests;
+
+    private RequiredGems(boolean forTests) {
+        this.forTests = forTests;
     }
 
     public static RequiredGems create(RubyBaseProject project) {
-        RequiredGems result = new RequiredGems();
+        RequiredGems result = new RequiredGems(false);
         result.setRequiredGems(fromString(project.evaluator().getProperty(REQUIRED_GEMS_PROPERTY)));
         return result;
+    }
+
+    public static RequiredGems createForTests(RubyBaseProject project) {
+        RequiredGems result = new RequiredGems(true);
+        result.setRequiredGems(fromString(project.evaluator().getProperty(REQUIRED_GEMS_TESTS_PROPERTY)));
+        return result;
+    }
+
+    /**
+     * Looks up <code>RequiredGems</code> from the given <code>project</code>.
+     * 
+     * @param project
+     * @return an array containing <code>RequiredGems</code>; <code>[0]</code> for sources and
+     * <code>[1]</code> for tests.
+     */
+    public static RequiredGems[] lookup(Project project) {
+        Collection<? extends RequiredGems> reqGems = project.getLookup().lookupAll(RequiredGems.class);
+        assert reqGems.size() == 2;
+        RequiredGems rg = null;
+        RequiredGems rgTest = null;
+        for (RequiredGems each : reqGems) {
+            if (each.isForTests()) {
+                rgTest = each;
+            } else {
+                rg = each;
+            }
+        }
+        return new RequiredGems[]{rg, rgTest};
+    }
+    /**
+     * @return true if this represents required gems for tests.
+     */
+    public boolean isForTests() {
+        return forTests;
     }
 
     /**
@@ -272,7 +314,7 @@ public final class RequiredGems  {
         }
     }
 
-    private static List<GemRequirement> fromString(String str) {
+    static List<GemRequirement> fromString(String str) {
         if (str == null) {
             return null;
         }
