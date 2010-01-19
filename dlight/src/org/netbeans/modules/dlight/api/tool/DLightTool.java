@@ -200,21 +200,21 @@ public final class DLightTool implements Validateable<DLightTarget> {
             List<DataCollectorConfiguration> configurations = toolConfAccessor.getDataCollectors(configuration);
             List<IndicatorDataProviderConfiguration> idpConfigurations = toolConfAccessor.getIndicatorDataProviders(configuration);
 
-                for (DataCollectorConfiguration conf : configurations) {
-                    DataCollector<?> collector = DataCollectorProvider.getInstance().createDataCollector(conf);
-                    if (collector == null) {
-                        log.info("Could not find DataCollector for configuration with id:" + conf.getID() + " check if " + //NOI18N
-                                "DataColelctorFactory is registered in Global Lookup with the same ID"); //NOI18N
-                        continue;
-                    }
-                    registerCollector(collector);
-                    //if it is indicator and registered as indicator
-                    if (collector instanceof IndicatorDataProvider<?> && idpConfigurations.contains((IndicatorDataProviderConfiguration) conf)) {
-                        registerIndicatorDataProvider((IndicatorDataProvider<?>) collector);
-                    }
+            for (DataCollectorConfiguration conf : configurations) {
+                DataCollector<?> collector = DataCollectorProvider.getInstance().createDataCollector(conf);
+                if (collector == null) {
+                    log.info("Could not find DataCollector for configuration with id:" + conf.getID() + " check if " + //NOI18N
+                            "DataColelctorFactory is registered in Global Lookup with the same ID"); //NOI18N
+                    continue;
                 }
-
+                registerCollector(collector);
+                //if it is indicator and registered as indicator
+                if (collector instanceof IndicatorDataProvider<?> && idpConfigurations.contains((IndicatorDataProviderConfiguration) conf)) {
+                    registerIndicatorDataProvider((IndicatorDataProvider<?>) collector);
+                }
             }
+
+            
             dcsInitialized = true;
         }
     }
