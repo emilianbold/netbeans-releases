@@ -204,11 +204,7 @@ public class JsfSupport {
 
     public synchronized JsfIndex getIndex() {
         if(index == null) {
-            try {
-                this.index = JsfIndex.create(wm);
-            } catch (IOException ex) {
-                Logger.global.log(Level.SEVERE, "Cannot create index for jsf support!", ex); //NOI18N
-            }
+	    this.index = JsfIndex.create(wm);
         }
         return this.index;
     }

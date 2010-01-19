@@ -86,6 +86,7 @@ import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
+import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.lexer.MutableTextInput;
@@ -412,7 +413,8 @@ public class JsfHtmlExtension extends HtmlExtension {
                     if (component == null) {
                         return DeclarationLocation.NONE;
                     }
-                    FileObject file = component.getComponentModel().getSourceFile();
+		    CompositeComponentModel model = component.getComponentModel();
+                    FileObject file = model.getSourceFile();
 
                     //find to what exactly the user points, the AST doesn't contain attributes as nodes :-(
                     int astOffset = snapshot.getEmbeddedOffset(caretOffset);
