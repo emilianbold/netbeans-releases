@@ -395,7 +395,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                                 indent = getTokenColumn(lparen)+1;
                                                 break;
                                             }
-                                        }
+                                         }
                                         indent = getTokenIndent(tt) + getFormatStatementContinuationIndent();
                                     } else {
                                         indent = getTokenIndent(tt);
