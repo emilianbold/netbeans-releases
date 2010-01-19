@@ -41,6 +41,7 @@ package org.netbeans.modules.java.hints.jackpot.spi;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -85,15 +86,19 @@ public class HintMetadata {
         return new HintMetadata(id, displayName, description, category, enabled, kind, severity, customizer, suppressWarnings);
     }
 
-    public static HintMetadata create(String id, Class<?> bundleFor, String category, boolean enabled, HintSeverity severity, String... suppressWarnings) {
-        return create(id, bundleFor, category, enabled, severity, null, suppressWarnings);
+    public static HintMetadata create(String id, String bundleForFQN, String category, boolean enabled, HintSeverity severity, String... suppressWarnings) {
+        return create(id, bundleForFQN, category, enabled, severity, null, suppressWarnings);
     }
 
-    public static HintMetadata create(String id, Class<?> bundleFor, String category, boolean enabled, HintSeverity severity, CustomizerProvider customizer, String... suppressWarnings) {
+    public static HintMetadata create(String id, String bundleForFQN, String category, boolean enabled, HintSeverity severity, CustomizerProvider customizer, String... suppressWarnings) {
         ResourceBundle bundle;
 
         try {
-            bundle = NbBundle.getBundle(bundleFor);
+            int lastDot = bundleForFQN.lastIndexOf('.');
+
+            assert lastDot >= 0;
+
+            bundle = NbBundle.getBundle(bundleForFQN.substring(0, lastDot + 1) + "Bundle");
         } catch (MissingResourceException mre) {
             Logger.getLogger(HintMetadata.class.getName()).log(Level.FINE, null, mre);
             bundle = null;

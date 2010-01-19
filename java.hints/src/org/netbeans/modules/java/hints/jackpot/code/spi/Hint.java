@@ -50,7 +50,7 @@ import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
  * @author lahvac
  */
 @Target({ElementType.TYPE, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.SOURCE)
 public @interface Hint {
     public String id() default "";
     public String category();

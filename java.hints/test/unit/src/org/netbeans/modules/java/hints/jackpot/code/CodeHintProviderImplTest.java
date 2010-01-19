@@ -69,7 +69,7 @@ public class CodeHintProviderImplTest {
     }
 
     @Test
-    public void testComputeHints() {
+    public void testComputeHints() throws Exception {
         Map<HintMetadata, ? extends Collection<? extends HintDescription>> hints = new CodeHintProviderImpl().computeHints();
 
         Set<String> golden = new HashSet<String>(Arrays.asList(
@@ -86,7 +86,7 @@ public class CodeHintProviderImplTest {
         assertTrue(golden.toString(), golden.isEmpty());
     }
 
-    private static String toString(HintDescription hd) {
+    private static String toString(HintDescription hd) throws Exception {
         StringBuilder sb = new StringBuilder();
 
         sb.append(hd.getTriggerKind());
