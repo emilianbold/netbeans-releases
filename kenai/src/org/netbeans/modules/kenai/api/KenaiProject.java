@@ -368,6 +368,7 @@ public final class KenaiProject {
     public synchronized void addMember(KenaiUser user, KenaiProjectMember.Role role) throws KenaiException {
         members = null;
         kenai.addMember(this, user, role);
+        firePropertyChange(PROP_PROJECT_CHANGED, null, null);
     }
 
     /**
@@ -377,10 +378,11 @@ public final class KenaiProject {
      */
     public synchronized void deleteMember(KenaiUser user) throws KenaiException {
         members = null;
-        if (user.data.href==null) {
+        //if (user.data.href==null) {
             getMembers();
-        }
+        //}
         kenai.deleteMember(this, user);
+        firePropertyChange(PROP_PROJECT_CHANGED, null, null);
     }
 
     public synchronized KenaiUser getOwner() throws KenaiException {
