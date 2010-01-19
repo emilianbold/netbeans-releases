@@ -377,6 +377,9 @@ public final class KenaiProject {
      */
     public synchronized void deleteMember(KenaiUser user) throws KenaiException {
         members = null;
+        if (user.data.href==null) {
+            getMembers();
+        }
         kenai.deleteMember(this, user);
     }
 
