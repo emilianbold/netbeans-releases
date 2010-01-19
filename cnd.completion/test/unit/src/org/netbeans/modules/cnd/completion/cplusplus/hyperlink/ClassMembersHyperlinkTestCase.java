@@ -904,6 +904,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz175231.cc", 11, 19, "iz175231.cc", 14, 5);
     }
 
+    public void testIZ179373() throws Exception {
+        // Bug#179373: unable to resolve a member of the result of an operator
+        performTest("iz179373.cc", 17, 13, "iz179373.cc", 3, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

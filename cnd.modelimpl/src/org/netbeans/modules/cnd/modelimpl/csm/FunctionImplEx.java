@@ -70,7 +70,7 @@ import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
     private CharSequence qualifiedName;
-    private static final byte QUALIFIED_NAME = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
+    private static final byte FAKE_QUALIFIED_NAME = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
     private final CharSequence[] classOrNspNames;   
     
     public FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
@@ -163,11 +163,12 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
     protected String findQualifiedName() {
         CsmObject owner = findOwner(null);
+        // check if owner is real or fake
         if(CsmKindUtilities.isQualified(owner)) {
-            setFlags(QUALIFIED_NAME, false);
+            setFlags(FAKE_QUALIFIED_NAME, false);
             return ((CsmQualifiedNamedElement) owner).getQualifiedName().toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix(); // NOI18N
         }
-        setFlags(QUALIFIED_NAME, true);
+        setFlags(FAKE_QUALIFIED_NAME, true);
         CharSequence[] cnn = classOrNspNames;
         CsmNamespaceDefinition nsd = findNamespaceDefinition();
         StringBuilder sb = new StringBuilder();
@@ -194,7 +195,9 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     @Override
     protected void registerInProject() {
         super.registerInProject();
-        if( hasFlags(QUALIFIED_NAME) ) {
+        // if this funtion couldn't find it's FQN => register it as fake and
+        // come back later on for registration (see fixFakeRegistration with null ast)
+        if( hasFlags(FAKE_QUALIFIED_NAME) ) {
             ((FileImpl) getContainingFile()).onFakeRegisration(this, null);
         }
     }

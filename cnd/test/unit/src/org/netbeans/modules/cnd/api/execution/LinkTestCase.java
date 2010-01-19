@@ -39,14 +39,14 @@
 
 package org.netbeans.modules.cnd.api.execution;
 
-import java.net.URL;
-import org.netbeans.junit.NbTestCase;
+import java.io.File;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
  *
  * @author Alexander Simon
  */
-public class LinkTestCase extends NbTestCase {
+public class LinkTestCase extends CndBaseTestCase {
 
     public LinkTestCase(String testName) {
         super(testName);
@@ -63,8 +63,8 @@ public class LinkTestCase extends NbTestCase {
     }
 
     public void testLink() throws Exception {
-        URL file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/gcc.exe.lnk.data"); // NOI18N
-        String resolved = LinkSupport.getOriginalFile(file.getFile());
+        File file = getDataFile("gcc.exe.lnk.data");
+        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath());
         if ("C:\\util\\cygwin\\etc\\alternatives\\gcc".equals(resolved)) {
             // normal processing
         } else if ("C:\\util\\cygwin\\bin\\gcc-3.exe".equals(resolved) ||
@@ -73,21 +73,21 @@ public class LinkTestCase extends NbTestCase {
         } else {
             assertEquals("C:\\util\\cygwin\\etc\\alternatives\\gcc", resolved); // NOI18N
         }
-        file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/gcc.lnk.data"); // NOI18N
-        resolved = LinkSupport.getOriginalFile(file.getFile());
+        file = getDataFile("gcc.lnk.data"); // NOI18N
+        resolved = LinkSupport.getOriginalFile(file.getAbsolutePath());
         assertEquals("C:\\util\\cygwin\\bin\\gcc-3.exe", resolved); // NOI18N
     }
 
     public void testCygwinLink() throws Exception {
-        URL file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/g++.data"); // NOI18N
-        String resolved = LinkSupport.getOriginalFile(file.getFile());
+        File file = getDataFile("g++.data"); // NOI18N
+        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath());
         assertEquals("/etc/alternatives/g++", resolved);
     }
 
     public void testCygwinLink2() throws Exception {
-        URL file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/c++.exe.data"); // NOI18N
-        String resolved = LinkSupport.getOriginalFile(file.getFile());
-        String expected = file.getFile();
+        File file = getDataFile("c++.exe.data"); // NOI18N
+        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath());
+        String expected = file.getAbsolutePath();
         int i = expected.lastIndexOf("\\"); // NOI18N
         if (i < 0) {
             i = expected.lastIndexOf("/"); // NOI18N
@@ -99,9 +99,9 @@ public class LinkTestCase extends NbTestCase {
     }
 
     public void testCygwinLink3() throws Exception {
-        URL file = LinkTestCase.class.getResource("/org/netbeans/modules/cnd/api/execution/f77.exe.data");// NOI18N
-        String resolved = LinkSupport.getOriginalFile(file.getFile());
-        String expected = file.getFile();
+        File file = getDataFile("f77.exe.data");// NOI18N
+        String resolved = LinkSupport.getOriginalFile(file.getAbsolutePath());
+        String expected = file.getAbsolutePath();
         int i = expected.lastIndexOf("\\"); // NOI18N
         if (i < 0) {
             i = expected.lastIndexOf("/"); // NOI18N

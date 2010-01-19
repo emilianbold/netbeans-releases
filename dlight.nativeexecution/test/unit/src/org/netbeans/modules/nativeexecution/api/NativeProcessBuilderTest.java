@@ -327,9 +327,19 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
             String shExecutable = findComand("sh.exe"); // NOI18N
             assertNotNull(resource, "Cannot find sh.exe in paths"); // NOI18N
             npb.setExecutable(shExecutable);
-            String dir = testDir.replaceAll(" ", "\\ "); // NOI18N
+            StringBuilder buf = new StringBuilder();
+            for(int i = 0; i < testDir.length(); i++) {
+                char c = testDir.charAt(i);
+                if (c == ' ') {
+                    buf.append('\\');
+                }
+                buf.append(c);
+            }
+            String dir = buf.toString();
             String ls = dir + "/copied\\ ls"; // NOI18N
             npb.setArguments("-c", ls, dir); // NOI18N
+            npb.setWorkingDirectory(WindowsSupport.getInstance().convertToWindowsPath(testDir));
+            npb.redirectError();
         } else {
             npb.setExecutable(testDir + "/copied ls"); // NOI18N
             npb.setArguments(testDir);
@@ -340,7 +350,7 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
         boolean found = false;
 
         for (String line : out) {
-            if ("copied ls".equals(line)) { // NOI18N
+            if (line.indexOf("copied ls")>=0) { // NOI18N
                 found = true;
                 break;
             }
