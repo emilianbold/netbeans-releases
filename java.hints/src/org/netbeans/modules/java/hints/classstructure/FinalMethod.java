@@ -54,6 +54,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -63,15 +64,16 @@ import org.openide.util.NbBundle;
  *
  * @author Dusan Balek
  */
-@Hint(category = "class_structure", enabled = false)
+@Hint(category = "class_structure", enabled = false, suppressWarnings={"FinalMethod"}) //NOI18N
 public class FinalMethod {
 
     @TriggerTreeKind(Kind.METHOD)
     public static ErrorDescription hint(HintContext context) {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
         if (mth.getModifiers().getFlags().contains(Modifier.FINAL)) {
-            return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(FinalMethod.class, "MSG_FinalMethod_checkLoggerDeclaration", mth.getName()),
-                    new FixImpl(NbBundle.getMessage(FinalMethod.class, "MSG_FinalMethod_checkLoggerDeclaration_fix", mth.getName()), TreePathHandle.create(context.getPath(), context.getInfo())));
+            return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(FinalMethod.class, "MSG_FinalMethod", mth.getName()), //NOI18N
+                    new FixImpl(NbBundle.getMessage(FinalMethod.class, "MSG_FinalMethod_fix", mth.getName()), TreePathHandle.create(context.getPath(), context.getInfo())), //NOI18N
+                    FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "FinalMethod")); //NOI18N
         }
         return null;
     }
