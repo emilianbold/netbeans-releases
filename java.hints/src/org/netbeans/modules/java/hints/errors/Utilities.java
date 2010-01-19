@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
@@ -53,6 +54,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,6 +64,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -71,14 +74,12 @@ import javax.lang.model.type.WildcardType;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
-import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
@@ -470,5 +471,64 @@ public class Utilities {
             }
         }
         return tm;
+    }
+
+    public static List<List<TreePath>> splitStringConcatenationToElements(CompilationInfo info, TreePath tree) {
+        return sortOut(info, linearize(tree));
+    }
+
+    //where:
+    private static List<TreePath> linearize(TreePath tree) {
+        List<TreePath> todo = new LinkedList<TreePath>();
+        List<TreePath> result = new LinkedList<TreePath>();
+
+        todo.add(tree);
+
+        while (!todo.isEmpty()) {
+            TreePath tp = todo.remove(0);
+
+            if (tp.getLeaf().getKind() != Kind.PLUS) {
+                result.add(tp);
+                continue;
+            }
+
+            BinaryTree bt = (BinaryTree) tp.getLeaf();
+
+            todo.add(0, new TreePath(tp, bt.getRightOperand()));
+            todo.add(0, new TreePath(tp, bt.getLeftOperand()));
+        }
+
+        return result;
+    }
+
+    private static List<List<TreePath>> sortOut(CompilationInfo info, List<TreePath> trees) {
+        List<List<TreePath>> result = new LinkedList<List<TreePath>>();
+        List<TreePath> currentCluster = new LinkedList<TreePath>();
+
+        for (TreePath t : trees) {
+            if (isConstantString(info, t)) {
+                currentCluster.add(t);
+            } else {
+                if (!currentCluster.isEmpty()) {
+                    result.add(currentCluster);
+                    currentCluster = new LinkedList<TreePath>();
+                }
+                result.add(new LinkedList<TreePath>(Collections.singletonList(t)));
+            }
+        }
+
+        if (!currentCluster.isEmpty()) {
+            result.add(currentCluster);
+        }
+
+        return result;
+    }
+
+    public static boolean isConstantString(CompilationInfo info, TreePath tp) {
+        if (tp.getLeaf().getKind() == Kind.STRING_LITERAL) return true;
+
+        Element el = info.getTrees().getElement(tp);
+
+        return el != null && el.getKind() == ElementKind.FIELD && ((VariableElement) el).getConstantValue() instanceof String;
     }
 }

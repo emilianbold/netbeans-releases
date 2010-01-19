@@ -232,5 +232,15 @@ public class JsfBinaryIndexer extends BinaryIndexer {
         public int getIndexVersion() {
             return INDEX_VERSION;
         }
+
+        @Override
+        public boolean scanStarted(Context context) {
+            try {
+                return IndexingSupport.getInstance(context).isValid();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return false;
+            }
+        }
     }
 }

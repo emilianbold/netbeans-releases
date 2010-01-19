@@ -56,11 +56,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.java.hints.jackpot.code.FSWrapper.ClassWrapper;
+import org.netbeans.modules.java.hints.jackpot.code.FSWrapper.MethodWrapper;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
+import org.netbeans.modules.java.hints.jackpot.spi.CustomizerProvider;
+import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
@@ -81,52 +88,21 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=HintProvider.class)
 public class CodeHintProviderImpl implements HintProvider {
 
-    public Map<HintMetadata, Collection<? extends HintDescription>> computeHints() {
+    public Map<HintMetadata, ? extends Collection<? extends HintDescription>> computeHints() {
         return computeHints(findLoader(), "META-INF/nb-hints/hints");
     }
 
-    private Map<HintMetadata, Collection<? extends HintDescription>> computeHints(ClassLoader l, String path) {
-        Map<HintMetadata, Collection<? extends HintDescription>> result = new HashMap<HintMetadata, Collection<? extends HintDescription>>();
+    private Map<HintMetadata, ? extends Collection<? extends HintDescription>> computeHints(ClassLoader l, String path) {
+        Map<HintMetadata, Collection<HintDescription>> result = new HashMap<HintMetadata, Collection<HintDescription>>();
         
-        try {
-            Set<String> classes = new HashSet<String>();
-
-            for (URL u : NbCollections.iterable(l.getResources(path))) {
-                BufferedReader r = null;
-
-                try {
-                    r = new BufferedReader(new InputStreamReader(u.openStream(), "UTF-8"));
-                    String line;
-
-                    while ((line = r.readLine()) != null) {
-                        classes.add(line);
-                    }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally {
-                    if (r != null) {
-                        r.close();
-                    }
-                }
-            }
-
-            for (String c : classes) {
-                try {
-                    Class clazz = l.loadClass(c);
-                    
-                    processClass(clazz, result);
-                } catch (ClassNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        for (ClassWrapper c : FSWrapper.listClasses()) {
+            processClass(c, result);
         }
 
         return result;
     }
 
-    private static ClassLoader findLoader() {
+    static ClassLoader findLoader() {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
 
         if (l == null) {
@@ -136,7 +112,7 @@ public class CodeHintProviderImpl implements HintProvider {
         return l;
     }
 
-    public static void processClass(Class<?> clazz, Map<HintMetadata, Collection<? extends HintDescription>> result) throws SecurityException {
+    public static void processClass(ClassWrapper clazz, Map<HintMetadata, Collection<HintDescription>> result) throws SecurityException {
         Hint metadata = clazz.getAnnotation(Hint.class);
 
         if (metadata == null) {
@@ -149,41 +125,77 @@ public class CodeHintProviderImpl implements HintProvider {
             id = clazz.getName();
         }
 
-        HintMetadata hm = HintMetadata.create(id, clazz, metadata.category(), metadata.enabled(), /*metadata.severity()*/HintSeverity.WARNING, metadata.suppressWarnings());
-        List<HintDescription> descs = new LinkedList<HintDescription>();
+        HintMetadata hm = HintMetadata.create(id, clazz.getName(), metadata.category(), metadata.enabled(), /*metadata.severity()*/HintSeverity.WARNING, createCustomizerProvider(metadata), metadata.suppressWarnings());
         
-        for (Method m : clazz.getDeclaredMethods()) {
-            processMethod(descs, m, hm);
-        }
+        for (MethodWrapper m : clazz.getMethods()) {
+            Hint localMetadataAnnotation = m.getAnnotation(Hint.class);
+            HintMetadata localMetadata;
 
-        result.put(hm, descs);
+            if (localMetadataAnnotation != null) {
+                String localID = localMetadataAnnotation.id();
+
+                if (localID == null || localID.length() == 0) {
+                    localID = clazz.getName() + "." + m.getName();
+                }
+
+                localMetadata = HintMetadata.create(localID, clazz.getName(), localMetadataAnnotation.category(), localMetadataAnnotation.enabled(), /*localMetadataAnnotation.severity()*/ HintSeverity.WARNING, createCustomizerProvider(localMetadataAnnotation), localMetadataAnnotation.suppressWarnings());
+            } else {
+                localMetadata = hm;
+            }
+
+            processMethod(result, m, localMetadata);
+        }
     }
 
-    static void processMethod(List<HintDescription> hints, Method m, HintMetadata metadata) {
+    private static CustomizerProvider createCustomizerProvider(Hint hint) {
+        Class<?> clazz = hint.customizerProvider();
+
+        if (CustomizerProvider.class.isAssignableFrom(clazz)) {
+            try {
+                return CustomizerProvider.class.cast(clazz.getConstructor().newInstance());
+            } catch (InstantiationException ex) {
+                Logger.getLogger(CodeHintProviderImpl.class.getName()).log(Level.INFO, null, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(CodeHintProviderImpl.class.getName()).log(Level.INFO, null, ex);
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(CodeHintProviderImpl.class.getName()).log(Level.INFO, null, ex);
+            } catch (InvocationTargetException ex) {
+                Logger.getLogger(CodeHintProviderImpl.class.getName()).log(Level.INFO, null, ex);
+            } catch (NoSuchMethodException ex) {
+                Logger.getLogger(CodeHintProviderImpl.class.getName()).log(Level.INFO, null, ex);
+            } catch (SecurityException ex) {
+                Logger.getLogger(CodeHintProviderImpl.class.getName()).log(Level.INFO, null, ex);
+            }
+        }
+
+        return null;
+    }
+
+    static void processMethod(Map<HintMetadata, Collection<HintDescription>> hints, MethodWrapper m, HintMetadata metadata) {
         //XXX: combinations of TriggerTreeKind and TriggerPattern?
         processTreeKindHint(hints, m, metadata);
         processPatternHint(hints, m, metadata);
     }
     
-    private static void processTreeKindHint(List<HintDescription> hints, Method m, HintMetadata metadata) {
+    private static void processTreeKindHint(Map<HintMetadata, Collection<HintDescription>> hints, MethodWrapper m, HintMetadata metadata) {
         TriggerTreeKind kindTrigger = m.getAnnotation(TriggerTreeKind.class);
 
         if (kindTrigger == null) {
             return ;
         }
 
-        Worker w = new WorkerImpl(m);
+        Worker w = new WorkerImpl(m.getClazz().getName(), m.getName());
 
         for (Kind k : new HashSet<Kind>(Arrays.asList(kindTrigger.value()))) {
-            hints.add(HintDescriptionFactory.create()
-                                            .setTriggerKind(k)
-                                            .setWorker(w)
-                                            .setMetadata(metadata)
-                                            .produce());
+            addHint(hints, metadata, HintDescriptionFactory.create()
+                                                           .setTriggerKind(k)
+                                                           .setWorker(w)
+                                                           .setMetadata(metadata)
+                                                           .produce());
         }
     }
     
-    private static void processPatternHint(List<HintDescription> hints, Method m, HintMetadata metadata) {
+    private static void processPatternHint(Map<HintMetadata, Collection<HintDescription>> hints, MethodWrapper m, HintMetadata metadata) {
         TriggerPattern patternTrigger = m.getAnnotation(TriggerPattern.class);
 
         if (patternTrigger != null) {
@@ -201,7 +213,7 @@ public class CodeHintProviderImpl implements HintProvider {
         }
     }
 
-    private static void processPatternHint(List<HintDescription> hints, TriggerPattern patternTrigger, Method m, HintMetadata metadata) {
+    private static void processPatternHint(Map<HintMetadata, Collection<HintDescription>> hints, TriggerPattern patternTrigger, MethodWrapper m, HintMetadata metadata) {
         String pattern = patternTrigger.value();
         Map<String, String> constraints = new HashMap<String, String>();
 
@@ -211,24 +223,44 @@ public class CodeHintProviderImpl implements HintProvider {
 
         PatternDescription pd = PatternDescription.create(pattern, constraints);
 
-        hints.add(HintDescriptionFactory.create()
-                                        .setTriggerPattern(pd)
-                                        .setWorker(new WorkerImpl(m))
-                                        .setMetadata(metadata)
-                                        .produce());
+        addHint(hints, metadata, HintDescriptionFactory.create()
+                                                       .setTriggerPattern(pd)
+                                                       .setWorker(new WorkerImpl(m.getClazz().getName(), m.getName()))
+                                                       .setMetadata(metadata)
+                                                       .produce());
+    }
+
+    private static void addHint(Map<HintMetadata, Collection<HintDescription>> hints, HintMetadata metadata, HintDescription hint) {
+        Collection<HintDescription> list = hints.get(metadata);
+
+        if (list == null) {
+            hints.put(metadata, list = new LinkedList<HintDescription>());
+        }
+
+        list.add(hint);
     }
 
     //accessed by tests:
     static final class WorkerImpl implements Worker {
 
-        private final Method method;
+        private final String className;
+        private final String methodName;
 
-        public WorkerImpl(Method m) {
-            this.method = m;
+        public WorkerImpl(String className, String methodName) {
+            this.className = className;
+            this.methodName = methodName;
         }
-        
+
+        private final AtomicReference<Method> methodRef = new AtomicReference<Method>();
+
         public Collection<? extends ErrorDescription> createErrors(org.netbeans.modules.java.hints.jackpot.spi.HintContext ctx) {
             try {
+                Method method = methodRef.get();
+
+                if (method == null) {
+                    methodRef.set(method = getMethod());
+                }
+                
                 Object result = method.invoke(null, ctx);
 
                 if (result == null) {
@@ -254,6 +286,10 @@ public class CodeHintProviderImpl implements HintProvider {
                 Exceptions.printStackTrace(ex);
             } catch (IllegalArgumentException ex) {
                 Exceptions.printStackTrace(ex);
+            } catch (ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (NoSuchMethodException ex) {
+                Exceptions.printStackTrace(ex);
             } catch (InvocationTargetException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -262,8 +298,8 @@ public class CodeHintProviderImpl implements HintProvider {
         }
 
         //used by tests:
-        Method getMethod() {
-            return method;
+        Method getMethod() throws NoSuchMethodException, ClassNotFoundException {
+            return FSWrapper.resolveMethod(className, methodName);
         }
 
     }
@@ -294,6 +330,10 @@ public class CodeHintProviderImpl implements HintProvider {
 
         public Class<? extends Annotation> annotationType() {
             return Hint.class;
+        }
+
+        public Class<?> customizerProvider() {
+            return Void.class;
         }
 
     }

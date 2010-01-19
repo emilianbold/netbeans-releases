@@ -45,13 +45,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -103,7 +113,29 @@ public class JavadocAndSourceRootDetection {
         }
         return null;
     }
-    
+
+    /**
+     * Finds Java sources roots inside of given folder.
+     *
+     * @param folder to start search in; routine will traverse subfolders
+     *  to find a Java file to detect package root; cannot be null; must be folder
+     * @param canceled if set to true the method immediately returns roots it has already found,
+     * may be null
+     * @return {@link Collection} of found package roots
+     * @since 1.31
+     */
+    public static Set<? extends FileObject> findSourceRoots(final @NonNull FileObject folder, final @NullAllowed AtomicBoolean canceled) {
+        Parameters.notNull("folder", folder);   //NOI18N
+        if (!folder.isValid()) {
+            throw new IllegalArgumentException("Folder: " + FileUtil.getFileDisplayName(folder)+" is not valid.");  //NOI18N
+        }
+        if (!folder.isFolder()) {
+            throw new IllegalArgumentException("The parameter: " + FileUtil.getFileDisplayName(folder) + " has to be a directory.");    //NOI18N
+        }
+        final Set<FileObject> result = new HashSet<FileObject>();
+        findAllSourceRoots(folder, result, canceled, 0);
+        return Collections.unmodifiableSet(result);
+    }
     /**
      * Returns package root of the given java or class file.
      *
@@ -120,6 +152,30 @@ public class JavadocAndSourceRootDetection {
         }
     }
 
+    private static FileObject findAllSourceRoots(final FileObject folder, final Collection<? super FileObject> result,
+            final AtomicBoolean canceled, final int depth) {
+        if (depth == 50) {
+            return null;
+        }
+        final FileObject[] children = folder.getChildren();
+        for (FileObject child : children) {
+            if (canceled != null && canceled.get()) {
+                return null;
+            } else if (child.isData() && "text/x-java".equals(FileUtil.getMIMEType(child, "text/x-java"))) {   //NOI18N
+                final FileObject root = findPackageRoot(child);
+                if (root != null) {
+                    result.add(root);
+                }
+                return root;
+            } else if (child.isFolder()) {
+                final FileObject upTo = findAllSourceRoots(child, result, canceled, depth+1);
+                if (upTo != null && !upTo.equals(child)) {
+                    return upTo;
+                }
+            }
+        }
+        return null;
+    }
 
     private static FileObject findJavadocRoot(FileObject fo, int level) {
         FileObject fo1 = fo.getFileObject("package-list", null); // NOI18N

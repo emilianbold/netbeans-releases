@@ -66,6 +66,7 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.cookies.EditorCookie;
@@ -255,21 +256,29 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
      * the current time.
      */
     public long getLastModified() {
-        if (isModified()==null) {
-            final FileObject file = handle.resolveFileObject(false);
-            try {
-                //Prefer class files to packed sources, the packed sources may have wrong time stamps.
-                if (file == null || file.getFileSystem() instanceof JarFileSystem) {
-                    return 0L;
-                }
-            } catch (FileStateInvalidException e) {
-                //Handled below
-            }
-            return file.lastModified().getTime();
+        EditorCookie ec;
+        if ((ec=isModified())==null) {
+            return getFileLastModified();
         }
         else {
-            return System.currentTimeMillis();
+            final Document doc = ec.getDocument();
+            return doc != null ?
+                DocumentUtilities.getDocumentTimestamp(doc) :
+                getFileLastModified();
         }
+    } //where
+
+    private long getFileLastModified() {
+        final FileObject file = handle.resolveFileObject(false);
+        try {
+            //Prefer class files to packed sources, the packed sources may have wrong time stamps.
+            if (file == null || file.getFileSystem() instanceof JarFileSystem) {
+                return 0L;
+            }
+        } catch (FileStateInvalidException e) {
+            //Handled below
+        }
+        return file.lastModified().getTime();
     }
 
     public NestingKind getNestingKind() {

@@ -1032,7 +1032,11 @@ public final class ClassPath {
                     }
                 }
                 try {
-                    newRoots.add(new File(url.toURI()));
+                    //todo: Ignore non file urls, we can try to url->fileobject->url
+                    //if it becomes a file.
+                    if ("file".equals(url.getProtocol())) { //NOI18N
+                        newRoots.add(new File(url.toURI()));
+                    }
                 } catch (IllegalArgumentException e) {
                     LOG.log(Level.WARNING, "Unexpected URL <{0}>: {1}", new Object[] {url, e});
                     //pass

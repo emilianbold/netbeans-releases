@@ -1222,7 +1222,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             return true;
         }
 
-        if (nodeEl.equals(bindState.variablesRemapToElement.get(pEl))) {
+        if (allowVariablesRemap && nodeEl.equals(bindState.variablesRemapToElement.get(pEl))) {
             return true;
         }
 
