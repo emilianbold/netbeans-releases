@@ -138,6 +138,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
    }
 
     public DLightSession createNewSession(DLightSessionConfiguration sessionConfiguration){
+        //in case session need to be opened in read/only mode we should set its state to the Analyze
         DLightSessionConfigurationAccessor accessor = DLightSessionConfigurationAccessor.getDefault();
         DLightConfiguration configuration = accessor.getDLightConfiguration(sessionConfiguration);
         if (configuration == null){
@@ -146,6 +147,9 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         DLightSession session = 
                 newSession(accessor.getSharedStorageUniqueKey(sessionConfiguration), accessor.getDLightTarget(sessionConfiguration), configuration, accessor.getSessionName(sessionConfiguration));
         setActiveSession(session);
+        if (accessor.getSessionMode(sessionConfiguration) == DLightSessionConfiguration.Mode.ANALYZE){
+            session.setState(SessionState.ANALYZE);
+        }
         if (session != null) {
             session.addSessionStateListener(sessionStateListener);//we should not remove it later, it will be removed automatically when session will be closed
         }

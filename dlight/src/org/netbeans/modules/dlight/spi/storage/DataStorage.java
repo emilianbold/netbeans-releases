@@ -57,7 +57,7 @@ import java.util.List;
 public interface DataStorage {
 
     /**
-     *  Attaches ServiceInfoDataStorage
+     * Attaches ServiceInfoDataStorage
      * @param serviceInfoStorage ServiceInfoDataStorage to be attached
      */
     void attachTo(ServiceInfoDataStorage serviceInfoStorage);
@@ -106,5 +106,11 @@ public interface DataStorage {
      * @return <code>true</code> if succeeded, <code>false</code> otherwise
      */
     boolean shutdown();
+
+    /**
+     * Returns the storage services provided by the DataStorage
+     * @return
+     */
+    Collection<DataStorageService> getDataStorageServices();
 
 }

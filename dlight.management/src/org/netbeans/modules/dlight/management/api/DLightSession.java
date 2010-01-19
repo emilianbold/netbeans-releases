@@ -832,7 +832,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
         }
     }
 
-    private void setState(SessionState state) {
+    void setState(SessionState state) {
         SessionState oldState = this.state;
         this.state = state;
 

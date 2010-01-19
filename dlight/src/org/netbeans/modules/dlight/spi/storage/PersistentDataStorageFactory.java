@@ -58,7 +58,7 @@ public interface PersistentDataStorageFactory<T extends PersistentDataStorage> e
      /**
       * Opens storage with the unique key <code>uniqueKey</code>
       * @param uniqueKey unique key generated using <link>getUniqueKey(T)</link> method
-      * @param mode the mode the storage will be opened: REadO
+      * @param mode the mode the storage will be opened: ReadOnly, ReadWrite
       * @return storage opened if exists, <code>null</code> it the storage doesn't exists or cannot be opened
       */
      T openStorage(String uniqueKey, Mode mode);
