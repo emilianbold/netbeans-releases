@@ -337,8 +337,7 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
             }
             String dir = buf.toString();
             String ls = dir + "/copied\\ ls"; // NOI18N
-            npb.setArguments("-c", ls, dir); // NOI18N
-            npb.setWorkingDirectory(WindowsSupport.getInstance().convertToWindowsPath(testDir));
+            npb.setArguments("-c", ls + " " + dir); // NOI18N
             npb.redirectError();
         } else {
             npb.setExecutable(testDir + "/copied ls"); // NOI18N
