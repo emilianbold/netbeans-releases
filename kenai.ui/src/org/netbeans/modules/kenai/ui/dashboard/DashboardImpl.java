@@ -163,7 +163,7 @@ public final class DashboardImpl extends Dashboard {
         userListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if( LoginHandle.PROP_MEMBER_PROJECT_LIST.equals(evt.getPropertyName()) ) {
-                    refreshMemberProjects();
+                    refreshMemberProjects(true);
                 }
             }
         };
@@ -188,7 +188,7 @@ public final class DashboardImpl extends Dashboard {
         memberProjectsError = new ErrorNode(NbBundle.getMessage(DashboardImpl.class, "ERR_OpenMemberProjects"), new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 clearError(memberProjectsError);
-                refreshMemberProjects();
+                refreshMemberProjects(true);
             }
         });
 
@@ -473,12 +473,15 @@ public final class DashboardImpl extends Dashboard {
         }
     }
 
-    private void refreshMemberProjects() {
+    void refreshMemberProjects(boolean force) {
         synchronized( LOCK ) {
+            if (!force) {
+                removeMemberProjectsFromModel(memberProjects);
+            }
             memberProjects.clear();
             memberProjectsLoaded = false;
             if( isOpened() ) {
-                startLoadingMemberProjects(true);
+                startLoadingMemberProjects(force);
             }
         }
     }
@@ -666,6 +669,14 @@ public final class DashboardImpl extends Dashboard {
             ProjectNode pn = (ProjectNode) n;
             pn.setMemberProject( memberProjects.contains( pn.getProject() ) );
         }
+    }
+
+    public void bookmarkingStarted() {
+        userNode.loadingStarted(NbBundle.getMessage(UserNode.class, "LBL_Bookmarking"));
+    }
+
+    public void bookmarkingFinished() {
+        userNode.loadingFinished();
     }
 
     private void loggingStarted() {

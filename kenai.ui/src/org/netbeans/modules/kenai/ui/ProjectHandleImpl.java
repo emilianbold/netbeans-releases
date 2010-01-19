@@ -39,21 +39,25 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.openide.util.Exceptions;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Jan Becicka
  */
-public class ProjectHandleImpl extends ProjectHandle {
+public class ProjectHandleImpl extends ProjectHandle implements PropertyChangeListener {
 
     private KenaiProject prj;
     public ProjectHandleImpl(KenaiProject prj) {
         super( prj.getName() );
         this.prj=prj;
+        prj.addPropertyChangeListener(WeakListeners.propertyChange(this, prj));
     }
 
     @Override
@@ -73,5 +77,9 @@ public class ProjectHandleImpl extends ProjectHandle {
             Exceptions.printStackTrace(kenaiException);
         }
         return false;
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        firePropertyChange(PROP_CONTENT, evt.getOldValue(), evt.getNewValue());
     }
 }
