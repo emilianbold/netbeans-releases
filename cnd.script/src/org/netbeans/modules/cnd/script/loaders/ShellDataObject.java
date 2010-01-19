@@ -48,12 +48,14 @@ import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
 
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.openide.loaders.MultiDataObject;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Lookup;
 
 /**
  *  Represents a Shell object in the Repository.
  */
-public class ShellDataObject extends CndDataObject {
+public class ShellDataObject extends MultiDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = -5853234372530618782L;
@@ -61,51 +63,18 @@ public class ShellDataObject extends CndDataObject {
     /** Constructor for this class */
     public ShellDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
-    }
 
-//    /*
-//     * Return name with extension so renaming etc works
-//     * But this breaks creating makefile with names xxx.mk from templates, so
-//     * check if name starts with "__", then return name without the 'extension'
-//     * (4899051)
-//     */
-//    public String getName() {
-//	String ename = null;
-//	ename = super.getName();
-//	if (!ename.startsWith("__")) // NOI18N
-//	    ename = getPrimaryFile().getNameExt();
-//	return ename;
-//    }
-//
-//    protected FileObject handleRename(String name) throws IOException {
-//        FileLock lock = getPrimaryFile().lock();
-//        int pos = name.lastIndexOf('.');
-//
-//        try {
-//            if (pos <= 0){
-//                // file without separator
-//                getPrimaryFile().rename(lock, name, null);
-//            } else {
-//		getPrimaryFile().rename(lock, name.substring(0, pos), 
-//                        name.substring(pos + 1, name.length()));
-//            }
-//        } finally {
-//            lock.releaseLock ();
-//        }
-//        return getPrimaryFile ();
-//    }
-    /**
-     *  The init method is called from CndDataObject's constructor.
-     */
-    @Override
-    protected void init() {
         CookieSet cookies = getCookieSet();
-
         cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
         cookies.add(new ShellExecSupport(getPrimaryEntry()));
     }
 
-    /** Create the delegate node */
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
+
+    @Override
     protected Node createNodeDelegate() {
         return new ShellDataNode(this);
     }

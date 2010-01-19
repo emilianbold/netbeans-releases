@@ -47,23 +47,19 @@ import org.openide.util.actions.SystemAction;
 import org.openide.actions.OpenAction;
 
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObject;
 
 /** A node to represent a Shell data object */
-public class ShellDataNode extends CndDataNode {
+public class ShellDataNode extends DataNode {
 
     /** We need this in several places */
     private ShellExecSupport mes;
 
     /** Construct the DataNode */
-    public ShellDataNode(ShellDataObject obj) {
-        this(obj, Children.LEAF);
-    }
-
-    /** Construct the DataNode */
-    public ShellDataNode(ShellDataObject obj, Children ch) {
-        super(obj, ch, "org/netbeans/modules/cnd/script/resources/ShellDataIcon.gif"); // NOI18N
-
-        getCookieSet().add(getSupport());
+    public ShellDataNode(DataObject obj) {
+        super(obj, Children.LEAF, obj.getLookup());
+        setIconBaseWithExtension("org/netbeans/modules/cnd/script/resources/ShellDataIcon.gif");
     }
 
     /** Get the support for methods which need it */

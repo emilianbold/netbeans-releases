@@ -41,21 +41,24 @@
 package org.netbeans.modules.cnd.makefile.loaders;
 
 import java.io.IOException;
-import org.netbeans.modules.cnd.script.loaders.CndAbstractDataLoader;
-
 import org.netbeans.modules.cnd.utils.MIMENames;
+
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.UniFileLoader;
 
-/** Recognizes single files in the Repository as being of a certain type */
-public class MakefileDataLoader extends CndAbstractDataLoader {
+/**
+ * Data loader for makefiles (<code>text/x-make</code>)
+ */
+public final class MakefileDataLoader extends UniFileLoader {
 
     /** Serial version number */
     static final long serialVersionUID = -7148711275717543299L;
 
     public MakefileDataLoader() {
         super("org.netbeans.modules.cnd.makefile.loaders.MakefileDataObject"); // NOI18N
+        getExtensions().addMimeType(MIMENames.MAKEFILE_MIME_TYPE);
     }
 
     @Override
@@ -63,15 +66,9 @@ public class MakefileDataLoader extends CndAbstractDataLoader {
         return "Loaders/text/x-make/Actions/"; // NOI18N
     }
 
-    /** Create the DataObject */
+    @Override
     protected MultiDataObject createMultiObject(FileObject primaryFile)
             throws DataObjectExistsException, IOException {
         return new MakefileDataObject(primaryFile, this);
     }
-
-    @Override
-    protected String getMimeType() {
-        return MIMENames.MAKEFILE_MIME_TYPE;
-    }
 }
-

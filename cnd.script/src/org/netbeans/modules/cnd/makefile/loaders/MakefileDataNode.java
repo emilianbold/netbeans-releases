@@ -41,26 +41,20 @@
 package org.netbeans.modules.cnd.makefile.loaders;
 
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
-import org.netbeans.modules.cnd.script.loaders.CndDataNode;
+import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 
 /** A node to represent a Makefile data object */
-public class MakefileDataNode extends CndDataNode {
+public class MakefileDataNode extends DataNode {
 
     /** We need this in several places */
     private MakeExecSupport mes;
 
     /** Construct the DataNode */
     public MakefileDataNode(MakefileDataObject obj) {
-        this(obj, Children.LEAF);
-    }
-
-    /** Construct the DataNode */
-    public MakefileDataNode(MakefileDataObject obj, Children ch) {
-        super(obj, ch, MakefileDataIcon);
-
-        getCookieSet().add(getSupport());
+        super(obj, Children.LEAF, obj.getLookup());
+        setIconBaseWithExtension("org/netbeans/modules/cnd/script/resources/MakefileDataIcon.gif"); // NOI18N
     }
 
     /** Get the support for methods which need it */
@@ -81,7 +75,5 @@ public class MakefileDataNode extends CndDataNode {
         getSupport().addProperties(defaultSet);
         return defaultSheet;
     }
-    private static final String MakefileDataIcon =
-            "org/netbeans/modules/cnd/script/resources/MakefileDataIcon.gif"; // NOI18N
 }
 

@@ -43,42 +43,40 @@ package org.netbeans.modules.cnd.makefile.loaders;
 
 
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
 
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
-import org.netbeans.modules.cnd.script.loaders.CndDataObject;
+import org.openide.loaders.MultiDataObject;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Lookup;
 
 /**
  *  Represents a Makefile object in the Repository.
  */
-public class MakefileDataObject extends CndDataObject {
+public class MakefileDataObject extends MultiDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = -5853234372530618782L;
 
-
     /** Constructor for this class */
-    public MakefileDataObject(FileObject pf, MultiFileLoader loader)
+    public MakefileDataObject(FileObject pf, MakefileDataLoader loader)
 		throws DataObjectExistsException {
 	super(pf, loader);
-    }
 
-    /**
-     *  The init method is called from CndDataObject's constructor.
-     */
-    protected void init() {
-	CookieSet cookies = getCookieSet();
-
+        CookieSet cookies = getCookieSet();
         cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
 	cookies.add(new MakeExecSupport(getPrimaryEntry()));
     }
 
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
+    }
 
     /** Create the delegate node */
+    @Override
     protected Node createNodeDelegate() {
 	return new MakefileDataNode(this);
     }

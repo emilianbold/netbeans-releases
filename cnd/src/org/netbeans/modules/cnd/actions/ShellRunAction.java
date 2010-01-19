@@ -88,7 +88,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
 
     @Override
     protected boolean accept(DataObject object) {
-        return object.getCookie(ShellExecSupport.class) != null;
+        return object != null && object.getCookie(ShellExecSupport.class) != null;
     }
 
     protected void performAction(Node[] activatedNodes) {

@@ -40,26 +40,18 @@
  */
 package org.netbeans.modules.cnd.script.loaders;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
-import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.editor.BaseDocument;
-
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.filesystems.FileLock;
+
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.UniFileLoader;
 
 /**
- *  Recognizes single files in the Repository as being of a certain type.
+ * Data loader for shell scripts (<code>text/sh</code>).
  */
-public class ShellDataLoader extends CndAbstractDataLoaderExt {
+public final class ShellDataLoader extends UniFileLoader {
 
     /** Serial version number */
     static final long serialVersionUID = -7173746465817543299L;
@@ -69,6 +61,7 @@ public class ShellDataLoader extends CndAbstractDataLoaderExt {
      */
     public ShellDataLoader() {
         super("org.netbeans.modules.cnd.script.loaders.ShellDataObject"); // NOI18N
+        getExtensions().addMimeType(MIMENames.SHELL_MIME_TYPE);
     }
 
     @Override
@@ -77,72 +70,7 @@ public class ShellDataLoader extends CndAbstractDataLoaderExt {
     }
 
     @Override
-    protected String getMimeType() {
-        return MIMENames.SHELL_MIME_TYPE;
-    }
-
-    /**
-     *  Create the DataObject.
-     */
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new ShellDataObject(primaryFile, this);
-    }
-
-    @Override
-    protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
-        return new ShellFormat(obj, primaryFile);
-    }
-
-    // Inner class: Substitute important template parameters...
-    private static class ShellFormat extends CndFormat {
-
-        public ShellFormat(MultiDataObject obj, FileObject primaryFile) {
-            super(obj, primaryFile);
-        }
-
-        // This method was taken fom base class to replace "new line" string.
-        // Shell scripts shouldn't contains "\r"
-        // API doesn't provide method to replace platform dependant "new line" string.
-        @Override
-        public FileObject createFromTemplate(FileObject f, String name) throws IOException {
-
-            // passed name already contains extension, don't append another one
-            String ext = FileUtil.getExtension(name);
-            if (ext.length() != 0) {
-                name = name.substring(0, name.length() - ext.length() - 1);
-            } else {
-                ext = getFile().getExt();
-            }
-
-            FileObject fo = f.createData(name, ext);
-            java.text.Format frm = createFormat(f, name, ext);
-            BufferedReader r = new BufferedReader(new InputStreamReader(
-                    getFile().getInputStream(), FileEncodingQuery.getEncoding(getFile())));
-            try {
-                FileLock lock = fo.lock();
-                try {
-                    Charset encoding = FileEncodingQuery.getEncoding(fo);
-                    BufferedWriter w = new BufferedWriter(new OutputStreamWriter(
-                            fo.getOutputStream(lock), encoding));
-                    try {
-                        String current;
-                        while ((current = r.readLine()) != null) {
-                            w.write(frm.format(current));
-                            w.write(BaseDocument.LS_LF);
-                        }
-                    } finally {
-                        w.close();
-                    }
-                } finally {
-                    lock.releaseLock();
-                }
-            } finally {
-                r.close();
-            }
-            FileUtil.copyAttributes(getFile(), fo);
-            setTemplate(fo, false);
-            return fo;
-        }
-
     }
 }

@@ -40,21 +40,26 @@
  */
 package org.netbeans.modules.cnd.script.loaders;
 
-
+import java.io.IOException;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.UniFileLoader;
 
 /**
- *  Recognizes single files in the Repository as being of a certain type.
+ * Data loader for batch scripts (<code>text/bat</code>)
+ *
+ * @author Alexey Vladykin
  */
-public final class BatDataLoader extends ShellDataLoader {
+public final class BatDataLoader extends UniFileLoader {
 
     /** Serial version number */
     static final long serialVersionUID = 1L;
 
-    /**
-     *  Default constructor
-     */
     public BatDataLoader() {
+        super("org.netbeans.modules.cnd.script.ShellDataObject"); // NOI18N
+        getExtensions().addExtension(MIMENames.BAT_MIME_TYPE);
     }
 
     @Override
@@ -63,7 +68,7 @@ public final class BatDataLoader extends ShellDataLoader {
     }
 
     @Override
-    protected String getMimeType() {
-        return MIMENames.BAT_MIME_TYPE;
+    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
+        return new ShellDataObject(primaryFile, this);
     }
 }
