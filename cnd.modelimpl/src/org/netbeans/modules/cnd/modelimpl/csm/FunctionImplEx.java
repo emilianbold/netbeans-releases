@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
@@ -213,8 +212,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         FileImpl aFile = (FileImpl) getContainingFile();
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
-                        RepositoryUtils.remove(getUID(), this);
-                        aFile.getProjectImpl(true).registerDeclaration(var);
+                        aFile.removeDeclaration(this);
+                        var.registerInProject();
                         aFile.addDeclaration(var);
                         fixFakeRegistrationAst = null;
                         return true;
@@ -231,8 +230,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         FileImpl aFile = (FileImpl) getContainingFile();
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
-                        RepositoryUtils.remove(getUID(), this);
-                        aFile.getProjectImpl(true).registerDeclaration(var);
+                        aFile.removeDeclaration(this);
+                        var.registerInProject();
                         aFile.addDeclaration(var);
                         fixFakeRegistrationAst = null;
                         return true;
@@ -245,7 +244,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                     FunctionImpl fi = new FunctionImpl(fixFakeRegistrationAst, getContainingFile(), this.getScope(), true, true);
                     fixFakeRegistrationAst = null;
                     aFile.getProjectImpl(true).unregisterDeclaration(this);
-                    RepositoryUtils.remove(getUID(), this);
+                    aFile.removeDeclaration(this);
+                    fi.registerInProject();
                     aFile.addDeclaration(fi);
                     fixed = true;
                     if (NamespaceImpl.isNamespaceScope(fi)) {
@@ -264,7 +264,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 aProject.unregisterDeclaration(this);
                 this.cleanUID();
                 qualifiedName = newQname;
-                aProject.registerDeclaration(this);
+                registerInProject();
                 fixed = true;
             }
         }
@@ -293,7 +293,14 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         return null;
     }    
     
-    
+    public static boolean isFakeFunction(CsmObject declaration) {
+        if (declaration instanceof FunctionImplEx) {
+            return FunctionImplEx.class.equals(declaration.getClass());
+        } else {
+            return false;
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
