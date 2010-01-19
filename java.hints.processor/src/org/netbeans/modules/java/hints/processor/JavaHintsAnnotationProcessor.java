@@ -39,10 +39,15 @@
 
 package org.netbeans.modules.java.hints.processor;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.MissingResourceException;
+import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -52,8 +57,10 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -63,6 +70,8 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
 import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
@@ -74,7 +83,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author lahvac
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes("org.netbeans.modules.java.hints.jackpot.code.spi.Hint")
+@SupportedAnnotationTypes("org.netbeans.modules.java.hints.jackpot.code.spi.*")
 @ServiceProvider(service=Processor.class)
 public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
     
@@ -88,30 +97,60 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
         if (!roundEnv.processingOver()) {
             generateTypeList("org.netbeans.modules.java.hints.jackpot.code.spi.Hint", roundEnv, hintTypes);
         } else {
-            generateTypeFile(hintTypes, "hints");
+            generateTypeFile(hintTypes);
         }
 
         return false;
     }
 
+    private static final String[] TRIGGERS = new String[] {
+        "org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind",
+        "org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern"
+    };
+
     private void generateTypeList(String annotationName, RoundEnvironment roundEnv, Set<String> hintTypes) {
         TypeElement hint = processingEnv.getElementUtils().getTypeElement(annotationName);
+
+        if (hint == null) return ;
+        
         for (Element annotated : roundEnv.getElementsAnnotatedWith(hint)) {
-//            if (!verifyMethodAcceptable(method)) continue;
+            if (!verifyHintAnnotationAcceptable(annotated)) continue;
             if (!annotated.getKind().isClass() && !annotated.getKind().isInterface()) {
+                if (annotated.getKind() != ElementKind.METHOD) {
+                    //the compiler should have already warned about this
+                    continue;
+                }
+
                 annotated = annotated.getEnclosingElement();
+            } else {
+                if (!annotated.getKind().isClass()) {
+                    //the compiler should have already warned about this
+                    continue;
+                }
             }
 
             if (!annotated.getKind().isClass()) {
+                processingEnv.getMessager().printMessage(Kind.ERROR, "Internal error - cannot find class containing the hint", annotated);
                 continue;
             }
 
             TypeElement current = (TypeElement) annotated;
             hintTypes.add(current.getQualifiedName().toString());
         }
+
+        for (String ann : TRIGGERS) {
+            TypeElement annRes = processingEnv.getElementUtils().getTypeElement(ann);
+
+            if (annRes == null) continue;
+
+            for (ExecutableElement method : ElementFilter.methodsIn(roundEnv.getElementsAnnotatedWith(hint))) {
+                verifyHintMethod(method);
+            }
+        }
+
     }
 
-    private void generateTypeFile(Set<String> types, String fileName) {
+    private void generateTypeFile(Set<String> types) {
         for (String fqn : types) {
             TypeElement clazz = processingEnv.getElementUtils().getTypeElement(fqn);
             LayerBuilder builder = layer(clazz);
@@ -157,13 +196,67 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
     static final String ERR_RETURN_TYPE = "The return type must be either org.netbeans.spi.editor.hints.ErrorDescription or java.util.List<org.netbeans.spi.editor.hints.ErrorDescription>";
     static final String ERR_PARAMETERS = "The method must have exactly one parameter of type org.netbeans.modules.jackpot30.spi.HintContext";
     static final String ERR_MUST_BE_STATIC = "The method must be static";
+    static final String WARN_BUNDLE_KEY_NOT_FOUND = "Bundle key %s not found";
 
-    private boolean verifyMethodAcceptable(ExecutableElement method) {
+    private boolean verifyHintAnnotationAcceptable(Element hint) {
+        String id = "";
+        for (AnnotationMirror am : hint.getAnnotationMirrors()) {
+            if (((TypeElement) am.getAnnotationType().asElement()).getQualifiedName().contentEquals("org.netbeans.modules.java.hints.jackpot.code.spi.Hint")) {
+                for (Entry<? extends ExecutableElement, ? extends AnnotationValue> e : am.getElementValues().entrySet()) {
+                    if (e.getKey().getSimpleName().contentEquals("id")) {
+                        id = (String) e.getValue().getValue();
+                    }
+                }
+            }
+        }
+
+        if (id == null || id.length() == 0) {
+            switch (hint.getKind()) {
+                case CLASS:
+                    id = ((TypeElement) hint).getQualifiedName().toString();
+                    break;
+                case METHOD:
+                    TypeElement hintClass = (TypeElement) hint.getEnclosingElement();
+                    id = hintClass.getQualifiedName() + "." + hint.getSimpleName();
+                    break;
+                default:
+                    //compiler should have already wraned about this
+                    return false;
+            }
+        }
+
+        Element hintPackage = hint;
+
+        while (hintPackage.getKind() != ElementKind.PACKAGE) {
+            hintPackage = hintPackage.getEnclosingElement();
+        }
+        try {
+            FileObject bundle = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, ((PackageElement) hintPackage).getQualifiedName(), "Bundle.properties");
+            ResourceBundle rb = new PropertyResourceBundle(bundle.openInputStream());
+
+            checkBundle(rb, "DN_" + id, hint);
+            checkBundle(rb, "DESC_" + id, hint);
+        } catch (IOException ex) {
+            LOG.log(Level.FINE, null, ex);
+        }
+
+        return true;
+    }
+
+    private void checkBundle(ResourceBundle bundle, String key, Element ref) {
+        try {
+            bundle.getString(key);
+        } catch (MissingResourceException ex) {
+            processingEnv.getMessager().printMessage(Kind.WARNING, String.format(WARN_BUNDLE_KEY_NOT_FOUND, key), ref);
+        }
+    }
+    
+    private boolean verifyHintMethod(ExecutableElement method) {
         StringBuilder error = new StringBuilder();
         Elements elements = processingEnv.getElementUtils();
         TypeElement errDesc = elements.getTypeElement("org.netbeans.spi.editor.hints.ErrorDescription");
         TypeElement juList = elements.getTypeElement("java.util.List");
-        TypeElement hintCtx = elements.getTypeElement("org.netbeans.modules.jackpot30.spi.HintContext");
+        TypeElement hintCtx = elements.getTypeElement("org.netbeans.modules.java.hints.jackpot.spi.HintContext");
 
         if (errDesc == null || juList == null || hintCtx == null) {
             return true;
