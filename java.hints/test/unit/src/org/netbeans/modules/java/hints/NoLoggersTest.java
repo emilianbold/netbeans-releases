@@ -51,12 +51,63 @@ public class NoLoggersTest extends TestBase {
         super(name, NoLoggers.class);
     }
 
-    public void testSimple1() throws Exception {
+    public void testSimple() throws Exception {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +
                             "public class Test {}",
                             "1:13-1:17:verifier:No logger declared for test.Test class"
                             );
+    }
+
+    public void testSimpleFix() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "}",
+                       "1:13-1:17:verifier:No logger declared for test.Test class",
+                       "FixImpl",
+                       ("package test;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "    private static final Logger LOG = Logger.getLogger(Test.class.getName());\n" +
+                       "}").replaceAll("[ \t\n]+", " ")
+                       );
+    }
+
+    public void testLoggerName1Fix() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    private String LOG;" +
+                       "}",
+                       "1:13-1:17:verifier:No logger declared for test.Test class",
+                       "FixImpl",
+                       ("package test;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "    private String LOG;" +
+                       "    private static final Logger LOGGER = Logger.getLogger(Test.class.getName());\n" +
+                       "}").replaceAll("[ \t\n]+", " ")
+                       );
+    }
+
+    public void testLoggerName2Fix() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    private String LOG;" +
+                       "    private String LOGGER;" +
+                       "}",
+                       "1:13-1:17:verifier:No logger declared for test.Test class",
+                       "FixImpl",
+                       ("package test;\n" +
+                       "import java.util.logging.Logger;\n" +
+                       "public class Test {\n" +
+                       "    private String LOG;" +
+                       "    private String LOGGER;" +
+                       "    private static final Logger LOG1 = Logger.getLogger(Test.class.getName());\n" +
+                       "}").replaceAll("[ \t\n]+", " ")
+                       );
     }
 
     public void testNoWarningsForAbstractClass() throws Exception {
