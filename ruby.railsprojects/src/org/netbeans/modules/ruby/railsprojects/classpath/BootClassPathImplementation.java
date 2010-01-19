@@ -296,7 +296,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             resetCache();
         }
         if (evt.getPropertyName().equals(RequiredGems.REQUIRED_GEMS_PROPERTY)) {
-            requiredGems.setRequiredGems(RequiredGems.fromString((String) evt.getNewValue()));
+            requiredGems.setRequiredGems((String) evt.getNewValue());
             resetCache();
         }
 //        if (evt.getSource() == this.evaluator && evt.getPropertyName().equals(PLATFORM_ACTIVE)) {

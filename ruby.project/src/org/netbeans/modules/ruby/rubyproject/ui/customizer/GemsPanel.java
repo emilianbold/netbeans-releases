@@ -77,9 +77,11 @@ public class GemsPanel extends javax.swing.JPanel {
     GemsPanel(RubyBaseProject project, SharedRubyProjectProperties uiProps) {
         this.project = project;
         this.properties = uiProps;
+        requiredGems = project.getLookup().lookup(RequiredGems.class);
+        //XXX need to init this somewhere else
+        requiredGems.setRequiredGems(project.evaluator().getProperty(RequiredGems.REQUIRED_GEMS_PROPERTY));
         initComponents();
         enableButtons(true);
-
     }
 
     private void enableButtons(boolean enabled) {
@@ -89,15 +91,13 @@ public class GemsPanel extends javax.swing.JPanel {
         editButton.setVisible(false);
     }
 
-    private void refreshIndexedGems() {
-        gemsTable.setModel(createTableModel());
-    }
     private DefaultTableModel createTableModel() {
-        requiredGems = project.getLookup().lookup(RequiredGems.class);
         List<GemIndexingStatus> gems = requiredGems.getGemIndexingStatuses();
         if (gems == null) {
             return createTestTableModel();
         }
+
+        GemManager gemManager = getGemManager();
 
         Object[][] data = new Object[gems.size()][3];
         for (int i = 0; i < gems.size(); i++) {
@@ -105,12 +105,19 @@ public class GemsPanel extends javax.swing.JPanel {
             data[i][0] = indexedGem.getRequirement().getName();
             data[i][1] = indexedGem.getRequirement().getVersionRequirement();
             String indexedVersion = indexedGem.getIndexedVersion();
+            if (indexedVersion == null) {
+                indexedVersion = gemManager.getLatestVersion(indexedGem.getRequirement().getName());
+            }
             data[i][2] = indexedVersion != null 
                     ? indexedVersion
                     : NbBundle.getMessage(GemsPanel.class, "NoVersionInstalled");
         }
 
-        return new DefaultTableModel(data, new Object[]{"name", "required version", "indexed version"});
+        NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title0");
+        return new DefaultTableModel(data, 
+                new Object[]{NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title0"),
+                NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title1"),
+                NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title2")});
     }
 
     private DefaultTableModel createTestTableModel() {
@@ -265,13 +272,17 @@ public class GemsPanel extends javax.swing.JPanel {
             }
         };
 
-        ProgressUtils.runOffEventDispatchThread(fetchGemsTask, "Fetch Gems", cancelled, true);
+        ProgressUtils.runOffEventDispatchThread(fetchGemsTask, 
+                NbBundle.getMessage(GemsPanel.class, "GemsPanel.fetchGems"),
+                cancelled,
+                true);
+        
         if (cancelled.get()) {
             return;
         }
 
         final GemListPanel gemListPanel = new GemListPanel(gems);
-        DialogDescriptor dd = new DialogDescriptor(gemListPanel, "Choose Gems");
+        DialogDescriptor dd = new DialogDescriptor(gemListPanel, NbBundle.getMessage(GemsPanel.class, "GemsPanel.chooseGems"));
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         dd.setModal(true);
         dd.setHelpCtx(new HelpCtx(GemsPanel.class));

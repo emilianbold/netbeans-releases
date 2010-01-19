@@ -54,6 +54,7 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
 import org.openide.util.Exceptions;
@@ -197,7 +198,7 @@ public final class RailsGemsHelper implements RakeTaskCustomizer {
                             }
 
                             public void outputLineAction(OutputEvent ev) {
-                                requiredGems.setRequiredGems(null);
+                                requiredGems.setRequiredGems((String) null);
                                 save();
                             }
 
@@ -209,15 +210,9 @@ public final class RailsGemsHelper implements RakeTaskCustomizer {
         }
 
         private void save() {
-//            project.getLookup().
-            try {
-                ProjectManager.getDefault().saveProject(project);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-
+            SharedRubyProjectProperties properties = project.getLookup().lookup(SharedRubyProjectProperties.class);
+            properties.setGemRequirements(requiredGems.getGemRequirements());
+            properties.save();
         }
     }
 

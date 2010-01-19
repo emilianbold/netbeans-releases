@@ -60,6 +60,8 @@ public final class Gem implements Comparable<Gem> {
         "activeresource", "activesupport", "rails", // NOI18N
         "actionwebservice"}; // NOI18N    actionwebservice is Rails 1.x only
 
+    private static final String RAKE_GEM = "rake"; //NOI18N
+    
     private String name;
     private String desc;
     private String installedVersions;
@@ -93,6 +95,10 @@ public final class Gem implements Comparable<Gem> {
             }
         }
         return false;
+    }
+
+    public static boolean isRakeGem(String name) {
+        return RAKE_GEM.equals(name);
     }
 
     /**

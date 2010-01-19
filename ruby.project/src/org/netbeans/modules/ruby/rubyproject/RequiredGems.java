@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.ruby.rubyproject;
 
-import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,9 +50,13 @@ import java.util.Map;
 import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
 import org.netbeans.modules.ruby.rubyproject.GemRequirement.Status;
+import org.openide.util.Parameters;
 
 /**
- * Represents the explicit gem requirements of a Ruby/Rails application.
+ * Helper class for dealing with the explicit gem requirements of
+ * a Ruby or Rails application. Contains info on the gem requirements, i.e. the gems
+ * and their versions that the application requires, and the gems and their versions
+ * that have actually been indexed.
  *
  * @author Erno Mononen
  */
@@ -63,21 +66,19 @@ public final class RequiredGems  {
      * The project property for required gems.
      */
     public static final String REQUIRED_GEMS_PROPERTY = "required.gems"; //NOI18N
-    /**
-     * Name of the property fired when there are changes in the required gems.
-     */
-    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
-    private List<GemRequirement> requirements;
-    private final List<URL> indexedGems = new ArrayList<URL>();
-    private final RubyBaseProject project;
 
-    public static RequiredGems create(RubyBaseProject project) {
-        RequiredGems result = new RequiredGems(project);
-        return result;
+    /** @GuardedBy("this") */
+    private List<GemRequirement> requirements;
+    /** @GuardedBy("this") */
+    private final List<URL> indexedGems = new ArrayList<URL>();
+
+    private RequiredGems() {
     }
 
-    private RequiredGems(RubyBaseProject project) {
-        this.project = project;
+    public static RequiredGems create(RubyBaseProject project) {
+        RequiredGems result = new RequiredGems();
+        result.setRequiredGems(fromString(project.evaluator().getProperty(REQUIRED_GEMS_PROPERTY)));
+        return result;
     }
 
     /**
@@ -87,29 +88,30 @@ public final class RequiredGems  {
      */
     public synchronized List<GemRequirement> getGemRequirements() {
         if (requirements == null) {
-            String required = project.evaluator().getProperty(REQUIRED_GEMS_PROPERTY);
-            if (required != null) {
-                requirements = fromString(required);
-            } else {
-                return null;
-            }
+            return null;
         }
         List<GemRequirement> result = mergeVersions(requirements);
         Collections.sort(result);
         return result;
     }
 
+    /**
+     * Adds the given requirements.
+     * @param gemRequirements
+     */
     public void addRequirements(Collection<GemRequirement> gemRequirements) {
-        List<GemRequirement> newReqs = null;
+        Parameters.notNull("gemRequirements", gemRequirements);
         synchronized (this) {
-            newReqs = new ArrayList<GemRequirement>(requirements);
-        }
-        for (GemRequirement each : gemRequirements) {
-            if (!newReqs.contains(each)) {
-                newReqs.add(each);
+            if (requirements == null) {
+                requirements = new ArrayList<GemRequirement>(gemRequirements);
+            } else {
+                for (GemRequirement each : gemRequirements) {
+                    if (!requirements.contains(each)) {
+                        requirements.add(each);
+                    }
+                }
             }
         }
-        setRequiredGems(newReqs);
     }
 
     public static String asString(List<GemRequirement> requirements) {
@@ -134,18 +136,29 @@ public final class RequiredGems  {
      * @param requirements
      */
     public synchronized void setRequiredGems(List<GemRequirement> requirements) {
-        this.requirements = Collections.unmodifiableList(requirements);
+        if (requirements == null) {
+            this.requirements = null;
+        } else {
+            this.requirements = new ArrayList<GemRequirement>(requirements);
+        }
+    }
+
+    /**
+     * Sets the required gems. If <code>requirements</code> is <code>null</code>,
+     * clears the list of required gems.
+     *
+     * @param requirements a comma separated list of the requirements.
+     */
+    public void setRequiredGems(String requirements) {
+        setRequiredGems(fromString(requirements));
     }
 
     public synchronized List<URL> getIndexedGems() {
-        return indexedGems;
-    }
-
-    public synchronized void reset() {
-        requirements = null;
+        return Collections.unmodifiableList(indexedGems);
     }
 
     public synchronized void setIndexedGems(Collection<URL> gemUrls) {
+        Parameters.notNull("gemUrls", gemUrls);
         indexedGems.clear();
         indexedGems.addAll(gemUrls);
     }
@@ -157,7 +170,7 @@ public final class RequiredGems  {
      * @return the filtered collection.
      */
     public synchronized Collection<URL> filterNotRequiredGems(Collection<URL> gemUrls) {
-        if (getGemRequirements() == null) {
+        if (requirements == null) {
             return gemUrls;
         }
 
@@ -186,7 +199,7 @@ public final class RequiredGems  {
     public synchronized List<GemIndexingStatus> getGemIndexingStatuses() {
         // if there are no requirements, just add all the indexed gems
         // this will also init requirements
-        boolean addAll = getGemRequirements() == null;
+        boolean addAll = requirements == null;
 
         // copy since we'll be removing elements
         List<GemRequirement> requirementsCopy = new ArrayList<GemRequirement>();
@@ -240,20 +253,26 @@ public final class RequiredGems  {
         return result;
     }
 
+    /**
+     * Removes the requirement identified by the given <code>name</code>.
+     * 
+     * @param name the name of requirement to remove.
+     */
     public void removeRequirement(String name) {
         List<GemIndexingStatus> statuses = new ArrayList<GemIndexingStatus>(getGemIndexingStatuses());
+        // can't just remove from requirements as it might not be set at all yet
         List<GemRequirement> newReqs = new ArrayList<GemRequirement>();
         for (GemIndexingStatus each : statuses) {
             if (!each.getRequirement().getName().equals(name)) {
                 newReqs.add(each.getRequirement());
             }
         }
-        if (newReqs.size() != statuses.size()) {
+        if (newReqs.size() < statuses.size()) {
             setRequiredGems(newReqs);
         }
     }
 
-    public static List<GemRequirement> fromString(String str) {
+    private static List<GemRequirement> fromString(String str) {
         if (str == null) {
             return null;
         }
@@ -269,7 +288,7 @@ public final class RequiredGems  {
     }
 
     private static boolean isRailsOrRake(String name) {
-        return Gem.isRailsGem(name) || "rake".equals(name);
+        return Gem.isRailsGem(name) || Gem.isRakeGem(name);
     }
 
     private static List<GemRequirement> mergeVersions(List<GemRequirement> requirements) {
@@ -286,7 +305,7 @@ public final class RequiredGems  {
             }
         }
 
-        return new ArrayList(map.values());
+        return new ArrayList<GemRequirement>(map.values());
     }
 
     public static final class GemIndexingStatus {
