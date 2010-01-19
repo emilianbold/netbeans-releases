@@ -122,7 +122,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	    doc.render(new Runnable() {
 
 		public void run() {
-		    ref.set(null == LexerUtils.getJoinedTokenSequence(doc, offset));
+		    ref.set(null != LexerUtils.getJoinedTokenSequence(doc, offset));
 		}
 	    });
 	    return ref.get();
@@ -138,7 +138,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
     }
 
     private static boolean representsOpenedFile(EditorCookie ec) {
-	return ec != null ? ec.getOpenedPanes() != null : null;
+	return ec != null && ec.getOpenedPanes() != null;
     }
 
     private static EditorCookie getEditorCookie(Node node) {

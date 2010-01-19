@@ -39,9 +39,23 @@
 
 package org.netbeans.modules.css.editor.refactoring;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import javax.swing.text.Position.Bias;
+import org.netbeans.modules.csl.spi.support.ModificationResult;
+import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
+import org.netbeans.modules.css.editor.Css;
+import org.netbeans.modules.css.parser.NodeVisitor;
+import org.netbeans.modules.css.parser.SimpleNode;
+import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.PositionRef;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -49,24 +63,71 @@ import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
  */
 public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
+    private RenameRefactoring refactoring;
+
+    public CssRenameRefactoringPlugin(RenameRefactoring refactoring) {
+	this.refactoring = refactoring;
+    }
+
     public Problem preCheck() {
-	throw new UnsupportedOperationException("Not supported yet.");
+	return null;
     }
 
     public Problem checkParameters() {
-	throw new UnsupportedOperationException("Not supported yet.");
+	return null;
     }
 
     public Problem fastCheckParameters() {
-	throw new UnsupportedOperationException("Not supported yet.");
+	return null;
     }
 
     public void cancelRequest() {
-	throw new UnsupportedOperationException("Not supported yet.");
+	//no-op
     }
 
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-	throw new UnsupportedOperationException("Not supported yet.");
+    public Problem prepare(final RefactoringElementsBag refactoringElements) {
+	Lookup lookup = refactoring.getRefactoringSource();
+	final CssElementContext context = lookup.lookup(CssElementContext.class);
+
+	//just testing how it could possibly work
+
+	//find all occurances of selected element in (and only in) THIS file.
+
+	//xxx do not do that in normal code!
+	CssElementContext.Editor econtext = (CssElementContext.Editor)context;
+
+	final SimpleNode element = econtext.getElement();
+	SimpleNode root = context.getResult().root();
+
+	final CloneableEditorSupport ces = Css.findCloneableEditorSupport(context.getFileObject());
+	final ModificationResult mr = new ModificationResult(); //per file???
+
+	//add the differences to the modificationResults
+	SimpleNodeUtil.visitChildren(root, new NodeVisitor() {
+
+	    public void visit(SimpleNode node) {
+		if(node.kind() == element.kind() && node.image().equals(element.image())) {
+		    int astFrom = context.getResult().getSnapshot().getOriginalOffset(node.startOffset());
+		    int astTo = context.getResult().getSnapshot().getOriginalOffset(node.endOffset());
+		    Difference diff = new Difference(Difference.Kind.CHANGE,
+			    ces.createPositionRef(astFrom, Bias.Forward),
+			    ces.createPositionRef(astTo, Bias.Backward),
+			    node.image(),
+			    refactoring.getNewName(),
+			    "Rename selector name");
+		    mr.addDifferences(context.getFileObject(), Collections.singletonList(diff));
+		    
+		}
+	    }
+	});
+
+	refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(mr)));
+
+	for(Difference diff : mr.getDifferences(context.getFileObject())) {
+	    refactoringElements.add(refactoring, DiffElement.create(diff, context.getFileObject(), mr));
+
+	}
+	return null;
     }
 
 }
