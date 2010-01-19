@@ -40,12 +40,8 @@
         class="org.mycompany.installer.wizard.components.actions.InitializeAction"/>
     <component 
         class="org.mycompany.installer.wizard.components.panels.WelcomePanel"/>
-    <!--
     <component 
-        class="org.netbeans.installer.wizard.components.panels.ComponentsSelectionPanel"/>
-    -->
-    <component 
-        class="org.netbeans.installer.wizard.components.sequences.MainSequence"/>
+        class="org.mycompany.installer.wizard.components.sequences.MainSequence"/>
     <component 
         class="org.netbeans.installer.wizard.components.sequences.CreateBundleSequence"/>
     <component 

@@ -42,14 +42,23 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-    <folder name="Projects">
-        <folder name="Actions">
+    <folder name="Actions">
+        <folder name="Project">
             <file name="org-netbeans-modules-apisupport-installer-actions-BuildInstallersAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.installer.actions.Bundle"/>
-                <attr name="delegate" newvalue="org.netbeans.modules.apisupport.installer.actions.BuildInstallersAction.getDefault"/>-->
+                <!--<attr name="delegate" newvalue="org.netbeans.modules.apisupport.installer.actions.BuildInstallersAction.getDefault"/>-->
                 <attr name="displayName" bundlevalue="org.netbeans.modules.apisupport.installer.actions.Bundle#CTL_BuildInstaller"/>
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.apisupport.installer.actions.BuildInstallersAction.getDefault"/>
-                <attr name="position" intvalue="30"/>
+            </file>
+        </folder>        
+    </folder>        
+
+    <folder name="Projects">
+        <folder name="Actions">
+            <file name="org-netbeans-modules-apisupport-installer-actions-BuildInstallersAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-apisupport-installer-actions-BuildInstallersAction.instance"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.apisupport.installer.actions.BuildInstallersAction.getDefault"/>
+                <attr name="position" intvalue="1"/>
             </file>
         </folder>        
     </folder>   

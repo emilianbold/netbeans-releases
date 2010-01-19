@@ -64,6 +64,7 @@
 
         <replace dir="${installer.build.dir}/ext" encoding="utf-8">
             <replacefilter token="{product-name}" value="${suite.props.app.title}"/>
+            <replacefilter token="{product-simple-name}" value="${suite.props.app.name}"/>
             <replacefilter token="{product-description}" value=""/>
             <replacefilter token="{product-uid}"         value="${product-uid}"/>
         </replace>
@@ -74,8 +75,8 @@
             <replacefilter token="{product-data-sub-dir}"     value="${suite.props.app.name}"/>
             <replacefilter token="{product-uid}"              value="${product-uid}"/>
             <replacefilter token="{product-install-directory-name}"         value="${suite.props.app.name}"/>
-            <replacefilter token="{product-install-directory-name-windows}" value="${suite.props.app.title}"/>
-            <replacefilter token="{product-install-directory-name-macosx}"  value="${suite.props.app.title}"/>
+            <replacefilter token="{product-install-directory-name-windows}" value="${suite.props.app.name}"/>
+            <replacefilter token="{product-install-directory-name-macosx}"  value="${suite.props.app.name}"/>
         </replace>       
         <property name="dir.dir" value="${installer.build.dir}/tmpdirfornac"/>
         <mkdir dir="${dir.dir}"/>

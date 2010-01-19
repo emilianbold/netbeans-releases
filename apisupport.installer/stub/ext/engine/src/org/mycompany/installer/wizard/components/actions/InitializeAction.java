@@ -67,7 +67,7 @@ public class InitializeAction extends WizardAction {
     public void execute() {
         final Progress progress = new Progress();
         
-        getWizardUi().setProgress(progress);
+        //getWizardUi().setProgress(progress);
         
 
         progress.setTitle(getProperty(PROGRESS_TITLE_PROPERTY));
@@ -88,6 +88,10 @@ public class InitializeAction extends WizardAction {
     @Override
     public boolean isCancelable() {
         return false;
+    }
+
+    public WizardActionUi getWizardUi() {
+        return null; // this action does not have a ui
     }
     
     /////////////////////////////////////////////////////////////////////////////////

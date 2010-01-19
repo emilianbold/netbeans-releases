@@ -39,8 +39,12 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.io.File;
+import java.util.List;
 import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -72,6 +76,11 @@ public class WelcomePanel extends ErrorMessagePanel {
         setProperty(WELCOME_TEXT_PROPERTY,
                 DEFAULT_WELCOME_TEXT);
 
+        setProperty(WELCOME_ALREADY_INSTALLED_TEXT_PROPERTY,
+                DEFAULT_WELCOME_ALREADY_INSTALLED_TEXT);
+        setProperty(WELCOME_ALREADY_INSTALLED_NEXT_BUTTON_TEXT_PROPERTY,
+                DEFAULT_WELCOME_ALREADY_INSTALLED_NEXT_BUTTON_TEXT);
+
        try {
             defaultRegistry = Registry.getInstance();
             bundledRegistry = new Registry();
@@ -88,6 +97,10 @@ public class WelcomePanel extends ErrorMessagePanel {
             ErrorManager.notifyError("Cannot load bundled registry", e);
         }
 
+    }
+
+    Registry getBundledRegistry() {
+        return bundledRegistry;
     }
 
     @Override
@@ -172,6 +185,28 @@ public class WelcomePanel extends ErrorMessagePanel {
 
             textPane.setContentType("text/html");
             textPane.setText(StringUtils.format(panel.getProperty(WELCOME_TEXT_PROPERTY)));
+            List<Product> toInstall = Registry.getInstance().getProductsToInstall();
+            if(toInstall.isEmpty()) {
+                List <Product> list = panel.getBundledRegistry().getProducts();
+                if(list.size() == 1) {
+                    File installationLocation = list.get(0).getInstallationLocation();
+                    if(SystemUtils.isMacOS()) {
+                        installationLocation =
+                                installationLocation.
+                                getParentFile().
+                                getParentFile().
+                                getParentFile();
+                    }
+                    textPane.setText(
+                            StringUtils.format(
+                            panel.getProperty(WELCOME_ALREADY_INSTALLED_TEXT_PROPERTY),
+                            list.get(0).getDisplayName(),
+                            installationLocation.getAbsolutePath()));
+                    container.getCancelButton().setVisible(false);
+                    container.getNextButton().setText(panel.getProperty(
+                            WELCOME_ALREADY_INSTALLED_NEXT_BUTTON_TEXT_PROPERTY));
+                }
+            }            
 
             super.initialize();
         }
@@ -267,10 +302,21 @@ public class WelcomePanel extends ErrorMessagePanel {
             "WP.description"); // NOI18N
     public static final String WELCOME_TEXT_PROPERTY =
             "welcome.text"; // NOI18N
+    public static final String WELCOME_ALREADY_INSTALLED_TEXT_PROPERTY =
+            "welcome.already.installed.text"; // NOI18N
+    public static final String WELCOME_ALREADY_INSTALLED_NEXT_BUTTON_TEXT_PROPERTY =
+            "welcome.already.installed.next.button.text";//NOI18N
+    public static final String DEFAULT_WELCOME_ALREADY_INSTALLED_NEXT_BUTTON_TEXT =
+            ResourceUtils.getString(WelcomePanel.class,
+            "WP.already.installed.next.button.text");//NOI18N
     
     public static final String DEFAULT_WELCOME_TEXT =
             ResourceUtils.getString(WelcomePanel.class,
             "WP.welcome.text"); // NOI18N
+
+    public static final String DEFAULT_WELCOME_ALREADY_INSTALLED_TEXT =
+            ResourceUtils.getString(WelcomePanel.class,
+            "WP.already.installed.text"); // NOI18N
 
     public static final String WELCOME_PAGE_LEFT_TOP_IMAGE_PROPERTY =
             "nbi.wizard.ui.swing.welcome.left.top.image";//NOI18N
