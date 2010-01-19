@@ -59,10 +59,10 @@ made subject to such option by the copyright holder.
 
   <target name="bootstrap" description="Bootstrap NetBeans-specific Ant extensions."
           depends="-jdk-init,-load-build-properties">
-    <fail message="You need JDK 1.5+ to build NetBeans">
+    <fail message="You need JDK 6+ to build NetBeans; nbjdk.home=${nbjdk.home} java.home=${java.home}">
         <condition>
             <not>
-                <isset property="have-jdk-1.5"/>
+                <isset property="have-jdk-1.6"/>
             </not>
         </condition>
     </fail>
