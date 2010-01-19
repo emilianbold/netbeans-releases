@@ -104,7 +104,7 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        SourceUtilsTestUtil.prepareTest(new String[]{"org/netbeans/modules/java/editor/resources/layer.xml", "org/netbeans/modules/java/hints/resources/layer.xml"},
+        SourceUtilsTestUtil.prepareTest(new String[]{"org/netbeans/modules/java/editor/resources/layer.xml", "org/netbeans/modules/java/hints/resources/layer.xml", "META-INF/generated-layer.xml"},
                 new Object[]{JavaDataLoader.class,
                 new MimeDataProvider() {
                 public Lookup getLookup(MimePath mimePath) {
