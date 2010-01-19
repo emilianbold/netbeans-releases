@@ -271,10 +271,7 @@ public class Mercurial {
             return;
         }
         final File repository = repositories.iterator().next();
-        final Set<File> rootFiles = new HashSet<File>(roots.length);
-        for (File root : roots) {
-            rootFiles.add(root);
-        }
+        final Set<File> rootFiles = new HashSet<File>(Arrays.asList(roots));
 
         FileStatusCache cache = hg.getFileStatusCache();
         cache.refreshAllRoots(Collections.singletonMap(repository, rootFiles));
