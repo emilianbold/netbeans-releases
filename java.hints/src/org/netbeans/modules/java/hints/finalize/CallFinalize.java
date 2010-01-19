@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.java.hints.finalize;
 
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
@@ -68,6 +71,17 @@ public class CallFinalize {
         assert ctx != null;
         final TreePath ins = ctx.getVariables().get("$ins");    //NOI18N
         assert ins != null;
+        Tree target = ins.getLeaf();
+        if (target.getKind() == Tree.Kind.IDENTIFIER && "super".contentEquals(((IdentifierTree)target).getName())) {    //NOI18N
+            TreePath parent = ins.getParentPath();
+            while (parent.getLeaf().getKind() != Tree.Kind.METHOD) {
+                parent = parent.getParentPath();
+            }
+            final MethodTree owner = (MethodTree) parent.getLeaf();
+            if ("finalize".contentEquals(owner.getName()) && owner.getParameters().isEmpty()) {  //NOI18N
+                return null;
+            }
+        }
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), NbBundle.getMessage(CallFinalize.class, "TXT_CallFinalize"),
                FixFactory.createSuppressWarningsFix(ctx.getInfo(), ins, "FinalizeCalledExplicitly"));   //NOI18N
     }

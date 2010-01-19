@@ -86,4 +86,25 @@ public class CallFinalizeTest extends TestBase {
                             "}");
     }
 
+    public void testSuperFinalizeCalledInOverridenMethod() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    protected void finalize() {\n" +
+                            "        super.finalize();\n" +
+                            "    }\n" +
+                            "}");
+    }
+
+    public void testSuperFinalizeCalledInNonOverridenMethod() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    protected void test() {\n" +
+                            "        super.finalize();\n" +
+                            "    }\n" +
+                            "}",
+                            "3:14-3:22:verifier:finalize() called explicitly");
+    }
+
 }
