@@ -161,7 +161,6 @@ public class GemsPanel extends javax.swing.JPanel {
         editButton = new javax.swing.JButton();
         gemManagerButton = new javax.swing.JButton();
 
-        gemsTable.setAutoCreateRowSorter(true);
         gemsTable.setModel(createTableModel());
         gemsTable.getTableHeader().setReorderingAllowed(false);
         runScrollPane.setViewportView(gemsTable);
@@ -171,7 +170,6 @@ public class GemsPanel extends javax.swing.JPanel {
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.runScrollPane.TabConstraints.tabTitle"), runScrollPane); // NOI18N
 
-        testGemsTable.setAutoCreateRowSorter(true);
         testGemsTable.setModel(createTestTableModel());
         testScrollPane.setViewportView(testGemsTable);
 
