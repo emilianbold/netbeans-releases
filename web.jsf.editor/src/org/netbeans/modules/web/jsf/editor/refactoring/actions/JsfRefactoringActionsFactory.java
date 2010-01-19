@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,52 +34,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
-import org.netbeans.modules.web.jsf.api.palette.PaletteItemsProvider;
-import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.openide.util.Lookup;
+package org.netbeans.modules.web.jsf.editor.refactoring.actions;
 
-public class JsfCodeGenerator {
+import javax.swing.Action;
 
-    public static class Factory implements CodeGenerator.Factory {
+/**
+ *
+ * @author marekfukala
+ */
+public class JsfRefactoringActionsFactory {
 
-        public List<? extends CodeGenerator> create(Lookup context) {
-
-            JTextComponent component = context.lookup(JTextComponent.class);
-            List<CodeGenerator> generators = new ArrayList<CodeGenerator>();
-	    generators.add(new InjectCompositeComponent.InjectCCCodeGen());
-
-	    //add palette items
-            for(PaletteItem item : PaletteItemsProvider.getPaletteItems()) {
-                generators.add(new PaletteCodeGenerator(component, item));
-            }
-            return generators;
-        }
+    public static Action convertToCCAction() {
+	 return ConvertToCCAction.findObject(ConvertToCCAction.class, true);
     }
-
-    private static class PaletteCodeGenerator implements CodeGenerator {
-
-        private JTextComponent component;
-        private PaletteItem item;
-
-        public PaletteCodeGenerator(JTextComponent component, PaletteItem item) {
-            this.component = component;
-            this.item = item;
-        }
-
-        public String getDisplayName() {
-            return item.getDisplayName();
-        }
-
-        public void invoke() {
-            item.insert(component);
-        }
-    }
+    
 }

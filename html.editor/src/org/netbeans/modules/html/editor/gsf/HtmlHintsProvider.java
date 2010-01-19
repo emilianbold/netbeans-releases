@@ -89,6 +89,10 @@ public class HtmlHintsProvider implements HintsProvider {
      */
     @Override
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
+        //html extensions
+        for(HtmlExtension ext : HtmlExtension.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
+            ext.computeSelectionHints(manager, context, suggestions, start, end);
+        }
     }
 
     /**

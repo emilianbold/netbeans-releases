@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,52 +34,62 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor;
+package org.netbeans.modules.web.jsf.editor.refactoring.actions;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
-import org.netbeans.modules.web.jsf.api.palette.PaletteItemsProvider;
-import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.openide.util.Lookup;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.EditorUtilities;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.web.jsf.editor.InjectCompositeComponent;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
-public class JsfCodeGenerator {
+/**
+ *
+ * @author marekfukala
+ */
+public class ConvertToCCAction extends NodeAction {
 
-    public static class Factory implements CodeGenerator.Factory {
-
-        public List<? extends CodeGenerator> create(Lookup context) {
-
-            JTextComponent component = context.lookup(JTextComponent.class);
-            List<CodeGenerator> generators = new ArrayList<CodeGenerator>();
-	    generators.add(new InjectCompositeComponent.InjectCCCodeGen());
-
-	    //add palette items
-            for(PaletteItem item : PaletteItemsProvider.getPaletteItems()) {
-                generators.add(new PaletteCodeGenerator(component, item));
-            }
-            return generators;
-        }
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+	JTextComponent tc = EditorRegistry.lastFocusedComponent();
+	InjectCompositeComponent.inject(tc.getDocument(), tc.getSelectionStart(), tc.getSelectionEnd());
     }
 
-    private static class PaletteCodeGenerator implements CodeGenerator {
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+	//enables the action only if the first activated node
+	//contains DataObject instance which is currently associated
+	//with edited document
+	if (activatedNodes.length > 0) {
+	    Node node = activatedNodes[0]; //multiselection doesn't make sense
+	    DataObject dobj = node.getLookup().lookup(DataObject.class);
+	    if (dobj != null) {
+		JTextComponent tc = EditorRegistry.lastFocusedComponent();
+		if (tc != null && tc.getSelectedText() != null) { //disable w/o editor selection
+		    DataObject editedDobj = NbEditorUtilities.getDataObject(tc.getDocument());
+		    if (editedDobj.equals(dobj)) {
+			return true;
+		    }
+		}
+	    }
+	}
+	return false;
+    }
 
-        private JTextComponent component;
-        private PaletteItem item;
+    @Override
+    public String getName() {
+	return NbBundle.getMessage(ConvertToCCAction.class, "MSG_ConvertToCompositeComponents"); //NOI18N
+    }
 
-        public PaletteCodeGenerator(JTextComponent component, PaletteItem item) {
-            this.component = component;
-            this.item = item;
-        }
-
-        public String getDisplayName() {
-            return item.getDisplayName();
-        }
-
-        public void invoke() {
-            item.insert(component);
-        }
+    @Override
+    public HelpCtx getHelpCtx() {
+	return null;
     }
 }
