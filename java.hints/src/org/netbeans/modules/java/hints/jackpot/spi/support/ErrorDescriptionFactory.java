@@ -47,6 +47,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -87,7 +89,12 @@ public class ErrorDescriptionFactory {
         int[] span = computeNameSpan(tree, context);
         
         if (span != null && span[0] != (-1) && span[1] != (-1)) {
-            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription(context.getSeverity().toEditorSeverity(), text, Arrays.asList(fixes), context.getInfo().getFileObject(), span[0], span[1]);
+            List<Fix> fixesForED = new LinkedList<Fix>();
+            for (Fix f : fixes) {
+                if (f == null) continue;
+                fixesForED.add(f);
+            }
+            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription(context.getSeverity().toEditorSeverity(), text, fixesForED, context.getInfo().getFileObject(), span[0], span[1]);
         }
 
         return null;
