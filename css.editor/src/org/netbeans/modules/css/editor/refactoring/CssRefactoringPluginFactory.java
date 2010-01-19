@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.editor.refactoring;
 
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -48,21 +47,17 @@ import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
  *
  * @author marekfukala
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=120)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position = 120)
 public class CssRefactoringPluginFactory implements RefactoringPluginFactory {
 
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-//	if (refactoring instanceof RenameRefactoring) {
-//		if(null != refactoring.getRefactoringSource().lookup(CssElementContext.class)) {
-//
-//
-//		}
-//
-//
-//        }
-//
-        return null;
+	if (refactoring instanceof RenameRefactoring) {
+	    if (null != refactoring.getRefactoringSource().lookup(CssElementContext.class)) {
+		return new CssRenameRefactoringPlugin((RenameRefactoring)refactoring);
+	    }
+	}
+
+	return null;
 
     }
-
 }
