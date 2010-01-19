@@ -11,3 +11,4 @@ org.netbeans.modules.java.hints.StringBuilderAppend
 org.netbeans.modules.java.hints.LoggerNotStaticFinal
 org.netbeans.modules.java.hints.MultipleLoggers
 org.netbeans.modules.java.hints.NoLoggers
+org.netbeans.modules.java.hints.ShiftOutOfRange
