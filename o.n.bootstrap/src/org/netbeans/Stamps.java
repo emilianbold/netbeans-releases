@@ -313,7 +313,7 @@ public final class Stamps {
         Set<File> processedDirs = new HashSet<File>();
         String home = System.getProperty ("netbeans.home"); // NOI18N
         if (home != null) {
-            long stamp = stampForCluster (new File (home), result, processedDirs, checkStampFile, true);
+            long stamp = stampForCluster (new File (home), result, processedDirs, checkStampFile, true, null);
             sb.append(home).append('=').append(stamp).append('\n');
         }
         String nbdirs = System.getProperty("netbeans.dirs"); // NOI18N
@@ -321,7 +321,7 @@ public final class Stamps {
             StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
             while (tok.hasMoreTokens()) {
                 String t = tok.nextToken();
-                long stamp = stampForCluster(new File(t), result, processedDirs, checkStampFile, true);
+                long stamp = stampForCluster(new File(t), result, processedDirs, checkStampFile, true, null);
                 if (stamp != -1) {
                     sb.append(t).append('=').append(stamp).append('\n');
                 }
@@ -329,8 +329,10 @@ public final class Stamps {
         }
         String user = getUserDir();
         if (user != null) {
-            stampForCluster (new File (user), result, new HashSet<File> (), false, false);
+            AtomicInteger crc = new AtomicInteger();
+            stampForCluster (new File (user), result, new HashSet<File> (), false, false, crc);
             sb.append(user).append('=').append(result.longValue()).append('\n');
+            sb.append("crc=").append(crc.intValue()).append('\n');
             
             File userDir = new File(user);
             File checkSum = new File(new File(new File(new File(userDir, "var"), "cache"), "lastModified"), "all-checksum.txt");
@@ -344,7 +346,7 @@ public final class Stamps {
     
     private static long stampForCluster(
         File cluster, AtomicLong result, Set<File> hashSet, 
-        boolean checkStampFile, boolean createStampFile
+        boolean checkStampFile, boolean createStampFile, AtomicInteger crc
     ) {
         File stamp = new File(cluster, ".lastModified"); // NOI18N
         long time;
@@ -372,7 +374,7 @@ public final class Stamps {
         File modulesDir = new File(cluster, "modules"); // NOI18N
 
         AtomicLong clusterResult = new AtomicLong();
-        if (highestStampForDir(configDir, clusterResult) && highestStampForDir(modulesDir, clusterResult)) {
+        if (highestStampForDir(configDir, clusterResult, crc) && highestStampForDir(modulesDir, clusterResult, crc)) {
             // ok
         } else {
             if (!cluster.isDirectory()) {
@@ -397,9 +399,16 @@ public final class Stamps {
         return clusterResult.longValue();
     }
 
-    private static boolean highestStampForDir(File file, AtomicLong result) {
+    private static boolean highestStampForDir(File file, AtomicLong result, AtomicInteger crc) {
+        if (file.getName().equals(".nbattrs")) { // NOI18N
+            return true;
+        }
+
         File[] children = file.listFiles();
         if (children == null) {
+            if (crc != null) {
+                crc.addAndGet(file.getName().length());
+            }
             long time = file.lastModified();
             if (time > result.longValue()) {
                 result.set(time);
@@ -408,7 +417,7 @@ public final class Stamps {
         }
         
         for (File f : children) {
-            highestStampForDir(f, result);
+            highestStampForDir(f, result, crc);
         }
         return true;
     }

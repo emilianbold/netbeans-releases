@@ -66,7 +66,7 @@ import javax.swing.MenuSelectionManager;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Keymap;
 import org.netbeans.core.NbKeymap;
-import org.netbeans.core.NbTopManager;
+import org.netbeans.core.NbLifecycleManager;
 import org.netbeans.core.windows.view.ui.KeyboardPopupSwitcher;
 import org.openide.actions.ActionManager;
 import org.openide.util.Lookup;
@@ -298,7 +298,7 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
 
     private boolean processShortcut(KeyEvent ev) {
         //ignore shortcut keys when the IDE is shutting down
-        if( NbTopManager.isExiting() ) {
+        if (NbLifecycleManager.isExiting()) {
             ev.consume();
             return true;
         }

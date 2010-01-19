@@ -63,7 +63,9 @@ options {
 } 
 
 {
+@org.netbeans.api.annotations.common.SuppressWarnings({"UCF", "MS"})
 @SuppressWarnings({"unchecked", "cast", "fallthrough"})
+final /*final class attribute gives us performance */
 }
 class APTExprParser extends Parser;
 

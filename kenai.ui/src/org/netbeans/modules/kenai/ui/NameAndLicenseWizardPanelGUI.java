@@ -60,7 +60,6 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -85,8 +84,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiLicense;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.WizardDescriptor;
@@ -135,8 +132,6 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         panel = pnl;
         initComponents();
 
-        kenaiCombo.setModel(new KenaiComboModel());
-        kenaiCombo.setRenderer(new KenaiListRenderer());
         panel.setKenai((Kenai) kenaiCombo.getModel().getSelectedItem());
 
         kenaiCombo.addActionListener(new ActionListener() {
@@ -311,7 +306,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         proxyConfigButton = new JButton();
         lowercaseLabel = new JLabel();
         licenseDescription = new JLabel();
-        kenaiCombo = new JComboBox();
+        kenaiCombo = new KenaiCombo(false);
 
         setLayout(new GridBagLayout());
         Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loggedInLabel.text"));

@@ -97,7 +97,7 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         NbBundle.getBundle(WatchesActionsProvider.class).getString("CTL_WatchAction_Delete"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
-                return !WatchesNodeModel.isEmptyWatch(node);
+                return !WatchesNodeModelFilter.isEmptyWatch(node);
             }
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;

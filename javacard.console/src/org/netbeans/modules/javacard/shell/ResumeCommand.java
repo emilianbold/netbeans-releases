@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.javacard.shell;
 
+import org.netbeans.modules.javacard.api.RunMode;
 import org.netbeans.modules.javacard.spi.CardState;
 import org.netbeans.modules.javacard.spi.capabilities.ResumeCapability;
 import org.openide.util.NbBundle;
@@ -58,7 +59,7 @@ final class ResumeCommand implements Command {
         }
         ResumeCapability cap = shellPanel.getCard().getLookup().lookup(ResumeCapability.class);
         if (cap != null) {
-            cap.resume().awaitUninterruptibly();
+            cap.resume(RunMode.RUN).awaitUninterruptibly();
         } else {
             return APDUSender.getString("ERR_RESUME_NOT_SUPPORTED");
         }

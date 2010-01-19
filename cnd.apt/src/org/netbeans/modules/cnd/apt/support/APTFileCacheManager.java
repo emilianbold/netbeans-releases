@@ -60,6 +60,7 @@ public final class APTFileCacheManager {
     private static final class Lock {}
     private static final Object aptCachesLock = new Lock();
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("DLS")
     private static ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> getAPTCache(CharSequence file, Boolean createAndClean) {
         if (createAndClean == null) {
             Reference<ConcurrentMap<State, APTFileCacheEntry>> removed = file2AptCacheRef.remove(file);
@@ -96,7 +97,7 @@ public final class APTFileCacheManager {
             }
         }
         assert out != null;
-        if (createAndClean == Boolean.TRUE) {
+        if (Boolean.TRUE.equals(createAndClean)) {
             out.clear();
         }
         return out;
@@ -140,7 +141,7 @@ public final class APTFileCacheManager {
         APTFileCacheEntry out = cache.get(key);
         if (createExclusiveIfAbsent != null) {
             if (out == null) {
-                if (createExclusiveIfAbsent == Boolean.TRUE) {
+                if (Boolean.TRUE.equals(createExclusiveIfAbsent)) {
                     out = APTFileCacheEntry.createSerialEntry(file);
                 } else {
                     // we do remember concurrent entries

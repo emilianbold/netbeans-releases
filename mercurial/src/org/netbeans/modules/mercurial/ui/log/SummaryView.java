@@ -399,11 +399,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     setEnabled(viewEnabled);
                 }
                 public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            exportFileDiff(selection[0]);
-                        }
-                    });
+                    exportFileDiff(selection[0]);
                 }
             }));
         }

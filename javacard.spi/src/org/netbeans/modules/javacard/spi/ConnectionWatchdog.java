@@ -85,7 +85,7 @@ public final class ConnectionWatchdog<CardImpl extends Card> {
     private final RequestProcessor.Task task = rp.create(r);
     private static final Logger LOGGER = Logger.getLogger(ConnectionWatchdog.class.getName());
     private boolean done;
-    private final Callback callback;
+    private final Callback<CardImpl> callback;
     private int POLL_FREQUENCY = 30000; //Poll every 30 seconds
     private int delayAfterActivation = 200;
     private boolean enabled = true;

@@ -115,8 +115,6 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 
         this.prjAndFeature = prjFtr;
         initComponents();
-        kenaiCombo.setModel(new KenaiComboModel());
-        kenaiCombo.setRenderer(new KenaiListRenderer());
         if (prjAndFeature==null) {
             kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
         } else {
@@ -190,7 +188,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         browseLocalButton = new JButton();
         proxyConfigButton = new JButton();
         emptySpace = new JPanel();
-        kenaiCombo = new JComboBox();
+        kenaiCombo = new KenaiCombo(true);
 
         setBorder(BorderFactory.createEmptyBorder(10, 12, 0, 12));
         setPreferredSize(new Dimension(700, 250));

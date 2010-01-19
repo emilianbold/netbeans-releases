@@ -90,6 +90,7 @@ public class MeasurementTestCase extends RemoteTestBase {
 
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("LG")
     private MeasurementTestCase(String testName, ExecutionEnvironment execEnv, File testDirectory, String displayNameBase) {
         super(testName, execEnv);
         if (DEBUG)  {
@@ -156,6 +157,7 @@ public class MeasurementTestCase extends RemoteTestBase {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("OBL")
     private void change(File file) throws IOException {
         if (file.isDirectory()) {
             for (File child : file.listFiles()) {

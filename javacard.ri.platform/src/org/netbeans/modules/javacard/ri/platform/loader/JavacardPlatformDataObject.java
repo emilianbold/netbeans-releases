@@ -51,7 +51,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -64,15 +63,14 @@ import javax.swing.BorderFactory;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.javacard.common.JCConstants;
-import org.netbeans.modules.javacard.common.Utils;
 import org.netbeans.modules.javacard.ri.platform.installer.RIPlatformFactory;
 import org.netbeans.modules.javacard.ri.platform.installer.ServersPanel;
+import org.netbeans.modules.javacard.spi.Cards;
 import org.netbeans.modules.javacard.spi.DeviceManagerDialogProvider;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.modules.javacard.spi.ProjectKind;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -154,15 +152,7 @@ public class JavacardPlatformDataObject extends PropertiesBasedDataObject<Javaca
     }
 
     public void showManageDevicesDialog(Component parent) {
-        try {
-            //XXX needs to be registered by kind instead!
-            FileObject p = Utils.sfsFolderForDeviceConfigsForPlatformNamed(getName(), true);
-            DataObject dob = DataObject.find(p);
-//            new ServersPanel(dob.getNodeDelegate()).showDialog();
-            new ServersPanel(getLookup().lookup(JavacardPlatform.class)).showDialog();
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        new ServersPanel(getLookup().lookup(JavacardPlatform.class)).showDialog();
     }
 
     private static final class ND extends DataNode {

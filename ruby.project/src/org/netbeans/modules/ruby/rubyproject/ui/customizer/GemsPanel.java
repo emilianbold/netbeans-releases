@@ -40,23 +40,24 @@
 package org.netbeans.modules.ruby.rubyproject.ui.customizer;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.gems.Gem;
-import org.netbeans.modules.ruby.platform.gems.GemInfo;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
-import org.netbeans.modules.ruby.rubyproject.GemRequirement;
 import org.netbeans.modules.ruby.rubyproject.RequiredGems;
+import org.netbeans.modules.ruby.rubyproject.RequiredGems.GemIndexingStatus;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
-import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Erno Mononen
  */
 public class GemsPanel extends javax.swing.JPanel {
+
+    private static final Logger LOGGER = Logger.getLogger(GemsPanel.class.getName());
 
     private final RubyBaseProject project;
 
@@ -75,17 +76,20 @@ public class GemsPanel extends javax.swing.JPanel {
 
         RequiredGems requiredGems = project.getLookup().lookup(RequiredGems.class);
 
-        List<GemRequirement> gems = requiredGems.getGemRequirements();
+        List<GemIndexingStatus> gems = requiredGems.getGems();
         if (gems == null) {
             return createTestTableModel();
         }
 
         Object[][] data = new Object[gems.size()][3];
         for (int i = 0; i < gems.size(); i++) {
-            GemRequirement gem = gems.get(i);
-            data[i][0] = gem.getName();
-            data[i][1] = gem.getVersionRequirement();
-            data[i][2] = getIndexedVersion(gem.getName());
+            GemIndexingStatus indexedGem = gems.get(i);
+            data[i][0] = indexedGem.getRequirement().getName();
+            data[i][1] = indexedGem.getRequirement().getVersionRequirement();
+            String indexedVersion = indexedGem.getIndexedVersion();
+            data[i][2] = indexedVersion != null 
+                    ? indexedVersion
+                    : NbBundle.getMessage(GemsPanel.class, "NoVersionInstalled");
         }
 
         return new DefaultTableModel(data, new Object[]{"name", "required version", "indexed version"});

@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm;
 
-import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
@@ -49,10 +48,22 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
@@ -146,7 +157,20 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     }
 
     private CsmFunction findDeclaration(CsmProject prj, String uname){
-        CsmDeclaration decl = prj.findDeclaration(uname);
+        CsmDeclaration decl = null;
+        for(CsmOffsetableDeclaration candidate : prj.findDeclarations(uname)) {
+            if ((candidate.getKind() == CsmDeclaration.Kind.FUNCTION ||
+                candidate.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND)) {
+                if (decl == null) {
+                    decl = candidate;
+                } else {
+                    if (candidate.getContainingFile().equals(getContainingFile())) {
+                        decl = candidate;
+                        break;
+                    }
+                }
+            }
+        }
         if( decl != null && (decl.getKind() == CsmDeclaration.Kind.FUNCTION ||
                 decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND)) {
             return (CsmFunction) decl;

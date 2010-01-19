@@ -71,6 +71,8 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.xpath.XPath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -219,6 +221,19 @@ public final class Util {
             to.setAttribute(attr.getNodeName(), attr.getNodeValue());
         }
         return to;
+    }
+
+    /**
+     * Pass to {@link XPath#setNamespaceContext} to bind {@code nbm:} to the /3 namespace.
+     */
+    public static final NamespaceContext nbmNamespaceContext() {
+        return new NamespaceContext() {
+            public String getNamespaceURI(String prefix) {
+                return prefix.equals("nbm") ? NbModuleProjectType.NAMESPACE_SHARED : null; // NOI18N
+            }
+            public String getPrefix(String namespaceURI) {return null;}
+            public Iterator getPrefixes(String namespaceURI) {return null;}
+        };
     }
 
     /**

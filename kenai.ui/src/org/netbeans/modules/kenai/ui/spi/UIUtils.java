@@ -258,12 +258,18 @@ public final class UIUtils {
         public String getUsername(Kenai kenai) {
             final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
             String uname = preferences.get(getPrefName(kenai, KENAI_USERNAME_PREF), ""); // NOI18N
+            if (uname==null) {
+                return "";
+            }
             return uname;
         }
 
         public char[] getPassword(Kenai kenai) {
             final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
             char[] password = loadPassword(kenai, preferences);
+            if (password==null) {
+                return new char[0];
+            }
             return password;
         }
     }

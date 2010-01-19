@@ -49,6 +49,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
+import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -106,6 +107,7 @@ public class TestUtil implements TestConstants {
         ta.setValue(desc);
 
         BugzillaClient client = brc.getClientManager().getClient(repository, NULL_PROGRESS_MONITOR);
+        RepositoryConfiguration rc = brc.getRepositoryConfiguration(repository, false, new NullProgressMonitor());
         String os = client.getRepositoryConfiguration().getOSs().get(0);
         ta = rta.createMappedAttribute(BugzillaAttribute.OP_SYS.getKey());
         ta.setValue(os);

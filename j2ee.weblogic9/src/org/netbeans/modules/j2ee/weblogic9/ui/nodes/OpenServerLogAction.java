@@ -42,7 +42,7 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
-import org.netbeans.modules.j2ee.weblogic9.WLBaseDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -70,8 +70,8 @@ public class OpenServerLogAction extends NodeAction {
                 continue;
             }
             
-            WLBaseDeploymentManager dm = ((WLManagerNode)node).getDeploymentManager();
-            InputOutput io = UISupport.getServerIO(dm.getURI());
+            WLDeploymentManager dm = ((WLManagerNode)node).getDeploymentManager();
+            InputOutput io = UISupport.getServerIO(dm.getUri());
             if (io != null) {
                 io.select();
             }

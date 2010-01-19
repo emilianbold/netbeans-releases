@@ -58,4 +58,15 @@ public enum ContactedProtocol {
                 throw new AssertionError();
         }
     }
+
+    public static ContactedProtocol forString(String val) {
+        val = val == null ? null : val.trim();
+        if ("T=0".equals(val)) {
+            return T0;
+        } else if ("T=1".equals(val)) {
+            return T1;
+        } else {
+            return null;
+        }
+    }
 }

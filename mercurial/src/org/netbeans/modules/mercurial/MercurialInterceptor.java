@@ -76,7 +76,6 @@ public class MercurialInterceptor extends VCSInterceptor {
     private RequestProcessor.Task refreshTask;
 
     private static final RequestProcessor rp = new RequestProcessor("MercurialRefresh", 1, true);
-    private final RequestProcessor parallelRP = new RequestProcessor("Mercurial FS handler", 50);
     private final HgFolderEventsHandler hgFolderEventsHandler;
     private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.mercurial.autoRefreshDisabled", "false")); //NOI18N
 
@@ -146,39 +145,10 @@ public class MercurialInterceptor extends VCSInterceptor {
     public void doMove(final File from, final File to) throws IOException {
         Mercurial.LOG.fine("doMove " + from + "->" + to);
         if (from == null || to == null || to.exists()) return;
-        
         if (SwingUtilities.isEventDispatchThread()) {
-
             Mercurial.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace()); // NOI18N
-            final Throwable innerT[] = new Throwable[1];
-            Runnable outOfAwt = new Runnable() {
-                public void run() {
-                    try {
-                        hgMoveImplementation(from, to);
-                    } catch (Throwable t) {
-                        innerT[0] = t;
-                    }
-                }
-            };
-
-            parallelRP.post(outOfAwt).waitFinished();
-            if (innerT[0] != null) {
-                if (innerT[0] instanceof IOException) {
-                    throw (IOException) innerT[0];
-                } else if (innerT[0] instanceof RuntimeException) {
-                    throw (RuntimeException) innerT[0];
-                } else if (innerT[0] instanceof Error) {
-                    throw (Error) innerT[0];
-                } else {
-                    throw new IllegalStateException("Unexpected exception class: " + innerT[0]);  // NOI18N
-                }
-            }
-
-            // end of hack
-
-        } else {
-            hgMoveImplementation(from, to);
         }
+        hgMoveImplementation(from, to);
     }
 
     private void hgMoveImplementation(final File srcFile, final File dstFile) throws IOException {
@@ -186,8 +156,6 @@ public class MercurialInterceptor extends VCSInterceptor {
         final File root = hg.getRepositoryRoot(srcFile);
         final File dstRoot = hg.getRepositoryRoot(dstFile);
         if (root == null) return;
-
-        RequestProcessor rp = hg.getRequestProcessor(root);
 
         Mercurial.LOG.log(Level.FINE, "hgMoveImplementation(): File: {0} {1}", new Object[] {srcFile, dstFile}); // NOI18N
 
@@ -197,7 +165,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         try {
             if (root.equals(dstRoot)) {
                 HgCommand.doRenameAfter(root, srcFile, dstFile, logger);
-             }
+            }
         } catch (HgException e) {
             Mercurial.LOG.log(Level.FINE, "Mercurial failed to rename: File: {0} {1}", new Object[]{srcFile.getAbsolutePath(), dstFile.getAbsolutePath()}); // NOI18N
         } finally {
@@ -235,22 +203,12 @@ public class MercurialInterceptor extends VCSInterceptor {
                 final File root = hg.getRepositoryRoot(file);
                 if (root == null) return false;
                 final OutputLogger logger = Mercurial.getInstance().getLogger(root.getAbsolutePath());
-                final Throwable innerT[] = new Throwable[1];
-                Runnable outOfAwt = new Runnable() {
-                    public void run() {
-                        try {
-                            List<File> revertFiles = new ArrayList<File>();
-                            revertFiles.add(file);
-                            HgCommand.doRevert(root, revertFiles, null, false, logger);
-                        } catch (Throwable t) {
-                            innerT[0] = t;
-                        }
-                    }
-                };
-
-                parallelRP.post(outOfAwt).waitFinished();
-                if (innerT[0] != null) {
-                    Mercurial.LOG.log(Level.FINE, "beforeCreate(): File: {0} {1}", new Object[] {file.getAbsolutePath(), innerT[0].toString()}); // NOI18N
+                try {
+                    List<File> revertFiles = new ArrayList<File>();
+                    revertFiles.add(file);
+                    HgCommand.doRevert(root, revertFiles, null, false, logger);
+                } catch (HgException ex) {
+                    Mercurial.LOG.log(Level.FINE, "beforeCreate(): File: {0} {1}", new Object[]{file.getAbsolutePath(), ex.toString()}); // NOI18N
                 }
                 Mercurial.LOG.log(Level.FINE, "beforeCreate(): afterWaitFinished: {0}", file); // NOI18N
                 logger.closeLog();
@@ -402,6 +360,13 @@ public class MercurialInterceptor extends VCSInterceptor {
          */
         private void refreshHgFolderTimestamp(File hgFolder, long timestamp) {
             boolean exists = timestamp > 0 || hgFolder.exists();
+            synchronized (hgFolders) {
+                Long ts;
+                if (exists && (ts = hgFolders.get(hgFolder)) != null && ts >= timestamp) {
+                    // do not enter the filesystem module unless really need to
+                    return;
+                }
+            }
             FileObject hgFolderFO = exists ? FileUtil.toFileObject(hgFolder) : null;
             synchronized (hgFolders) {
                 hgFolders.remove(hgFolder);

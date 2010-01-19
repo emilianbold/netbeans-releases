@@ -134,6 +134,7 @@ final class ModuleList implements Stamps.Updater {
     private boolean triggered = false;
     /** listener for changes in modules, etc.; see comment on class Listener */
     private final Listener listener = new Listener();
+    private FileChangeListener weakListener;
     /** atomic actions I have used to change Modules/*.xml */
     private final Set<FileSystem.AtomicAction> myAtomicActions = Collections.<FileSystem.AtomicAction>synchronizedSet(new WeakSet<FileSystem.AtomicAction>(100));
     
@@ -953,6 +954,15 @@ final class ModuleList implements Stamps.Updater {
     }
     
     private static RequestProcessor rpListener = null;
+
+    final void init() {
+        weakListener = FileUtil.weakFileChangeListener(listener, folder);
+        folder.addFileChangeListener(weakListener);
+    }
+
+    final void shutDown() {
+        folder.removeFileChangeListener(weakListener);
+    }
     /** Listener for changes in set of modules and various properties of individual modules.
      * Also serves as a strict error handler for XML parsing.
      * Also listens to changes in the Modules/ folder and processes them in req proc.
@@ -1600,7 +1610,7 @@ final class ModuleList implements Stamps.Updater {
             }
             ev.log(Events.FINISH_READ, read);
             // Handle changes in the Modules/ folder on disk by parsing & applying them.
-            folder.addFileChangeListener(FileUtil.weakFileChangeListener(listener, folder));
+            init();
         }
     }
     

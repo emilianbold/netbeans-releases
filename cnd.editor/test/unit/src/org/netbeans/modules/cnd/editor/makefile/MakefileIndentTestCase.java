@@ -55,6 +55,7 @@ import org.netbeans.modules.editor.indent.api.Indent;
 public class MakefileIndentTestCase extends NbTestCase {
 
     private static final String MIME_TYPE = "text/x-make";
+    private MimePath mimePath;
 
     public MakefileIndentTestCase(String name) {
         super(name);
@@ -65,7 +66,8 @@ public class MakefileIndentTestCase extends NbTestCase {
         super.setUp();
         MakefileIndentTaskFactory factory = new MakefileIndentTaskFactory();
         MockServices.setServices(MockMimeLookup.class);
-        MockMimeLookup.setInstances(MimePath.parse(MIME_TYPE), factory);
+        mimePath = MimePath.parse(MIME_TYPE);
+        MockMimeLookup.setInstances( mimePath, factory);
     }
 
     public void testRuleIndent1() throws BadLocationException {

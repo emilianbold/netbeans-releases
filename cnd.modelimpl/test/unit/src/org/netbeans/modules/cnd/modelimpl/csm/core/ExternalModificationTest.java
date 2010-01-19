@@ -81,16 +81,17 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         final TraceModelBase traceModel = new TraceModelBase(true);
         //traceModel.setUseSysPredefined(true);
         traceModel.processArguments(sourceFile.getAbsolutePath());
-        ModelImpl model = traceModel.getModel();
+        //ModelImpl model = traceModel.getModel();
         //ModelSupport.instance().setModel(model);
         final CsmProject project = traceModel.getProject();
 
         project.waitParse();
         assertNotNull(oldName + " should be found", findDeclaration(oldName, project));
 
+        sleep(2000);
         writeFile(sourceFile, "void " + newName + "() {};");
 
-        sleep(1000);
+        sleep(2000);
         FileUtil.refreshAll();
         sleep(2000);
 
@@ -120,13 +121,16 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         // so that subsequent creation of test.h will be noticed.
         FileUtil.toFileObject(workDir).getChildren();
 
+        sleep(2000);
         writeFile(headerFile, "void foo();\n");
 
-        sleep(1000);
+        sleep(2000);
         FileUtil.refreshAll();
         sleep(2000);
 
         project.waitParse();
+
+        assertTrue("CsmFile is invalid", csmFile.isValid());
         assertNotNull(csmFile.getIncludes().iterator().next().getIncludeFile());
     }
 
@@ -153,13 +157,15 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         // so that subsequent creation of test2.h will be noticed.
         FileUtil.toFileObject(workDir).getChildren();
 
+        sleep(2000);
         writeFile(headerFile2, "void foo();\n");
-
-        sleep(1000);
+        sleep(2000);
         FileUtil.refreshAll();
         sleep(2000);
 
         project.waitParse();
+
+        assertTrue("CsmFile is invalid", csmFile.isValid());
         assertNotNull(csmFile.getIncludes().iterator().next().getIncludeFile());
     }
 

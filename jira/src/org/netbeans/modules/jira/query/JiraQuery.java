@@ -43,15 +43,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.jira.core.model.JiraFilter;
 import org.eclipse.mylyn.internal.jira.core.model.NamedFilter;
-import org.eclipse.mylyn.internal.jira.core.model.Project;
 import org.eclipse.mylyn.internal.jira.core.model.filter.FilterDefinition;
-import org.eclipse.mylyn.internal.jira.core.model.filter.ProjectFilter;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -176,7 +176,6 @@ public class JiraQuery extends Query {
 
                     // run query to know what matches the criteria
                     // IssuesIdCollector will populate the issues set
-                    ensureProjects(jiraFilter);
                     PerformQueryCommand queryCmd = new PerformQueryCommand(repository, jiraFilter, new IssuesCollector());
                     repository.getExecutor().execute(queryCmd, !autoRefresh);
                     ret[0] = !queryCmd.hasFailed();
@@ -198,21 +197,6 @@ public class JiraQuery extends Query {
             }
         });
         return ret[0];
-    }
-
-    private void ensureProjects(JiraFilter jiraFilter) {
-        if(!(jiraFilter instanceof FilterDefinition)) {
-            return;
-        }
-        FilterDefinition fd = (FilterDefinition) jiraFilter;
-        ProjectFilter pf = fd.getProjectFilter();
-        if(pf == null) {
-            return;
-        }
-        Project[] projects = pf.getProjects();
-        for (Project project : projects) {
-            repository.getConfiguration().ensureProjectLoaded(project);
-        }
     }
 
     public String getStoredQueryName() {

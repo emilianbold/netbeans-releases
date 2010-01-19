@@ -46,7 +46,6 @@ import java.util.List;
 import org.netbeans.installer.Installer;
 import org.netbeans.installer.utils.EngineUtils;
 import org.netbeans.installer.utils.helper.EnvironmentScope;
-import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.system.shortcut.Shortcut;
@@ -60,6 +59,7 @@ import org.netbeans.installer.utils.system.launchers.LauncherResource;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.cleaner.OnExitCleanerHandler;
 import org.netbeans.installer.utils.system.cleaner.JavaOnExitCleanerHandler;
+import org.netbeans.installer.utils.system.cleaner.SystemPropertyOnExitCleanerHandler;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
 import org.netbeans.installer.utils.system.shortcut.LocationType;
 
@@ -85,7 +85,7 @@ public abstract class NativeUtils {
             NATIVE_RESOURCE_SUFFIX +
             "cleaner/"; // NOI18N
     private static OnExitCleanerHandler cleanerHandler;
-
+    
     protected abstract Platform getPlatform();
     
     final public Platform getCurrentPlatform() {
@@ -214,8 +214,12 @@ public abstract class NativeUtils {
     }
     protected OnExitCleanerHandler getDeleteOnExitHandler() {
         if(cleanerHandler == null) {
-            cleanerHandler = newDeleteOnExitCleanerHandler();
-            Runtime.getRuntime().addShutdownHook(cleanerHandler);
+            if(SystemPropertyOnExitCleanerHandler.isSet()) {
+                cleanerHandler = new SystemPropertyOnExitCleanerHandler();
+            } else {
+                cleanerHandler = newDeleteOnExitCleanerHandler();
+                Runtime.getRuntime().addShutdownHook(cleanerHandler);
+            }            
         }   
         return cleanerHandler;
     }
