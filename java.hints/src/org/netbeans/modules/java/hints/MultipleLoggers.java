@@ -73,9 +73,9 @@ public final class MultipleLoggers {
 
     @TriggerTreeKind(Tree.Kind.CLASS)
     public static Iterable<ErrorDescription> checkMultipleLoggers(HintContext ctx) {
-        Element e = ctx.getInfo().getTrees().getElement(ctx.getPath());
-        if (e == null || e.getKind() != ElementKind.CLASS || e.getModifiers().contains(Modifier.ABSTRACT) ||
-            (e.getEnclosingElement() != null && e.getEnclosingElement().getKind() != ElementKind.PACKAGE)
+        Element cls = ctx.getInfo().getTrees().getElement(ctx.getPath());
+        if (cls == null || cls.getKind() != ElementKind.CLASS || cls.getModifiers().contains(Modifier.ABSTRACT) ||
+            (cls.getEnclosingElement() != null && cls.getEnclosingElement().getKind() != ElementKind.PACKAGE)
         ) {
             return null;
         }
@@ -90,7 +90,7 @@ public final class MultipleLoggers {
         }
 
         List<VariableElement> loggerFields = new LinkedList<VariableElement>();
-        List<VariableElement> fields = ElementFilter.fieldsIn(e.getEnclosedElements());
+        List<VariableElement> fields = ElementFilter.fieldsIn(cls.getEnclosedElements());
         for(VariableElement f : fields) {
             if (f.getKind() != ElementKind.FIELD) {
                 continue;
@@ -102,6 +102,20 @@ public final class MultipleLoggers {
         }
 
         if (loggerFields.size() > 1) {
+            StringBuilder loggers = new StringBuilder();
+            for(VariableElement f : loggerFields) {
+                Tree path = ctx.getInfo().getTrees().getTree(f);
+                if (path instanceof VariableTree) {
+                    int [] span = ctx.getInfo().getTreeUtilities().findNameSpan((VariableTree)path);
+                    if (span != null) {
+                        if (loggers.length() > 0) {
+                            loggers.append(", "); //NOI18N
+                        }
+                        loggers.append(f.getSimpleName().toString());
+                    }
+                }
+            }
+
             List<ErrorDescription> errors = new LinkedList<ErrorDescription>();
             for(VariableElement f : loggerFields) {
                 Tree path = ctx.getInfo().getTrees().getTree(f);
@@ -110,7 +124,7 @@ public final class MultipleLoggers {
                     if (span != null) {
                         ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
                             Severity.WARNING,
-                            NbBundle.getMessage(MultipleLoggers.class, "MSG_MultipleLoggers_checkMultipleLoggers"), //NOI18N
+                            NbBundle.getMessage(MultipleLoggers.class, "MSG_MultipleLoggers_checkMultipleLoggers", loggers, cls), //NOI18N
                             Collections.<Fix>emptyList(),
                             ctx.getInfo().getFileObject(),
                             span[0],
