@@ -190,7 +190,7 @@ public class WelcomePanel extends ErrorMessagePanel {
             if(toInstall.isEmpty()) {
                 List <Product> list = panel.getBundledRegistry().getProducts();
                 if(list.size() == 1) {
-                    if(list.get(0).isCompatibleWith(SystemUtils.getCurrentPlatform())) {
+                    if(SystemUtils.getCurrentPlatform().isCompatibleWith(list.get(0).getPlatforms())) {
                         File installationLocation = list.get(0).getInstallationLocation();
                     if(SystemUtils.isMacOS()) {
                         installationLocation =
