@@ -145,7 +145,6 @@ made subject to such option by the copyright holder.
                     <path path="${bootclasspath.mac}"/>
                     <path path="${nbjdk.bootclasspath}"/>
                 </bootclasspath>
-                <javacclasspath refid="javacimpl"/>
             </custom-javac>
         </presetdef>
     </target>

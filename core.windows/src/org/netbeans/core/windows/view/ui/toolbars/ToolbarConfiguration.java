@@ -97,7 +97,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
 
     private final List<ToolbarRow> rows;
 
-    private final DnDSupport dndSupport;
+    private DnDSupport dndSupport;
 
     private Saver saver;
 
@@ -118,8 +118,13 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
 //        toolbarPanel.setOpaque(false);
 
         this.rows = new ArrayList<ToolbarRow>(rows);
+    }
 
-        dndSupport = new DnDSupport( this );
+    private synchronized DnDSupport dndSupport() {
+        if (dndSupport == null) {
+            dndSupport = new DnDSupport(this);
+        }
+        return dndSupport;
     }
 
     /** Finds toolbar configuration which has given name.
@@ -275,7 +280,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
                     continue;
                 Toolbar tb = bars.get(tc.getName());
                 if( null != tb ) {
-                    ToolbarContainer container = new ToolbarContainer( tb, dndSupport, tc.isDraggable() );
+                    ToolbarContainer container = new ToolbarContainer( tb, dndSupport(), tc.isDraggable() );
                     row.add( tc.getName(), container );
                 }
             }
@@ -426,7 +431,7 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
      * @param buttonDndAllowed
      */
     void setToolbarButtonDragAndDropAllowed(boolean buttonDndAllowed) {
-        dndSupport.setButtonDragAndDropAllowed(buttonDndAllowed);
+        dndSupport().setButtonDragAndDropAllowed(buttonDndAllowed);
     }
 
     /**

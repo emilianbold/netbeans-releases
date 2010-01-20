@@ -58,6 +58,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import static org.junit.Assert.*;
+import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
@@ -83,6 +84,11 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
 
     public MakeSampleProjectIteratorTest(String name) {
         super(name);
+    }
+
+    @Before @Override
+    public void setUp() throws Exception {
+        super.setUp();
         List<CompilerSet> sets = CompilerSetManager.getDefault().getCompilerSets();
         for (CompilerSet set : sets) {
             if (set.getName().equals("SunStudio")) {

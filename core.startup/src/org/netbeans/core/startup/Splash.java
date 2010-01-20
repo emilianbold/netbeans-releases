@@ -54,6 +54,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.SplashScreen;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -61,9 +62,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -94,48 +93,9 @@ public final class Splash implements Stamps.Updater {
     private static Splash splash;
     
     /** is there progress bar in splash or not */
-    private static boolean noBar = Boolean.getBoolean("netbeans.splash.nobar");
+    private static final boolean noBar = Boolean.getBoolean("netbeans.splash.nobar") ||
+            !Boolean.parseBoolean(NbBundle.getMessage(Splash.class, "SplashShowProgressBar"));
 
-    private static final Method setIconImages16;
-    private static final Method getSplashScreen;
-    private static final Method createGraphics;
-    private static final Method update;
-    static {
-        ResourceBundle bundle = NbBundle.getBundle(Splash.class);
-        noBar |= !Boolean.parseBoolean(bundle.getString("SplashShowProgressBar"));
-        Method m;
-        try {
-            m = Window.class.getMethod(
-                "setIconImages", new Class [] {List.class}
-            );
-        } catch (NoSuchMethodException ex) {
-            //Method not available so we are on JDK 5. Use setIconImage.
-            m = null;
-        }
-        setIconImages16 = m;
-        try {
-            Class<?> c = Class.forName("java.awt.SplashScreen"); // NOI18N
-            m = c.getMethod("getSplashScreen");
-        } catch (Exception ex) {
-            m = null;
-        }
-        getSplashScreen = m;
-        try {
-            Class<?> c = Class.forName("java.awt.SplashScreen"); // NOI18N
-            m = c.getMethod("createGraphics");
-        } catch (Exception ex) {
-            m = null;
-        }
-        createGraphics = m;
-        try {
-            Class<?> c = Class.forName("java.awt.SplashScreen"); // NOI18N
-            m = c.getMethod("update");
-        } catch (Exception ex) {
-            m = null;
-        }
-        update = m;
-    }
-    
     public static Splash getInstance() {
         if (splash == null) {
             splash = new Splash();
@@ -156,59 +116,34 @@ public final class Splash implements Stamps.Updater {
     private static final String ICON_16 = "org/netbeans/core/startup/frame.gif"; // NOI18N
     private static final String ICON_32 = "org/netbeans/core/startup/frame32.gif"; // NOI18N
     private static final String ICON_48 = "org/netbeans/core/startup/frame48.gif"; // NOI18N
-    
-    static Image createIDEImage() {
-        return ImageUtilities.loadImage(ICON_16, true);
-    }
-    
-    static List<Image> createIDEImages() {
-        List<Image> l = new ArrayList<Image>();
-        l.add(ImageUtilities.loadImage(ICON_16, true));
-        l.add(ImageUtilities.loadImage(ICON_32, true));
-        l.add(ImageUtilities.loadImage(ICON_48, true));
-        return l;
-    }
-    
     private void initFrameIcons (Frame f) {
-        if (setIconImages16 != null) {
-            List<Image> l = createIDEImages();
-            try {
-                setIconImages16.invoke(f, new Object [] {l});
-            } catch (Exception ex) {
-                Logger.getLogger(Splash.class.getName()).log
-                (Level.INFO, "Cannot invoke setIconImages", ex); //NOI18N
-                f.setIconImage(createIDEImage());
-            }
-        } else {
-            f.setIconImage(createIDEImage());
-        }
+        f.setIconImages(Arrays.asList(
+                ImageUtilities.loadImage(ICON_16, true),
+                ImageUtilities.loadImage(ICON_32, true),
+                ImageUtilities.loadImage(ICON_48, true)));
     }
     
     private Frame frame;
     private SplashPainter painter;
     private SplashComponent comp;
-    private Object splashScreen;
+    private SplashScreen splashScreen;
     
     private Splash() {
         Stamps s = Stamps.getModulesJARs();
-        if (!s.exists("splash.png")) {
-            if (setIconImages16 != null) {
-                // running on JDK 1.6
+        if (!CLIOptions.isNoSplash()) {
+            if (!s.exists("splash.png")) {
                 s.scheduleSave(this, "splash.png", false);
+            } else {
+                splashScreen = SplashScreen.getSplashScreen();
+                if (splashScreen != null) {
+                    Graphics2D graphics = splashScreen.createGraphics();
+                    painter = new SplashPainter(graphics, null, false);
+                }
             }
-        } else {
-            try {
-                Graphics2D graphics;
-                splashScreen = getSplashScreen.invoke(null);
-                graphics = (Graphics2D) createGraphics.invoke(splashScreen);
-                painter = new SplashPainter(graphics, null, false);
-            } catch (Exception ex) {
-                // running on 1.5
+            if (painter == null) {
+                comp = new SplashComponent(false);
+                painter = comp.painter;
             }
-        }
-        if (painter == null) {
-            comp = new SplashComponent(false);
-            painter = comp.painter;
         }
     }
     
@@ -456,7 +391,7 @@ public final class Splash implements Stamps.Updater {
                     try {
                         Splash s = splash;
                         if (s != null) {
-                            update.invoke(s.splashScreen);
+                            s.splashScreen.update();
                         }
                     } catch (Exception ex) {
                         ex.printStackTrace();

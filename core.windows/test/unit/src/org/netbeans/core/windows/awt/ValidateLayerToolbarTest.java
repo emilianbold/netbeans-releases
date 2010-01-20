@@ -52,6 +52,10 @@ import org.openide.filesystems.*;
  */
 public class ValidateLayerToolbarTest extends ValidateLayerMenuTest {
 
+    static {
+        System.setProperty("java.awt.headless", "true");
+    }
+
     /** Creates a new instance of SFSTest */
     public ValidateLayerToolbarTest(String name) {
         super (name);

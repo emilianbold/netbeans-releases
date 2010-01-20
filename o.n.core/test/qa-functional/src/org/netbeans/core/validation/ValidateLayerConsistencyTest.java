@@ -96,6 +96,12 @@ import org.openide.util.NbCollections;
  */
 public class ValidateLayerConsistencyTest extends NbTestCase {
 
+    /* Impossible due to NbClipboard and Windows2/Components/*.settings:
+    static {
+        System.setProperty("java.awt.headless", "true");
+    }
+     */
+
     private static final String SFS_LB = "SystemFileSystem.localizingBundle";
 
     private ClassLoader contextClassLoader;   

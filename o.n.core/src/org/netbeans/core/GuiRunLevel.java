@@ -112,7 +112,9 @@ public class GuiRunLevel implements RunLevel {
 
         // set security manager
         TopSecurityManager.install();
+        if (CLIOptions.isGui()) {
         TopSecurityManager.makeSwingUseSpecialClipboard(Lookup.getDefault().lookup(org.openide.util.datatransfer.ExClipboard.class));
+        }
 
         // install java.net.Authenticator
         java.net.Authenticator.setDefault (new NbAuthenticator ());

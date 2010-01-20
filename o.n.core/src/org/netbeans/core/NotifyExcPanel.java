@@ -270,7 +270,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         }
         
         // #50018 Don't try to show any notify dialog when reporting headless exception
-        if ("java.awt.HeadlessException".equals(t.getClassName()) && GraphicsEnvironment.isHeadless()) { // NOI18N
+        if (/*"java.awt.HeadlessException".equals(t.getClassName()) &&*/ GraphicsEnvironment.isHeadless()) { // NOI18N
             t.printStackTrace(System.err);
             return;
         }
