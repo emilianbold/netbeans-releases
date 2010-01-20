@@ -45,7 +45,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -453,11 +455,14 @@ public class WordMatch extends FinderFactory.AbstractFinder implements PropertyC
             return null;
         }
         BaseDocument nextDoc = null;
-        List<? extends JTextComponent> list = EditorRegistry.componentList();
-        for(int i = 0; i < list.size(); i++) {
-            if (doc == list.get(i).getDocument()) {
-                if (i + 1 < list.size()) {
-                    nextDoc = Utilities.getDocument(list.get(i + 1));
+        Set<BaseDocument> list = new LinkedHashSet<BaseDocument>();
+        for(JTextComponent jtc : EditorRegistry.componentList()) {
+            list.add(Utilities.getDocument(jtc));
+        }
+        for(Iterator<? extends BaseDocument> i = list.iterator(); i.hasNext(); ) {
+            if (doc == i.next()) {
+                if (i.hasNext()) {
+                    nextDoc = i.next();
                 }
                 break;
             }

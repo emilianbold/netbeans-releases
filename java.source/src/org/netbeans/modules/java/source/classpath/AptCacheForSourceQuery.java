@@ -61,13 +61,19 @@ public final class AptCacheForSourceQuery {
 
 
     public static URL getAptFolder (@NonNull final URL sourceRoot) {
-        Parameters.notNull("sourceRoot", sourceRoot);
+        Parameters.notNull("sourceRoot", sourceRoot); //NOI18N
         //Currently no SPI as single impl exists
         return getDefaultAptFolder (sourceRoot);
     }
 
+    public static URL getSourceFolder(@NonNull final URL aptFolder) {
+        Parameters.notNull("aptFolder", aptFolder); //NOI18N
+        //Currently no SPI as single impl exists
+        return getDefaultSourceFolder(aptFolder);
+    }
+
     public static URL getClassFolder (@NonNull final URL aptFolder) {
-        Parameters.notNull("aptFolder", aptFolder);
+        Parameters.notNull("aptFolder", aptFolder); //NOI18N
         //Currently no SPI as single impl exists
         return getDefaultCacheFolder (aptFolder);
     }
@@ -89,6 +95,10 @@ public final class AptCacheForSourceQuery {
             Exceptions.printStackTrace(e);
             return null;
         }
+    }
+
+    private static URL getDefaultSourceFolder(final URL aptFolder) {
+        return emittedAptFolders.get(aptFolder);
     }
 
     private static URL getDefaultCacheFolder (final URL aptFolder) {

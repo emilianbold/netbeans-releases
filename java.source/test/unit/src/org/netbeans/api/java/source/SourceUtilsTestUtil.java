@@ -47,7 +47,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -119,14 +121,21 @@ public final class SourceUtilsTestUtil extends ProxyLookup {
     private static Object[] extraLookupContent = null;
     
     public static void prepareTest(String[] additionalLayers, Object[] additionalLookupContent) throws IOException, SAXException, PropertyVetoException {
-        URL[] layers = new URL[additionalLayers.length];
+        List<URL> layers = new LinkedList<URL>();
         
         for (int cntr = 0; cntr < additionalLayers.length; cntr++) {
-            layers[cntr] = Thread.currentThread().getContextClassLoader().getResource(additionalLayers[cntr]);
+            boolean found = false;
+
+            for (Enumeration<URL> en = Thread.currentThread().getContextClassLoader().getResources(additionalLayers[cntr]); en.hasMoreElements(); ) {
+                found = true;
+                layers.add(en.nextElement());
+            }
+
+            Assert.assertTrue(additionalLayers[cntr], found);
         }
         
         XMLFileSystem xmlFS = new XMLFileSystem();
-        xmlFS.setXmlUrls(layers);
+        xmlFS.setXmlUrls(layers.toArray(new URL[0]));
         
         FileSystem system = new MultiFileSystem(new FileSystem[] {FileUtil.createMemoryFileSystem(), xmlFS});
         

@@ -40,9 +40,12 @@
 package org.netbeans.modules.java.hints.jackpot.code.spi;
 
 import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,6 +63,8 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.jackpot.code.CodeHintProviderImpl;
+import org.netbeans.modules.java.hints.jackpot.code.FSWrapper;
+import org.netbeans.modules.java.hints.jackpot.code.FSWrapper.ClassWrapper;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.jackpot.spi.HintsRunner;
@@ -71,6 +76,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -94,7 +100,7 @@ public abstract class TestBase extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
+        SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml", "META-INF/generated-layer.xml"}, new Object[0]);
         TreeLoader.DISABLE_CONFINEMENT_TEST = true;
     }
 
@@ -141,9 +147,20 @@ public abstract class TestBase extends NbTestCase {
     private Document doc;
 
     private List<ErrorDescription> computeErrors(CompilationInfo info) {
-        Map<HintMetadata, Collection<? extends HintDescription>> hints = new HashMap<HintMetadata, Collection<? extends HintDescription>>();
+        Map<HintMetadata, Collection<HintDescription>> hints = new HashMap<HintMetadata, Collection<HintDescription>>();
+
+        ClassWrapper found = null;
+
+        for (ClassWrapper w : FSWrapper.listClasses()) {
+            if (w.getName().equals(hintClass.getName())) {
+                found = w;
+                break;
+            }
+        }
+
+        assertNotNull(found);
         
-        CodeHintProviderImpl.processClass(hintClass, hints);
+        CodeHintProviderImpl.processClass(found, hints);
 
         List<HintDescription> total = new LinkedList<HintDescription>();
 
@@ -162,6 +179,7 @@ public abstract class TestBase extends NbTestCase {
         prepareTest(fileName, code);
 
         List<ErrorDescription> errors = computeErrors(info);
+        Collections.sort (errors, ERRORS_COMPARATOR);
         List<String> errorsNames = new LinkedList<String>();
 
         errors = errors != null ? errors : Collections.<ErrorDescription>emptyList();
@@ -181,6 +199,7 @@ public abstract class TestBase extends NbTestCase {
         prepareTest(fileName, code);
 
         List<ErrorDescription> errors = computeErrors(info);
+        Collections.sort (errors, ERRORS_COMPARATOR);
 
         ErrorDescription toFix = null;
 
@@ -237,4 +256,14 @@ public abstract class TestBase extends NbTestCase {
         return new FileObject[0];
     }
 
+    static {
+        NbBundle.setBranding("test");
+    }
+
+    private static final Comparator<ErrorDescription> ERRORS_COMPARATOR = new Comparator<ErrorDescription> () {
+
+        public int compare (ErrorDescription e1, ErrorDescription e2) {
+            return e1.getRange ().getBegin ().getOffset () - e2.getRange ().getBegin ().getOffset ();
+        }
+    };
 }

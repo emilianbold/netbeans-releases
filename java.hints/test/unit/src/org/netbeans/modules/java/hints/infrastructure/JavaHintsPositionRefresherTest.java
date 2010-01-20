@@ -81,6 +81,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -103,7 +104,7 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        SourceUtilsTestUtil.prepareTest(new String[]{"org/netbeans/modules/java/editor/resources/layer.xml", "org/netbeans/modules/java/hints/resources/layer.xml"},
+        SourceUtilsTestUtil.prepareTest(new String[]{"org/netbeans/modules/java/editor/resources/layer.xml", "org/netbeans/modules/java/hints/resources/layer.xml", "META-INF/generated-layer.xml"},
                 new Object[]{JavaDataLoader.class,
                 new MimeDataProvider() {
                 public Lookup getLookup(MimePath mimePath) {
@@ -203,7 +204,7 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
 
     public void testHintCount173282() throws Exception {
         performTest("test/Test.java", "class Test { static int statField; int field; public void method() { \n|String field = \"\"; \nSystem.out.println(field); Integer.parseInt(\"1\"); if(\"\"== \"\") { System.out.println(\"ok\"); } this.statField = 23; } }",
-                new String[] {"2:53-2:60:verifier:Comparing Strings using == or !=", "1:7-1:12:verifier:Local variable hides a field", "2:92-2:96:verifier:Accessing static field statField"});
+                new String[] {"2:53-2:60:verifier:Comparing Strings using == or !=", "1:7-1:12:verifier:Local variable hides a field", "2:92-2:96:verifier:AS0statField"});
     }
 
     public void testEmptyStatement() throws Exception {
@@ -213,7 +214,7 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
 
     public void testPatternBasedHint() throws Exception {
         performTest("test/Test.java", "class Test { public void method(String g) {\n java.util.|logging.Logger.global.fine(g + g); \n} }",
-                new String[] {"1:38-1:43:verifier:Inefficient to use string concat in logger"});
+                new String[] {"1:38-1:43:verifier:Inefficient use of string concatenation in logger"});
     }
 
     private void performTest(String fileName , String code, String[] expected) throws Exception {
@@ -238,6 +239,9 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
         }
         assertTrue("Provided error messages differ. " + eds, eds.containsAll(Arrays.asList(expected)));
     }
-   
 
+    static {
+        NbBundle.setBranding("test");
+    }
+    
 }
