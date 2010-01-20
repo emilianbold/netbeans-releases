@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -40,44 +40,13 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE MIME-Resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN"
-		    "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
+<!DOCTYPE editor-preferences PUBLIC "-//NetBeans//DTD Editor Preferences 1.0//EN" "http://www.netbeans.org/dtds/EditorPreferences-1_0.dtd">
 
-<MIME-resolver >
-    <file>
-        <ext name="exe"/>
-        <resolver mime="application/x-exe"/>
-    </file>
-    <file>
-        <ext name="dll"/>
-        <resolver mime="application/x-exe+dll"/>
-    </file>
-    <file>
-        <ext name="o"/>
-        <resolver mime="application/x-object+elf"/>
-    </file>
-    <file>
-        <ext name="so"/>
-        <resolver mime="application/x-shobj+elf"/>
-    </file>    
-    <file>
-        <ext name="core"/>
-        <resolver mime="application/x-core+elf"/>
-    </file>
-    <file>
-        <ext name="ui"/>
-        <resolver mime="text/qtui+xml"/>
-    </file>
-    <file>
-        <ext name="qrc"/>
-        <resolver mime="text/qtresource+xml"/>
-    </file>
-    <file>
-        <ext name="ts"/>
-        <resolver mime="text/qttranslation+xml"/>
-    </file>
-    <file>
-        <ext name="pro"/>
-        <resolver mime="text/x-qtproject"/>
-    </file>
-</MIME-resolver>
+<editor-preferences>
+    <entry name="tab-size" value="8" javaType="java.lang.Integer" />
+    <entry name="expand-tabs" value="false" javaType="java.lang.Boolean" />
+    <entry name="indent-shift-width" value="8" javaType="java.lang.Integer" />
+    <entry name="word-match-match-case" value="true" javaType="java.lang.Boolean" />
+    <entry name="abbrev-reset-acceptor" value="org.netbeans.modules.cnd.makefile.editor.MakefileSettingsFactory.getAbbrevResetAcceptor" javaType="methodvalue" />
+    <entry name="identifier-acceptor" value="org.netbeans.modules.cnd.makefile.editor.MakefileSettingsFactory.getIdentifierAcceptor" javaType="methodvalue" />
+</editor-preferences>
