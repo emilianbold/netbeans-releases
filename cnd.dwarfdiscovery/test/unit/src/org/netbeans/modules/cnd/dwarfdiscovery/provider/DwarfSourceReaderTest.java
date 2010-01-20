@@ -79,18 +79,13 @@ public class DwarfSourceReaderTest extends NbTestCase {
         golden.put("_iBCS2", "null");
         TreeMap<String, String> ignore = new TreeMap<String, String>();
         List<String> system = new ArrayList<String>();
-        String prefix = "";
-        if (Utilities.isWindows()) {
-            prefix = new File("/usr/include").getAbsolutePath();
-            prefix = prefix.substring(0,prefix.indexOf('\\'));
-        }
         Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
         DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/echo", system, ignore, grepBase);
         assertNotNull(source);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
         assertTrue(compareMap(map, golden));
         assertTrue(source.getUserInludePaths().size()==1);
-        assertEquals(source.getUserInludePaths().get(0), prefix+"/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include");
+        assertEquals(source.getUserInludePaths().get(0), "/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include");
         printInclidePaths(source);
         List<SourceFile> list = CompileLineService.getSourceFileProperties(getDataDir().getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/echo");
         assertTrue(list.size()==1);
