@@ -69,6 +69,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Endpoint;
@@ -79,6 +81,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.wsitconf.spi.WsitProvider;
 import org.netbeans.modules.websvc.wsitconf.util.GenerationUtils;
@@ -154,14 +157,29 @@ public class STSWizardCreator {
             wsitSupported = wsitProvider.isWsitSupported();
         }
         
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        EjbJar em = EjbJar.getEjbJar(project.getProjectDirectory());
-        if (em != null)
-            projectType = EJB_PROJECT_TYPE;
-        else if (wm != null)
-            projectType = WEB_PROJECT_TYPE;
-        else
-            projectType = JSE_PROJECT_TYPE;
+        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
+            if (J2eeModule.Type.EJB.equals(moduleType)) {
+                projectType = ProjectInfo.EJB_PROJECT_TYPE;
+            } else if (J2eeModule.Type.WAR.equals(moduleType)) {
+                projectType = ProjectInfo.WEB_PROJECT_TYPE;
+            } else if (J2eeModule.Type.CAR.equals(moduleType)) {
+                projectType = ProjectInfo.CAR_PROJECT_TYPE;
+            } else {
+                projectType = ProjectInfo.JSE_PROJECT_TYPE;
+            }
+        } else {
+            WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+            EjbJar em = EjbJar.getEjbJar(project.getProjectDirectory());
+            if (wm != null) {
+                projectType = WEB_PROJECT_TYPE;
+            } else if (em != null) {
+                projectType = EJB_PROJECT_TYPE;
+            } else {
+                projectType = JSE_PROJECT_TYPE;
+            }
+        }
     }
     
     private void generateWsFromWsdl15(final ProgressHandle handle) throws Exception {
