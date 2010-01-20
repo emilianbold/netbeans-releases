@@ -87,6 +87,7 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
     static ClusterInfo showAddDialog(Project prj) {
         EditClusterPanel panel = new EditClusterPanel();
         panel.prjDir = FileUtil.toFile(prj.getProjectDirectory());
+        panel.prj = prj;
         SourceRootsSupport srs = new SourceRootsSupport(new URL[0], null);
         panel.sourcesPanel.setSourceRootsProvider(srs);
         JavadocRootsSupport jrs = new JavadocRootsSupport(new URL[0], null);
@@ -124,6 +125,7 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
     static ClusterInfo showEditDialog(ClusterInfo ci, Project prj) {
         EditClusterPanel panel = new EditClusterPanel();
         panel.prjDir = FileUtil.toFile(prj.getProjectDirectory());
+        panel.prj = prj;
         SourceRootsSupport srs = new SourceRootsSupport(
                 ci.getSourceRoots() == null ? new URL[0] : ci.getSourceRoots(), null);
         panel.sourcesPanel.setSourceRootsProvider(srs);
@@ -156,6 +158,7 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
 
     private ClusterInfo clusterInfo;
     private File prjDir;
+    private Project prj;
 
     /** Creates new form EditClusterPanel */
     public EditClusterPanel() {
@@ -248,13 +251,17 @@ public final class EditClusterPanel extends javax.swing.JPanel implements Docume
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
-            if (! file.exists() || file.isFile() || ! ClusterUtils.isValidCluster(file)) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        org.openide.util.NbBundle.getMessage(EditClusterPanel.class, "MSG_NotValidCluster")));
-            } else {
-                ModuleUISettings.getDefault().setLastUsedClusterLocation(file.getParentFile().getAbsolutePath());
-                String relPath = PropertyUtils.relativizeFile(prjDir, file);
-                clusterDirText.setText(relPath);
+            AGAIN: for (;;) {
+                if (! file.exists() || file.isFile() || ! ClusterUtils.isValidCluster(file)) {
+                    if (Clusterize.clusterize(prj, file)) {
+                        continue AGAIN;
+                    }
+                } else {
+                    ModuleUISettings.getDefault().setLastUsedClusterLocation(file.getParentFile().getAbsolutePath());
+                    String relPath = PropertyUtils.relativizeFile(prjDir, file);
+                    clusterDirText.setText(relPath);
+                }
+                break;
             }
         }
     }//GEN-LAST:event_browseButtonActionPerformed
