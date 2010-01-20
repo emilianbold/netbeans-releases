@@ -302,15 +302,27 @@ public final class RequiredGems  {
      */
     public void removeRequirement(String name) {
         List<GemIndexingStatus> statuses = new ArrayList<GemIndexingStatus>(getGemIndexingStatuses());
-        // can't just remove from requirements as it might not be set at all yet
-        List<GemRequirement> newReqs = new ArrayList<GemRequirement>();
-        for (GemIndexingStatus each : statuses) {
-            if (!each.getRequirement().getName().equals(name)) {
-                newReqs.add(each.getRequirement());
+        
+        synchronized(this) {
+         // can't just remove from requirements as it might not be set at all yet
+            if (this.requirements == null) {
+                List<GemRequirement> newReqs = new ArrayList<GemRequirement>();
+                for (GemIndexingStatus each : statuses) {
+                    if (!each.getRequirement().getName().equals(name)) {
+                        newReqs.add(each.getRequirement());
+                    }
+                }
+                if (newReqs.size() < statuses.size()) {
+                    setRequiredGems(newReqs);
+                }
+            } else {
+                for (Iterator<GemRequirement> it = requirements.iterator(); it.hasNext();) {
+                    GemRequirement each = it.next();
+                    if (each.getName().equals(name)) {
+                        it.remove();
+                    }
+                }
             }
-        }
-        if (newReqs.size() < statuses.size()) {
-            setRequiredGems(newReqs);
         }
     }
 
