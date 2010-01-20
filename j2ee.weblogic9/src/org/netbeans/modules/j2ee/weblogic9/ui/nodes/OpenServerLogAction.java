@@ -42,7 +42,7 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;

@@ -45,7 +45,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.ui.wizard.WLInstantiatingIterator;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 

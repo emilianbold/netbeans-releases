@@ -47,7 +47,7 @@ import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.RefreshModulesCookie;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;

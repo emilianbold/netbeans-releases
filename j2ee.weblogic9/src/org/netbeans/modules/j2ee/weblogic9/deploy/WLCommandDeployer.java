@@ -77,7 +77,6 @@ import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.URLWait;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentStatus;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLTargetModuleID;
 import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicWebApp;

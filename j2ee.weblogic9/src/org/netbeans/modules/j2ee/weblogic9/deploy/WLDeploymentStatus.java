@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.weblogic9;
+package org.netbeans.modules.j2ee.weblogic9.deploy;
 
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
@@ -51,21 +51,22 @@ import javax.enterprise.deploy.spi.status.DeploymentStatus;
  *
  * @author Kirill Sorokin
  */
-public class WLDeploymentStatus implements DeploymentStatus {
+public final class WLDeploymentStatus implements DeploymentStatus {
 
-    private ActionType action;
-    private CommandType command;
-    private StateType state;
-    
-    private String message;
-    
-    /** Creates a new instance of JBDeploymentStatus */
-    public WLDeploymentStatus(ActionType action, CommandType command, StateType state, String message) {
-        
+    private final ActionType action;
+
+    private final CommandType command;
+
+    private final StateType state;
+
+    private final String message;
+
+    public WLDeploymentStatus(ActionType action, CommandType command,
+            StateType state, String message) {
         this.action = action;
         this.command = command;
         this.state = state;
-        
+
         this.message = message;
     }
 
@@ -84,7 +85,7 @@ public class WLDeploymentStatus implements DeploymentStatus {
     public ActionType getAction() {
         return action;
     }
-    
+
     public boolean isRunning() {
         return StateType.RUNNING.equals(state);
     }
