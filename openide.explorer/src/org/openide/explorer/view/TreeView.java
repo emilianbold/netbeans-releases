@@ -255,7 +255,9 @@ public abstract class TreeView extends JScrollPane {
 //
 //            // note: drag target is activated on focus gained
 //        }
-        setDropTarget( DragDropUtilities.dragAndDropEnabled );
+        if (!GraphicsEnvironment.isHeadless()) {
+            setDropTarget(DragDropUtilities.dragAndDropEnabled);
+        }
 
         setPopupAllowed(popupAllowed);
         setDefaultActionAllowed(defaultAction);
@@ -309,6 +311,10 @@ public abstract class TreeView extends JScrollPane {
         treeModel.addView(this);
 
         tree = new ExplorerTree(treeModel);
+
+        if (GraphicsEnvironment.isHeadless()) {
+            return;
+        }
 
         NodeRenderer rend = new NodeRenderer();
         tree.setCellRenderer(rend);
