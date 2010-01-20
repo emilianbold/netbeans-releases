@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -47,17 +46,14 @@ import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.VariableElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
@@ -100,7 +96,7 @@ public class StringBuilderAppend {
         CompilationInfo info = ctx.getInfo();
         MethodInvocationTree mit = (MethodInvocationTree) ctx.getPath().getLeaf();
         ExpressionTree param = mit.getArguments().get(0);
-        List<List<TreePath>> sorted = sortOut(info, linearize(new TreePath(ctx.getPath(), param)));
+        List<List<TreePath>> sorted = Utilities.splitStringConcatenationToElements(info, new TreePath(ctx.getPath(), param));
 
         if (sorted.size() > 1) {
             int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), param);
@@ -111,60 +107,6 @@ public class StringBuilderAppend {
         }
 
         return null;
-    }
-
-    private static List<TreePath> linearize(TreePath tree) {
-        List<TreePath> todo = new LinkedList<TreePath>();
-        List<TreePath> result = new LinkedList<TreePath>();
-
-        todo.add(tree);
-
-        while (!todo.isEmpty()) {
-            TreePath tp = todo.remove(0);
-
-            if (tp.getLeaf().getKind() != Kind.PLUS) {
-                result.add(tp);
-                continue;
-            }
-
-            BinaryTree bt = (BinaryTree) tp.getLeaf();
-
-            todo.add(0, new TreePath(tp, bt.getRightOperand()));
-            todo.add(0, new TreePath(tp, bt.getLeftOperand()));
-        }
-
-        return result;
-    }
-
-    private static List<List<TreePath>> sortOut(CompilationInfo info, List<TreePath> trees) {
-        List<List<TreePath>> result = new LinkedList<List<TreePath>>();
-        List<TreePath> currentCluster = new LinkedList<TreePath>();
-
-        for (TreePath t : trees) {
-            if (constant(info, t)) {
-                currentCluster.add(t);
-            } else {
-                if (!currentCluster.isEmpty()) {
-                    result.add(currentCluster);
-                    currentCluster = new LinkedList<TreePath>();
-                }
-                result.add(new LinkedList<TreePath>(Collections.singletonList(t)));
-            }
-        }
-
-        if (!currentCluster.isEmpty()) {
-            result.add(currentCluster);
-        }
-        
-        return result;
-    }
-
-    private static boolean constant(CompilationInfo info, TreePath tp) {
-        if (tp.getLeaf().getKind() == Kind.STRING_LITERAL) return true;
-
-        Element el = info.getTrees().getElement(tp);
-
-        return el != null && el.getKind() == ElementKind.FIELD && ((VariableElement) el).getConstantValue() instanceof String;
     }
 
     private static final class FixImpl implements Fix {
@@ -201,7 +143,7 @@ public class StringBuilderAppend {
 
                     MethodInvocationTree mit = (MethodInvocationTree) tp.getLeaf();
                     ExpressionTree param = mit.getArguments().get(0);
-                    List<List<TreePath>> sorted = sortOut(copy, linearize(new TreePath(tp, param)));
+                    List<List<TreePath>> sorted = Utilities.splitStringConcatenationToElements(copy, new TreePath(tp, param));
                     ExpressionTree site = ((MemberSelectTree) mit.getMethodSelect()).getExpression();
                     TreeMaker make = copy.getTreeMaker();
 

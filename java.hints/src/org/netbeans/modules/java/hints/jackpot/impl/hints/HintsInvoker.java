@@ -39,10 +39,7 @@
 
 package org.netbeans.modules.java.hints.jackpot.impl.hints;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
@@ -60,7 +57,6 @@ import org.openide.filesystems.FileObject;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.Collection;
@@ -72,7 +68,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.prefs.Preferences;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeMirror;
@@ -496,25 +491,39 @@ public class HintsInvoker {
             TreePath tp = new TreePath(getCurrentPath(), tree);
             Kind k = tree.getKind();
 
-            runAndAdd(tp, hints.get(k), p);
+            boolean b = pushSuppressWarrnings(tp);
+            try {
+                runAndAdd(tp, hints.get(k), p);
 
-            if (isCanceled()) {
-                return null;
+                if (isCanceled()) {
+                    return null;
+                }
+
+                return super.scan(tree, p);
+            } finally {
+                if (b) {
+                    suppresWarnings.pop();
+                }
             }
-
-            return super.scan(tree, p);
         }
 
         @Override
         public Void scan(TreePath path, List<ErrorDescription> p) {
             Kind k = path.getLeaf().getKind();
-            runAndAdd(path, hints.get(k), p);
+            boolean b = pushSuppressWarrnings(path);
+            try {
+                runAndAdd(path, hints.get(k), p);
 
-            if (isCanceled()) {
-                return null;
+                if (isCanceled()) {
+                    return null;
+                }
+
+                return super.scan(path, p);
+            } finally {
+                if (b) {
+                    suppresWarnings.pop();
+                }
             }
-
-            return super.scan(path, p);
         }
 
         public void scanDoNotGoDeeper(TreePath path, List<ErrorDescription> p) {
@@ -522,63 +531,44 @@ public class HintsInvoker {
             runAndAdd(path, hints.get(k), p);
         }
 
-        @Override
-        public Void visitMethod(MethodTree tree, List<ErrorDescription> arg1) {
-            pushSuppressWarrnings();
-            Void r = super.visitMethod(tree, arg1);
-            suppresWarnings.pop();
-            return r;
-        }
+        private boolean pushSuppressWarrnings(TreePath path) {
+            switch(path.getLeaf().getKind()) {
+                case CLASS:
+                case METHOD:
+                case VARIABLE:
+                    Set<String> current = suppresWarnings.size() == 0 ? null : suppresWarnings.peek();
+                    Set<String> nju = current == null ? new HashSet<String>() : new HashSet<String>(current);
 
-        @Override
-        public Void visitClass(ClassTree tree, List<ErrorDescription> arg1) {
-            pushSuppressWarrnings();
-            Void r = super.visitClass(tree, arg1);
-            suppresWarnings.pop();
-            return r;
-        }
+                    Element e = getTrees().getElement(path);
 
-        @Override
-        public Void visitVariable(VariableTree tree, List<ErrorDescription> arg1) {
-            pushSuppressWarrnings();
-            Void r = super.visitVariable(tree, arg1);
-            suppresWarnings.pop();
-            return r;
-        }
-
-        private void pushSuppressWarrnings( ) {
-            Set<String> current = suppresWarnings.size() == 0 ? null : suppresWarnings.peek();
-            Set<String> nju = current == null ? new HashSet<String>() : new HashSet<String>(current);
-
-            Element e = getTrees().getElement(getCurrentPath());
-
-            if ( e != null) {
-                for (AnnotationMirror am : e.getAnnotationMirrors()) {
-                    String name = ((TypeElement)am.getAnnotationType().asElement()).getQualifiedName().toString();
-                    if ( "java.lang.SuppressWarnings".equals(name) ) { // NOI18N
-                        Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = am.getElementValues();
-                        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : elementValues.entrySet()) {
-                            if( "value".equals(entry.getKey().getSimpleName().toString()) ) { // NOI18N
-                                Object value = entry.getValue().getValue();
-                                if ( value instanceof List) {
-                                    for (Object av : (List)value) {
-                                        if( av instanceof AnnotationValue ) {
-                                            Object wname = ((AnnotationValue)av).getValue();
-                                            if ( wname instanceof String ) {
-                                                nju.add((String)wname);
+                    if ( e != null) {
+                        for (AnnotationMirror am : e.getAnnotationMirrors()) {
+                            String name = ((TypeElement)am.getAnnotationType().asElement()).getQualifiedName().toString();
+                            if ( "java.lang.SuppressWarnings".equals(name) ) { // NOI18N
+                                Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = am.getElementValues();
+                                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : elementValues.entrySet()) {
+                                    if( "value".equals(entry.getKey().getSimpleName().toString()) ) { // NOI18N
+                                        Object value = entry.getValue().getValue();
+                                        if ( value instanceof List) {
+                                            for (Object av : (List)value) {
+                                                if( av instanceof AnnotationValue ) {
+                                                    Object wname = ((AnnotationValue)av).getValue();
+                                                    if ( wname instanceof String ) {
+                                                        nju.add((String)wname);
+                                                    }
+                                                }
                                             }
                                         }
                                     }
-
                                 }
                             }
                         }
-
                     }
-                }
-            }
 
-            suppresWarnings.push(nju);
+                    suppresWarnings.push(nju);
+                    return true;
+            }
+            return false;
         }
 
         private Trees getTrees() {

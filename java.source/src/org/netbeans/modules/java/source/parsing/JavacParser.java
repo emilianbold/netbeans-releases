@@ -708,9 +708,9 @@ public class JavacParser extends Parser {
                     if (cancelService != null) {
                         DefaultCancelService.preRegister(context, cancelService);
                     }
+                    Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
                     if (!backgroundCompilation) {
                         JavacFlowListener.preRegister(context);
-                        Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
                         ErrorHandlingJavadocEnter.preRegister(context);
                         JavadocMemberEnter.preRegister(context);
                         JavadocEnv.preRegister(context, cpInfo);

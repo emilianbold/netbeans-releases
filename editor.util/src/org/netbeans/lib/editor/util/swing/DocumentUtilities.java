@@ -73,6 +73,7 @@ public final class DocumentUtilities {
     
     /** BaseDocument's version. */
     private static final String VERSION_PROP = "version"; //NOI18N
+    private static final String LAST_MODIFICATION_TIMESTAMP_PROP = "last-modification-timestamp"; //NOI18N
 
     private static final Object TYPING_MODIFICATION_DOCUMENT_PROPERTY = new Object();
     
@@ -876,6 +877,25 @@ public final class DocumentUtilities {
      */
     public static long getDocumentVersion(Document doc) {
         Object version = doc.getProperty(VERSION_PROP);
+        return version instanceof AtomicLong ? ((AtomicLong) version).get() : 0;
+    }
+
+    /**
+     * Attempts to get the timestamp of a <code>Document</code>. Netbeans editor
+     * documents are versioned and timestamped whenever they are modified.
+     * This method can be used to read the timestamp of the most recent modification.
+     * The timestamp is a number of milliseconds returned from <code>System.currentTimeMillis()</code>
+     * at the document modification.
+     *
+     * @param doc The document to get the timestamp for.
+     *
+     * @return The document's timestamp or <code>0</code> if the document does not
+     *   support timestamps (ie. is not a netbeans editor document).
+     *
+     * @since 1.34
+     */
+    public static long getDocumentTimestamp(Document doc) {
+        Object version = doc.getProperty(LAST_MODIFICATION_TIMESTAMP_PROP);
         return version instanceof AtomicLong ? ((AtomicLong) version).get() : 0;
     }
 }

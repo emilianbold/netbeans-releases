@@ -43,8 +43,13 @@ package org.netbeans.modules.java.api.common.project.ui.wizards;
 
 import java.awt.Component;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
@@ -52,11 +57,13 @@ import javax.swing.JList;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
+import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -229,24 +236,49 @@ public final class FolderList extends javax.swing.JPanel {
         chooser.setMultiSelectionEnabled(true);
         if (this.lastUsedFolder != null && this.lastUsedFolder.isDirectory()) {
             chooser.setCurrentDirectory (this.lastUsedFolder);
-        }        
+        }
         else if (this.projectFolder != null && this.projectFolder.isDirectory()) {
-            chooser.setCurrentDirectory (this.projectFolder);            
-        }                        
+            chooser.setCurrentDirectory (this.projectFolder);
+        }
         if (chooser.showOpenDialog(this)== JFileChooser.APPROVE_OPTION) {
-            File[] files = chooser.getSelectedFiles();
-            int[] indecesToSelect = new int[files.length];
+            final AtomicBoolean cancel = new AtomicBoolean();
+            final File[] files = normalizeFiles(chooser.getSelectedFiles());
+            final List<File> toAdd = Collections.synchronizedList(new ArrayList<File>());
+            final Runnable task = new Runnable() {
+                public void run() {
+                    for (File file : files) {
+                        if (cancel.get()) {
+                            return;
+                        }
+                        final Collection<? extends FileObject> detectedRoots = JavadocAndSourceRootDetection.findSourceRoots(FileUtil.toFileObject(file),cancel);
+                        if (detectedRoots.isEmpty()) {
+                            toAdd.add(file);
+                        }
+                        else {
+                            for (FileObject detectedRoot : detectedRoots) {
+                                toAdd.add (FileUtil.toFile(detectedRoot));
+                            }
+                        }
+                    }
+                }
+            };
+            ProgressUtils.runOffEventDispatchThread(task, NbBundle.getMessage(FolderList.class, "TXT_SearchingSourceRoots"), cancel, true);
+            File[] toAddArr;
+            synchronized (toAdd) {
+                toAddArr = cancel.get() ? files : toAdd.toArray(new File[toAdd.size()]);
+            }
+            int[] indecesToSelect = new int[toAdd.size()];
             DefaultListModel model = (DefaultListModel)this.roots.getModel();
             Set<File> invalidRoots = new HashSet<File>();
-            File[] relatedFolders = this.relatedFolderList == null ? 
+            File[] relatedFolders = this.relatedFolderList == null ?
                 new File[0] : this.relatedFolderList.getFiles();
-            for (int i=0, index=model.size(); i<files.length; i++, index++) {
-                File normalizedFile = FileUtil.normalizeFile(files[i]);
+            for (int i=0, index=model.size(); i<toAddArr.length; i++) {
+                File normalizedFile = toAddArr[i];
                 if (!isValidRoot(normalizedFile, relatedFolders, this.projectFolder)) {
                     invalidRoots.add (normalizedFile);
                 }
                 else {
-                    int pos = model.indexOf (normalizedFile);                
+                    int pos = model.indexOf (normalizedFile);
                     if (pos == -1) {
                         model.addElement (normalizedFile);
                         indecesToSelect[i] = index;
@@ -254,6 +286,7 @@ public final class FolderList extends javax.swing.JPanel {
                     else {
                         indecesToSelect[i] = pos;
                     }
+                    index++;
                 }
             }
             this.roots.setSelectedIndices(indecesToSelect);
@@ -267,7 +300,14 @@ public final class FolderList extends javax.swing.JPanel {
             }
         }
     }//GEN-LAST:event_addButtonActionPerformed
-    
+
+    private static File[] normalizeFiles(final File... files) {
+        for (int i=0; i< files.length; i++) {
+            files[i] = FileUtil.normalizeFile(files[i]);
+        }
+        return files;
+    }
+
     public static boolean isValidRoot (File file, File[] relatedRoots, File projectFolder) {
         Project p;
         if ((p = FileOwnerQuery.getOwner(file.toURI()))!=null 

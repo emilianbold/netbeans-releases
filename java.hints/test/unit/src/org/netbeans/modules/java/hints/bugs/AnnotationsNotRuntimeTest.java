@@ -40,7 +40,6 @@
 package org.netbeans.modules.java.hints.bugs;
 
 import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -109,8 +108,4 @@ public class AnnotationsNotRuntimeTest extends TestBase {
                             "3:27-3:43:verifier:java.lang.SuppressWarnings instanceof");
     }
 
-    static {
-        NbBundle.setBranding("test");
-    }
-    
 }

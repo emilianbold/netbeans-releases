@@ -173,6 +173,15 @@ public class BinaryAnalyser {
        this.lmListener = new LMListener();
     }
 
+    /**
+     * Checks validity of underlying index.
+     * @return
+     * @throws IOException
+     */
+    public boolean isValid() throws IOException {
+        return this.index.isValid(true);
+    }
+
     /** Analyses a classpath root.
      * @param scanning context
      *
