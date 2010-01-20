@@ -61,6 +61,7 @@ import javax.swing.filechooser.FileFilter;
 import org.openide.modules.SpecificationVersion;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
+import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties.Version;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -73,7 +74,10 @@ import org.openide.util.NbBundle;
  */
 public class ServerLocationVisual extends JPanel {
 
+    private static final Version WEBLOGIC_10_3 = new Version("10.3"); // NOI18N
+
     private transient WLInstantiatingIterator instantiatingIterator;
+
     public ServerLocationVisual(WLInstantiatingIterator instantiatingIterator) {
 
         // save the instantiating iterator
@@ -106,7 +110,7 @@ public class ServerLocationVisual extends JPanel {
         }
         
         File serverRoot = new File(location);
-        String version = WLPluginProperties.getVersion(serverRoot);
+        Version version = WLPluginProperties.getVersion(serverRoot);
 
         if (!WLPluginProperties.isSupportedVersion(version)) {
             String msg = NbBundle.getMessage(ServerLocationVisual.class, "ERR_INVALID_SERVER_VERSION");  // NOI18N
@@ -147,15 +151,14 @@ public class ServerLocationVisual extends JPanel {
 
     private static final String J2SE_PLATFORM_VERSION_15 = "1.5"; // NOI18N
 
-    private boolean runningOnCorrectJdk(String version) {
+    private boolean runningOnCorrectJdk(Version version) {
         SpecificationVersion defPlatVersion = JavaPlatformManager.getDefault()
                 .getDefaultPlatform().getSpecification().getVersion();
         // test just JDK 1.5 for now, because WL 9.x and 10 throws marshalling
         // exception when running on JDK 6.
-        
-        // FIXME we need a real (means comparable Object) version here
-        // with move to JDK6 for NB - weblogic 9 is in fact becoming unsupported
-        return (version != null && version.startsWith("10.3")) // NOI18N
+
+        // FIXME with move to JDK6 for NB - weblogic 9 is in fact becoming unsupported
+        return (version != null && WEBLOGIC_10_3.compareTo(version) <= 0)
                 || J2SE_PLATFORM_VERSION_15.equals(defPlatVersion.toString());
     }
 

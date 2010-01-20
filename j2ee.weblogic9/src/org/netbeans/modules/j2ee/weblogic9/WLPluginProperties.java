@@ -213,11 +213,11 @@ public class WLPluginProperties {
     /**
      * Checks whether the server root contains weblogic.jar of version 9 or 10.
      */
-    public static boolean isSupportedVersion(String version) {
-        return version != null && (version.startsWith("9.") || version.startsWith("10.")); // NOI18N
+    public static boolean isSupportedVersion(Version version) {
+        return version != null && ("9".equals(version.getMajorNumber()) || "10".equals(version.getMajorNumber())); // NOI18N
     }
 
-    public static String getVersion(File serverRoot) {
+    public static Version getVersion(File serverRoot) {
         File weblogicJar = new File(serverRoot, "server/lib/weblogic.jar"); // NOI18N
         if (!weblogicJar.exists()) {
             return null;
@@ -234,7 +234,7 @@ public class WLPluginProperties {
                 }
                 if (implementationVersion != null) { // NOI18N
                     implementationVersion = implementationVersion.trim();
-                    return implementationVersion;
+                    return new Version(implementationVersion);
                 }
             } finally {
                 try {
@@ -306,5 +306,163 @@ public class WLPluginProperties {
     
     public String getInstallLocation(){
         return this.installLocation;
+    }
+
+    /**
+     * Class representing the JBoss version.
+     * <p>
+     * <i>Immutable</i>
+     *
+     * @author Petr Hejl
+     */
+    public static final class Version implements Comparable<Version> {
+
+        private String majorNumber = "0";
+
+        private String minorNumber = "0";
+
+        private String microNumber = "0";
+
+        private String update = "";
+
+        /**
+         * Constructs the version from the spec version string.
+         * Expected format is <code>MAJOR_NUMBER[.MINOR_NUMBER[.MICRO_NUMBER[.UPDATE]]]</code>.
+         *
+         * @param version spec version string with the following format:
+         *             <code>MAJOR_NUMBER[.MINOR_NUMBER[.MICRO_NUMBER[.UPDATE]]]</code>
+         */
+        public Version(String version) {
+            assert version != null : "Version can't be null"; // NOI18N
+
+            String[] tokens = version.split("\\.");
+
+            if (tokens.length >= 4) {
+                update = tokens[3];
+            }
+            if (tokens.length >= 3) {
+                microNumber = tokens[2];
+            }
+            if (tokens.length >= 2) {
+                minorNumber = tokens[1];
+            }
+            majorNumber = tokens[0];
+        }
+
+        /**
+         * Returns the major number.
+         *
+         * @return the major number. Never returns <code>null</code>.
+         */
+        public String getMajorNumber() {
+            return majorNumber;
+        }
+
+        /**
+         * Returns the minor number.
+         *
+         * @return the minor number. Never returns <code>null</code>.
+         */
+        public String getMinorNumber() {
+            return minorNumber;
+        }
+
+        /**
+         * Returns the micro number.
+         *
+         * @return the micro number. Never returns <code>null</code>.
+         */
+        public String getMicroNumber() {
+            return microNumber;
+        }
+
+        /**
+         * Returns the update.
+         *
+         * @return the update. Never returns <code>null</code>.
+         */
+        public String getUpdate() {
+            return update;
+        }
+
+        /**
+         * {@inheritDoc}<p>
+         * Two versions are equal if and only if they have same major, minor,
+         * micro number and update.
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Version other = (Version) obj;
+            if (this.majorNumber != other.majorNumber
+                    && (this.majorNumber == null || !this.majorNumber.equals(other.majorNumber))) {
+                return false;
+            }
+            if (this.minorNumber != other.minorNumber
+                    && (this.minorNumber == null || !this.minorNumber.equals(other.minorNumber))) {
+                return false;
+            }
+            if (this.microNumber != other.microNumber
+                    && (this.microNumber == null || !this.microNumber.equals(other.microNumber))) {
+                return false;
+            }
+            if (this.update != other.update
+                    && (this.update == null || !this.update.equals(other.update))) {
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * {@inheritDoc}<p>
+         * The implementation consistent with {@link #equals(Object)}.
+         */
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 17 * hash + (this.majorNumber != null ? this.majorNumber.hashCode() : 0);
+            hash = 17 * hash + (this.minorNumber != null ? this.minorNumber.hashCode() : 0);
+            hash = 17 * hash + (this.microNumber != null ? this.microNumber.hashCode() : 0);
+            hash = 17 * hash + (this.update != null ? this.update.hashCode() : 0);
+            return hash;
+        }
+
+        /**
+         * {@inheritDoc}<p>
+         * Compares the versions based on its major, minor, micro and update.
+         * Major number is the most significant. Implementation is consistent
+         * with {@link #equals(Object)}.
+         */
+        public int compareTo(Version o) {
+            int comparison = compareToIgnoreUpdate(o);
+            if (comparison != 0) {
+                return comparison;
+            }
+            return update.compareTo(o.update);
+        }
+
+        /**
+         * Compares the versions based on its major, minor, micro. Update field
+         * is ignored. Major number is the most significant.
+         *
+         * @param o version to compare with
+         */
+        public int compareToIgnoreUpdate(Version o) {
+            int comparison = majorNumber.compareTo(o.majorNumber);
+            if (comparison != 0) {
+                return comparison;
+            }
+            comparison = minorNumber.compareTo(o.minorNumber);
+            if (comparison != 0) {
+                return comparison;
+            }
+            return microNumber.compareTo(o.microNumber);
+        }
+
     }
 }
