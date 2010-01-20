@@ -39,37 +39,37 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.cnd.api.lexer;
+package org.netbeans.modules.cnd.script.lexer;
 
-import org.netbeans.api.lexer.TokenId;
-
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.LanguageProvider;
 
 /**
  *
  * @author Jan Jancura
  */
-public enum ShTokenId implements TokenId {
-
-    KEYWORD ("keyword"), // NOI18N
-    COMMAND ("command"), // NOI18N
-    OPERATOR ("operator"), // NOI18N
-    LABEL ("label"), // NOI18N
-    WHITESPACE ("whitespace"), // NOI18N
-    NUMBER ("number"), // NOI18N
-    STRING ("string"), // NOI18N
-    IDENTIFIER ("identifier"), // NOI18N
-    COMMENT ("comment"), // NOI18N
-    ERROR ("error"); // NOI18N
-
-    private String  name;
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.lexer.LanguageProvider.class)
+public class ShLanguageProvider extends LanguageProvider {
     
-    ShTokenId (
-        String  name
-    ) {
-        this.name = name;
+    public Language<ShTokenId> findLanguage (String mimeType) {
+        if (MIMENames.SHELL_MIME_TYPE.equals (mimeType))
+            return new ShLanguageHierarchy ().language ();
+        return null;
     }
 
-    public String primaryCategory () {
-        return name;
+    @Override
+    public LanguageEmbedding<?> findLanguageEmbedding (
+        Token arg0,
+        LanguagePath arg1,
+        InputAttributes arg2
+    ) {
+        return null;
     }
 }
+
+

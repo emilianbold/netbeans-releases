@@ -39,9 +39,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.lexer;
+package org.netbeans.modules.cnd.script.lexer;
 
-import org.netbeans.cnd.api.lexer.ShTokenId;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;

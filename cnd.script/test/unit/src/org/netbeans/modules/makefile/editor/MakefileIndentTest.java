@@ -53,12 +53,12 @@ import org.netbeans.modules.editor.indent.api.Indent;
 /**
  * @author Alexey Vladykin
  */
-public class MakefileIndentTestCase extends NbTestCase {
+public class MakefileIndentTest extends NbTestCase {
 
     private static final String MIME_TYPE = MIMENames.MAKEFILE_MIME_TYPE;
     private MimePath mimePath;
 
-    public MakefileIndentTestCase(String name) {
+    public MakefileIndentTest(String name) {
         super(name);
     }
 

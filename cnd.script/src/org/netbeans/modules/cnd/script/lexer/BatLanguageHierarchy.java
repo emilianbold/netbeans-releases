@@ -39,38 +39,35 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.lexer;
+package org.netbeans.modules.cnd.script.lexer;
 
-import org.netbeans.cnd.api.lexer.ShTokenId;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
+import java.util.Collection;
+
+import java.util.EnumSet;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.spi.lexer.LanguageEmbedding;
-import org.netbeans.spi.lexer.LanguageProvider;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
+
 
 /**
  *
  * @author Jan Jancura
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.lexer.LanguageProvider.class)
-public class ShLanguageProvider extends LanguageProvider {
-    
-    public Language<ShTokenId> findLanguage (String mimeType) {
-        if (MIMENames.SHELL_MIME_TYPE.equals (mimeType))
-            return new ShLanguageHierarchy ().language ();
-        return null;
+public class BatLanguageHierarchy extends LanguageHierarchy<BatTokenId> {
+
+    protected synchronized Collection<BatTokenId> createTokenIds () {
+        return EnumSet.allOf (BatTokenId.class);
     }
 
-    @Override
-    public LanguageEmbedding<?> findLanguageEmbedding (
-        Token arg0,
-        LanguagePath arg1,
-        InputAttributes arg2
-    ) {
-        return null;
+    protected Lexer<BatTokenId> createLexer (LexerRestartInfo<BatTokenId> info) {
+        return new BatLexer (info);
+    }
+
+    protected String mimeType () {
+        return MIMENames.BAT_MIME_TYPE;
     }
 }
+
 
 

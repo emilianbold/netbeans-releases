@@ -39,36 +39,37 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.lexer;
+package org.netbeans.modules.cnd.script.lexer;
 
-import org.netbeans.cnd.api.lexer.ShTokenId;
-import java.util.Collection;
-
-import java.util.EnumSet;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.spi.lexer.LanguageHierarchy;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
-
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.LanguageProvider;
 
 /**
  *
  * @author Jan Jancura
  */
-public class ShLanguageHierarchy extends LanguageHierarchy<ShTokenId> {
-
-    protected synchronized Collection<ShTokenId> createTokenIds () {
-        return EnumSet.allOf (ShTokenId.class);
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.lexer.LanguageProvider.class)
+public class BatLanguageProvider extends LanguageProvider {
+    
+    public Language<BatTokenId> findLanguage (String mimeType) {
+        if (MIMENames.BAT_MIME_TYPE.equals (mimeType))
+            return new BatLanguageHierarchy ().language ();
+        return null;
     }
 
-    protected Lexer<ShTokenId> createLexer (LexerRestartInfo<ShTokenId> info) {
-        return new ShLexer (info);
-    }
-
-    protected String mimeType () {
-        return MIMENames.SHELL_MIME_TYPE;
+    @Override
+    public LanguageEmbedding<?> findLanguageEmbedding (
+        Token arg0,
+        LanguagePath arg1,
+        InputAttributes arg2
+    ) {
+        return null;
     }
 }
-
 
 

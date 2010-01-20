@@ -38,37 +38,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.cnd.api.lexer;
+
+package org.netbeans.modules.cnd.script.lexer;
 
 import org.netbeans.api.lexer.TokenId;
+
 
 /**
  *
  * @author Jan Jancura
  */
-public enum MakefileTokenId implements TokenId {
+public enum BatTokenId implements TokenId {
 
-    WHITESPACE("whitespace"),// NOI18N
-    NEW_LINE("newline"),// NOI18N
-    TAB("tab"),// NOI18N
-    LINE_COMMENT("line_comment"),// NOI18N
-    MACRO("macro"),// NOI18N
-    MACRO_OPERATOR("macro_operator"),// NOI18N
-    RULE_OPERATOR("rule_operator"),// NOI18N
-    SEPARATOR("separator"),// NOI18N
-    KEYWORD("keyword"),// NOI18N
-    SPECIAL_TARGET("special_target"),// NOI18N
-    STRING_LITERAL("string_literal"),// NOI18N
-    IDENTIFIER("identifier"),// NOI18N
-    ERROR("error");// NOI18N
-    private String name;
+    KEYWORD ("keyword"), // NOI18N
+    COMMAND ("command"), // NOI18N
+    OPERATOR ("operator"), // NOI18N
+    NUMBER ("number"), // NOI18N
+    WHITESPACE ("whitespace"), // NOI18N
+    IDENTIFIER ("identifier"), // NOI18N
+    STRING ("string"), // NOI18N
+    COMMENT ("comment"), // NOI18N
+    ERROR ("error"); // NOI18N
 
-    MakefileTokenId(
-            String name) {
+    private String  name;
+    
+    BatTokenId (
+        String  name
+    ) {
         this.name = name;
     }
 
-    public String primaryCategory() {
+    public String primaryCategory () {
         return name;
     }
 }

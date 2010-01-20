@@ -37,21 +37,22 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.lexer;
+package org.netbeans.modules.script.lexer;
 
+import org.netbeans.modules.cnd.script.lexer.ShLanguageHierarchy;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
-import static org.netbeans.cnd.api.lexer.ShTokenId.*;
+import static org.netbeans.modules.cnd.script.lexer.ShTokenId.*;
 import static org.netbeans.lib.lexer.test.LexerTestUtilities.assertNextTokenEquals;
 
 /**
  * @author Alexey Vladykin
  */
-public class ShLexerTestCase extends NbTestCase {
+public class ShLexerTest extends NbTestCase {
 
-    public ShLexerTestCase(String testName) {
+    public ShLexerTest(String testName) {
         super(testName);
     }
 

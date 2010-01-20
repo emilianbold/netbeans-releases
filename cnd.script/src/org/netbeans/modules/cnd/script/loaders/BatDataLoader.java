@@ -58,7 +58,7 @@ public final class BatDataLoader extends UniFileLoader {
     static final long serialVersionUID = 1L;
 
     public BatDataLoader() {
-        super("org.netbeans.modules.cnd.script.ShellDataObject"); // NOI18N
+        super("org.netbeans.modules.cnd.script.loaders.ShellDataObject"); // NOI18N
         getExtensions().addExtension(MIMENames.BAT_MIME_TYPE);
     }
 

@@ -38,38 +38,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.lexer;
+package org.netbeans.modules.cnd.makefile.lexer;
 
-import org.netbeans.cnd.api.lexer.MakefileTokenId;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.spi.lexer.LanguageEmbedding;
-import org.netbeans.spi.lexer.LanguageProvider;
+import org.netbeans.api.lexer.TokenId;
 
 /**
  *
  * @author Jan Jancura
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.spi.lexer.LanguageProvider.class)
-public class MakefileLanguageProvider extends LanguageProvider {
+public enum MakefileTokenId implements TokenId {
 
-    public Language<MakefileTokenId> findLanguage(String mimeType) {
-        if (MIMENames.MAKEFILE_MIME_TYPE.equals(mimeType)) {
-            return new MakefileLanguageHierarchy().language();
-        }
-        return null;
+    WHITESPACE("whitespace"),// NOI18N
+    NEW_LINE("newline"),// NOI18N
+    TAB("tab"),// NOI18N
+    LINE_COMMENT("line_comment"),// NOI18N
+    MACRO("macro"),// NOI18N
+    MACRO_OPERATOR("macro_operator"),// NOI18N
+    RULE_OPERATOR("rule_operator"),// NOI18N
+    SEPARATOR("separator"),// NOI18N
+    KEYWORD("keyword"),// NOI18N
+    SPECIAL_TARGET("special_target"),// NOI18N
+    STRING_LITERAL("string_literal"),// NOI18N
+    IDENTIFIER("identifier"),// NOI18N
+    ERROR("error");// NOI18N
+    private String name;
+
+    MakefileTokenId(
+            String name) {
+        this.name = name;
     }
 
-    @Override
-    public LanguageEmbedding<?> findLanguageEmbedding(
-            Token arg0,
-            LanguagePath arg1,
-            InputAttributes arg2) {
-        return null;
+    public String primaryCategory() {
+        return name;
     }
 }
-
-

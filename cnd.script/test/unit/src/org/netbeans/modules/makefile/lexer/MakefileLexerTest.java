@@ -37,20 +37,21 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.lexer;
+package org.netbeans.modules.makefile.lexer;
 
+import org.netbeans.modules.cnd.makefile.lexer.MakefileLanguageHierarchy;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.cnd.api.lexer.MakefileTokenId;
+import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
 /**
  * @author Alexey Vladykin
  */
-public class MakefileLexerTestCase extends NbTestCase {
+public class MakefileLexerTest extends NbTestCase {
 
-    public MakefileLexerTestCase(String testName) {
+    public MakefileLexerTest(String testName) {
         super(testName);
     }
 
