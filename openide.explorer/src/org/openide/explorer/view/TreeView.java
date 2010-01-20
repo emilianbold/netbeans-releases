@@ -63,6 +63,7 @@ import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -1770,8 +1771,10 @@ public abstract class TreeView extends JScrollPane {
             }
 
             setupSearch();
-            
-            setDragEnabled( true );
+
+            if (!GraphicsEnvironment.isHeadless()) {
+                setDragEnabled(true);
+            }
         }
 
         /** removeNotify() call count sometimes does not match addNotify(), use special flag */
