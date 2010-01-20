@@ -60,6 +60,7 @@ import org.netbeans.modules.jira.issue.JiraIssueProvider;
 import org.netbeans.modules.jira.kenai.KenaiSupportImpl;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.repository.JiraStorageManager;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -82,6 +83,7 @@ public class Jira {
 
     private KenaiSupport kenaiSupport;
     private final JiraCorePlugin jcp;
+    private JiraConnector connector;
     
     private Jira() {
         ModuleLifecycleManager.instantiated = true;
@@ -146,6 +148,7 @@ public class Jira {
                     .getTaskRepositoryManager()
                     .addRepository(repository.getTaskRepository());
         }
+        getConnector().fireRepositoriesChanged();
     }
 
     public void removeRepository(JiraRepository repository) {
@@ -155,7 +158,15 @@ public class Jira {
             BugtrackingRuntime br = BugtrackingRuntime.getInstance();
             br.getTaskRepositoryManager().removeRepository(repository.getTaskRepository(), REPOSITORIES_STORE);
         }
+        getConnector().fireRepositoriesChanged();
         JiraIssueProvider.getInstance().removeAllFor(repository);
+    }
+
+    public JiraConnector getConnector() {
+        if (connector == null) {
+            connector = Lookup.getDefault().lookup(JiraConnector.class);
+        }
+        return connector;
     }
 
     public JiraRepository[] getRepositories() {

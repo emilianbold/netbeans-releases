@@ -57,7 +57,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.RepositoriesSupport;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
@@ -92,7 +92,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      */
     public IssueTopComponent() {
         initComponents();
-        RepositoriesSupport.getInstance().addPropertyChangeListener(this);
+        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        for (BugtrackingConnector c : connectors) {
+            c.addPropertyChangeListener(this);
+        }
         preparingLabel.setVisible(false);
         newButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -467,7 +470,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(evt.getPropertyName().equals(Issue.EVENT_ISSUE_DATA_CHANGED)) {
             repoPanel.setVisible(false);
             setNameAndTooltip();
-        } else if(evt.getPropertyName().equals(RepositoriesSupport.EVENT_REPOSITORIES_CHANGED)) {
+        } else if(evt.getPropertyName().equals(BugtrackingConnector.EVENT_REPOSITORIES_CHANGED)) {
             if(!repositoryComboBox.isEnabled()) {
                 // well, looks like there shuold be only one repository available
                 return;
