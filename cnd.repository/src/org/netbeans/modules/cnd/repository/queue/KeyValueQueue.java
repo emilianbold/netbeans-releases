@@ -46,7 +46,6 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
-import org.openide.util.Exceptions;
 
 /**
  * The queue that is based on key-value pairs
@@ -92,7 +91,7 @@ public class KeyValueQueue<K, V> extends BaseQueue {
         dispatcher.newEvent(createEntry(key, value));
     }
 
-    public final void pushLastFromDispatcher() {
+    protected final void pushLastFromDispatcher() {
         dispatcher.pushLast();
     }
 
