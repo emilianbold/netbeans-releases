@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.makefile;
+package org.netbeans.modules.cnd.makefile.editor;
 
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;

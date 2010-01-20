@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,23 +34,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor.makefile;
+package org.netbeans.modules.cnd.script.editor;
 
-import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.editor.indent.spi.IndentTask;
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.NbEditorKit;
 
 /**
- * IndentTask factory for Makefiles.
- *
  * @author Alexey Vladykin
  */
-public class MakefileIndentTaskFactory implements IndentTask.Factory {
+public class ShellKit extends NbEditorKit {
 
-    public IndentTask createTask(Context context) {
-        return new MakefileIndentTask(context);
+    @Override
+    public Document createDefaultDocument() {
+        Document doc = super.createDefaultDocument();
+        doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);
+        return doc;
+    }
+
+    @Override
+    public String getContentType() {
+        return MIMENames.SHELL_MIME_TYPE;
     }
 
 }

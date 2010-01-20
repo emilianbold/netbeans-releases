@@ -37,15 +37,16 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor.makefile;
+package org.netbeans.modules.makefile.editor;
 
+import org.netbeans.modules.cnd.makefile.editor.MakefileIndentTaskFactory;
 import javax.swing.text.BadLocationException;
-import static org.junit.Assert.*;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.indent.api.Indent;
 
@@ -54,7 +55,7 @@ import org.netbeans.modules.editor.indent.api.Indent;
  */
 public class MakefileIndentTestCase extends NbTestCase {
 
-    private static final String MIME_TYPE = "text/x-make";
+    private static final String MIME_TYPE = MIMENames.MAKEFILE_MIME_TYPE;
     private MimePath mimePath;
 
     public MakefileIndentTestCase(String name) {
@@ -67,7 +68,7 @@ public class MakefileIndentTestCase extends NbTestCase {
         MakefileIndentTaskFactory factory = new MakefileIndentTaskFactory();
         MockServices.setServices(MockMimeLookup.class);
         mimePath = MimePath.parse(MIME_TYPE);
-        MockMimeLookup.setInstances( mimePath, factory);
+        MockMimeLookup.setInstances(mimePath, factory);
     }
 
     public void testRuleIndent1() throws BadLocationException {

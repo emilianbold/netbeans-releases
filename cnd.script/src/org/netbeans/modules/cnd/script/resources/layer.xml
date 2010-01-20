@@ -298,4 +298,89 @@
         </folder>
     </folder>
 
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="x-make" url="makefileExample">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/script/resources/MakefileDataIcon.gif"/>
+                </file>
+                <file name="sh" url="shellExample.sh">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/script/resources/ShellDataIcon.gif"/>
+                </file>
+		<file name="bat" url="batExample.bat">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/script/resources/ShellDataIcon.gif"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Editors">
+        <folder name="text">
+
+            <folder name="x-make">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
+
+                <file name="MakefileIndentTaskFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.editor.MakefileIndentTaskFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
+                </file>
+
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="codeTemplates.xml" url="makefileCodeTemplates.xml"/>
+                    </folder>
+                </folder>
+
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="fontsColors.xml" url="makefileFontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makefile.editor.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+
+                <folder name="Preferences">
+                    <folder name="Defaults">
+                        <file name="editorPreferences.xml" url="makefileEditorPreferences.xml"/>
+                    </folder>
+                </folder>
+            </folder>
+
+            <folder name="sh">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="fontsColors.xml" url="shellFontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.editor.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.script.editor.ShellKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit"/>
+                </file>
+            </folder>
+
+            <folder name="bat">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="fontsColors.xml" url="batFontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.editor.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>

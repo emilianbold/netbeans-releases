@@ -37,51 +37,22 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor.makefile;
+package org.netbeans.modules.makefile.editor;
 
-import javax.swing.text.BadLocationException;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.editor.indent.spi.ExtraLock;
-import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.netbeans.junit.NbTestSuite;
 
 /**
- * Indentation support for Makefiles.
- *
  * @author Alexey Vladykin
  */
-class MakefileIndentTask implements IndentTask {
+public class MakefileEditorUnitTest extends NbTestSuite {
 
-    private static final int INDENT = 8;
-
-    private final Context context;
-
-    public MakefileIndentTask(Context context) {
-        this.context = context;
+    public MakefileEditorUnitTest() {
+        super("Makefile Editor");
+        addTestSuite(MakefileIndentTestCase.class);
     }
 
-    public ExtraLock indentLock() {
-        return null; // no extra locking
-    }
-
-    public void reindent() throws BadLocationException {
-        if (context.isIndent()) {
-            int caretOffset = context.caretOffset();
-            if (isRuleOrActionLine((BaseDocument) context.document(), caretOffset)) {
-                context.modifyIndent(context.lineStartOffset(caretOffset), INDENT);
-            }
-        }
-    }
-
-    private static boolean isRuleOrActionLine(BaseDocument doc, int offset) throws BadLocationException {
-        int start = Utilities.getRowStart(doc, offset - 1);
-        String line = doc.getText(start, offset - start);
-        int colon = line.indexOf(':'); // NOI18N
-        int pound = line.indexOf('#'); // NOI18N
-        return (line.charAt(0) == '\t') // NOI18N
-                || (colon > 0 && pound == -1)
-                || (colon > 0 && colon < pound);
+    public static NbTestSuite suite() {
+        return new MakefileEditorUnitTest();
     }
 
 }
