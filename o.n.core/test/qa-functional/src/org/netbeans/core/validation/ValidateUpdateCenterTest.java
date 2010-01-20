@@ -61,6 +61,10 @@ import org.netbeans.junit.NbTestCase;
  */
 public class ValidateUpdateCenterTest extends NbTestCase {
 
+    static {
+        System.setProperty("java.awt.headless", "true");
+    }
+
     public ValidateUpdateCenterTest(String n) {
         super(n);
     }
