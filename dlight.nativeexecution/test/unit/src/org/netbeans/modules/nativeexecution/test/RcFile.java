@@ -149,18 +149,19 @@ public final class RcFile {
                 continue;
             }
             if (sectionPattern.matcher(str).matches()) {
-                String name = str.trim().substring(1, str.length()-1);
+                str = str.trim();
+                String name = str.substring(1, str.length()-1);
                 currSection = new Section(name);
                 sections.put(name, currSection);
             } else {
                 Matcher m = valuePattern.matcher(str);
                 if (m.matches()) {
-                    String key = m.group(1);
-                    String value = m.group(2);
+                    String key = m.group(1).trim();
+                    String value = m.group(2).trim();
                     currSection.put(key, value);
                 } else {
                     if (justKeyPattern.matcher(str).matches()) {
-                        String key = str;
+                        String key = str.trim();
                         String value = null;
                         currSection.put(key, value);
                     } else {
