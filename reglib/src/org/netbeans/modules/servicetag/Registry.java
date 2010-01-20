@@ -124,11 +124,7 @@ public class Registry {
             initialized = true;
         }
 
-        // com.sun.servicetag package has to be compiled with JDK 5 as well
-        // JDK 5 doesn't support the File.canExecute() method.
-        // Risk not checking isExecute() for the stclient command is very low.
-
-        if (stclientPath == null && stclient != null && stclient.exists()) {
+        if (stclientPath == null && stclient != null && stclient.canExecute()) {
             stclientPath = stclient.getAbsolutePath();
         }
         return stclientPath;
