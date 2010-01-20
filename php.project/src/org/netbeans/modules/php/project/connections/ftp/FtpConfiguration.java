@@ -67,7 +67,7 @@ public final class FtpConfiguration extends RemoteConfiguration {
         host = cfg.getValue(FtpConnectionProvider.HOST);
         port = Integer.parseInt(cfg.getValue(FtpConnectionProvider.PORT));
         userName = cfg.getValue(FtpConnectionProvider.USER);
-        password = cfg.getValue(FtpConnectionProvider.PASSWORD, true);
+        password = readPassword(cfg, FtpConnectionProvider.PASSWORD);
         anonymousLogin = Boolean.valueOf(cfg.getValue(FtpConnectionProvider.ANONYMOUS_LOGIN));
         initialDirectory = cfg.getValue(FtpConnectionProvider.INITIAL_DIRECTORY);
         timeout = Integer.parseInt(cfg.getValue(FtpConnectionProvider.TIMEOUT));
@@ -129,6 +129,21 @@ public final class FtpConfiguration extends RemoteConfiguration {
             path += directory;
         }
         return "ftp://" + host + path.replaceAll(PATH_SEPARATOR + "{2,}", PATH_SEPARATOR); // NOI18N
+    }
+
+    @Override
+    public boolean saveProperty(String key, String value) {
+        if (FtpConnectionProvider.PASSWORD.equals(key)) {
+            // value cannot be used (is scrambled)
+            savePassword(password, FtpConnectionProvider.get().getDisplayName());
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void notifyDeleted() {
+        deletePassword();
     }
 
     @Override
