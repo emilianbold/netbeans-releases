@@ -558,15 +558,9 @@ Property testcoverage.report.dir not set. Test coverage script may be missing in
         <property name="config.dir" location="${cluster}/config/Modules"/>
         <mkdir dir="${config.dir}"/>
         <createmodulexml xmldir="${config.dir}" updatetrackingroot="${cluster}" failonmissingmanifest="false">
-            <autoload dir="${cluster}">
-                <include name="${include.autoload}"/>
-            </autoload>
-             <eager dir="${cluster}">
-                <include name="${include.eager}"/>
-            </eager>
-            <enabled dir="${cluster}">
-                <include name="${include.enabled}"/>
-            </enabled>
+            <autoload dir="${cluster}" includes="${include.autoload}"/>
+            <eager dir="${cluster}" includes="${include.eager}"/>
+            <enabled dir="${cluster}" includes="${include.enabled}"/>
         </createmodulexml>
     </target>
 </project>
