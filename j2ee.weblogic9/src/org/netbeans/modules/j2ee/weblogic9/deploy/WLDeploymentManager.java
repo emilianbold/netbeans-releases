@@ -87,7 +87,7 @@ public class WLDeploymentManager implements DeploymentManager {
 
     private static final Logger LOGGER = Logger.getLogger(WLDeploymentManager.class.getName());
 
-    protected final WLDeploymentFactory factory;
+    private final WLDeploymentFactory factory;
 
     private final String uri;
     private final String host;
@@ -213,7 +213,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(InstanceProperties.getInstanceProperties(getUri()));
+        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
         return wlDeployer.deploy(target, file, file2, getHost(), getPort());
     }
 
@@ -241,7 +241,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(InstanceProperties.getInstanceProperties(getUri()));
+        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
         return wlDeployer.undeploy(targetModuleID);
     }
 
@@ -249,7 +249,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(InstanceProperties.getInstanceProperties(getUri()));
+        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
         return wlDeployer.stop(targetModuleID);
     }
 
@@ -257,7 +257,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(InstanceProperties.getInstanceProperties(getUri()));
+        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
         return wlDeployer.start(targetModuleID);
     }
 

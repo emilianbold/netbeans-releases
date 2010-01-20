@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.j2ee.weblogic9;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,9 +60,11 @@ import org.openide.util.NbBundle;
  */
 public class WLDeploymentFactory implements DeploymentFactory {
 
+    public static final String URI_PREFIX = "deployer:WebLogic:http://"; // NOI18N
+
     private static final Logger LOGGER = Logger.getLogger(WLDeploymentFactory.class.getName());
 
-    public static final String URI_PREFIX = "deployer:WebLogic:http://"; // NOI18N
+    private ExecutorService executorService = Executors.newCachedThreadPool();
 
     /**
      * The singleton instance of the factory
@@ -99,7 +103,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
                     + uri + " username:" + username + " password:" + password); // NOI18N
         }
 
-        String[] parts = uri.split(":");                               // NOI18N
+        String[] parts = uri.split(":"); // NOI18N
         String host = parts[3].substring(2);
         String port = parts[4] != null ? parts[4].trim() : parts[4];
 
@@ -114,7 +118,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
             LOGGER.log(Level.FINER, "getDisconnectedDeploymentManager, uri:" + uri); // NOI18N
         }
 
-        String[] parts = uri.split(":");                               // NOI18N
+        String[] parts = uri.split(":"); // NOI18N
         String host = parts[3].substring(2);
         String port = parts[4] != null ? parts[4].trim() : parts[4];
         WLDeploymentManager dm = new WLDeploymentManager(this, uri, host, port, true);
@@ -128,4 +132,9 @@ public class WLDeploymentFactory implements DeploymentFactory {
     public String getDisplayName() {
         return NbBundle.getMessage(WLDeploymentFactory.class, "TXT_displayName");
     }
+
+    public ExecutorService getExecutorService() {
+        return executorService;
+    }
+
 }
