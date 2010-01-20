@@ -256,12 +256,14 @@ public class GemRequirementsPanel extends javax.swing.JPanel {
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         JTable selected = getSelectedTable();
-        int row = selected.getSelectedRow();
-        if (row != -1) {
-            DefaultTableModel model = (DefaultTableModel) selected.getModel();
+        DefaultTableModel model = (DefaultTableModel) selected.getModel();
+        int[] rows = selected.getSelectedRows();
+        for (int row : rows) {
             String name = (String) model.getValueAt(row, 0);
             getSelectedRequiredGems().removeRequirement(name);
-            model.removeRow(row);
+        }
+        for (int i = rows.length - 1; i >= 0; i--) {
+            model.removeRow(rows[i]);
         }
     }//GEN-LAST:event_removeButtonActionPerformed
 
