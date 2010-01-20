@@ -213,13 +213,17 @@ public class WLPluginProperties {
     /**
      * Checks whether the server root contains weblogic.jar of version 9 or 10.
      */
-    public static boolean isSupportedVersion(File serverRoot) {
+    public static boolean isSupportedVersion(String version) {
+        return version != null && (version.startsWith("9.") || version.startsWith("10.")); // NOI18N
+    }
+
+    public static String getVersion(File serverRoot) {
         File weblogicJar = new File(serverRoot, "server/lib/weblogic.jar"); // NOI18N
         if (!weblogicJar.exists()) {
-            return false;
+            return null;
         }
         try {
-            // JarInputStream cannot be used due to problem in weblogic.jar ib Oracle Weblogic Server 10.3
+            // JarInputStream cannot be used due to problem in weblogic.jar in Oracle Weblogic Server 10.3
             JarFile jar = new JarFile(weblogicJar);
             try {
                 Manifest manifest = jar.getManifest();
@@ -230,7 +234,7 @@ public class WLPluginProperties {
                 }
                 if (implementationVersion != null) { // NOI18N
                     implementationVersion = implementationVersion.trim();
-                    return implementationVersion.startsWith("9.") || implementationVersion.startsWith("10."); // NOI18N
+                    return implementationVersion;
                 }
             } finally {
                 try {
@@ -242,7 +246,7 @@ public class WLPluginProperties {
         } catch (IOException e) {
             LOGGER.log(Level.FINE, null, e);
         }
-        return false;
+        return null;
     }
 
     public static String getWeblogicDomainVersion(String domainRoot) {

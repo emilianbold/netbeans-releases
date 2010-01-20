@@ -95,12 +95,6 @@ public class ServerLocationVisual extends JPanel {
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
 
-        // test if IDE is run on correct JDK version
-        if (!runningOnCorrectJdk()) {
-            String msg = NbBundle.getMessage(ServerLocationVisual.class, "WARN_INVALID_JDK");  // NOI18N
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
-        }
-
         // check for the validity of the entered installation directory
         // if it's invalid, return false
         String location = this.getInstallLocation();
@@ -112,8 +106,9 @@ public class ServerLocationVisual extends JPanel {
         }
         
         File serverRoot = new File(location);
+        String version = WLPluginProperties.getVersion(serverRoot);
 
-        if (!WLPluginProperties.isSupportedVersion(serverRoot)) {
+        if (!WLPluginProperties.isSupportedVersion(version)) {
             String msg = NbBundle.getMessage(ServerLocationVisual.class, "ERR_INVALID_SERVER_VERSION");  // NOI18N
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
             return false;
@@ -135,6 +130,11 @@ public class ServerLocationVisual extends JPanel {
             return false;
         }
 
+        // test if IDE is run on correct JDK version
+        if (!runningOnCorrectJdk(version)) {
+            String msg = NbBundle.getMessage(ServerLocationVisual.class, "WARN_INVALID_JDK");  // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
+        }
 
         WLPluginProperties.getInstance().setInstallLocation(location);
         WLPluginProperties.getInstance().saveProperties();
@@ -147,12 +147,16 @@ public class ServerLocationVisual extends JPanel {
 
     private static final String J2SE_PLATFORM_VERSION_15 = "1.5"; // NOI18N
 
-    private boolean runningOnCorrectJdk() {
+    private boolean runningOnCorrectJdk(String version) {
         SpecificationVersion defPlatVersion = JavaPlatformManager.getDefault()
                 .getDefaultPlatform().getSpecification().getVersion();
         // test just JDK 1.5 for now, because WL 9.x and 10 throws marshalling
         // exception when running on JDK 6.
-        return J2SE_PLATFORM_VERSION_15.equals(defPlatVersion.toString());
+        
+        // FIXME we need a real (means comparable Object) version here
+        // with move to JDK6 for NB - weblogic 9 is in fact becoming unsupported
+        return (version != null && version.startsWith("10.3")) // NOI18N
+                || J2SE_PLATFORM_VERSION_15.equals(defPlatVersion.toString());
     }
 
     ////////////////////////////////////////////////////////////////////////////
