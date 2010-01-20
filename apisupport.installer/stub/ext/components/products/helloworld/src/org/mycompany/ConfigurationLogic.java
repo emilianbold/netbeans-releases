@@ -275,6 +275,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         return true;
     }
 
+    @Override
+    public boolean requireLegalArtifactSaving() {
+        return false;
+    }
+
     private Shortcut getDesktopShortcut(final File directory) {
         return getShortcut(
                 getStrings("CL.desktop.shortcut.name"), // NOI18N

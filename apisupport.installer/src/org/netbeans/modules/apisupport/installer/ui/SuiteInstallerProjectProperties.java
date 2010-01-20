@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.ResourceBundle;
 import javax.swing.JToggleButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -17,6 +21,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -33,6 +38,7 @@ public class SuiteInstallerProjectProperties {
     public static final String DEFAULT_PATH_LINUX = "installer.path.linux";
     public static final String DEFAULT_PATH_SOLARIS = "installer.path.solaris";
     public static final String DEFAULT_PATH_MAC = "installer.path.macos";
+    public static final String LICENSE_TYPE = "installer.license.type";
     private StoreGroup installerPropGroup = new StoreGroup();
     private Project suiteProject;
     private PropertyEvaluator propEval;
@@ -41,6 +47,7 @@ public class SuiteInstallerProjectProperties {
     JToggleButton.ToggleButtonModel linuxModel;
     JToggleButton.ToggleButtonModel solarisModel;
     JToggleButton.ToggleButtonModel macModel;
+    LicenseComboBoxModel licenseModel;
 
     public SuiteInstallerProjectProperties(Lookup context) {
 
@@ -53,9 +60,9 @@ public class SuiteInstallerProjectProperties {
             AntProjectHelper helper = null;
             try {
                 Class suiteClass = suiteProject.getClass();
-                Method getHelperMethod = suiteClass.getDeclaredMethod("getHelper",new Class[]{});
-                helper = (AntProjectHelper)getHelperMethod.invoke(suiteProject, new Object[]{});
-            }catch  (Exception e) {
+                Method getHelperMethod = suiteClass.getDeclaredMethod("getHelper", new Class[]{});
+                helper = (AntProjectHelper) getHelperMethod.invoke(suiteProject, new Object[]{});
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             //End of hack
@@ -71,10 +78,44 @@ public class SuiteInstallerProjectProperties {
             solarisModel = installerPropGroup.createToggleButtonModel(propEval, GENERATE_FOR_SOLARIS);
             macModel = installerPropGroup.createToggleButtonModel(propEval, GENERATE_FOR_MAC);
 
+            createLicenseModel();
+
         }
 
 
 
+    }
+
+    private void createLicenseModel() {
+        ResourceBundle rb = NbBundle.getBundle(SuiteInstallerProjectProperties.class);
+        Enumeration<String> keys = rb.getKeys();
+        String prefix = "SuiteInstallerProjectProperties.license.type.";
+        List<String> names = new ArrayList<String>();
+        List<String> types = new ArrayList<String>();
+
+        while (keys.hasMoreElements()) {
+            String key = keys.nextElement();
+            if (key.startsWith(prefix)) {
+                String type = key.substring(prefix.length());
+                String value = NbBundle.getMessage(SuiteInstallerProjectProperties.class, key);
+                if (type.equals("no")) {
+                    //No License is the first option
+                    names.add(0, value);
+                    types.add(0, type);
+                } else {
+                    names.add(value);
+                    types.add(type);
+                }
+            }
+        }
+        licenseModel = new LicenseComboBoxModel(names, types);
+        if (propEval.getProperty(LICENSE_TYPE) != null) {
+            int index = licenseModel.getTypes().indexOf(propEval.getProperty(LICENSE_TYPE));
+            if (index != -1) {
+                licenseModel.setSelectedItem(licenseModel.getNames().get(index));
+
+            }
+        }
     }
 
     public void store() throws IOException {
@@ -95,6 +136,14 @@ public class SuiteInstallerProjectProperties {
                         }
                     }
                     installerPropGroup.store(ep);
+                    Object lName = licenseModel.getSelectedItem();
+                    String licenseName = (lName == null) ? null : (String) lName;
+                    if (licenseName != null) {
+                        int index = licenseModel.getNames().indexOf(licenseName);
+                        if (index != -1) {
+                            ep.setProperty(LICENSE_TYPE, licenseModel.getTypes().get(index));
+                        }
+                    }
                     //storeRest(ep);
                     OutputStream os = null;
                     FileLock lock = null;

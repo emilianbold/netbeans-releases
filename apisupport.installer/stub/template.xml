@@ -45,6 +45,7 @@
         <copy todir="${installer.build.dir}/.common">
            <fileset dir="${nbi.stub.common.location}"/>
         </copy>
+        
 
 
         <property name="product-uid"  value="${suite.nbi.product.uid}"/>
@@ -86,9 +87,19 @@
         <copy todir="${installer.build.dir}" overwrite="true" includeEmptyDirs="true">
              <fileset dir="${dir.dir}"/>
         </copy> 
+        <condition property="license.defined">
+             <and>
+                 <isset property="nbi.license.file"/>
+                 <available file="${nbi.license.file}"/>
+             </and>
+        </condition> 
+        <antcall target="-prepare-license"/>
         <delete dir="${dir.dir}" includeEmptyDirs="true"/>
     </target>
     
+    <target name="-prepare-license" if="license.defined">
+        <copy file="${nbi.license.file}" tofile="${installer.build.dir}/ext/components/products/helloworld/src/org/mycompany/license.txt"/>
+    </target>
     <target name="replace">
         <property file="${token.file}"/>
         <replaceregexp file="${file.to.replace}" flags="mg">

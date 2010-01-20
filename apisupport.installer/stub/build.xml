@@ -173,7 +173,7 @@ jarsigner.enabled=${jarsigner.enabled}
 	        <delete file="${bundles.release.dir}/${bundle.files.prefix}-${platform}.zip"/>
             </if>
         </for-each>
-        <echo>Installer(s) for ${target.platforms} are available at ${bundles.release.dir}</echo>
+        <echo>Installer(s) for [${target.platforms}] are available at ${bundles.release.dir}</echo>
     </target>
 
     <target name="zip-to-tgz">

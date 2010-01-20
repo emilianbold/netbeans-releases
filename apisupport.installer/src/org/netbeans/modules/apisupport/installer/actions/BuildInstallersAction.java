@@ -45,19 +45,24 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import org.openide.ErrorManager;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -65,11 +70,17 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 import org.openide.windows.WindowManager;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.modules.apisupport.installer.ui.SuiteInstallerProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.RequestProcessor;
 
 public final class BuildInstallersAction extends AbstractAction implements ContextAwareAction {
 
@@ -121,13 +132,91 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         FileObject propertiesFile = prj.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         Properties ps = new Properties();
                         String appName = "";
+                        String licenseType = null;
                         try {
                             InputStream is = propertiesFile.getInputStream();
                             ps.load(is);
                             appName = ps.getProperty("app.name");
+                            licenseType = ps.getProperty("installer.license.type");
+                            if (appName == null) {
+                                //suite, not standalone app
+                                RequestProcessor.getDefault().post(new Runnable() {
+
+                                    public void run() {
+                                        DialogDescriptor d = new DialogDescriptor(
+                                                NbBundle.getMessage(BuildInstallersAction.class, "BuildInstallersAction.NotApp.Warning.Message"),
+                                                NbBundle.getMessage(BuildInstallersAction.class, "BuildInstallersAction.NotApp.Warning.Title"));
+                                        d.setModal(true);
+                                        JButton accept = new JButton(NbBundle.getMessage(BuildInstallersAction.class, "BuildInstallersAction.NotApp.Warning.OK"));
+                                        accept.setDefaultCapable(true);
+                                        d.setOptions(new Object[]{
+                                                    accept});
+                                        d.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
+                                        if (DialogDisplayer.getDefault().notify(d).equals(accept)) {
+                                            //SuiteCustomizer cpi = prj.getLookup().lookup(org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer.class);
+                                            //cpi.showCustomizer(SuiteCustomizer.APPLICATION, SuiteCustomizer.APPLICATION_CREATE_STANDALONE_APPLICATION);
+                                        }
+                                    }
+                                });
+
+                                return;
+                            }
                         } catch (IOException ex) {
                             Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "Can`t store properties", ex);
                         }
+
+                        File licenseFile = null;
+                        if (licenseType != null && !licenseType.equals("no")) {
+                            Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "License type defined to " + licenseType);
+                            String licenseResource = null;
+                            try {
+                                licenseResource = NbBundle.getMessage(SuiteInstallerProjectProperties.class,
+                                        "SuiteInstallerProjectProperties.license.file." + licenseType);
+                            } catch (MissingResourceException ex) {
+                                Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "License resource not found");
+                            }
+
+                            if (licenseResource != null) {
+                                InputStream is = null;
+                                try {
+                                    URL url = new URL(licenseResource);
+                                    is = url.openStream();
+                                    if (is != null) {
+                                        licenseFile = File.createTempFile("license", ".txt");
+                                        licenseFile.getParentFile().mkdirs();
+                                        licenseFile.deleteOnExit();
+
+                                        OutputStream os = new FileOutputStream(licenseFile);
+                                        byte[] bytes = new byte[4096];
+                                        int read = 0;
+                                        while ((read = is.read(bytes)) > 0) {
+                                            os.write(bytes, 0, read);
+                                        }
+                                        os.flush();
+                                        os.close();
+                                    } else {
+                                        Logger.getLogger(BuildInstallersAction.class.getName()).log(
+                                                Level.WARNING,
+                                                "License resource " + licenseResource
+                                                + " not found");
+                                    }
+                                } catch (MalformedURLException ex) {
+                                    Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING,
+                                            "Can`t parse URL", ex);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING,
+                                            "Input/Output error", ex);
+                                } finally {
+                                    if (is != null) {
+                                        try {
+                                            is.close();
+                                        } catch (IOException ex) {
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         //Logger.getLogger(BuildInstallersAction.class.getName()).warning("actionPerformed for " + suiteLocation);
                         Properties props = new Properties();
                         props.put("suite.location", suiteLocation.getAbsolutePath().replace("\\", "/"));
@@ -155,13 +244,36 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                                 "nbi.engine.jar", InstalledFileLocator.getDefault().locate(
                                 "modules/ext/nbi-engine.jar",
                                 "org.netbeans.modules.apisupport.installer", false).getAbsolutePath().replace("\\", "/"));
+                        if (licenseFile != null) {
+                            Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.INFO,
+                                    "License file is at " + licenseFile + ", exist = " + licenseFile.exists());
+                            props.put(
+                                    "nbi.license.file", licenseFile.getAbsolutePath());
+                        }
 
                         List<String> platforms = new ArrayList<String>();
+
+                        boolean installerConfDefined = false;
                         for (Object s : ps.keySet()) {
                             String key = (String) s;
                             String prefix = "installer.os.";
-                            if (key.startsWith(prefix) && ps.get(key).equals("true")) {
-                                platforms.add(key.substring(prefix.length()));
+                            if (key.startsWith(prefix)) {
+                                installerConfDefined = true;
+                                if (ps.getProperty(key).equals("true")) {
+                                    platforms.add(key.substring(prefix.length()));
+                                }
+                            }
+                        }
+                        if (!installerConfDefined) {
+                            String osName = System.getProperty("os.name");
+                            if (osName.contains("Windows")) {
+                                platforms.add("windows");
+                            } else if (osName.contains("Linux")) {
+                                platforms.add("linux");
+                            } else if (osName.contains("SunOS") || osName.contains("Solaris")) {
+                                platforms.add("solaris");
+                            } else if (osName.contains("Mac OS X") || osName.contains("Darwin")) {
+                                platforms.add("macosx");                                
                             }
                         }
                         StringBuilder sb = new StringBuilder();
@@ -171,9 +283,33 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                             }
                             sb.append(platforms.get(i));
                         }
+                        if (sb.length() == 0) {
+                            //nothing to build
+                            RequestProcessor.getDefault().post(new Runnable() {
+
+                                public void run() {
+                                    DialogDescriptor d = new DialogDescriptor(
+                                            NbBundle.getMessage(BuildInstallersAction.class, "BuildInstallersAction.NotConfigured.Warning.Message"),
+                                            NbBundle.getMessage(BuildInstallersAction.class, "BuildInstallersAction.NotConfigured.Warning.Title"));
+                                    d.setModal(true);
+                                    JButton accept = new JButton(NbBundle.getMessage(BuildInstallersAction.class, "BuildInstallersAction.NotConfigured.Warning.OK"));
+                                    accept.setDefaultCapable(true);
+                                    d.setOptions(new Object[]{
+                                                accept});
+                                    d.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
+                                    if (DialogDisplayer.getDefault().notify(d).equals(accept)) {
+                                        //SuiteCustomizer cpi = prj.getLookup().lookup(org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer.class);
+                                        //cpi.showCustomizer(SuiteCustomizer.APPLICATION, SuiteCustomizer.APPLICATION_CREATE_STANDALONE_APPLICATION);
+                                    }
+                                }
+                            });
+                            return;
+                        }
 
                         props.put("generate.installer.for.platforms",
                                 sb.toString());
+
+
 
                         File javaHome = new File(System.getProperty("java.home"));
                         if (new File(javaHome,
@@ -184,9 +320,9 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                                 "generator-jdk-location-forward-slashes", javaHome.getAbsolutePath().replace("\\", "/"));
                         /*
                         props.put(
-                                "generated-installers-location-forward-slashes",
-                                new File(suiteLocation, "dist").getAbsolutePath().replace("\\", "/"));
-                        */
+                        "generated-installers-location-forward-slashes",
+                        new File(suiteLocation, "dist").getAbsolutePath().replace("\\", "/"));
+                         */
                         props.put(
                                 "pack200.enabled", "false");
 
@@ -199,12 +335,12 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         /*
                         File tmpProps = null;
                         try {
-                            tmpProps = File.createTempFile("nbi-properties-", ".properties");
-                            FileOutputStream fos = new FileOutputStream(tmpProps);
-                            props.store(fos, null);
-                            fos.close();
+                        tmpProps = File.createTempFile("nbi-properties-", ".properties");
+                        FileOutputStream fos = new FileOutputStream(tmpProps);
+                        props.store(fos, null);
+                        fos.close();
                         } catch (IOException ex) {
-                            Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "Can`t store properties", ex);
+                        Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "Can`t store properties", ex);
                         }*/
                         try {
                             final ExecutorTask executorTask = ActionUtils.runTarget(findGenXml(prj), new String[]{"build"}, props);
@@ -232,7 +368,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
 
                         /*
                         if (tmpProps != null && !tmpProps.delete() && tmpProps.exists()) {
-                            tmpProps.deleteOnExit();
+                        tmpProps.deleteOnExit();
                         }*/
                     }
                 }

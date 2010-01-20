@@ -1,12 +1,62 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ */
+
+
 package org.netbeans.modules.apisupport.installer.ui;
 
-import javax.swing.JPanel;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ResourceBundle;
+import javax.swing.ComboBoxModel;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author avm
+ * @author Dmitry Lipin
+ * @author Alexei Mokeev
  */
-public class InstallerPanel extends JPanel {
+public class InstallerPanel extends javax.swing.JPanel {
+
     private SuiteInstallerProjectProperties installerProps;
 
     /** Creates new form InstallerPanel */
@@ -14,11 +64,12 @@ public class InstallerPanel extends JPanel {
         this.installerProps = props;
         initComponents();
 
-        windowsCheckBox.setModel(installerProps.windowsModel);
-        linuxCheckBox.setModel(installerProps.linuxModel);
-        solarisCheckBox.setModel(installerProps.solarisModel);
-        macCheckBox.setModel(installerProps.macModel);
-
+        jCheckBox1.setModel(installerProps.windowsModel);
+        jCheckBox2.setModel(installerProps.linuxModel);
+        jCheckBox3.setModel(installerProps.macModel);
+        jCheckBox4.setModel(installerProps.solarisModel);
+        
+        licenseComboBox.setModel(installerProps.licenseModel);
     }
 
     /** This method is called from within the constructor to
@@ -29,147 +80,92 @@ public class InstallerPanel extends JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        windowsCheckBox = new javax.swing.JCheckBox();
-        linuxCheckBox = new javax.swing.JCheckBox();
-        macCheckBox = new javax.swing.JCheckBox();
-        solarisCheckBox = new javax.swing.JCheckBox();
-        licenseLocation = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
-        header = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jCheckBox1 = new javax.swing.JCheckBox();
+        jCheckBox2 = new javax.swing.JCheckBox();
+        jCheckBox3 = new javax.swing.JCheckBox();
+        jCheckBox4 = new javax.swing.JCheckBox();
+        jSeparator1 = new javax.swing.JSeparator();
+        licenseLabel = new javax.swing.JLabel();
+        licenseComboBox = new javax.swing.JComboBox();
 
-        setLayout(new java.awt.GridBagLayout());
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.Platforms.Label")); // NOI18N
 
-        windowsCheckBox.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelWindows")); // NOI18N
-        windowsCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                windowsCheckBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.ipadx = 303;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
-        add(windowsCheckBox, gridBagConstraints);
+        jCheckBox1.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelWindows")); // NOI18N
 
-        linuxCheckBox.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.jOSLabelLinux")); // NOI18N
-        linuxCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                linuxCheckBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.ipadx = 319;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(34, 0, 0, 0);
-        add(linuxCheckBox, gridBagConstraints);
+        jCheckBox2.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelLinux")); // NOI18N
 
-        macCheckBox.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelMacOS")); // NOI18N
-        macCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                macCheckBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.ipadx = 313;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(34, 0, 0, 0);
-        add(macCheckBox, gridBagConstraints);
+        jCheckBox3.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelMacOS")); // NOI18N
 
-        solarisCheckBox.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelSolaris")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.ipadx = 315;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(35, 0, 0, 0);
-        add(solarisCheckBox, gridBagConstraints);
+        jCheckBox4.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.OSLabelSolaris")); // NOI18N
 
-        licenseLocation.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.licenseLocation.text")); // NOI18N
-        licenseLocation.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                licenseLocationActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.ipadx = 284;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(37, 18, 0, 0);
-        add(licenseLocation, gridBagConstraints);
+        licenseLabel.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.licenseLabel.text")); // NOI18N
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.License")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.ipadx = -117;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(40, 0, 0, 0);
-        add(jLabel1, gridBagConstraints);
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel2)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(jCheckBox1)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(layout.createSequentialGroup()
+                                .add(jCheckBox2)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                            .add(jCheckBox3)
+                            .add(layout.createSequentialGroup()
+                                .add(jCheckBox4)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                    .add(layout.createSequentialGroup()
+                        .add(licenseLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(licenseComboBox, 0, 199, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jCheckBox1)
+                    .add(jLabel2))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jCheckBox2)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jCheckBox3)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jCheckBox4)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(licenseLabel)
+                    .add(licenseComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(161, Short.MAX_VALUE))
+        );
 
-        jButton1.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.jButton1.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = 6;
-        gridBagConstraints.gridheight = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(36, 6, 0, 0);
-        add(jButton1, gridBagConstraints);
-
-        header.setFont(new java.awt.Font("DejaVu Sans", 0, 24)); // NOI18N
-        header.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.Header")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.ipadx = -59;
-        gridBagConstraints.ipady = -8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        add(header, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.Platforms.Label")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-    private void linuxCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_linuxCheckBoxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_linuxCheckBoxActionPerformed
-
-    private void macCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_macCheckBoxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_macCheckBoxActionPerformed
-
-    private void licenseLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_licenseLocationActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_licenseLocationActionPerformed
-
-    private void windowsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_windowsCheckBoxActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_windowsCheckBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel header;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JTextField licenseLocation;
-    private javax.swing.JCheckBox linuxCheckBox;
-    private javax.swing.JCheckBox macCheckBox;
-    private javax.swing.JCheckBox solarisCheckBox;
-    private javax.swing.JCheckBox windowsCheckBox;
+    private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JCheckBox jCheckBox2;
+    private javax.swing.JCheckBox jCheckBox3;
+    private javax.swing.JCheckBox jCheckBox4;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JComboBox licenseComboBox;
+    private javax.swing.JLabel licenseLabel;
     // End of variables declaration//GEN-END:variables
 
+    
 }
