@@ -43,9 +43,7 @@ package org.netbeans.junit;
 import java.io.File;
 import java.util.Collections;
 import java.util.LinkedList;
-import test.pkg.not.in.junit.NbModuleSuiteT;
 import junit.framework.Test;
-import junit.framework.TestCase;
 import junit.framework.TestResult;
 import org.netbeans.junit.NbModuleSuite.Configuration;
 import test.pkg.not.in.junit.NbModuleSuiteClusterPath;
@@ -54,31 +52,15 @@ import test.pkg.not.in.junit.NbModuleSuiteClusterPath;
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-public class NbModuleSuiteClusterPathFinalTest extends TestCase {
+public class NbModuleSuiteClusterPathFinalTest extends NbTestCase {
     
     public NbModuleSuiteClusterPathFinalTest(String testName) {
         super(testName);
-    }            
-    
-    public static Test suite() {
-        Test t = null;
-        //t = new NbModuleSuiteTest("testRunEmptyConfig");
-        if (t == null) {
-            t = new NbTestSuite(NbModuleSuiteClusterPathFinalTest.class);
-        }
-        return t;
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    protected @Override int timeOut() {
+        return 100000;
     }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     
     public void testClusterPathFinal() throws Exception{
         LinkedList<File> clusters = new LinkedList<File>();
