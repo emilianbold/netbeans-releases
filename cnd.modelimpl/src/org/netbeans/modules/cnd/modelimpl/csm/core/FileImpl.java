@@ -212,7 +212,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private FileType fileType = FileType.UNDEFINED_FILE;
     private static final class StateLock {}
     private final Object stateLock = new StateLock();
-    private final Collection<FakePair> fakeRegistrationPairs = new ArrayList<FakePair>();
+    private final List<FakePair> fakeRegistrationPairs = new ArrayList<FakePair>();
 
     private static final class FakePair {
 
@@ -1739,8 +1739,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                     return false;
                 }
                 if (fakeRegistrationPairs.size() > 0) {
-                    for (Iterator<FakePair> it = fakeRegistrationPairs.iterator(); it.hasNext();) {
-                        FakePair fakePair = it.next();
+                    for (int i = 0; i < fakeRegistrationPairs.size(); i++) {
+                        FakePair fakePair = fakeRegistrationPairs.get(i);
+                        if (fakePair == null) {
+                            continue;
+                        }
                         CsmUID<? extends CsmDeclaration> fakeUid = fakePair.uid;
                         CsmDeclaration curElem = fakeUid.getObject();
                         if (curElem != null) {
@@ -1748,7 +1751,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                 wereFakes = true;
                                 incParseCount();
                                 if (((FunctionImplEx) curElem).fixFakeRegistration(projectParsedMode, fakePair.tree)) {
-                                    it.remove();
+                                    fakeRegistrationPairs.set(i, null);
                                 }
                                 incParseCount();
                             } else {
