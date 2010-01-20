@@ -55,9 +55,9 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.NbBundle;
 
@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
  *
  * @author vita
  */
-@Hint(category="logging")
+@Hint(category="logging", suppressWarnings={"ClassWithMultipleLoggers"}) //NOI18N
 public final class MultipleLoggers {
 
     public MultipleLoggers() {
@@ -125,7 +125,7 @@ public final class MultipleLoggers {
                         ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
                             Severity.WARNING,
                             NbBundle.getMessage(MultipleLoggers.class, "MSG_MultipleLoggers_checkMultipleLoggers", loggers, cls), //NOI18N
-                            Collections.<Fix>emptyList(),
+                            Collections.singletonList(FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "ClassWithMultipleLoggers")), //NOI18N
                             ctx.getInfo().getFileObject(),
                             span[0],
                             span[1]
