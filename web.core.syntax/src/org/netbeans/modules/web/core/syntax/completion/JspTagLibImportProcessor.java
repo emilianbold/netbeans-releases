@@ -36,28 +36,65 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.refactoring;
 
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+package org.netbeans.modules.web.core.syntax.completion;
+
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author marekfukala
+ * @author Tomasz.Slota@Sun.COM
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position = 120)
-public class CssRefactoringPluginFactory implements RefactoringPluginFactory {
+public abstract class JspTagLibImportProcessor implements ImportProcessor {
 
-    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-	if (refactoring instanceof RenameRefactoring) {
-	    if (null != refactoring.getRefactoringSource().lookup(CssElementContext.class)) {
-		return new CssRenameRefactoringPlugin((RenameRefactoring)refactoring);
-	    }
-	}
+    public void addImport(Document document, final String fqn) {
+        final BaseDocument doc = (BaseDocument)document;
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                doc.runAtomic(new Runnable() {
+                    public void run() {
+                        try {
+                            processDocument(doc, fqn);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            }
+        });
+    }
 
-	return null;
+    protected abstract String createImportDirective(String fqn);
 
+    private void processDocument(BaseDocument doc, final String fqn) throws BadLocationException {
+        int insertPos = findInsertPos(doc);
+        doc.insertString(insertPos, createImportDirective(fqn), null);
+    }
+
+    private int findInsertPos(BaseDocument doc){
+        //TODO: find the optimal position to insert the import directive
+
+        return 0;
+    }
+
+    public static class JspImportProcessor extends JspTagLibImportProcessor{
+
+        @Override
+        protected String createImportDirective(String fqn) {
+            return "<%@page import=\"" + fqn + "\"%>\n";
+        }
+    }
+
+    public static class TagImportProcessor extends JspTagLibImportProcessor{
+
+        @Override
+        protected String createImportDirective(String fqn) {
+            return "<%@tag import=\"" + fqn + "\"%>\n";
+        }
     }
 }
