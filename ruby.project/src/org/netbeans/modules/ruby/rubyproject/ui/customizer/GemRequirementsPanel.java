@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.ruby.rubyproject.ui.customizer;
 
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.RegularExpression;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -67,16 +66,16 @@ import org.openide.util.NbBundle;
  *
  * @author Erno Mononen
  */
-public class GemsPanel extends javax.swing.JPanel {
+public class GemRequirementsPanel extends javax.swing.JPanel {
 
-    private static final Logger LOGGER = Logger.getLogger(GemsPanel.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(GemRequirementsPanel.class.getName());
 
     private final RubyBaseProject project;
     private final SharedRubyProjectProperties properties;
     private RequiredGems requiredGems;
     private RequiredGems requiredGemsTest;
 
-    GemsPanel(RubyBaseProject project, SharedRubyProjectProperties uiProps) {
+    GemRequirementsPanel(RubyBaseProject project, SharedRubyProjectProperties uiProps) {
         this.project = project;
         this.properties = uiProps;
         RequiredGems[] reqs = RequiredGems.lookup(project);
@@ -123,14 +122,14 @@ public class GemsPanel extends javax.swing.JPanel {
             }
             data[i][2] = indexedVersion != null
                     ? indexedVersion
-                    : NbBundle.getMessage(GemsPanel.class, "NoVersionInstalled");
+                    : NbBundle.getMessage(GemRequirementsPanel.class, "NoVersionInstalled");
         }
 
-        NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title0");
+        NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.gemsTable.columnModel.title0");
         return new DefaultTableModel(data,
-                new Object[]{NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title0"),
-                NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title1"),
-                NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title2")});
+                new Object[]{NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.gemsTable.columnModel.title0"),
+                NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.gemsTable.columnModel.title1"),
+                NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.gemsTable.columnModel.title2")});
     }
 
     private DefaultTableModel createTableModelWithDefaultGems() {
@@ -154,9 +153,9 @@ public class GemsPanel extends javax.swing.JPanel {
         }
 
         return new DefaultTableModel(data,
-                new Object[]{NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title0"),
-                NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title1"),
-                NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title2")});
+                new Object[]{NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.gemsTable.columnModel.title0"),
+                NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.gemsTable.columnModel.title1"),
+                NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.gemsTable.columnModel.title2")});
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -180,34 +179,34 @@ public class GemsPanel extends javax.swing.JPanel {
         gemsTable.setModel(createTableModel());
         gemsTable.getTableHeader().setReorderingAllowed(false);
         runScrollPane.setViewportView(gemsTable);
-        gemsTable.getColumnModel().getColumn(0).setHeaderValue(org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title0")); // NOI18N
-        gemsTable.getColumnModel().getColumn(1).setHeaderValue(org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title1")); // NOI18N
-        gemsTable.getColumnModel().getColumn(2).setHeaderValue(org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemsTable.columnModel.title2")); // NOI18N
+        gemsTable.getColumnModel().getColumn(0).setHeaderValue(org.openide.util.NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.gemsTable.columnModel.title0")); // NOI18N
+        gemsTable.getColumnModel().getColumn(1).setHeaderValue(org.openide.util.NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.gemsTable.columnModel.title1")); // NOI18N
+        gemsTable.getColumnModel().getColumn(2).setHeaderValue(org.openide.util.NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.gemsTable.columnModel.title2")); // NOI18N
 
-        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.runScrollPane.TabConstraints.tabTitle"), runScrollPane); // NOI18N
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.runScrollPane.TabConstraints.tabTitle"), runScrollPane); // NOI18N
 
         testGemsTable.setModel(createTestTableModel());
         testScrollPane.setViewportView(testGemsTable);
 
-        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.testScrollPane.TabConstraints.tabTitle"), testScrollPane); // NOI18N
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.testScrollPane.TabConstraints.tabTitle"), testScrollPane); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.addButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.removeButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.removeButton.text")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.editButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.editButton.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(gemManagerButton, org.openide.util.NbBundle.getMessage(GemsPanel.class, "GemsPanel.gemManagerButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(gemManagerButton, org.openide.util.NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.gemManagerButton.text")); // NOI18N
         gemManagerButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 gemManagerButtonActionPerformed(evt);
@@ -292,7 +291,7 @@ public class GemsPanel extends javax.swing.JPanel {
         };
 
         ProgressUtils.runOffEventDispatchThread(fetchGemsTask, 
-                NbBundle.getMessage(GemsPanel.class, "GemsPanel.fetchGems"),
+                NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.fetchGems"),
                 cancelled,
                 true);
         
@@ -301,10 +300,10 @@ public class GemsPanel extends javax.swing.JPanel {
         }
 
         final GemListPanel gemListPanel = new GemListPanel(gems);
-        DialogDescriptor dd = new DialogDescriptor(gemListPanel, NbBundle.getMessage(GemsPanel.class, "GemsPanel.chooseGems"));
+        DialogDescriptor dd = new DialogDescriptor(gemListPanel, NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.chooseGems"));
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         dd.setModal(true);
-        dd.setHelpCtx(new HelpCtx(GemsPanel.class));
+        dd.setHelpCtx(new HelpCtx(GemRequirementsPanel.class));
         Object result = DialogDisplayer.getDefault().notify(dd);
         if (result.equals(NotifyDescriptor.OK_OPTION)) {
             List<GemRequirement> reqsToAdd = new ArrayList<GemRequirement>();
