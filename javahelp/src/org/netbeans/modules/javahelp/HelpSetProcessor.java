@@ -43,9 +43,6 @@ package org.netbeans.modules.javahelp;
 
 import java.io.IOException;
 import java.net.URL;
-import javax.swing.BoundedRangeModel;
-import javax.swing.DefaultBoundedRangeModel;
-import javax.swing.SwingUtilities;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -73,8 +70,6 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
      * not; by default, true
      */    
     public static final String HELPSET_MERGE_ATTR = "mergeIntoMaster"; // NOI18N
-
-    public static final BoundedRangeModel parseModel = new DefaultBoundedRangeModel(0, 0, 0, 0);
     
     /** the XML file being parsed
      */
@@ -93,12 +88,6 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
         // XXX this is called way too often, why?
         this.xml = xml;
         Installer.log.fine("processing help set ref: " + xml.getPrimaryFile());
-        BPMChanger.invoke(BPMChanger.INC_MAXIMUM);
-    }
-    
-    /** Decrement count of available help sets.  */
-    protected void finalize() {
-        BPMChanger.invoke(BPMChanger.DEC_VALUE_AND_MAXIMUM);
     }
     
     /** The class being produced.
@@ -148,7 +137,6 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
                 Object ignore = NbDocsStreamHandler.class; // DO NOT DELETE THIS LINE
                 hs = new HelpSet(((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)), new URL(url));
                 hs.setKeyData(HELPSET_MERGE_CONTEXT, HELPSET_MERGE_ATTR, merge ? Boolean.TRUE : Boolean.FALSE);
-                BPMChanger.invoke(BPMChanger.INC_VALUE);
             } catch (SAXException saxe) {
                 throw (IOException) new IOException(saxe.toString()).initCause(saxe);
             } catch (HelpSetException hse) {
@@ -156,35 +144,6 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
             }
         }
         return hs;
-    }
-    
-    private static final class BPMChanger implements Runnable {
-        public static final int INC_MAXIMUM = 0;
-        public static final int DEC_VALUE_AND_MAXIMUM = 1;
-        public static final int INC_VALUE = 2;
-        public static void invoke(int action) {
-            SwingUtilities.invokeLater(new BPMChanger(action));
-        }
-        private final int action;
-        private BPMChanger(int action) {
-            this.action = action;
-        }
-        public void run() {
-            switch (action) {
-            case INC_MAXIMUM:
-                parseModel.setMaximum(parseModel.getMaximum() + 1);
-                break;
-            case DEC_VALUE_AND_MAXIMUM:
-                parseModel.setValue(parseModel.getValue() - 1);
-                parseModel.setMaximum(parseModel.getMaximum() - 1);
-                break;
-            case INC_VALUE:
-                parseModel.setValue(parseModel.getValue() + 1);
-                break;
-            default:
-                throw new IllegalStateException();
-            }
-        }
     }
     
 }
