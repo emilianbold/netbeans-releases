@@ -60,6 +60,10 @@ import org.openide.util.Lookup;
  * @author Vita Stejskal
  */
 public class EditorSanityTest extends NbTestCase {
+
+    static {
+        System.setProperty("java.awt.headless", "true");
+    }
     
     /** Creates a new instance of EditorSanityTest */
     public EditorSanityTest(String name) {

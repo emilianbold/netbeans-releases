@@ -396,9 +396,11 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         
         // fix for issue #16352
         getDefaultColoring().apply(component);
-        
-        // enable drag and drop feature
-        component.setDragEnabled(true);
+
+        if (!GraphicsEnvironment.isHeadless()) {
+            // enable drag and drop feature
+            component.setDragEnabled(true);
+        }
     }
 
     /** Called when the <tt>BaseTextUI</tt> is being uninstalled
