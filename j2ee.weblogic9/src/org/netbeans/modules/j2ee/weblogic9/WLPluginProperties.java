@@ -309,7 +309,7 @@ public class WLPluginProperties {
     }
 
     /**
-     * Class representing the JBoss version.
+     * Class representing the WebLogic version.
      * <p>
      * <i>Immutable</i>
      *
