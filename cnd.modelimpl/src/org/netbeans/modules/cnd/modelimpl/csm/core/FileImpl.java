@@ -1713,7 +1713,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         synchronized (fakeRegistrationPairs) {
             CsmUID<FunctionImplEx> uidDecl = UIDCsmConverter.declarationToUID(decl);
             if (alreadyInFixFakeRegistrations && CndUtils.isUnitTestMode()) {
-                new Exception("onFakeRegistration " + decl.getClass() + " from fixRegistration for " + uidDecl + " decl = " + decl).printStackTrace(System.err);
+                new Exception("onFakeRegistration " + decl.getClass() + " from fixRegistration for " + uidDecl + " decl = " + decl).printStackTrace(System.err); // NOI18N
             }
             fakeRegistrationPairs.add(new FakePair(uidDecl, fakeRegistrationAst));
         }
