@@ -54,6 +54,10 @@ import test.pkg.not.in.junit.NbModuleSuiteClusterPath;
  */
 public class NbModuleSuiteClusterPathFinalTest extends NbTestCase {
     
+    static {
+        System.setProperty("java.awt.headless", "true");
+    }
+
     public NbModuleSuiteClusterPathFinalTest(String testName) {
         super(testName);
     }

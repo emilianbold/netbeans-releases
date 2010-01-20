@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.ErrorManager;
@@ -53,7 +54,9 @@ import org.openide.modules.ModuleInstall;
 public class ProjectUiModule extends ModuleInstall {
 
     public void restored() {
-        Hacks.keepCurrentProjectNameUpdated();
+        if (!GraphicsEnvironment.isHeadless()) {
+            Hacks.keepCurrentProjectNameUpdated();
+        }
     }
 
     public void close() {
