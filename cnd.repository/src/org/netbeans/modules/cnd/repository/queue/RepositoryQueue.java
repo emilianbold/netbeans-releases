@@ -89,6 +89,7 @@ public class RepositoryQueue extends KeyValueQueue<Key, Persistent> {
      * @return a set of objects that are removed from queue
      */
     public Collection<RepositoryQueue.Entry<Key, Persistent>> clearQueue (Filter filter) {
+       pushLastFromDispatcher();
        synchronized (lock) {
 	   Collection<RepositoryQueue.Entry<Key, Persistent>> removed = new ArrayList<Entry<Key, Persistent>>();
 	   // collecting entried to remove

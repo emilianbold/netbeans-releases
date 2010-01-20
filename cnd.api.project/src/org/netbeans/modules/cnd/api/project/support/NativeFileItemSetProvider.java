@@ -65,7 +65,13 @@ public final class NativeFileItemSetProvider extends CndCookieProvider {
         private Set<NativeFileItem> items = new WeakSet<NativeFileItem>(1);
 
         public synchronized Collection<NativeFileItem> getItems() {
-            return new ArrayList<NativeFileItem>(items);
+            ArrayList<NativeFileItem> res = new ArrayList<NativeFileItem>(items.size());
+            for(NativeFileItem item : items) {
+                if (item != null) {
+                    res.add(item);
+                }
+            }
+            return res;
         }
 
         public synchronized void add(NativeFileItem item) {

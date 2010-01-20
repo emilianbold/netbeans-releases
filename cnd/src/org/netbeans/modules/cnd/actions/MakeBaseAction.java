@@ -56,8 +56,8 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.execution.CompilerLineConvertor;
-import org.netbeans.modules.cnd.loaders.MakefileDataObject;
 import org.netbeans.modules.cnd.settings.MakeSettings;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -78,7 +78,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
 
     @Override
     protected boolean accept(DataObject object) {
-        return object instanceof MakefileDataObject;
+        return object.getCookie(MakeExecSupport.class) != null;
     }
 
     protected void performAction(Node[] activatedNodes) {
