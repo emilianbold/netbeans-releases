@@ -39,50 +39,36 @@
 
 package org.netbeans.modules.java.hints.finalize;
 
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.util.NbBundle;
-
+import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
 /**
  *
  * @author Tomas Zezula
  */
-@Hint(category="finalization",suppressWarnings={"FinalizeCalledExplicitly"})    //NOI18N
-public class CallFinalize {
+public class FinalizeDeclaredTest extends TestBase {
 
-    @TriggerPatterns({
-        @TriggerPattern(value="$ins.finalize()",    //NOI18N
-            constraints={
-                @Constraint(variable="$ins",type="java.lang.Object")    //NOI18N
-            })
-        }
-    )
-    public static ErrorDescription hint(final HintContext ctx) {
-        assert ctx != null;
-        final TreePath ins = ctx.getVariables().get("$ins");    //NOI18N
-        assert ins != null;
-        Tree target = ins.getLeaf();
-        if (target.getKind() == Tree.Kind.IDENTIFIER && "super".contentEquals(((IdentifierTree)target).getName())) {    //NOI18N
-            TreePath parent = ins.getParentPath();
-            while (parent.getLeaf().getKind() != Tree.Kind.METHOD) {
-                parent = parent.getParentPath();
-            }
-            final MethodTree owner = (MethodTree) parent.getLeaf();
-            if (Util.isFinalize(owner)) {
-                return null;
-            }
-        }
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), NbBundle.getMessage(CallFinalize.class, "TXT_CallFinalize"),
-               FixFactory.createSuppressWarningsFix(ctx.getInfo(), ins, "FinalizeCalledExplicitly"));   //NOI18N
+    public FinalizeDeclaredTest(final String name) {
+        super (name,FinalizeDeclared.class);
     }
+
+
+    public void testFinalizeDeclared() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    protected final void finalize() {\n" +
+                            "    }\n" +
+                            "}",
+                            "2:25-2:33:verifier:finalize() declared");
+    }
+
+    public void testSuppressed() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    @SuppressWarnings(\"FinalizeDeclaration\")\n\n"+
+                            "    protected final void finalize() {\n" +
+                            "    }\n" +
+                            "}");
+    }
+
 }

@@ -41,81 +41,33 @@ package org.netbeans.modules.java.hints.finalize;
 
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import java.util.Set;
-import javax.lang.model.element.Modifier;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Zezula
  */
-@Hint(category="finalization",suppressWarnings={"FinalizeNotProtected"},enabled=false)    //NOI18N
-public class FinalizeNotProtected {
+@Hint(category="finalization",suppressWarnings={"FinalizeDeclaration"}) //NOI18N
+public class FinalizeDeclared {
 
-    @TriggerTreeKind(Kind.METHOD)
+    @TriggerTreeKind(Tree.Kind.METHOD)
     public static ErrorDescription hint(final HintContext ctx) {
         assert ctx != null;
         final TreePath tp = ctx.getPath();
         final MethodTree tree = (MethodTree) tp.getLeaf();
         if (Util.isFinalize(tree)) {
-            final Set<Modifier> modifiers = tree.getModifiers().getFlags();
-            if (modifiers.contains(Modifier.PUBLIC)) {
-                return ErrorDescriptionFactory.forName(ctx, tp,
-                        NbBundle.getMessage(FinalizeNotProtected.class, "TXT_FinalizeNotProtected"),
-                        new FixImpl(TreePathHandle.create(tp, ctx.getInfo())),
-                        FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "FinalizeNotProtected"));    //NOI18N
+            if (!Util.isInObject(ctx, tp)) {
+                return ErrorDescriptionFactory.forName(ctx, tp, NbBundle.getMessage(FinalizeDeclared.class, "TXT_FinalizeDeclared"),
+                FixFactory.createSuppressWarningsFix(ctx.getInfo(), tp, "FinalizeDeclaration"));    //NOI18N
             }
         }
         return null;
-    }
-
-    static class FixImpl implements Fix {
-
-        private final TreePathHandle handle;
-
-        FixImpl(final TreePathHandle handle) {
-            assert handle != null;
-            this.handle = handle;
-        }
-
-        public String getText() {
-            return NbBundle.getMessage(FinalizeNotProtected.class, "FIX_FinalizeNotProtected_MakePublic");
-        }
-
-        public ChangeInfo implement() throws Exception {
-            JavaSource.forFileObject(handle.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
-                public void run(WorkingCopy wc) throws Exception {
-                    wc.toPhase(JavaSource.Phase.RESOLVED);
-                    final TreePath tp = handle.resolve(wc);
-                    if (tp == null) {
-                        return;
-                    }
-                    final Tree tree = tp.getLeaf();
-                    if (tree.getKind() != Tree.Kind.METHOD) {
-                        return;
-                    }
-                    final TreeMaker tm = wc.getTreeMaker();
-                    wc.rewrite(((MethodTree)tree).getModifiers(), tm.addModifiersModifier(
-                            tm.removeModifiersModifier(((MethodTree)tree).getModifiers(), Modifier.PUBLIC),
-                            Modifier.PROTECTED));
-                }
-            }).commit();
-            return null;
-        }
     }
 }
