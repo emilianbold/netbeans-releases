@@ -57,6 +57,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -186,7 +187,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
     }
 
     private synchronized void init() {
-        errors2Lines = new HashMap<ErrorDescription, List<Position>>();
+        errors2Lines = new IdentityHashMap<ErrorDescription, List<Position>>();
         line2Errors = new HashMap<Position, List<ErrorDescription>>();
         line2Annotations = new HashMap<Position, ParseErrorAnnotation>();
         layer2Errors = new HashMap<String, List<ErrorDescription>>();
