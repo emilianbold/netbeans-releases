@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.weblogic9;
+package org.netbeans.modules.j2ee.weblogic9.deploy;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,11 +58,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.concurrent.ExecutionException;
 import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.shared.ActionType;
-import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
@@ -70,14 +67,11 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedException;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
-import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
-import javax.enterprise.deploy.spi.status.ClientConfiguration;
-import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.weblogic9.deploy.WLCommandDeployer;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
+import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 
 
 /**
@@ -93,7 +87,7 @@ public class WLDeploymentManager implements DeploymentManager {
 
     private static final Logger LOGGER = Logger.getLogger(WLDeploymentManager.class.getName());
 
-    protected final WLDeploymentFactory factory;
+    private final WLDeploymentFactory factory;
 
     private final String uri;
     private final String host;
@@ -219,7 +213,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(InstanceProperties.getInstanceProperties(getUri()));
+        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
         return wlDeployer.deploy(target, file, file2, getHost(), getPort());
     }
 
@@ -247,7 +241,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(InstanceProperties.getInstanceProperties(getUri()));
+        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
         return wlDeployer.undeploy(targetModuleID);
     }
 
@@ -255,7 +249,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(InstanceProperties.getInstanceProperties(getUri()));
+        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
         return wlDeployer.stop(targetModuleID);
     }
 
@@ -263,7 +257,7 @@ public class WLDeploymentManager implements DeploymentManager {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
-        WLCommandDeployer wlDeployer = new WLCommandDeployer(InstanceProperties.getInstanceProperties(getUri()));
+        WLCommandDeployer wlDeployer = new WLCommandDeployer(factory, getInstanceProperties());
         return wlDeployer.start(targetModuleID);
     }
 

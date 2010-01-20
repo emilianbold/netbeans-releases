@@ -38,63 +38,77 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.weblogic9;
+package org.netbeans.modules.j2ee.weblogic9.deploy;
 
-import javax.enterprise.deploy.shared.ActionType;
-import javax.enterprise.deploy.shared.CommandType;
-import javax.enterprise.deploy.shared.StateType;
-import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import java.util.ArrayList;
+import java.util.List;
+import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
 
 /**
- * An implementation of the DeploymentStatus interface used to track the
- * server start/stop progress.
  *
- * @author Kirill Sorokin
+ * @author whd
  */
-public class WLDeploymentStatus implements DeploymentStatus {
+public class WLTargetModuleID implements TargetModuleID {
 
-    private ActionType action;
-    private CommandType command;
-    private StateType state;
-    
-    private String message;
-    
-    /** Creates a new instance of JBDeploymentStatus */
-    public WLDeploymentStatus(ActionType action, CommandType command, StateType state, String message) {
-        
-        this.action = action;
-        this.command = command;
-        this.state = state;
-        
-        this.message = message;
+    private final Target target;
+
+    private String jarName;
+
+    private String contextUrl;
+
+    private List children = new ArrayList();
+
+    private TargetModuleID  parent;
+
+    public WLTargetModuleID(Target target) {
+        this(target, "");
     }
 
-    public String getMessage() {
-        return message;
+    public WLTargetModuleID(Target target, String jarName) {
+        this.target = target;
+        this.setJarName(jarName);
     }
 
-    public StateType getState() {
-        return state;
+    public void setContextURL(String contextUrl) {
+        this.contextUrl = contextUrl;
     }
 
-    public CommandType getCommand() {
-        return command;
+    public void setJarName(String jarName) {
+        this.jarName = jarName;
     }
 
-    public ActionType getAction() {
-        return action;
-    }
-    
-    public boolean isRunning() {
-        return StateType.RUNNING.equals(state);
+    public void setParent(WLTargetModuleID parent) {
+        this.parent = parent;
     }
 
-    public boolean isFailed() {
-        return StateType.FAILED.equals(state);
+    public synchronized void addChild(WLTargetModuleID child) {
+        children.add(child);
+        child.setParent(this);
     }
 
-    public boolean isCompleted() {
-        return StateType.COMPLETED.equals(state);
+    public synchronized TargetModuleID[] getChildTargetModuleID(){
+        return (TargetModuleID[]) children.toArray(new TargetModuleID[children.size()]);
     }
 
+    public String getModuleID() {
+        return jarName;
+    }
+
+    public TargetModuleID getParentTargetModuleID() {
+        return parent;
+    }
+
+    public Target getTarget() {
+        return target;
+    }
+
+    public String getWebURL() {
+        return contextUrl;
+    }
+
+    @Override
+    public String toString() {
+        return getModuleID() + hashCode();
+    }
 }

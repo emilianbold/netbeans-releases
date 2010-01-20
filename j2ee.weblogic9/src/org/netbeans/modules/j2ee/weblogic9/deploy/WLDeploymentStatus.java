@@ -38,72 +38,64 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.weblogic9;
+package org.netbeans.modules.j2ee.weblogic9.deploy;
 
-import java.util.Vector;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.StateType;
+import javax.enterprise.deploy.spi.status.DeploymentStatus;
+
 /**
+ * An implementation of the DeploymentStatus interface used to track the
+ * server start/stop progress.
  *
- * @author whd
+ * @author Kirill Sorokin
  */
-public class WLTargetModuleID implements TargetModuleID{
-    private Target target;
-    private String jar_name;
-    private String context_url;
+public final class WLDeploymentStatus implements DeploymentStatus {
 
-    Vector childs = new Vector();
-    TargetModuleID  parent = null;
-    public WLTargetModuleID(Target target  ){
-        this( target, "");
+    private final ActionType action;
 
+    private final CommandType command;
 
+    private final StateType state;
+
+    private final String message;
+
+    public WLDeploymentStatus(ActionType action, CommandType command,
+            StateType state, String message) {
+        this.action = action;
+        this.command = command;
+        this.state = state;
+
+        this.message = message;
     }
-    public WLTargetModuleID(Target target, String jar_name  ){
-        this.target = target;
-        this.setJARName(jar_name);
-        
-    }    
-    public void setContextURL( String context_url ){
-        this.context_url = context_url;
+
+    public String getMessage() {
+        return message;
     }
-    public void setJARName( String jar_name ){
-        this.jar_name = jar_name;
+
+    public StateType getState() {
+        return state;
     }
-    
-    public void setParent( WLTargetModuleID parent){
-        this.parent = parent;
-        
+
+    public CommandType getCommand() {
+        return command;
     }
-    
-    public void addChild( WLTargetModuleID child) {
-        childs.add( child );
-        child.setParent( this );
+
+    public ActionType getAction() {
+        return action;
     }
-    
-    public TargetModuleID[]     getChildTargetModuleID(){
-        return (TargetModuleID[])childs.toArray(new TargetModuleID[childs.size()]);
+
+    public boolean isRunning() {
+        return StateType.RUNNING.equals(state);
     }
-    //Retrieve a list of identifiers of the children of this deployed module.
-    public java.lang.String     getModuleID(){
-        return jar_name ;
+
+    public boolean isFailed() {
+        return StateType.FAILED.equals(state);
     }
-    //         Retrieve the id assigned to represent the deployed module.
-    public TargetModuleID     getParentTargetModuleID(){
-        
-        return parent;
+
+    public boolean isCompleted() {
+        return StateType.COMPLETED.equals(state);
     }
-    //Retrieve the identifier of the parent object of this deployed module.
-    public Target     getTarget(){
-        return target;
-    }
-    //Retrieve the name of the target server.
-    public java.lang.String     getWebURL(){
-        return context_url;//"http://" + module_id; //NOI18N
-    }
-    //If this TargetModulID represents a web module retrieve the URL for it.
-    @Override
-    public java.lang.String     toString() {
-        return getModuleID() +  hashCode();
-    }
+
 }
