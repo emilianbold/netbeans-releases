@@ -49,6 +49,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
+import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel;
@@ -189,7 +190,8 @@ public class WelcomePanel extends ErrorMessagePanel {
             if(toInstall.isEmpty()) {
                 List <Product> list = panel.getBundledRegistry().getProducts();
                 if(list.size() == 1) {
-                    File installationLocation = list.get(0).getInstallationLocation();
+                    if(list.get(0).isCompatibleWith(SystemUtils.getCurrentPlatform())) {
+                        File installationLocation = list.get(0).getInstallationLocation();
                     if(SystemUtils.isMacOS()) {
                         installationLocation =
                                 installationLocation.
@@ -197,11 +199,17 @@ public class WelcomePanel extends ErrorMessagePanel {
                                 getParentFile().
                                 getParentFile();
                     }
-                    textPane.setText(
+                        textPane.setText(
                             StringUtils.format(
                             panel.getProperty(WELCOME_ALREADY_INSTALLED_TEXT_PROPERTY),
                             list.get(0).getDisplayName(),
                             installationLocation.getAbsolutePath()));
+                    } else {
+                        textPane.setText(
+                            StringUtils.format(
+                            WELCOME_INCOMPATIBLE_PLATFORM_TEXT,
+                            list.get(0).getDisplayName()));
+                    }
                     container.getCancelButton().setVisible(false);
                     container.getNextButton().setText(panel.getProperty(
                             WELCOME_ALREADY_INSTALLED_NEXT_BUTTON_TEXT_PROPERTY));
@@ -306,6 +314,10 @@ public class WelcomePanel extends ErrorMessagePanel {
             "welcome.already.installed.text"; // NOI18N
     public static final String WELCOME_ALREADY_INSTALLED_NEXT_BUTTON_TEXT_PROPERTY =
             "welcome.already.installed.next.button.text";//NOI18N
+    public static final String WELCOME_INCOMPATIBLE_PLATFORM_TEXT =
+            ResourceUtils.getString(WelcomePanel.class,
+            "WP.incompatible.platform.text");//NOI18N
+
     public static final String DEFAULT_WELCOME_ALREADY_INSTALLED_NEXT_BUTTON_TEXT =
             ResourceUtils.getString(WelcomePanel.class,
             "WP.already.installed.next.button.text");//NOI18N
