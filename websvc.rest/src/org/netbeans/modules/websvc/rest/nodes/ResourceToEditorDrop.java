@@ -42,12 +42,19 @@
 package org.netbeans.modules.websvc.rest.nodes;
 
 import com.sun.source.tree.ClassTree;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.rest.client.ClientJavaSourceHelper;
@@ -83,6 +90,33 @@ public class ResourceToEditorDrop implements ActiveEditorDrop {
             try {
                 FileObject targetFo = NbEditorUtilities.getFileObject(targetComponent.getDocument());
                 if (targetFo != null) {
+
+                    // add REST and Jersey dependencies
+                    ClassPath cp = ClassPath.getClassPath(targetFo, ClassPath.COMPILE);
+                    List<Library> restLibs = new ArrayList<Library>();
+                    if (cp.findResource("javax/ws/rs/WebApplicationException.class") == null) {
+                        Library lib = LibraryManager.getDefault().getLibrary("restapi"); //NOI18N
+                        if (lib != null) {
+                            restLibs.add(lib);
+                        }
+                    }
+                    if (cp.findResource("com/sun/jersey/api/clientWebResource.class") == null) {
+                        Library lib = LibraryManager.getDefault().getLibrary("restlib"); //NOI18N
+                        if (lib != null) {
+                            restLibs.add(lib);
+                        }
+                    }
+                    if (restLibs.size() > 0) {
+                        try {
+                            ProjectClassPathModifier.addLibraries(
+                                    restLibs.toArray(new Library[restLibs.size()]),
+                                    targetFo,
+                                    ClassPath.COMPILE);
+                        } catch (java.io.IOException ex) {
+                            Logger.getLogger(ResourceToEditorDrop.class.getName()).log(Level.INFO, "Cannot add Jersey libraries" , ex);
+                        }
+                    }
+
                     RestServiceDescription desc = resourceNode.getLookup().lookup(RestServiceDescription.class);
                     List<RestMethodDescription> methods =  desc.getMethods();
                     String uriTemplate = desc.getUriTemplate();

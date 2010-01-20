@@ -56,6 +56,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
@@ -114,15 +115,18 @@ public class ClientJavaSourceHelper {
 
         // add constructor
         ModifiersTree emtyModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+        TypeElement clientEl = copy.getElements().getTypeElement("com.sun.jersey.api.client.Client");
+        String body =
+                "{"+ //NOI18N
+                "   client = new "+(clientEl == null ? "com.sun.jersey.api.client.":"")+"Client();"+ //NOI18N
+                "   webResource = client.resource(RESOURCE_URI);"+ //NOI18N
+                "}"; //NOI18N
         MethodTree constructorTree = maker.Constructor (
                 emtyModifier,
                 Collections.<TypeParameterTree>emptyList(),
                 Collections.<VariableTree>emptyList(),
                 Collections.<ExpressionTree>emptyList(),
-                "{"+ //NOI18N
-                "   client = new Client();"+ //NOI18N
-                "   webResource = client.resource(RESOURCE_URI);"+ //NOI18N
-                "}"); //NOI18N
+                body);
         modifiedInnerClass = maker.addClassMember(modifiedInnerClass, constructorTree);
 
         // add close()
