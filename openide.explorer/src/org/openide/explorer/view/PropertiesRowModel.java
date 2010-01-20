@@ -337,6 +337,10 @@ class PropertiesRowModel implements RowModel {
         return prop[column].getValue(propName);
     }
 
+    final Node.Property[] getProperties() {
+        return prop;
+    }
+
     /**
      * Changes the value of the boolean property.
      */
