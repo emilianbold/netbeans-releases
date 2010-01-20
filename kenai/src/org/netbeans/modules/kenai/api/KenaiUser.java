@@ -136,10 +136,11 @@ public final class KenaiUser {
         Kenai kenai = getKenai(name);
         assert kenai!=null: "kenai instance not found for " + name;
         synchronized (kenai.users) {
-            KenaiUser user = kenai.users.get(name + "@" + kenai.getUrl().getHost());
+            String shortName = StringUtils.parseName(name);
+            KenaiUser user = kenai.users.get(shortName);
             if (user==null) {
-                user = new KenaiUser(kenai, name + "@" + kenai.getUrl().getHost());
-                kenai.users.put(name + "@" + kenai.getUrl().getHost(), user);
+                user = new KenaiUser(kenai, name);
+                kenai.users.put(shortName, user);
             }
             return user;
         }
