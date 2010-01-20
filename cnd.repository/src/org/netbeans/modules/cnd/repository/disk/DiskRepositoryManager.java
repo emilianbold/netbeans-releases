@@ -270,7 +270,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
 
         try {
             queueLock.writeLock().lock();
-
+            queue.pushLastFromDispatcher();
             Collection<RepositoryQueue.Entry<Key, Persistent>> removedEntries = queue.clearQueue(new UnitFilter(unitName));
             if (!cleanRepository) {
                 for (RepositoryQueue.Entry<Key, Persistent> entry : removedEntries) {
@@ -293,6 +293,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         } finally {
             queueLock.writeLock().unlock();
         }
+        assert queue.clearQueue(new UnitFilter(unitName)).isEmpty();
 
         //clean the repository cach files here if it is necessary
         //
