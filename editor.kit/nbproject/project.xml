@@ -30,7 +30,7 @@
                     <code-name-base>org.netbeans.modules.html</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.23</specification-version>
+                        <specification-version>1.28.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -44,7 +44,7 @@
                     <code-name-base>org.netbeans.modules.javascript.kit</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.103</specification-version>
+                        <specification-version>0.108.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
