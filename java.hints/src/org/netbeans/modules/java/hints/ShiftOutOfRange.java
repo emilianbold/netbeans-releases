@@ -39,13 +39,16 @@
 
 package org.netbeans.modules.java.hints;
 
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
-import com.sun.tools.javac.tree.JCTree.JCBinary;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
+import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
+
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
@@ -67,45 +70,33 @@ public class ShiftOutOfRange {
         @TriggerPattern (value="$v >>> $c"),
         @TriggerPattern (value="$v << $c")
     })
-    public static ErrorDescription checkLoggerDeclaration (HintContext ctx) {
+    public static ErrorDescription checkShiftOutOfRange (HintContext ctx) {
         TreePath treePath = ctx.getPath ();
+        Map<String,TreePath> variables = ctx.getVariables ();
+        Tree tree = variables.get ("$c").getLeaf ();
+        Long value = IncompatibleMask.getConstant (tree, ctx);
+        if (value == null) return null;
+        tree = variables.get ("$v").getLeaf ();
+        if (!(tree instanceof ExpressionTree)) return null;
         CompilationInfo compilationInfo = ctx.getInfo ();
         Trees trees = compilationInfo.getTrees ();
-        JCBinary binary = (JCBinary) treePath.getLeaf ();
-        Element e = trees.getElement (treePath);
-        if (binary.getRightOperand () instanceof JCLiteral) {
-            JCLiteral literal = (JCLiteral) binary.getRightOperand ();
-            Object objectValue = literal.getValue ();
-            long value = 0;
-            if (objectValue instanceof Integer)
-                value = (Integer) objectValue;
-            else
-            if (objectValue instanceof Long)
-                value = (Long) objectValue;
-            else
-            if (objectValue instanceof Character)
-                value = (Character) objectValue;
-            else
-                return null;
-            JCExpression identifier = binary.getLeftOperand ();
-            TreePath identifierTreePath = trees.getPath (compilationInfo.getCompilationUnit (), identifier);
-            TypeMirror typeMirror = trees.getTypeMirror (identifierTreePath);
-            if (typeMirror.toString ().equals ("int")) {
-                if (value < 0 || value > 31)
-                    return ErrorDescriptionFactory.forName (
-                            ctx,
-                            treePath,
-                            NbBundle.getMessage (ShiftOutOfRange.class, "MSG_ShiftOutOfRange_int", e)
-                    );
-            } else
-            if (typeMirror.toString ().equals ("long")) {
-                if (value < 0 || value > 63)
-                    return ErrorDescriptionFactory.forName (
-                            ctx,
-                            treePath,
-                            NbBundle.getMessage (ShiftOutOfRange.class, "MSG_ShiftOutOfRange_long", e)
-                    );
-            }
+        TreePath identifierTreePath = trees.getPath (compilationInfo.getCompilationUnit (), tree);
+        TypeMirror typeMirror = trees.getTypeMirror (identifierTreePath);
+        if (typeMirror.toString ().equals ("int")) {
+            if (value < 0 || value > 31)
+                return ErrorDescriptionFactory.forName (
+                        ctx,
+                        treePath,
+                        NbBundle.getMessage (ShiftOutOfRange.class, "MSG_ShiftOutOfRange_int")
+                );
+        } else
+        if (typeMirror.toString ().equals ("long")) {
+            if (value < 0 || value > 63)
+                return ErrorDescriptionFactory.forName (
+                        ctx,
+                        treePath,
+                        NbBundle.getMessage (ShiftOutOfRange.class, "MSG_ShiftOutOfRange_long")
+                );
         }
         return null;
     }
