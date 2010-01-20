@@ -38,69 +38,21 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.apisupport.project.ui.customizer;
 
-package org.openide.explorer.propertysheet;
+import org.openide.util.NbBundle;
 
-import java.beans.PropertyEditorSupport;
+public enum ClusterizeAction {
+    IGNORE, ENABLED, AUTOLOAD, EAGER;
 
-/**
- * Property editor for enumeration types.
- * @author Jesse Glick
- */
-final class EnumPropertyEditor extends PropertyEditorSupport {
-
-    private final Class<? extends Enum> c;
-
-    public EnumPropertyEditor(Class<? extends Enum> c) {
-        this.c = c;
-    }
-
-    private Object[] getValues() {
-        try {
-            return (Object[]) c.getMethod("values").invoke(null); // NOI18N
-        } catch (Exception x) {
-            throw new AssertionError(x);
+    @Override
+    public String toString() {
+        switch (this) {
+            case IGNORE: return NbBundle.getMessage(ClusterizeAction.class, "LAB_ClusterizeAction_IGNORE"); // NOI18N
+            case ENABLED: return NbBundle.getMessage(ClusterizeAction.class, "LAB_ClusterizeAction_ENABLED"); // NOI18N
+            case AUTOLOAD: return NbBundle.getMessage(ClusterizeAction.class, "LAB_ClusterizeAction_AUTOLOAD"); // NOI18N
+            case EAGER: return NbBundle.getMessage(ClusterizeAction.class, "LAB_ClusterizeAction_EAGER"); // NOI18N
         }
+        throw new IllegalStateException();
     }
-
-    @Override
-    public String[] getTags() {
-        Object[] values = getValues();
-        String[] tags = new String[values.length];
-        for (int i = 0; i < values.length; i++) {
-            tags[i] = values[i].toString();
-        }
-        return tags;
-    }
-
-    @Override
-    public String getAsText() {
-        Object o = getValue();
-        return o != null ? o.toString() : "";
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void setAsText(String text) throws IllegalArgumentException {
-        if (text.length() > 0) {
-            Object[] values = getValues();
-            for (int i = 0; i < values.length; i++) {
-                String p = values[i].toString();
-                if (text.equals(p)) {
-                    setValue(values[i]);
-                    return;
-                }
-            }
-            setValue(Enum.valueOf(c, text));
-        } else {
-            setValue(null);
-        }
-    }
-
-    @Override
-    public String getJavaInitializationString() {
-        Enum e = (Enum) getValue();
-        return e != null ? c.getName().replace('$', '.') + '.' + e.name() : "null"; // NOI18N
-    }
-
 }

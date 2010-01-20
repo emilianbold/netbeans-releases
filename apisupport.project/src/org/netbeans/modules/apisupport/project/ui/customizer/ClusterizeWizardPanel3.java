@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,70 +31,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.apisupport.project.ui.customizer;
 
-package org.openide.explorer.propertysheet;
+import java.awt.Component;
+import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
-import java.beans.PropertyEditorSupport;
+public class ClusterizeWizardPanel3 implements WizardDescriptor.Panel<Clusterize> {
+    private Component component;
+    Clusterize settings;
 
-/**
- * Property editor for enumeration types.
- * @author Jesse Glick
- */
-final class EnumPropertyEditor extends PropertyEditorSupport {
-
-    private final Class<? extends Enum> c;
-
-    public EnumPropertyEditor(Class<? extends Enum> c) {
-        this.c = c;
+    ClusterizeWizardPanel3() {
     }
 
-    private Object[] getValues() {
-        try {
-            return (Object[]) c.getMethod("values").invoke(null); // NOI18N
-        } catch (Exception x) {
-            throw new AssertionError(x);
+    @Override
+    public Component getComponent() {
+        if (component == null) {
+            component = new ClusterizeVisualPanel3(this);
         }
+        return component;
     }
 
     @Override
-    public String[] getTags() {
-        Object[] values = getValues();
-        String[] tags = new String[values.length];
-        for (int i = 0; i < values.length; i++) {
-            tags[i] = values[i].toString();
-        }
-        return tags;
+    public HelpCtx getHelp() {
+        return new HelpCtx(ClusterizeVisualPanel3.class);
     }
 
     @Override
-    public String getAsText() {
-        Object o = getValue();
-        return o != null ? o.toString() : "";
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void setAsText(String text) throws IllegalArgumentException {
-        if (text.length() > 0) {
-            Object[] values = getValues();
-            for (int i = 0; i < values.length; i++) {
-                String p = values[i].toString();
-                if (text.equals(p)) {
-                    setValue(values[i]);
-                    return;
-                }
-            }
-            setValue(Enum.valueOf(c, text));
-        } else {
-            setValue(null);
-        }
+    public boolean isValid() {
+        return true;
     }
 
     @Override
-    public String getJavaInitializationString() {
-        Enum e = (Enum) getValue();
-        return e != null ? c.getName().replace('$', '.') + '.' + e.name() : "null"; // NOI18N
+    public final void addChangeListener(ChangeListener l) {
     }
 
+    @Override
+    public final void removeChangeListener(ChangeListener l) {
+    }
+
+    @Override
+    public void readSettings(Clusterize settings) {
+        this.settings = settings;
+    }
+
+    @Override
+    public void storeSettings(Clusterize settings) {
+    }
 }
+
