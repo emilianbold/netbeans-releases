@@ -45,6 +45,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.text.Format;
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
@@ -59,14 +60,18 @@ import org.openide.util.lookup.ServiceProvider;
  * This handler writes Unix-style ends-of-lines. It is important
  * for shell scripts and makefiles.
  *
+ * It also tweaks standard template parameters for compatibility
+ * with previous CND versions.
+ *
  * @author Alexey Vladykin
  */
 @ServiceProvider(service = CreateFromTemplateHandler.class)
-public class UnixEolsCreateFromTemplateHandler extends CreateFromTemplateHandler {
+public class ScriptCreateFromTemplateHandler extends CreateFromTemplateHandler {
 
     @Override
     protected boolean accept(FileObject orig) {
         String mimeType = orig.getMIMEType();
+        // bat files should be created by standard handler with Windows-style EOLs
         return MIMENames.SHELL_MIME_TYPE.equals(mimeType)
                 || MIMENames.MAKEFILE_MIME_TYPE.equals(mimeType);
     }
@@ -75,7 +80,7 @@ public class UnixEolsCreateFromTemplateHandler extends CreateFromTemplateHandler
     protected FileObject createFromTemplate(FileObject template, FileObject folder, String name, Map<String, Object> parameters) throws IOException {
         FileObject targetFile = folder.createData(name, template.getExt());
 
-        Format format = createFormat(parameters);
+        Format format = createFormat(template, parameters);
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(
                 template.getInputStream(), FileEncodingQuery.getEncoding(template)));
@@ -104,11 +109,26 @@ public class UnixEolsCreateFromTemplateHandler extends CreateFromTemplateHandler
         return targetFile;
     }
 
-    private Format createFormat(Map<String, Object> parameters) {
-        MapFormat format = new MapFormat(parameters);
-        // use %<%PARAM%>% notation for historical reasons
+    private Format createFormat(FileObject template, Map<String, Object> params) {
+        // tweak parameters to be compatible with templates from previous CND versions
+        Map<String, Object> enhancedParams = new HashMap<String, Object>(params);
+        copyValueToUppercaseKey(enhancedParams, "name"); // NOI18N
+        copyValueToUppercaseKey(enhancedParams, "user"); // NOI18N
+        copyValueToUppercaseKey(enhancedParams, "date"); // NOI18N
+        copyValueToUppercaseKey(enhancedParams, "time"); // NOI18N
+
+        enhancedParams.put("EXTENSION", template.getExt()); // NOI18N
+
+        MapFormat format = new MapFormat(enhancedParams);
         format.setLeftBrace("%<%"); // NOI18N
         format.setRightBrace("%>%"); // NOI18N
         return format;
+    }
+
+    private void copyValueToUppercaseKey(Map<String, Object> params, String lowercaseKey) {
+        String uppercaseKey = lowercaseKey.toUpperCase();
+        if (params.containsKey(lowercaseKey) && !params.containsKey(uppercaseKey)) {
+            params.put(uppercaseKey, params.get(lowercaseKey));
+        }
     }
 }
