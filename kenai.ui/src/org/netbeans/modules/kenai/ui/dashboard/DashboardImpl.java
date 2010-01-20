@@ -72,6 +72,7 @@ import javax.swing.UIManager;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
+import org.netbeans.modules.kenai.ui.KenaiTopComponent;
 import org.netbeans.modules.kenai.ui.LoginHandleImpl;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
@@ -367,36 +368,44 @@ public final class DashboardImpl extends Dashboard {
      * @param isMemberProject
      */
     @Override
-    public void addProject( final ProjectHandle project, boolean isMemberProject, boolean select ) {
-        synchronized( LOCK ) {
-            if( openProjects.contains(project) ) {
-                if (select) {
-                    selectAndExpand(((ProjectHandleImpl)project).getKenaiProject());
-                }
-                return;
-            }
+    public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {
+        if (project.getKenaiProject().getKenai()!=this.kenai)
+            KenaiTopComponent.findInstance().setSelectedKenai(project.getKenaiProject().getKenai());
+        requestProcessor.post(new Runnable() {
 
-            if( isMemberProject && memberProjectsLoaded && !memberProjects.contains(project) ) {
-                memberProjects.add(project);
-                setMemberProjects(new ArrayList<ProjectHandle>(memberProjects));
-            }
-            openProjects.add(project);
-            storeAllProjects();
-            setOtherProjects(new ArrayList<ProjectHandle>(openProjects));
-            userNode.set(login, !openProjects.isEmpty());
-            switchMemberProjects();
-            if( isOpened() ) {
-                switchContent();
-                if (select) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            selectAndExpand(((ProjectHandleImpl)project).getKenaiProject());
+            public void run() {
+                synchronized (LOCK) {
+                    if (openProjects.contains(project)) {
+                        if (select) {
+                            selectAndExpand(((ProjectHandleImpl) project).getKenaiProject());
                         }
-                    });
+                        return;
+                    }
+
+                    if (isMemberProject && memberProjectsLoaded && !memberProjects.contains(project)) {
+                        memberProjects.add(project);
+                        setMemberProjects(new ArrayList<ProjectHandle>(memberProjects));
+                    }
+                    openProjects.add(project);
+                    storeAllProjects();
+                    setOtherProjects(new ArrayList<ProjectHandle>(openProjects));
+                    userNode.set(login, !openProjects.isEmpty());
+                    switchMemberProjects();
+                    if (isOpened()) {
+                        switchContent();
+                        if (select) {
+                            SwingUtilities.invokeLater(new Runnable() {
+
+                                public void run() {
+                                    selectAndExpand(((ProjectHandleImpl) project).getKenaiProject());
+                                }
+                            });
+                        }
+                    }
                 }
+                changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
             }
-        }
-        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
+        });
     }
 
     public void removeProject( ProjectHandle project ) {
