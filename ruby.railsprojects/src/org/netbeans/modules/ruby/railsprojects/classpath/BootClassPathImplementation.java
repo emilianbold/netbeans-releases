@@ -67,6 +67,7 @@ import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -93,6 +94,8 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private final RequiredGems requiredGems;
     private final boolean forTests;
     private final GemFilter gemFilter;
+    private RubyPlatform platform;
+
 
     public BootClassPathImplementation(RailsProject project, File projectDirectory, PropertyEvaluator evaluator, boolean forTests) {
         this.project = project;
@@ -101,10 +104,11 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         this.evaluator = evaluator;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
         RubyPreferences.addPropertyChangeListener(WeakListeners.propertyChange(this, RubyPreferences.getInstance()));
-        this.requiredGems = project.getLookup().lookup(RequiredGems.class);
-        this.requiredGems.addPropertyChangeListener(WeakListeners.propertyChange(this, this.requiredGems));
         this.forTests = forTests;
+        RequiredGems[] reqs = RequiredGems.lookup(project);
+        this.requiredGems = forTests ? reqs[1] : reqs[0];
         this.gemFilter = new GemFilter(evaluator);
+        this.platform = new RubyPlatformProvider(evaluator).getPlatform();
     }
 
     public synchronized List<PathResourceImplementation> getResources() {
@@ -118,7 +122,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 Exceptions.printStackTrace(ex);
             }
 
-            RubyPlatform platform = new RubyPlatformProvider(evaluator).getPlatform();
+//            RubyPlatform platform = new RubyPlatformProvider(evaluator).getPlatform();
             if (platform == null) {
                 LOGGER.severe("Cannot resolve platform for project: " + projectDirectory);
                 return Collections.emptyList();
@@ -173,7 +177,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     }
 
     private void filterAndAddGems(Collection<URL> gemsToAdd, List<PathResourceImplementation> result) {
-        Collection<URL> filtered = forTests ? gemsToAdd : requiredGems.filterNotRequiredGems(gemsToAdd);
+        Collection<URL> filtered = requiredGems.filterNotRequiredGems(gemsToAdd);
         for (URL url : filtered) {
             String gem = Gem.getGemName(url);
             if (gemFilter.include(gem)) {
@@ -185,9 +189,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             }
             result.add(ClassPathSupport.createResource(url));
         }
-        if (!forTests) {
-            requiredGems.setIndexedGems(filtered);
-        }
+        requiredGems.setIndexedGems(filtered);
     }
 
     private boolean useVendorGemsOnly() {
@@ -285,27 +287,18 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 || evt.getSource() == RubyPreferences.getInstance() && evt.getPropertyName().equals(RubyPreferences.VENDOR_GEMS_PROPERTY)) {
             resetCache();
         }
-        if (evt.getPropertyName().equals(RequiredGems.REQUIRED_GEMS_CHANGED_PROPERTY)) {
+        if (evt.getPropertyName().equals(SharedRubyProjectProperties.PLATFORM_ACTIVE)) {
+            platform = RubyPlatformProvider.getPlatform((String) evt.getNewValue());
             resetCache();
         }
-//        if (evt.getSource() == this.evaluator && evt.getPropertyName().equals(PLATFORM_ACTIVE)) {
-//            //Active platform was changed
-//            resetCache ();
-//        }
-//        else if (evt.getSource() == this.platformManager && JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(evt.getPropertyName()) && activePlatformName != null) {
-//            //Platform definitions were changed, check if the platform was not resolved or deleted
-//            if (this.isActivePlatformValid) {
-//                if (RubyProjectUtil.getActivePlatform (this.activePlatformName) == null) {
-//                    //the platform was not removed
-//                    this.resetCache();
-//                }
-//            }
-//            else {
-//                if (RubyProjectUtil.getActivePlatform (this.activePlatformName) != null) {
-//                    this.resetCache();
-//                }
-//            }
-//        }
+        if (evt.getPropertyName().equals(RequiredGems.REQUIRED_GEMS_TESTS_PROPERTY) && forTests) {
+            requiredGems.setRequiredGems((String) evt.getNewValue());
+            resetCache();
+        }
+        if (evt.getPropertyName().equals(RequiredGems.REQUIRED_GEMS_PROPERTY) && !forTests) {
+            requiredGems.setRequiredGems((String) evt.getNewValue());
+            resetCache();
+        }
     }
 
     /**

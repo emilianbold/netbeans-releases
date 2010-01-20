@@ -116,6 +116,7 @@ public class RailsProject extends RubyBaseProject {
             new RailsActionProvider( this, this.updateHelper ),
             new RailsLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
             RequiredGems.create(this),
+            RequiredGems.createForTests(this),
             new ClassPathProviderImpl(this, this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             projectOpenedHook,
