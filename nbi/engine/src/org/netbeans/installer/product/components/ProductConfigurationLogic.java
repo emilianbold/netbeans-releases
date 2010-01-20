@@ -132,8 +132,7 @@ public abstract class ProductConfigurationLogic {
         final String text = parseString(
                 "$R{" + StringUtils.asPath(getClass()) + "/license.txt;" + 
                 StringUtils.ENCODING_UTF8 + "}");
-        
-        return new Text(text, ContentType.PLAIN_TEXT);
+        return text == null ? null : new Text(text, ContentType.PLAIN_TEXT);
     }
     
     public Map<String, Text> getThirdPartyLicenses() {
