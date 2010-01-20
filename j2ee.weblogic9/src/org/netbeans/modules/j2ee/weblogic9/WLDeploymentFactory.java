@@ -64,8 +64,8 @@ public class WLDeploymentFactory implements DeploymentFactory {
 
     /**
      * The singleton instance of the factory
-     *
-     * GuardedBy(WLDeploymentFactory.class)
+     * <p>
+     * <i>GuardedBy(WLDeploymentFactory.class)</i>
      */
     private static WLDeploymentFactory instance;
 

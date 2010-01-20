@@ -38,72 +38,77 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.weblogic9;
+package org.netbeans.modules.j2ee.weblogic9.deploy;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
+
 /**
  *
  * @author whd
  */
-public class WLTargetModuleID implements TargetModuleID{
-    private Target target;
-    private String jar_name;
-    private String context_url;
+public class WLTargetModuleID implements TargetModuleID {
 
-    Vector childs = new Vector();
-    TargetModuleID  parent = null;
-    public WLTargetModuleID(Target target  ){
-        this( target, "");
+    private final Target target;
 
+    private String jarName;
 
+    private String contextUrl;
+
+    private List children = new ArrayList();
+
+    private TargetModuleID  parent;
+
+    public WLTargetModuleID(Target target) {
+        this(target, "");
     }
-    public WLTargetModuleID(Target target, String jar_name  ){
+
+    public WLTargetModuleID(Target target, String jarName) {
         this.target = target;
-        this.setJARName(jar_name);
-        
-    }    
-    public void setContextURL( String context_url ){
-        this.context_url = context_url;
+        this.setJarName(jarName);
     }
-    public void setJARName( String jar_name ){
-        this.jar_name = jar_name;
+
+    public void setContextURL(String contextUrl) {
+        this.contextUrl = contextUrl;
     }
-    
-    public void setParent( WLTargetModuleID parent){
+
+    public void setJarName(String jarName) {
+        this.jarName = jarName;
+    }
+
+    public void setParent(WLTargetModuleID parent) {
         this.parent = parent;
-        
     }
-    
-    public void addChild( WLTargetModuleID child) {
-        childs.add( child );
-        child.setParent( this );
+
+    public synchronized void addChild(WLTargetModuleID child) {
+        children.add(child);
+        child.setParent(this);
     }
-    
-    public TargetModuleID[]     getChildTargetModuleID(){
-        return (TargetModuleID[])childs.toArray(new TargetModuleID[childs.size()]);
+
+    public synchronized TargetModuleID[] getChildTargetModuleID(){
+        return (TargetModuleID[]) children.toArray(new TargetModuleID[children.size()]);
     }
-    //Retrieve a list of identifiers of the children of this deployed module.
-    public java.lang.String     getModuleID(){
-        return jar_name ;
+
+    public String getModuleID() {
+        return jarName;
     }
-    //         Retrieve the id assigned to represent the deployed module.
-    public TargetModuleID     getParentTargetModuleID(){
-        
+
+    public TargetModuleID getParentTargetModuleID() {
         return parent;
     }
-    //Retrieve the identifier of the parent object of this deployed module.
-    public Target     getTarget(){
+
+    public Target getTarget() {
         return target;
     }
-    //Retrieve the name of the target server.
-    public java.lang.String     getWebURL(){
-        return context_url;//"http://" + module_id; //NOI18N
+
+    public String getWebURL() {
+        return contextUrl;
     }
-    //If this TargetModulID represents a web module retrieve the URL for it.
+
     @Override
-    public java.lang.String     toString() {
-        return getModuleID() +  hashCode();
+    public String toString() {
+        return getModuleID() + hashCode();
     }
 }
