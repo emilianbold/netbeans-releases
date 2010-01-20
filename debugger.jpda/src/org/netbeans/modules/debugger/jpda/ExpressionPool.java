@@ -50,7 +50,6 @@ import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 
 import com.sun.jdi.VirtualMachine;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -73,10 +72,8 @@ import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
-import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
-import org.openide.util.Exceptions;
 
 /**
  * The pool of operations, which are used for expression stepping.
@@ -166,7 +163,7 @@ public class ExpressionPool {
         final Method method = LocationWrapper.method(loc);
         final byte[] bytecodes = MethodWrapper.bytecodes(method);
         byte[] constantPool = null;
-        if (JPDAUtils.IS_JDK_16 && VirtualMachineWrapper.canGetConstantPool(vm)) {
+        if (VirtualMachineWrapper.canGetConstantPool(vm)) {
             constantPool = ReferenceTypeWrapper.constantPool(clazzType);
         }
         final byte[] theConstantPool = constantPool;

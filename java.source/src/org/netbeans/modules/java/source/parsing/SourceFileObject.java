@@ -50,7 +50,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.CharBuffer;
@@ -534,15 +533,10 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
                         public void run () {
                             try {
                                 doc.remove(0,doc.getLength());
-                                //todo: use new String(data,0,pos,FileEncodingQuery.getEncoding(file)) on JDK 6.0
-                                doc.insertString(0,new String(data,0,pos,FileEncodingQuery.getEncoding(handle.resolveFileObject(false)).name()),null);
+                                doc.insertString(0,new String(data,0,pos,FileEncodingQuery.getEncoding(handle.resolveFileObject(false))),null);
                             } catch (BadLocationException e) {
                                 if (log.isLoggable(Level.SEVERE))
                                     log.log(Level.SEVERE, e.getMessage(), e);
-                            }
-                            catch (UnsupportedEncodingException ee) {
-                                if (log.isLoggable(Level.SEVERE))
-                                    log.log(Level.SEVERE, ee.getMessage(), ee);
                             }
                         }
                     });

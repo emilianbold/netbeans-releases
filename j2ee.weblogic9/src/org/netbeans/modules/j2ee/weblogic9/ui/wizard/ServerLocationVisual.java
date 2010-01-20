@@ -58,8 +58,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
-import org.openide.modules.SpecificationVersion;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -95,8 +93,8 @@ public class ServerLocationVisual extends JPanel {
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
 
-        // test if IDE is run on correct JDK version
-        if (!runningOnCorrectJdk()) {
+        // WL 9.x and 10 throws marshalling exception when running on JDK 6
+        {
             String msg = NbBundle.getMessage(ServerLocationVisual.class, "WARN_INVALID_JDK");  // NOI18N
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
         }
@@ -143,16 +141,6 @@ public class ServerLocationVisual extends JPanel {
 
         // everything seems ok
         return true;
-    }
-
-    private static final String J2SE_PLATFORM_VERSION_15 = "1.5"; // NOI18N
-
-    private boolean runningOnCorrectJdk() {
-        SpecificationVersion defPlatVersion = JavaPlatformManager.getDefault()
-                .getDefaultPlatform().getSpecification().getVersion();
-        // test just JDK 1.5 for now, because WL 9.x and 10 throws marshalling
-        // exception when running on JDK 6.
-        return J2SE_PLATFORM_VERSION_15.equals(defPlatVersion.toString());
     }
 
     ////////////////////////////////////////////////////////////////////////////
