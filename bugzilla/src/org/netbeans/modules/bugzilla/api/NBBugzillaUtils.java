@@ -41,7 +41,7 @@ package org.netbeans.modules.bugzilla.api;
 
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.repository.NBRepository;
+import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 
 /**
  *
@@ -53,12 +53,46 @@ public class NBBugzillaUtils {
      * Opens in the IDE the given issue from the netbeans repository
      *
      * @param issueID issue identifier
-     * @param username the user to connect with. Use null if none available.
-     * @param password the given users password. Use null if none available.
      */
-    public static void openIssue(String issueID, String username, String password) {
-        BugzillaRepository nbRepo = NBRepository.findInstance();
+    public static void openIssue(String issueID) {
+        BugzillaRepository nbRepo = NBRepositorySupport.findNbRepository();
         Issue.open(nbRepo, issueID);
     }
-    
+
+    /**
+     * Returns the last time used username for netbeans.org.
+     * Shouldn't be called in awt
+     *
+     * @return username
+     */
+    public static String getNBUsername() {
+        return NBRepositorySupport.getNBUsername();
+    }
+
+    /**
+     * Returns the last time used password for netbeans.org
+     * Shouldn't be called in awt
+     *
+     * @return password
+     */
+    public static char[] getNBPassword() {
+        return NBRepositorySupport.getNBPassword();
+    }
+
+    /**
+     * Save the given username as a netbeans.org username.
+     * Shouldn't be called in awt
+     */
+    public static void saveNBUsername(String username) {
+        NBRepositorySupport.setNBUsername(username);
+    }
+
+    /**
+     * Saves the given value as a netbeans.org password
+     * Shouldn't be called in awt
+     */
+    public static void saveNBPassword(char[] password) {
+        NBRepositorySupport.setNBPassword(password);
+    }
+
 }

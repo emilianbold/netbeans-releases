@@ -46,7 +46,7 @@ import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugzilla.repository.NBRepository;
+import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,7 +69,7 @@ public class ReportNBIssueAction extends SystemAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
-        BugzillaRepository repo = NBRepository.findInstance();
+        BugzillaRepository repo = NBRepositorySupport.findNbRepository();
         Issue.open(repo, null);        
     }
     
