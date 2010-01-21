@@ -249,25 +249,44 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             
             // ADD JSTL LIBRARY IF ENABLED AND SPRING LIBRARY
             List<Library> libraries = new ArrayList<Library>(3);
-            Library webMVCLibrary = SpringUtilities.findSpringWebMVCLibrary();
-            Library springLibrary = null;
-            if (webMVCLibrary != null) {
-                libraries.add(webMVCLibrary);
-                if (SpringUtilities.isSpringLibrary(webMVCLibrary)) {
-                    // In case this is an user library with a monolithic Spring.
-                    springLibrary = webMVCLibrary;
+            Library springLibrary = component.getSpringLibrary();
+            String version = component.getSpringLibraryVersion();
+            Library webMVCLibrary = null;
+            if (springLibrary != null) {
+                libraries.add(springLibrary);
+                if (SpringUtilities.isSpringWebMVCLibrary(springLibrary)) {
+                    webMVCLibrary = springLibrary;
                 }
             } else {
-                LOGGER.log(Level.WARNING, null, new Error("No Spring Web MVC library found."));
+                LOGGER.log(Level.WARNING, null, new Error("No Spring Framework library found."));
             }
-            if (springLibrary == null) {
-                springLibrary = SpringUtilities.findSpringLibrary();
-                if (springLibrary != null){
-                    libraries.add(springLibrary);
+            if (webMVCLibrary == null) {
+                webMVCLibrary = SpringUtilities.findSpringWebMVCLibrary(version);
+                if (webMVCLibrary !=null) {
+                    libraries.add(webMVCLibrary);
                 } else {
-                    LOGGER.log(Level.WARNING, null, new Error("No Spring Framework library found."));
+                    LOGGER.log(Level.WARNING, null, new Error("No Spring Web MVC library with version "+version+" found."));
                 }
             }
+//            Library webMVCLibrary = SpringUtilities.findSpringWebMVCLibrary();
+//            Library springLibrary = null;
+//            if (webMVCLibrary != null) {
+//                libraries.add(webMVCLibrary);
+//                if (SpringUtilities.isSpringLibrary(webMVCLibrary)) {
+//                    // In case this is an user library with a monolithic Spring.
+//                    springLibrary = webMVCLibrary;
+//                }
+//            } else {
+//                LOGGER.log(Level.WARNING, null, new Error("No Spring Web MVC library found."));
+//            }
+//            if (springLibrary == null) {
+//                springLibrary = SpringUtilities.findSpringLibrary();
+//                if (springLibrary != null){
+//                    libraries.add(springLibrary);
+//                } else {
+//                    LOGGER.log(Level.WARNING, null, new Error("No Spring Framework library found."));
+//                }
+//            }
             if (includeJstl) {
                 Library jstlLibrary = SpringUtilities.findJSTLibrary();
                 if (jstlLibrary != null) {
