@@ -2121,7 +2121,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private String getMissingCCs(Set<String> ccs, Set<String> missingIn) {
-        StringBuffer ret = new StringBuffer();
+        StringBuilder ret = new StringBuilder();
         Iterator<String> it = ccs.iterator();
         while(it.hasNext()) {
             String cc = it.next();
