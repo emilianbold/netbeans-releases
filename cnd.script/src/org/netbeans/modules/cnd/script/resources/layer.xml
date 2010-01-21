@@ -296,6 +296,22 @@
             </file>
 
         </folder>
+
+        <folder name="MakeTemplates">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
+            <attr name="position" intvalue="850"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/makefiles.html"/>
+
+            <file name="ComplexMakefile">
+                <attr name="position" intvalue="100"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/script/resources/complexMakefile.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.makefile.wizard.MakefileWizardComplex"/>
+                <attr name="templateCategory" stringvalue="makefile-types"/>
+            </file>
+        </folder>
+
     </folder>
 
     <folder name="OptionsDialog">
