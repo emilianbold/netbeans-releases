@@ -405,7 +405,7 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
 
         BulkPattern p = createSearch().create(info, patterns);
 
-        boolean result = createSearch().matches(info, info.getCompilationUnit(), p);
+        boolean result = createSearch().matches(info, new TreePath(info.getCompilationUnit()), p);
 
         assertEquals(golden, result);
     }
@@ -425,7 +425,7 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
 //        System.err.println("create: " + (e1 - s1));
 
         long s2 = System.currentTimeMillis();
-        Map<String, Collection<TreePath>> result = createSearch().match(info, info.getCompilationUnit(), p);
+        Map<String, Collection<TreePath>> result = createSearch().match(info, new TreePath(info.getCompilationUnit()), p);
         long e2 = System.currentTimeMillis();
 
 //        System.err.println("match: " + (e2 - s2));

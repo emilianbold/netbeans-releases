@@ -239,25 +239,27 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     }
 
     private void setupContextLazily() {
-        final String text = codePane.getText();
+        final String text = codeText;
         final Document[] documentPtr = new Document[] { null };
-        ActionListener contextUpdated = new ActionListener() {
+
+        class ContextUpdated implements ActionListener, Runnable {
             public void actionPerformed(ActionEvent e) {
+                run();
+            }
+            public void run() {
                 if (codePane.getDocument() != documentPtr[0]) {
                     codePane.getDocument().addDocumentListener(CodeEvaluator.this);
                     if (text != null) {
                         codePane.setText(text);
                     }
                 }
+                documentPtr[0] = codePane.getDocument();
             }
-        };
-        WatchPanel.setupContext(codePane, contextUpdated);
-        codePane.getDocument().addDocumentListener(this);
-        if (text != null) {
-            codePane.setText(text);
-            codeText = text;
         }
-        documentPtr[0] = codePane.getDocument();
+
+        ContextUpdated contextUpdated = new ContextUpdated();
+        WatchPanel.setupContext(codePane, contextUpdated);
+        SwingUtilities.invokeLater(contextUpdated);
     }
 
     private SwitcherTableItem[] createSwitcherItems() {

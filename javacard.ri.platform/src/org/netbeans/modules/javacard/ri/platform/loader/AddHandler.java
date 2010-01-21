@@ -96,7 +96,7 @@ public class AddHandler extends AddCardHandler {
                 setModal(true);
 
         if (builder.showDialog(DialogDescriptor.OK_OPTION)) {
-            KeysAndValues kv = new KeysAndValuesEditablePropsAdapter(p);
+            KeysAndValues<?> kv = new KeysAndValuesEditablePropsAdapter(p);
             panel.write(kv);
             if (p.getProperty(JavacardDeviceKeyNames.DEVICE_CAPABILITIES) == null) {
                 p.setProperty(JavacardDeviceKeyNames.DEVICE_CAPABILITIES,

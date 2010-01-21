@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,18 +34,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.impl.hints;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -53,12 +49,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
 import org.netbeans.editor.MarkBlockChain;
-import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
 
 import com.sun.source.tree.Tree.Kind;
@@ -74,15 +68,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.JavaSource.Priority;
-import org.netbeans.api.java.source.JavaSourceTaskFactory;
-import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
 import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
 import org.netbeans.modules.java.hints.jackpot.impl.pm.BulkSearch;
@@ -94,46 +84,46 @@ import org.netbeans.modules.java.hints.jackpot.spi.Hacks;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.options.HintsSettings;
+import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author lahvac
  */
-public class HintsInvoker implements CancellableTask<CompilationInfo> {
+public class HintsInvoker {
 
     private static final Logger TIMER = Logger.getLogger("TIMER");
-    
-    private final AtomicBoolean cancel = new AtomicBoolean();
+
     private final Map<String, Long> timeLog = new HashMap<String, Long>();
-    
-    public void run(CompilationInfo info) {
-        cancel.set(false);
-        timeLog.clear();
 
-        long startTime = System.currentTimeMillis();
+    private final CompilationInfo info;
+    private final int caret;
+    private final int from;
+    private final int to;
+    private final AtomicBoolean cancel;
 
-        List<ErrorDescription> result = computeHints(info);
-
-        if (cancel.get()) {
-            return;
-        }
-
-        HintsController.setErrors(info.getFileObject(), HintsInvoker.class.getName(), result);
-
-        long endTime = System.currentTimeMillis();
-        
-        TIMER.log(Level.FINE, "Jackpot 3.0 Hints Task", new Object[] {info.getFileObject(), endTime - startTime});
-
-        for (Entry<String, Long> e : timeLog.entrySet()) {
-            TIMER.log(Level.FINE, e.getKey(), new Object[] {info.getFileObject(), e.getValue()});
-        }
+    public HintsInvoker(CompilationInfo info, AtomicBoolean cancel) {
+        this(info, -1, cancel);
     }
 
-    public void cancel() {
-        cancel.set(true);
+    public HintsInvoker(CompilationInfo info, int caret, AtomicBoolean cancel) {
+        this(info, caret, -1, -1, cancel);
+    }
+
+    public HintsInvoker(CompilationInfo info, int from, int to, AtomicBoolean cancel) {
+        this(info, -1, from, to, cancel);
+    }
+
+    private HintsInvoker(CompilationInfo info, int caret, int from, int to, AtomicBoolean cancel) {
+        this.info = info;
+        this.caret = caret;
+        this.from = from;
+        this.to = to;
+        this.cancel = cancel;
     }
 
     public List<ErrorDescription> computeHints(CompilationInfo info) {
@@ -141,26 +131,47 @@ public class HintsInvoker implements CancellableTask<CompilationInfo> {
     }
 
     private List<ErrorDescription> computeHints(CompilationInfo info, TreePath startAt) {
-        Map<Kind, List<HintDescription>> kindHints = new HashMap<Kind, List<HintDescription>>();
-        Map<PatternDescription, List<HintDescription>> patternHints = new HashMap<PatternDescription, List<HintDescription>>();
-        
-        for (Entry<Kind, List<HintDescription>> e : RulesManager.getInstance().getKindBasedHints().entrySet()) {
-            kindHints.put(e.getKey(), new LinkedList<HintDescription>(e.getValue()));
+        List<HintDescription> descs = new LinkedList<HintDescription>();
+        for (Entry<HintMetadata, Collection<? extends HintDescription>> e : RulesManager.getInstance().allHints.entrySet()) {
+            HintMetadata m = e.getKey();
+
+            if (!HintsSettings.isEnabled(m)) {
+                continue;
+            }
+
+            if (caret != -1) {
+                if (m.kind == HintMetadata.Kind.SUGGESTION || m.kind == HintMetadata.Kind.SUGGESTION_NON_GUI) {
+                    descs.addAll(e.getValue());
+                } else {
+                    Preferences pref = RulesManager.getPreferences(m.id, HintsSettings.getCurrentProfileId());
+                    if (HintsSettings.getSeverity(m, pref) == HintSeverity.CURRENT_LINE_WARNING) {
+                        descs.addAll(e.getValue());
+                    }
+                }
+            } else {
+                if (m.kind == HintMetadata.Kind.HINT || m.kind == HintMetadata.Kind.HINT_NON_GUI) {
+                    Preferences pref = RulesManager.getPreferences(m.id, HintsSettings.getCurrentProfileId());
+                    if (HintsSettings.getSeverity(m, pref) != HintSeverity.CURRENT_LINE_WARNING || from != (-1)) {
+                        descs.addAll(e.getValue());
+                    }
+                }
+            }
         }
 
-        for (Entry<PatternDescription, List<HintDescription>> e : RulesManager.getInstance().getPatternBasedHints().entrySet()) {
-            patternHints.put(e.getKey(), new LinkedList<HintDescription>(e.getValue()));
-        }
+        Map<Kind, List<HintDescription>> kindHints = new HashMap<Kind, List<HintDescription>>();
+        Map<PatternDescription, List<HintDescription>> patternHints = new HashMap<PatternDescription, List<HintDescription>>();
+
+        RulesManager.sortOut(descs, kindHints, patternHints);
 
         long elementBasedStart = System.currentTimeMillis();
 
         RulesManager.computeElementBasedHintsXXX(info, cancel, kindHints, patternHints);
-        
+
         long elementBasedEnd = System.currentTimeMillis();
 
         timeLog.put("Jackpot 3.0 Element Based Hints", elementBasedEnd - elementBasedStart);
 
-        return computeHints(info, startAt, kindHints, patternHints, new LinkedList<MessageImpl>());
+        return compute(info, startAt, kindHints, patternHints, new LinkedList<MessageImpl>());
     }
 
     public List<ErrorDescription> computeHints(CompilationInfo info,
@@ -173,7 +184,24 @@ public class HintsInvoker implements CancellableTask<CompilationInfo> {
                                         Map<Kind, List<HintDescription>> hints,
                                         Map<PatternDescription, List<HintDescription>> patternHints,
                                         Collection<? super MessageImpl> problems) {
-        return computeHints(info, new TreePath(info.getCompilationUnit()), hints, patternHints, problems);
+        return compute(info, new TreePath(info.getCompilationUnit()), hints, patternHints, problems);
+    }
+
+    List<ErrorDescription> compute(CompilationInfo info,
+                                        TreePath startAt,
+                                        Map<Kind, List<HintDescription>> hints,
+                                        Map<PatternDescription, List<HintDescription>> patternHints,
+                                        Collection<? super MessageImpl> problems) {
+        if (caret != -1) {
+            TreePath tp = info.getTreeUtilities().pathFor(caret);
+            return computeSuggestions(info, tp, hints, patternHints, problems);
+        } else {
+            if (from != (-1) && to != (-1)) {
+                return computeHintsInSpan(info, hints, patternHints, problems);
+            } else {
+                return computeHints(info, startAt, hints, patternHints, problems);
+            }
+        }
     }
 
     List<ErrorDescription> computeHints(CompilationInfo info,
@@ -194,23 +222,123 @@ public class HintsInvoker implements CancellableTask<CompilationInfo> {
         }
 
         long patternStart = System.currentTimeMillis();
-        
+
         Map<String, List<PatternDescription>> patternTests = computePatternTests(patternHints);
 
         long bulkStart = System.currentTimeMillis();
-        
+
         BulkPattern bulkPattern = BulkSearch.getDefault().create(info, patternTests.keySet());
-        Map<String, Collection<TreePath>> occurringPatterns = BulkSearch.getDefault().match(info, info.getCompilationUnit(), bulkPattern, timeLog);
-        
+        Map<String, Collection<TreePath>> occurringPatterns = BulkSearch.getDefault().match(info, startAt, bulkPattern, timeLog);
+
         long bulkEnd = System.currentTimeMillis();
 
         timeLog.put("Jackpot 3.0 Bulk Search", bulkEnd - bulkStart);
-        
+
         errors.addAll(doComputeHints(info, occurringPatterns, patternTests, startAt, patternHints, problems));
 
         long patternEnd = System.currentTimeMillis();
 
         timeLog.put("Jackpot 3.0 Pattern Based Hints", patternEnd - patternStart);
+
+        return errors;
+    }
+
+    List<ErrorDescription> computeHintsInSpan(CompilationInfo info,
+                                        Map<Kind, List<HintDescription>> hints,
+                                        Map<PatternDescription, List<HintDescription>> patternHints,
+                                        Collection<? super MessageImpl> problems) {
+
+        TreePath path = info.getTreeUtilities().pathFor((from + to) / 2);
+
+        while (path.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
+            int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), path.getLeaf());
+            int end = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), path.getLeaf());
+
+            if (start <= from && end >= to) {
+                break;
+            }
+
+            path = path.getParentPath();
+        }
+
+        List<ErrorDescription> errors = new LinkedList<ErrorDescription>();
+
+        if (!hints.isEmpty()) {
+            long kindStart = System.currentTimeMillis();
+
+            new ScannerImpl(info, cancel, hints).scan(path, errors);
+
+            long kindEnd = System.currentTimeMillis();
+
+            timeLog.put("Jackpot 3.0 Kind Based Hints", kindEnd - kindStart);
+        }
+
+        if (!patternHints.isEmpty()) {
+            long patternStart = System.currentTimeMillis();
+
+            Map<String, List<PatternDescription>> patternTests = computePatternTests(patternHints);
+
+            long bulkStart = System.currentTimeMillis();
+
+            BulkPattern bulkPattern = BulkSearch.getDefault().create(info, patternTests.keySet());
+            Map<String, Collection<TreePath>> occurringPatterns = BulkSearch.getDefault().match(info, path, bulkPattern, timeLog);
+
+            long bulkEnd = System.currentTimeMillis();
+
+            timeLog.put("Jackpot 3.0 Bulk Search", bulkEnd - bulkStart);
+
+            errors.addAll(doComputeHints(info, occurringPatterns, patternTests, path, patternHints, problems));
+
+            long patternEnd = System.currentTimeMillis();
+
+            timeLog.put("Jackpot 3.0 Pattern Based Hints", patternEnd - patternStart);
+        }
+
+        return errors;
+    }
+
+    List<ErrorDescription> computeSuggestions(CompilationInfo info,
+                                        TreePath workOn,
+                                        Map<Kind, List<HintDescription>> hints,
+                                        Map<PatternDescription, List<HintDescription>> patternHints,
+                                        Collection<? super MessageImpl> problems) {
+        List<ErrorDescription> errors = new  LinkedList<ErrorDescription>();
+
+        if (!hints.isEmpty()) {
+            long kindStart = System.currentTimeMillis();
+
+            TreePath proc = workOn;
+
+            while (proc != null) {
+                new ScannerImpl(info, cancel, hints).scanDoNotGoDeeper(proc, errors);
+                proc = proc.getParentPath();
+            }
+
+            long kindEnd = System.currentTimeMillis();
+
+            timeLog.put("Kind Based Suggestions", kindEnd - kindStart);
+        }
+
+        if (!patternHints.isEmpty()) {
+//            long patternStart = System.currentTimeMillis();
+//
+//            Map<String, List<PatternDescription>> patternTests = computePatternTests(patternHints);
+//
+//            long bulkStart = System.currentTimeMillis();
+//
+//            BulkPattern bulkPattern = BulkSearch.getDefault().create(info, patternTests.keySet());
+//            Map<String, Collection<TreePath>> occurringPatterns = BulkSearch.getDefault().match(info, info.getCompilationUnit(), bulkPattern, timeLog);
+//
+//            long bulkEnd = System.currentTimeMillis();
+//
+//            timeLog.put("Jackpot 3.0 Bulk Search", bulkEnd - bulkStart);
+//
+//            errors.addAll(doComputeHints(info, occurringPatterns, patternTests, startAt, patternHints, problems));
+//
+//            long patternEnd = System.currentTimeMillis();
+//
+//            timeLog.put("Jackpot 3.0 Pattern Based Hints", patternEnd - patternStart);
+        }
 
         return errors;
     }
@@ -231,10 +359,10 @@ public class HintsInvoker implements CancellableTask<CompilationInfo> {
         }
         return patternTests;
     }
-    
+
     private List<ErrorDescription> doComputeHints(CompilationInfo info, Map<String, Collection<TreePath>> occurringPatterns, Map<String, List<PatternDescription>> patterns, TreePath startAt, Map<PatternDescription, List<HintDescription>> patternHints, Collection<? super MessageImpl> problems) throws IllegalStateException {
         List<ErrorDescription> errors = new LinkedList<ErrorDescription>();
-        
+
         for (Entry<String, Collection<TreePath>> occ : occurringPatterns.entrySet()) {
             for (PatternDescription d : patterns.get(occ.getKey())) {
                 Map<String, TypeMirror> constraints = new HashMap<String, TypeMirror>();
@@ -253,14 +381,16 @@ public class HintsInvoker implements CancellableTask<CompilationInfo> {
                     if (verified == null) {
                         continue;
                     }
-                    
+
                     Set<String> suppressedWarnings = new HashSet<String>(Utilities.findSuppressedWarnings(info, candidate));
-                    HintContext c = new HintContext(info, AbstractHint.HintSeverity.WARNING, candidate, verified.variables, verified.multiVariables, verified.variables2Names, problems);
 
                     for (HintDescription hd : patternHints.get(d)) {
-                        if (!Collections.disjoint(suppressedWarnings, hd.getSuppressWarnings()))
+                        HintMetadata hm = hd.getMetadata();
+                        HintContext c = new HintContext(info, hm, candidate, verified.variables, verified.multiVariables, verified.variables2Names, problems);
+
+                        if (!Collections.disjoint(suppressedWarnings, hm.suppressWarnings))
                             continue;
-                        
+
                         Collection<? extends ErrorDescription> workerErrors = hd.getWorker().createErrors(c);
 
                         if (workerErrors != null) {
@@ -273,7 +403,7 @@ public class HintsInvoker implements CancellableTask<CompilationInfo> {
 
         return errors;
     }
-    
+
 //    public static void computeHints(URI file, ProcessingEnvironment env, CompilationUnitTree cut, RulesManager m) {
 //        Map<Kind, HintDescription> hints = m.getKindBasedHints();
 //
@@ -303,7 +433,7 @@ public class HintsInvoker implements CancellableTask<CompilationInfo> {
 //            env.getMessager().printMessage(k, ed.getDescription());
 //        }
 //    }
-    
+
     private static final class ScannerImpl extends CancellableTreePathScanner<Void, List<ErrorDescription>> {
 
         private final Stack<Set<String>> suppresWarnings = new Stack<Set<String>>();
@@ -330,34 +460,24 @@ public class HintsInvoker implements CancellableTask<CompilationInfo> {
 
         private void runAndAdd(TreePath path, List<HintDescription> rules, List<ErrorDescription> d) {
             if (rules != null && !isInGuarded(info, path)) {
-                for (HintDescription hd : rules) {
+                OUTER: for (HintDescription hd : rules) {
                     if (isCanceled()) {
                         return ;
                     }
 
-                    boolean enabled = true;
-                    String[] suppressedBy = null;
+                    HintMetadata hm = hd.getMetadata();
 
-//                    if (tr instanceof AbstractHint) {
-//                        enabled = HintsSettings.isEnabled((AbstractHint)tr);
-//                        suppressedBy = HintsSettings.getSuppressedBy((AbstractHint)tr);
-//                    }
-
-                    if ( suppressedBy != null && suppressedBy.length != 0 ) {
-                        for (String wname : suppressedBy) {
-                            if( !suppresWarnings.empty() && suppresWarnings.peek().contains(wname)) {
-                                return;
-                            }
+                    for (String wname : hm.suppressWarnings) {
+                        if( !suppresWarnings.empty() && suppresWarnings.peek().contains(wname)) {
+                            continue OUTER;
                         }
                     }
 
-                    if (enabled) {
-                        HintContext c = new HintContext(info, AbstractHint.HintSeverity.WARNING, path, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
-                        Collection<? extends ErrorDescription> errors = hd.getWorker().createErrors(c);
+                    HintContext c = new HintContext(info, hm, path, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
+                    Collection<? extends ErrorDescription> errors = hd.getWorker().createErrors(c);
 
-                        if (errors != null) {
-                            d.addAll(errors);
-                        }
+                    if (errors != null) {
+                        d.addAll(errors);
                     }
                 }
             }
@@ -371,84 +491,84 @@ public class HintsInvoker implements CancellableTask<CompilationInfo> {
             TreePath tp = new TreePath(getCurrentPath(), tree);
             Kind k = tree.getKind();
 
-            runAndAdd(tp, hints.get(k), p);
+            boolean b = pushSuppressWarrnings(tp);
+            try {
+                runAndAdd(tp, hints.get(k), p);
 
-            if (isCanceled()) {
-                return null;
+                if (isCanceled()) {
+                    return null;
+                }
+
+                return super.scan(tree, p);
+            } finally {
+                if (b) {
+                    suppresWarnings.pop();
+                }
             }
-
-            return super.scan(tree, p);
         }
 
         @Override
         public Void scan(TreePath path, List<ErrorDescription> p) {
             Kind k = path.getLeaf().getKind();
-            runAndAdd(path, hints.get(k), p);
+            boolean b = pushSuppressWarrnings(path);
+            try {
+                runAndAdd(path, hints.get(k), p);
 
-            if (isCanceled()) {
-                return null;
+                if (isCanceled()) {
+                    return null;
+                }
+
+                return super.scan(path, p);
+            } finally {
+                if (b) {
+                    suppresWarnings.pop();
+                }
             }
-
-            return super.scan(path, p);
         }
 
-        @Override
-        public Void visitMethod(MethodTree tree, List<ErrorDescription> arg1) {
-            pushSuppressWarrnings();
-            Void r = super.visitMethod(tree, arg1);
-            suppresWarnings.pop();
-            return r;
+        public void scanDoNotGoDeeper(TreePath path, List<ErrorDescription> p) {
+            Kind k = path.getLeaf().getKind();
+            runAndAdd(path, hints.get(k), p);
         }
 
-        @Override
-        public Void visitClass(ClassTree tree, List<ErrorDescription> arg1) {
-            pushSuppressWarrnings();
-            Void r = super.visitClass(tree, arg1);
-            suppresWarnings.pop();
-            return r;
-        }
+        private boolean pushSuppressWarrnings(TreePath path) {
+            switch(path.getLeaf().getKind()) {
+                case CLASS:
+                case METHOD:
+                case VARIABLE:
+                    Set<String> current = suppresWarnings.size() == 0 ? null : suppresWarnings.peek();
+                    Set<String> nju = current == null ? new HashSet<String>() : new HashSet<String>(current);
 
-        @Override
-        public Void visitVariable(VariableTree tree, List<ErrorDescription> arg1) {
-            pushSuppressWarrnings();
-            Void r = super.visitVariable(tree, arg1);
-            suppresWarnings.pop();
-            return r;
-        }
+                    Element e = getTrees().getElement(path);
 
-        private void pushSuppressWarrnings( ) {
-            Set<String> current = suppresWarnings.size() == 0 ? null : suppresWarnings.peek();
-            Set<String> nju = current == null ? new HashSet<String>() : new HashSet<String>(current);
-
-            Element e = getTrees().getElement(getCurrentPath());
-
-            if ( e != null) {
-                for (AnnotationMirror am : e.getAnnotationMirrors()) {
-                    String name = ((TypeElement)am.getAnnotationType().asElement()).getQualifiedName().toString();
-                    if ( "java.lang.SuppressWarnings".equals(name) ) { // NOI18N
-                        Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = am.getElementValues();
-                        for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : elementValues.entrySet()) {
-                            if( "value".equals(entry.getKey().getSimpleName().toString()) ) { // NOI18N
-                                Object value = entry.getValue().getValue();
-                                if ( value instanceof List) {
-                                    for (Object av : (List)value) {
-                                        if( av instanceof AnnotationValue ) {
-                                            Object wname = ((AnnotationValue)av).getValue();
-                                            if ( wname instanceof String ) {
-                                                nju.add((String)wname);
+                    if ( e != null) {
+                        for (AnnotationMirror am : e.getAnnotationMirrors()) {
+                            String name = ((TypeElement)am.getAnnotationType().asElement()).getQualifiedName().toString();
+                            if ( "java.lang.SuppressWarnings".equals(name) ) { // NOI18N
+                                Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = am.getElementValues();
+                                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : elementValues.entrySet()) {
+                                    if( "value".equals(entry.getKey().getSimpleName().toString()) ) { // NOI18N
+                                        Object value = entry.getValue().getValue();
+                                        if ( value instanceof List) {
+                                            for (Object av : (List)value) {
+                                                if( av instanceof AnnotationValue ) {
+                                                    Object wname = ((AnnotationValue)av).getValue();
+                                                    if ( wname instanceof String ) {
+                                                        nju.add((String)wname);
+                                                    }
+                                                }
                                             }
                                         }
                                     }
-
                                 }
                             }
                         }
-
                     }
-                }
-            }
 
-            suppresWarnings.push(nju);
+                    suppresWarnings.push(nju);
+                    return true;
+            }
+            return false;
         }
 
         private Trees getTrees() {
@@ -460,7 +580,7 @@ public class HintsInvoker implements CancellableTask<CompilationInfo> {
         if (info == null) {
             return false;
         }
-        
+
         try {
             Document doc = info.getDocument();
 
@@ -480,17 +600,4 @@ public class HintsInvoker implements CancellableTask<CompilationInfo> {
         return false;
     }
 
-    @ServiceProvider(service=JavaSourceTaskFactory.class)
-    public static final class FactoryImpl extends EditorAwareJavaSourceTaskFactory {
-
-        public FactoryImpl() {
-            super(Phase.RESOLVED, Priority.LOW);
-        }
-
-        @Override
-        protected CancellableTask<CompilationInfo> createTask(FileObject file) {
-            return new HintsInvoker();
-        }
-        
-    }
 }

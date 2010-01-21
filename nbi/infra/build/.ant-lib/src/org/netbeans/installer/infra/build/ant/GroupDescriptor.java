@@ -40,7 +40,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.netbeans.installer.infra.build.ant.utils.Utils;
 
@@ -111,7 +110,7 @@ public class GroupDescriptor extends Task {
                 get("group.display.name.default"); // NOI18N
         
         xml.append("            <display-name>\n"); // NOI18N
-        xml.append("                <default><![CDATA[" + displayName + // NOI18N
+        xml.append("                <default><![CDATA[" + Utils.convertToAscii(displayName) + // NOI18N
                 "]]></default>\n"); // NOI18N
         
         if (!locales.equals("")) { // NOI18N
@@ -121,7 +120,7 @@ public class GroupDescriptor extends Task {
                 if (displayName != null) {
                     xml.append("                <localized locale=\"" + // NOI18N
                             locale + "\"><![CDATA[" + // NOI18N
-                            displayName + "]]></localized>\n"); // NOI18N
+                            Utils.convertToAscii(displayName) + "]]></localized>\n"); // NOI18N
                 }
             }
         }
@@ -132,7 +131,7 @@ public class GroupDescriptor extends Task {
                 get("group.description.default"); // NOI18N
         
         xml.append("            <description>\n"); // NOI18N
-        xml.append("                <default><![CDATA[" + description + // NOI18N
+        xml.append("                <default><![CDATA[" + Utils.convertToAscii(description) + // NOI18N
                 "]]></default>\n"); // NOI18N
         
         if (!locales.equals("")) { // NOI18N
@@ -142,7 +141,7 @@ public class GroupDescriptor extends Task {
                 if (description != null) {
                     xml.append("                <localized locale=\"" + // NOI18N
                             locale + "\"><![CDATA[" + // NOI18N
-                            description + "]]></localized>\n"); // NOI18N
+                            Utils.convertToAscii(description) + "]]></localized>\n"); // NOI18N
                 }
             }
         }

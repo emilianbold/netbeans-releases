@@ -5,6 +5,7 @@ if (true) {
 }
 
 class class_name {
+  
   /**
    * PHPDoc
    */
@@ -13,4 +14,5 @@ class class_name {
     echo 1;
   }
 }
+
 ?>

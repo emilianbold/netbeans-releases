@@ -61,7 +61,7 @@ public class LoggerStringConcatTest extends TestBase {
                        "        l.log(Level.SEVERE, \"a=\" + a + \", b=\" + b + \", c=\" + c);\n" +
                        "    }\n" +
                        "}\n",
-                       "5:28-5:62:verifier:Inefficient to use string concat in logger",
+                       "5:28-5:62:verifier:Inefficient use of string concatenation in logger",
                        "FixImpl",
                       ("package test;\n" +
                         "import java.util.logging.Level;\n" +
@@ -83,7 +83,7 @@ public class LoggerStringConcatTest extends TestBase {
                        "        l.severe(\"a=\" + a + \", b=\" + b + \", c=\" + c);\n" +
                        "    }\n" +
                        "}\n",
-                       "5:17-5:51:verifier:Inefficient to use string concat in logger",
+                       "5:17-5:51:verifier:Inefficient use of string concatenation in logger",
                        "FixImpl",
                       ("package test;\n" +
                         "import java.util.logging.Level;\n" +

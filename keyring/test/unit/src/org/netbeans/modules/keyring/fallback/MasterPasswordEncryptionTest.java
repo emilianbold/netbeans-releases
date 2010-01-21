@@ -67,12 +67,13 @@ public class MasterPasswordEncryptionTest extends NbTestCase {
         p.unlock("first password".toCharArray());
         byte[] ciphertext = p.encrypt("secret".toCharArray());
         p.unlock("second password".toCharArray());
+        char[] result = new char[0];
         try {
-            p.decrypt(ciphertext);
-            fail("should not be able to decrypt with incorrect password");
+            result = p.decrypt(ciphertext);
         } catch (Exception x) {
             // expected: "BadPaddingException: Given final block not properly padded"
         }
+        assertFalse("should not be able to decrypt with incorrect password", new String(result).equals("secret"));
     }
 
 }

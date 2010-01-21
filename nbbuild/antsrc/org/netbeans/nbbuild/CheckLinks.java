@@ -246,11 +246,7 @@ public class CheckLinks extends MatchingTask {
                 ex.printStackTrace();
             }
         }
-        String b = u.toString();
-        int i = b.lastIndexOf('#');
-        if (i != -1) {
-            b = b.substring(0, i);
-        }
+        String b = u.toString().replaceFirst("[#?].*$", "");
         try {
             base = new URI(b);
             //base = new URI(u.getScheme(), u.getUserInfo(), u.getHost(), u.getPort(), u.toURL().getPath(), u.getQuery(), /*fragment*/null);

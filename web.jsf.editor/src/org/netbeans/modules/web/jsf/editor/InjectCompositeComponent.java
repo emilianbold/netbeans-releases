@@ -40,9 +40,13 @@ package org.netbeans.modules.web.jsf.editor;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -63,6 +67,8 @@ import org.netbeans.modules.csl.api.Rule.SelectionRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.html.editor.api.HtmlKit;
+import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -72,6 +78,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -80,6 +87,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -90,7 +98,7 @@ public class InjectCompositeComponent {
     private static final int HINT_PRIORITY = 60; //magic number
     private static final String TEMPLATES_FOLDER = "JSF";   //NOI18N
     private static final String TEMPLATE_NAME = "out.xhtml";  //NOI18N
-
+ 
     public static void inject(Document document, int from, int to) {
 	try {
 	    FileObject fileObject = NbEditorUtilities.getFileObject(document);
@@ -111,7 +119,7 @@ public class InjectCompositeComponent {
 
     public static Hint getHint(final RuleContext context, final int from, final int to) {
 	return new Hint(injectCCRule,
-		NbBundle.getMessage(InjectCompositeComponent.class, "MSG_InjectCompositeComponentHint"), //NOI18N
+		NbBundle.getMessage(InjectCompositeComponent.class, "MSG_InjectCompositeComponentSelectionHintDescription"), //NOI18N
 		context.parserResult.getSnapshot().getSource().getFileObject(),
 		new OffsetRange(from, to),
 		Collections.<HintFix>singletonList(new HintFix() {
@@ -150,17 +158,36 @@ public class InjectCompositeComponent {
 
 	final Logger logger = Logger.getLogger(InjectCompositeComponent.class.getSimpleName());
 	final JsfSupport jsfs = JsfSupport.findFor(file);
-	if(jsfs == null) {
+	if (jsfs == null) {
 	    logger.warning("Cannot find JsfSupport instance for file " + file.getPath()); //NOI18N
-	    return ;
+	    return;
 	}
 
-	if (!isValidSelection(document, startOffset, endOffset, jsfs)) {
+	final SnippetContext context = getSnippetContext(document, startOffset, endOffset, jsfs);
+	if (!context.isValid()) {
 	    templateWizard.putProperty("incorrectActionContext", true); //NOI18N
 	}
 
+	//get list of used declarations, which needs to be passed to the wizard
+	Source source = Source.create(document);
+	final AtomicReference<Map<String, String>> declaredPrefixes = new AtomicReference<Map<String, String>>();
+	ParserManager.parse(Collections.singleton(source), new UserTask() {
+	    @Override
+	    public void run(ResultIterator resultIterator) throws Exception {
+		ResultIterator ri = Utils.getResultIterator(resultIterator, HtmlKit.HTML_MIME_TYPE);
+		if (ri != null) {
+		    HtmlParserResult result = (HtmlParserResult) ri.getParserResult();
+		    if(result != null) {
+			declaredPrefixes.set(result.getNamespaces());
+		    }
+		}
+	    }
+	});
+	templateWizard.putProperty("declaredPrefixes", declaredPrefixes.get()); //NOI18N
+
 	templateDO = DataObject.find(template);
 	Set<DataObject> result = templateWizard.instantiate(templateDO, targetFolder);
+	final String prefix = (String)templateWizard.getProperty("selectedPrefix"); //NOI18N
 	if (result != null && result.size() > 0) {
 	    final String compName = result.iterator().next().getName();
 	    //TODO XXX Replace selected text by created component in editor
@@ -174,7 +201,7 @@ public class InjectCompositeComponent {
 		    public void run() {
 			try {
 			    doc.remove(startOffset, endOffset - startOffset);
-			    String text = "<ez:" + compName + "/>"; //NOI18N
+			    String text = "<" + prefix + ":" + compName + "/>"; //NOI18N
 			    doc.insertString(startOffset, text, null);
 			    indent.reindent(startOffset, startOffset + text.length());
 			} catch (BadLocationException ex) {
@@ -197,12 +224,14 @@ public class InjectCompositeComponent {
 	    //to the resources/xxx/ folder we need to wait until the files
 	    //get indexed and the library is created
 	    final String compositeLibURL = JsfUtils.getCompositeLibraryURL(compFolder);
-	    ParserManager.parseWhenScanFinished(Collections.singletonList(Source.create(document)), new UserTask() { //NOI18N
+	    Source documentSource = Source.create(document);
+	    ParserManager.parseWhenScanFinished(Collections.singletonList(documentSource), new UserTask() { //NOI18N
+
 		@Override
 		public void run(ResultIterator resultIterator) throws Exception {
 		    FaceletsLibrary lib = jsfs.getFaceletsLibraries().get(compositeLibURL);
-		    if(lib != null) {
-			if(null == JsfUtils.importLibrary(document, lib, "ez")) { //XXX: fix the damned static prefix !!!
+		    if (lib != null) {
+			if (!JsfUtils.importLibrary(document, lib, prefix)) { //XXX: fix the damned static prefix !!!
 			    logger.warning("Cannot import composite components library " + compositeLibURL); //NOI18N
 			}
 		    } else {
@@ -211,26 +240,58 @@ public class InjectCompositeComponent {
 		    }
 		}
 	    });
+
+	    //now we need to import all the namespaces refered in the snipet
+	    DataObject templateInstance = result.iterator().next();
+	    EditorCookie ec = templateInstance.getCookie(EditorCookie.class);
+	    final Document templateInstanceDoc = ec.openDocument();
+	    ParserManager.parseWhenScanFinished(Collections.singletonList(documentSource), new UserTask() { //NOI18N
+
+		@Override
+		public void run(ResultIterator resultIterator) throws Exception {
+		    final Map<FaceletsLibrary, String> importsMap = new LinkedHashMap<FaceletsLibrary, String>();
+		    for (String uri : context.getDeclarations().keySet()) {
+			String prefix = context.getDeclarations().get(uri);
+			FaceletsLibrary lib = jsfs.getFaceletsLibraries().get(uri);
+			if (lib != null) {
+			    importsMap.put(lib, prefix);
+			}
+		    }
+		    //do the import under atomic lock in different thread,
+		    RequestProcessor.getDefault().post(new Runnable() {
+			public void run() {
+			    ((BaseDocument)templateInstanceDoc).runAtomic(new Runnable() {
+				public void run() {
+				    JsfUtils.importLibrary(templateInstanceDoc, importsMap);
+				}
+			    });
+			}
+		    });
+		}
+	    });
+	    ec.saveDocument(); //save the template instance after imports
 	}
     }
 
-    private static boolean isValidSelection(Document doc, final int from, final int to, final JsfSupport jsfs) {
+    private static SnippetContext getSnippetContext(Document doc, final int from, final int to, final JsfSupport jsfs) {
+	final SnippetContext context = new SnippetContext();
+	context.setValid(true);
+
 	final Source source = Source.create(doc);
-	final AtomicBoolean retval = new AtomicBoolean(true);
 	try {
 	    ParserManager.parse(Collections.singleton(source), new UserTask() {
 
 		@Override
 		public void run(ResultIterator resultIterator) throws Exception {
-		    HtmlParserResult result = (HtmlParserResult) JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
+		    final HtmlParserResult result = (HtmlParserResult) JsfUtils.getEmbeddedParserResult(resultIterator, "text/html"); //NOI18N
 		    if (result == null) {
 			return;
 		    }
 		    final int astFrom = result.getSnapshot().getEmbeddedOffset(from);
 		    final int astTo = result.getSnapshot().getEmbeddedOffset(to);
-		    
+
 		    try {
-			for (String libUri : result.getNamespaces().keySet()) {
+			for (final String libUri : result.getNamespaces().keySet()) {
 			    //is the declared uri a faceler library?
 			    if (!jsfs.getFaceletsLibraries().containsKey(libUri)) {
 				continue; //no facelets stuff, skip it
@@ -243,7 +304,15 @@ public class InjectCompositeComponent {
 				    int node_logical_from = node.logicalStartOffset();
 				    int node_logical_to = node.logicalEndOffset();
 
-				    //todo: optimize be a bit please :-)
+				    if (node_logical_from >= astFrom && node_logical_from <= astTo
+					    || node_logical_to >= astFrom && node_logical_to <= astTo) {
+					//the node start or end is in the selection
+					//such info is enough to add the node's namespace
+					//to the list of future imports for the snippet
+					context.addDeclaration(libUri, result.getNamespaces().get(libUri));
+				    }
+
+				    //todo: optimize me a bit please :-)
 
 				    //the node must either contain both offsets or none
 				    if ((astFrom > node_logical_from && astFrom < node_logical_to && !(astTo > node_logical_from && astTo < node_logical_to))
@@ -256,7 +325,7 @@ public class InjectCompositeComponent {
 				    AstNode closeTag = node.getMatchingTag();
 				    if (closeTag == null) {
 					//broken source, error
-					if(!node.isEmpty()) {
+					if (!node.isEmpty()) {
 					    fail();
 					}
 				    }
@@ -272,7 +341,7 @@ public class InjectCompositeComponent {
 				}
 
 				private void fail() {
-				    retval.set(false);
+				    context.setValid(false);
 				    throw new AstTreeVisitingBreakException();
 				}
 			    }, AstNode.NodeType.OPEN_TAG);
@@ -280,19 +349,43 @@ public class InjectCompositeComponent {
 
 		    } catch (AstTreeVisitingBreakException e) {
 			//no-op, we just need to stop the visition once we find first problem
+			context.setValid(false);
 		    }
 		}
 	    });
-	    return retval.get();
+
 	} catch (ParseException ex) {
 	    Exceptions.printStackTrace(ex);
-	    return false;
 	}
+	return context;
     }
     private static final Rule injectCCRule = new InjectCCSelectionRule();
 
     private static class AstTreeVisitingBreakException extends RuntimeException {
     };
+
+    private static class SnippetContext {
+
+	private boolean valid;
+	private Map<String, String> relatedDeclarations = new HashMap<String, String>();
+
+	public void setValid(boolean valid) {
+	    this.valid = valid;
+	}
+
+	public void addDeclaration(String uri, String prefix) {
+	    relatedDeclarations.put(uri, prefix);
+	}
+
+	/** uri2prefix map of related declarations */
+	public Map<String, String> getDeclarations() {
+	    return relatedDeclarations;
+	}
+
+	public boolean isValid() {
+	    return valid;
+	}
+    }
 
     private static class InjectCCSelectionRule implements SelectionRule {
 

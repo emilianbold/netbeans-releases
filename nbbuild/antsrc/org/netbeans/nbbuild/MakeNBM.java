@@ -459,7 +459,7 @@ public class MakeNBM extends Task {
             attr = new Attributes(englishAttr);
             attr.putValue("locale", locale);
             log("Copying English module attributes to localized attributes in locale "+locale,Project.MSG_VERBOSE);
-            String om = attr.getValue("OpenIDE-Module");
+            String om = JarWithModuleAttributes.extractCodeName(attr);
             String omn = attr.getValue("OpenIDE-Module-Name");
             String omdc = attr.getValue("OpenIDE-Module-Display-Category");
             String omsd = attr.getValue("OpenIDE-Module-Short-Description");

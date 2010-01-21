@@ -100,6 +100,7 @@ public class DevicePropertiesPanel extends JPanel implements DocumentListener, F
     private boolean updating;
     private ValidationGroup group = ValidationGroup.create(this);
     private final ComboEditor ceditor = new ComboEditor();
+    @SuppressWarnings("unchecked") //NOI18N
     public void run() {
         initComponents();
         ProtocolRenderer r = new ProtocolRenderer();

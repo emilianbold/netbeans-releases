@@ -78,12 +78,26 @@ public class KenaiUtil {
 
     /**
      * Returns true if logged into kenai, otherwise false.
-     *
+     * @param url if set to null, any kenai will be tested
      * @return
      */
     public static boolean isLoggedIn(String url) {
-        Kenai kenai = getKenai(url);
-        return (kenai != null) && (kenai.getPasswordAuthentication() != null);
+        boolean loggedIn = false;
+        if (url == null) {
+            // is the user logged into any kenai?
+            // we're just interested if the user works with any kenais
+            for (Kenai kenai : KenaiManager.getDefault().getKenais()) {
+                if (kenai.getPasswordAuthentication() != null) {
+                    loggedIn = true;
+                    break;
+                }
+            }
+        } else {
+            // is the user logged into a concrete kenai instance?
+            Kenai kenai = getKenai(url);
+            loggedIn = (kenai != null) && (kenai.getPasswordAuthentication() != null);
+        }
+        return loggedIn;
     }
 
     /**
@@ -242,16 +256,29 @@ public class KenaiUtil {
     }
 
     public static Kenai getKenai(String url) {
+        // 1st - full url match
+        Kenai kenaiCandidate = KenaiManager.getDefault().getKenai(url);
+        if (kenaiCandidate != null) {
+            return kenaiCandidate;
+        }
+        // 2nd - VCS repository url match
         try {
             KenaiProject kp = KenaiProject.forRepository(url);
-            if (kp == null) {
-                return null;
+            if (kp != null) {
+                return kp.getKenai();
             }
-            return kp.getKenai();
         } catch (KenaiException ex) {
             BugtrackingManager.LOG.log(Level.FINE, url, ex);
-            return null;
         }
+        // 3rd - bugtracking issue url match
+        for (Kenai kenai : KenaiManager.getDefault().getKenais()) {
+            String kenaiUrl = kenai.getUrl().toString();
+            if (url.startsWith(kenaiUrl)) {
+                BugtrackingManager.LOG.log(Level.FINE, "getKenai: url {0} matches kenai url {1}", new String[] {url, kenaiUrl}); //NOI18N
+                return kenai;
+            }
+        }
+        return null;
     }
 
 }

@@ -43,7 +43,6 @@ package org.netbeans.modules.versioning.system.cvss;
 
 import java.util.regex.Pattern;
 import java.util.*;
-import java.lang.String;
 import java.util.prefs.Preferences;
 import java.io.File;
 
@@ -51,6 +50,7 @@ import org.openide.util.NbPreferences;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.FileCollection;
 import org.netbeans.lib.cvsclient.CVSRoot;
+import org.netbeans.modules.versioning.util.KeyringSupport;
 
 /**
  * Stores CVS module configuration.
@@ -73,6 +73,7 @@ public class CvsModuleConfig {
     private static final String FIELD_SEPARATOR = "<~>";
     
     private static final CvsModuleConfig INSTANCE = new CvsModuleConfig();
+    public static final String PREFIX_KEYRING_KEY = "versioning.cvs."; //NOI18N
 
     public static CvsModuleConfig getDefault() {
         return INSTANCE;
@@ -205,32 +206,18 @@ public class CvsModuleConfig {
         Map<String, RootSettings> map = new HashMap<String, RootSettings>(smap.size());
         for (String s : smap) {
             String [] fields = s.split(FIELD_SEPARATOR);
-            if (fields.length >= 8) {
-                // TODO: old settings, remove this block after 6.0
+            if (fields.length < 8 && fields.length >= 3) {
                 RootSettings rs = new RootSettings();
                 map.put(fields[0], rs);
-                if (fields.length >= 11) {
-                    ExtSettings es = new ExtSettings();
-                    rs.extSettings = es;
-                    es.extUseInternalSsh = Boolean.valueOf(fields[8]);
-                    es.extRememberPassword = Boolean.valueOf(fields[9]);
-                    es.extCommand = fields[10];
-                    if (fields.length >= 12) {
-                        es.extPassword = fields[11];
-                    }
-                }
-            } else {
-                if (fields.length >= 4) {
-                    RootSettings rs = new RootSettings();
-                    map.put(fields[0], rs);
-                    ExtSettings es = new ExtSettings();
-                    rs.extSettings = es;
-                    es.extUseInternalSsh = Boolean.valueOf(fields[1]);
-                    es.extRememberPassword = Boolean.valueOf(fields[2]);
-                    es.extCommand = fields[3];
-                    if (fields.length >= 5) {
-                        es.extPassword = fields[4];
-                    }
+                ExtSettings es = new ExtSettings();
+                rs.extSettings = es;
+                es.extUseInternalSsh = Boolean.valueOf(fields[1]);
+                es.extRememberPassword = Boolean.valueOf(fields[2]);
+                es.extCommand = fields.length >= 4 ? fields[3] : ""; //NOI18N
+                es.extPassword = KeyringSupport.read(PREFIX_KEYRING_KEY, fields[0]);
+                if (fields.length >= 5 && !"".equals(fields[4])) {
+                    es.extPassword = fields[4].toCharArray();
+                    KeyringSupport.save(PREFIX_KEYRING_KEY, fields[0], es.extPassword.clone(), null);
                 }
             }
         }
@@ -252,7 +239,7 @@ public class CvsModuleConfig {
                 es.append(settings.extSettings.extCommand);
                 if (settings.extSettings.extRememberPassword) {
                     es.append(FIELD_SEPARATOR);
-                    es.append(settings.extSettings.extPassword);
+                    KeyringSupport.save(PREFIX_KEYRING_KEY, entry.getKey(), settings.extSettings.extPassword.clone(), null);
                 }
             }
             smap.add(es.toString());
@@ -319,7 +306,7 @@ public class CvsModuleConfig {
         public boolean extRememberPassword;
 
         /** Makes sense if extUseInternalSsh == true */
-        public String extPassword;
+        public char[] extPassword;
 
         /** Makes sense if extUseInternalSsh == false */
         public String extCommand;

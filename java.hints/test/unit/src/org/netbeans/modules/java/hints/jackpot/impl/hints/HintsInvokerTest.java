@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.impl.hints;
@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.type.TypeMirror;
 import junit.framework.TestSuite;
@@ -73,6 +74,8 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintDescriptionFactory;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.Exceptions;
@@ -677,7 +680,8 @@ public class HintsInvokerTest extends TreeRuleTestBase {
         test2Hint.put("testMultiple2OneStatement2", test2Hint.get("testMultiple2OneStatement1"));
         test2Hint.put("testMemberSelectInsideMemberSelect", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("$Test.test", Collections.<String, String>singletonMap("$Test", "test.Test"))).setWorker(new WorkerImpl("$Test.getTest()")).produce());
         test2Hint.put("testPackageInfo", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("$Test.test", Collections.<String, String>singletonMap("$Test", "test.Test"))).setWorker(new WorkerImpl("$Test.getTest()")).produce());
-        test2Hint.put("testSuppressWarnings", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("$Test.test", Collections.<String, String>singletonMap("$Test", "test.Test"))).setWorker(new WorkerImpl("$Test.getTest()")).addSuppressWarningsKeys("test").produce());
+        HintMetadata metadata = HintMetadata.create("no-id", "", "", "", true, HintMetadata.Kind.HINT_NON_GUI, HintSeverity.WARNING, Collections.singletonList("test"));
+        test2Hint.put("testSuppressWarnings", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("$Test.test", Collections.<String, String>singletonMap("$Test", "test.Test"))).setWorker(new WorkerImpl("$Test.getTest()")).setMetadata(metadata).produce());
         test2Hint.put("testRewriteOneToMultipleClassMembers", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("private int i;", Collections.<String, String>emptyMap())).setWorker(new WorkerImpl("private int i; public int getI() { return i; }")).produce());
         test2Hint.put("testImports1", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("new LinkedList()", Collections.<String, String>emptyMap(), "import java.util.LinkedList;")).setWorker(new WorkerImpl("new ArrayList()", "import java.util.ArrayList;\n")).produce());
         test2Hint.put("testImports2", HintDescriptionFactory.create().setTriggerPattern(PatternDescription.create("LinkedList $0;", Collections.<String, String>emptyMap(), "import java.util.LinkedList;")).setWorker(new WorkerImpl("ArrayList $0;", "import java.util.ArrayList;\n")).produce());
@@ -700,7 +704,7 @@ public class HintsInvokerTest extends TreeRuleTestBase {
         Map<PatternDescription, List<HintDescription>> pattern2Hint = new HashMap<PatternDescription, List<HintDescription>>();
         RulesManager.sortOut(Collections.singletonList(hd), kind2Hints, pattern2Hint);
 
-        return new HintsInvoker().computeHints(info, new TreePath(info.getCompilationUnit()), kind2Hints, pattern2Hint, new LinkedList<MessageImpl>());
+        return new HintsInvoker(info, new AtomicBoolean()).computeHints(info, new TreePath(info.getCompilationUnit()), kind2Hints, pattern2Hint, new LinkedList<MessageImpl>());
     }
 
     @Override

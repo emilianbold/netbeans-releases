@@ -43,6 +43,8 @@ package org.netbeans.modules.web.jsf.editor.el;
 
 import java.awt.Toolkit;
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
@@ -76,6 +78,9 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.WebBeansModelSupport;
+import org.netbeans.modules.web.jsf.editor.WebBeansModelSupport.WebBean;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
@@ -98,11 +103,11 @@ import org.openide.util.RequestProcessor;
  * @author Petr Pisl
  */
 public class JsfHyperlinkProvider implements HyperlinkProvider {
-    
+
     /** Creates a new instance of JSFJSPHyperlinkProvider */
     public JsfHyperlinkProvider() {
     }
-    
+
     /**
      * Should determine whether there should be a hyperlink on the given offset
      * in the given document. May be called any number of times for given parameters.
@@ -116,65 +121,39 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
      * @return true if the provided offset should be in a hyperlink
      *         false otherwise
      */
-    public boolean isHyperlinkPoint(Document doc, int offset) {
-        if (!(doc instanceof BaseDocument))
-            return false;
-        BaseDocument bdoc = (BaseDocument) doc;
-        bdoc.readLock();
-        try {
-            JTextComponent target = Utilities.getFocusedComponent();
-            if (target == null || target.getDocument() != bdoc)
-                return false;
-        
-            TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(bdoc);
-            TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
-            if (tokenSequence.move(offset) == Integer.MAX_VALUE) {
-                return false; //no token found
-            }
-        
-            if (!tokenSequence.moveNext()) {
-                return false; //no token
-            }
-        
-            //Token<?> token = tokenSequence.token();
-            TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
-                    ELTokenId.language());
-            if (elTokenSequence != null) {
-                FileObject fObject = NbEditorUtilities.getFileObject(doc);
-                if (fObject == null) {
-                    return false;
-                }
-                
-                WebModule wm = WebModule.getWebModule(fObject);
-                if (wm != null) {
-                    JsfElExpression exp = new JsfElExpression(wm, doc);
-                    elTokenSequence.move(offset);
-                    if (!elTokenSequence.moveNext()) {
-                        return false; //no token
-                    }
-                
-                    if (elTokenSequence.token().id() == ELTokenId.DOT) {
-                        return false;
-                    }
-                    
-                    int endOfEL = elTokenSequence.offset() + 
-                        elTokenSequence.token().length();
-                    int res = exp.parse(endOfEL);
-                    
-                    if (res == JsfElExpression.EL_START) {
-                        res = exp.parse(endOfEL + 1);
-                    }
-                    return (res == JsfElExpression.EL_JSF_BEAN) ||
-                        (res == JsfElExpression.EL_JSF_BEAN_REFERENCE);
-                }
-            }
-        } finally {
-            bdoc.readUnlock();
-        }
-        
-        return false;
+    public boolean isHyperlinkPoint(final Document doc, final int offset) {
+	final AtomicBoolean ret = new AtomicBoolean(false);
+	doc.render(new Runnable() {
+
+	    public void run() {
+		TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(doc);
+		TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
+		tokenSequence.move(offset);
+		if (!tokenSequence.moveNext()) {
+		    return; //no token
+		}
+
+		//check expression language
+		TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(ELTokenId.language());
+		if(elTokenSequence == null) {
+		    return ;
+		}
+		
+ 		elTokenSequence.move(offset);
+		if (!elTokenSequence.moveNext()) {
+		    return; //no token
+		}
+
+		ret.set(elTokenSequence.token().id() == ELTokenId.IDENTIFIER);
+
+	    }
+	});
+
+	return ret.get();
     }
-    
+
+
+
     /**
      * Should determine the span of hyperlink on given offset. Generally, if
      * isHyperlinkPoint returns true for a given parameters, this class should
@@ -192,13 +171,13 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
     public int[] getHyperlinkSpan(Document doc, int offset) {
         if (!(doc instanceof BaseDocument))
             return null;
-        
+
         BaseDocument bdoc = (BaseDocument) doc;
         JTextComponent target = Utilities.getFocusedComponent();
-        
+
         if (target == null || target.getDocument() != bdoc)
             return null;
-        
+
         TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(bdoc);
         TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
         if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
@@ -207,13 +186,13 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
         if(!tokenSequence.moveNext()) {
             return null; //no token
         }
-        
+
         //Token<?> token = tokenSequence.token();
-        
+
         // is it a bean in EL ?
         TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
                 ELTokenId.language());
-        
+
         if (elTokenSequence != null){
             FileObject fObject = NbEditorUtilities.getFileObject(doc);
             WebModule wm = WebModule.getWebModule(fObject);
@@ -223,18 +202,18 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                 if(!elTokenSequence.moveNext()) {
                     return null; //no token
                 }
-                
+
                 int elEnd = elTokenSequence.offset() + elTokenSequence.token().length();
-                
+
                 int res = exp.parse(elEnd);
-                if (res == JsfElExpression.EL_JSF_BEAN || res == JsfElExpression.EL_START 
+                if (res == JsfElExpression.EL_JSF_BEAN || res == JsfElExpression.EL_START
                         || res == JsfElExpression.EL_JSF_BEAN_REFERENCE)
                     return new int[] {elTokenSequence.offset(), elEnd};
             }
         }
         return null;
     }
-    
+
     /**
      * The implementor should perform an action
      * corresponding to clicking on the hyperlink on the given offset. The
@@ -247,13 +226,13 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
      *               the implementations should not depend on it)
      */
     public void performClickAction(Document doc, int offset) {
-        
+
         BaseDocument bdoc = (BaseDocument) doc;
         JTextComponent target = Utilities.getFocusedComponent();
-        
+
         if (target == null || target.getDocument() != bdoc)
             return;
-              
+
         TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(bdoc);
         TokenSequence<?> tokenSequence = tokenHierarchy.tokenSequence();
         if(tokenSequence.move(offset) == Integer.MAX_VALUE) {
@@ -262,9 +241,9 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
         if(!tokenSequence.moveNext()) {
             return ; //no token
         }
-        
+
         //Token<?> token = tokenSequence.token();
-        
+
         // is it a bean in EL
         TokenSequence<ELTokenId> elTokenSequence = tokenSequence.embedded(
                 ELTokenId.language());
@@ -277,16 +256,16 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                 if(!elTokenSequence.moveNext()) {
                     return; //no token
                 }
-                
-                int res = exp.parse(elTokenSequence.offset() + 
+
+                int res = exp.parse(elTokenSequence.offset() +
                             elTokenSequence.token().length());
                 if (res == JsfElExpression.EL_START ){
                     //TODO XXX Add code to point references to beans in JSF file
-                    (new OpenConfigFile(fObject, wm, 
+                    (new OpenConfigFile(fObject, wm,
                             elTokenSequence.token().text().toString())).run();
                     return;
                 }
-                if (res == JsfElExpression.EL_JSF_BEAN || 
+                if (res == JsfElExpression.EL_JSF_BEAN ||
                         res == JsfElExpression.EL_JSF_BEAN_REFERENCE)
                 {
                     if (!exp.gotoPropertyDeclaration(exp.getBaseObjectClass())){
@@ -299,22 +278,32 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
             }
         }
     }
-    
+
     private static class OpenConfigFile implements Runnable {
         private String beanName;
         private WebModule wm;
         private FileObject mySource;
-        
+
         OpenConfigFile(FileObject orig, WebModule wm, String beanName){
             this.beanName = beanName;
             this.wm = wm;
             mySource = orig;
         }
-        
+
         public void run(){
             if (wm == null) return;
-            
-            FacesManagedBean bean = ConfigurationUtils.findFacesManagedBean( 
+
+	    //try web beans first
+	    List<WebBean> webBeans = WebBeansModelSupport.getNamedBeans(JsfSupport.findFor(wm.getDocumentBase()).getWebBeansModel());
+	    for(WebBean wb : webBeans) {
+		if(wb.getName().equals(beanName)) {
+		    JavaSource javaSource = JavaSource.create( getClassPathInfo() );
+		    openElement( javaSource , wb.getBeanClassName());
+		    return;
+		}
+	    }
+
+            FacesManagedBean bean = ConfigurationUtils.findFacesManagedBean(
                     wm, beanName);
             if ( bean == null ){
                 return ;
@@ -342,12 +331,12 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                         if (editorCookie != null) {
                             StyledDocument document = editorCookie.openDocument();
                             int[] definition = JSFEditorUtilities.
-                                getManagedBeanDefinition((BaseDocument)document, 
+                                getManagedBeanDefinition((BaseDocument)document,
                                         "managed-bean-name", beanName); //NOI18N
                             // line number in the document
-                            int lineNumber = NbDocument.findLineNumber(document, 
+                            int lineNumber = NbDocument.findLineNumber(document,
                                     definition[0]);
-                            int lineOffset = NbDocument.findLineOffset(document, 
+                            int lineOffset = NbDocument.findLineOffset(document,
                                     lineNumber);
                             // column at the line
                             int column = lineOffset - definition[0];
@@ -358,7 +347,7 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
 
                                 if(line != null) {
                                     // show the line
-                                    line.show(ShowOpenType.OPEN, 
+                                    line.show(ShowOpenType.OPEN,
                                             ShowVisibilityType.FRONT, column);
                                 }
                             }
@@ -378,12 +367,12 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                 }
             }
         }
-        
+
         private void openElement( final JavaSource javaSource, final String fqn){
             try {
                 javaSource.runUserActionTask(
                         new Task<CompilationController>() {
-                            
+
                             public void run(
                                     CompilationController controller )
                                     throws Exception
@@ -403,17 +392,17 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
                 Exceptions.printStackTrace(e);
             }
         }
-        
+
         private ClasspathInfo getClassPathInfo(){
             //ClasspathInfo.create(mySource);
             Project project = FileOwnerQuery.getOwner(mySource);
-            return ClasspathInfo.create( getClassPath(project, ClassPath.BOOT ), 
-                    getClassPath(project, ClassPath.COMPILE ), 
+            return ClasspathInfo.create( getClassPath(project, ClassPath.BOOT ),
+                    getClassPath(project, ClassPath.COMPILE ),
                     getClassPath(project, ClassPath.SOURCE ));
         }
 
         private static ClassPath getClassPath( Project project, String type ) {
-            ClassPathProvider provider = project.getLookup().lookup( 
+            ClassPathProvider provider = project.getLookup().lookup(
                     ClassPathProvider.class);
             if ( provider == null ){
                 return null;
@@ -422,7 +411,7 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
             if ( sources == null ){
                 return null;
             }
-            SourceGroup[] sourceGroups = sources.getSourceGroups( 
+            SourceGroup[] sourceGroups = sources.getSourceGroups(
                     JavaProjectConstants.SOURCES_TYPE_JAVA );
             ClassPath[] paths = new ClassPath[ sourceGroups.length];
             int i=0;

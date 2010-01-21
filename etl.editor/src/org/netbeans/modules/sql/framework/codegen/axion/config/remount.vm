@@ -1,1 +1,0 @@
-REMOUNT#if( $isExternal ) EXTERNAL#end TABLE $tableName

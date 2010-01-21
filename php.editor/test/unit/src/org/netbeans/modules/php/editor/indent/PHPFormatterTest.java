@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
@@ -221,7 +223,128 @@ public class PHPFormatterTest extends PHPTestBase {
     public void test167791() throws Exception {
         reformatFileContents("testfiles/formatting/issue167791.php", 5);
     }
-  
+
+    // blank lines
+    public void testBLClass01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Class01.php", options);
+    }
+
+    public void testBLFields01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Fields01.php", options);
+    }
+
+    public void testBLFields02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Fields02.php", options);
+    }
+
+    public void testBLFields03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Fields03.php", options);
+    }
+
+    public void testBLFields04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Fields04.php", options);
+    }
+
+    public void testBLFields05() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Fields05.php", options);
+    }
+
+    public void testBLFields06() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Fields06.php", options);
+    }
+
+    public void testBLFunction01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Function01.php", options);
+    }
+
+    public void testBLFunction02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Function02.php", options);
+    }
+
+    public void testBLFunction04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Function04.php", options);
+    }
+
+    public void testBLNamespace01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Namespace01.php", options);
+    }
+
+    public void testBLNamespace02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Namespace02.php", options);
+    }
+
+    public void testBLNamespace03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Namespace03.php", options);
+    }
+
+    public void testBLSimpleClass01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleClass01.php", options);
+    }
+
+    public void testBLSimpleClass02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleClass02.php", options);
+    }
+
+    public void testBLSimpleClass03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleClass03.php", options);
+    }
+
+    public void testBLSimpleClass04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/SimpleClass04.php", options);
+    }
+
+    public void testBLSimpleUse01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Use01.php", options);
+    }
+
+    public void testBLSimpleUse02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Use02.php", options);
+    }
+
+    public void testBLSimpleUse03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 0);
+        reformatFileContents("testfiles/formatting/blankLines/Use03.php", options);
+    }
+
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));
     }
@@ -262,6 +385,49 @@ public class PHPFormatterTest extends PHPTestBase {
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
         prefs.putInt(FmtOptions.initialIndent, initialIndent);
         prefs.putInt(FmtOptions.continuationIndentSize, 4);
+
+        format(doc, formatter, formatStart, formatEnd, false);
+
+        String after = doc.getText(0, doc.getLength());
+        assertDescriptionMatches(file, after, false, ".formatted");
+    }
+
+    
+    protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
+        FileObject fo = getTestFile(file);
+        assertNotNull(fo);
+        BaseDocument doc = getDocument(fo);
+        assertNotNull(doc);
+        String fullTxt = doc.getText(0, doc.getLength());
+        int formatStart = 0;
+        int formatEnd = doc.getLength();
+        int startMarkPos = fullTxt.indexOf(FORMAT_START_MARK);
+
+        if (startMarkPos >= 0){
+            formatStart = startMarkPos + FORMAT_START_MARK.length();
+            formatEnd = fullTxt.indexOf(FORMAT_END_MARK);
+
+            if (formatEnd == -1){
+                throw new IllegalStateException();
+            }
+        }
+
+        IndentPrefs preferences = new IndentPrefs(4, 4);
+        Formatter formatter = getFormatter(preferences);
+        //assertNotNull("getFormatter must be implemented", formatter);
+
+        setupDocumentIndentation(doc, preferences);
+
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        for (String option : options.keySet()) {
+            Object value = options.get(option);
+            if(value instanceof Integer) {
+                prefs.putInt(option, ((Integer)value).intValue());
+            }
+            if(value instanceof String) {
+                prefs.put(option, (String)value);
+            }
+        }
 
         format(doc, formatter, formatStart, formatEnd, false);
 

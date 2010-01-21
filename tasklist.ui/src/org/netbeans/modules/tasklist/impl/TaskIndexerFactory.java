@@ -110,4 +110,15 @@ public class TaskIndexerFactory extends CustomIndexerFactory {
     public boolean supportsEmbeddedIndexers() {
         return true;
     }
+
+    @Override
+    public boolean scanStarted(Context context) {
+        try {
+            return IndexingSupport.getInstance(context).isValid();
+        } catch( IOException ex ) {
+            Exceptions.printStackTrace(ex);
+            return false;
+        }
+    }
+
 }

@@ -23,6 +23,7 @@ then
     else
         cp netbeans.conf netbeans.conf_orig_tc
         cat netbeans.conf_orig_tc  | sed -e 's|netbeans_default_options=\"|netbeans_default_options=\"-J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome='$tc_dir' -J-Dorg.netbeans.modules.tomcat.autoregister.token='$token' |' > netbeans.conf
+    fi
   else
     echo No netbeans.conf in: `pwd`
   fi

@@ -701,6 +701,13 @@ public class PhpProject implements Project {
             // #164073 - for the first time, let's do it not in AWT thread
             PhpUnit.validateVersion(CommandUtils.getPhpUnit(false));
 
+            // frameworks
+            PhpModule phpModule = getPhpModule();
+            assert phpModule != null;
+            for (PhpFrameworkProvider frameworkProvider : frameworkProviders) {
+                frameworkProvider.phpModuleOpened(phpModule);
+            }
+
             // log usage
             StringBuilder buffer = new StringBuilder(200);
             for (PhpFrameworkProvider provider : frameworkProviders) {
@@ -723,6 +730,14 @@ public class PhpProject implements Project {
             GlobalPathRegistry.getDefault().unregister(PhpSourcePath.SOURCE_CP, cpProvider.getProjectClassPaths(PhpSourcePath.SOURCE_CP));
 
             getCopySupport().projectClosed();
+
+            // frameworks
+            PhpModule phpModule = getPhpModule();
+            assert phpModule != null;
+            for (PhpFrameworkProvider frameworkProvider : getFrameworks()) {
+                frameworkProvider.phpModuleClosed(phpModule);
+            }
+
         }
     }
 

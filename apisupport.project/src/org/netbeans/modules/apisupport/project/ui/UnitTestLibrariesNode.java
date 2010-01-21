@@ -466,7 +466,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 return; // cancelled
             }
             try {
-                ModuleProjectClassPathExtender.resolveJUnitDependencies(project, testType, addNBJUnit);
+                resolveJUnitDependencies(project, testType, addNBJUnit);
             } catch (IOException ex) {
                 String msg = Exceptions.findLocalizedMessage(ex);
                 if (msg == null) {
@@ -479,6 +479,24 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 ProjectManager.getDefault().saveProject(project);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+        }
+        private static final String JUNIT_MODULE = "org.netbeans.libs.junit4";
+        private static final String NBJUNIT_MODULE = "org.netbeans.modules.nbjunit";
+        private static void resolveJUnitDependencies(NbModuleProject project, String testType, boolean addNBJUnit) throws IOException {
+            ModuleList moduleList = project.getModuleList();
+            ModuleEntry junit4 = moduleList.getEntry(JUNIT_MODULE);
+            ModuleEntry nbjunit = moduleList.getEntry(NBJUNIT_MODULE);
+            if (junit4 == null || (addNBJUnit && nbjunit == null)) {
+                String m = (junit4 == null) ? JUNIT_MODULE : NBJUNIT_MODULE;
+                IOException e = new IOException("no module " + m); // NOI18N
+                Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(ModuleProjectClassPathExtender.class, "ERR_could_not_find_module", m));
+                throw e;
+            }
+            ProjectXMLManager pxm = new ProjectXMLManager(project);
+            pxm.addTestDependency(testType, new TestModuleDependency(junit4, false, false, true));
+            if (addNBJUnit) {
+                pxm.addTestDependency(testType, new TestModuleDependency(nbjunit, false, true, true));
             }
         }
     }

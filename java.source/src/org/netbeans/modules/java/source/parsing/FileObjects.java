@@ -77,7 +77,9 @@ import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -211,7 +213,92 @@ public class FileObjects {
     public static SourceFileObject nbFileObject (final FileObject file, final FileObject root) throws IOException {
         return nbFileObject (file, root, null, false);
     }
-    
+
+        /**
+     * Creates {@link JavaFileObject} for a NetBeans {@link FileObject} which may not exist (the FileObject is resolved on demand)
+     * Any client which needs to create {@link JavaFileObject} for java
+     * source file should use this factory method.
+     * @param path of the {@link JavaFileObject} should be created
+     * @param {@link FileObject} root owning the file
+     * @return {@link JavaFileObject}, never returns null
+     * @exception {@link IOException} may be thrown
+     */
+    public static SourceFileObject nbFileObject (final URL path, final FileObject root) throws IOException {
+        final SourceFileObject.Handle handle = new SourceFileObject.Handle(root){
+
+            @Override
+            protected FileObject resolveFileObject(boolean write) {
+                FileObject res = super.resolveFileObject(write);
+                if (res == null) {
+                    try {
+                        if (write) {
+                            //Create the file
+                            FileUtil.createData(root,getRelativePath());
+                        }
+                        file = URLMapper.findFileObject(path);
+                        res = super.resolveFileObject(write);
+                    } catch (IOException e) {
+                        //pass, return null
+                    }
+                }
+                return res;
+            }
+
+            protected URL getURL() throws IOException {
+                return path;
+            }
+
+            protected String getExt() {
+                String ext = super.getExt();
+                if (ext == null) {
+                    ext = FileObjects.getExtension(path.getPath());
+                }
+                return ext;
+            }
+
+            protected String getName(boolean includeExtension) {
+                String name = super.getName(includeExtension);
+                if (name == null) {
+                    name = FileObjects.getBaseName(path.getPath(),'/'); //NOI18N
+                    if (!includeExtension) {
+                        name = FileObjects.stripExtension(name);
+                    }
+                }
+                return name;
+            }
+
+            protected String getRelativePath() {
+                String relativePath = super.getRelativePath();
+                if (relativePath == null) {
+                    try {
+                        relativePath = FileObjects.getRelativePath(root.getURL(), path);
+                    } catch (FileStateInvalidException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (URISyntaxException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                return relativePath;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (file != null) {
+                    return super.equals(obj);
+                } else if (obj instanceof SourceFileObject.Handle) {
+                    try {
+                        return getURL().equals(((SourceFileObject.Handle) obj).getURL());
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                return false;
+            }
+
+        };
+        return new SourceFileObject(handle, null);
+    }
+
     /**
      * Creates {@link JavaFileObject} for a NetBeans {@link FileObject}
      * Any client which needs to create {@link JavaFileObject} for java

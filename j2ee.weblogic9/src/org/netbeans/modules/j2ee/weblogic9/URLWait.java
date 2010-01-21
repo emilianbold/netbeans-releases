@@ -75,6 +75,7 @@ public class URLWait {
         try {
             t.join(timeout);
         } catch(InterruptedException ie) {
+            
         }
         if (t.isAlive()) {
             connect.finishLoop();

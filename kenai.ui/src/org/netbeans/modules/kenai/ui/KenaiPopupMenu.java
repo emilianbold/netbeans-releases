@@ -114,6 +114,13 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
         }
     }
 
+    private KenaiProject getActualKenaiProject (Project p, String kenaiProjectName) throws KenaiException {
+        KenaiProject defaultKenaiProject = KenaiProject.forRepository(repoForProjCache.get(p));
+        Kenai kenai = KenaiManager.getDefault().getKenai(defaultKenaiProject != null ? defaultKenaiProject.getKenai().getUrl().toString() : "https://kenai.com"); //NOI18N
+        KenaiProject kp = kenai == null ? null : kenai.getProject(kenaiProjectName);
+        return kp;
+    }
+
     private final class KenaiPopupMenuPresenter extends AbstractAction implements Presenter.Popup {
 
         private final Project proj;
@@ -179,7 +186,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                 try {
                     // ensure project. If none with the given owner name available,
                     // fallback on repoForProjCache
-                    KenaiProject kp = KenaiManager.getDefault().getKenai("https://kenai.com").getProject(ownerInfo.getOwner());
+                    KenaiProject kp = getActualKenaiProject(proj, ownerInfo.getOwner());
                     if(kp != null) {
                         kpName = kp.getName();
                     }
@@ -197,7 +204,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                 kpName = KenaiProject.getNameForRepository(projRepo);
             }
             
-            kenaiPopup.add(new LazyOpenKenaiProjectAction(kpName));
+            kenaiPopup.add(new LazyOpenKenaiProjectAction(proj, kpName));
             kenaiPopup.addSeparator();
             if (kpName != null) {
                 kenaiPopup.add(new LazyFindIssuesAction(proj, kpName));
@@ -290,7 +297,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));  //NOI18N
                             handle.start();
                             try {
-                                final KenaiProject kp = KenaiManager.getDefault().getKenai("https://kenai.com").getProject(kenaiProjectUniqueName);
+                                final KenaiProject kp = getActualKenaiProject(proj, kenaiProjectUniqueName);
                                 if (kp != null) {
                                     if (kp.getFeatures(Type.ISSUES).length > 0) {
                                         final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
@@ -331,7 +338,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER")); //NOI18N
                             handle.start();
                             try {
-                                final KenaiProject kp = KenaiManager.getDefault().getKenai("https://kenai.com").getProject(kenaiProjectUniqueName);
+                                final KenaiProject kp = getActualKenaiProject(proj, kenaiProjectUniqueName);
                                 if (kp != null) {
                                     if (kp.getFeatures(Type.ISSUES).length > 0) {
                                         final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
@@ -361,7 +368,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
 
     class LazyOpenKenaiProjectAction extends JMenuItem {
 
-        public LazyOpenKenaiProjectAction(final String kenaiProjectUniqueName) {
+        public LazyOpenKenaiProjectAction(final Project proj, final String kenaiProjectUniqueName) {
             super(NbBundle.getMessage(KenaiPopupMenu.class, "OPEN_CORRESPONDING_KENAI_PROJ")); //NOI18N
             this.addActionListener(new ActionListener() {
 
@@ -380,7 +387,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                             try {
                                 handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CTL_OpenKenaiProjectAction")); //NOI18N
                                 handle.start();
-                                final KenaiProject kp = KenaiManager.getDefault().getKenai("https://kenai.com").getProject(kenaiProjectUniqueName);
+                                final KenaiProject kp = getActualKenaiProject(proj, kenaiProjectUniqueName);
                                 if (kp != null) {
                                     final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
                                     DashboardImpl.getInstance().addProject(pHandle, false, true);

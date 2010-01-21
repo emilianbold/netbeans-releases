@@ -48,6 +48,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.javacard.spi.capabilities.CardContentsProvider;
 import org.netbeans.modules.javacard.spi.capabilities.CardInfo;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
@@ -68,9 +69,11 @@ import org.openide.util.lookup.Lookups;
  * listened on for changes.
  * <p/>
  * Provides a list of Lookup.Providers.  Each one's lookup should contain
- * a Card instance (although, since these represent system filesystem fileobjects
+ * a Card instance (although, since these may represent system filesystem fileobjects
  * typically, it is important to check that they really do provide card
- * instances).
+ * instances).  Typically, each Lookup.Provider is a DataObject, at least in
+ * the case of the Java Card RI.  However, the only requirement is that it be
+ * a Lookup.Provider with an instance of Card in its Lookup.
  *
  * @author Tim Boudreau
  */
@@ -165,7 +168,14 @@ public abstract class Cards {
 
     /**
      * Create a Children object which can display all available cards
-     * as children of a node.
+     * as children of a node.  This works as follows:  If the Lookup.Provider
+     * for a given card contains a DataObject, the children of that DataObject
+     * are used (so modules can completely replace the mechanism by which
+     * children are shown if they want).  Otherwise, a Card will be searched
+     * for in each Lookup.Provider's Lookup.  If found, then it will be queried
+     * for a CardContentsProvider capability, and if that is found, then whatever
+     * subtree that provides as an XListModel will be rendered as nodes.
+     *
      * @return A Children object
      */
     public Children createChildren() {
@@ -173,11 +183,12 @@ public abstract class Cards {
     }
 
     /**
-     * Create a Children object which, if necessary, will contain a fake
-     * card with the given system id
+     * Create a Children object which, if necessary, will contain a fake (invalid)
+     * card with the given system id.
+     *
      * @param expectedCardSystemId The system ID for a card that is expected to
      * exist
-     * @return
+     * @return A Children object suitable for use under a Node
      */
     public Children createChildren(String expectedCardSystemId) {
         return Children.create(new CF(expectedCardSystemId), true);
@@ -274,11 +285,14 @@ public abstract class Cards {
                 Card card = dob.getLookup().lookup(Card.class);
                 if (card == null) {
                     card = dob.getNodeDelegate().getLookup().lookup(Card.class);
+                    //PENDING: Check that we do not ever see card children in settings dlgs
+                    //If broken card name is null, we are in use in the services tab, where
+                    //we do want children
                     if (card != null) {
-                        return new FilterNode(dob.getNodeDelegate(), Children.LEAF);
+                        return brokenCardName == null ? new FilterNode(dob.getNodeDelegate()) : new FilterNode(dob.getNodeDelegate(), Children.LEAF);
                     }
                 } else {
-                    return new FilterNode(dob.getNodeDelegate(), Children.LEAF);
+                    return brokenCardName == null ? new FilterNode(dob.getNodeDelegate()) : new FilterNode(dob.getNodeDelegate(), Children.LEAF);
                 }
             }
             Card card = l.lookup(Card.class);
@@ -310,7 +324,7 @@ public abstract class Cards {
     }
 
     private static final class CardNode extends AbstractNode implements CardStateObserver {
-        private Card hardRef;
+        private Card hardRef; //DO NOT DELETE!
         CardNode(Lookup.Provider p) {
             super(Children.LEAF, p.getLookup());
             Card card = getLookup().lookup(Card.class);
@@ -325,6 +339,11 @@ public abstract class Cards {
                 setDisplayName(getName());
             }
             card.addCardStateObserver(new WeakCardStateObserver(this));
+            CardContentsProvider prov =
+                    card.getCapability(CardContentsProvider.class);
+            if (prov != null) {
+                setChildren (Children.create(new CardChildren(prov), true));
+            }
         }
 
         @Override

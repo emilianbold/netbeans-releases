@@ -106,6 +106,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="JavadocAndSourceRootDetection.findSourceRoots">
+            <api name="general"/>
+            <summary>Added JavadocAndSourceRootDetection.findSourceRoots method to find all source roots under the given folder</summary>
+            <version major="1" minor="31"/>
+            <date day="15" month="1" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added JavadocAndSourceRootDetection.findSourceRoots to find all source roots under the given folder.
+                    This method is used by the import source roots in the new project wizards.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support" name="JavadocAndSourceRootDetection"/>
+            <issue number="179427"/>
+        </change>
         <change id="JavaRunner-runtime-encoding">
             <api name="general"/>
             <summary>Added JavaRunner.PROP_RUNTIME_ENCODING property for COS Runner</summary>

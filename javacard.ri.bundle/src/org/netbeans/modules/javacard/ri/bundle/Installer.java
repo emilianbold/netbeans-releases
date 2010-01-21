@@ -55,7 +55,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 public class Installer extends ModuleInstall implements Runnable {
-    private static final String ATTR = "isRiBundle"; //NOI18N
+    private static final String ATTR = "isRiBundle302"; //NOI18N
+    private static final String[] SUPERSEDED_ATTRS = new String[] { "isRiBundle" }; //NOI18N
     private static final String PLATFORM_DIRECTORY_NAME = "JCDK3.0.2_ConnectedEdition"; //NOI18N
 
     @Override
@@ -71,6 +72,13 @@ public class Installer extends ModuleInstall implements Runnable {
         for (FileObject fo : platformsFolder.getChildren()) {
             if (Boolean.TRUE.equals(fo.getAttribute(ATTR))) {
                 return;
+            }
+            //Try to clean up out-of-date or unsupported platforms and their 
+            //metadata, since we cannot rely on uninstalled()
+            for (String s : SUPERSEDED_ATTRS) {
+                if (Boolean.TRUE.equals(fo.getAttribute(s))) {
+                    cleanUp (fo);
+                }
             }
         }
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Installer.class,
@@ -98,27 +106,33 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
+    private void cleanUp (FileObject platformFileObject) {
+        //If there was an older version of the bundle, try to delete its
+        //card files, so we do not end up with stale properties files
+        //that cannot be read in directories we will try to use
+        try {
+            FileObject serversFolder = Utils.sfsFolderForDeviceConfigsForPlatformNamed(
+                    platformFileObject.getName(), false);
+            if (serversFolder != null) {
+                serversFolder.delete();
+            }
+            FileObject eepromFolder = Utils.sfsFolderForDeviceEepromsForPlatformNamed(
+                    platformFileObject.getName(), false);
+            if (eepromFolder != null) {
+                eepromFolder.delete();
+            }
+            platformFileObject.delete();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     @Override
     public void uninstalled() {
         FileObject platformsFolder = Utils.sfsFolderForRegisteredJavaPlatforms();
         for (FileObject fo : platformsFolder.getChildren()) {
             if (Boolean.TRUE.equals(fo.getAttribute(ATTR))) {
-                try {
-                    FileObject serversFolder = Utils.sfsFolderForDeviceConfigsForPlatformNamed(
-                            fo.getName(), false);
-                    if (serversFolder != null) {
-                        serversFolder.delete();
-                    }
-                    FileObject eepromFolder = Utils.sfsFolderForDeviceEepromsForPlatformNamed(
-                            fo.getName(), false);
-                    if (eepromFolder != null) {
-                        eepromFolder.delete();
-                    }
-                    fo.delete();
-                    return;
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                cleanUp (fo);
             }
         }
     }

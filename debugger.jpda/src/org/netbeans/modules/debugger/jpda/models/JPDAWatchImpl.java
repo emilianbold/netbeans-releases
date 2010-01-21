@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
  * @author   Jan Jancura
  */
 
-class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
+class JPDAWatchImpl extends AbstractVariable implements JPDAWatch/*, Watch.Provider*/ {
 
     private JPDADebuggerImpl    debugger;
     private Watch               watch;
@@ -123,7 +123,11 @@ class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         }
         this.nodeRef = new java.lang.ref.WeakReference<Object>(node);
     }
-    
+
+    public Watch getWatch() {
+        return watch;
+    }
+
     /**
      * Watched expression.
      *

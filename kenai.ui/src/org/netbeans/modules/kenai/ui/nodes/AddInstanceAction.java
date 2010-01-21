@@ -56,6 +56,8 @@ import org.openide.util.NbBundle;
  */
 public class AddInstanceAction extends AbstractAction {
 
+    private Kenai kenai;
+
     public AddInstanceAction() {
         super(NbBundle.getMessage(AddInstanceAction.class, "CTL_AddInstance"));
     }
@@ -64,7 +66,7 @@ public class AddInstanceAction extends AbstractAction {
         KenaiInstance s = showInputDialog();
         if (s!=null) {
             try {
-                Kenai kenai = KenaiManager.getDefault().createKenai(s.name, s.url);
+                kenai = KenaiManager.getDefault().createKenai(s.name, s.url);
                 if (e!=null && e.getSource() instanceof JComboBox) {
                     ((JComboBox) e.getSource()).setSelectedItem(kenai);
                 }
@@ -76,6 +78,10 @@ public class AddInstanceAction extends AbstractAction {
                 ((JComboBox) e.getSource()).setSelectedIndex(0);
             }
         }
+    }
+
+    public Kenai getLastKenai() {
+        return kenai;
     }
 
     private static class KenaiInstance {

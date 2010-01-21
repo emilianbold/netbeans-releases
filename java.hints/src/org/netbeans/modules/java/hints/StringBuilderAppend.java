@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,41 +34,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.modules.java.hints.errors.Utilities;
+import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
+import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
+import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -82,126 +71,42 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-public class StringBuilderAppend extends AbstractHint {
+@Hint(id="StringBuilderAppend", category="performance")
+public class StringBuilderAppend {
 
-    public StringBuilderAppend() {
-        super(true, false, HintSeverity.WARNING);
+    @TriggerPattern(value="$build.append($app)",
+                    constraints={
+                        @Constraint(variable="$build", type="java.lang.StringBuilder"),
+                        @Constraint(variable="$app", type="java.lang.String")
+                    })
+    public static ErrorDescription builder(HintContext ctx) {
+        return hint(ctx, "StringBuilder");
     }
 
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(StringBuilderAppend.class, "DSC_StringBuilderAppend");
+    @TriggerPattern(value="$build.append($app)",
+                    constraints={
+                        @Constraint(variable="$build", type="java.lang.StringBuffer"),
+                        @Constraint(variable="$app", type="java.lang.String")
+                    })
+    public static ErrorDescription buffer(HintContext ctx) {
+        return hint(ctx, "StringBuffer");
     }
 
-    public Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.METHOD_INVOCATION);
-    }
-
-    public List<ErrorDescription> run(CompilationInfo info, TreePath tp) {
-        Element el = info.getTrees().getElement(tp);
-
-        if (el == null || el.getKind() != ElementKind.METHOD || el.getModifiers().contains(Modifier.STATIC) || !el.getSimpleName().contentEquals("append")) {
-            return null;
-        }
-
-        ExecutableElement ee = (ExecutableElement) el;
-        TypeElement jlString = info.getElements().getTypeElement("java.lang.String");
-
-        if (ee.getParameters().size() != 1 || !info.getTypes().isSameType(ee.getParameters().get(0).asType(), jlString.asType())) {
-            return null;
-        }
-
-        if (el.getEnclosingElement().getKind() != ElementKind.CLASS) {
-            return null;
-        }
-
-        TypeElement clazz = (TypeElement) el.getEnclosingElement();
-        Name fqn = clazz.getQualifiedName();
-
-        if (!SUPPORTED_CLASSES.contains(fqn.toString())) {
-            return null;
-        }
-
-        MethodInvocationTree mit = (MethodInvocationTree) tp.getLeaf();
+    private static ErrorDescription hint(HintContext ctx, String clazzName) {
+        CompilationInfo info = ctx.getInfo();
+        MethodInvocationTree mit = (MethodInvocationTree) ctx.getPath().getLeaf();
         ExpressionTree param = mit.getArguments().get(0);
-        List<List<TreePath>> sorted = sortOut(info, linearize(new TreePath(tp, param)));
+        List<List<TreePath>> sorted = Utilities.splitStringConcatenationToElements(info, new TreePath(ctx.getPath(), param));
 
         if (sorted.size() > 1) {
             int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), param);
             int end = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), param);
-            List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(info.getSnapshot().getSource(), TreePathHandle.create(tp, info)));
-            String error = NbBundle.getMessage(StringBuilderAppend.class, "ERR_StringBuilderAppend", clazz.getSimpleName().toString());
-            ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(getSeverity().toEditorSeverity(), error, fixes, info.getFileObject(), start, end);
-            return Collections.singletonList(ed);
+            List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(info.getSnapshot().getSource(), TreePathHandle.create(ctx.getPath(), info)));
+            String error = NbBundle.getMessage(StringBuilderAppend.class, "ERR_StringBuilderAppend", clazzName);
+            return ErrorDescriptionFactory.createErrorDescription(ctx.getSeverity().toEditorSeverity(), error, fixes, info.getFileObject(), start, end);
         }
 
         return null;
-    }
-
-    public String getId() {
-        return StringBuilderAppend.class.getName();
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(StringBuilderAppend.class, "DN_StringBuilderAppend");
-    }
-
-    public void cancel() {}
-
-    private static Set<String> SUPPORTED_CLASSES = new HashSet<String>(Arrays.asList("java.lang.StringBuilder", "java.lang.StringBuffer"));
-
-    private static List<TreePath> linearize(TreePath tree) {
-        List<TreePath> todo = new LinkedList<TreePath>();
-        List<TreePath> result = new LinkedList<TreePath>();
-
-        todo.add(tree);
-
-        while (!todo.isEmpty()) {
-            TreePath tp = todo.remove(0);
-
-            if (tp.getLeaf().getKind() != Kind.PLUS) {
-                result.add(tp);
-                continue;
-            }
-
-            BinaryTree bt = (BinaryTree) tp.getLeaf();
-
-            todo.add(0, new TreePath(tp, bt.getRightOperand()));
-            todo.add(0, new TreePath(tp, bt.getLeftOperand()));
-        }
-
-        return result;
-    }
-
-    private static List<List<TreePath>> sortOut(CompilationInfo info, List<TreePath> trees) {
-        List<List<TreePath>> result = new LinkedList<List<TreePath>>();
-        List<TreePath> currentCluster = new LinkedList<TreePath>();
-
-        for (TreePath t : trees) {
-            if (constant(info, t)) {
-                currentCluster.add(t);
-            } else {
-                if (!currentCluster.isEmpty()) {
-                    result.add(currentCluster);
-                    currentCluster = new LinkedList<TreePath>();
-                }
-                result.add(new LinkedList<TreePath>(Collections.singletonList(t)));
-            }
-        }
-
-        if (!currentCluster.isEmpty()) {
-            result.add(currentCluster);
-        }
-        
-        return result;
-    }
-
-    private static boolean constant(CompilationInfo info, TreePath tp) {
-        if (tp.getLeaf().getKind() == Kind.STRING_LITERAL) return true;
-
-        Element el = info.getTrees().getElement(tp);
-
-        return el != null && el.getKind() == ElementKind.FIELD && ((VariableElement) el).getConstantValue() instanceof String;
     }
 
     private static final class FixImpl implements Fix {
@@ -238,7 +143,7 @@ public class StringBuilderAppend extends AbstractHint {
 
                     MethodInvocationTree mit = (MethodInvocationTree) tp.getLeaf();
                     ExpressionTree param = mit.getArguments().get(0);
-                    List<List<TreePath>> sorted = sortOut(copy, linearize(new TreePath(tp, param)));
+                    List<List<TreePath>> sorted = Utilities.splitStringConcatenationToElements(copy, new TreePath(tp, param));
                     ExpressionTree site = ((MemberSelectTree) mit.getMethodSelect()).getExpression();
                     TreeMaker make = copy.getTreeMaker();
 

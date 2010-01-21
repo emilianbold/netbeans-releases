@@ -95,14 +95,17 @@ final class BrokenCard implements Card, CardInfo, CapabilitiesProvider {
         return 23 * name.hashCode();
     }
 
+    @SuppressWarnings("unchecked")
     public <T extends ICardCapability> T getCapability(Class<T> type) {
         return (T) (type.equals(CardInfo.class) ? this : null);
     }
 
+    @SuppressWarnings("unchecked") //NOI18N
     public Set<Class<? extends ICardCapability>> getSupportedCapabilities() {
         return toSet(CardInfo.class);
     }
 
+    @SuppressWarnings("unchecked") //NOI18N
     public Set<Class<? extends ICardCapability>> getEnabledCapabilities() {
         return toSet(CardInfo.class);
     }

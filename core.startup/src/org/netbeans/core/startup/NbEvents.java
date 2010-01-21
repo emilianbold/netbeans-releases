@@ -42,12 +42,11 @@
 package org.netbeans.core.startup;
 
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.lang.reflect.Method;
-import java.net.URI;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -365,7 +364,7 @@ final class NbEvents extends Events {
                     if (EventType.ACTIVATED == hlevt.getEventType()) {
                         assert hlevt.getURL() != null;
                         try {
-                            showUrl (hlevt.getURL ().toURI (), c);
+                            Desktop.getDesktop().browse(hlevt.getURL().toURI());
                         } catch (Exception ex) {
                             Logger.getLogger (NbBundle.class.getName ()).log(Level.INFO, null, ex);
                         }
@@ -417,16 +416,5 @@ final class NbEvents extends Events {
         
     private static void setStatusText (String msg) {
         Main.setStatusText (msg);
-    }
-    
-    private static void showUrl (URI uri, Component c) throws Exception {
-        SpecificationVersion javaSpec = new SpecificationVersion (System.getProperty("java.specification.version")); // NOI18N
-        if (javaSpec.compareTo (new SpecificationVersion ("1.6")) >= 0) {
-            Class<?> desktopC = Class.forName ("java.awt.Desktop");
-            Method getDesktopM = desktopC.getMethod ("getDesktop");
-            Object desktopInstanceO = getDesktopM.invoke (null);
-            Method browseM = desktopC.getMethod ("browse", URI.class);
-            browseM.invoke (desktopInstanceO, uri);
-        }
     }
 }

@@ -129,6 +129,13 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         return new KenaiUserImpl(new org.netbeans.modules.kenai.ui.spi.KenaiUserUI(user));
     }
 
+    @Override
+    public KenaiUser forName(String user, String url) {
+        assert url != null;
+        Kenai kenai = KenaiUtil.getKenai(url);
+        return new KenaiUserImpl(new org.netbeans.modules.kenai.ui.spi.KenaiUserUI(kenai != null ? user + "@" + kenai.getUrl().getHost() : user)); //NOI18N
+    }
+
     public void addVCSNoficationListener(PropertyChangeListener l) {
         PropertyChangeListener[] ls = support.getPropertyChangeListeners(PROP_KENAI_VCS_NOTIFICATION);
         if(ls == null || ls.length == 0) {
@@ -303,7 +310,6 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         private final KenaiNotification kn;
         private final File projectDir;
         private final KenaiProject kp;
-        private String serviceName;
 
         public VCSKenaiNotificationImpl(KenaiNotification kn, KenaiProject kp, File projectDir) {
             assert kp != null;
@@ -323,26 +329,7 @@ public class VCSKenaiSupportImpl extends VCSKenaiSupport implements PropertyChan
         }
 
         public Service getService() {
-            if(serviceName == null) {
-                KenaiFeature[] features = null;
-                try {
-                    features = kp.getFeatures(KenaiService.Type.SOURCE);
-                    for (KenaiFeature kf : features) {
-                        if(kf.getName().equals(kn.getServiceName())) {
-                            serviceName = kf.getService();
-                            break;
-                        }
-                    }
-                } catch (KenaiException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                }
-                if(serviceName == null) {
-                    // fallback
-                    serviceName = kn.getServiceName();
-                }
-
-            }
-
+            String serviceName = kn.getServiceName();
             if(serviceName.equals(KenaiService.Names.SUBVERSION)) {
                 return Service.VCS_SVN;
             } else if (serviceName.equals(KenaiService.Names.MERCURIAL)) {

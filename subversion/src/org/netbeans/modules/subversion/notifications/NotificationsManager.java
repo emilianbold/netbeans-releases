@@ -122,10 +122,9 @@ public class NotificationsManager {
      * @param file file to scan
      */
     public void scheduleFor(File file) {
-        boolean isEnabled = isEnabled(file);
-        if (!isEnabled || isSeen(file) || !isUpToDate(file)) {
+        if (isSeen(file) || !isEnabled() || !isUpToDate(file)) {
             if (LOG.isLoggable(Level.FINER)) {
-                LOG.finer("File " + file.getAbsolutePath() + " is " + (isUpToDate(file) ? "" : "not ") + " up to date, notifications enabled: " + isEnabled); //NOI18N
+                LOG.log(Level.FINER, "File {0} is {1} up to date, notifications enabled: {2}", new Object[]{file.getAbsolutePath(), isUpToDate(file) ? "" : "not ", isEnabled()}); //NOI18N
             }
             return;
         }
@@ -175,18 +174,12 @@ public class NotificationsManager {
      * Notifications are enabled only for logged kenai users and unless disabled by a switch
      * @return
      */
-    private boolean isEnabled(File file) {
+    private boolean isEnabled() {
         if (enabled == null) {
             // let's leave a possibility to disable the notifications
             enabled = new Boolean(!"false".equals(System.getProperty("subversion.notificationsEnabled", "true"))); //NOI18N
         }
-        SVNUrl url;
-        try {
-            url = SvnUtils.getRepositoryUrl(file);
-        } catch (SVNClientException ex) {
-            return false;
-        }
-        return enabled.booleanValue() && supp.isLogged(url.toString());
+        return enabled.booleanValue() && supp.isLogged(null);
     }
 
     private boolean isUpToDate(File file) {
@@ -361,7 +354,7 @@ public class NotificationsManager {
         private SVNUrl getRepositoryRoot (File file) {
             SVNUrl repositoryUrl = null;
             SVNUrl url = getRepositoryUrl(file);
-            if (url != null && supp.isKenai(url.toString())) {
+            if (url != null && supp.isKenai(url.toString()) && supp.isLogged(url.toString())) {
                 repositoryUrl = url;
             }
             return repositoryUrl;

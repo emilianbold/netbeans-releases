@@ -39,12 +39,17 @@
 
 package org.netbeans.modules.websvc.rest.spi;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
@@ -61,6 +66,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -76,6 +83,9 @@ public abstract class WebRestSupport extends RestSupport {
     public static final String CONFIG_TYPE_USER= "user"; //NOI18N
     public static final String CONFIG_TYPE_DD= "dd"; //NOI18N
     public static final String REST_CONFIG_TARGET="generate-rest-config"; //NOI18N
+    protected static final String JERSEY_SPRING_JAR_PATTERN = "jersey-spring.*\\.jar";//NOI18N
+    protected static final String JERSEY_PROP_PACKAGES = "com.sun.jersey.config.property.packages"; //NOI18N
+    protected static final String JERSEY_PROP_PACKAGES_DESC = "Multiple packages, separated by semicolon(;), can be specified in param-value"; //NOI18N
 
     /** Creates a new instance of WebProjectRestSupport */
     public WebRestSupport(Project project) {
@@ -240,7 +250,17 @@ public abstract class WebRestSupport extends RestSupport {
             if (adaptorServlet == null) {
                 adaptorServlet = (Servlet) webApp.createBean("Servlet"); //NOI18N
                 adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
-                adaptorServlet.setServletClass(getServletAdapterClass());
+                boolean isSpring = hasSpringSupport();
+                if (isSpring) {
+                    adaptorServlet.setServletClass(REST_SPRING_SERVLET_ADAPTOR_CLASS);
+                    InitParam initParam = (InitParam) adaptorServlet.createBean("InitParam"); //NOI18N
+                    initParam.setParamName(JERSEY_PROP_PACKAGES);
+                    initParam.setParamValue("."); //NOI18N
+                    initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
+                    adaptorServlet.addInitParam(initParam);
+                } else {
+                    adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
+                }
                 adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
                 webApp.addServlet(adaptorServlet);
                 needsSave = true;
@@ -375,6 +395,23 @@ public abstract class WebRestSupport extends RestSupport {
             }
         }
         return null;
+    }
+
+    protected void addJerseySpringJar() throws IOException {
+        FileObject srcRoot = findSourceRoot();
+        if (srcRoot != null) {
+            ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
+            if (cp.findResource("com/sun/jersey/api/spring/Autowire.class") == null) { //NOI18N
+                File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, null, false);
+                if (jerseyRoot != null && jerseyRoot.isDirectory()) {
+                    File[] jerseyJars = jerseyRoot.listFiles(new JerseyFilter(JERSEY_SPRING_JAR_PATTERN));
+                    if (jerseyJars != null && jerseyJars.length>0) {
+                        URL url = FileUtil.getArchiveRoot(jerseyJars[0].toURI().toURL());
+                        ProjectClassPathModifier.addRoots(new URL[] {url}, srcRoot, ClassPath.COMPILE);
+                    }
+                }
+            }
+        }
     }
 
 }

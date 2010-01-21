@@ -68,7 +68,7 @@ public class NbModuleSuiteAddModuleTest extends TestCase {
      * Test of run method, of class NbModuleSuite.
      */
     public void testRun() {
-        Test instance = NbModuleSuite.create(T.class, "", "org\\.netbeans.*window.*");
+        Test instance = NbModuleSuite.create(NbModuleSuite.createConfiguration(T.class).clusters("").enableModules("org\\.netbeans.*window.*").gui(false));
         junit.textui.TestRunner.run(instance);
         
         String m = System.getProperty("modules");

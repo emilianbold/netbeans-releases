@@ -139,6 +139,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     /** This document's version. It's accessed by DocumentUtilities.getDocumentVersion(). */
     private static final String VERSION_PROP = "version"; //NOI18N
 
+    /** Timestamp when this document was last modified. It's accessed by DocumentUtilities.getDocumentVersion(). */
+    private static final String LAST_MODIFICATION_TIMESTAMP_PROP = "last-modification-timestamp"; //NOI18N
+
     /** Line separator property for reading files in */
     public static final String READ_LINE_SEPARATOR_PROP = DefaultEditorKit.EndOfLineStringProperty;
 
@@ -511,6 +514,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         putProperty("supportsModificationListener", Boolean.TRUE); // NOI18N
         putProperty(MIME_TYPE_PROP, new MimeTypePropertyEvaluator(this));
         putProperty(VERSION_PROP, new AtomicLong());
+        putProperty(LAST_MODIFICATION_TIMESTAMP_PROP, new AtomicLong());
 
         lineRootElement = new LineRootElement(this);
 
@@ -526,11 +530,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         EditorKit kit = getEditorKit();
         if (kit instanceof BaseKit) {
             ((BaseKit) kit).initDocument(this);
-        }
-
-        // Possibly add the document to registry
-        if (addToRegistry) {
-            Registry.addDocument(this); // add if created thru the kit
         }
 
         // Start listen on find-support
@@ -2133,6 +2132,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     /* package */ void incrementDocVersion() {
         ((AtomicLong) getProperty(VERSION_PROP)).incrementAndGet();
+        ((AtomicLong) getProperty(LAST_MODIFICATION_TIMESTAMP_PROP)).set(System.currentTimeMillis());
     }
 
     /** Compound edit that write-locks the document for the whole processing

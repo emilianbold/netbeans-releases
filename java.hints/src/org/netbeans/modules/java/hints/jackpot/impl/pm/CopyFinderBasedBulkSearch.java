@@ -65,13 +65,13 @@ public class CopyFinderBasedBulkSearch extends BulkSearch {
     }
 
     @Override
-    public Map<String, Collection<TreePath>> match(CompilationInfo info, Tree tree, BulkPattern pattern, Map<String, Long> timeLog) {
+    public Map<String, Collection<TreePath>> match(CompilationInfo info, TreePath toSearch, BulkPattern pattern, Map<String, Long> timeLog) {
         Map<String, Collection<TreePath>> result = new HashMap<String, Collection<TreePath>>();
+        TreePath topLevel = new TreePath(info.getCompilationUnit());
         
         for (Entry<Tree, String> e : ((BulkPatternImpl) pattern).pattern2Code.entrySet()) {
-            TreePath topLevel = new TreePath(info.getCompilationUnit());
             
-            for (TreePath r : CopyFinder.computeDuplicates(info, new TreePath(topLevel, e.getKey()), topLevel, false, new AtomicBoolean(), Collections.<String, TypeMirror>emptyMap()).keySet()) {
+            for (TreePath r : CopyFinder.computeDuplicates(info, new TreePath(topLevel, e.getKey()), toSearch, false, new AtomicBoolean(), Collections.<String, TypeMirror>emptyMap()).keySet()) {
                 Collection<TreePath> c = result.get(e.getValue());
 
                 if (c == null) {
@@ -86,9 +86,9 @@ public class CopyFinderBasedBulkSearch extends BulkSearch {
     }
 
     @Override
-    public boolean matches(CompilationInfo info, Tree tree, BulkPattern pattern) {
+    public boolean matches(CompilationInfo info, TreePath toSearch, BulkPattern pattern) {
         //XXX: performance
-        return !match(info, tree, pattern).isEmpty();
+        return !match(info, toSearch, pattern).isEmpty();
     }
 
     @Override

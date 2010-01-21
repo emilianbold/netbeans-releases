@@ -54,6 +54,8 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
+import org.netbeans.modules.cnd.dwarfdump.CompileLineService.SourceFile;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.openide.util.Exceptions;
@@ -68,6 +70,35 @@ public class DwarfSourceReaderTest extends NbTestCase {
     public DwarfSourceReaderTest() {
         super("DwarfSourceReaderTest");
         Logger.getLogger("cnd.logger").setLevel(Level.SEVERE);
+    }
+
+    public void testSunStudioCompiler(){
+        TreeMap<String, String> golden = new TreeMap<String, String>();
+        golden.put("TEXT_DOMAIN", "\"SUNW_OST_OSCMD\"");
+        golden.put("_TS_ERRNO", "null");
+        golden.put("_iBCS2", "null");
+        TreeMap<String, String> ignore = new TreeMap<String, String>();
+        List<String> system = new ArrayList<String>();
+        Map<String,GrepEntry> grepBase = new HashMap<String, GrepEntry>();
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/echo", system, ignore, grepBase);
+        assertNotNull(source);
+        TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
+        assertTrue(compareMap(map, golden));
+        assertTrue(source.getUserInludePaths().size()==1);
+        assertEquals(source.getUserInludePaths().get(0), "/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include");
+        printInclidePaths(source);
+        List<SourceFile> list = CompileLineService.getSourceFileProperties(getDataDir().getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/echo");
+        assertTrue(list.size()==1);
+        SourceFile sf = list.get(0);
+        assertEquals(sf.getCompileDir(), "/export1/sside/pomona/java_cp/wsb131/usr/src/cmd/echo");
+        assertEquals(sf.getSource(), "echo.c");
+//      /export/opt/sunstudio/12ml/SUNWspro/prod/bin/cc -O -xspace -Xa -xildoff -errtags=yes -errwarn=%all -erroff=E_EMPTY_TRANSLATION_UNIT -erroff=E_STATEMENT_NOT_REACHED -xc99=%none -W0,-xglobalstatic -v -D_iBCS2 -DTEXT_DOMAIN='"SUNW_OST_OSCMD"' -D_TS_ERRNO -I/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include -Bdirect -M/export1/sside/pomona/java_cp/wsb131/usr/src/common/mapfiles/common/map.noexstk -M/export1/sside/pomona/java_cp/wsb131/usr/src/common/mapfiles/i386/map.pagealign -M/export1/sside/pomona/java_cp/wsb131/usr/src/common/mapfiles/i386/map.noexdata -L/export1/sside/pomona/java_cp/wsb131/proto/root_i386/lib -L/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/lib -c  echo.c
+        //System.err.println(sf.getCompileLine());
+        map = new TreeMap<String, String>(sf.getUserMacros());
+        assertTrue(compareMap(map, golden));
+        assertEquals(sf.getUserPaths().get(0), "/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include");
+        list = CompileLineService.getSourceFolderProperties(getDataDir().getAbsolutePath());
+        assertTrue(list.size()==1);
     }
 
     public void testLeopard(){
@@ -608,7 +639,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         GrepEntry grep =new GrepEntry();
         grep.firstMacro="HTIOP_ACCEPTOR_IMPL_CPP";
         grep.firstMacroLine=4;
-        String name = "/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP/HTIOP_Acceptor_Impl.cpp";
+        String name = "/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP/HTIOP_Acceptor_Impl.cpp";
         grepBase.put(name, grep);
         if (Utilities.isWindows()) {
              //this is hack for testing on windows an object file created on unix
@@ -639,26 +670,27 @@ public class DwarfSourceReaderTest extends NbTestCase {
         "../../../../TAO/tao/AnyTypeCode",
         "../../../../TAO/../protocols/ace/HTBP",
         prefix+"/usr/include/rpc",
-        "../../../../TAO/orbsvcs",
-        "../../../../TAO/../protocols",
-        "../../../../TAO",
-        "../../../../TAO/..",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace",
-        "../../..",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/ace",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/sys",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/netinet",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/net",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/arpa",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/tao",
-        "../..",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/TAO/tao",
-        "../../orbsvcs",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/TAO/orbsvcs/orbsvcs",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/tao/AnyTypeCode",
-        prefix+"/net/d-espb04-127-81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/protocols/ace/HTBP"
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/ace",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/sys",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/netinet",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/net",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/ace/os_include/arpa",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/tao",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/TAO/tao",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/build/TAO/orbsvcs/orbsvcs",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/tao/AnyTypeCode",
+        prefix+"/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/protocols/ace/HTBP"
+        // next dirs are detected if source file is available
+        //"../../../../TAO/orbsvcs",
+        //"../../../../TAO/../protocols",
+        //"../../../../TAO",
+        //"../../../../TAO/..",
+        //"../../..",
+        //"../..",
+        //"../../orbsvcs"
                 }));
         printInclidePaths(source);
     }

@@ -70,6 +70,7 @@ import org.netbeans.modules.kenai.LicensesListData;
 import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.ServicesListData.ServicesListItem;
 import org.netbeans.modules.kenai.UserData;
+import org.netbeans.modules.kenai.api.KenaiProjectMember.Role;
 
 /**
  * Main entry point to Kenai integration.
@@ -466,17 +467,6 @@ public final class Kenai implements Comparable<Kenai> {
         return result;
     }
 
-    void joinProject(KenaiProject project) throws KenaiException {
-        if (getStatus()==Status.OFFLINE) {
-            throw new KenaiException("Cannot join project. You must be logged in");
-        }
-        impl.joinProject(project.getName(), auth.getUserName());
-        synchronized(this) {
-            if (myProjects!=null)
-                myProjects.add(project);
-        }
-    }
-
     /**
      * 
      * @param projectName
@@ -609,6 +599,27 @@ public final class Kenai implements Comparable<Kenai> {
         return KenaiProject.get(this, prj);
     }
 
+    void addMember(KenaiProject project, KenaiUser user, Role role) throws KenaiException {
+        assert auth!=null;
+        impl.addMember(project.getName(), user.getUserName(), role.toString(), auth);
+        synchronized (this) {
+            if (myProjects != null) {
+                myProjects.add(project);
+            }
+        }
+
+    }
+
+    void deleteMember(KenaiProject project, KenaiUser user) throws KenaiException {
+        assert auth!=null;
+        impl.deleteMember(project.getName(), user.data.member_id, auth);
+        synchronized (this) {
+            if (myProjects != null) {
+                myProjects.remove(project);
+            }
+        }
+    }
+
     private class LazyCollection<I,O> extends AbstractCollection<O> {
 
         private Collection<I> delegate;
@@ -714,7 +725,7 @@ public final class Kenai implements Comparable<Kenai> {
             return false;
         }
         final Kenai other = (Kenai) obj;
-        if ((this.getUrl() == null) ? (other.getUrl() != null) : !this.getUrl().equals(other.getUrl())) {
+        if ((this.getUrl() == null) ? (other.getUrl() != null) : !this.getUrl().toString().equals(other.getUrl().toString())) {
             return false;
         }
         return true;

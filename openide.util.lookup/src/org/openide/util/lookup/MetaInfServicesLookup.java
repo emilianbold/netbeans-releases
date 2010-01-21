@@ -443,7 +443,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
 
                         synchronized (knownInstances) { // guards only the static cache
                             int size = knownInstances.size();
-                            int index = c.hashCode() % size;
+                            int index = hashForClass(c, size);
                             for (int i = 0; i < size; i++) {
                                 Reference<Object> ref = knownInstances.get(index);
                                 Object obj = ref == null ? null : ref.get();
@@ -501,7 +501,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                     } catch (Exception ex) {
                         LOGGER.log(Level.WARNING, "Cannot create " + object, ex);
                         object = null;
-                    } catch (ExceptionInInitializerError x) { // #174055
+                    } catch (LinkageError x) { // #174055 + NoClassDefFoundError
                         LOGGER.log(Level.WARNING, "Cannot create " + object, x);
                         object = null;
                     }
@@ -522,11 +522,14 @@ final class MetaInfServicesLookup extends AbstractLookup {
         protected boolean creatorOf(Object obj) {
             return obj == object;
         }
+        private static int hashForClass(Class<?> c, int size) {
+            return Math.abs(c.hashCode()) % size;
+        }
 
         private static void hashPut(Object o) {
             Class<?> c = o.getClass();
             int size = knownInstances.size();
-            int index = c.hashCode() % size;
+            int index = hashForClass(c, size);
             for (int i = 0; i < size; i++) {
                 Reference<Object> ref = knownInstances.get(index);
                 Object obj = ref == null ? null : ref.get();

@@ -43,6 +43,9 @@ package org.openide.modules;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -69,6 +72,22 @@ public abstract class InstalledFileLocator {
             }
             
             return null;
+        }
+        public @Override Set<File> locateAll(String relativePath, String codeNameBase, boolean localized) {
+            Set<File> result = null;
+            for (InstalledFileLocator ifl : getInstances()) {
+                Set<File> added = ifl.locateAll(relativePath, codeNameBase, localized);
+                // avoid allocating extra lists, under the assumption there is only one result:
+                if (!added.isEmpty()) {
+                    if (result == null) {
+                        result = added;
+                    } else {
+                        result = new LinkedHashSet<File>(result);
+                        result.addAll(added);
+                    }
+                }
+            }
+            return result != null ? result : Collections.<File>emptySet();
         }
     };
     
@@ -108,9 +127,7 @@ public abstract class InstalledFileLocator {
      * useful where a directory can contain many items that may be merged between e.g.
      * the installation and user directories. For example, the <samp>docs</samp> folder
      * (used e.g. for Javadoc) might contain several ZIP files in both the installation and
-     * user areas. There is currently no supported way to enumerate all such files. Therefore
-     * searching for a directory should be attempted only when there is just one module which
-     * is expected to provide that directory and all of its contents. The module may assume
+     * user areas. Use {@link #locateAll} if you need all results. The module may assume
      * that all contained files are in the same relative structure in the directory as in
      * the normal NBM-based installation; unusual locator implementations may need to create
      * temporary directories with matching structures to return from this method, in case the
@@ -182,6 +199,20 @@ public abstract class InstalledFileLocator {
      * @return the requested <code>File</code>, if it can be found, else <code>null</code>
      */
     public abstract File locate(String relativePath, String codeNameBase, boolean localized);
+
+    /**
+     * Similar to {@link #locate} but can return multiple results.
+     * The default implementation returns a list with zero or one elements according to {@link #locate}.
+     * @param relativePath a path from install root
+     * @param codeNameBase name of the supplying module or null
+     * @param localized true to perform a localized/branded search
+     * @return a (possibly empty) set of files
+     * @since org.openide.modules 7.15
+     */
+    public Set<File> locateAll(String relativePath, String codeNameBase, boolean localized) {
+        File f = locate(relativePath, codeNameBase, localized);
+        return f != null ? Collections.singleton(f) : Collections.<File>emptySet();
+    }
     
     /**
      * Get a master locator.

@@ -198,6 +198,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.options.editor</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.18</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.project.ant</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -405,6 +414,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.killer</friend>
                 <friend>org.netbeans.modules.maven.kit</friend>
                 <friend>org.netbeans.modules.maven.maven.checkstyle.bridge</friend>
+                <friend>org.netbeans.modules.maven.osgi</friend>
                 <friend>org.netbeans.modules.maven.persistence</friend>
                 <friend>org.netbeans.modules.maven.profiler</friend>
                 <friend>org.netbeans.modules.maven.repository</friend>

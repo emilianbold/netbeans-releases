@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
     private ProgressHandle progressHandle;
 
     // TODO: eliminate copy-paste with ZipSyncWorker.TimestampAndSharabilityFilters
-    private class TimestampAndSharabilityFilter implements FileFilter {
+    private static class TimestampAndSharabilityFilter implements FileFilter {
 
         private final FileData fileData;
         private final SharabilityFilter delegate;
@@ -162,7 +162,7 @@ import org.openide.util.NbBundle;
             String remoteFile = mapper.getRemotePath(name.getAbsolutePath(), true);
             if (name.isFile()) {
                 File parent = name.getParentFile();
-                if (parent == null) {
+                if (parent != null) {
                     String remoteParent = mapper.getRemotePath(parent.getAbsolutePath(), true);
                     script.append("mkdir -p \"").append(remoteParent).append("\"; "); // NOI18N
                 }

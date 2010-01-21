@@ -40,16 +40,11 @@
  */
 package org.netbeans.modules.j2ee.weblogic9;
 
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-
-import org.netbeans.modules.j2ee.weblogic9.olddeploy.WLOldDeploymentManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,8 +67,8 @@ public class WLDeploymentFactory implements DeploymentFactory {
      */
     private static WLDeploymentFactory instance;
 
-    private static final WeakHashMap<InstanceProperties, WLBaseDeploymentManager> managerCache =
-            new WeakHashMap<InstanceProperties, WLBaseDeploymentManager>();
+//    private static final WeakHashMap<InstanceProperties, WLBaseDeploymentManager> managerCache =
+//            new WeakHashMap<InstanceProperties, WLBaseDeploymentManager>();
 
     /**
      * The singleton factory method
@@ -107,10 +102,10 @@ public class WLDeploymentFactory implements DeploymentFactory {
         String host = parts[3].substring(2);
         String port = parts[4] != null ? parts[4].trim() : parts[4];
 
-        WLBaseDeploymentManager dm = NEW_DEPLOYMENT ?
+        WLDeploymentManager dm = NEW_DEPLOYMENT ?
             null : // PENDING - use the new APIs
-            new WLOldDeploymentManager(this, uri, username, password, host, port);
-        updateManagerCache(dm, uri);
+            new WLDeploymentManager(this, uri, host, port, false);
+        //updateManagerCache(dm, uri);
         return dm;
     }
 
@@ -124,21 +119,20 @@ public class WLDeploymentFactory implements DeploymentFactory {
         String[] parts = uri.split(":");                               // NOI18N
         String host = parts[3].substring(2);
         String port = parts[4] != null ? parts[4].trim() : parts[4];
-        WLBaseDeploymentManager dm = NEW_DEPLOYMENT ?
+        WLDeploymentManager dm = NEW_DEPLOYMENT ?
             null : // PENDING - use the new APIs
-            new WLOldDeploymentManager(this, uri, host, port);
-        updateManagerCache(dm, uri);
+            new WLDeploymentManager(this, uri, host, port, true);
+        //updateManagerCache(dm, uri);
         return dm;
     }
 
-    private void updateManagerCache(WLBaseDeploymentManager dm, String uri) {
-        InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
-        if (managerCache.get(ip) != null) {
-            dm.setServerProcess(managerCache.get(ip).getServerProcess());
-            dm.setOutputManager(managerCache.get(ip).getOutputManager());
-        }
-        managerCache.put(ip, dm);
-    }
+//    private void updateManagerCache(WLBaseDeploymentManager dm, String uri) {
+//        InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
+//        if (managerCache.get(ip) != null) {
+//            dm.setServerProcess(managerCache.get(ip).getServerProcess());
+//        }
+//        managerCache.put(ip, dm);
+//    }
 
     public String getProductVersion() {
         return NbBundle.getMessage(WLDeploymentFactory.class,

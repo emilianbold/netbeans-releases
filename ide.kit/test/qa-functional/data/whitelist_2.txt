@@ -5513,3 +5513,17 @@ org.netbeans.modules.maven.indexer.Installer
 org.netbeans.editor.BaseKit$SearchableKit
 org.netbeans.modules.bugzilla.ModuleLifecycleManager
 
+# OK on Jan 18, 2010:
+org.netbeans.ModuleFactory
+org.netbeans.ProxyClassLoader
+org.netbeans.core.GuiRunLevel
+org.netbeans.core.NbStatusDisplayer
+org.netbeans.core.NbStatusDisplayer$MessageImpl
+org.netbeans.core.WindowSystem
+org.netbeans.core.netigso.Installer
+org.netbeans.core.netigso.NetigsoModuleFactory
+org.netbeans.core.startup.Splash$SplashPainter
+org.netbeans.modules.ide.ergonomics.Installer
+org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$FCL
+org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater$RootsListeners
+

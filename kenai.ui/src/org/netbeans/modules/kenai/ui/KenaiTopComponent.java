@@ -59,12 +59,13 @@ import org.openide.windows.WindowManager;
  * Top component which displays something.
  * @author Jan Becicka
  */
-final class KenaiTopComponent extends TopComponent {
+public final class KenaiTopComponent extends TopComponent {
 
     private static KenaiTopComponent instance;
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/kenai/ui/resources/kenai-small.png"; // NOI18N
     private static final String PREFERRED_ID = "KenaiTopComponent"; // NOI18N
+    private JComboBox combo;
 
     private JComponent dashboardComponent;
 
@@ -135,8 +136,7 @@ final class KenaiTopComponent extends TopComponent {
     }
 
     Component getKenaiSwitcher() {
-        final JComboBox combo = new JComboBox(new KenaiComboModel());
-        combo.setRenderer(new KenaiListRenderer());
+        combo = new KenaiCombo(false);
         combo.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -144,10 +144,17 @@ final class KenaiTopComponent extends TopComponent {
                     DashboardImpl.getInstance().setKenai((Kenai) combo.getSelectedItem());
                 } else {
                     new AddInstanceAction().actionPerformed(e);
+                    DashboardImpl.getInstance().setKenai((Kenai) combo.getSelectedItem());
                 }
             }
         });
         return combo;
+    }
+
+    public void setSelectedKenai(Kenai kenai) {
+        if (combo!=null) {
+            combo.setSelectedItem(kenai);
+        }
     }
 
     @Override

@@ -42,6 +42,7 @@ package org.netbeans.modules.subversion.client;
 
 import java.awt.Dialog;
 import java.net.PasswordAuthentication;
+import java.util.Arrays;
 import javax.swing.JButton;
 import org.netbeans.modules.subversion.kenai.SvnKenaiSupport;
 import org.netbeans.modules.subversion.SvnModuleConfig;
@@ -62,7 +63,7 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
     private final int handledExceptions;
     
     private String username = null;
-    private String password = null;        
+    private char[] password = null;
 
     private final boolean prompt;
     
@@ -85,7 +86,11 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
 
     public String getPassword() {
         getAuthData();
-        return password;
+        String retval = ""; //NOI18N
+        if (password != null) {
+            retval = new String(password);
+        }
+        return retval;
     }
 
     public int askTrustSSLServer(String certMessage, boolean b) {
@@ -177,7 +182,7 @@ public class SvnClientCallback implements ISVNPromptUserPassword {
         char[] psswd = pa.getPassword();
 
         username = user != null ? user : "";
-        password = psswd != null ? new String(psswd) : "";
+        password = psswd;
     }
 
     private void showDialog(DialogDescriptor dialogDescriptor) {

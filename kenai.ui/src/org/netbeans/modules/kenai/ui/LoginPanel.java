@@ -66,6 +66,8 @@ import org.openide.util.RequestProcessor;
  */
 public class LoginPanel extends javax.swing.JPanel {
 
+    private Credentials credentials;
+
     private URL getForgetPasswordUrl() {
         try {
             return new URL(kenai.getUrl().toString() + "/people/forgot_password"); // NOI18N
@@ -87,11 +89,10 @@ public class LoginPanel extends javax.swing.JPanel {
     private Kenai kenai;
 
     /** Creates new form LoginPanel */
-    public LoginPanel(Kenai kenai) {
+    public LoginPanel(Kenai kenai, Credentials credentials) {
         this.kenai = kenai;
+        this.credentials = credentials;
         initComponents();
-        kenaiCombo.setModel(new KenaiComboModel(Kenai.Status.OFFLINE));
-        kenaiCombo.setRenderer(new KenaiListRenderer());
         kenaiCombo.setSelectedItem(kenai);
 //        lblKenaiLogoCenter.setBorder(null);
 //        lblKenaiLogoLeft.setBorder(null);
@@ -104,6 +105,8 @@ public class LoginPanel extends javax.swing.JPanel {
 //            lblKenaiLogoLeft.setBorder(new EmptyBorder(10, 12, 0, 10));
 //            lblKenaiLogoLeft.setIcon(null);
 //        }
+        setUsername(credentials.getUsername(kenai));
+        setPassword(credentials.getPassword(kenai));
         setChkOnline();
     }
 
@@ -194,7 +197,7 @@ public class LoginPanel extends javax.swing.JPanel {
         progressBar = new javax.swing.JProgressBar();
         chkIsOnline = new javax.swing.JCheckBox();
         kenaiLabel = new javax.swing.JLabel();
-        kenaiCombo = new javax.swing.JComboBox();
+        kenaiCombo = new KenaiCombo(Kenai.Status.OFFLINE, true);
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
@@ -338,9 +341,18 @@ public class LoginPanel extends javax.swing.JPanel {
             signUp.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"));
             
             setChkOnline();
-
+            setUsername(credentials.getUsername(kenai));
+            setPassword(credentials.getPassword(kenai));
         } else {
             new AddInstanceAction().actionPerformed(evt);
+            this.kenai = ((Kenai) kenaiCombo.getSelectedItem());
+            forgotPassword.setAction(new URLDisplayerAction("", getForgetPasswordUrl()));
+            signUp.setAction(new URLDisplayerAction("", getRegisterUrl()));
+
+            forgotPassword.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.forgotPassword.text"));
+            signUp.setText(NbBundle.getMessage(LoginPanel.class, "LoginPanel.register.text"));
+
+            setChkOnline();
         }
     }//GEN-LAST:event_kenaiComboActionPerformed
 
@@ -368,16 +380,26 @@ public class LoginPanel extends javax.swing.JPanel {
     public String getUsername() {
         return username.getText();
     }
-    public void setUsername(String uname) {
+
+    private void setUsername(String uname) {
         username.setText(uname);
         chkRememberMe.setSelected(true);
     }
 
-    public void setPassword(char[] pwd) {
+    private void setPassword(char[] pwd) {
         password.setText(new String(pwd));
     }
 
     public boolean isOnline() {
         return chkIsOnline.isSelected();
+    }
+
+    public Kenai getKenai() {
+        return (Kenai) kenaiCombo.getSelectedItem();
+    }
+
+    public interface Credentials {
+        String getUsername(Kenai kenai);
+        char[] getPassword(Kenai kenai);
     }
 }

@@ -39,21 +39,18 @@
 
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.util.TreePath;
-import java.util.List;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
 import org.netbeans.spi.editor.hints.Fix;
 
 /**
  *
  * @author lahvac
  */
-public class StringBuilderAppendTest extends TreeRuleTestBase {
+public class StringBuilderAppendTest extends TestBase {
 
     public StringBuilderAppendTest(String name) {
-        super(name);
+        super(name, StringBuilderAppend.class);
     }
 
     public void testStringBuilder() throws Exception {
@@ -62,7 +59,7 @@ public class StringBuilderAppendTest extends TreeRuleTestBase {
                        "public class Test {\n" +
                        "    private void test(int a, int b) {\n" +
                        "        StringBuilder sb = new StringBuilder();\n" +
-                       "        sb.append|(\"a\" + \"b\" + a + \"c\" + b);\n" +
+                       "        sb.append(\"a\" + \"b\" + a + \"c\" + b);\n" +
                        "    }\n" +
                        "}\n",
                        "4:18-4:41:verifier:String concatenation in StringBuilder.append",
@@ -82,7 +79,7 @@ public class StringBuilderAppendTest extends TreeRuleTestBase {
                        "public class Test {\n" +
                        "    private void test(int a, int b) {\n" +
                        "        StringBuffer sb = new StringBuffer();\n" +
-                       "        sb.append|(\"a\" + \"b\" + a + \"c\" + b);\n" +
+                       "        sb.append(\"a\" + \"b\" + a + \"c\" + b);\n" +
                        "    }\n" +
                        "}\n",
                        "4:18-4:41:verifier:String concatenation in StringBuffer.append",
@@ -102,7 +99,7 @@ public class StringBuilderAppendTest extends TreeRuleTestBase {
                        "public class Test {\n" +
                        "    private void test(int a, int b) {\n" +
                        "        StringBuffer sb = new StringBuffer();\n" +
-                       "        sb.append|((\"a\" + \"b\") + a + (\"c\" + CONST));\n" +
+                       "        sb.append((\"a\" + \"b\") + a + (\"c\" + CONST));\n" +
                        "    }\n" +
                        "    private static final String CONST = \"d\";\n" +
                        "}\n",
@@ -124,7 +121,7 @@ public class StringBuilderAppendTest extends TreeRuleTestBase {
                             "public class Test {\n" +
                             "    private void test(int a, int b) {\n" +
                             "        StringBuilder sb = new StringBuilder();\n" +
-                            "        sb.append|(a + b);\n" +
+                            "        sb.append(a + b);\n" +
                             "    }\n" +
                             "}\n");
     }
@@ -135,7 +132,7 @@ public class StringBuilderAppendTest extends TreeRuleTestBase {
                             "public class Test {\n" +
                             "    private void test(int a, int b) {\n" +
                             "        StringBuilder sb = new StringBuilder();\n" +
-                            "        sb.append|(\"a\" + a + \"b\" + b, 1, 2);\n" +
+                            "        sb.append(\"a\" + a + \"b\" + b, 1, 2);\n" +
                             "    }\n" +
                             "}\n");
     }
@@ -146,7 +143,7 @@ public class StringBuilderAppendTest extends TreeRuleTestBase {
                             "public class Test {\n" +
                             "    private void test(int a, int b) {\n" +
                             "        StringBuilder sb = new StringBuilder();\n" +
-                            "        sb.append|(\"a\" + \"b\");\n" +
+                            "        sb.append(\"a\" + \"b\");\n" +
                             "    }\n" +
                             "}\n");
     }
@@ -157,7 +154,7 @@ public class StringBuilderAppendTest extends TreeRuleTestBase {
                        "public class Test {\n" +
                        "    private void test(int a, int b) {\n" +
                        "        StringBuffer sb = new StringBuffer();\n" +
-                       "        sb.append|((\"a\" + \"b\") + a + \"c\");\n" +
+                       "        sb.append((\"a\" + \"b\") + a + \"c\");\n" +
                        "    }\n" +
                        "    private static final String CONST = \"d\";\n" +
                        "}\n",
@@ -179,7 +176,7 @@ public class StringBuilderAppendTest extends TreeRuleTestBase {
                        "public class Test {\n" +
                        "    private void test(int a, int b) {\n" +
                        "        StringBuffer sb = new StringBuffer();\n" +
-                       "        sb.append|(\"a\" + d);\n" +
+                       "        sb.append(\"a\" + d);\n" +
                        "    }\n" +
                        "    private static String CONST = \"d\";\n" +
                        "}\n",
@@ -193,21 +190,6 @@ public class StringBuilderAppendTest extends TreeRuleTestBase {
                         "    }\n" +
                         "    private static String CONST = \"d\";\n" +
                         "}\n").replaceAll("[ \n\t]+", " "));
-    }
-
-    @Override
-    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
-        StringBuilderAppend h = new StringBuilderAppend();
-
-        while (path != null) {
-            if (h.getTreeKinds().contains(path.getLeaf().getKind())) {
-                return h.run(info, path);
-            }
-
-            path = path.getParentPath();
-        }
-
-        return null;
     }
 
     @Override

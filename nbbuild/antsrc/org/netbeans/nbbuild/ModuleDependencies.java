@@ -60,6 +60,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -766,19 +767,23 @@ public class ModuleDependencies extends Task {
         
         PrintWriter w = new PrintWriter (new FileWriter (output));
         for (Map.Entry<String,List<ModuleInfo>> entry : packages.entrySet()) {
-            String out = entry.getKey();
+            String pkg = entry.getKey().replace('/', '.');
+            if (pkg.equals("")) {
+                continue; // ignore default package
+            }
             List<ModuleInfo> cnt = entry.getValue();
             if (cnt.size() > 1) {
-                log("Package " + out + " is shared between:", Project.MSG_VERBOSE);
-                boolean doPrint = regexp == null;
+                SortedSet<String> cnbs = new TreeSet<String>();
                 for (ModuleInfo m : cnt) {
-                    log ("   " + m.codebasename, Project.MSG_VERBOSE);
-                    if (regexp != null && regexp.matcher(m.group).matches()) {
-                        doPrint = true;
+                    if (regexp == null || regexp.matcher(m.group).matches()) {
+                        cnbs.add(m.codebasename);
                     }
                 }
-                if (doPrint) {
-                    w.println (out.replace ('/', '.'));
+                if (cnbs.size() > 1) {
+                    w.println("PACKAGE " + pkg);
+                    for (String cnb : cnbs) {
+                        w.println("  MODULE " + cnb);
+                    }
                 }
             }
         }

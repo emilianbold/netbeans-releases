@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.spi;
@@ -56,13 +56,13 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public class HintsRunner {
 
-    public static List<ErrorDescription> computeErrors(CompilationInfo info, List<HintDescription> hints, AtomicBoolean cancel/*XXX*/) {
+    public static List<ErrorDescription> computeErrors(CompilationInfo info, Iterable<? extends HintDescription> hints, AtomicBoolean cancel) {
         Map<Kind, List<HintDescription>> kindHints = new HashMap<Kind, List<HintDescription>>();
         Map<PatternDescription, List<HintDescription>> patternHints = new HashMap<PatternDescription, List<HintDescription>>();
         
         RulesManager.sortOut(hints, kindHints, patternHints);
 
-        return new HintsInvoker().computeHints(info, kindHints, patternHints);
+        return new HintsInvoker(info, cancel).computeHints(info, kindHints, patternHints);
     }
 
 }

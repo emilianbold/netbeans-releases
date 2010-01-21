@@ -57,6 +57,7 @@ public class RemoteBinaryServiceTest extends RemoteTestBase {
     }
 
     @ForAllEnvironments
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     public void testBinaryService() throws Exception {
 
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();

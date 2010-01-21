@@ -81,11 +81,11 @@ public class Deadlock73332Test extends NbTestCase {
         }
     }
     
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
         File f = this.getWorkDir();
-        folder = FileUtil.toFileObject(f);        
+        folder = FileUtil.toFileObject(f);
     }
     
     public static class TestLookup extends ProxyLookup {
@@ -98,10 +98,10 @@ public class Deadlock73332Test extends NbTestCase {
             return Lookups.metaInfServices(Thread.currentThread().getContextClassLoader());
         }
         
-        protected void beforeLookup(Lookup.Template template) {
-            if (template.getType().isAssignableFrom(AnnotationProvider.class)) {
+        protected @Override void beforeLookup(Lookup.Template<?> template) {
+            if (folder != null && template.getType().isAssignableFrom(AnnotationProvider.class)) {
                 RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         folder.getChildren(true);
                     }
                 });

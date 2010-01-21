@@ -142,7 +142,16 @@ public final class UIUtils {
         return true;
     }
 
+    /**
+     *
+     * @return
+     */
     public static boolean showLogin() {
+        for (Kenai k: KenaiManager.getDefault().getKenais()) {
+            if (k.getStatus()==Kenai.Status.OFFLINE) {
+                return showLogin(k);
+            }
+        }
         return showLogin(KenaiManager.getDefault().getKenai("https://kenai.com"));
     }
     /**
@@ -170,7 +179,7 @@ public final class UIUtils {
      */
     public static boolean showLogin(final Kenai kenai) {
         PresenceIndicator.getDefault().init();
-        final LoginPanel loginPanel = new LoginPanel(kenai);
+        final LoginPanel loginPanel = new LoginPanel(kenai, new CredentialsImpl());
         final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
         final String ctlLogin = NbBundle.getMessage(Utilities.class, "CTL_Login");
         final String ctlCancel = NbBundle.getMessage(Utilities.class, "CTL_Cancel");
@@ -182,6 +191,7 @@ public final class UIUtils {
                 DialogDescriptor.DEFAULT_ALIGN,
                 null, new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
+                        final Kenai k = loginPanel.getKenai();
                         if (event.getSource().equals(ctlLogin)) {
                             UIUtils.logKenaiUsage("LOGIN"); // NOI18N
                         loginPanel.showProgress();
@@ -189,8 +199,8 @@ public final class UIUtils {
 
                             public void run() {
                                 try {
-                                    KenaiConnection.getDefault(kenai);
-                                    kenai.login(loginPanel.getUsername(), loginPanel.getPassword(), loginPanel.isOnline());
+                                    KenaiConnection.getDefault(k);
+                                    k.login(loginPanel.getUsername(), loginPanel.getPassword(), loginPanel.isOnline());
                                     SwingUtilities.invokeLater(new Runnable() {
 
                                         public void run() {
@@ -214,13 +224,13 @@ public final class UIUtils {
                                 }
                             }
                         });
-                        String passwordPref = getPrefName(kenai, KENAI_PASSWORD_PREF);
+                        String passwordPref = getPrefName(k, KENAI_PASSWORD_PREF);
                         if (loginPanel.isStorePassword()) {
-                            preferences.put(getPrefName(kenai, KENAI_USERNAME_PREF), loginPanel.getUsername()); // NOI18N
+                            preferences.put(getPrefName(k, KENAI_USERNAME_PREF), loginPanel.getUsername()); // NOI18N
                             Keyring.save(passwordPref, loginPanel.getPassword(),
-                                    NbBundle.getMessage(UIUtils.class, "UIUtils.password_keyring_description", kenai.getUrl().getHost()));
+                                    NbBundle.getMessage(UIUtils.class, "UIUtils.password_keyring_description", k.getUrl().getHost()));
                         } else {
-                            preferences.remove(getPrefName(kenai, KENAI_USERNAME_PREF)); // NOI18N
+                            preferences.remove(getPrefName(k, KENAI_USERNAME_PREF)); // NOI18N
                             Keyring.delete(passwordPref);
                         }
                         preferences.remove(passwordPref);
@@ -235,20 +245,33 @@ public final class UIUtils {
         login.setClosingOptions(new Object[]{ctlCancel});
         Dialog d = DialogDisplayer.getDefault().createDialog(login);
 
-        String uname=preferences.get(getPrefName(kenai, KENAI_USERNAME_PREF), null); // NOI18N
-        if (uname != null) {
-            loginPanel.setUsername(uname);
-            char[] password = loadPassword(kenai, preferences);
-            if (password != null) {
-                loginPanel.setPassword(password);
-            }
-        }
         d.pack();
         d.setResizable(false);
         loginPanel.clearStatus();
         d.setVisible(true);
 
         return loginPanel.getClientProperty("cancel")==null; // NOI18N
+    }
+
+    private static class CredentialsImpl implements LoginPanel.Credentials {
+
+        public String getUsername(Kenai kenai) {
+            final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+            String uname = preferences.get(getPrefName(kenai, KENAI_USERNAME_PREF), ""); // NOI18N
+            if (uname==null) {
+                return "";
+            }
+            return uname;
+        }
+
+        public char[] getPassword(Kenai kenai) {
+            final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
+            char[] password = loadPassword(kenai, preferences);
+            if (password==null) {
+                return new char[0];
+            }
+            return password;
+        }
     }
 
     public static JLabel createUserWidget(String user) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.analyzer;
@@ -63,9 +63,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.java.hints.infrastructure.HintsTask;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.analyzer.ui.AnalyzerTopComponent;
+import org.netbeans.modules.java.hints.jackpot.impl.hints.HintsInvoker;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -146,7 +146,7 @@ public class Analyzer implements Runnable {
 
                             handle.progress(f.incrementAndGet());
 
-                            eds.addAll(new HintsTask().computeHints(cc));
+                            eds.addAll(new HintsInvoker(cc, new AtomicBoolean()).computeHints(cc));
                         } finally {
                             HintsSettings.setPreferencesOverride(null);
                         }

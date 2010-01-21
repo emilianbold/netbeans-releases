@@ -68,6 +68,10 @@ public abstract class AbstractModelImplementation {
         return myModel;
     }
     
+    protected BeansModel getBeansModel(){
+        return BeansModelFactory.getModel(getModelUnit());
+    }
+    
     protected WebBeansModelProvider getProvider(){
         return Lookup.getDefault().lookup( WebBeansModelProvider.class);
     }

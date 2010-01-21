@@ -155,6 +155,8 @@ public class APTSerializeUtils {
     }
     
     private static int fileIndex = 0;
+    private static final boolean TRACE = true;
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     static public APT testAPTSerialization(APTFileBuffer buffer, APT apt) {
         File file = buffer.getFile();
         APT aptRead = null;
@@ -163,7 +165,7 @@ public class APTSerializeUtils {
         String suffix = file.getName();
         try {
             File out = File.createTempFile(prefix, suffix);                
-            if (false) { System.out.println("...saving APT of file " + file.getAbsolutePath() + " into tmp file " + out); } // NOI18N
+            if (TRACE) { System.out.println("...saving APT of file " + file.getAbsolutePath() + " into tmp file " + out); } // NOI18N
             long astTime = System.currentTimeMillis();
             // write
             ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(out), APTTraceFlags.BUF_SIZE));
@@ -173,7 +175,7 @@ public class APTSerializeUtils {
                 oos.close();
             }
             long writeTime = System.currentTimeMillis() - astTime;
-            if (false) { System.out.println("saved APT of file " + file.getAbsolutePath() + " withing " + writeTime + "ms"); } // NOI18N
+            if (TRACE) { System.out.println("saved APT of file " + file.getAbsolutePath() + " withing " + writeTime + "ms"); } // NOI18N
             astTime = System.currentTimeMillis();
             // read
             ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(out), APTTraceFlags.BUF_SIZE));
@@ -185,7 +187,7 @@ public class APTSerializeUtils {
                 ois.close();                
             }
             long readTime = System.currentTimeMillis() - astTime;
-            if (false) { System.out.println("read APT of file " + file.getAbsolutePath() + " withing " + readTime + "ms"); } // NOI18N
+            if (TRACE) { System.out.println("read APT of file " + file.getAbsolutePath() + " withing " + readTime + "ms"); } // NOI18N
             out.delete();
         } catch (IOException ex) {
             ex.printStackTrace();

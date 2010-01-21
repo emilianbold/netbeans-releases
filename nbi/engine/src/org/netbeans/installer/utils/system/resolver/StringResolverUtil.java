@@ -57,6 +57,9 @@ public class StringResolverUtil {
         }
         for(StringResolver resolver : list) {
             parsed = resolver.resolve(parsed, loader);
+            if(parsed == null) {
+                break;
+            }
         }
         return parsed;
     }

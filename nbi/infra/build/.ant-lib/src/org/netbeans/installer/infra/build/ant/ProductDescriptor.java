@@ -69,7 +69,7 @@ public class ProductDescriptor extends Task {
             file = new File(getProject().getBaseDir(), path);
         }
     }
-    
+
     // execution ////////////////////////////////////////////////////////////////////
     /**
      * Executes the task. This method writes the product package descriptor xml code
@@ -115,14 +115,14 @@ public class ProductDescriptor extends Task {
         // display name /////////////////////////////////////////////////////////////
         xml.append("            <display-name>\n"); // NOI18N
         xml.append("                <default><![CDATA[" + // NOI18N
-                get("product.display.name.default") + "]]></default>\n"); // NOI18N
+                Utils.convertToAscii(get("product.display.name.default")) + "]]></default>\n"); // NOI18N
         if (!locales.equals("")) { // NOI18N
             for (String locale: locales.split(" ")) { // NOI18N
                 String name = get("product.display.name." + locale);
                 if (name != null) {
                     xml.append("                <localized locale=\"" + // NOI18N
                             locale + "\"><![CDATA[" + // NOI18N
-                            name + // NOI18N
+                            Utils.convertToAscii(name) + // NOI18N
                             "]]></localized>\n"); // NOI18N
                 }
             }
@@ -132,14 +132,14 @@ public class ProductDescriptor extends Task {
         // description //////////////////////////////////////////////////////////////
         xml.append("            <description>\n"); // NOI18N
         xml.append("                <default><![CDATA[" + // NOI18N
-                get("product.description.default") + "]]></default>\n"); // NOI18N
+                Utils.convertToAscii(get("product.description.default")) + "]]></default>\n"); // NOI18N
         if (!locales.equals("")) { // NOI18N
             for (String locale: locales.split(" ")) { // NOI18N
                 String desc = get("product.description." + locale);
                 if (desc != null) {
                     xml.append("                <localized locale=\"" + // NOI18N
                             locale + "\"><![CDATA[" + // NOI18N
-                            desc + // NOI18N
+                            Utils.convertToAscii(desc) + // NOI18N
                             "]]></localized>\n"); // NOI18N
                 }
             }
@@ -181,7 +181,6 @@ public class ProductDescriptor extends Task {
             xml.append("                <file " + // NOI18N
                     "size=\"" + size + "\" " + // NOI18N
                     "md5=\"" + md5 + "\">\n"); // NOI18N
-            
             xml.append(
                     "                    <default-uri>" + // NOI18N
                     uri.replace(" ", "%20") + // NOI18N

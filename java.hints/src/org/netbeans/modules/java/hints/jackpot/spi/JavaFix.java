@@ -48,7 +48,6 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.VariableTree;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.regex.Matcher;
 import com.sun.source.tree.IdentifierTree;
@@ -61,6 +60,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,8 +81,6 @@ import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 //import org.netbeans.modules.apisupport.project.NbModuleProject;
 //import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 //import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -93,10 +91,7 @@ import org.netbeans.modules.java.hints.jackpot.impl.pm.Pattern;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -129,6 +124,14 @@ public abstract class JavaFix {
 
     final FileObject getFile() {
         return handle.getFileObject();
+    }
+
+    public static Fix rewriteFix(HintContext ctx, String displayName, TreePath what, final String to, String... imports) {
+        return rewriteFix(ctx, displayName, what, to, Collections.<String, TypeMirror>emptyMap(), imports);
+    }
+    
+    public static Fix rewriteFix(HintContext ctx, String displayName, TreePath what, final String to, Map<String, TypeMirror> constraints, String... imports) {
+        return rewriteFix(ctx.getInfo(), displayName, what, to, ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames(), constraints, imports);
     }
 
     public static Fix rewriteFix(CompilationInfo info, String displayName, TreePath what, final String to, Map<String, TreePath> parameters, Map<String, Collection<? extends TreePath>> parametersMulti, final Map<String, String> parameterNames, Map<String, TypeMirror> constraints, String... imports) {

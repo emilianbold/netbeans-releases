@@ -48,6 +48,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.mercurial.HgException;
@@ -64,6 +65,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
+import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -190,6 +192,15 @@ public class PushAction extends ContextAction {
                 new DialogDescriptor.Message(msg));
     }
 
+    /**
+     *
+     * @param root
+     * @param pushUrl password is nulled
+     * @param fromPrjName
+     * @param toPrjName
+     * @param logger
+     * @param showSaveCredsOption
+     */
     static void performPush(File root, HgURL pushUrl, String fromPrjName, String toPrjName, OutputLogger logger, boolean showSaveCredsOption) {
         try {
             boolean bLocalPush = pushUrl.isFile();
@@ -238,8 +249,7 @@ public class PushAction extends ContextAction {
             if (bNoChanges) {
                 list = listOutgoing;
             } else {
-                List<HgHook> hooks = Mercurial.getInstance().getHooks();
-                int a = 0;
+                Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);
                 HgHookContext context = null;
                 if(hooks.size() > 0) {
                     HgHookContext.LogEntry[] entries = new HgHookContext.LogEntry[messages.size()];
@@ -374,6 +384,7 @@ public class PushAction extends ContextAction {
         } finally {
             logger.outputInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_DONE")); // NOI18N
             logger.output(""); // NOI18N
+            pushUrl.clearPassword();
         }
     }
 

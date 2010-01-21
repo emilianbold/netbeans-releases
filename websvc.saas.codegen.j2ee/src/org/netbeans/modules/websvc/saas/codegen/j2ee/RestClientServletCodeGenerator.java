@@ -166,10 +166,6 @@ public class RestClientServletCodeGenerator extends RestClientPojoCodeGenerator 
     }
 
     @Override
-    protected void addJaxbLib() throws IOException {
-    }
-
-    @Override
     protected void addImportsToTargetFile() throws IOException {
         super.addImportsToTargetFile();
         if (getDropFileType() == Constants.DropFileType.RESOURCE) {

@@ -124,19 +124,8 @@ public class TestUtil {
         
     }
     
-    public static File createWorkFolder() throws IOException {
-        File tempFile = File.createTempFile( "TestWorkDir", null );
-        tempFile.delete();
-        tempFile.mkdir();
-        return tempFile;
-    }
-    
     public static FileFilter createExtensionFilter( boolean folders, final String ... extensions ) {
         return new ExtensionFileFilter( folders, extensions );            
-    }
-    
-    public static void removeWorkFolder( File file ) {
-        deleteRecursively( file );        
     }
     
     /** Good for debuging content of large collections.
@@ -263,21 +252,6 @@ public class TestUtil {
         is.close();
         os.close();
     }
-    
-    /** Recursively deletes the complete folder srtucture
-     */
-    private static void deleteRecursively( File file ) {
-        
-        if ( file.isDirectory() ) {        
-            File[] files = file.listFiles();
-            for( File f : files ) {
-                deleteRecursively( f );
-            }
-        }
-        
-        file.delete();
-    }
-    
     
 //    public static void printInsane( Object... roots ) {
 //        

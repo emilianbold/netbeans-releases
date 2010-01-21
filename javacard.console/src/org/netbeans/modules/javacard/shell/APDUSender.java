@@ -54,6 +54,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.regex.Pattern;
 import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.capabilities.PortKind;
@@ -196,11 +197,18 @@ public class APDUSender {
         if(contactedInterface == null) {
             powerup();
         }
-        Apdu apdu = new Apdu(toBytes(apduString));
-        apdu.isExtended = extended;
-        contactedInterface.exchangeApdu(apdu);
-        String response = apdu.toString();
-        return response;
+        try {
+            Apdu apdu = new Apdu(toBytes(apduString));
+            apdu.isExtended = extended;
+            contactedInterface.exchangeApdu(apdu);
+            String response = apdu.toString();
+            return response;
+        } catch (ArrayIndexOutOfBoundsException aioobe) {
+            ShellException e = new ShellException (NbBundle.getMessage(APDUSender.class,
+                    "MSG_INSUFFICIENT_BYTES", aioobe.getMessage())); //NOI18N
+            e.initCause(aioobe);
+            throw e;
+        }
     }
 
     public String sendContactless(String apduString) throws IOException, ShellException, CadTransportException {
@@ -214,43 +222,7 @@ public class APDUSender {
         return response;
     }
 
-    private static byte[] toBytes(String str) throws ShellException {
-        StringTokenizer st = new StringTokenizer(str, ", ");
-        byte[] bytes = new byte[st.countTokens()];
-        int i = 0;
-        String token = null;
-            while (st.hasMoreTokens()) {
-                token = st.nextToken();
-                switch (token.charAt(0)) {
-                    case '\'':
-                        bytes[i] = (byte) token.charAt(1);
-                        break;
-                    case '0':
-                        if (token.charAt(1) == 'x' || token.charAt(1) == 'X') {
-                            bytes[i] = (byte) Integer.parseInt(token.substring(2), 16);
-                        } else {
-                            bytes[i] = (byte) Integer.parseInt(token.substring(1), 8);
-                        }
-                        break;
-                    case '1': //NOI18N
-                    case '2': //NOI18N
-                    case '3': //NOI18N
-                    case '4': //NOI18N
-                    case '5': //NOI18N
-                    case '6': //NOI18N
-                    case '7': //NOI18N
-                    case '8': //NOI18N
-                    case '9': //NOI18N
-                        bytes[i] = (byte) Integer.parseInt(token, 10);
-                        break;
-                    default:
-                        String msg = NbBundle.getMessage (APDUSender.class,
-                                "ERR_INVALID_TOKEN", token);
-                        throw new ShellException(msg);
-
-                }
-                i++;
-            }
-        return bytes;
+    static byte[] toBytes (String str) throws ShellException {
+        return new APDUParser(str).bytes();
     }
 }

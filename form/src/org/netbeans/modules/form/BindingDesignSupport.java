@@ -256,7 +256,7 @@ public class BindingDesignSupport {
         }
         List<PropertyDescriptor> specialPds = getSpecialBindingDescriptors(beanClass);
         Map<String,PropertyDescriptor> pathToDesc = new HashMap<String,PropertyDescriptor>();
-        if (Utilities.isMac() && System.getProperty("java.version").startsWith("1.6")) { // NOI18N
+        if (Utilities.isMac()) {
             try {
                 for (PropertyDescriptor pd : FormUtils.getBeanInfo(beanClass, Introspector.IGNORE_ALL_BEANINFO).getPropertyDescriptors()) {
                     pathToDesc.put(pd.getName(), pd);

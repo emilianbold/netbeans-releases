@@ -116,6 +116,7 @@ public class FetchAction extends ContextAction {
     }
 
     static void performFetch(final File root, OutputLogger logger) {
+        HgURL pullSource = null;
         try {
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE")); // NOI18N
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE_SEP")); // NOI18N
@@ -129,7 +130,6 @@ public class FetchAction extends ContextAction {
                 return;
             }
 
-            HgURL pullSource;
             try {
                 pullSource = new HgURL(pullSourceString);
             } catch (URISyntaxException ex) {
@@ -150,6 +150,9 @@ public class FetchAction extends ContextAction {
         } finally {
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_DONE")); // NOI18N
             logger.output(""); // NOI18N
+            if (pullSource != null) {
+                pullSource.clearPassword();
+            }
         }
     }
 }

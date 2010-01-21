@@ -64,7 +64,7 @@ public class RepositoryConnection {
                                 String password,
                                 String externalCommand,
                                 boolean savePassword) throws URISyntaxException {
-        this(new HgURL(url, username, password), externalCommand, savePassword);
+        this(new HgURL(url, username, password == null ? null : password.toCharArray()), externalCommand, savePassword);
     }
 
     public RepositoryConnection(HgURL url, String externalCommand, boolean savePassword) {
@@ -81,7 +81,7 @@ public class RepositoryConnection {
         return url.getUsername();
     }
 
-    String getPassword() {
+    char[] getPassword() {
         return url.getPassword();
     }
 
@@ -123,7 +123,6 @@ public class RepositoryConnection {
     public static String getString(RepositoryConnection rc) {
         String url = rc.url.toUrlStringWithoutUserInfo();
         String username = rc.getUsername();
-        String password = rc.getPassword();
         String extCommand = rc.getExternalCommand();
 
         StringBuffer sb = new StringBuffer();        
@@ -133,9 +132,7 @@ public class RepositoryConnection {
             sb.append(username);
         }
         sb.append(RC_DELIMITER);
-        if (password != null) {
-            sb.append(Scrambler.getInstance().scramble(password));
-        }
+        sb.append("");                                              //NOI18N
         sb.append(RC_DELIMITER);
         if (extCommand != null) {
             sb.append(extCommand);

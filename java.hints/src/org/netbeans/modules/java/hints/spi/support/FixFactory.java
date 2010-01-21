@@ -80,6 +80,40 @@ public final class FixFactory {
      * @param compilationInfo CompilationInfo to work on
      * @param treePath TreePath to a tree. The method will find nearest outer
      *        declaration. (type, method, field or local variable)
+     * @param keys keys to be contained in the SuppresWarnings annotation. E.g.
+     *        @SuppresWarnings( "key" ) or @SuppresWarnings( {"key1", "key2", ..., "keyN" } ).
+     * @throws IllegalArgumentException if keys are null or empty or id no suitable element
+     *         to put the annotation on is found (e.g. if TreePath to CompilationUnit is given")
+     */
+    public static Fix createSuppressWarningsFix(CompilationInfo compilationInfo, TreePath treePath, String... keys ) {
+        Parameters.notNull("compilationInfo", compilationInfo);
+        Parameters.notNull("treePath", treePath);
+        Parameters.notNull("keys", keys);
+
+        if (keys.length == 0) {
+            throw new IllegalArgumentException("key must not be empty"); // NOI18N
+        }
+
+        if (!isSuppressWarningsSupported(compilationInfo)) {
+            return null;
+        }
+
+        while (treePath.getLeaf().getKind() != Kind.COMPILATION_UNIT && !DECLARATION.contains(treePath.getLeaf().getKind())) {
+            treePath = treePath.getParentPath();
+        }
+
+        if (treePath.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
+            return new FixImpl(TreePathHandle.create(treePath, compilationInfo), compilationInfo.getFileObject(), keys);
+        } else {
+            return null;
+        }
+    }
+
+    /** Creates a fix, which when invoked adds @SuppresWarnings(keys) to
+     * nearest declaration.
+     * @param compilationInfo CompilationInfo to work on
+     * @param treePath TreePath to a tree. The method will find nearest outer
+     *        declaration. (type, method, field or local variable)
      * @param keys keys to be contained in the SuppresWarnings annotation. E.g. 
      *        @SuppresWarnings( "key" ) or @SuppresWarnings( {"key1", "key2", ..., "keyN" } ).
      * @throws IllegalArgumentException if keys are null or empty or id no suitable element 
@@ -89,21 +123,15 @@ public final class FixFactory {
         Parameters.notNull("compilationInfo", compilationInfo);
         Parameters.notNull("treePath", treePath);
         Parameters.notNull("keys", keys);
-        
+
         if (keys.length == 0) {
             throw new IllegalArgumentException("key must not be empty"); // NOI18N
         }
-        	
-        if (!isSuppressWarningsSupported(compilationInfo)) {
-            return Collections.emptyList();
-        }
 
-        while (treePath.getLeaf().getKind() != Kind.COMPILATION_UNIT && !DECLARATION.contains(treePath.getLeaf().getKind())) {
-            treePath = treePath.getParentPath();
-        }
-                
-        if (treePath.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
-            return Collections.<Fix>singletonList(new FixImpl(TreePathHandle.create(treePath, compilationInfo), compilationInfo.getFileObject(), keys));
+        Fix f = createSuppressWarningsFix(compilationInfo, treePath, keys);
+
+        if (f != null) {
+            return Collections.<Fix>singletonList(f);
         } else {
             return Collections.emptyList();
         }        

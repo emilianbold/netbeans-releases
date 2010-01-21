@@ -356,6 +356,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         }
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         if (refreshTask != null) {
@@ -389,6 +390,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
         splitPane.setDividerLocation(optimalLocation);
     }
     
+    @Override
     public void removeNotify() {
         Mercurial.getInstance().getFileStatusCache().removePropertyChangeListener(this);
         super.removeNotify();

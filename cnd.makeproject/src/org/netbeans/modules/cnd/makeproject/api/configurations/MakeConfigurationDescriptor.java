@@ -50,6 +50,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.Icon;
@@ -124,7 +126,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         this.baseDir = baseDir;
         rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
         projectItems = new HashMap<String, Item>();
-        setModified(true);
+        setModified();
         ToolsPanel.addCompilerSetModifiedListener(this);
     }
 
@@ -229,7 +231,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     public void init(Configuration def) {
         super.init(new Configuration[]{def}, 0);
-        setModified(true);
+        setModified();
     }
 
     public void setInitTask(Task task) {
@@ -274,7 +276,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 addSourceFilesFromRoot(getLogicalFolders(), sourceFolderInfo.getFile(), false, true);
             }
         }
-        setModified(true);
+        setModified();
     }
 
     public String getProjectMakefileName() {
@@ -469,7 +471,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         projectItems.put(item.getPath(), item);
         fireProjectItemsChangeEvent(item, ProjectItemChangeEvent.ITEM_ADDED);
         //getNativeProject().fireFileAdded(item);
-        setModified(true);
     }
 
     public void fireFilesAdded(List<NativeFileItem> fileItems) {
@@ -482,7 +483,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         projectItems.remove(item.getPath());
         fireProjectItemsChangeEvent(item, ProjectItemChangeEvent.ITEM_REMOVED);
         //getNativeProject().fireFileRemoved(item);
-        setModified(true);
     }
 
     public void fireFilesRemoved(List<NativeFileItem> fileItems) {
@@ -648,7 +648,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             ConfigurationAuxObject[] auxObjects = conf.getAuxObjects();
             for (int j = 0; j < auxObjects.length; j++) {
                 if (auxObjects[j].hasChanged()) {
-                    setModified(true);
+                    setModified();
                 }
                 auxObjects[j].clearChanged();
             }
@@ -767,7 +767,18 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
             ProjectManager.getDefault().saveProject(project);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Set<Entry<Thread, StackTraceElement[]>> entrySet = Thread.getAllStackTraces().entrySet();
+            ex.printStackTrace();
+            System.err.println("----- Start thread dump on catching IOException-----"); // NOI18N
+            for (Map.Entry<Thread, StackTraceElement[]> entry : entrySet) {
+                System.err.println(entry.getKey().getName());
+                for (StackTraceElement element : entry.getValue()) {
+                    System.err.println("\tat " + element.toString()); // NOI18N
+                }
+                System.err.println();
+            }
+            System.err.println("-----End thread dump on catching IOException-----"); // NOI18N
+            //ErrorManager.getDefault().notify(ex);
         }
     }
 
@@ -979,7 +990,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
             if (toBeRemoved.size() > 0) {
                 for (String rootToBeRemoved : toBeRemoved) {
-                    Vector<Folder> rootFolders = getLogicalFolders().getAllFolders(modified);
+                    Vector<Folder> rootFolders = getLogicalFolders().getAllFolders(modified); // FIXUP: should probably alays be 'true'
                     for (Folder root : rootFolders) {
                         if (root.getRoot() != null && root.getRoot().equals(rootToBeRemoved)) {
                             getLogicalFolders().removeFolderAction(root);
@@ -1084,7 +1095,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         top = folder.findFolderByName(dir.getName());
         if (top == null) {
             top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getName(), dir.getName(), true);
-            folder.addFolder(top);
+            folder.addFolder(top, true);
         }
         if (asDiskFolder) {
             String rootPath;
@@ -1098,7 +1109,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             rootPath = FilePathAdaptor.normalize(rootPath);
             top.setRoot(rootPath);
         }
-        addFiles(top, dir, null, filesAdded, true);
+        addFiles(top, dir, null, filesAdded, true, true);
         if (getNativeProject() != null) { // once not null, it never becomes null
             getNativeProject().fireFilesAdded(filesAdded);
         }
@@ -1115,11 +1126,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         return top;
     }
 
-    public Folder addSourceFilesFromFolder(Folder folder, File dir, boolean attachListeners) {
+    public Folder addSourceFilesFromFolder(Folder folder, File dir, boolean attachListeners, boolean setModified) {
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
         Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getName(), dir.getName(), true);
-        folder.addFolder(top);
-        addFiles(top, dir, null, filesAdded, true);
+        folder.addFolder(top, setModified);
+        addFiles(top, dir, null, filesAdded, true, setModified);
         if (getNativeProject() != null) { // once not null, it never becomes null
             getNativeProject().fireFilesAdded(filesAdded);
         }
@@ -1129,7 +1140,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         return top;
     }
 
-    private void addFiles(Folder folder, File dir, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded, boolean notify) {
+    private void addFiles(Folder folder, File dir, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded, boolean notify, boolean setModified) {
         File[] files = dir.listFiles();
         if (files == null) {
             return;
@@ -1150,7 +1161,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 if (dirfolder == null) {
                     dirfolder = folder.addNewFolder(files[i].getName(), files[i].getName(), true);
                 }
-                addFiles(dirfolder, files[i], handle, filesAdded, notify);
+                addFiles(dirfolder, files[i], handle, filesAdded, notify, setModified);
             } else {
                 String filePath;
                 if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
@@ -1161,7 +1172,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     filePath = IpeUtils.toAbsolutePath(baseDir, files[i].getPath());
                 }
                 Item item = new Item(FilePathAdaptor.normalize(filePath));
-                if (folder.addItem(item, notify) != null) {
+                if (folder.addItem(item, notify, setModified) != null) {
                     filesAdded.add(item);
                 }
                 if (handle != null) {

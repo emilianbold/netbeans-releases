@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,13 +34,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.file;
 
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,7 +67,9 @@ import org.netbeans.modules.java.hints.jackpot.spi.ClassPathBasedHintProvider;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescriptionFactory;
+import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.jackpot.spi.HintProvider;
+import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -80,19 +83,29 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=HintProvider.class)
 public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHintProvider {
 
-    public Collection<? extends HintDescription> computeHints() {
+    public Map<HintMetadata, Collection<? extends HintDescription>> computeHints() {
         return readHints(findGlobalFiles());
     }
 
     public Collection<? extends HintDescription> computeHints(ClassPath cp) {
-        return readHints(findFiles(cp));
+        return join(readHints(findFiles(cp)));
     }
 
-    private List<HintDescription> readHints(Iterable<? extends FileObject> files) {
-        List<HintDescription> result = new LinkedList<HintDescription>();
+    public static Collection<? extends HintDescription> join(Map<HintMetadata, Collection<? extends HintDescription>> hints) {
+        List<HintDescription> descs = new LinkedList<HintDescription>();
+
+        for (Collection<? extends HintDescription> c : hints.values()) {
+            descs.addAll(c);
+        }
+
+        return descs;
+    }
+
+    private Map<HintMetadata, Collection<? extends HintDescription>> readHints(Iterable<? extends FileObject> files) {
+        Map<HintMetadata, Collection<? extends HintDescription>> result = new HashMap<HintMetadata, Collection<? extends HintDescription>>();
 
         for (FileObject f : files) {
-            result.addAll(parseHintFile(f));
+            result.putAll(parseHintFile(f));
         }
 
         return result;
@@ -136,7 +149,7 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
             return Collections.emptyList();
         }
 
-        return findFiles(folder);
+        return findFilesRecursive(folder);
     }
 
     private static Collection<? extends FileObject> findFiles(FileObject folder) {
@@ -152,13 +165,35 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
         return result;
     }
 
-    public static List<HintDescription> parseHintFile(@NonNull FileObject file) {
-        String spec = Utilities.readFile(file);
+    private static Collection<? extends FileObject> findFilesRecursive(FileObject folder) {
+        List<FileObject> todo = new LinkedList<FileObject>();
+        List<FileObject> result = new LinkedList<FileObject>();
 
-        return spec != null ? parseHints(file, spec) : Collections.<HintDescription>emptyList();
+        todo.add(folder);
+
+        while (!todo.isEmpty()) {
+            FileObject f = todo.remove(0);
+
+            if (f.isFolder()) {
+                todo.addAll(Arrays.asList(f.getChildren()));
+                continue;
+            }
+            if (!"hint".equals(f.getExt())) {
+                continue;
+            }
+            result.add(f);
+        }
+
+        return result;
     }
 
-    public static List<HintDescription> parseHints(@NullAllowed FileObject file, String spec) {
+    public static Map<HintMetadata, Collection<? extends HintDescription>> parseHintFile(@NonNull FileObject file) {
+        String spec = Utilities.readFile(file);
+
+        return spec != null ? parseHints(file, spec) : Collections.<HintMetadata, Collection<? extends HintDescription>>emptyMap();
+    }
+
+    public static Map<HintMetadata, Collection<? extends HintDescription>> parseHints(@NullAllowed FileObject file, String spec) {
         ResourceBundle bundle;
 
         try {
@@ -178,8 +213,30 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
         
         TokenHierarchy<?> h = TokenHierarchy.create(spec, DeclarativeHintTokenId.language());
         TokenSequence<DeclarativeHintTokenId> ts = h.tokenSequence(DeclarativeHintTokenId.language());
-        List<HintDescription> result = new LinkedList<HintDescription>();
+        Map<HintMetadata, Collection<HintDescription>> result = new HashMap<HintMetadata, Collection<HintDescription>>();
         Result parsed = new DeclarativeHintsParser().parse(file, spec, ts);
+
+        HintMetadata meta;
+        String primarySuppressWarningsKey;
+        String id = parsed.options.get("hint");
+        
+        if (id != null) {
+            String cat = parsed.options.get("hint-category");
+            
+            if (cat == null) {
+                cat = "general";
+            }
+
+            String[] w = suppressWarnings(parsed.options);
+
+            meta = HintMetadata.create(id, bundle, cat, true, HintSeverity.WARNING, null, w);
+            primarySuppressWarningsKey = w.length > 0 ? w[0] : null;
+        } else {
+            meta = null;
+            primarySuppressWarningsKey = null;
+        }
+
+        int count = 0;
 
         for (HintTextDescription hint : parsed.hints) {
             HintDescriptionFactory f = HintDescriptionFactory.create();
@@ -208,23 +265,52 @@ public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHint
                 fixes.add(DeclarativeFix.create(fixDisplayName, spec.substring(fixRange[0], fixRange[1]), fix.conditions, fix.options));
             }
 
-            String suppressWarnings = hint.options.get("suppress-warnings");
-            String primarySuppressWarningsKey = null;
+            HintMetadata currentMeta = meta;
 
-            if (suppressWarnings != null) {
-                String[] keys = suppressWarnings.split(",");
-                
-                f.addSuppressWarningsKeys(keys);
-                primarySuppressWarningsKey = keys[0];
+            if (currentMeta == null) {
+                String[] w = suppressWarnings(hint.options);
+                String currentId = hint.options.get("hint");
+                String cat = parsed.options.get("hint-category");
+
+                if (cat == null) {
+                    cat = "general";
+                }
+
+                if (currentId != null) {
+                    currentMeta = HintMetadata.create(currentId, bundle, cat, true, HintSeverity.WARNING, null, w);
+                } else {
+                    currentId = file != null ? file.getNameExt() + "-" + count : String.valueOf(count);
+                    currentMeta = HintMetadata.create(currentId, displayName, "No Description", cat, true, HintMetadata.Kind.HINT, HintSeverity.WARNING, null, Arrays.asList(w));
+                }
+
+                primarySuppressWarningsKey = w.length > 0 ? w[0] : null;
             }
 
             f = f.setWorker(new DeclarativeHintsWorker(displayName, hint.conditions, imports, fixes, hint.options, primarySuppressWarningsKey));
-            f = f.setDisplayName(displayName);
+            f = f.setMetadata(currentMeta);
 
-            result.add(f.produce());
+            Collection<HintDescription> hints = result.get(currentMeta);
+
+            if (hints == null) {
+                result.put(currentMeta, hints = new LinkedList<HintDescription>());
+            }
+
+            hints.add(f.produce());
+
+            count++;
         }
 
-        return result;
+        return new HashMap<HintMetadata, Collection<? extends HintDescription>>(result);
+    }
+
+    private static String[] suppressWarnings(Map<String, String> options) {
+        String suppressWarnings = options.get("suppress-warnings");
+
+        if (suppressWarnings != null) {
+            return suppressWarnings.split(",");
+        } else {
+            return new String[0];
+        }
     }
 
     private static @NonNull String resolveDisplayName(@NonNull FileObject hintFile, @NullAllowed ResourceBundle bundle, String displayNameSpec, boolean fallbackToFileName, String def) {

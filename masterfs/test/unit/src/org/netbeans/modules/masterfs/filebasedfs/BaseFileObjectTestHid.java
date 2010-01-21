@@ -306,20 +306,19 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         }        
     }*/
 
-    //just for JDK 1.6    
-    /*public void  testCreateFolderOrDataFile_ReadOnly() throws Exception {
+    public void testCreateFolderOrDataFile_ReadOnly() throws Exception {
         final File wDir = getWorkDir();
         final File fold = new File(wDir,"a/b/c");
         final File data = new File(fold,"a/b/c.data");
         assertTrue(getWorkDir().setReadOnly());
         try {
-            implCreateFolderOrDataFile(wDir, fold, data);        
+            implCreateFolderOrDataFile(fold, data);        
             fail();
         } catch (IOException ex) {            
         } finally {
             assertTrue(getWorkDir().setWritable(true));        
-        }        
-    }*/
+        }
+    }
     
     private static void createFiles(final File data, final File fold) throws IOException {
         assertTrue(fold.mkdirs());

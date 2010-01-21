@@ -69,7 +69,7 @@
 	<mapID target="org.netbeans.modules.javacard.SettingClassicAppletRunProperties" url="help/SettingClassicAppletRunProperties.html"/>
 	<mapID target="org.netbeans.modules.javacard.RunningClassicAppletProject" url="help/RunningClassicAppletProject.html"/>
 	<mapID target="org.netbeans.modules.javacard.RunningClassicAppletSamples" url="help/RunningClassicAppletSamples.html"/>
-	<mapID target="org.netbeans.modules.javacard.GetAdditonalClassicAppletSamples" url="help/GetAdditonalClassicAppletSamples.html"/>
+	<mapID target="org.netbeans.modules.javacard.GetAdditionalClassicAppletSamples" url="help/GetAdditionalClassicAppletSamples.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreatingExtendedAppletProject" url="help/CreatingExtendedAppletProject.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreateExtendedAppletProjectFromTemplate" url="help/CreateExtendedAppletProjectFromTemplate.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreateExtendedAppletProjectFromExistingCode" url="help/CreateExtendedAppletProjectFromExistingCode.html"/>

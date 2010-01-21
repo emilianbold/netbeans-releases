@@ -72,7 +72,7 @@ import org.openide.util.Exceptions;
  * Contains higher-level convenience methods to
  * access the basic functionality and procedural
  * stages of the module system.
- * The NbTopManager should hold a reference to one instance.
+ * Main should hold a reference to one instance.
  * Methods are thread-safe.
  * @author Jesse Glick
  */
@@ -80,7 +80,7 @@ public final class ModuleSystem {
     private static final Logger LOG = Logger.getLogger(ModuleSystem.class.getName());
     private final ModuleManager mgr;
     private final NbInstaller installer;
-    private final ModuleList list;
+    private ModuleList list;
     private final Events ev;
     
     /** Initialize module system.
@@ -89,10 +89,17 @@ public final class ModuleSystem {
      * so it is forbidden to call readList, scanForNewAndRestore, or installNew.
      */
     public ModuleSystem(FileSystem systemFileSystem) throws IOException {
-        if (Boolean.getBoolean("org.netbeans.core.startup.ModuleSystem.CULPRIT")) Thread.dumpStack(); // NOI18N
-        ev = Boolean.getBoolean("netbeans.modules.quiet") ? (Events)new QuietEvents() : new NbEvents();
+        this();
+        init(systemFileSystem);
+    }
+    ModuleSystem() {
+        ev = Boolean.getBoolean("netbeans.modules.quiet") ? (Events) new QuietEvents() : new NbEvents();
         installer = new NbInstaller(ev);
         mgr = new ModuleManager(installer, ev);
+    }
+
+    final void init(FileSystem systemFileSystem) throws IOException {
+        if (Boolean.getBoolean("org.netbeans.core.startup.ModuleSystem.CULPRIT")) Thread.dumpStack(); // NOI18N
         PropertyChangeListener l = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent ev) {
                 if (ModuleManager.PROP_CLASS_LOADER.equals(ev.getPropertyName())) {

@@ -62,6 +62,7 @@ public class AutoUpdateTest extends NbTestCase {
         File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
             "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
             "netbeans/modules/org-netbeans-api-annotations-common.jar");
+        assertTrue("NBM file created", nbm.isFile());
 
         File target = new File(getWorkDir(), "target");
         target.mkdirs();
@@ -87,6 +88,7 @@ public class AutoUpdateTest extends NbTestCase {
 
         File lastM = new File(target, ".lastModified");
         assertTrue("Last modified file created", lastM.exists());
+        assertTrue("NBM file left untouched", nbm.isFile());
     }
     public void testDownloadAndExtractModule() throws Exception {
         clearWorkDir();

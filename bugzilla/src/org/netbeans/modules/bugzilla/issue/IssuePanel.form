@@ -73,7 +73,6 @@
                       <Component id="separatorLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="reloadButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -93,13 +92,11 @@
                           <Component id="summaryLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="attachmentsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="addCommentLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="customFieldsPanelLeft" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="dummyAttachmentsPanel" max="32767" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="dummyAttachmentsPanel" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="issueTypeCombo" max="32767" attributes="1"/>
@@ -189,7 +186,7 @@
                                           <Component id="qaContactWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                           <Component id="ccWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                           <Component id="statusWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="resolutionWarning" min="-2" pref="11" max="-2" attributes="0"/>
+                                          <Component id="resolutionWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                           <Component id="blocksWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                           <Component id="dependsOnWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                       </Group>
@@ -204,28 +201,24 @@
                                       <Component id="modifiedField" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
-                              <EmptySpace pref="20" max="32767" attributes="0"/>
                           </Group>
+                          <Component id="scrollPane1" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="scrollPane1" alignment="0" max="32767" attributes="0"/>
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <Component id="summaryField" max="32767" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="summaryWarning" min="-2" pref="9" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="submitButton" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                                      <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Component id="messagePanel" alignment="0" max="32767" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                              <Component id="summaryField" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="summaryWarning" min="-2" pref="16" max="-2" attributes="0"/>
                           </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="submitButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="messagePanel" alignment="0" max="32767" attributes="0"/>
+                          <Component id="customFieldsPanelRight" alignment="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
               </Group>
+              <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -308,7 +301,7 @@
                   <Component id="milestoneWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
                   <Component id="resolutionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="resolutionField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="resolutionWarning" alignment="3" min="-2" pref="11" max="-2" attributes="0"/>
+                  <Component id="resolutionWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -353,13 +346,18 @@
                   </Group>
                   <Component id="dummyAttachmentsPanel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="1" attributes="0">
+                  <Component id="customFieldsPanelRight" min="-2" max="-2" attributes="0"/>
+                  <Component id="customFieldsPanelLeft" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="summaryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="summaryField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="summaryWarning" alignment="3" min="-2" pref="12" max="-2" attributes="0"/>
+                  <Component id="summaryWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="addCommentLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="scrollPane1" min="-2" max="-2" attributes="0"/>
@@ -380,6 +378,14 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
+    <Container class="javax.swing.JPanel" name="customFieldsPanelLeft">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+    </Container>
+    <Container class="javax.swing.JPanel" name="customFieldsPanelRight">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
+    </Container>
     <Component class="javax.swing.JTextField" name="reportedField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>

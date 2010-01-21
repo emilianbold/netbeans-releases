@@ -122,8 +122,13 @@ public class JsfIndexer extends EmbeddingIndexer {
 
 	@Override
 	public boolean scanStarted(Context context) {
-	    this.modifications = new HashSet<String>();
-	    return super.scanStarted(context);
+            try {
+                this.modifications = new HashSet<String>();
+                return IndexingSupport.getInstance(context).isValid();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return false;
+            }
 	}
 
 	@Override

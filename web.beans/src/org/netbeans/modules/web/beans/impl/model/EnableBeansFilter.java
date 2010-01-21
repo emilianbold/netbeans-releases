@@ -42,19 +42,22 @@ package org.netbeans.modules.web.beans.impl.model;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.beans.api.model.BeansModel;
-import org.netbeans.modules.web.beans.api.model.BeansModelFactory;
 import org.netbeans.modules.web.beans.api.model.Result;
 import org.netbeans.modules.web.beans.impl.model.results.ErrorImpl;
 import org.netbeans.modules.web.beans.impl.model.results.InjectableResultImpl;
@@ -73,10 +76,13 @@ class EnableBeansFilter {
     {
         myResult = result;
         myHelper = model.getHelper();
-        myBeansModel = BeansModelFactory.getModel(model.getModelUnit());
+        myBeansModel = model.getBeansModel();
     }
     
     Result filter(){
+        myAlternatives = new HashSet<Element>();
+        myEnabledAlternatives = new HashSet<Element>();
+        
         Set<TypeElement> typeElements = getResult().getTypeElements();
         for (TypeElement typeElement : typeElements) {
             if ( getResult().isAlternative(typeElement)){
@@ -88,7 +94,7 @@ class EnableBeansFilter {
         for (Element element : productions) {
             TypeElement enclosingTypeElement = myHelper.getCompilationController().
                 getElementUtilities().enclosingTypeElement(element);
-            if ( getResult().isAlternative(enclosingTypeElement)){
+            if ( getResult().isAlternative(element)){
                 myAlternatives.add( element );
                 addEnabledAlternative( enclosingTypeElement , element );
             }
@@ -111,7 +117,7 @@ class EnableBeansFilter {
         if ( commonSize == 1 ){
             Element injectable = enabledTypes.size() ==0 ? 
                     enabledProductions.iterator().next(): 
-                        enabledTypeElements.iterator().next();
+                        enabledTypes.iterator().next();
             enabledTypes.addAll( enabledProductions);
             return new InjectableResultImpl( getResult(), injectable, enabledTypes ); 
         }
@@ -175,61 +181,130 @@ class EnableBeansFilter {
                 enclosingTypeElement(element);
             if ( getResult().isAlternative(enclosingTypeElement)){
                 String name = enclosingTypeElement.getQualifiedName().toString();
-                if ( getResult().hasAlternative(element) ){
+                if ( getResult().hasAlternative(enclosingTypeElement) ){
                     if ( !getModel().getAlternativeClasses().contains( name ) ){
                         iterator.remove();
                     }
                 }
-                else {
-                    if ( !alternativeStereotypesEnabled(enclosingTypeElement) ){
-                        iterator.remove();
-                    }
+                if ( !alternativeStereotypesEnabled(enclosingTypeElement) ){
+                    iterator.remove();
                 }
             }
         }
     }
 
     private Set<Element> findEnabledTypes(Set<Element> elements) {
-        Set<Element> enabledTypes = new HashSet<Element>( elements );
-        for (Element element : elements) {
-            TypeElement typeElement = (TypeElement)element;
+        LinkedList<Element> types = new LinkedList<Element>( elements );
+        Set<Element> result = new HashSet<Element>( elements );
+        while( types.size() != 0 ) {
+            TypeElement typeElement = (TypeElement)types.remove();
             if ( typeElement.getKind() != ElementKind.CLASS){
-                enabledTypes.remove( typeElement );
+                result.remove( typeElement );
+                continue;
             }
-            checkSpecializes(typeElement, enabledTypes);
+            checkProxyability( typeElement , types, result );
+            checkSpecializes(typeElement, types, result ,  elements );
         }
-        return enabledTypes;
+        return result;
     }
     
-    private void checkSpecializes( TypeElement typeElement, 
-            Set<Element> enabledBeans)
+    private void checkProxyability( TypeElement typeElement,
+            LinkedList<Element> types , Set<Element> result)
     {
-        if (AnnotationObjectProvider.hasSpecializes(typeElement, getHelper())) {
-            TypeMirror superClass = typeElement.getSuperclass();
-            if (superClass instanceof DeclaredType) {
-                typeElement = (TypeElement) ((DeclaredType) superClass)
-                        .asElement();
-                if (enabledBeans.contains(typeElement)) {
-                    enabledBeans.remove(typeElement);
-                    checkSpecializes(typeElement, enabledBeans);
-                }
-                else {
-                    return;
-                }
-            }
-            else {
+        /*
+         * Certain legal bean types cannot be proxied by the container:
+         * - classes which don't have a non-private constructor with no parameters,
+         * - classes which are declared final or have final methods,
+         * - primitive types,
+         * -  and array types.
+         */
+        if ( hasModifier(typeElement, Modifier.FINAL)){
+            types.remove(typeElement);
+            result.remove( typeElement );
+            return;
+        }
+        List<ExecutableElement> methods = ElementFilter.methodsIn(
+                typeElement.getEnclosedElements()) ;
+        for (ExecutableElement executableElement : methods) {
+            if ( hasModifier(executableElement, Modifier.FINAL)){
+                types.remove(typeElement);
+                result.remove( typeElement );
                 return;
             }
+        }
+        
+        List<ExecutableElement> constructors = ElementFilter.constructorsIn(
+                typeElement.getEnclosedElements()) ;
+        boolean appropriateCtor = false;
+        for (ExecutableElement constructor : constructors) {
+            if ( hasModifier(constructor, Modifier.PRIVATE)){
+                continue;
+            }
+            if ( constructor.getParameters().size() == 0 ){
+                appropriateCtor = true;
+                break;
+            }
+        }
+        
+        if ( !appropriateCtor){
+            types.remove(typeElement);
+            result.remove( typeElement );
+        }
+    }
+    
+    private boolean hasModifier ( Element element , Modifier mod){
+        Set<Modifier> modifiers = element.getModifiers();
+        for (Modifier modifier : modifiers) {
+            if ( modifier.equals( mod )){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void checkSpecializes( TypeElement typeElement, 
+            LinkedList<Element> beans, Set<Element> resultSet, 
+            Set<Element> originalElements)
+    {
+        TypeElement current = typeElement;
+        while( current != null ){
+            TypeMirror superClass = current.getSuperclass(); 
+            if (!(superClass instanceof DeclaredType)) {
+                break;
+            }
+            if (!AnnotationObjectProvider.hasSpecializes(current, getHelper())) {
+                break;
+            }
+            TypeElement superElement = (TypeElement) ((DeclaredType) superClass)
+                .asElement();
+            if (originalElements.contains(superElement)) {
+                resultSet.remove(superElement);
+            }
+            beans.remove( superElement );
+            if ( !getResult().getTypeElements().contains( superElement)){
+                break;
+            }
+            current = superElement;
         }
     }
 
     private void addEnabledAlternative( TypeElement typeElement , Element element) {
         String name = typeElement.getQualifiedName().toString();
         if ( getResult().hasAlternative(element) ){
-            if ( getModel().getAlternativeClasses().contains( name ) ){
-                myEnabledAlternatives.add( element );
+            if ( !getModel().getAlternativeClasses().contains( name ) ){
+                return;
             }
-            return;
+            /*
+             * I have commented the code below but I'm not sure is it 
+             * correct. Specification doesn't mention the case 
+             * when @Alternative annotation presents along with 
+             * alternative Stereotypes.
+             * 
+             * if ( getModel().getAlternativeClasses().contains( name ) ){
+             *  myEnabledAlternatives.add( element );
+                return;
+            }
+             */
         }
         if ( alternativeStereotypesEnabled(element)){
             myEnabledAlternatives.add( element );

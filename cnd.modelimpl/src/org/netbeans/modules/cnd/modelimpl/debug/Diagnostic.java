@@ -278,7 +278,7 @@ public class Diagnostic {
         getDiagnosticUnresolved().dumpStatictics(dumpFile, append);
     }
     
-    private static  DiagnosticUnresolved getDiagnosticUnresolved() {
+    private static synchronized DiagnosticUnresolved getDiagnosticUnresolved() {
         if( diagnosticUnresolved == null ) {
             diagnosticUnresolved = new DiagnosticUnresolved(STATISTICS_LEVEL);
         }

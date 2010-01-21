@@ -159,6 +159,9 @@ public class WatchPanel {
             Context c = new Context();
             c.url = sp.getURL(csf, language);
             c.line = csf.getLineNumber(language);
+            if (c.line == -1) {
+                c.line = 1;
+            }
             return c;
         } else {
             EditorContext context = EditorContextBridge.getContext();

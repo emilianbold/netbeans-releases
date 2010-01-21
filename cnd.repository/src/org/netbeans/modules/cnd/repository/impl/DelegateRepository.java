@@ -110,7 +110,10 @@ public final class DelegateRepository implements Repository {
     }
 
     public void closeUnit(String unitName, boolean cleanRepository, Set<String> requiredUnits) {
-        delegate.closeUnit(unitName, cleanRepository, requiredUnits);
+        Repository aDelegate = delegate;
+        if (aDelegate != null) {
+            aDelegate.closeUnit(unitName, cleanRepository, requiredUnits);
+        }
     }
 
     public void removeUnit(String unitName) {

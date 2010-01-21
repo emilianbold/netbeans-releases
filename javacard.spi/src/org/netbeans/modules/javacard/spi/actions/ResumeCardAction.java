@@ -40,6 +40,7 @@
 package org.netbeans.modules.javacard.spi.actions;
 
 import java.util.Collection;
+import org.netbeans.modules.javacard.api.RunMode;
 import org.netbeans.modules.javacard.spi.capabilities.ResumeCapability;
 import org.netbeans.spi.actions.ContextAction;
 import org.openide.util.NbBundle;
@@ -49,16 +50,18 @@ import org.openide.util.NbBundle;
  * @author Tim
  */
 final class ResumeCardAction extends ContextAction<ResumeCapability> {
-
-    ResumeCardAction() {
-        super (ResumeCapability.class, NbBundle.getMessage(ResumeCardAction.class,
-                "ACTION_RESUME_CARD"), null); //NOI18N
+    private final RunMode mode;
+    ResumeCardAction(RunMode mode) {
+        super (ResumeCapability.class, mode == RunMode.RUN ? NbBundle.getMessage(ResumeCardAction.class,
+                "ACTION_RESUME_CARD") : NbBundle.getMessage(ResumeCardAction.class, //NOI18N
+                "ACTION_RESUME_CARD_MODAL", mode), null); //NOI18N
+        this.mode = mode;
     }
 
     @Override
     protected void actionPerformed(Collection<? extends ResumeCapability> targets) {
         for (ResumeCapability c : targets) {
-            c.resume();
+            c.resume(mode);
         }
     }
 }

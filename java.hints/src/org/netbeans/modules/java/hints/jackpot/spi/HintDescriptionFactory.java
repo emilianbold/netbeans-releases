@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,18 +34,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.spi;
 
 import com.sun.source.tree.Tree.Kind;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.PatternDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
+import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 
 /**
  *
@@ -53,12 +51,10 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
  */
 public class HintDescriptionFactory {
 
-    private       String displayName;
-    private       String category;
+    private       HintMetadata metadata;
     private       Kind triggerKind;
     private       PatternDescription triggerPattern;
     private       Worker worker;
-    private final List<String> suppressWarningsKeys = new LinkedList<String>();
     private       boolean finished;
 
     private HintDescriptionFactory() {
@@ -68,13 +64,8 @@ public class HintDescriptionFactory {
         return new HintDescriptionFactory();
     }
 
-    public HintDescriptionFactory setDisplayName(String displayName) {
-        this.displayName = displayName;
-        return this;
-    }
-
-    public HintDescriptionFactory setCategory(String category) {
-        this.category = category;
+    public HintDescriptionFactory setMetadata(HintMetadata metadata) {
+        this.metadata = metadata;
         return this;
     }
 
@@ -101,16 +92,14 @@ public class HintDescriptionFactory {
         return this;
     }
 
-    public HintDescriptionFactory addSuppressWarningsKeys(String... keys) {
-        this.suppressWarningsKeys.addAll(Arrays.asList(keys));
-        return this;
-    }
-
     public HintDescription produce() {
+        if (metadata == null) {
+            metadata = new HintMetadata("no-id", "", "", "", true, HintMetadata.Kind.HINT_NON_GUI, HintSeverity.WARNING, null, Collections.<String>emptyList());
+        }
         if (this.triggerKind == null) {
-            return HintDescription.create(displayName, category, triggerPattern, worker, Collections.unmodifiableList(suppressWarningsKeys));
+            return HintDescription.create(metadata, triggerPattern, worker);
         } else {
-            return HintDescription.create(displayName, category, triggerKind, worker, Collections.unmodifiableList(suppressWarningsKeys));
+            return HintDescription.create(metadata, triggerKind, worker);
         }
     }
     

@@ -179,28 +179,34 @@ public class DiffExecutor {
             return ((MultiDiffPanel) getComponent(0)).canClose();
         }
 
+        @Override
         public UndoRedo getUndoRedo() {
             MultiDiffPanel mainPanel = (MultiDiffPanel) getComponent(0);
             return mainPanel.getUndoRedo();
         }
 
+        @Override
         public int getPersistenceType(){
             return TopComponent.PERSISTENCE_NEVER;
         }
 
+        @Override
         protected void componentClosed() {
             ((MultiDiffPanel) getComponent(0)).componentClosed();
             super.componentClosed();
         }
 
+        @Override
         protected String preferredID(){
             return "DiffExecutorTopComponent";    // NOI18N       
         }
         
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(getClass());
         }
 
+        @Override
         protected void componentActivated() {
             super.componentActivated();
             MultiDiffPanel mainPanel = (MultiDiffPanel) getComponent(0);

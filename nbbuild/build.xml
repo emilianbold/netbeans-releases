@@ -59,16 +59,16 @@ made subject to such option by the copyright holder.
 
   <target name="bootstrap" description="Bootstrap NetBeans-specific Ant extensions."
           depends="-jdk-init,-load-build-properties">
-    <fail message="You need JDK 1.5+ to build NetBeans">
+    <fail message="You need JDK 6+ to build NetBeans; nbjdk.home=${nbjdk.home} java.home=${java.home}">
         <condition>
             <not>
-                <isset property="have-jdk-1.5"/>
+                <isset property="have-jdk-1.6"/>
             </not>
         </condition>
     </fail>
 
     <mkdir dir="build/antclasses"/>
-    <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.5" target="1.5">
+    <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.6" target="1.6">
         <classpath>
             <pathelement location="${ant.core.lib}"/>
         </classpath>
@@ -101,7 +101,7 @@ made subject to such option by the copyright holder.
       </fileset>
     </path>
     <available property="have.javahelp" file="../apisupport.harness/external" type="dir"/>
-    <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.5" target="1.5">
+    <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.6" target="1.6">
       <classpath refid="bootstrap-cp"/>
       <exclude name="**/CheckHelpSets.java" unless="have.javahelp"/>
       <exclude name="**/CheckHelpSetsBin.java" unless="have.javahelp"/>
@@ -118,7 +118,7 @@ made subject to such option by the copyright holder.
       </fileset>
     </jar>
   </target>
-  <target name="download-all-extbins" unless="ext.binaries.downloaded">
+  <target name="download-all-extbins" unless="ext.binaries.downloaded" depends="bootstrap">
     <echo>Downloading external binaries (*/external/ directories)...</echo>
     <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
         <manifest dir="${nb_all}">
@@ -469,7 +469,7 @@ the ${netbeans.dest}/bin/ directory.
     </pathconvert>
     <pathconvert property="nb.clusters.exe.includes" pathsep=",">
         <dirset dir="${netbeans.dest.dir}" includes="${nb.clusters.dirs}"/>
-        <mapper type="regexp" from=".*/([^/\\]*)" to="\1/**/*.sh,\1/**/bin/*,\1/**/modules/ext/lib/*/tools_exec,\1/**/modules/ext/lib/**/*.so,\1/**/modules/ext/lib/**/*.dylib"/>
+        <mapper type="regexp" from=".*/([^/\\]*)" to="\1/**/*.sh,\1/**/bin/*,\1/**/bin/nativeexecution/**,\1/**/modules/ext/lib/*/tools_exec,\1/**/modules/ext/lib/**/*.so,\1/**/modules/ext/lib/**/*.dylib"/>
     </pathconvert>
     <pathconvert property="nb.clusters.exe.excludes" pathsep=",">
         <dirset dir="${netbeans.dest.dir}" includes="${nb.clusters.dirs}"/>
@@ -1171,7 +1171,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
     <target name="localtest" depends="bootstrap">
         <mkdir dir="build/test/unit/classes"/>
-        <javac srcdir="test/unit/src" destdir="build/test/unit/classes" debug="true" source="1.5">
+        <javac srcdir="test/unit/src" destdir="build/test/unit/classes" debug="true" source="1.6">
             <classpath path="${test.unit.cp}"/>
             <compilerarg line="-Xlint -Xlint:-serial"/>
         </javac>

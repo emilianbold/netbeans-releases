@@ -43,7 +43,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoriesSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
@@ -54,6 +53,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -100,7 +100,7 @@ public class RepositoryNode extends AbstractNode {
                         NotifyDescriptor.OK_CANCEL_OPTION);
 
                     if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
-                        BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+                        RequestProcessor.getDefault().post(new Runnable() {
                             public void run() {
                                 repository.remove();
                                 RepositoriesSupport.getInstance().fireRepositoriesChanged();

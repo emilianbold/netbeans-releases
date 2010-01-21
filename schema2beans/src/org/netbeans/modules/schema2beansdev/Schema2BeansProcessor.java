@@ -40,7 +40,6 @@
 package org.netbeans.modules.schema2beansdev;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -110,24 +109,22 @@ public class Schema2BeansProcessor extends AbstractProcessor {
                     }
                     String nameAndExt = name + "." + extension;
                     try {
-                        processingEnv.getFiler().getResource(StandardLocation.SOURCE_OUTPUT, pkg, nameAndExt).openInputStream().close();
-                        throw new IOException("should not get here");
+                        return processingEnv.getFiler().createSourceFile(pkg + "." + name, e).openOutputStream();
                     } catch (FilerException x) {
                         processingEnv.getMessager().printMessage(Kind.WARNING, "ignoring attempt to regenerate " + nameAndExt/*, e*/);
                         return new ByteArrayOutputStream(); // XXX could check that the same contents are written
-                    } catch (FileNotFoundException x) {
-                        // expected
                     }
-                    return processingEnv.getFiler().createSourceFile(pkg + "." + name, e).openOutputStream();
                 }
                 public boolean isOlderThan(String dir, String name, String extension, long time) throws IOException {
                     return true;
                 }
             });
             FileObject schema = findResource(s2b.schema(), pkg);
-            processingEnv.getMessager().printMessage(Kind.NOTE, "generating beans for " + schema.getName() + " in " + pkg/*, e*/);
+            processingEnv.getMessager().printMessage(Kind.NOTE, "generating beans in " + pkg/*, e*/);
             config.setFileIn(schema.openInputStream());
-            config.setInputURI(fileObjectToUri(schema).toString());
+            String inputUri = fileObjectToUri(schema).toString();
+            processingEnv.getMessager().printMessage(Kind.NOTE, "parsing: " + inputUri);
+            config.setInputURI(inputUri);
             switch (s2b.schemaType()) {
             case DTD:
                 config.setSchemaType(Config.DTD);
@@ -178,9 +175,12 @@ public class Schema2BeansProcessor extends AbstractProcessor {
                 }
             }
         } catch (Exception x) {
-            // Oddly, the ERROR is never printed.
-            processingEnv.getMessager().printMessage(Kind.WARNING, x.toString(), e);
-            processingEnv.getMessager().printMessage(Kind.ERROR, "Could not process");
+            processingEnv.getMessager().printMessage(Kind.ERROR, "Failed to process", e);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(baos);
+            x.printStackTrace(ps);
+            ps.close();
+            processingEnv.getMessager().printMessage(Kind.ERROR, baos.toString());
         }
     }
 
@@ -201,6 +201,7 @@ public class Schema2BeansProcessor extends AbstractProcessor {
         if (u.getScheme() == null) {
             u = new URI("file", u.getPath(), u.getFragment());
         }
+        // XXX note that File.toURI is broken for UNC paths: JDK #6916645
         return u;
     }
 

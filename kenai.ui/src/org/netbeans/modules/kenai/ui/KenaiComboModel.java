@@ -45,6 +45,7 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -52,21 +53,20 @@ import org.netbeans.modules.kenai.api.KenaiManager;
  */
 public class KenaiComboModel extends AbstractListModel implements ComboBoxModel {
 
-    private Object selected = KenaiManager.getDefault().getKenai("https://kenai.com");
+    private Object selected = getElementAt(0);
     private Kenai.Status status;
+    private PropertyChangeListener listener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            fireContentsChanged(evt.getSource(), 0, getSize());
+        }
+    };
 
     public KenaiComboModel(Kenai.Status status) {
         this.status = status;
     }
 
     public KenaiComboModel() {
-        KenaiManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-
-            public void propertyChange(PropertyChangeEvent evt) {
-                fireContentsChanged(evt.getSource(), 0, getSize());
-            }
-        });
-
+        KenaiManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(listener, KenaiManager.getDefault()));
     }
 
     public void setSelectedItem(Object anItem) {
@@ -80,7 +80,10 @@ public class KenaiComboModel extends AbstractListModel implements ComboBoxModel 
     public Object getElementAt(int index) {
         int i = 0;
         for (Kenai k: KenaiManager.getDefault().getKenais()) {
-            if (i++ == index) {
+            if (status==null || k.getStatus()==status) {
+                i++;
+            }
+            if (i -1 == index) {
                 return k;
             }
         }
@@ -100,5 +103,4 @@ public class KenaiComboModel extends AbstractListModel implements ComboBoxModel 
         }
         return i + 1;
     }
-
 }

@@ -110,13 +110,14 @@ public class IndexingSupportTest extends NbTestCase {
         IndexDocument doc1 = is.createDocument(i1);
         assertNotNull(doc1);
         doc1.addPair("class", "String", true, true);
-        doc1.addPair("package", "java.lang", true, true);        
+        doc1.addPair("package", "java.lang", true, true);
         is.addDocument(doc1);
         final Indexable i2 = SPIAccessor.getInstance().create(new FileObjectIndexable(root, f2));
         IndexDocument doc2 = is.createDocument(i2);
         assertNotNull(doc2);
         doc2.addPair("class", "Object", true, true);
-        doc2.addPair("package", "java.lang", true, true);        
+        doc2.addPair("package", "java.lang", true, true);
+        doc2.addPair("flag", "true", true, true);
         is.addDocument(doc2);
         SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder()).store(true, null);
 
@@ -150,6 +151,25 @@ public class IndexingSupportTest extends NbTestCase {
         assertEquals("java.lang", ir[1].getValue("package"));
         result = qs.query("class", "F", QuerySupport.Kind.PREFIX, "class", "package");
         assertEquals(0, result.size());
+
+        // search for documents that contain field called 'flag'
+        result = qs.query("flag", "", QuerySupport.Kind.PREFIX);
+        assertEquals(1, result.size());
+        assertEquals("Object", result.iterator().next().getValue("class"));
+        assertEquals("java.lang", result.iterator().next().getValue("package"));
+        assertEquals("true", result.iterator().next().getValue("flag"));
+
+        // search for all documents
+        result = qs.query("", "", QuerySupport.Kind.PREFIX);
+        assertEquals(2, result.size());
+        ir = new IndexResult[2];
+        ir = result.toArray(ir);
+        assertEquals("String", ir[0].getValue("class"));
+        assertEquals("java.lang", ir[0].getValue("package"));
+        assertNull(ir[0].getValue("flag"));
+        assertEquals("Object", ir[1].getValue("class"));
+        assertEquals("java.lang", ir[1].getValue("package"));
+        assertEquals("true", ir[1].getValue("flag"));
     }
 
     public void testQuerySupportCaching() throws Exception {
@@ -185,11 +205,17 @@ public class IndexingSupportTest extends NbTestCase {
         QuerySupport.IndexerQuery.indexFactory = lif;
 
         QuerySupport qs1 = QuerySupport.forRoots("fooIndexer", 1, root);
-        assertTrue("Expecting getIndex not called", lif.getIndexCalled);
+        assertFalse("Expecting getIndex not called", lif.getIndexCalled);
+        qs1.query("", "", QuerySupport.Kind.EXACT);
+        assertTrue("Expecting getIndex called", lif.getIndexCalled);
 
         lif.getIndexCalled = false;
+        qs1.query("", "", QuerySupport.Kind.EXACT);
+        assertFalse("Expecting getIndex not called", lif.getIndexCalled);
 
         QuerySupport qs2 = QuerySupport.forRoots("fooIndexer", 1, root);
+        assertFalse("Expecting getIndex not called", lif.getIndexCalled);
+        qs2.query("", "", QuerySupport.Kind.EXACT);
         assertFalse("Expecting getIndex not called", lif.getIndexCalled);
     }
 }

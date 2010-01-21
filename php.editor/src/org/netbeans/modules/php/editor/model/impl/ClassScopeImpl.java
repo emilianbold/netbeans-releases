@@ -287,6 +287,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         }
         sb.append(ifaceSb);
         sb.append(";");//NOI18N
+        sb.append(getPhpModifiers().toBitmask()).append(";");
         //TODO: add ifaces
         return sb.toString();
     }

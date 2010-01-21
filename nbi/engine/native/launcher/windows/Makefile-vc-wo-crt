@@ -58,7 +58,7 @@ L32_OPTS=\
 	/OPT:REF /OPT:ICF \
 	/MACHINE:X86 \
 	/ERRORREPORT:PROMPT \
-        /ENTRY:WinMain \
+        /ENTRY:MyMain \
 	$(LINKING_LIBRARIES)
 
 	

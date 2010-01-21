@@ -58,16 +58,10 @@ import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 import org.openide.awt.UndoRedo;
-import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.nodes.Node;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.LifecycleManager;
 
 import javax.swing.*;
 import java.io.*;
@@ -383,6 +377,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         dividerSet = false;
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         if (refreshTask != null) {
@@ -417,6 +412,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         splitPane.setDividerLocation(optimalLocation);
     }
     
+    @Override
     public void removeNotify() {
         Clearcase.getInstance().getFileStatusCache().removeVersioningListener(this);
         super.removeNotify();

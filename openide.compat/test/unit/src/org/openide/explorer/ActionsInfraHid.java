@@ -70,8 +70,6 @@ public abstract class ActionsInfraHid {
     
     public static final UsefulThings UT;
     static {
-        String tm = System.getProperty("org.openide.TopManager");
-        if (tm != null) throw new IllegalStateException("TopManager was initialized already: " + tm);
         String lookup = System.getProperty("org.openide.util.Lookup");
         if (lookup != null && !lookup.equals(UsefulLookup.class.getName())) throw new IllegalStateException("Already had a Lookup installed: " + lookup);
         System.setProperty("org.openide.util.Lookup", UsefulLookup.class.getName());

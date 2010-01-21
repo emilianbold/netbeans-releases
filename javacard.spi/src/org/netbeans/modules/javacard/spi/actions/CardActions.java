@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.javacard.spi.actions;
 
+import org.netbeans.modules.javacard.api.RunMode;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.spi.actions.ContextAction;
 import org.netbeans.spi.actions.LookupProviderAction;
@@ -77,7 +78,13 @@ public final class CardActions {
 
     public static ContextAction<?> createResumeAction() {
         ContextAction<?> a = LookupProviderAction.createIndirectAction(Node.class,
-                LookupProviderAction.createIndirectAction(Card.class, new ResumeCardAction()));
+                LookupProviderAction.createIndirectAction(Card.class, new ResumeCardAction(RunMode.RUN)));
+        return a;
+    }
+
+    public static ContextAction<?> createResumeIntoDebugModeAction() {
+        ContextAction<?> a = LookupProviderAction.createIndirectAction(Node.class,
+                LookupProviderAction.createIndirectAction(Card.class, new ResumeCardDebugAction(RunMode.DEBUG)));
         return a;
     }
 
