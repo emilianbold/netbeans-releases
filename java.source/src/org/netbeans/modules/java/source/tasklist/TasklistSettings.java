@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.source.tasklist;
 
+import org.netbeans.modules.parsing.impl.indexing.errors.ErrorAnnotator;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -67,10 +68,6 @@ public class TasklistSettings {
                     if (curr != dt) {
                         if (dt.ordinal() > curr.ordinal()) {
                             IndexingManager.getDefault().refreshAllIndices(JavaIndex.NAME);
-                        }
-                        ErrorAnnotator an = ErrorAnnotator.getAnnotator();
-                        if (an != null) {
-                            an.updateAllInError();
                         }
                         curr = dt;
                     }

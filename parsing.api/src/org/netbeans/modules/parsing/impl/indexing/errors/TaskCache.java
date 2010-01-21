@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,7 +40,7 @@
  */
 
 
-package org.netbeans.modules.java.source.tasklist;
+package org.netbeans.modules.parsing.impl.indexing.errors;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -62,16 +62,18 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.tools.Diagnostic;
-import javax.tools.Diagnostic.Kind;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.source.indexing.JavaIndex;
+import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.Convertor;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.ErrorKind;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.spi.tasklist.Task;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex.ExceptionAction;
 
 /**
@@ -82,6 +84,8 @@ public class TaskCache {
     
     private static final String ERR_EXT = "err";
     private static final String WARN_EXT = "warn";
+
+    private static final int VERSION = 1;
     
     private static final Logger LOG = Logger.getLogger(TaskCache.class.getName());
     
@@ -101,12 +105,12 @@ public class TaskCache {
         return theInstance;
     }
 
-    private String getTaskType( Kind k ) {
+    private String getTaskType( ErrorKind k ) {
         switch( k ) {
             case ERROR:
+            case ERROR_NO_BADGE:
                 return "nb-tasklist-error"; //NOI18N
             case WARNING:
-            case MANDATORY_WARNING:
                 return "nb-tasklist-warning"; //NOI18N
         }
         return null;
@@ -115,17 +119,17 @@ public class TaskCache {
     public List<Task> getErrors(FileObject file) {
         List<Task> result = new LinkedList<Task>();
         
-        result.addAll(getErrors(file, true));
-        result.addAll(getErrors(file, false));
+        result.addAll(getErrors(file, ERR_EXT));
+        result.addAll(getErrors(file, WARN_EXT));
 
         return result;
     }
     
-    private List<Task> getErrors(FileObject file, boolean errors) {
-        LOG.log(Level.FINE, "getErrors, file={0}, errors={1}", new Object[] {FileUtil.getFileDisplayName(file), errors});
+    private List<Task> getErrors(FileObject file, String ext) {
+        LOG.log(Level.FINE, "getErrors, file={0}, ext={1}", new Object[] {FileUtil.getFileDisplayName(file), ext});
         
         try {
-            File input = computePersistentFile(file, errors ? ERR_EXT : WARN_EXT);
+            File input = computePersistentFile(file, ext);
             
             LOG.log(Level.FINE, "getErrors, error file={0}", input == null ? "null" : input.getAbsolutePath());
             
@@ -142,19 +146,19 @@ public class TaskCache {
         return Collections.<Task>emptyList();
     }
     
-    private boolean dumpErrors(File output, List<? extends Diagnostic> errors, boolean interestedInReturnValue) throws IOException {
-        if (!errors.isEmpty()) {
+    private <T> boolean dumpErrors(File output, Iterable<? extends T> errors, Convertor<T> convertor, boolean interestedInReturnValue) throws IOException {
+        if (errors.iterator().hasNext()) {
             boolean existed = interestedInReturnValue && output.exists();
             output.getParentFile().mkdirs();
             PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(output), "UTF-8"));
             
-            for (Diagnostic d : errors) {
-                pw.print(d.getKind());
+            for (T err : errors) {
+                pw.print(convertor.getKind(err));
                 pw.print(':');
-                pw.print(d.getLineNumber());
+                pw.print(convertor.getLineNumber(err));
                 pw.print(':');
                 
-                String description = d.getMessage(null);
+                String description = convertor.getMessage(err);
                 
                 description = description.replaceAll("\\\\", "\\\\\\\\");
                 description = description.replaceAll("\n", "\\\\n");
@@ -171,76 +175,52 @@ public class TaskCache {
         }
     }
     
-    private void separate(List<? extends Diagnostic> input, List<Diagnostic> errors, List<Diagnostic> notErrors) {
-        for (Diagnostic d : input) {
-            if (d.getKind() == Kind.ERROR) {
-                errors.add(d);
+    private <T> void separate(Iterable<? extends T> input, Convertor<T> convertor, List<T> errors, List<T> notErrors) {
+        for (T err : input) {
+            if (convertor.getKind(err) == ErrorKind.ERROR) {
+                errors.add(err);
             } else {
-                notErrors.add(d);
+                notErrors.add(err);
             }
         }
     }
 
-    private static File urlToFile(URL url) {
-        if ("file".equals(url.getProtocol())) {
-            try {
-                return new File(url.toURI().getPath());
-            } catch (URISyntaxException ex) {
-                if (LOG.isLoggable(Level.WARNING))
-                    LOG.log(Level.WARNING, "The caller module provide unencoded URL. Please report this issue against caller module.", ex);
-                return new File(url.getPath());
-            }
+    public <T> void dumpErrors(final URL root, final Indexable i, final Iterable<? extends T> errors, final Convertor<T> convertor) {
+        try {
+            refreshTransaction(new ExceptionAction<Void>() {
+                public Void run() throws Exception {
+                    dumpErrors(q.get(), root, i, errors, convertor);
+                    return null;
+                }
+            });
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        if (LOG.isLoggable(Level.SEVERE))
-            LOG.log(Level.SEVERE, "Url is not a file: " + url);
-        return null;//#172651: ignoring non-file URL, TODO: should handle these URLs?
     }
 
-    public void dumpErrors(final URL root, final URL file, final List<? extends Diagnostic> errors) throws IOException {
-        refreshTransaction(new ExceptionAction<Void>() {
-            public Void run() throws Exception {
-                dumpErrors(q.get(), root, file, errors);
-                return null;
-            }
-        });
-    }
+    private <T> void dumpErrors(TransactionContext c, URL root, Indexable i, Iterable<? extends T> errors, Convertor<T> convertor) throws IOException {
+        //TODO: check to canRead() on "Indexable" was done here
+        File[] output = computePersistentFile(root, i);
+        
+        List<T> trueErrors = new LinkedList<T>();
+        List<T> notErrors = new LinkedList<T>();
+        
+        separate(errors, convertor, trueErrors, notErrors);
+        
+        boolean modified = dumpErrors(output[0], trueErrors, convertor, true);
+        
+        dumpErrors(output[1], notErrors, convertor, false);
 
-    private void dumpErrors(TransactionContext c, URL root, URL file, List<? extends Diagnostic> errors) throws IOException {
-        File fileFile = urlToFile(file);
+        URL currentFile = i.getURL();
 
-        if (fileFile == null) {
-            return ;
-        }
-        
-        if (!fileFile.canRead()) {
-            //if the file is not readable anymore, ignore the errors:
-            errors = Collections.emptyList();
-        }
-        
-        File[] output = computePersistentFile(root, file);
-        
-        List<Diagnostic> trueErrors = new LinkedList<Diagnostic>();
-        List<Diagnostic> notErrors = new LinkedList<Diagnostic>();
-        
-        separate(errors, trueErrors, notErrors);
-        
-        boolean modified = dumpErrors(output[1], trueErrors, true);
-        
-        dumpErrors(output[2], notErrors, false);
-        
-        c.toRefresh.add(file);
-        
-        File currentFile = fileFile.getParentFile();
-        
-        c.toRefresh.add(currentFile.toURI().toURL());
+        c.toRefresh.add(currentFile);
 
         if (modified) {
-            File current = output[1].getParentFile();
-
-            while (!output[0].equals(current)) {
-                current = current.getParentFile();
-                currentFile = currentFile.getParentFile();
-                c.toRefresh.add(currentFile.toURI().toURL());
+            c.toRefresh.add(currentFile = new URL(currentFile, "."));
+            
+            while (!root.equals(currentFile)) {
+                currentFile = new URL(currentFile, "..");
+                c.toRefresh.add(currentFile);
             }
 
             FileObject rootFO = URLMapper.findFileObject(root);
@@ -276,7 +256,7 @@ public class TaskCache {
         while ((line = pw.readLine()) != null) {
             String[] parts = line.split(":");
 
-            Kind kind = Kind.valueOf(parts[0]);
+            ErrorKind kind = ErrorKind.valueOf(parts[0]);
 
             if (kind == null) {
                 continue;
@@ -313,11 +293,11 @@ public class TaskCache {
                 return result;
             }
             URI rootURI = root.toURI();
-            File[] cacheRoot = computePersistentFile(root, root);
-            URI cacheRootURI = cacheRoot[0].toURI();
+            File cacheRoot = getCacheRoot(root);
+            URI cacheRootURI = cacheRoot.toURI();
             Queue<File> todo = new LinkedList<File>();
             
-            todo.add(cacheRoot[0]);
+            todo.add(cacheRoot);
             
             while (!todo.isEmpty()) {
                 File f = todo.poll();
@@ -328,13 +308,13 @@ public class TaskCache {
                     if (f.getName().endsWith(ERR_EXT)) {
                         String relative = cacheRootURI.relativize(f.toURI()).getRawPath();
                         
-                        relative = relative.replaceAll(ERR_EXT + "$", "java");
+                        relative = relative.replaceAll("." + ERR_EXT + "$", "");
                         result.add(rootURI.resolve(relative).toURL());
                     }
                     if (!onlyErrors && f.getName().endsWith(WARN_EXT)) {
                         String relative = cacheRootURI.relativize(f.toURI()).getRawPath();
                         
-                        relative = relative.replaceAll(WARN_EXT + "$", "java");
+                        relative = relative.replaceAll("." + WARN_EXT + "$", "");
                         result.add(rootURI.resolve(relative).toURL());
                     }
                 } else {
@@ -361,7 +341,7 @@ public class TaskCache {
         LOG.log(Level.FINE, "file={0}, recursive={1}", new Object[] {file, Boolean.valueOf(recursive)});
         
         if (file.isData()) {
-            return !getErrors(file, true).isEmpty();
+            return !getErrors(file, ERR_EXT).isEmpty();
         } else {
             try {
                 ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
@@ -378,14 +358,14 @@ public class TaskCache {
                 }
                 
                 String resourceName = cp.getResourceName(file, File.separatorChar, false);
-                File cacheRoot = JavaIndex.getClassFolder(root.getURL(), true);
+                File cacheRoot = getCacheRoot(root.getURL(), true);
                 
                 if (cacheRoot == null) {
                     //index does not exist:
                     return false;
                 }
                 
-                final File folder = new File(new File(cacheRoot.getParentFile(), "errors"), resourceName);
+                final File folder = new File(cacheRoot, resourceName);
                 
                 return folderContainsErrors(folder, recursive);
             } catch (IOException e) {
@@ -426,28 +406,17 @@ public class TaskCache {
         return false;
     }
     
-    private File[] computePersistentFile(URL root, URL file) throws IOException {        
-        try {
-            URI fileURI = file.toURI();
-            URI u = root.toURI();
-            String resourceName = u.relativize(fileURI).getPath();
-            int lastDot = resourceName.lastIndexOf('.');
-            if (lastDot != (-1)) {
-                resourceName = resourceName.substring(0, lastDot);
-            }
-            File cacheRoot = JavaIndex.getClassFolder(root);
-            File errorsRoot = new File(cacheRoot.getParentFile(), "errors");
-            File errorCacheFile = new File(errorsRoot, resourceName + "." + ERR_EXT);
-            File warningCacheFile = new File(errorsRoot, resourceName + "." + WARN_EXT);
-            
-            return new File[] {errorsRoot, errorCacheFile, warningCacheFile};
-        } catch (URISyntaxException e) {
-            throw (IOException) new IOException().initCause(e);
-        }
+    private File[] computePersistentFile(URL root, Indexable i) throws IOException {
+        String resourceName = i.getRelativePath();
+        File cacheRoot = getCacheRoot(root);
+        File errorCacheFile = new File(cacheRoot, resourceName + "." + ERR_EXT);
+        File warningCacheFile = new File(cacheRoot, resourceName + "." + WARN_EXT);
+
+        return new File[] {errorCacheFile, warningCacheFile};
     }
     
     private File computePersistentFile(FileObject file, String extension) throws IOException {
-        ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
+        ClassPath cp = Utilities.getSourceClassPathFor(file);
         
         if (cp == null)
             return null;
@@ -459,9 +428,9 @@ public class TaskCache {
             return null;
         }
         
-        String resourceName = cp.getResourceName(file, File.separatorChar, false);
-        File cacheRoot = JavaIndex.getClassFolder(root.getURL());
-        File cacheFile = new File(new File(cacheRoot.getParentFile(), "errors"), resourceName + "." + extension);
+        String resourceName = cp.getResourceName(file, File.separatorChar, true);
+        File cacheRoot = getCacheRoot(root.getURL());
+        File cacheFile = new File(cacheRoot, resourceName + "." + extension);
         
         return cacheFile;
     }
@@ -492,7 +461,7 @@ public class TaskCache {
     }
 
     private static void doRefresh(TransactionContext c) {
-        if (TasklistSettings.isBadgesEnabled() && !c.toRefresh.isEmpty()) {
+        if (Settings.isBadgesEnabled() && !c.toRefresh.isEmpty()) {
             ErrorAnnotator an = ErrorAnnotator.getAnnotator();
 
             if (an != null) {
@@ -504,11 +473,27 @@ public class TaskCache {
             FileObject rootFO = URLMapper.findFileObject(root);
 
             if (rootFO != null) {
-                JavaTaskProvider.refresh(rootFO);
+                TaskProvider.refresh(rootFO);
             }
         }
     }
-    
+
+    private static File getCacheRoot(URL root) throws IOException {
+        return getCacheRoot(root, false);
+    }
+
+    private static File getCacheRoot(URL root, boolean onlyIfExists) throws IOException {
+        FileObject dataFolder = CacheFolder.getDataFolder(root, onlyIfExists);
+
+        if (dataFolder == null) {
+            return null;
+        }
+        
+        File cache = FileUtil.toFile(FileUtil.createFolder(dataFolder, "errors/" + VERSION));
+
+        return cache;
+    }
+
     private static final class TransactionContext {
         private int depth;
         private Set<URL> toRefresh = new HashSet<URL>();

@@ -115,8 +115,8 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.java.source</friend>
                 <friend>org.netbeans.modules.javafx.source</friend>
+                <friend>org.netbeans.modules.parsing.api</friend>
                 <friend>org.netbeans.modules.versioning</friend>
                 <package>org.netbeans.modules.masterfs.providers</package>
             </friend-packages>

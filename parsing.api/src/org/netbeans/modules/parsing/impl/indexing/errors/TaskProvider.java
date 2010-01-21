@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.source.tasklist;
+package org.netbeans.modules.parsing.impl.indexing.errors;
 
 import java.io.IOException;
 import java.net.URL;
@@ -56,6 +56,9 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
@@ -72,18 +75,18 @@ import org.openide.util.WeakSet;
  *
  * @author Stanislav Aubrecht, Jan Lahoda
  */
-public final class JavaTaskProvider extends PushTaskScanner {
+public final class TaskProvider extends PushTaskScanner {
     
-    private static final Logger LOG = Logger.getLogger(JavaTaskProvider.class.getName());
+    private static final Logger LOG = Logger.getLogger(TaskProvider.class.getName());
     
-    private static JavaTaskProvider INSTANCE;
+    private static TaskProvider INSTANCE;
     
     private TaskScanningScope scope;
     private Callback callback;
     
-    public JavaTaskProvider() {
-        super( NbBundle.getBundle(JavaTaskProvider.class).getString("LBL_ProviderName"),
-                NbBundle.getBundle(JavaTaskProvider.class).getString("LBL_ProviderDescription"), null); //NOI18N
+    public TaskProvider() {
+        super( NbBundle.getBundle(TaskProvider.class).getString("LBL_ProviderName"),
+                NbBundle.getBundle(TaskProvider.class).getString("LBL_ProviderDescription"), null); //NOI18N
         INSTANCE = this;
     }
     
@@ -140,8 +143,10 @@ public final class JavaTaskProvider extends PushTaskScanner {
         }
         
         for (Project p : scope.getLookup().lookupAll(Project.class)) {
-            for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups("java")) {
-                enqueue(new Work(sg.getRootFolder(), callback));
+            for (SourceGroup generic : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
+                for (FileObject root : Utilities.findIndexedRootsUnderDirectory(p, generic.getRootFolder())) {
+                    enqueue(new Work(root, callback));
+                }
             }
         }
     }
@@ -184,7 +189,7 @@ public final class JavaTaskProvider extends PushTaskScanner {
             }
         }
         
-        synchronized (JavaTaskProvider.class) {
+        synchronized (TaskProvider.class) {
             root2FilesWithAttachedErrors.clear();
         }
         
@@ -269,13 +274,13 @@ public final class JavaTaskProvider extends PushTaskScanner {
 
             LOG.log(Level.FINE, "dequeued work for: {0}", file);
 
-            ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
+            ClassPath cp = Utilities.getSourceClassPathFor(file);
 
             if (cp == null) {
                 LOG.log(Level.FINE, "cp == null");
                 return;
             }
-
+            
             FileObject root = cp.findOwnerRoot(file);
 
             if (root == null) {

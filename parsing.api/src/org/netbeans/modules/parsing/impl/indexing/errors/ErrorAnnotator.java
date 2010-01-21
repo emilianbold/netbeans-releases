@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,13 +38,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.source.tasklist;
+package org.netbeans.modules.parsing.impl.indexing.errors;
 
+import org.netbeans.api.java.classpath.ClassPath;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -59,10 +59,9 @@ import javax.swing.Action;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
+import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
@@ -84,7 +83,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
 
     private static final Logger LOG = Logger.getLogger(ErrorAnnotator.class.getName());
 
-    private static final String ERROR_BADGE_URL = "org/netbeans/modules/java/source/resources/icons/error-badge.gif";
+    private static final String ERROR_BADGE_URL = "org/netbeans/modules/parsing/impl/resources/error-badge.gif";
     
     private static final Image ERROR_BADGE_SINGLE;
     private static final Image ERROR_BADGE_FOLDER;
@@ -108,8 +107,8 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
     }
     
     @Override
-    public Image annotateIcon(Image icon, int iconType, Set files) {
-        if (!TasklistSettings.isBadgesEnabled())
+    public Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
+        if (!Settings.isBadgesEnabled())
             return null;
         
         boolean inError = false;
@@ -133,7 +132,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                         if (inError)
                             continue;
                     } else {
-                        if (f.isData() && "java".equals(f.getExt())) {
+                        if (f.isData()) {
                             if (isInError(f, true, !inError)) {
                                 inError = true;
                             }
@@ -295,28 +294,18 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                 if (f.isData()) {
                     recError = nonRecError = TaskCache.getDefault().isInError(f, true);
                 } else {
-                    boolean handled = false;
-                    Project p = FileOwnerQuery.getOwner(f);
+                    ClassPath source = ClassPath.getClassPath(f, ClassPath.SOURCE);
+                    
+                    if (source == null) {
+                        //presumably not under an indexed root:
+                        Project p = FileOwnerQuery.getOwner(f);
 
-                    if (p != null) {
-                        for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups("java"/*JavaProjectConstants.SOURCES_TYPE_JAVA*/)) {
-                            FileObject sgRoot = sg.getRootFolder();
-
-                            if (sgRoot==null) {
-                                Logger.getLogger(ErrorAnnotator.class.getName()).log(Level.WARNING, "SourceGroup[" + sg.getDisplayName() + "].getRootFolder() returned null");
-                                continue;
-                            }
-
-                            if ((FileUtil.isParentOf(f, sgRoot) || f == sgRoot)) {
-                                recError |= TaskCache.getDefault().isInError(sgRoot, true);
-                                nonRecError |= TaskCache.getDefault().isInError(sgRoot, false);
-
-                                handled = true;
+                        if (p != null) {
+                            for (FileObject root : Utilities.findIndexedRootsUnderDirectory(p, f)) {
+                                recError |= TaskCache.getDefault().isInError(root, true);
                             }
                         }
-                    }
-                    
-                    if (!handled) {
+                    } else {
                         recError = TaskCache.getDefault().isInError(f, true);
                         nonRecError = TaskCache.getDefault().isInError(f, false);
                     }

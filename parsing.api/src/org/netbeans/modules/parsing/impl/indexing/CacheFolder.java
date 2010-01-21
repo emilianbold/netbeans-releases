@@ -45,13 +45,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -168,6 +172,25 @@ public final class CacheFolder {
         });
 
         return dataFolder[0];
+    }
+
+    public static synchronized Iterable<? extends FileObject> findRootsWithCacheUnderFolder(FileObject folder) throws IOException {
+        URL folderURL = folder.getURL();
+        String prefix = folderURL.toExternalForm();
+        final FileObject _cacheFolder = getCacheFolder();
+        List<FileObject> result = new LinkedList<FileObject>();
+        loadSegments(_cacheFolder);
+        for (Entry<String, String> e : invertedSegments.entrySet()) {
+            if (e.getKey().startsWith(prefix)) {
+                FileObject fo = URLMapper.findFileObject(new URL(e.getKey()));
+                
+                if (fo != null) {
+                    result.add(fo);
+                }
+            }
+        }
+
+        return result;
     }
 
     private static String getNbUserDir () {
