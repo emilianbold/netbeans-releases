@@ -42,15 +42,21 @@ package org.netbeans.modules.debugger.ui.models;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -132,6 +138,7 @@ public class BreakpointGroup {
     static Object[] createGroups(Properties props) {
         //props.addPropertyChangeListener(null);
         String[] groupNames = (String[]) props.getArray("Grouping", new String[] { Group.CUSTOM.name() });
+        boolean openProjectsOnly = props.getBoolean("fromOpenProjects", true);
         Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
         if (groupNames.length == 0 || groupNames[0].equals(Group.NO.name())) {
             return bs;
@@ -151,12 +158,37 @@ public class BreakpointGroup {
         List ids = new ArrayList();
         List<BreakpointGroup> parentGroups = new ArrayList<BreakpointGroup>();
         List<BreakpointGroup> rootGroups = new ArrayList<BreakpointGroup>();
+
+        Set openProjects;
+        if (openProjectsOnly) {
+            openProjects = new HashSet(Arrays.asList(OpenProjects.getDefault().getOpenProjects()));
+        } else {
+            openProjects = null;
+        }
+        
         for (int bi = 0; bi < bs.length; bi++) {
             Breakpoint b = bs[bi];
             //Breakpoint.GroupProperties bprops = b.getGroupProperties();
             GroupProperties bprops = GroupProperties.getFrom(b);
-            if (bprops != null && bprops.isHidden()) {
-                continue;
+            if (bprops != null) {
+                if (bprops.isHidden()) {
+                    continue;
+                }
+                if (openProjects != null) {
+                    Project ps[] = bprops.getProjects();
+                    if (ps != null) {
+                        boolean contains = false;
+                        for (Project p : ps) {
+                            if (openProjects.contains(p)) {
+                                contains = true;
+                                break;
+                            }
+                        }
+                        if (!contains) {
+                            continue;
+                        }
+                    }
+                }
             }
             parentGroups.clear();
             rootGroups.clear();

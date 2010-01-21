@@ -45,10 +45,13 @@ import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 
@@ -90,8 +93,8 @@ public class BreakpointsViewButtons {
             );
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String[] groupNames = (String[]) Properties.getDefault().
-                        getProperties("Breakpoints").getArray("Grouping", new String[] { Group.CUSTOM.name() });
+                final Properties props = Properties.getDefault().getProperties("Breakpoints");
+                String[] groupNames = (String[]) props.getArray("Grouping", new String[] { Group.CUSTOM.name() });
                 String brkpGroup;
                 if (groupNames.length == 0) {
                     brkpGroup = Group.NO.name();
@@ -104,7 +107,19 @@ public class BreakpointsViewButtons {
                 for (Group group : Group.values()) {
                     menu.add(createJRadioButtonMenuItem(group, brkpGroup));
                 }
+                boolean openProjectsOnly = props.getBoolean("fromOpenProjects", true);
+                String openProjectsOnlyText = NbBundle.getMessage(BreakpointsViewButtons.class, "LBL_BreakpointsFromOpenProjectsOnly");
+                final JCheckBoxMenuItem openProjectsOnlyMenu = new JCheckBoxMenuItem(openProjectsOnlyText, openProjectsOnly);
+                openProjectsOnlyMenu.addItemListener(new ItemListener() {
+                    public void itemStateChanged(ItemEvent e) {
+                        boolean openProjectsOnly = openProjectsOnlyMenu.isSelected();
+                        props.setBoolean("fromOpenProjects", openProjectsOnly);
+                    }
+                });
+                menu.addSeparator();
+                menu.add(openProjectsOnlyMenu);
                 menu.show(button, 16, 0);
+
             }
         });
         return button;
