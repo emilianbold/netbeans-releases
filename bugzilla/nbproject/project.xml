@@ -62,7 +62,7 @@
                     <run-dependency>
                         <specification-version>1.5</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency>                
                 <dependency>
                     <code-name-base>org.netbeans.modules.diff</code-name-base>
                     <build-prerequisite/>
@@ -220,7 +220,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.uihandler</friend>
+                <friend>org.netbeans.modules.bugzilla.exceptionreporter</friend>
                 <package>org.netbeans.modules.bugzilla.api</package>
             </friend-packages>
         </data>

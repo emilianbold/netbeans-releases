@@ -41,10 +41,9 @@ package org.netbeans.modules.bugzilla.repository;
 
 import java.net.URL;
 import java.util.Collection;
-import java.util.prefs.Preferences;
-import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.openide.util.NbBundle;
@@ -53,16 +52,10 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class NBRepositorySupport extends BugzillaRepository {
-
-    private static final String NBBUGZILLA_PREFERENCES = "org/netbeans/modules/nbbugzilla";  // NOI18N
-    private static final String NB_BUGZILLA_PASSWORD = "nbbugzilla.password";                // NOI18N
-    private static final String NB_BUGZILLA_USERNAME = "nbbugzilla.username";                // NOI18N
+public class NBRepositorySupport extends BugzillaRepository {    
 
     private static final String NB_BUGZILLA_HOST = "netbeans.org";           // NOI18N
     private static final String NB_BUGZILLA_URL = "https://" + NB_BUGZILLA_HOST + "/bugzilla";           // NOI18N
-
-    private static Preferences nbUserPrefs;
 
     private static BugzillaRepository nbRepository;
 
@@ -107,73 +100,14 @@ public class NBRepositorySupport extends BugzillaRepository {
         return nbRepository;
     }
 
-    /**
-     * Returns a stored netbeans.org username or null otherwise
-     * @return
-     */
-    public static String getNBUsername() {
-        String user = getNBPref().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
-        return user.equals("") ? null : user;
-    }
-
-    /**
-     * Returns a stored netbeans.org password or null otherwise
-     * @return
-     */
-    public static char[] getNBPassword() {
-        return Keyring.read(NB_BUGZILLA_PASSWORD);
-    }
-
-    /**
-     * Returns a stored netbeans.org password or null otherwise
-     * @return
-     */
-    public static String getNBPasswordString() {
-        char[] psswd = getNBPassword();
-        return psswd == null ? null : new String(psswd);
-    }
-
-    /**
-     * Stores a netbeans.org username
-     */
-    public static void setNBUsername(String user) {
-        getNBPref().put(NB_BUGZILLA_USERNAME, user); // NOI18N
-    }
-
-    /**
-     * Stores a netbeans.org password
-     */
-    public static void setNBPassword(char[] psswd) {
-        if(psswd == null) {
-            Keyring.delete(NB_BUGZILLA_PASSWORD);
-        } else {
-            Keyring.save(
-                NB_BUGZILLA_PASSWORD,
-                psswd,
-                NbBundle.getMessage(
-                    NBRepositorySupport.class,
-                    "NBRepositorySupport.password_keyring_description",         // NOI18N
-                    NB_BUGZILLA_HOST));
-        }
-    }
-
-    public static String setNBPassword() {
-        char[] psswd = Keyring.read(NB_BUGZILLA_PASSWORD);
-        return psswd == null ? null : new String(psswd);
-    }
-
     private static BugzillaRepository createRepositoryIntern() {
+        char[] password = NBBugzillaUtils.getNBPassword();
+        final String username = NBBugzillaUtils.getNBUsername();
         return new BugzillaRepository("NetbeansRepository" + System.currentTimeMillis(),       // NOI18N
                       NbBundle.getMessage(NBRepositorySupport.class, "LBL_NBRepository"),      // NOI18N
                       NB_BUGZILLA_URL,
-                      getNBUsername(), getNBPasswordString(),
+                      username,
+                      password != null ? new String(password) : null,
                       null, null); // NOI18N
-    }
-
-    private static Preferences getNBPref() {
-        if (nbUserPrefs == null) {
-            nbUserPrefs = org.openide.util.NbPreferences.root().node(NBBUGZILLA_PREFERENCES);
-        }
-        return nbUserPrefs;
     }
 }

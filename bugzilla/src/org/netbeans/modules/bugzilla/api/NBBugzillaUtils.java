@@ -39,15 +39,29 @@
 
 package org.netbeans.modules.bugzilla.api;
 
+import java.net.URL;
+import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author Tomas Stupka
  */
 public class NBBugzillaUtils {
+
+    private static final String NB_BUGZILLA_PASSWORD = "nbbugzilla.password";                // NOI18N
+    private static final String NB_BUGZILLA_USERNAME = "nbbugzilla.username";                // NOI18N
+
+    private static Pattern netbeansUrlPattern = Pattern.compile("(https|http)://(([a-z]|\\d)+\\.)*([a-z]|\\d)*netbeans([a-z]|\\d)*(([a-z]|\\d)*\\.)+org(.*)"); // NOI18N
+
+    private static Preferences preferences;
 
     /**
      * Opens in the IDE the given issue from the netbeans repository
@@ -56,27 +70,33 @@ public class NBBugzillaUtils {
      */
     public static void openIssue(String issueID) {
         BugzillaRepository nbRepo = NBRepositorySupport.findNbRepository();
+        assert nbRepo != null;
+        if(nbRepo == null) {
+            Bugzilla.LOG.warning("No bugzilla repository available for netbeans.org"); // NOI18N
+            return;
+        }
         Issue.open(nbRepo, issueID);
     }
 
     /**
-     * Returns the last time used username for netbeans.org.
+     * Returns the netbeans.org username
      * Shouldn't be called in awt
      *
      * @return username
      */
     public static String getNBUsername() {
-        return NBRepositorySupport.getNBUsername();
+        String user = getPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
+        return user.equals("") ? null : user;                         // NOI18N
     }
 
     /**
-     * Returns the last time used password for netbeans.org
+     * Returns the netbeans.org password
      * Shouldn't be called in awt
      *
      * @return password
      */
     public static char[] getNBPassword() {
-        return NBRepositorySupport.getNBPassword();
+        return Keyring.read(NB_BUGZILLA_PASSWORD);
     }
 
     /**
@@ -84,7 +104,7 @@ public class NBBugzillaUtils {
      * Shouldn't be called in awt
      */
     public static void saveNBUsername(String username) {
-        NBRepositorySupport.setNBUsername(username);
+        getPreferences().put(NB_BUGZILLA_USERNAME, username);
     }
 
     /**
@@ -92,7 +112,42 @@ public class NBBugzillaUtils {
      * Shouldn't be called in awt
      */
     public static void saveNBPassword(char[] password) {
-        NBRepositorySupport.setNBPassword(password);
+        if(password == null) {
+            Keyring.delete(NB_BUGZILLA_PASSWORD);
+        } else {
+            Keyring.save(
+                NB_BUGZILLA_PASSWORD,
+                password,
+                NbBundle.getMessage(
+                    NBBugzillaUtils.class,
+                    "NBRepositorySupport.password_keyring_description"));       // NOI18N
+
+        }
     }
 
+    /**
+     * Determines wheter the given url is a netbeans.org url or not
+     *
+     * @return true if the given url is netbeans.org url, otherwise false
+     */
+    public static boolean isNbRepository(URL url) {
+        assert url != null;
+        boolean ret = netbeansUrlPattern.matcher(url.toString()).matches();
+        if(ret) {
+            return true;
+        }
+        String nbUrl = System.getProperty("netbeans.bugzilla.url");  // NOI18N
+        if(nbUrl == null || nbUrl.equals("")) {                      // NOI18N
+            return false;
+        }
+        return url.toString().startsWith(nbUrl);
+    }
+
+    private static Preferences getPreferences() {
+        if (preferences == null) {
+            preferences = NbPreferences.forModule(NBBugzillaUtils.class);
+        }
+        return preferences;
+    }
+    
 }
