@@ -350,12 +350,20 @@ public class ServerPropertiesVisual extends javax.swing.JPanel {
                             }
                         }
 
+                        if (port != null) {
+                            port = port.trim();
+                        }
+
                         // if all the parameters were fetched successfully add
                         // them to the result
                         if ((name != null) && (!name.equals(""))) { // NOI18N
                             //address and port have minOccurs=0 and are missing in 90 examples server
-                            port = port == null || port.equals("") ? "7001" : port; //NOI18N
-                            host = host == null || host.equals("") ? "localhost" : host; // NOI18N
+                            port = (port == null || port.equals("")) //NOI18N
+                                    ? Integer.toString(WLDeploymentFactory.DEFAULT_PORT)
+                                    : port;
+                            host = (host == null || host.equals(""))
+                                    ? "localhost" // NOI18N
+                                    : host;
                             result.add(new Instance(name, host, port, domains[i]));
                         }
                     }
