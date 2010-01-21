@@ -47,6 +47,8 @@ package org.netbeans.modules.maven.osgi.customizer;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.api.customizer.support.SelectedItemsTable;
+import org.netbeans.modules.maven.api.customizer.support.SelectedItemsTable.SelectedItemsTableModel;
 
 /**
  *
@@ -56,11 +58,15 @@ public class PackagesPanel extends javax.swing.JPanel {
 
     private final ModelHandle handle;
     private final Project prj;
+    private final SelectedItemsTableModel tableModel;
 
     /** Creates new form PackagesPanel */
     public PackagesPanel(ModelHandle handle, Project prj) {
         this.handle = handle;
         this.prj = prj;
+
+        FelixExportPersister exportPersist = new FelixExportPersister(prj, handle);
+        tableModel = new SelectedItemsTableModel(exportPersist);
 
         initComponents();
     }
@@ -76,21 +82,10 @@ public class PackagesPanel extends javax.swing.JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        exportTable = new SelectedItemsTable();
+        exportTable = new SelectedItemsTable(tableModel);
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(PackagesPanel.class, "PackagesPanel.jLabel1.text")); // NOI18N
 
-        exportTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
         jScrollPane1.setViewportView(exportTable);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);

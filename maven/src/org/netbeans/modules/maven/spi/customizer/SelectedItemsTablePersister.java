@@ -37,34 +37,18 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.osgi.customizer;
+package org.netbeans.modules.maven.spi.customizer;
 
-import javax.swing.JComponent;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.Lookup;
+import java.util.Map;
 
 /**
  *
  * @author dafe
  */
-@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=350)
-public class PackagesPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
+public interface SelectedItemsTablePersister {
 
-    public Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                ModelHandle.PANEL_COMPILE,
-                org.openide.util.NbBundle.getMessage(PackagesPanelProvider.class, "TIT_Packages"),
-                null);
-    }
+    public Map<String, Boolean> read ();
 
-    public JComponent createComponent(Category category, Lookup context) {
-        ModelHandle handle = context.lookup(ModelHandle.class);
-        Project prj = context.lookup(Project.class);
-        final PackagesPanel panel = new PackagesPanel(handle, prj);
-        return panel;
-    }
+    public void write (Map<String, Boolean> selItems);
 
 }
