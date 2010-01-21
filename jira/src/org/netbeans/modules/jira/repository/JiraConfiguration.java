@@ -66,8 +66,6 @@ import org.openide.util.Exceptions;
  *
  * @author Tomas Stupka, Jan Stola
  */
-// XXX rename - it actually the cache, not the configuration
-// XXX Project MUST be somehow refreshed when a list of components changes on a server
 public class JiraConfiguration {
 
     private JiraClient client;
