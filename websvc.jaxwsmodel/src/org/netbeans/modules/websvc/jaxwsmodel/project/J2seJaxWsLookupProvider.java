@@ -308,10 +308,7 @@ public class J2seJaxWsLookupProvider implements LookupProvider {
         SourceGroup[] sourceGroups = ProjectUtils.getSources(prj).getSourceGroups(
         JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sourceGroups!=null && sourceGroups.length>0) {
-            String java_version = System.getProperty("java.version"); //NOI18N
-            if (java_version.compareTo("1.6") >= 0) {
-                WSUtils.addJaxWsApiEndorsed(prj, sourceGroups[0].getRootFolder());
-            }
+            WSUtils.addJaxWsApiEndorsed(prj, sourceGroups[0].getRootFolder());
         }
     }
 }

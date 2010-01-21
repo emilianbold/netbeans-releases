@@ -1133,8 +1133,6 @@ public class ProjectHelper {
     }
 
     public static void addJaxbApiEndorsed(FileObject srcRoot) throws IOException {
-        String java_version = System.getProperty("java.version"); //NOI18N
-        if (java_version.compareTo("1.6") >= 0) { //NOI18N
             ClassPath classPath = ClassPath.getClassPath(srcRoot, CLASSPATH_ENDORSED);
             if (classPath == null || classPath.findResource("javax/xml/bind/JAXBElement.class") == null) { //NOI18N
                 Library jaxWsApiLib = LibraryManager.getDefault().getLibrary(JAXB_ENDORSED);
@@ -1143,7 +1141,6 @@ public class ProjectHelper {
                 }
                 ProjectClassPathModifier.addLibraries(new Library[]{jaxWsApiLib}, srcRoot, CLASSPATH_ENDORSED);
             }
-        }
     }
 
     private static FileObject getSourceRoot(Project prj) {

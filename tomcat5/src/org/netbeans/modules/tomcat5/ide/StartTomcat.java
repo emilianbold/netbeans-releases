@@ -78,7 +78,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.tomcat5.TomcatManager;
-import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -783,15 +782,6 @@ public final class StartTomcat extends StartServer implements ProgressObject {
         TomcatProperties tp = tm.getTomcatProperties();
         if (tp.getCustomScript()) {
             return new File(tp.getScriptPath());
-        }
-        // use catalina50.sh/bat for Tomcat 5.0 on jdk1.5
-        if (tm.getTomcatVersion() == TomcatVersion.TOMCAT_50 
-             && "1.5".equals(getJavaPlatform().getSpecification().getVersion().toString())) {  // NOI18N
-            String startupScript = Utilities.isWindows() ? CATALINA_50_BAT : CATALINA_50_SH;
-            File scriptFile = new File(tp.getCatalinaHome(), "/bin/" + startupScript); // NOI18N
-            if (scriptFile.exists()) {
-                return scriptFile;
-            }
         }
         String startupScript = Utilities.isWindows() ? CATALINA_BAT : CATALINA_SH;
         return new File(tp.getCatalinaHome(), "/bin/" + startupScript); // NOI18N

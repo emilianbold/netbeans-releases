@@ -43,7 +43,6 @@ package org.netbeans.modules.autoupdate.services;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -110,34 +109,7 @@ public class ExecutablePermissionsTest extends NbmAdvancedTestCase {
         installUpdateUnit(u1);
         File f = new File(userDir, "bin/start.sh");
         assertTrue("File " + f + " should exist after module installation", f.exists());
-        if (System.getProperty("java.version").startsWith("1.5")) {
-            File ls = new File("/bin/ls");
-            if (!ls.isFile()) {
-                ls = new File("/usr/bin/ls");
-            }
-            if (ls.isFile()) {
-                String output = readCommandOutput(ls.getAbsolutePath(), "-la", f.getAbsolutePath()).trim();
-                int index = output.indexOf(" ");
-                assertFalse("Can`t read permissions from output:\n" + output, index == -1);
-                String permissions = output.substring(0, index);
-                assertTrue("File " + f + " does not have executable permissions after installation, actual perms : " + permissions,
-                        permissions.matches(".*x.*x.*x.*"));
-            }
-        } else {
-            Method canExecuteMethod = null;
-            try {
-                canExecuteMethod = File.class.getMethod("canExecute", new Class[]{});
-            } catch (Exception e) {
-                assertTrue("java.io.File.canExecute method is not accessible", false);
-            }
-            boolean canExecute = false;
-            try {
-                canExecute = (Boolean) canExecuteMethod.invoke(f);
-            } catch (Exception e) {
-                assertTrue("File " + f + " is not executable after module installation", canExecute);
-                e.printStackTrace();
-            }
-        }
+        assertTrue("File " + f + " is not executable after module installation", f.canExecute());
     }
 
     private String readCommandOutput(String... command) {
