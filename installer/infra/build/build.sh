@@ -109,7 +109,7 @@ fi
 
 
 
-if [ -n "$JDK_HOME" ] && [ -z "$JAVA_HOME" ] ; then
+if [ -n "$JDK_HOME" ] ; then
 JAVA_HOME="$JDK_HOME"
 fi
 
