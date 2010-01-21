@@ -93,12 +93,6 @@ public class ServerLocationVisual extends JPanel {
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
         wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, null);
 
-        // WL 9.x and 10 throws marshalling exception when running on JDK 6
-//        {
-//            String msg = NbBundle.getMessage(ServerLocationVisual.class, "WARN_INVALID_JDK");  // NOI18N
-//            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
-//        }
-
         // check for the validity of the entered installation directory
         // if it's invalid, return false
         String location = this.getInstallLocation();
