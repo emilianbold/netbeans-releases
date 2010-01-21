@@ -1915,7 +1915,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         componentCombo.setModel(toComboModel(bc.getComponents(product)));
         versionCombo.setModel(toComboModel(bc.getVersions(product)));
         List<String> targetMilestones = bc.getTargetMilestones(product);
-        usingTargetMilestones = (targetMilestones.size() != 0);
+        usingTargetMilestones = !targetMilestones.isEmpty();
         targetMilestoneCombo.setModel(toComboModel(targetMilestones));
         // Attempt to keep selection
         boolean isNew = issue.getTaskData().isNew();
