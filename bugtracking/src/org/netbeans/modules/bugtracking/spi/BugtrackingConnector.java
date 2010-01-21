@@ -40,6 +40,8 @@
 package org.netbeans.modules.bugtracking.spi;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -49,6 +51,13 @@ import org.openide.util.Lookup;
  */
 public abstract class BugtrackingConnector implements Lookup.Provider {
 
+    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+
+    /**
+     * a repository from this connector was created, removed or changed
+     */
+    public final static String EVENT_REPOSITORIES_CHANGED = "bugtracking.repositories.changed"; // NOI18N
+    
     /**
      * Returns a unique ID for this connector
      *
@@ -103,4 +112,27 @@ public abstract class BugtrackingConnector implements Lookup.Provider {
         return null;
     }
 
+    /**
+     * remove a listener from this conector
+     * @param listener
+     */
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Add a listener to this connector to listen on events
+     * @param listener
+     */
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Notify listeners on this connector that a repository was either removed or saved
+     * XXX make use of new/old value
+     */
+    protected void fireRepositoriesChanged() {
+        changeSupport.firePropertyChange(EVENT_REPOSITORIES_CHANGED, null, null);
+    }    
 }
