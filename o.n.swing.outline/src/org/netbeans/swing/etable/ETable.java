@@ -104,7 +104,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.*;
-import javax.swing.table.TableCellRenderer;
 
 /**
  * <UL>Extended JTable (ETable) adds these features to JTable:
@@ -389,11 +388,6 @@ public class ETable extends JTable {
         if(editing == FULLY_NONEDITABLE) {
             return false;
         }
-        //In 1.6 JTable adds method convertRowIndexToModel which is called in
-        //its isCellEditable(), otherwise we have to translate the row
-        if( System.getProperty("java.version").startsWith("1.5") ) { //NOI18N
-            row = convertRowIndexToModel(row);
-        }
         return super.isCellEditable(row, column);
     }
 
@@ -644,11 +638,6 @@ public class ETable extends JTable {
     @Override
     public Object getValueAt(int row, int column) {
         int modelRow = row;
-        //#144502: in 1.6 JTable adds method convertRowIndexToModel which is called in
-        //its getValueAt, otherwise we have translate the index
-        if( System.getProperty("java.version").startsWith("1.5") ) { //NOI18N //NOI18N
-            modelRow = convertRowIndexToModel(row);
-        }
         return super.getValueAt(modelRow, column);
     }
 
@@ -658,11 +647,6 @@ public class ETable extends JTable {
      */
     @Override
     public void setValueAt(Object aValue, int row, int column) {
-        //In 1.6 JTable adds method convertRowIndexToModel which is called in
-        //its setValueAt(), otherwise we have to translate the row
-        if( System.getProperty("java.version").startsWith("1.5") ) { //NOI18N
-            row = convertRowIndexToModel(row);
-        }
         super.setValueAt(aValue, row, column);
     }
 
