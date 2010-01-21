@@ -1051,7 +1051,7 @@ public class ChatPanel extends javax.swing.JPanel {
         if (projectName.contains("@")) { // NOI18N
             projectName = StringUtils.parseName(projectName);
         }
-        String url = kenai.getUrl().toString()+ "/projects/" + projectName + "/sources/" + n.getServiceName() + "/revision/" + id; // NOI18N
+        String url = kenai.getUrl().toString()+ "/projects/" + projectName + "/sources/" + (n.getFeatureName()!=null?n.getFeatureName():n.getServiceName()) + "/revision/" + id; // NOI18N
         return body + "\n" + url; // NOI18N
     }
 
