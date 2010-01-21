@@ -39,9 +39,14 @@
 
 package org.netbeans.modules.jira.repository;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Collections;
+import javax.swing.SwingUtilities;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.jira.core.model.Component;
 import org.eclipse.mylyn.internal.jira.core.model.IssueType;
 import org.eclipse.mylyn.internal.jira.core.model.JiraStatus;
@@ -54,6 +59,8 @@ import org.eclipse.mylyn.internal.jira.core.model.User;
 import org.eclipse.mylyn.internal.jira.core.model.Version;
 import org.eclipse.mylyn.internal.jira.core.service.JiraClient;
 import org.eclipse.mylyn.internal.jira.core.service.JiraException;
+import org.netbeans.modules.jira.commands.JiraCommand;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -64,11 +71,13 @@ import org.eclipse.mylyn.internal.jira.core.service.JiraException;
 public class JiraConfiguration {
 
     private JiraClient client;
+    private final JiraRepository repository;
 
     private static final Object PROJECT_LOCK = new Object();
 
     public JiraConfiguration(JiraClient jiraClient, JiraRepository repository) {
         this.client = jiraClient;
+        this.repository = repository;
     }
 
     public IssueType getIssueTypeById(String id) {
@@ -90,6 +99,7 @@ public class JiraConfiguration {
         if(!supportsProjectIssueTypes(getServerInfo().getVersion())) {
             return getIssueTypes();
         }
+        ensureProjectLoaded(project);
         return project.getIssueTypes();
     }
 
@@ -150,6 +160,7 @@ public class JiraConfiguration {
     }
 
     public Component[] getComponents(final Project project) {
+        ensureProjectLoaded(project);
         return project.getComponents();
     }
 
@@ -167,6 +178,7 @@ public class JiraConfiguration {
     }
 
     public Version[] getVersions(final Project project) {
+        ensureProjectLoaded(project);
         return project.getVersions();
     }
 
@@ -189,6 +201,39 @@ public class JiraConfiguration {
 
     public boolean supportsProjectIssueTypes(String version) {
         return new JiraVersion(version).compareTo(JiraVersion.JIRA_3_12) > -1;
+    }
+
+    public void ensureProjectLoaded(final Project project) {
+        ensureProjectLoaded(project, false);
+    }
+
+    public void ensureProjectLoaded(final Project project, boolean force) {
+        if(!force && project.hasDetails()) {
+            return;
+        }
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        JiraCommand cmd = new JiraCommand() {
+            @Override
+            public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+                try {
+                    client.getCache().refreshProjectDetails(project.getId(), new NullProgressMonitor());
+                } catch (JiraException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        repository.getExecutor().execute(cmd);
+    }
+
+    public void ensureIssueTypes(Project project) {
+        if(!supportsProjectIssueTypes(getServerInfo().getVersion())) {
+            return;
+        }
+        if (project.getIssueTypes() == null) {
+            // The cached project data had been created before we started
+            // to use project specific issue types. Forcing reload.
+            ensureProjectLoaded(project, true);
+        }
     }
 
 }

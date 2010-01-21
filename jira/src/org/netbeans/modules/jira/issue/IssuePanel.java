@@ -1820,6 +1820,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         handle.switchToIndeterminate();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
+
+                // The project meta-data may not be initialized.
+                // Their intialization must be performed outside event-dispatch thread
+                try {
+                    JiraConfiguration config = issue.getRepository().getConfiguration();
+                    config.ensureProjectLoaded(project);
+                    config.ensureIssueTypes(project);
+                } finally {
+                    handle.finish();
+                }
+
                 EventQueue.invokeLater(new Runnable() {
                     public void run () {
                         boolean oldReloading = reloading;
