@@ -74,6 +74,7 @@ class FindBar extends javax.swing.JPanel {
         String closeKey = "close"; // NOI18N
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), closeKey);
         getActionMap().put(closeKey, new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 FindBar.this.support.cancel();
             }
@@ -85,12 +86,15 @@ class FindBar extends javax.swing.JPanel {
         if (editor instanceof JTextComponent) {
             JTextComponent tcomp = (JTextComponent)editor;
             tcomp.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     changedUpdate(e);
                 }
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     changedUpdate(e);
                 }
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     support.updatePattern();
                 }
