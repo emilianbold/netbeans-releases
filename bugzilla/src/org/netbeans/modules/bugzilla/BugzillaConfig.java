@@ -55,8 +55,8 @@ import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugzilla.util.FileUtils;
 import org.openide.util.ImageUtilities;
@@ -189,9 +189,9 @@ public class BugzillaConfig {
         String password = repository.getPassword();
         String httpPassword = repository.getHttpPassword();
         if(BugtrackingUtil.isNbRepository(repository)) {
-            NBRepositorySupport.setNBUsername(user);
+            NBBugzillaUtils.saveNBUsername(user);
             String psswd = repository.getPassword();
-            NBRepositorySupport.setNBPassword(psswd != null ? psswd.toCharArray() : null);
+            NBBugzillaUtils.saveNBPassword(psswd != null ? psswd.toCharArray() : null);
         } else {
             savePassword(password, null, url, user);
             savePassword(httpPassword, "http", url, httpUser); // NOI18N
@@ -221,8 +221,9 @@ public class BugzillaConfig {
         String user;
         String password;
         if(BugtrackingUtil.isNbRepository(url)) {
-            user = NBRepositorySupport.getNBUsername();
-            password = NBRepositorySupport.getNBPasswordString();
+            user = NBBugzillaUtils.getNBUsername();
+            char[] psswdArray = NBBugzillaUtils.getNBPassword();
+            password = psswdArray != null ? new String(psswdArray) : null;
         } else {
             user = values[1];
             password = readPassword(values[2], null, url, user);
