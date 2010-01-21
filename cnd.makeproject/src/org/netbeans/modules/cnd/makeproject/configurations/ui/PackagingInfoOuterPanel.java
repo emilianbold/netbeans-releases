@@ -97,15 +97,15 @@ public class PackagingInfoOuterPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        org.jdesktop.layout.GroupLayout packagingHeaderOuterPanelLayout = new org.jdesktop.layout.GroupLayout(packagingHeaderOuterPanel);
+        javax.swing.GroupLayout packagingHeaderOuterPanelLayout = new javax.swing.GroupLayout(packagingHeaderOuterPanel);
         packagingHeaderOuterPanel.setLayout(packagingHeaderOuterPanelLayout);
         packagingHeaderOuterPanelLayout.setHorizontalGroup(
-            packagingHeaderOuterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 411, Short.MAX_VALUE)
+            packagingHeaderOuterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 411, Short.MAX_VALUE)
         );
         packagingHeaderOuterPanelLayout.setVerticalGroup(
-            packagingHeaderOuterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 99, Short.MAX_VALUE)
+            packagingHeaderOuterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 99, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
