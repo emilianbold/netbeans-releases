@@ -481,10 +481,12 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         return repository;
     }
 
+    @Override
     public String getID() {
         return getID(data);
     }
 
+    @Override
     public String getSummary() {
         return getFieldValue(IssueField.SUMMARY);
     }
@@ -495,6 +497,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         attributes = null; // reset
         availableOperations = null;
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 ((BugzillaIssueNode)getNode()).fireDataChanged();
                 fireDataChanged();
@@ -750,6 +753,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
     }
 
     // XXX carefull - implicit refresh
+    @Override
     public void addComment(String comment, boolean close) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         if(comment == null && !close) {
@@ -856,6 +860,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         return true;
     }
 
+    @Override
     public boolean refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         return refresh(getID(), false);
@@ -1087,6 +1092,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
             handle.start();
             handle.switchToIndeterminate();
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         File file = saveToTempFile();
@@ -1129,6 +1135,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                 handle.start();
                 handle.switchToIndeterminate();
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             getAttachementData(new FileOutputStream(file));
@@ -1153,6 +1160,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                 handle.start();
                 handle.switchToIndeterminate();
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             File file = saveToTempFile();
@@ -1187,6 +1195,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                                    "Attachment.DefaultAction.name"));   //NOI18N
             }
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Attachment.this.open();
             }
@@ -1200,6 +1209,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                                    "Attachment.SaveAction.name"));      //NOI18N
             }
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Attachment.this.saveToFile();
             }
@@ -1213,6 +1223,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                                    "Attachment.ApplyPatchAction.name"));//NOI18N
             }
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Attachment.this.applyPatch();
             }
