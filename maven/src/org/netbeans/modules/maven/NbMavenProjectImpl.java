@@ -56,6 +56,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -597,15 +598,16 @@ public final class NbMavenProjectImpl implements Project {
         return updater2;
     }
 
-    private static Map<String, String> pkg2Icon = new HashMap<String, String>() {{
+    private static Map<String, String> pkg2Icon = Collections.unmodifiableMap(new HashMap<String, String>() {{
         put("jar", "org/netbeans/modules/maven/resources/jaricon.png"); //NOI18N
-        put("war", "org/netbeans/modules/maven/resources/webicon.gif"); //NOI18N
-        put("ejb", "org/netbeans/modules/maven/resources/ejbicon.gif"); //NOI18N
-        put("ear", "org/netbeans/modules/maven/resources/earicon.gif"); //NOI18N
+        put("war", "org/netbeans/modules/maven/resources/maven_web_application_16.png"); //NOI18N
+        put("ejb", "org/netbeans/modules/maven/resources/maven_ejb_module_16.png"); //NOI18N
+        put("ear", "org/netbeans/modules/maven/resources/maven_enterprise_application_16.png"); //NOI18N
         put("pom", "org/netbeans/modules/maven/resources/Maven2Icon.gif"); //NOI18N
         put("nbm", "org/netbeans/modules/maven/resources/nbmicon.png"); //NOI18N
+        put("bundle", "org/netbeans/modules/maven/resources/maven_osgi_16.png"); //NOI18N
         put("nbm-application", "org/netbeans/modules/maven/resources/suiteicon.png"); //NOI18N
-    }};
+    }});
 
     public static Image getIcon (MavenProject mPrj) {
         String iconPath = pkg2Icon.get(mPrj.getPackaging().toLowerCase());
@@ -996,12 +998,14 @@ public final class NbMavenProjectImpl implements Project {
             pcs.firePropertyChange(prop, null, null);
         }
 
+        @Override
         public String getName() {
             String toReturn = NbMavenProjectImpl.this.getName();
             return toReturn;
         }
 
 
+        @Override
         public String getDisplayName() {
             MavenProject pr = NbMavenProjectImpl.this.getOriginalMavenProject();
             if (isErrorPom(pr)) {
@@ -1026,19 +1030,23 @@ public final class NbMavenProjectImpl implements Project {
             return toReturn;
         }
 
+        @Override
         public Icon getIcon() {
             MavenProject pr = NbMavenProjectImpl.this.getOriginalMavenProject();
             return ImageUtilities.image2Icon(NbMavenProjectImpl.getIcon(pr));
         }
 
+        @Override
         public Project getProject() {
             return NbMavenProjectImpl.this;
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             pcs.addPropertyChangeListener(listener);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
