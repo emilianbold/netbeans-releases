@@ -194,10 +194,6 @@ public class DwarfSourceReaderTest extends NbTestCase {
         ignore.put("i386", "1");
         List<String> system = new ArrayList<String>();
         String prefix = "";
-        if (Utilities.isWindows()) {
-            prefix = new File("/usr/include").getAbsolutePath();
-            prefix = prefix.substring(0,prefix.indexOf('\\'));
-        }
         system.add(prefix+"/usr/include");
         system.add(prefix+"/usr/include/c++/4.0.0");
         system.add(prefix+"/usr/include/c++/4.0.0/i686-apple-darwin9/bits");
@@ -252,7 +248,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         entry.includes.add("/bits");
         entry.includes.add("/debug");
         entry.includes.add("/ext");
-        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/quote.cygwin.o", system, ignore, grepBase, true, null);
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/quote.cygwin.o", system, ignore, grepBase, true, prefix);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
         assertTrue(compareMap(map, golden));
         assertTrue(source.getUserInludePaths().size()==1);
@@ -286,7 +282,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         entry.includes.add("/bits");
         entry.includes.add("/debug");
         entry.includes.add("/ext");
-        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/string.cygwin.o", system, ignore, grepBase, true, null);
+        DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/string.cygwin.o", system, ignore, grepBase, true, prefix);
         assertNotNull(source);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
         assertTrue(compareMap(map, golden));
@@ -444,10 +440,6 @@ public class DwarfSourceReaderTest extends NbTestCase {
         ignore.put("unix", "1");
         List<String> system = new ArrayList<String>();
         String prefix = "";
-        if (Utilities.isWindows()) {
-            prefix = new File("/usr/include").getAbsolutePath();
-            prefix = prefix.substring(0,prefix.indexOf('\\'));
-        }
         system.add(prefix+"/usr/include");
         system.add(prefix+"/usr/lib/gcc/x86_64-pc-linux-gnu/4.3.2/include");
         system.add(prefix+"/usr/lib/gcc/x86_64-pc-linux-gnu/4.3.2/include/g++-v4");
@@ -577,10 +569,6 @@ public class DwarfSourceReaderTest extends NbTestCase {
         ignore.put("unix", "1");
         List<String> system = new ArrayList<String>();
         String prefix = "";
-        if (Utilities.isWindows()) {
-            prefix = new File("/usr/include").getAbsolutePath();
-            prefix = prefix.substring(0,prefix.indexOf('\\'));
-        }
         system.add(prefix+"/usr/include");
         system.add(prefix+"/usr/include/c++/4.1.2");
         system.add(prefix+"/usr/lib/gcc/x86_64-redhat-linux/4.1.2/include");
@@ -604,14 +592,10 @@ public class DwarfSourceReaderTest extends NbTestCase {
         grep.firstMacro="HTIOP_ACCEPTOR_IMPL_CPP";
         grep.firstMacroLine=4;
         String name = "/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP/HTIOP_Acceptor_Impl.cpp";
-        grepBase.put(name, grep);
         if (Utilities.isWindows()) {
-             //this is hack for testing on windows an object file created on unix
-            name = ":"+name.replace('/', '\\');
-            for (char c = 'A'; c <= 'Z'; c++) {
-                grepBase.put(c+name, grep);
-            }
+            name = "D:\\net\\dxespb04x127x81\\export\\devarea\\osprojects\\ACE_TAO\\ACE_wrappers\\TAO\\orbsvcs\\orbsvcs\\HTIOP\\HTIOP_Acceptor_Impl.cpp";
         }
+        grepBase.put(name, grep);
         DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/x86_64-redhat-4.1.2.o", system, ignore, grepBase, false, null);
         assertNotNull(source);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
@@ -729,7 +713,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         }
     }
 
-    private DwarfSource getDwarfSource(String resource, final List<String> systemPath, 
+    private DwarfSource getDwarfSource(String resource, final List<String> systemPath,
             final Map<String, String> ignore, final Map<String,GrepEntry> grepBase,
             final boolean isWindows, final String cygwinPath){
         File dataDir = getDataDir();
@@ -742,11 +726,17 @@ public class DwarfSourceReaderTest extends NbTestCase {
                 while (units.hasNext()) {
                     CompilationUnit cu = units.next();
                     BaseDwarfProvider.CompilerSettings settings = new BaseDwarfProvider.CompilerSettings(new ProjectProxy() {
+                        @Override
                         public boolean createSubProjects() { return false; }
+                        @Override
                         public Project getProject() { return null; }
+                        @Override
                         public String getMakefile() { return null; }
+                        @Override
                         public String getSourceRoot() { return null; }
+                        @Override
                         public String getExecutable() { return null; }
+                        @Override
                         public String getWorkingFolder() { return null; }
                     }){
                         @Override
@@ -785,6 +775,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
                             if (isWindows == Utilities.isWindows()) {
                                 return super.normalizePath(path);
                             }
+                            path = path.replace('\\', '/');
                             while (path.indexOf("/..") > 0) {
                                 int i = path.indexOf("/..");
                                 String beg = path.substring(0,i);
