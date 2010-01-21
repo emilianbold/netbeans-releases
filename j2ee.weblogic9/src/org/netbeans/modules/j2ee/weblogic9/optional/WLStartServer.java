@@ -548,7 +548,7 @@ public final class WLStartServer extends StartServer {
                         }
 
                         if (isRunning()) {
-                            serverProgress.notifyStop(StateType.COMPLETED,
+                            serverProgress.notifyStop(StateType.FAILED,
                                 NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_FAILED", serverName));
                         } else {
                             serverProgress.notifyStop(StateType.COMPLETED,
