@@ -104,7 +104,7 @@ public class Bugzilla {
 
     void shutdown() {
         try {
-            bcp.stop(null);
+            bcp.stop(null); // forces persisting of repository configuration
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
