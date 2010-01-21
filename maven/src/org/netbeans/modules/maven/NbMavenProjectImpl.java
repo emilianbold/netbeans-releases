@@ -527,6 +527,7 @@ public final class NbMavenProjectImpl implements Project {
             ProjectManager.mutex().isWriteAccess() ||
             SwingUtilities.isEventDispatchThread()) {
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     fireProjectReload();
                 }
@@ -645,6 +646,7 @@ public final class NbMavenProjectImpl implements Project {
     /**
      * the root dirtectory of the project.. that;s where the pom resides.
      */
+    @Override
     public FileObject getProjectDirectory() {
         return folderFileObject;
     }
@@ -729,6 +731,7 @@ public final class NbMavenProjectImpl implements Project {
         File fil = new File(uri);
         if (fil.exists() && fil.isDirectory()) {
             File[] fils = fil.listFiles(new FileFilter() {
+                @Override
                 public boolean accept(File pathname) {
                     return pathname.isDirectory();
                 }
@@ -826,6 +829,7 @@ public final class NbMavenProjectImpl implements Project {
         File fil = new File(uri);
         if (fil.exists()) {
             File[] fls = fil.listFiles(new FilenameFilter() {
+                @Override
                 public boolean accept(File dir, String name) {
                     //TODO most probably a performance bottleneck of sorts..
                     return !("java".equalsIgnoreCase(name)) && //NOI18N
@@ -853,6 +857,7 @@ public final class NbMavenProjectImpl implements Project {
     }
 
 
+    @Override
     public Lookup getLookup() {
         return lookup;
     }
@@ -1101,9 +1106,11 @@ public final class NbMavenProjectImpl implements Project {
             filesToWatch = toWatch;
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fileAttributeEvent) {
         }
 
+        @Override
         public void fileChanged(FileEvent fileEvent) {
             if (!fileEvent.getFile().isFolder()) {
                 String nameExt = fileEvent.getFile().getNameExt();
@@ -1115,6 +1122,7 @@ public final class NbMavenProjectImpl implements Project {
             }
         }
 
+        @Override
         public void fileDataCreated(FileEvent fileEvent) {
             //TODO shall also include the parent of the pom if available..
             if (fileEvent.getFile().isFolder()) {
@@ -1128,6 +1136,7 @@ public final class NbMavenProjectImpl implements Project {
             }
         }
 
+        @Override
         public void fileDeleted(FileEvent fileEvent) {
             if (!fileEvent.getFile().isFolder()) {
                 lastTime = System.currentTimeMillis();
@@ -1136,11 +1145,13 @@ public final class NbMavenProjectImpl implements Project {
             }
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fileEvent) {
             //TODO possibly remove this fire.. watch for actual path..
 //            NbMavenProject.fireMavenProjectReload(NbMavenProjectImpl.this);
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fileRenameEvent) {
         }
 
@@ -1274,6 +1285,7 @@ public final class NbMavenProjectImpl implements Project {
             prohibited.add(NbMavenProject.TYPE_OSGI);
         }
 
+        @Override
         public String[] getRecommendedTypes() {
             String packaging = project.getProjectWatcher().getPackagingType();
             if (packaging == null) {
@@ -1307,6 +1319,7 @@ public final class NbMavenProjectImpl implements Project {
             return ALL_TYPES;
         }
 
+        @Override
         public String[] getPrivilegedTemplates() {
             String packaging = project.getProjectWatcher().getPackagingType();
             if (packaging == null) {
@@ -1330,7 +1343,7 @@ public final class NbMavenProjectImpl implements Project {
 
         public RefreshAction(Lookup lkp) {
             context = lkp;
-            Collection col = context.lookupAll(NbMavenProjectImpl.class);
+            Collection<? extends NbMavenProjectImpl> col = context.lookupAll(NbMavenProjectImpl.class);
             if (col.size() > 1) {
                 putValue(Action.NAME, NbBundle.getMessage(NbMavenProjectImpl.class, "ACT_Reload_Projects", col.size()));
             } else {
@@ -1338,9 +1351,11 @@ public final class NbMavenProjectImpl implements Project {
             }
         }
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent event) {
             //#166919 - need to run in RP to prevent RPing later in fireProjectReload()
             RELOAD_RP.post(new Runnable() {
+                @Override
                 public void run() {
                     EmbedderFactory.resetProjectEmbedder();
                     for (NbMavenProjectImpl prj : context.lookupAll(NbMavenProjectImpl.class)) {
@@ -1351,16 +1366,16 @@ public final class NbMavenProjectImpl implements Project {
 
         }
 
+        @Override
         public Action createContextAwareInstance(Lookup actionContext) {
             return new RefreshAction(actionContext);
         }
     }
 
-    private String repositoryListToString(List repositories) {
+    private String repositoryListToString(List<ArtifactRepository> repositories) {
         String toRet = "";
         if (repositories != null) {
-            for (Object r : repositories) {
-                ArtifactRepository repo = (ArtifactRepository)r;
+            for (ArtifactRepository repo : repositories) {
                 toRet = toRet + "      " + repo.getId() + "  (" + repo.getUrl() + ")\n"; //NOI18N
             }
         }
@@ -1385,6 +1400,7 @@ public final class NbMavenProjectImpl implements Project {
             putValue(Action.NAME, "Open Wiki page");
             this.url = url;
         }
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent event) {
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         }
