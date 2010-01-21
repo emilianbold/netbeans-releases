@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
@@ -67,7 +68,6 @@ public final class SelectedItemsTable extends JTable {
         setTableHeader(null);
         getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         setShowGrid(false);
-        //getViewport().setBackground(getBackground());
 
         final Action switchAction = new AbstractAction() {
             public void actionPerformed(java.awt.event.ActionEvent e) {

@@ -42,11 +42,15 @@ package org.netbeans.modules.maven.osgi.customizer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
+import org.netbeans.modules.maven.model.pom.POMComponent;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.osgi.OSGIConstants;
 import org.netbeans.modules.maven.spi.customizer.SelectedItemsTablePersister;
@@ -92,31 +96,70 @@ public class FelixExportPersister implements SelectedItemsTablePersister {
 
     public void write(Map<String, Boolean> selItems) {
         Map<Integer, String> exportIns = InstructionsConverter.computeExportInstructions(selItems);
+        final POMModel pomModel = handle.getPOMModel();
+        
+        Build build = pomModel.getProject().getBuild();
+        Plugin felixPlugin = null;
+        if (build != null) {
+            felixPlugin = build.findPluginById(OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN);
+        } else {
+            build = pomModel.getFactory().createBuild();
+            pomModel.getProject().setBuild(build);
+        }
+        Configuration config = null;
+        if (felixPlugin != null) {
+            config = felixPlugin.getConfiguration();
+        } else {
+            felixPlugin = pomModel.getFactory().createPlugin();
+            felixPlugin.setGroupId(OSGIConstants.GROUPID_FELIX);
+            felixPlugin.setArtifactId(OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN);
+            felixPlugin.setExtensions(Boolean.TRUE);
+            build.addPlugin(felixPlugin);
+        }
+        if (config == null) {
+            config = pomModel.getFactory().createConfiguration();
+            felixPlugin.setConfiguration(config);
+        }
 
-        //Plugin felixPlugin = model.getFactory().createBuild().findPluginById(OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN);
-        Plugin felixPlugin = handle.getPOMModel().getProject().getBuild().
-                findPluginById(OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN);
-        Configuration config = felixPlugin.getConfiguration();
-        List<POMExtensibilityElement> confEls = config.getConfigurationElements();
         POMExtensibilityElement instructionsEl = null;
+        List<POMExtensibilityElement> confEls = config.getConfigurationElements();
         for (POMExtensibilityElement el : confEls) {
             if (OSGIConstants.PARAM_INSTRUCTIONS.equals(el.getQName().getLocalPart())) {
                 instructionsEl = el;
                 break;
             }
         }
+        if (instructionsEl == null) {
+            instructionsEl = pomModel.getFactory().
+                    createPOMExtensibilityElement(new QName(OSGIConstants.PARAM_INSTRUCTIONS));
+            config.addExtensibilityElement(instructionsEl);
+        }
+        
+        POMExtensibilityElement exportEl = getOrCreateChild(instructionsEl, OSGIConstants.EXPORT_PACKAGE, pomModel);
+        POMExtensibilityElement privateEl = getOrCreateChild(instructionsEl, OSGIConstants.PRIVATE_PACKAGE, pomModel);
 
-        POMExtensibilityElement exportEl = null;
-        for (POMExtensibilityElement el : instructionsEl.getAnyElements()) {
-            if (OSGIConstants.EXPORT_PACKAGE.equals(el.getQName().getLocalPart())) {
-                exportEl = el;
+        exportEl.setElementText(exportIns.get(InstructionsConverter.EXPORT_PACKAGE));
+        privateEl.setElementText(exportIns.get(InstructionsConverter.PRIVATE_PACKAGE));
+
+        handle.markAsModified(pomModel);
+    }
+
+    static private POMExtensibilityElement getOrCreateChild (POMComponent parent, String localQName, POMModel pomModel) {
+        POMExtensibilityElement result = null;
+        for (POMExtensibilityElement el : parent.getExtensibilityElements()) {
+            if (localQName.equals(el.getQName().getLocalPart())) {
+                result = el;
                 break;
             }
         }
+        
+        if (result == null) {
+            result = pomModel.getFactory().
+                    createPOMExtensibilityElement(new QName(localQName));
+            parent.addExtensibilityElement(result);
+        }
 
-        exportEl.setElementText(exportIns.get(InstructionsConverter.EXPORT_PACKAGE));
-
-        handle.markAsModified(handle.getPOMModel());
+        return result;
     }
 
 }

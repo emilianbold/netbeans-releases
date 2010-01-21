@@ -45,6 +45,7 @@
 
 package org.netbeans.modules.maven.osgi.customizer;
 
+import java.awt.Color;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.api.customizer.support.SelectedItemsTable;
@@ -56,19 +57,16 @@ import org.netbeans.modules.maven.api.customizer.support.SelectedItemsTable.Sele
  */
 public class PackagesPanel extends javax.swing.JPanel {
 
-    private final ModelHandle handle;
-    private final Project prj;
     private final SelectedItemsTableModel tableModel;
 
     /** Creates new form PackagesPanel */
     public PackagesPanel(ModelHandle handle, Project prj) {
-        this.handle = handle;
-        this.prj = prj;
-
         FelixExportPersister exportPersist = new FelixExportPersister(prj, handle);
         tableModel = new SelectedItemsTableModel(exportPersist);
 
         initComponents();
+
+        jScrollPane1.getViewport().setBackground(exportTable.getBackground());
     }
 
     /** This method is called from within the constructor to
@@ -84,6 +82,7 @@ public class PackagesPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         exportTable = new SelectedItemsTable(tableModel);
 
+        jLabel1.setLabelFor(exportTable);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(PackagesPanel.class, "PackagesPanel.jLabel1.text")); // NOI18N
 
         jScrollPane1.setViewportView(exportTable);
@@ -106,7 +105,7 @@ public class PackagesPanel extends javax.swing.JPanel {
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 189, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(76, Short.MAX_VALUE))
+                .addContainerGap(199, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

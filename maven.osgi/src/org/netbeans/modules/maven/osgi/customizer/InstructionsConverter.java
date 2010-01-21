@@ -63,16 +63,14 @@ public final class InstructionsConverter {
     public static Map<Integer, String> computeExportInstructions (Map<String, Boolean> items) {
         Map<Integer, String> instructionsMap = new HashMap<Integer, String>(2);
         StringBuilder exportIns = new StringBuilder();
-        int mapSize = items.size();
-        int counter = 0;
         for (Map.Entry<String, Boolean> entry : items.entrySet()) {
             if (entry.getValue()) {
                 exportIns.append(entry.getKey());
-                if (counter < mapSize - 1) {
-                    exportIns.append(DELIMITER);
-                }
+                exportIns.append(DELIMITER);
             }
-            counter++;
+        }
+        if (exportIns.length() > 0) {
+            exportIns.deleteCharAt(exportIns.length() - 1);
         }
 
         instructionsMap.put(EXPORT_PACKAGE, exportIns.toString());
@@ -82,9 +80,8 @@ public final class InstructionsConverter {
     }
 
     public static Map<String, Boolean> computeExportList (Map<Integer, String> exportInstructions, Project project) {
-        StringTokenizer strTok = new StringTokenizer(exportInstructions.get(EXPORT_PACKAGE), DELIMITER);
         Map<String, Boolean> pkgMap = new HashMap<String, Boolean>();
-        
+
         SourceGroup[] groups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (groups != null && groups.length > 0) {
             ComboBoxModel cbm = PackageView.createListView(groups[0]);
@@ -92,11 +89,15 @@ public final class InstructionsConverter {
                 pkgMap.put(cbm.getElementAt(i).toString(), Boolean.FALSE);
             }
         }
+        String exportIns = exportInstructions.get(EXPORT_PACKAGE);
+        if (exportIns != null) {
+            StringTokenizer strTok = new StringTokenizer(exportIns, DELIMITER);
 
-        while(strTok.hasMoreTokens()) {
-            String cur = strTok.nextToken();
-            pkgMap.remove(cur);
-            pkgMap.put(cur, Boolean.TRUE);
+            while(strTok.hasMoreTokens()) {
+                String cur = strTok.nextToken();
+                pkgMap.remove(cur);
+                pkgMap.put(cur, Boolean.TRUE);
+            }
         }
 
         return pkgMap;
