@@ -358,22 +358,6 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-java-hints-DeclarationForInstanceOf.instance"/>
             </folder>
          </folder>
-
-        <folder name="declarative">
-            <file name="assert2if.hint" url="../jackpot/hintsimpl/assert2if.hint" />
-            <file name="variable-decl-assignment.hint" url="../jackpot/hintsimpl/variable-decl-assignment.hint" />
-            <file name="double-checked-locking.hint" url="../jackpot/hintsimpl/double-checked-locking.hint" />
-            <file name="sync-on-non-final.hint" url="../jackpot/hintsimpl/sync-on-non-final.hint" />
-            <file name="abstract-document.hint" url="../jackpot/hintsimpl/abstract-document.hint" />
-            <folder name="bugs">
-                <file name="Bundle.properties" url="../bugs/Bundle.properties" />
-                <file name="string-replace-all-dot.hint" url="../bugs/string-replace-all-dot.hint" />
-            </folder>
-            <folder name="perf">
-                <file name="Bundle.properties" url="../perf/Bundle.properties" />
-                <file name="array.hint" url="../perf/array.hint" />
-            </folder>
-        </folder>
     </folder>
     
     <folder name="OptionsDialog">

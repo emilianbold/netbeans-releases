@@ -1,4 +1,0 @@
-'Use of assert':
-assert $1 : $2; :: $1 instanceof boolean && $2 instanceof java.lang.Object
-   => if (!$1) throw new IllegalStateException($2);
-   ;;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,50 +34,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.jackpot.file;
+package org.netbeans.modules.java.hints.bugs;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
+import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
+import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
+import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Jan Lahoda
+ * @author lahvac
  */
-public class Utilities {
+public class Tiny {
 
-    public static String readFile(FileObject file) {
-        StringBuilder sb = new StringBuilder();
+    @Hint(category="bugs")
+    @TriggerPattern(value="$str.replaceAll(\".\", $to))",
+                    constraints=@Constraint(variable="$str", type="java.lang.String"))
+    public static ErrorDescription stringReplaceAllDot(HintContext ctx) {
+        Tree constant = ((MethodInvocationTree) ctx.getPath().getLeaf()).getArguments().get(0);
+        TreePath constantTP = new TreePath(ctx.getPath(), constant);
 
-        Reader r = null;
+        String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_string-replace-all-dot");
+        Fix fix = JavaFix.rewriteFix(ctx, fixDisplayName, constantTP, "\"\\\\.\"");
+        String displayName = NbBundle.getMessage(Tiny.class, "ERR_string-replace-all-dot");
 
-        try {
-            r = new InputStreamReader(file.getInputStream(), "UTF-8");
-
-            int read;
-
-            while ((read = r.read()) != (-1)) {
-                sb.append((char) read);
-            }
-
-            return sb.toString();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        } finally {
-            if (r != null) {
-                try {
-                    r.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
+        return ErrorDescriptionFactory.forTree(ctx, constant, displayName, fix);
     }
 
 }

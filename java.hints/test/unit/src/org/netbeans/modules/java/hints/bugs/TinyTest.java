@@ -36,24 +36,53 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-%%TestCase positive-replaceAll-1
-package test;
-public class Test {
-    private void test() {
-        "a".replaceAll(".", "/");
+
+package org.netbeans.modules.java.hints.bugs;
+
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.spi.editor.hints.Fix;
+
+/**
+ *
+ * @author lahvac
+ */
+public class TinyTest extends TestBase {
+
+    public TinyTest(String name) {
+        super(name, Tiny.class);
     }
-}
-%%=>
-package test;
-public class Test {
-    private void test() {
-        "a".replaceAll("\\.", "/");
+    public void testPositive1() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(String[] args) {\n" +
+                       "        \"a\".replaceAll(\".\", \"/\");\n" +
+                       "    }\n" +
+                       "}\n",
+                       "3:23-3:26:verifier:ERR_string-replace-all-dot",
+                       "FIX_string-replace-all-dot",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void test(String[] args) {\n" +
+                        "        \"a\".replaceAll(\"\\\\.\", \"/\");\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
     }
-}
-%%TestCase negative-replaceAll-1
-package test;
-public class Test {
-    private void test() {
-        "a".replaceAll(",", "/");
+
+    public void testNegative1() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public void test(String[] args) {\n" +
+                            "        \"a\".replaceAll(\",\", \"/\");\n" +
+                            "    }\n" +
+                            "}\n");
     }
+
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return f.getText();
+    }
+
 }
