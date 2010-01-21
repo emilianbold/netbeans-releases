@@ -386,7 +386,7 @@ public class Util {
 
         if (provider == null) {
             //choose default/first provider
-            List<Provider> providers = aProviderSupplier.getSupportedProviders();
+            ArrayList<Provider> providers = new ArrayList<Provider>(aProviderSupplier.getSupportedProviders());
             if (providers.size() == 0 && aProviderSupplier.supportsDefaultProvider()) {
                 providers.add(ProviderUtil.DEFAULT_PROVIDER);
             }
