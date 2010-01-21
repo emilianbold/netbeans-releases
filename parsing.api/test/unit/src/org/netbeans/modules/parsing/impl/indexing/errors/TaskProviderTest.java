@@ -44,10 +44,12 @@ package org.netbeans.modules.parsing.impl.indexing.errors;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -57,6 +59,7 @@ import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.Convertor;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.ErrorKind;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.tasklist.trampoline.Accessor;
 import org.netbeans.modules.tasklist.trampoline.TaskManager;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -70,6 +73,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -260,6 +264,31 @@ public class TaskProviderTest extends NbTestCase {
             }
 
             return null;
+        }
+
+    }
+
+    @ServiceProvider(service=PathRecognizer.class)
+    public static final class PathRecognizerImpl extends PathRecognizer {
+
+        @Override
+        public Set<String> getSourcePathIds() {
+            return Collections.singleton(ClassPath.SOURCE);
+        }
+
+        @Override
+        public Set<String> getLibraryPathIds() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Set<String> getBinaryLibraryPathIds() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Set<String> getMimeTypes() {
+            return Collections.emptySet();
         }
 
     }
