@@ -527,6 +527,7 @@ public class DwarfSource implements SourceFileProperties{
     }
 
     private void processPath(String path, List<String> list, DwarfStatementList dwarfTable, boolean isPath) {
+        path = path.replace('\\', '/'); // NOI18N
         String includeFullName = path;
         if (FULL_TRACE) {
             System.out.println("Included file original:" + path); // NOI18N
