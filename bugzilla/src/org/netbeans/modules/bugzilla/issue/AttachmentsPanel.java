@@ -286,6 +286,7 @@ public class AttachmentsPanel extends JPanel {
     PropertyChangeListener getDeletedListener() {
         if (deletedListener == null) {
             deletedListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (AttachmentPanel.PROP_DELETED.equals(evt.getPropertyName())) {
                         for (AttachmentPanel panel : newAttachments) {
@@ -344,6 +345,7 @@ public class AttachmentsPanel extends JPanel {
             this.verticalGroup = verticalGroup;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             AttachmentPanel attachment = new AttachmentPanel();
             attachment.setBackground(BG_COLOR);

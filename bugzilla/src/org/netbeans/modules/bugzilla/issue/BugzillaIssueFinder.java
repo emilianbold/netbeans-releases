@@ -58,11 +58,13 @@ public class BugzillaIssueFinder extends IssueFinder {
 
     private static final int[] EMPTY_INT_ARR = new int[0];
 
+    @Override
     public int[] getIssueSpans(CharSequence text) {
         int[] result = findBoundaries(text);
         return (result != null) ? result : EMPTY_INT_ARR;
     }
 
+    @Override
     public String getIssueId(String issueHyperlinkText) {
         int pos = issueHyperlinkText.length() - 1;
         while ((pos >= 0) && Impl.isDigit(issueHyperlinkText.charAt(pos))) {
