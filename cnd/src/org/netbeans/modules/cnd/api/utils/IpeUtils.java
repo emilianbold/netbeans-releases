@@ -51,13 +51,11 @@ import java.util.StringTokenizer;
 import javax.swing.JButton;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.netbeans.modules.cnd.loaders.CoreElfObject;
 import org.netbeans.modules.cnd.loaders.ExeObject;
-import org.netbeans.modules.cnd.loaders.MakefileDataObject;
 import org.netbeans.modules.cnd.loaders.OrphanedElfObject;
-import org.netbeans.modules.cnd.loaders.ShellDataObject;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -935,7 +933,7 @@ public class IpeUtils {
         } catch (DataObjectNotFoundException e) {
             return false;
         }
-        if (dataObject instanceof ExeObject || dataObject instanceof ShellDataObject) {
+        if (dataObject instanceof ExeObject || dataObject.getPrimaryFile().getMIMEType().equals(MIMENames.SHELL_MIME_TYPE)) {
             if (dataObject instanceof OrphanedElfObject || dataObject instanceof CoreElfObject) {
                 return false;
             }

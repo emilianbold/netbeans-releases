@@ -317,19 +317,8 @@ public class WindowUtils {
          * displayable.
          */
         protected void whenDisplayable(Component w, final Runnable action) {
-            if (w.isDisplayable() && (!Holder.requiresVisible || w.isVisible())) {
+            if (w.isDisplayable()) {
                 action.run();
-            }
-            else if (Holder.requiresVisible) {
-                getWindow(w).addWindowListener(new WindowAdapter() {
-                    public void windowOpened(WindowEvent e) {
-                        e.getWindow().removeWindowListener(this);
-                        action.run();
-                    }
-                    public void windowClosed(WindowEvent e) {
-                        e.getWindow().removeWindowListener(this);
-                    }
-                });
             }
             else {
                 // Hierarchy events are fired in direct response to
@@ -537,7 +526,6 @@ public class WindowUtils {
          * handle can be obtained. This wart is caused by the Java
          * 1.4/X11 implementation.
          */
-        public static boolean requiresVisible;
         public static final NativeWindowUtils INSTANCE;
         static {
             if (Platform.isWindows()) {
@@ -548,8 +536,6 @@ public class WindowUtils {
             }
             else if (Platform.isX11()) {
                 INSTANCE = new X11WindowUtils();
-                requiresVisible = System.getProperty("java.version")
-                                        .matches("^1\\.4\\..*");
             }
             else {
                 String os = System.getProperty("os.name");

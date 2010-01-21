@@ -592,7 +592,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             fixPrefSize(createdField);
             boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
             if ((reporterStatusLabel.getIcon() == null) && isKenaiRepository) {
-                String host = ((KenaiRepository) issue.getRepository()).getUrl();
+                String host = ((KenaiRepository) issue.getRepository()).getHost();
                 KenaiUserUI ku = new KenaiUserUI(reporter + "@" + host);
                 ku.setMessage(KenaiUtil.getChatLink(issue));
                 JLabel label = ku.createUserWidget();

@@ -38,13 +38,16 @@
  */
 package org.netbeans.modules.cnd.dwarfdump;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 
@@ -58,6 +61,15 @@ public class CompileLineService {
     private static final boolean TRACE_READ_EXCEPTIONS = false;
 
     private CompileLineService() {
+    }
+
+    // valid on Solaris or Linux
+    public static List<SourceFile> getSourceFolderProperties(String objFolderName) {
+        List<SourceFile> list = new ArrayList<SourceFile>();
+        for(String objFileName : getObjectFiles(objFolderName)) {
+            list.addAll(getSourceFileProperties(objFileName));
+        }
+        return list;
     }
 
     public static List<SourceFile> getSourceFileProperties(String objFileName) {
@@ -132,15 +144,15 @@ public class CompileLineService {
         private SourceFile(CompilationUnit cu) throws IOException, Exception {
             compileLine = cu.getCommandLine();
             if (compileLine == null) {
-                throw new Exception("Dwarf information dies not contain compile line");  // NOI18N
+                throw new Exception("Dwarf information does not contain compile line");  // NOI18N
             }
             compileDir = cu.getCompilationDir();
             if (compileDir == null) {
-                throw new Exception("Dwarf information dies not contain compile dir");  // NOI18N
+                throw new Exception("Dwarf information does not contain compile dir");  // NOI18N
             }
             sourceFile = cu.getSourceFileName();
             if (sourceFile == null) {
-                throw new Exception("Dwarf information dies not contain source file name");  // NOI18N
+                throw new Exception("Dwarf information does not contain source file name");  // NOI18N
             }
         }
 
@@ -278,4 +290,59 @@ public class CompileLineService {
             return res;
         }
     }
+
+    private static Set<String> getObjectFiles(String root){
+        HashSet<String> set = new HashSet<String>();
+        gatherSubFolders(new File(root), set);
+        HashSet<String> map = new HashSet<String>();
+        for (Iterator<String> it = set.iterator(); it.hasNext();){
+            File d = new File(it.next());
+            if (d.exists() && d.isDirectory() && d.canRead()){
+                File[] ff = d.listFiles();
+                for (int i = 0; i < ff.length; i++) {
+                    if (ff[i].isFile()) {
+                        String name = ff[i].getName();
+                        if (name.endsWith(".o") ||  // NOI18N
+                            name.endsWith(".so") || // NOI18N
+                            name.endsWith(".a") ||  // NOI18N
+                            isExecutable(ff[i])){
+                            String path = ff[i].getAbsolutePath();
+                            map.add(path);
+                        }
+                    }
+                }
+            }
+        }
+        return map;
+    }
+
+    private static boolean isExecutable(File file){
+        String name = file.getName();
+        return name.indexOf('.') < 0;
+    }
+
+    private static void gatherSubFolders(File d, HashSet<String> set){
+        if (d.exists() && d.isDirectory() && d.canRead()){
+            if (ignoreFolder(d)){
+                return;
+            }
+            String path = d.getAbsolutePath();
+            if (!set.contains(path)){
+                set.add(path);
+                File[] ff = d.listFiles();
+                for (int i = 0; i < ff.length; i++) {
+                    gatherSubFolders(ff[i], set);
+                }
+            }
+        }
+    }
+
+    private static boolean ignoreFolder(File file){
+        if (file.isDirectory()) {
+            String name = file.getName();
+            return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache") || name.equals(".svn"); // NOI18N
+        }
+        return false;
+    }
+
 }

@@ -41,16 +41,81 @@
 
 package org.openide.util;
 
+import java.awt.Button;
+import java.awt.Canvas;
+import java.awt.Checkbox;
+import java.awt.CheckboxMenuItem;
+import java.awt.Choice;
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.awt.Dialog;
+import java.awt.Dialog.ModalExclusionType;
+import java.awt.Dialog.ModalityType;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.FileDialog;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Frame;
+import java.awt.HeadlessException;
+import java.awt.Image;
+import java.awt.Label;
+import java.awt.Menu;
+import java.awt.MenuBar;
+import java.awt.MenuItem;
+import java.awt.Panel;
+import java.awt.Point;
+import java.awt.PopupMenu;
+import java.awt.PrintJob;
+import java.awt.ScrollPane;
+import java.awt.Scrollbar;
+import java.awt.TextArea;
+import java.awt.TextField;
+import java.awt.Toolkit;
+import java.awt.Window;
+import java.awt.datatransfer.Clipboard;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.InvalidDnDOperationException;
+import java.awt.dnd.peer.DragSourceContextPeer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.im.InputMethodHighlight;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.ImageObserver;
+import java.awt.image.ImageProducer;
+import java.awt.peer.ButtonPeer;
+import java.awt.peer.CanvasPeer;
+import java.awt.peer.CheckboxMenuItemPeer;
+import java.awt.peer.CheckboxPeer;
+import java.awt.peer.ChoicePeer;
+import java.awt.peer.DesktopPeer;
+import java.awt.peer.DialogPeer;
+import java.awt.peer.FileDialogPeer;
+import java.awt.peer.FontPeer;
+import java.awt.peer.FramePeer;
+import java.awt.peer.LabelPeer;
+import java.awt.peer.ListPeer;
+import java.awt.peer.MenuBarPeer;
+import java.awt.peer.MenuItemPeer;
+import java.awt.peer.MenuPeer;
+import java.awt.peer.PanelPeer;
+import java.awt.peer.PopupMenuPeer;
+import java.awt.peer.ScrollPanePeer;
+import java.awt.peer.ScrollbarPeer;
+import java.awt.peer.TextAreaPeer;
+import java.awt.peer.TextFieldPeer;
+import java.awt.peer.WindowPeer;
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -146,11 +211,6 @@ public class UtilitiesTest extends NbTestCase {
         assertTrue ("freebsd isUnix", Utilities.isUnix ());
     }
 
-    // XXX sorry, but NoCustomCursorToolkit does not compile on JDK 6:
-    // org.openide.util.UtilitiesTest.NoCustomCursorToolkit is not abstract and does not override abstract method isModalExclusionTypeSupported(java.awt.Dialog.ModalExclusionType) in java.awt.Toolkit
-    // and since Toolkit is not an interface, we can't use java.lang.reflect.Proxy to solve the problem...
-    // Filed as #6313637.
-    /*
     public void testCustomCursorNotSupported() {
         NoCustomCursorToolkit toolkit = new NoCustomCursorToolkit();
         CustomToolkitComponent c = new CustomToolkitComponent( toolkit );
@@ -160,7 +220,6 @@ public class UtilitiesTest extends NbTestCase {
         assertTrue( "getBestCursorSize was called", toolkit.getBestCursorSizeCalled );
         assertFalse( "no custom cursor created", toolkit.createCustomCursorCalled );
     }
-     */
 
     public void testKeyConversions() throws Exception {
         assertEquals("CS-F1", Utilities.keyToString(KeyStroke.getKeyStroke(KeyEvent.VK_F1, KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK)));
@@ -353,7 +412,6 @@ public class UtilitiesTest extends NbTestCase {
         }
     }
 
-    /*
     private static class CustomToolkitComponent extends Component {
         private Toolkit customToolkit;
         
@@ -543,8 +601,22 @@ public class UtilitiesTest extends NbTestCase {
             getBestCursorSizeCalled = true;
             return new Dimension(0,0);
         }
+
+        @Override
+        protected DesktopPeer createDesktopPeer(Desktop target) throws HeadlessException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean isModalityTypeSupported(ModalityType modalityType) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean isModalExclusionTypeSupported(ModalExclusionType modalExclusionType) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
-     */
 
     public static final class AwtBridgeImpl extends AWTBridge {
         public JPopupMenu createEmptyPopup() {

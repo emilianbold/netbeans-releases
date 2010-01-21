@@ -40,7 +40,6 @@
 package org.netbeans.modules.keyring;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -70,23 +69,13 @@ public class Utils {
 
     /** Tries to set permissions on preferences storage file to -rw------- */
     public static void goMinusR(Preferences p) {
-        Method setReadable;
-        try {
-            setReadable = File.class.getMethod("setReadable", boolean.class, boolean.class);
-        } catch (NoSuchMethodException x) {
-            return; // JDK 1.5
-        }
         File props = new File(System.getProperty("netbeans.user"), ("config/Preferences" + p.absolutePath()).replace('/', File.separatorChar) + ".properties");
         if (props.isFile()) {
-            try {
-                setReadable.invoke(props, false, false); // seems to be necessary, not sure why
-                setReadable.invoke(props, true, true);
-                LOG.fine("chmod go-r " + props);
-            } catch (Exception x) {
-                LOG.log(Level.WARNING, "could not chmod go-r " + props, x);
-            }
+            props.setReadable(false, false); // seems to be necessary, not sure why
+            props.setReadable(true, true);
+            LOG.log(Level.FINE, "chmod go-r {0}", props);
         } else {
-            LOG.fine("no such file to chmod: " + props);
+            LOG.log(Level.FINE, "no such file to chmod: {0}", props);
         }
     }
 

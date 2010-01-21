@@ -147,7 +147,13 @@ public final class AnnotationsHighlighting extends AbstractHighlightsContainer i
         final OffsetsBag b = new OffsetsBag(document, true);
         
         for(int line = annotations.getNextLineWithAnnotation(0); line != -1; line = annotations.getNextLineWithAnnotation(line + 1)) {
-            refreshLine(line, b, -1, -1);
+            try {
+                refreshLine(line, b, -1, -1);
+            } catch (Exception e) {
+                // ignore, refreshLine is intentionally called outside of the document lock
+                // in order not to block editing
+                return;
+            }
         }
 
         document.render(new Runnable() {

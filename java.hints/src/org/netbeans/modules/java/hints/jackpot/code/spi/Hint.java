@@ -49,12 +49,13 @@ import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
  *
  * @author lahvac
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.SOURCE)
 public @interface Hint {
     public String id() default "";
     public String category();
     public boolean enabled() default true;
 //    public HintSeverity severity() default HintSeverity.WARNING;
     public String[] suppressWarnings() default {};
+    public Class<?> customizerProvider() default Void.class;
 }

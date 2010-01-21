@@ -73,13 +73,11 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
-import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -384,11 +382,11 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
         if (o.equals ("NoInfo")) // NOI18N
             return true;
         if (o instanceof JPDAClassType) return false;
-        if (o instanceof Operation) return !JPDAUtils.IS_JDK_16;
+        if (o instanceof Operation) return false;
         if (o == "lastOperations") return false;
         if (o == NO_DEBUG_INFO) return true;
         if (o instanceof String && ((String) o).startsWith("operationArguments")) { // NOI18N
-            return !JPDAUtils.IS_JDK_16;
+            return false;
         }
         throw new UnknownTypeException (o);
     }

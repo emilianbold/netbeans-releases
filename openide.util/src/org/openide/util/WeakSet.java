@@ -57,7 +57,7 @@ import java.util.logging.Logger;
 
 /** Set which holds its members by using of WeakReferences.
 * MT level: unsafe.
- * <p><strong>Note:</strong> as of JDK 6.0 (b51), you can instead use
+ * <p><strong>Note:</strong> you can instead use
  * <pre>
  * Set&lt;T&gt; s = Collections.newSetFromMap(new WeakHashMap&lt;T, Boolean&gt;());
  * </pre>

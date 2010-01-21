@@ -51,7 +51,7 @@ import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentStatus;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentStatus;
 
 /**
  *

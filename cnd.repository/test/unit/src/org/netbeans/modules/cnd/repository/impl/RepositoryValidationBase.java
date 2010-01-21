@@ -177,7 +177,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
             file.mkdirs();
         }
         if (file.list().length == 0){
-            execute("wget", dataPath, "http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/li/litesql/litesql-0.3.3.tar.gz");
+            execute("wget", dataPath, "http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.3/litesql-0.3.3.tar.gz");
             execute("gzip", dataPath, "-d", "litesql-0.3.3.tar.gz");
             execute("tar", dataPath, "xf", "litesql-0.3.3.tar");
         }

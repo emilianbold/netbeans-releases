@@ -103,8 +103,6 @@ public class CustomClientPojoCodeGenerator extends SaasClientCodeGenerator {
     
     @Override 
     protected void preGenerate() throws IOException {
-        JavaUtil.addJaxbLib(getProject());
-        
         createRestConnectionFile(getProject());
         
         //add JAXB Classes, etc, if available

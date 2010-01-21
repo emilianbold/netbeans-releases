@@ -84,7 +84,7 @@ public class HelpAction extends SystemAction
         private static WindowActivatedDetector detector = null;
 
         static synchronized void install() {
-            if (detector == null) {
+            if (detector == null && !GraphicsEnvironment.isHeadless()) {
                 detector = new WindowActivatedDetector();
                 Toolkit.getDefaultToolkit ().addAWTEventListener(detector, AWTEvent.WINDOW_EVENT_MASK);
             }

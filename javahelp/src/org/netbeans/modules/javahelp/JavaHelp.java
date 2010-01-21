@@ -56,8 +56,6 @@ import java.awt.event.AWTEventListener;
 import java.awt.event.WindowEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -145,13 +143,6 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
     
     private ProgressHandle progressHandle = null;
     
-    private static final boolean isJdk15;
-    
-    static {
-        String javaVersion = System.getProperty("java.version");
-        isJdk15 = javaVersion.startsWith("1.5");
-    }
-
     /** Get the master help set that others will be merged into.
      * @return the master help set
      */
@@ -1007,136 +998,11 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
 
     // XXX(ttran) see JDK bug 5092094 for details
     
-    private static int modalExcludedSupported = -1;
-    
     private static boolean isModalExcludedSupported() {
-        if (modalExcludedSupported == -1) {
-            modalExcludedSupported = 0;
-            if (isJdk15) {
-                try {
-                    Class<?> clazz = Class.forName("sun.awt.SunToolkit"); // NOI18N
-                    Method m = clazz.getMethod("isModalExcludedSupported"); // NOI18N
-                    Boolean b = (Boolean) m.invoke(null);
-                    modalExcludedSupported = b.booleanValue() ? 1 : 0;
-                    Installer.log.fine("isModalExcludedSupported = " + modalExcludedSupported); // NOI18N
-                } catch (ThreadDeath ex) {
-                    throw ex;
-                } catch (Throwable ex) {
-                    Installer.log.info("isModalExcludedSupported() failed  " + ex); // NOI18N
-                }
-            } else {
-                //Newer JDK version
-                Class typeClass = null;
-                try {
-                    typeClass = Class.forName("java.awt.Dialog$ModalExclusionType");
-                } catch (ClassNotFoundException ex) {
-                    Installer.log.info("Cannot get class java.awt.Dialog$ModalExclusionType " + ex); // NOI18N
-                    return false;
-                }
-                Method isSupportedMethod = null;
-                try {
-                    isSupportedMethod = Toolkit.class.getMethod("isModalExclusionTypeSupported", typeClass);
-                } catch (NoSuchMethodException ex) {
-                    Installer.log.info("Cannot get method isModalExcludedSupported " + ex); // NOI18N
-                    return false;
-                }
-                Method methodValues = null;
-                try {
-                    methodValues = typeClass.getMethod("valueOf", String.class);
-                } catch (NoSuchMethodException ex) {
-                    Installer.log.info("Cannot get method valueOf " + ex); // NOI18N
-                    return false;
-                }
-                Object modalityExclusionType = null;
-                try {
-                    modalityExclusionType = methodValues.invoke(null, "APPLICATION_EXCLUDE");
-                } catch (IllegalAccessException ex) {
-                    Installer.log.info("Cannot invoke method valueOf " + ex); // NOI18N
-                    return false;
-                } catch (InvocationTargetException ex) {
-                    Installer.log.info("Cannot invoke method valueOf " + ex); // NOI18N
-                    return false;
-                }
-                try {
-                    Boolean b = (Boolean) isSupportedMethod.invoke(Toolkit.getDefaultToolkit(),modalityExclusionType);
-                    modalExcludedSupported = b.booleanValue() ? 1 : 0;
-                    Installer.log.fine("isModalExcludedSupported = " + modalExcludedSupported); // NOI18N
-                } catch (IllegalAccessException ex) {
-                    Installer.log.info("Cannot invoke method isModalExcludedSupported " + ex); // NOI18N
-                    return false;
-                } catch (InvocationTargetException ex) {
-                    Installer.log.info("Cannot invoke method isModalExcludedSupported " + ex); // NOI18N
-                    return false;
-                }
-            }
-        }
-        return modalExcludedSupported == 1;
+        return Toolkit.getDefaultToolkit().isModalExclusionTypeSupported(Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
     }
     
     private static void setModalExcluded(Window window) {
-        if (modalExcludedSupported == 0) {
-            return;
-        }
-        
-        if (isJdk15) {
-            try {
-                Class<?> clazz = Class.forName("sun.awt.SunToolkit"); // NOI18N
-                Method m = clazz.getMethod("setModalExcluded", Window.class); // NOI18N
-                m.invoke(null, window);
-            } catch (ThreadDeath ex) {
-                throw ex;
-            } catch (Throwable ex) {
-                Installer.log.info("setModalExcluded(Window) failed  " + ex); // NOI18N
-                modalExcludedSupported = 0;
-            }
-        } else {
-            Class typeClass = null;
-            try {
-                typeClass = Class.forName("java.awt.Dialog$ModalExclusionType");
-            } catch (ClassNotFoundException ex) {
-                Installer.log.info("Cannot get class java.awt.Dialog$ModalExclusionType " + ex); // NOI18N
-                modalExcludedSupported = 0;
-                return;
-            }
-            Method methodValues = null;
-            try {
-                methodValues = typeClass.getMethod("valueOf", String.class);
-            } catch (NoSuchMethodException ex) {
-                Installer.log.info("Cannot get method valueOf(String) " + ex); // NOI18N
-                modalExcludedSupported = 0;
-                return;
-            }
-            Object modalityExclusionType = null;
-            try {
-                modalityExclusionType = methodValues.invoke(null, new Object [] {"APPLICATION_EXCLUDE"});
-            } catch (IllegalAccessException ex) {
-                Installer.log.info("Cannot invoke method valueOf(String) " + ex); // NOI18N
-                modalExcludedSupported = 0;
-                return;
-            } catch (InvocationTargetException ex) {
-                Installer.log.info("Cannot invoke method valueOf(String) " + ex); // NOI18N
-                modalExcludedSupported = 0;
-                return;
-            }
-            Method setMethod = null;
-            try {
-                setMethod = Window.class.getMethod("setModalExclusionType", typeClass); // NOI18N
-            } catch (NoSuchMethodException ex) {
-                Installer.log.info("Cannot get method setModalExclusionType " + ex); // NOI18N
-                modalExcludedSupported = 0;
-                return;
-            }
-            try {
-                setMethod.invoke(window,modalityExclusionType);
-            } catch (IllegalAccessException ex) {
-                Installer.log.info("Cannot invoke method setModalExclusionType " + ex); // NOI18N
-                modalExcludedSupported = 0;
-                return;
-            } catch (InvocationTargetException ex) {
-                Installer.log.info("Cannot invoke method setModalExclusionType " + ex); // NOI18N
-                modalExcludedSupported = 0;
-                return;
-            }
-        }
+        window.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
     }
 }

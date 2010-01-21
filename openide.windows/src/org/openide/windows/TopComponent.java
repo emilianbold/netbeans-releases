@@ -91,10 +91,10 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
-import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -243,6 +243,8 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      */
     public static final String PROP_MAXIMIZATION_DISABLED = "netbeans.winsys.tc.maximization_disabled"; //NOI18N
 
+    private transient String modeName;
+
     /** Create a top component.
     */
     public TopComponent() {
@@ -268,6 +270,46 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         // XXX What to do in case nothing in TopComponent is focusable?
         setFocusable(false);
         initActionMap(lookup);
+    }
+
+    private static final String MODE_ID_PREFERENCES_KEY_INFIX = "_modeId_"; //NOI18N
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if (isPersistLocation()) {
+            Mode m = WindowManager.getDefault().findMode(this);
+            if (m != null) {
+                modeName = m.getName();
+                if (modeName == null) {
+                    modeName = getClass().getAnnotation(
+                               RetainLocation.class).value();
+                }
+                NbPreferences.forModule(getClass()).put(getModeIdKey(), modeName);
+            }
+        }
+    }
+
+    private boolean isPersistLocation() {
+        boolean result = getPersistenceType() == PERSISTENCE_NEVER &&
+               getClass().getAnnotation(RetainLocation.class) != null;
+        assert annotationAndPersistenceTypeAreCompatible();
+        return result;
+    }
+
+    private boolean annotationAndPersistenceTypeAreCompatible() {
+        if (getPersistenceType() != PERSISTENCE_NEVER &&
+            getClass().getAnnotation(RetainLocation.class) != null) {
+            Logger.getLogger(TopComponent.class.getName()).log(Level.WARNING,
+                "Useless to annotate a TopComponent with @RetainLocation if " + //NOI18N
+                "its persistence type is not PERSISTENCE_NEVER: {0}", //NOI18N
+                new Object[] { getClass().getName() });
+        }
+        return true;
+    }
+
+    private String getModeIdKey() {
+        return getClass().getName() + MODE_ID_PREFERENCES_KEY_INFIX + 
+                WindowManager.getDefault().findTopComponentID(this);
     }
 
     // It is necessary so the old actions (clone and close from org.openide.actions package) remain working.
@@ -432,6 +474,17 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * @deprecated Use {@link #open()} instead. */
     @Deprecated
     public void open(Workspace workspace) {
+        if (isPersistLocation()) {
+            modeName = NbPreferences.forModule(getClass()).get(getModeIdKey(), null);
+            if (modeName == null) {
+                modeName = getClass().getAnnotation(
+                           RetainLocation.class).value();
+            }
+            Mode mode = WindowManager.getDefault().findMode(modeName);
+            if (mode != null) {
+                mode.dockInto(this);
+            }
+        }
         WindowManager.getDefault().topComponentOpen(this);
     }
     

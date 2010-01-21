@@ -41,77 +41,17 @@
 
 package org.netbeans.modules.reglib;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
+import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
- * BrowserSupport class.
- *
- * The implementation of the com.sun.servicetag API needs to be
- * compiled with JDK 5 as well since the consumer of this API
- * may require to support JDK 5 (e.g. NetBeans). 
- *
- * The Desktop.browse() method can be backported in this class 
- * if needed.  The current implementation only supports JDK 6.
+ * Wraps {@link Desktop}.
  */
 public class BrowserSupport {
-    private final static boolean isBrowseSupported;
-    private final static Method browseMethod;
-    private final static Object desktop;
-
-    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.reglib.BrowserSupport"); // NOI18N
-    
-
-    static {
-        boolean supported = false;
-        Method browseM = null;
-        Object desktopObj = null;
-        try {
-            // Determine if java.awt.Desktop is supported
-            Class desktopCls = Class.forName("java.awt.Desktop", true, null);
-            Method getDesktopM = desktopCls.getMethod("getDesktop"); 
-            browseM = desktopCls.getMethod("browse", URI.class); 
-
-            Class actionCls = Class.forName("java.awt.Desktop$Action", true, null);
-            Method isDesktopSupportedMethod = desktopCls.getMethod("isDesktopSupported"); 
-            Method isSupportedMethod = desktopCls.getMethod("isSupported", actionCls); 
-            Field browseField = actionCls.getField("BROWSE");
-
-            // support only if Desktop.isDesktopSupported() and 
-            // Desktop.isSupported(Desktop.Action.BROWSE) return true.
-            Boolean result = (Boolean) isDesktopSupportedMethod.invoke(null);
-            if (result.booleanValue()) {
-                desktopObj = getDesktopM.invoke(null);
-                result = (Boolean) isSupportedMethod.invoke(desktopObj, browseField.get(null));
-                supported = result.booleanValue();
-            }
-        } catch (ClassNotFoundException e) {
-            LOG.log(Level.INFO,"Browser not supported:");
-        } catch (NoSuchMethodException e) {
-            LOG.log(Level.INFO,"Browser not supported:");
-        } catch (NoSuchFieldException e) {
-            LOG.log(Level.INFO,"Browser not supported:");
-        } catch (IllegalAccessException e) {
-            // should never reach here
-            InternalError x = 
-                new InternalError("Desktop.getDesktop() method not found");
-            x.initCause(e);
-                throw x;
-        } catch (InvocationTargetException e) {
-            LOG.log(Level.INFO,"Browser not supported:");
-        }
-        isBrowseSupported = supported;
-        browseMethod = browseM;
-        desktop = desktopObj;
-    }
 
     public static boolean isSupported() {
-        return isBrowseSupported; 
+        return Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE);
     }
 
     /**
@@ -127,8 +67,6 @@ public class BrowserSupport {
      * @param uri the URI to be displayed in the user default browser
      *
      * @throws NullPointerException if {@code uri} is {@code null}
-     * @throws UnsupportedOperationException if the current platform
-     * does not support the {@link Desktop.Action#BROWSE} action
      * @throws IOException if the user default browser is not found,
      * or it fails to be launched, or the default handler application
      * failed to be launched
@@ -139,34 +77,6 @@ public class BrowserSupport {
         if (uri == null) {
             throw new NullPointerException("null uri");
         }
-        if (!isSupported()) {
-            throw new UnsupportedOperationException("Browse operation is not supported");
-        }
-
-        // Call Desktop.browse() method
-        try { 
-            browseMethod.invoke(desktop, uri);
-        } catch (IllegalAccessException e) {
-            // should never reach here
-            InternalError x = 
-                new InternalError("Desktop.getDesktop() method not found");
-            x.initCause(e);
-                throw x;
-        } catch (InvocationTargetException e) {
-            Throwable x = e.getCause();
-            if (x != null) {
-                if (x instanceof UnsupportedOperationException) {
-                    throw (UnsupportedOperationException) x;
-                } else if (x instanceof IllegalArgumentException) {
-                    throw (IllegalArgumentException) x;
-                } else if (x instanceof IOException) {
-                    throw (IOException) x;
-                } else if (x instanceof SecurityException) {
-                    throw (SecurityException) x;
-                } else {
-                    // ignore
-                } 
-            } 
-        }
+        Desktop.getDesktop().browse(uri);
     }
 }
