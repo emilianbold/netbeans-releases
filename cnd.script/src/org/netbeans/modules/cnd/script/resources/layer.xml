@@ -300,7 +300,7 @@
         <folder name="MakeTemplates">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
             <attr name="position" intvalue="850"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/makefiles.html"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/script/resources/makefiles.html"/>
 
             <file name="ComplexMakefile">
                 <attr name="position" intvalue="100"/>
