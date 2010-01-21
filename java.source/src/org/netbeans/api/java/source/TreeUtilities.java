@@ -94,13 +94,14 @@ public final class TreeUtilities {
     /**Checks whether the given tree represents a class.
      */
     public boolean isClass(ClassTree tree) {
-        throw new UnsupportedOperationException();
+        return (((JCTree.JCModifiers)tree.getModifiers()).flags & (Flags.INTERFACE | Flags.ENUM | Flags.ANNOTATION)) == 0;
     }
     
     /**Checks whether the given tree represents an interface.
      */
     public boolean isInterface(ClassTree tree) {
-        return (((JCTree.JCModifiers)tree.getModifiers()).flags & Flags.INTERFACE) != 0;
+        final long flags = ((JCTree.JCModifiers) tree.getModifiers()).flags;
+        return (flags & Flags.INTERFACE) != 0 && (flags & Flags.ANNOTATION) == 0;
     }
     
     /**Checks whether the given tree represents an enum.
