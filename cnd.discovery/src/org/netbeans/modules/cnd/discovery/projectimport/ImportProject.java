@@ -505,6 +505,14 @@ public class ImportProject implements PropertyChangeListener {
                 CMakeAction.performAction(node, listener, null, makeProject, null);
             } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
                 QMakeAction.performAction(node, listener, null, makeProject, null);
+            } else {
+                if (TRACE) {
+                    logger.log(Level.INFO, "#Configure script does not supported"); // NOI18N
+                }
+                importResult.put(Step.Configure, State.Fail);
+                importResult.put(Step.MakeClean, State.Skiped);
+                switchModel(true);
+                postModelDiscovery(true);
             }
         } catch (DataObjectNotFoundException e) {
             isFinished = true;
