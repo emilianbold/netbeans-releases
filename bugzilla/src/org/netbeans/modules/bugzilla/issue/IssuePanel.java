@@ -164,6 +164,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         // Comments panel
         commentsPanel = new CommentsPanel();
         commentsPanel.setNewCommentHandler(new CommentsPanel.NewCommentHandler() {
+            @Override
             public void append(String text) {
                 addCommentArea.append(text);
                 addCommentArea.requestFocus();
@@ -191,6 +192,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadForm(force);
         } else {
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     reloadForm(force);
                 }
@@ -199,6 +201,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     PropertyChangeListener cacheListener = new PropertyChangeListener() {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getSource() != IssuePanel.this.issue) {
                 return;
@@ -216,6 +219,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     public void setIssue(BugzillaIssue issue) {
         if (this.issue == null) {
             issue.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
                         reloadFormInAWT(false);
@@ -227,23 +231,29 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             IssueCacheUtils.addCacheListener(issue, cacheListener);
 
             summaryField.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     changedUpdate(e);
                 }
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     changedUpdate(e);
                 }
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     updateNoSummary();
                 }
             });
             keywordsField.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     changedUpdate(e);
                 }
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     changedUpdate(e);
                 }
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     updateInvalidKeyword();
                 }
@@ -677,6 +687,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private void initAssignedCombo() {
         assignedCombo.setRenderer(new RepositoryUserRenderer());
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 BugzillaRepository repository = issue.getBugzillaRepository();
                 final Collection<RepositoryUser> users = repository.getUsers();
@@ -685,6 +696,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     assignedModel.addElement(user);
                 }
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         reloading = true;
                         try {
@@ -883,14 +895,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void attachHideStatusListener() {
         assignedField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 changedUpdate(e);
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 changedUpdate(e);
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 if (!reloading) {
                     assignedToStatusLabel.setVisible(false);
@@ -1056,9 +1071,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             // listens on events comming from the tasklist, like when an issue is removed, etc.
             // needed to correctly update tasklistButton label and status
             tasklistListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (BugzillaIssueProvider.PROPERTY_ISSUE_REMOVED.equals(evt.getPropertyName()) && issue.equals(evt.getOldValue())) {
                         Runnable inAWT = new Runnable() {
+                            @Override
                             public void run() {
                                 updateTasklistButton();
                             }
@@ -1078,6 +1095,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private void updateTasklistButton() {
         tasklistButton.setEnabled(false);
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 BugzillaIssueProvider provider = BugzillaIssueProvider.getInstance();
                 if (provider == null || issue.isNew()) { // do not enable button for new issues
@@ -1088,6 +1106,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     attachTasklistListener(provider);
                 }
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         String tasklistMessage = NbBundle.getMessage(IssuePanel.class,
                                 isInTasklist ? "IssuePanel.tasklistButton.remove" : "IssuePanel.tasklistButton.add"); // NOI18N
@@ -2037,6 +2056,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         skipReload = true;
         enableComponents(false);
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 boolean ret = false;
                 try {
@@ -2053,6 +2073,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     }
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             enableComponents(true);
                             skipReload = false;
@@ -2124,11 +2145,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         skipReload = true;
         enableComponents(false);
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     issue.refresh();
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             enableComponents(true);
                             skipReload = false;
@@ -2229,9 +2252,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         skipReload = true;
         enableComponents(false);
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 issue.getBugzillaRepository().refreshConfiguration();
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             reloading = true;
@@ -2412,18 +2437,22 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         return getMinimumSize(); // Issue 176085
     }
 
+    @Override
     public Dimension getPreferredScrollableViewportSize() {
         return getPreferredSize();
     }
 
+    @Override
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
         return getUnitIncrement();
     }
 
+    @Override
     public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
         return (orientation==SwingConstants.VERTICAL) ? visibleRect.height : visibleRect.width;
     }
 
+    @Override
     public boolean getScrollableTracksViewportWidth() {
         JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
         if (scrollPane!=null) {
@@ -2448,6 +2477,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         return true;
     }
 
+    @Override
     public boolean getScrollableTracksViewportHeight() {
         return false;
     }
@@ -2470,14 +2500,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             this.label = label;
         }
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             cancelHighlight(label);
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             cancelHighlight(label);
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             cancelHighlight(label);
         }
@@ -2485,14 +2518,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     class CyclicDependencyDocumentListener implements DocumentListener {
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             changedUpdate(e);
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             changedUpdate(e);
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             Set<Integer> bugs1 = bugs(blocksField.getText());
             Set<Integer> bugs2 = bugs(dependsField.getText());
@@ -2526,20 +2562,24 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     class RevalidatingListener implements DocumentListener, Runnable {
         private boolean ignoreUpdate;
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             changedUpdate(e);
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             changedUpdate(e);
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             if (ignoreUpdate) return;
             ignoreUpdate = true;
             EventQueue.invokeLater(this);
         }
 
+        @Override
         public void run() {
             revalidate();
             repaint();
