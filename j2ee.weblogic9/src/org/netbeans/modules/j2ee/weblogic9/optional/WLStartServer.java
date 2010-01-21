@@ -526,7 +526,6 @@ public final class WLStartServer extends StartServer {
 
                 while ((System.currentTimeMillis() - start) < TIMEOUT) {
                     if (isRunning() && isRunning(stopProcess)) {
-                        // FIXME check if the stop process is running
                         serverProgress.notifyStop(StateType.RUNNING,
                                 NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName));
                         try {
