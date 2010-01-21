@@ -91,7 +91,6 @@ public class MonitorAndDeadlockTest extends NbTestCase {
         support.doContinue();
         support.waitState (JPDADebugger.STATE_STOPPED);
         
-        if (!System.getProperty("java.version").startsWith("1.5")) {
             List<MonitorInfo> mis = t.getOwnedMonitorsAndFrames();
             assertEquals(1, mis.size());
             MonitorInfo mi = mis.get(0);
@@ -103,9 +102,6 @@ public class MonitorAndDeadlockTest extends NbTestCase {
 
             mis = t.getOwnedMonitorsAndFrames();
             assertEquals(2, mis.size());
-        } else {
-            System.out.println("Monitor info not available on JDK 5.");
-        }
     }
     
     public void testDeadlock () throws Exception {

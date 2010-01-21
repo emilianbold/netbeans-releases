@@ -80,13 +80,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import org.netbeans.Stamps;
 import org.netbeans.Util;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
 /** A class that encapsulates all the splash screen things.
-*
-* @author Ian Formanek, David Peroutka, Radim Kubacki
 */
 public final class Splash implements Stamps.Updater {
 
@@ -134,10 +133,14 @@ public final class Splash implements Stamps.Updater {
             if (!s.exists("splash.png")) {
                 s.scheduleSave(this, "splash.png", false);
             } else {
-                splashScreen = SplashScreen.getSplashScreen();
-                if (splashScreen != null) {
-                    Graphics2D graphics = splashScreen.createGraphics();
-                    painter = new SplashPainter(graphics, null, false);
+                try {
+                    splashScreen = SplashScreen.getSplashScreen();
+                    if (splashScreen != null) {
+                        Graphics2D graphics = splashScreen.createGraphics();
+                        painter = new SplashPainter(graphics, null, false);
+                    }
+                } catch (RuntimeException x) {
+                    Exceptions.printStackTrace(x);
                 }
             }
             if (painter == null) {

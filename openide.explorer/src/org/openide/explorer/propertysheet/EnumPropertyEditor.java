@@ -55,33 +55,49 @@ final class EnumPropertyEditor extends PropertyEditorSupport {
         this.c = c;
     }
 
-    public String[] getTags() {
+    private Object[] getValues() {
         try {
-            Object[] values = (Object[]) c.getMethod("values").invoke(null); // NOI18N
-            String[] tags = new String[values.length];
-            for (int i = 0; i < values.length; i++) {
-                tags[i] = values[i].toString();
-            }
-            return tags;
+            return (Object[]) c.getMethod("values").invoke(null); // NOI18N
         } catch (Exception x) {
             throw new AssertionError(x);
         }
     }
 
+    @Override
+    public String[] getTags() {
+        Object[] values = getValues();
+        String[] tags = new String[values.length];
+        for (int i = 0; i < values.length; i++) {
+            tags[i] = values[i].toString();
+        }
+        return tags;
+    }
+
+    @Override
     public String getAsText() {
         Object o = getValue();
         return o != null ? o.toString() : "";
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public void setAsText(String text) throws IllegalArgumentException {
         if (text.length() > 0) {
+            Object[] values = getValues();
+            for (int i = 0; i < values.length; i++) {
+                String p = values[i].toString();
+                if (text.equals(p)) {
+                    setValue(values[i]);
+                    return;
+                }
+            }
             setValue(Enum.valueOf(c, text));
         } else {
             setValue(null);
         }
     }
 
+    @Override
     public String getJavaInitializationString() {
         Enum e = (Enum) getValue();
         return e != null ? c.getName().replace('$', '.') + '.' + e.name() : "null"; // NOI18N

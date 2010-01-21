@@ -883,12 +883,7 @@ final class BinaryFS extends FileSystem {
         /** Get all children of this folder (files and subfolders). */
         public FileObject[] getChildren() {
             initialize();
-            // 145775 - workaround of JDK 1.5 bug 6377302 (toArray is not thread safe)
-            // When JDK 1.6 is only supported, use just "return childrenMap.values().toArray(NO_CHILDREN);" instead
-            // and remove synchronized in doInitialize.
-            synchronized (this) {
                 return childrenMap.values().toArray(NO_CHILDREN);
-            }
         }
 
         /** Retrieve file or folder contained in this folder by name. */
@@ -909,7 +904,6 @@ final class BinaryFS extends FileSystem {
         protected void doInitialize(ByteBuffer sub) throws Exception {
             int files = sub.getInt();
             if (files > 0) {
-                synchronized (this) {  // 145775
                     childrenMap = new HashMap<String,BFSBase>(files*4/3+1);
                     for (int i=0; i<files; i++) { //read file desc:
                         String nm = getString(sub);   // String name
@@ -919,7 +913,6 @@ final class BinaryFS extends FileSystem {
                             new BFSFile(nm, this, off) :
                             new BFSFolder(nm, this, off));
                     }
-                }  // 145775
                 if (LayerCacheManager.err.isLoggable(Level.FINEST)) {
                     LayerCacheManager.err.log(Level.FINEST, "  children for " + getPath() + " are: " + childrenMap.keySet());
                 }
