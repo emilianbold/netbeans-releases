@@ -71,6 +71,7 @@ public final class CustomerTopComponent extends TopComponent implements Explorer
 //        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         EntityManager entityManager = Persistence.createEntityManagerFactory("CustomerDBAccessPU").createEntityManager();
         Query query = entityManager.createQuery("SELECT c FROM Customer c");
+        @SuppressWarnings("unchecked")
         List<Customer> resultList = query.getResultList();
         em.setRootContext(new CustomerRootNode(Children.create(new CustomerChildFactory(resultList), true)));
         associateLookup(ExplorerUtils.createLookup(em, getActionMap()));
@@ -89,18 +90,18 @@ public final class CustomerTopComponent extends TopComponent implements Explorer
 
         beanTreeView1 = new org.openide.explorer.view.BeanTreeView();
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(beanTreeView1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(beanTreeView1, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(beanTreeView1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 412, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(beanTreeView1, javax.swing.GroupLayout.PREFERRED_SIZE, 412, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -186,6 +187,7 @@ public final class CustomerTopComponent extends TopComponent implements Explorer
     public static void refreshNode() {
         EntityManager entityManager = Persistence.createEntityManagerFactory("CustomerDBAccessPU").createEntityManager();
         Query query = entityManager.createQuery("SELECT c FROM Customer c");
+        @SuppressWarnings("unchecked")
         List<Customer> resultList = query.getResultList();
         em.setRootContext(new CustomerRootNode(Children.create(new CustomerChildFactory(resultList), true)));
     }
