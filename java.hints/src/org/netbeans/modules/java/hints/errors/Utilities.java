@@ -529,6 +529,26 @@ public class Utilities {
 
         Element el = info.getTrees().getElement(tp);
 
-        return el != null && el.getKind() == ElementKind.FIELD && ((VariableElement) el).getConstantValue() instanceof String;
+        if (el != null && el.getKind() == ElementKind.FIELD && ((VariableElement) el).getConstantValue() instanceof String) {
+            return true;
+        }
+
+        if (tp.getLeaf().getKind() != Kind.PLUS) {
+            return false;
+        }
+
+        List<List<TreePath>> sorted = splitStringConcatenationToElements(info, tp);
+
+        if (sorted.size() != 1) {
+            return false;
+        }
+
+        List<TreePath> part = sorted.get(0);
+
+        if (!part.isEmpty() && isConstantString(info, part.get(0))) {
+            return true;
+        }
+
+        return false;
     }
 }
