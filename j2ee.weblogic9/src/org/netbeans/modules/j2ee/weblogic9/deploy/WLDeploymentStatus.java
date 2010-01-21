@@ -38,56 +38,64 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.j2ee.weblogic9.deploy;
 
-package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
-
-import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
-import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
-import org.openide.windows.InputOutput;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.StateType;
+import javax.enterprise.deploy.spi.status.DeploymentStatus;
 
 /**
+ * An implementation of the DeploymentStatus interface used to track the
+ * server start/stop progress.
  *
- * @author Libor Kotouc
+ * @author Kirill Sorokin
  */
-public class OpenServerLogAction extends NodeAction {
-    
-    public OpenServerLogAction() {
+public final class WLDeploymentStatus implements DeploymentStatus {
+
+    private final ActionType action;
+
+    private final CommandType command;
+
+    private final StateType state;
+
+    private final String message;
+
+    public WLDeploymentStatus(ActionType action, CommandType command,
+            StateType state, String message) {
+        this.action = action;
+        this.command = command;
+        this.state = state;
+
+        this.message = message;
     }
 
-    protected boolean enable(Node[] activatedNodes) {
-        return true;
+    public String getMessage() {
+        return message;
     }
 
-    protected void performAction(Node[] activatedNodes) {
-        for (Node activatedNode : activatedNodes) {
-            Object node = activatedNode.getLookup().lookup(WLManagerNode.class);
-            
-            if (!(node instanceof WLManagerNode)) {
-                continue;
-            }
-            
-            WLDeploymentManager dm = ((WLManagerNode)node).getDeploymentManager();
-            InputOutput io = UISupport.getServerIO(dm.getUri());
-            if (io != null) {
-                io.select();
-            }
-        }        
+    public StateType getState() {
+        return state;
     }
 
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+    public CommandType getCommand() {
+        return command;
     }
 
-    public String getName() {
-        return NbBundle.getMessage(OpenServerLogAction.class, "LBL_OpenServerLogAction");
+    public ActionType getAction() {
+        return action;
     }
 
-    public boolean asynchronous() {
-        return false;
+    public boolean isRunning() {
+        return StateType.RUNNING.equals(state);
     }
-    
+
+    public boolean isFailed() {
+        return StateType.FAILED.equals(state);
+    }
+
+    public boolean isCompleted() {
+        return StateType.COMPLETED.equals(state);
+    }
+
 }

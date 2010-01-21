@@ -1731,13 +1731,22 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     }
 
     private void initializeProfiling() {
-        if (profile != null)
+        if (profile != null) {
             return;
+        }
         FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance");
-        if (fo == null) return;
-        Action a = (Action)fo.getAttribute("delegate"); // NOI18N
-        if (a == null) return;
-        profile = new Profile(a.getValue("logger-completion")); // NOI18N
+        if (fo == null) {
+            return;
+        }
+        Action a = (Action) fo.getAttribute("delegate"); // NOI18N
+        if (a == null) {
+            return;
+        }
+        Object profiler = a.getValue("logger-completion"); // NOI18N
+        if (profiler == null) {
+            return;
+        }
+        profile = new Profile(profiler);
     }
 
     private class Profile implements Runnable {

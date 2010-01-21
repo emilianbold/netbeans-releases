@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.php.project.connections.spi;
 
+import org.netbeans.api.keyring.Keyring;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.ConfigManager;
+import org.openide.util.NbBundle;
 
 /**
  * Class representing a remote configuration (e.g. FTP, SFTP).
@@ -51,21 +54,21 @@ public abstract class RemoteConfiguration {
     private final String displayName;
     private final String name;
 
+    private final String passwordKey;
+
     /**
      * Create new remote configuration based on the given {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration}
      * @param cfg {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration} with configuration data.
      */
     public RemoteConfiguration(final ConfigManager.Configuration cfg) {
-        assert cfg.getName() != null;
-        assert cfg.getDisplayName() != null;
-
-        name = cfg.getName();
-        displayName = cfg.getDisplayName();
+        this(cfg.getName(), cfg.getDisplayName());
     }
 
     protected RemoteConfiguration(String name, String displayName) {
         assert name != null;
         assert displayName != null;
+
+        passwordKey = getClass().getName() + "." + name + ".password"; // NOI18N
 
         this.name = name;
         this.displayName = displayName;
@@ -111,6 +114,33 @@ public abstract class RemoteConfiguration {
      * @return the initial directory, never <code>null</code>.
      */
     public abstract String getInitialDirectory();
+
+    /**
+     * This method is called when this remote configuration is to be saved.
+     * <p>
+     * It should return <code>true</code> if the key/value is going to be saved somehow specially
+     * (typical for e.g. password), <code>false</code> otherwise.
+     * <p>
+     * The default value is <code>false</code> (no special handling).
+     * @param key the key from the input {@link org.netbeans.modules.php.project.connections.ConfigManager.Configuration configuration data}
+     * @param value the value of the key
+     * @return <code>true</code> if the key/value is going to be saved somehow specially, <code>false</code> otherwise
+     * @see #notifyDeleted()
+     */
+    public boolean saveProperty(String key, String value) {
+        return false;
+    }
+
+    /**
+     * This method is called after this configuration is deleted.
+     * <p>
+     * Usually, in this method any cleanup can be done, typically remove {@link #saveProperty(String, String) customly saved properties} etc.
+     * <p>
+     * <b>WARNING:</b> the only known property is {@link #name}, all other properties are <code>null</code>.
+     * @see #saveProperty(String, String)
+     */
+    public void notifyDeleted() {
+    }
 
     @Override
     public boolean equals(Object obj) {
@@ -163,5 +193,32 @@ public abstract class RemoteConfiguration {
         public String getInitialDirectory() {
             return "/";
         }
+    }
+
+    protected String readPassword(ConfigManager.Configuration cfg, String key) {
+        String oldPassword = cfg.getValue(key, true);
+        if (oldPassword != null) {
+            return oldPassword;
+        }
+        char[] newPassword = Keyring.read(passwordKey);
+        if (newPassword != null) {
+            String newPasswordString = new String(newPassword);
+            cfg.putValue(key, newPasswordString, true);
+            return newPasswordString;
+        }
+        return null;
+    }
+
+    protected void savePassword(String password, String type) {
+        if (StringUtils.hasText(password)) {
+            Keyring.save(passwordKey, password.toCharArray(),
+                    NbBundle.getMessage(RemoteConfiguration.class, "MSG_PasswordFor", getDisplayName(), type));
+        } else {
+            deletePassword();
+        }
+    }
+
+    protected void deletePassword() {
+        Keyring.delete(passwordKey);
     }
 }

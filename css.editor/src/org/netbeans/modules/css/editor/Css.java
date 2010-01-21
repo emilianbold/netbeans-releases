@@ -41,6 +41,11 @@ package org.netbeans.modules.css.editor;
 
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -69,4 +74,22 @@ public class Css {
         return null;
     }
 
+
+    public static CloneableEditorSupport findCloneableEditorSupport(FileObject fo) {
+	try {
+	    DataObject dob = DataObject.find(fo);
+	    Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
+	    if (obj instanceof CloneableEditorSupport) {
+		return (CloneableEditorSupport)obj;
+	    }
+	    obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
+	    if (obj instanceof CloneableEditorSupport) {
+		return (CloneableEditorSupport)obj;
+	    }
+	} catch (DataObjectNotFoundException ex) {
+	    Exceptions.printStackTrace(ex);
+	}
+        return null;
+    }
+    
 }

@@ -40,18 +40,12 @@ package org.netbeans.modules.web.jsf.editor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.parsing.api.Source;
@@ -59,7 +53,6 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
-import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptorCache;
@@ -69,8 +62,6 @@ import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrariesCache;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -204,11 +195,7 @@ public class JsfSupport {
 
     public synchronized JsfIndex getIndex() {
         if(index == null) {
-            try {
-                this.index = JsfIndex.create(wm);
-            } catch (IOException ex) {
-                Logger.global.log(Level.SEVERE, "Cannot create index for jsf support!", ex); //NOI18N
-            }
+	    this.index = JsfIndex.create(wm);
         }
         return this.index;
     }

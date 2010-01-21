@@ -43,6 +43,7 @@ import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -58,6 +59,10 @@ public class CssElementContext {
 
     public CssParserResult getResult() {
 	return result;
+    }
+
+    public FileObject getFileObject() {
+	return result.getSnapshot().getSource().getFileObject();
     }
 
     public String getElementName() {
@@ -86,7 +91,8 @@ public class CssElementContext {
 	//XXX make it only caret position sensitive for now
 	private SimpleNode findCurrentElement() {
 	    SimpleNode root = super.getResult().root();
-	    return SimpleNodeUtil.findDescendant(root, caretOffset);
+	    int astOffset = super.getResult().getSnapshot().getEmbeddedOffset(caretOffset);
+	    return SimpleNodeUtil.findDescendant(root, astOffset);
 	}
 
 	public int getCaret() {
