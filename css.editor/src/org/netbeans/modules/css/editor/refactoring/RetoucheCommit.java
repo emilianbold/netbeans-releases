@@ -38,72 +38,62 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.weblogic9;
+package org.netbeans.modules.css.editor.refactoring;
 
-import java.util.Vector;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.modules.csl.spi.support.ModificationResult;
+import org.netbeans.modules.refactoring.spi.BackupFacility;
+import org.netbeans.modules.refactoring.spi.Transaction;
+
 /**
+ * @todo Copied from javascript module. Should be a part of either CSL or better
+ * the refactoring API.
  *
- * @author whd
+ * @author Jan Becicka
  */
-public class WLTargetModuleID implements TargetModuleID{
-    private Target target;
-    private String jar_name;
-    private String context_url;
 
-    Vector childs = new Vector();
-    TargetModuleID  parent = null;
-    public WLTargetModuleID(Target target  ){
-        this( target, "");
-
-
-    }
-    public WLTargetModuleID(Target target, String jar_name  ){
-        this.target = target;
-        this.setJARName(jar_name);
-        
-    }    
-    public void setContextURL( String context_url ){
-        this.context_url = context_url;
-    }
-    public void setJARName( String jar_name ){
-        this.jar_name = jar_name;
+public class RetoucheCommit implements Transaction {
+    ArrayList<BackupFacility.Handle> ids = new ArrayList<BackupFacility.Handle>();
+    private boolean commited = false;
+    Collection<ModificationResult> results;
+    
+    public RetoucheCommit(Collection<ModificationResult> results) {
+        this.results = results;
     }
     
-    public void setParent( WLTargetModuleID parent){
-        this.parent = parent;
-        
+    public void commit() {
+        try {
+            if (commited) {
+                for (BackupFacility.Handle id:ids) {
+                    try {
+                        id.restore();
+                    } catch (IOException ex) {
+                        throw (RuntimeException) new RuntimeException().initCause(ex);
+                    }
+                }
+            } else {
+                commited = true;
+                for (ModificationResult result:results) {
+                    ids.add(BackupFacility.getDefault().backup(result.getModifiedFileObjects()));
+                    result.commit();
+                }
+            }
+            
+        } catch (IOException ex) {
+            throw (RuntimeException) new RuntimeException().initCause(ex);
+        }
     }
     
-    public void addChild( WLTargetModuleID child) {
-        childs.add( child );
-        child.setParent( this );
-    }
-    
-    public TargetModuleID[]     getChildTargetModuleID(){
-        return (TargetModuleID[])childs.toArray(new TargetModuleID[childs.size()]);
-    }
-    //Retrieve a list of identifiers of the children of this deployed module.
-    public java.lang.String     getModuleID(){
-        return jar_name ;
-    }
-    //         Retrieve the id assigned to represent the deployed module.
-    public TargetModuleID     getParentTargetModuleID(){
-        
-        return parent;
-    }
-    //Retrieve the identifier of the parent object of this deployed module.
-    public Target     getTarget(){
-        return target;
-    }
-    //Retrieve the name of the target server.
-    public java.lang.String     getWebURL(){
-        return context_url;//"http://" + module_id; //NOI18N
-    }
-    //If this TargetModulID represents a web module retrieve the URL for it.
-    @Override
-    public java.lang.String     toString() {
-        return getModuleID() +  hashCode();
+    public void rollback() {
+        for (BackupFacility.Handle id:ids) {
+            try {
+                id.restore();
+            } catch (IOException ex) {
+                throw (RuntimeException) new RuntimeException().initCause(ex);
+            }
+        }
     }
 }
+            

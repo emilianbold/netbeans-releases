@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import java.awt.*;
 
 import javax.enterprise.deploy.spi.*;

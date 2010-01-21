@@ -92,7 +92,7 @@ public class ProprietarySecurityPolicyModelHelper {
 
     public static final String DEFAULT_LIFETIME = "300000";                     //NOI18N
     public static final String DEFAULT_CONTRACT_CLASS = "com.sun.xml.ws.security.trust.impl.IssueSamlTokenContractImpl"; //NOI18N
-    public static final String DEFAULT_CONTRACT_CLASS_METRO13 = "com.sun.xml.ws.security.trust.impl.WSTRustContractImpl"; //NOI18N
+    public static final String DEFAULT_CONTRACT_CLASS_METRO13 = "com.sun.xml.ws.security.trust.impl.WSTrustContractImpl"; //NOI18N
     public static final String DEFAULT_HANDLER_TIMESTAMP_TIMEOUT = "300";                     //NOI18N
     public static final String DEFAULT_MAXCLOCKSKEW = "300000";                     //NOI18N
     public static final String DEFAULT_TIMESTAMPFRESHNESS = "300000";                     //NOI18N
