@@ -37,8 +37,6 @@
 
     <target name="all-nbms" description="Builds all Java Card NBMs" depends="build-all-nbms,copy-all-nbms"/>
 
-    <target name="clean-build-all-nbms" description="Cleans and builds all Java Card NBMs and copies them to javacard.kit/build"/>
-
     <target name="build-all-nbms" depends="nbm">
         <ant antfile="../javacard.apdu.io/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
         <ant antfile="../javacard.common/build.xml" target="nbm" inheritall="false" inheritrefs="false"/>
@@ -78,11 +76,4 @@
             <fileset dir="../swing.customizerlayout/build"><include name="**/*.nbm"/></fileset>
         </copy>
     </target>
-
-    <target name="build-68-nbms" depends="clean-all" description="Applies dependency patches and builds NetBeans 6.8-compatible NBMs">
-        <patch dir="${basedir}/.." patchfile="nb68.diff" backups="false" ignorewhitespace="true"/>
-        <antcall target="all-nbms"/>
-        <patch dir="${basedir}/.." patchfile="nb68.diff" backups="false" ignorewhitespace="true" reverse="true"/>
-    </target>
-
     </project>
