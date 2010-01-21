@@ -41,6 +41,8 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
 
 /**
  * Notifies about thread started and dead events.
@@ -113,4 +115,34 @@ public final class ThreadBreakpoint extends JPDABreakpoint {
     public String toString () {
         return "ThreadBreakpoint " + breakpointType;
     }
+
+    //@Override
+    private Object /*public GroupProperties*/ getGroupProperties() {
+        return new ThreadGroupProperties();
+    }
+
+    private final class ThreadGroupProperties {//extends GroupProperties {
+
+        public String getType() {
+            return "Thread";
+        }
+
+        public String getLanguage() {
+            return "Java";
+        }
+
+        public FileObject[] getFiles() {
+            return null;
+        }
+
+        public Project[] getProjects() {
+            return null;
+        }
+        
+        public boolean isHidden() {
+            return ThreadBreakpoint.this.isHidden();
+        }
+
+    }
+    
 }

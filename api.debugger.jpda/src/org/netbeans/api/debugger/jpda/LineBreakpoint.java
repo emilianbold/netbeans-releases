@@ -43,6 +43,7 @@ package org.netbeans.api.debugger.jpda;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -52,6 +53,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -61,8 +64,6 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 
@@ -464,6 +465,11 @@ public class LineBreakpoint extends JPDABreakpoint {
             }
         }
 
+//        @Override
+        public Object /*GroupProperties*/ getGroupProperties() {
+            return new LineGroupProperties();
+        }
+
         public int compareTo(Object o) {
             if (o instanceof LineBreakpointImpl) {
                 LineBreakpoint lbthis = this;
@@ -557,6 +563,44 @@ public class LineBreakpoint extends JPDABreakpoint {
                 fo = newFO;
                 DebuggerManager.getDebuggerManager().addBreakpoint(this);
             }
+        }
+
+        private final class LineGroupProperties { //extends GroupProperties {
+
+            public String getType() {
+                return "Line";
+            }
+
+            public String getLanguage() {
+                return "Java";
+            }
+
+            public FileObject[] getFiles() {
+                return new FileObject[] { fo };
+            }
+
+            public Project[] getProjects() {
+                FileObject f = fo;
+                while (f != null) {
+                    f = f.getParent();
+                    if (f != null && ProjectManager.getDefault().isProject(f)) {
+                        break;
+                    }
+                }
+                if (f != null) {
+                    try {
+                        return new Project[] { ProjectManager.getDefault().findProject(f) };
+                    } catch (IOException ex) {
+                    } catch (IllegalArgumentException ex) {
+                    }
+                }
+                return null;
+            }
+
+            public boolean isHidden() {
+                return LineBreakpointImpl.this.isHidden();
+            }
+
         }
 
     }

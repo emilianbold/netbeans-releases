@@ -1,0 +1,163 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ */
+
+package org.netbeans.modules.debugger.ui.models;
+
+import java.awt.Dimension;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
+
+import org.netbeans.api.debugger.Properties;
+import org.netbeans.modules.debugger.ui.actions.AddBreakpointAction;
+import org.netbeans.modules.debugger.ui.models.BreakpointGroup.Group;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+
+/**
+ *
+ * @author Martin Entlicher
+ */
+public class BreakpointsViewButtons {
+
+    public static final String PREFERENCES_NAME = "variables_view"; // NOI18N
+    public static final String SHOW_VALUE_AS_STRING = "show_value_as_string"; // NOI18N
+
+    public static JButton createNewBreakpointActionButton() {
+        JButton button = createButton(
+                "org/netbeans/modules/debugger/resources/breakpointsView/NewBreakpoint.gif",
+                NbBundle.getMessage (BreakpointsViewButtons.class, "Hint_New_Breakpoint")
+            );
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                new AddBreakpointAction().actionPerformed(e);
+            }
+        });
+        return button;
+    }
+
+    public static synchronized JButton createGroupSelectionButton() {
+        final JButton button = createButton(
+                "org/netbeans/modules/debugger/resources/breakpointsView/BreakpointGroups_options_16.png",
+                NbBundle.getMessage (BreakpointsViewButtons.class, "Hint_Select_bp_groups")
+            );
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String[] groupNames = (String[]) Properties.getDefault().
+                        getProperties("Breakpoints").getArray("Grouping", new String[] { Group.CUSTOM.name() });
+                String brkpGroup;
+                if (groupNames.length == 0) {
+                    brkpGroup = Group.NO.name();
+                } else if (groupNames.length > 1) {
+                    brkpGroup = Group.NESTED.name();
+                } else {
+                    brkpGroup = groupNames[0];
+                }
+                JPopupMenu menu = new JPopupMenu(NbBundle.getMessage (BreakpointsViewButtons.class, "Lbl_bp_groups"));
+                for (Group group : Group.values()) {
+                    menu.add(createJRadioButtonMenuItem(group, brkpGroup));
+                }
+                menu.show(button, 16, 0);
+            }
+        });
+        return button;
+    }
+
+    private static JRadioButtonMenuItem createJRadioButtonMenuItem(Group group, String brkpGroup) {
+        JRadioButtonMenuItem gb = new JRadioButtonMenuItem(new GroupChangeAction(group));
+        gb.setSelected(brkpGroup.equals(group.name()));
+        return gb;
+    }
+
+    private static JButton createButton (String iconPath, String tooltip) {
+        Icon icon = ImageUtilities.loadImageIcon(iconPath, false);
+        final JButton button = new JButton(icon);
+        // ensure small size, just for the icon
+        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
+        button.setPreferredSize(size);
+        button.setMargin(new Insets(1, 1, 1, 1));
+        button.setToolTipText(tooltip);
+        button.setFocusable(false);
+        return button;
+    }
+
+    // **************************************************************************
+
+    private static class GroupChangeAction extends AbstractAction {
+
+        private Group group;
+
+        public GroupChangeAction(Group group) {
+            this.group = group;
+            String name = "LBL_"+group.name()+"Group"; // NOI18N
+            name = NbBundle.getMessage (BreakpointsViewButtons.class, name);
+            putValue(Action.NAME, name);
+        }
+
+
+        public void actionPerformed(ActionEvent e) {
+            if (group == Group.NESTED) {
+                BreakpointNestedGroupsDialog bngd = new BreakpointNestedGroupsDialog();
+                bngd.setDisplayedGroups((String[]) Properties.getDefault().
+                        getProperties("Breakpoints").getArray("Grouping", new String[] { Group.CUSTOM.name() }));
+                String title = NbBundle.getMessage(BreakpointNestedGroupsDialog.class, "BreakpointNestedGroupsDialog_title");
+                Object res = DialogDisplayer.getDefault().notify(new DialogDescriptor(bngd, title, true, null));
+                if (NotifyDescriptor.OK_OPTION.equals(res)) {
+                    Properties.getDefault().getProperties("Breakpoints").
+                            setArray("Grouping", bngd.getDisplayedGroups());
+                }
+            } else {
+                Properties.getDefault().getProperties("Breakpoints").setArray("Grouping", new String[] { group.name() });
+            }
+        }
+
+    }
+
+}
