@@ -383,7 +383,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
             LOG.finer("initializeIssues: reloading saved issues");      //NOI18N
             // load from storage
             Map<String, List<String>> repositoryIssues = BugzillaConfig.getInstance().getTaskListIssues();
-            if (repositoryIssues.size() == 0) {
+            if (repositoryIssues.isEmpty()) {
                 LOG.fine("initializeIssues: no saved issues");          //NOI18N
                 return;
             }
