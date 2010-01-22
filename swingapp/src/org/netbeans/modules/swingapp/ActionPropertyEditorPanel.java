@@ -357,7 +357,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         acceleratorListener.setCurrentKeyStroke((KeyStroke) act.getValue(javax.swing.Action.ACCELERATOR_KEY));
         
         
-        StringBuffer sig = new StringBuffer();
+        StringBuilder sig = new StringBuilder();
         sig.append("@Action"); // NOI18N
         if(act.isTaskEnabled()) {
             sig.append(" Task"); // NOI18N
