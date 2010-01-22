@@ -988,16 +988,16 @@ public class ActionManager {
         String getterName = "is"+prop.substring(0,1).toUpperCase() + prop.substring(1); // NOI18N
         String setterName = "set"+prop.substring(0,1).toUpperCase() + prop.substring(1); // NOI18N
         
-        buf.append(indent+"private boolean " + prop + " = false;\n"); // NOI18N
-        buf.append(indent+"public boolean " + getterName + "() {\n"); // NOI18N
-        buf.append(indent+indent+"return " + prop + ";\n"); // NOI18N
-        buf.append(indent+"}\n"); // NOI18N
+        buf.append(indent).append("private boolean ").append(prop).append(" = false;\n"); // NOI18N
+        buf.append(indent).append("public boolean ").append(getterName).append("() {\n"); // NOI18N
+        buf.append(indent).append(indent).append("return ").append(prop).append(";\n"); // NOI18N
+        buf.append(indent).append("}\n"); // NOI18N
         buf.append("\n"); // NOI18N
-        buf.append(indent+"public void "+setterName+"(boolean b) {\n"); // NOI18N
-        buf.append(indent+indent+"boolean old = " + getterName + "();\n"); // NOI18N
-        buf.append(indent+indent+"this."+prop + " = b;\n"); // NOI18N
-        buf.append(indent+indent+"firePropertyChange(\""+prop+"\", old, "+getterName+"());\n"); // NOI18N
-        buf.append(indent+"}\n\n"); // NOI18N
+        buf.append(indent).append("public void ").append(setterName).append("(boolean b) {\n"); // NOI18N
+        buf.append(indent).append(indent).append("boolean old = ").append(getterName).append("();\n"); // NOI18N
+        buf.append(indent).append(indent).append("this.").append(prop).append(" = b;\n"); // NOI18N
+        buf.append(indent).append(indent).append("firePropertyChange(\"").append(prop).append("\", old, ").append(getterName).append("());\n"); // NOI18N
+        buf.append(indent).append("}\n\n"); // NOI18N
         return buf.toString();
     }
     
