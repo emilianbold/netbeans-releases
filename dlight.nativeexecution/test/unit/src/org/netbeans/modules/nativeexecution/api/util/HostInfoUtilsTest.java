@@ -389,24 +389,26 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
             return;
         }
 
-        File testDir = new File(info.getTempDirFile(), "some dir"); // NOI18N
-        testDir.mkdir();
-        File testFile = File.createTempFile("some (", ") file", testDir); // NOI18N
-        testFile.createNewFile();
+        final File testDir = new File(info.getTempDirFile(), "some dir"); // NOI18N
+
+        if (!testDir.exists()) {
+            boolean mkdirResult = testDir.mkdir();
+            assertTrue("Failed to create directory " + testDir, mkdirResult); // NOI18N
+        }
+
+        final File testFile = File.createTempFile("some (", ") file", testDir); // NOI18N
+
+        assertTrue("Cannot create test file in " + testDir, testFile.exists() && testFile.canWrite()); // NOI18N
 
         System.out.println("Use file '" + testFile.getAbsolutePath() + "' for testing"); // NOI18N
-        try {
 
+        try {
             String result;
 
             result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows", testDir.getAbsolutePath()), testFile.getName(), true); // NOI18N
             assertNotNull(result);
 
-            if (info.getShell() != null) {
-                assertEquals(result, WindowsSupport.getInstance().convertToShellPath(testFile.getCanonicalPath()));
-            } else {
-                assertEquals(result, testFile.getCanonicalPath());
-            }
+            assertEquals(testFile.getCanonicalPath(), result);
 
             result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows", "c:\\Windows\\system32"), "cmd.exe", true); // NOI18N
             assertNotNull(result);
