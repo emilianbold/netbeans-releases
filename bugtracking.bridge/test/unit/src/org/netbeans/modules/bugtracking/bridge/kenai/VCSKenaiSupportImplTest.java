@@ -169,7 +169,7 @@ public class VCSKenaiSupportImplTest extends NbTestCase {
         List<Modification> modifications = new ArrayList<Modification>();
         modifications.add(m);
 
-        KenaiNotification kn = new KenaiNotification(date, Type.SOURCE, new URI(feature.getLocation()), "Aramis", "svn", modifications);
+        KenaiNotification kn = new KenaiNotification(date, Type.SOURCE, new URI(feature.getLocation()), "Aramis", "svn", "svn", modifications);
         PropertyChangeEvent e = new PropertyChangeEvent(kp, KenaiProject.PROP_PROJECT_NOTIFICATION, null, kn);
 
         VCSKenaiSupportImpl support = new VCSKenaiSupportImpl();
