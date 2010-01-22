@@ -99,16 +99,16 @@
         <zip destfile="${cache}/latest/${sierra.build}_${env.BUILD_NUMBER}_${time.stamp}.zip">
             <zipfileset dir="${home}/nbbuild">
                 <include name="netbeans/bin/**"/>
-                <include name="netbeans/enterprise6/**"/>
+                <include name="netbeans/enterprise/**"/>
                 <include name="netbeans/etc/**"/>
                 <include name="netbeans/harness/**"/>
-                <include name="netbeans/ide12/**"/>
-                <include name="netbeans/java3/**"/>
-                <include name="netbeans/nb6.8/**"/>
-                <include name="netbeans/platform11/**"/>
-                <include name="netbeans/soa2/**"/>
-                <include name="netbeans/websvccommon1/**"/>
-                <include name="netbeans/xml2/**"/>
+                <include name="netbeans/ide/**"/>
+                <include name="netbeans/java/**"/>
+                <include name="netbeans/nb/**"/>
+                <include name="netbeans/platform/**"/>
+                <include name="netbeans/soa/**"/>
+                <include name="netbeans/websvccommon/**"/>
+                <include name="netbeans/xml/**"/>
                 <exclude name="netbeans/**/.lastModified"/>
             </zipfileset>
         </zip>

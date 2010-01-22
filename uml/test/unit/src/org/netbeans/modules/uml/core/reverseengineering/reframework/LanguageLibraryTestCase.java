@@ -73,7 +73,7 @@ public class LanguageLibraryTestCase extends AbstractUMLTestCase
 
             String langPath = path + File.separator + "nbbuild" + 
                 File.separator + "netbeans" + File.separator +
-                "uml4" + File.separator + "modules" + File.separator + 
+                "uml" + File.separator + "modules" + File.separator + 
                 "Libraries" + File.separator;
 
             ll.setIndex(langPath + "Java16.index");

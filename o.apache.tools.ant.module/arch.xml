@@ -482,7 +482,7 @@ made subject to such option by the copyright holder.
                     <code>InstalledFileLocator</code> is used to find
                     <code>ant/lib/ant.jar</code> and the default Ant installation
                     is taken to be the parent directory of the containing directory
-                    of this (e.g. <code>ide5/ant/</code>).
+                    of this (e.g. <code>ide/ant/</code>).
                 </p>
                 <p>
                     If any files <code>ant/patches/*.jar</code> exist, they are

@@ -147,7 +147,7 @@
         <set property="javamesdk.directory" value="Java_ME_platform_SDK_3.0"/>
 
 
-        <set property="mobility.cluster"    value="mobility8"/>
+        <set property="mobility.cluster"    value="mobility"/>
 
 
         <if property="i" value="2">

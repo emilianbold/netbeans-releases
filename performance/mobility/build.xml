@@ -35,7 +35,7 @@
     <target name="prepare-wtk" depends="set-wtk-path">
         <fail unless="wtk.zipfile.name" message="Not supported platform."/>
 
-        <unzip src="${nbextra.dir}/data/${wtk.zipfile.name}" dest="${netbeans.dest.dir}/mobility8"/>
+        <unzip src="${nbextra.dir}/data/${wtk.zipfile.name}" dest="${netbeans.dest.dir}/mobility"/>
     </target>
 
 <!-- why UML is here?

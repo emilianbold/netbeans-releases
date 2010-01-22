@@ -63,7 +63,7 @@ public class ErprintSessionTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
-        System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/nbbuild/netbeans/dlight2:" + dirs);
+        System.setProperty("netbeans.dirs", "/export/home/ak119685/netbeans-src/main/nbbuild/netbeans/dlight:" + dirs);
     }
 
     @AfterClass

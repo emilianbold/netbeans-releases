@@ -23,6 +23,7 @@ trap rollback EXIT
 
 hg pull -r default -u http://hg.netbeans.org/"$push_repo"
 
+hg heads -r default
 HEADS=`hg heads -r default --template "{node}\n" | wc -l`
 if [ $HEADS = 2 ]; then
     echo "2 heads, Need to merge"

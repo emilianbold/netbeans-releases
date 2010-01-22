@@ -914,7 +914,7 @@ final class ModuleListParser {
         }
         
         /**
-         * Get the absolute JAR location, e.g. .../ide5/modules/org-netbeans-modules-ant-grammar.jar.
+         * Get the absolute JAR location, e.g. .../ide/modules/org-netbeans-modules-ant-grammar.jar.
          */
         public File getJar() {
             return jar;

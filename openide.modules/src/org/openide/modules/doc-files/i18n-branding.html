@@ -582,11 +582,11 @@ suffixes in the resource path. For example, a single JAR might have
 both default and Japanese bundles:</p>
 
 <dl>
-<dt><samp>jar:file:/netbeans/ide5/modules/mymodule.jar!/com/me/mymod/Some.class</samp></dt>
+<dt><samp>jar:file:/netbeans/ide/modules/mymodule.jar!/com/me/mymod/Some.class</samp></dt>
 <dd>(code referring to <samp>com.me.mymod.Bundle</samp>)</dd>
-<dt><samp>jar:file:/netbeans/ide5/modules/mymodule.jar!/com/me/mymod/Bundle.properties</samp></dt>
+<dt><samp>jar:file:/netbeans/ide/modules/mymodule.jar!/com/me/mymod/Bundle.properties</samp></dt>
 <dd><samp>Some_key=Some value in US English</samp></dd>
-<dt><samp>jar:file:/netbeans/ide5/modules/mymodule.jar!/com/me/mymod/Bundle_ja.properties</samp></dt>
+<dt><samp>jar:file:/netbeans/ide/modules/mymodule.jar!/com/me/mymod/Bundle_ja.properties</samp></dt>
 <dd><samp>Some_key=\u540c\u671f\u5316</samp></dd>
 </dl>
 
@@ -599,11 +599,11 @@ variants</em> off from the main contents of a module. For example, the
 module above could be stored as:</p>
 
 <dl>
-<dt><samp>jar:file:/netbeans/ide5/modules/mymodule.jar!/com/me/mymod/Some.class</samp></dt>
+<dt><samp>jar:file:/netbeans/ide/modules/mymodule.jar!/com/me/mymod/Some.class</samp></dt>
 <dd>(code referring to <samp>com.me.mymod.Bundle</samp>)</dd>
-<dt><samp>jar:file:/netbeans/ide5/modules/mymodule.jar!/com/me/mymod/Bundle.properties</samp></dt>
+<dt><samp>jar:file:/netbeans/ide/modules/mymodule.jar!/com/me/mymod/Bundle.properties</samp></dt>
 <dd><samp>Some_key=Some value in US English</samp></dd>
-<dt><samp>jar:file:/netbeans/ide5/modules/locale/mymodule_ja.jar!/com/me/mymod/Bundle_ja.properties</samp></dt>
+<dt><samp>jar:file:/netbeans/ide/modules/locale/mymodule_ja.jar!/com/me/mymod/Bundle_ja.properties</samp></dt>
 <dd><samp>Some_key=\u540c\u671f\u5316</samp></dd>
 </dl>
 
@@ -611,12 +611,12 @@ module above could be stored as:</p>
 go into a separate JAR file, named according to the master JAR but
 with an appropriate locale suffix, and placed in a subdirectory
 <samp>locale</samp> below the position of the master JAR.
-(<samp>/netbeans/ide5/lib/locale/</samp> works too to localize libraries
-present in <samp>/netbeans/ide5/lib/</samp>, and similarly
-<samp>/netbeans/ide5/modules/ext/locale/</samp>, etc.) If you are using country
+(<samp>/netbeans/ide/lib/locale/</samp> works too to localize libraries
+present in <samp>/netbeans/ide/lib/</samp>, and similarly
+<samp>/netbeans/ide/modules/ext/locale/</samp>, etc.) If you are using country
 variants or branding (see below), you can analogously split off
 multiple variants, such as
-<samp>/netbeans/ide5/modules/locale/mymodule_f4j_ce_ja.jar</samp>.</p>
+<samp>/netbeans/ide/modules/locale/mymodule_f4j_ce_ja.jar</samp>.</p>
 
 <p>Remember that resources inside locale variants must still be
 individually marked with locale suffixes! The presence of appropriate
@@ -639,11 +639,11 @@ Analogously, it is stored in the <samp>locale</samp> subdirectory with
 no suffix. For example:</p>
 
 <dl>
-<dt><samp>jar:file:/netbeans/ide5/modules/mymodule.jar!/com/me/mymod/Some.class</samp></dt>
+<dt><samp>jar:file:/netbeans/ide/modules/mymodule.jar!/com/me/mymod/Some.class</samp></dt>
 <dd>(code referring to <samp>com.me.mymod.Bundle</samp>)</dd>
-<dt><samp>jar:file:/netbeans/ide5/modules/locale/mymodule.jar!/com/me/mymod/Bundle.properties</samp></dt>
+<dt><samp>jar:file:/netbeans/ide/modules/locale/mymodule.jar!/com/me/mymod/Bundle.properties</samp></dt>
 <dd><samp>Some_key=Some value in US English</samp></dd>
-<dt><samp>jar:file:/netbeans/ide5/modules/locale/mymodule_ja.jar!/com/me/mymod/Bundle_ja.properties</samp></dt>
+<dt><samp>jar:file:/netbeans/ide/modules/locale/mymodule_ja.jar!/com/me/mymod/Bundle_ja.properties</samp></dt>
 <dd><samp>Some_key=\u540c\u671f\u5316</samp></dd>
 </dl>
 
@@ -795,8 +795,8 @@ duplicated resources.</p>
 <p>Since branding is generally used to provide product-specific overrides which ideally would live in a
 different location than the base NetBeans product, you are permitted to place branding JARs in
 parallel locations in other clusters. For example, if the NetBeans IDE lives in <samp>/opt/netbeans</samp> with
-clusters like <samp>platform5</samp> and <samp>ide5</samp>, and then
-<samp>/opt/netbeans/ide5/modules/foo.jar</samp> may be branded by
+clusters like <samp>platform</samp> and <samp>ide</samp>, and then
+<samp>/opt/netbeans/ide/modules/foo.jar</samp> may be branded by
 <samp>/opt/product1/modules/locale/foo_brand.jar</samp> if you pass <samp>--branding&nbsp;brand</samp> and
 <samp>/opt/product1</samp> is a cluster included in the NetBeans-based product.</p>
 

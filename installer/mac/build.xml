@@ -60,7 +60,7 @@
   <property name="appname" value="${netbeans.appname}"/>
   <property name="appversion" value="7.0 Development Version"/>
   <property name="version" value="7.0 Development Version"/>
-  <property name="nbClusterDir" value="nb7.0"/>
+  <property name="nbClusterDir" value="nb"/>
   
   <property name="appdir" value="build/app/${appname}.app"/>
   <property name="zipname" value="netbeans-6.1dev-macosx.zip"/>
