@@ -221,25 +221,10 @@ public class FunctionsListViewVisualizer extends JPanel implements
                 super.mouseClicked(e);
             }
         });
-
-        List<Property<?>> result = new ArrayList<Property<?>>();
         for (Column c : metrics) {
             String displayedName = columnsUIMapping == null || columnsUIMapping.getDisplayedName(c.getColumnName()) == null ? c.getColumnUName() : columnsUIMapping.getDisplayedName(c.getColumnName());
-            String displayedTooltip = columnsUIMapping == null || columnsUIMapping.getTooltip(c.getColumnName()) == null ? c.getColumnLongUName() : columnsUIMapping.getTooltip(c.getColumnName());
-            @SuppressWarnings("unchecked")
-            Property<?> property = new PropertySupport(c.getColumnName(), c.getColumnClass(),
-                    displayedName, displayedTooltip, true, false) {
-
-                @Override
-                public Object getValue() throws IllegalAccessException, InvocationTargetException {
-                    return null;
-                }
-
-                @Override
-                public void setValue(Object arg0) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                }
-            };
-            result.add(property);
+            String displayedTooltip = columnsUIMapping == null || columnsUIMapping.getTooltip(c.getColumnName()) == null ? c.getColumnLongUName() : columnsUIMapping.getTooltip(c.getColumnName());            
+            outlineView.addPropertyColumn(c.getColumnName(), displayedName, displayedTooltip);
 
         }
         //add Alt+Column Number for sorting
@@ -251,6 +236,7 @@ public class FunctionsListViewVisualizer extends JPanel implements
             outlineView.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(columnKey, "ascSortFor" + i);//NOI18N
             outlineView.getActionMap().put("ascSortFor" + i, new AbstractAction() {// NOI18N
 
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     // ok, do the sorting
                     int column = columnNumber;
@@ -284,7 +270,6 @@ public class FunctionsListViewVisualizer extends JPanel implements
 //            });
         }
         outline.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        outlineView.setProperties(result.toArray(new Property<?>[0]));
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
         KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);

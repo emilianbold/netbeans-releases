@@ -82,7 +82,7 @@ public final class NativeExecutableTargetConfiguration {
     }
 
     /**
-     * Sets wotking directory
+     * Sets working directory
      * @param workingDirectory working directory to start target
      */
     public void setWorkingDirectory(String workingDirectory) {
