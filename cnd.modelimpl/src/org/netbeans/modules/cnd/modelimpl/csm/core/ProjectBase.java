@@ -235,10 +235,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return null;
     }
 
+    @Override
     public final CsmNamespace getGlobalNamespace() {
         return _getGlobalNamespace();
     }
 
+    @Override
     public final CharSequence getName() {
         return name;
     }
@@ -274,6 +276,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /** Gets an object, which represents correspondent IDE project */
+    @Override
     public final Object getPlatformProject() {
         return platformProject;
     }
@@ -302,6 +305,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /** Finds namespace by its qualified name */
+    @Override
     public final CsmNamespace findNamespace(CharSequence qualifiedName) {
         CsmNamespace nsp = _getNamespace(qualifiedName);
         return nsp;
@@ -354,11 +358,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return result;
     }
 
+    @Override
     public final CsmClassifier findClassifier(CharSequence qualifiedName) {
         CsmClassifier result = getClassifierSorage().getClassifier(qualifiedName);
         return result;
     }
 
+    @Override
     public final Collection<CsmClassifier> findClassifiers(CharSequence qualifiedName) {
         CsmClassifier result = getClassifierSorage().getClassifier(qualifiedName);
         Collection<CsmClassifier> out = new ArrayList<CsmClassifier>();
@@ -387,10 +393,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return out;
     }
 
+    @Override
     public final CsmDeclaration findDeclaration(CharSequence uniqueName) {
         return getDeclarationsSorage().getDeclaration(uniqueName);
     }
 
+    @Override
     public final Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName) {
         return getDeclarationsSorage().findDeclarations(uniqueName);
     }
@@ -493,6 +501,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         System.err.printf("registration: %s\n", text);
     }
 
+    @Override
     public final void waitParse() {
         boolean insideParser = ParserThreadManager.instance().isParserThread();
         if (insideParser) {
@@ -641,32 +650,41 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         final Set<NativeFileItem> removedFiles = Collections.synchronizedSet(new HashSet<NativeFileItem>());
         NativeProjectItemsListener projectItemListener = new NativeProjectItemsListener() {
 
+            @Override
             public void fileAdded(NativeFileItem fileItem) {
             }
 
+            @Override
             public void filesAdded(List<NativeFileItem> fileItems) {
             }
 
+            @Override
             public void fileRemoved(NativeFileItem fileItem) {
                 removedFiles.add(fileItem);
             }
 
+            @Override
             public void filesRemoved(List<NativeFileItem> fileItems) {
                 removedFiles.addAll(fileItems);
             }
 
+            @Override
             public void fileRenamed(String oldPath, NativeFileItem newFileIetm) {
             }
 
+            @Override
             public void filePropertiesChanged(NativeFileItem fileItem) {
             }
 
+            @Override
             public void filesPropertiesChanged(List<NativeFileItem> fileItems) {
             }
 
+            @Override
             public void filesPropertiesChanged() {
             }
 
+            @Override
             public void projectDeleted(NativeProject nativeProject) {
             }
         };
@@ -919,6 +937,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (status == Status.Initial || status == Status.Restored) {
             Runnable r = new Runnable() {
 
+                @Override
                 public void run() {
                     onAddedToModelImpl(isRestored);
                     synchronized (initializationTaskLock) {
@@ -1279,7 +1298,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             APTFile aptLight = getAPTLight(csmFile);
             if (aptLight == null) {
                 // in the case file was just removed
-                Utils.LOG.info("Can not find or build APT for file " + file); //NOI18N
+                Utils.LOG.log(Level.INFO, "Can not find or build APT for file {0}", file); //NOI18N
                 return csmFile;
             }
 
@@ -1689,6 +1708,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         DeepReparsingUtils.reparseOnEdit(file, this);
     }
 
+    @Override
     public final CsmFile findFile(Object absolutePathOrNativeFileItem) {
         if (absolutePathOrNativeFileItem instanceof CharSequence) {
             return findFileByPath((CharSequence) absolutePathOrNativeFileItem);
@@ -1876,6 +1896,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return res;
     }
 
+    @Override
     public List<CsmProject> getLibraries() {
         List<CsmProject> res = new ArrayList<CsmProject>();
         if (platformProject instanceof NativeProject) {
@@ -1957,6 +1978,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return unresolved;
     }
 
+    @Override
     public final boolean isValid() {
         return platformProject != null && !isDisposing();
     }
@@ -2079,6 +2101,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     private CsmUID<CsmProject> uid = null;
 
+    @Override
     public final CsmUID<CsmProject> getUID() { // final because called from constructor
         CsmUID<CsmProject> out = uid;
         if (out == null) {
@@ -2092,6 +2115,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return uid;
     }
 
+    @Override
     public boolean isStable(CsmFile skipFile) {
         if (status == Status.Ready && !isDisposing()) {
             return !ParserQueue.instance().hasPendingProjectRelatedWork(this, (FileImpl) skipFile);
@@ -2190,6 +2214,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     /**
      * CsmProject implementation
      */
+    @Override
     public final Collection<CsmFile> getAllFiles() {
         return getFileContainer().getFiles();
     }
@@ -2210,6 +2235,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getFileContainer().getFileImpls();
     }
 
+    @Override
     public final Collection<CsmFile> getSourceFiles() {
         List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>();
         for (FileImpl file : getAllFileImpls()) {
@@ -2220,6 +2246,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return new LazyCsmCollection<CsmFile, CsmFile>(uids, TraceFlags.SAFE_UID_ACCESS);
     }
 
+    @Override
     public final Collection<CsmFile> getHeaderFiles() {
         List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>();
         for (FileImpl file : getAllFileImpls()) {
@@ -2584,6 +2611,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return nativeFile;
         }
 
+        @Override
         public List<String> getUserMacroDefinitions() {
             if (project != null) {
                 return project.getUserMacroDefinitions();
@@ -2591,6 +2619,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return Collections.<String>emptyList();
         }
 
+        @Override
         public List<String> getUserIncludePaths() {
             if (project != null) {
                 return project.getUserIncludePaths();
@@ -2598,6 +2627,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return Collections.<String>emptyList();
         }
 
+        @Override
         public List<String> getSystemMacroDefinitions() {
             if (project != null) {
                 return project.getSystemMacroDefinitions();
@@ -2605,6 +2635,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return Collections.<String>emptyList();
         }
 
+        @Override
         public List<String> getSystemIncludePaths() {
             if (project != null) {
                 return project.getSystemIncludePaths();
@@ -2612,22 +2643,27 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return Collections.<String>emptyList();
         }
 
+        @Override
         public NativeProject getNativeProject() {
             return project;
         }
 
+        @Override
         public File getFile() {
             return new File(absolutePath);
         }
 
+        @Override
         public Language getLanguage() {
             return NativeFileItem.Language.C_HEADER;
         }
 
+        @Override
         public LanguageFlavor getLanguageFlavor() {
             return NativeFileItem.LanguageFlavor.GENERIC;
         }
 
+        @Override
         public boolean isExcluded() {
             return false;
         }
@@ -2741,6 +2777,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
+    @Override
     public void write(DataOutput aStream) throws IOException {
         assert aStream != null;
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
@@ -2915,6 +2952,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             this.libsAlreadyParsed = libsAlreadyParsed;
             this.cancelled = cancelled;
         }
+        @Override
         public void run() {
             try {
                 for(CsmUID<CsmFile> file : files) {
@@ -2963,6 +3001,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             this.enougth = enougth;
         }
 
+        @Override
         public void run() {
             try {
                 for(NativeFileItem nativeFileItem : nativeFileItems) {
