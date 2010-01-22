@@ -47,12 +47,12 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org.netbeans.modules.j2ee.toplinklib.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///modules/ext/toplink/toplink-essentials.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/toplink/toplink-essentials-agent.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.j2ee.toplinklib/modules/ext/toplink/toplink-essentials.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.j2ee.toplinklib/modules/ext/toplink/toplink-essentials-agent.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/javaee6-doc-api.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.j2ee.platform/docs/javaee6-doc-api.zip!/</resource>
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->

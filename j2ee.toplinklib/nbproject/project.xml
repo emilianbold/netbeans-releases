@@ -45,9 +45,17 @@ made subject to such option by the copyright holder.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.j2ee.toplinklib</code-name-base>
-            <module-dependencies>
-            </module-dependencies>
-            <public-packages/>
+            <module-dependencies/>
+            <public-packages>
+                <package>javax.persistence</package>
+                <package>javax.persistence.spi</package>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/toplink/toplink-essentials.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/toplink/toplink-essentials-agent.jar</runtime-relative-path>
+            </class-path-extension>
         </data>
     </configuration>
 </project>

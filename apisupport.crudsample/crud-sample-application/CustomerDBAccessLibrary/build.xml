@@ -5,4 +5,12 @@
 <project name="org.netbeans.modules.customerdb" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.customerdb.</description>
     <import file="nbproject/build-impl.xml"/>
+    <target name="compile">
+        <ant dir="../CustomerDBAccess" inheritall="false" target="jar"/>
+        <copy file="../CustomerDBAccess/dist/CustomerDBAccess.jar" tofile="${cluster}/modules/ext/CustomerDBAccess.jar"/>
+        <antcall target="projectized-common.compile"/>
+    </target>
+    <target name="clean">
+        <ant dir="../CustomerDBAccess" inheritall="false" target="clean"/>
+    </target>
 </project>
