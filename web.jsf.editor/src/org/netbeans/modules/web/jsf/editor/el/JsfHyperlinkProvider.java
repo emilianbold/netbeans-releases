@@ -43,6 +43,7 @@ package org.netbeans.modules.web.jsf.editor.el;
 
 import java.awt.Toolkit;
 import java.io.IOException;
+import java.util.List;
 
 import javax.lang.model.element.TypeElement;
 import javax.swing.text.Document;
@@ -76,6 +77,9 @@ import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.modules.web.jsf.editor.JsfSupport;
+import org.netbeans.modules.web.jsf.editor.WebBeansModelSupport;
+import org.netbeans.modules.web.jsf.editor.WebBeansModelSupport.WebBean;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
@@ -314,6 +318,16 @@ public class JsfHyperlinkProvider implements HyperlinkProvider {
         public void run(){
             if (wm == null) return;
             
+	    //try web beans first
+	    List<WebBean> webBeans = WebBeansModelSupport.getNamedBeans(JsfSupport.findFor(wm.getDocumentBase()).getWebBeansModel());
+	    for(WebBean wb : webBeans) {
+		if(wb.getName().equals(beanName)) {
+		    JavaSource javaSource = JavaSource.create( getClassPathInfo() );
+		    openElement( javaSource , wb.getBeanClassName());
+		    return;
+		}
+	    }
+
             FacesManagedBean bean = ConfigurationUtils.findFacesManagedBean( 
                     wm, beanName);
             if ( bean == null ){
