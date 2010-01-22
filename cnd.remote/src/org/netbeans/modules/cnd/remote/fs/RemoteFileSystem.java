@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -55,6 +56,7 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author Vladimir Kvashin
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("Se") // is it ever serialized?
 public class RemoteFileSystem extends FileSystem {
 
     private static final SystemAction[] NO_SYSTEM_ACTIONS = new SystemAction[] {};
@@ -65,7 +67,7 @@ public class RemoteFileSystem extends FileSystem {
     private final RemoteFileSupport remoteFileSupport;
     private final File cache;
 
-    public RemoteFileSystem(ExecutionEnvironment execEnv) {
+    public RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         CndUtils.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
         this.remoteFileSupport = new RemoteFileSupport(execEnv);
@@ -73,7 +75,9 @@ public class RemoteFileSystem extends FileSystem {
         // Should be moved to a proper place
         this.filePrefix = BasicCompiler.getIncludeFilePrefix(execEnv);
         cache = new File(filePrefix);
-        cache.mkdirs(); // TODO: error processing
+        if (! cache.exists() && ! cache.mkdirs()) {
+            throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath())); 
+        }
         this.root = new RootFileObject(this, execEnv, cache); // NOI18N
     }
 

@@ -37,11 +37,60 @@
 #include <jni.h>
 #include <wchar.h>
 #include <stdlib.h>
+#ifdef _MSC_VER 
+#include <windows.h>
+#endif
 
 #ifndef _CommonUtils_H
 #define	_CommonUtils_H
 
-#define FREE(x) {if((x) != NULL) {free((x)); x = NULL;}}
+
+#ifdef _MSC_VER 
+#define FREE(x) { if((x)!=NULL) { LocalFree(x); (x)=NULL;}}
+#else  
+#define FREE(x) { if((x)!=NULL) {      free(x); (x)=NULL;}}
+#endif
+
+#ifdef _MSC_VER 
+#define MALLOC(x) LocalAlloc(LPTR, x)
+#else  
+#define MALLOC(x) malloc(x)
+#endif
+
+
+#ifdef _MSC_VER
+#define ZERO(x,y) SecureZeroMemory((x),(y))
+#else
+#define ZERO(x,y) memset((x),0,(y))
+#endif
+
+
+#ifdef _MSC_VER
+#define STRLEN(x) lstrlenA(x)
+#else
+#define STRLEN(x) strlen(x)
+#endif
+
+
+#ifdef _MSC_VER
+#define WCSLEN(x) ((unsigned long)lstrlenW(x))
+#else
+#define WCSLEN(x) ((unsigned long)wcslen(x))
+#endif
+
+
+#ifdef _MSC_VER
+#define STRNCPY(x,y,z) lstrcpynA((x),(y),(z))
+#else
+#define STRNCPY(x,y,z) strncpy((x),(y),(z))
+#endif
+
+#ifdef _MSC_VER
+#define WCSNCPY(x,y,z) lstrcpynW((x),(y),(z))
+#else
+#define WCSNCPY(x,y,z) wcsncpy((x),(y),(z))
+#endif
+
 
 #define LOG_DEBUG    4
 #define LOG_MESSAGE  3

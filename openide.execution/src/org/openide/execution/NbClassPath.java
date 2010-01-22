@@ -113,7 +113,7 @@ public final class NbClassPath extends Object implements java.io.Serializable {
     *
     *
     * @return class path for all reachable systems in the repository
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
     */
     public static NbClassPath createRepositoryPath () {
         Thread.dumpStack();
@@ -129,7 +129,7 @@ public final class NbClassPath extends Object implements java.io.Serializable {
     * @param cap the capability that must be satisfied by the file system
     *    added to the class path
     * @return class path for all reachable systems in the repository
-    * @deprecated Please use the <a href="@JAVA/API@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
+    * @deprecated Please use the <a href="@org-netbeans-api-java-classpath@/org/netbeans/api/java/classpath/api.html">ClassPath API</a> instead.
     */
     public static NbClassPath createRepositoryPath (FileSystemCapability cap) {
         Thread.dumpStack();

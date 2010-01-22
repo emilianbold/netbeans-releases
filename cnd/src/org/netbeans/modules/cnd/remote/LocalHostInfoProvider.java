@@ -41,8 +41,6 @@ package org.netbeans.modules.cnd.remote;
 
 import java.io.File;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetUtils;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -84,11 +82,6 @@ import org.openide.util.Utilities;
     @Override
     public PathMap getMapper() {
         return new LocalPathMap();
-    }
-
-    @Override
-    public int getPlatform() {
-        return CompilerSetUtils.computeLocalPlatform();
     }
 
     private static class LocalPathMap extends PathMap {

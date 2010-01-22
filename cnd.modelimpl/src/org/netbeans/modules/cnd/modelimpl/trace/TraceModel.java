@@ -1134,6 +1134,7 @@ public class TraceModel extends TraceModelBase {
         return apt;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("DM_GC")
     private long usedMemory() {
         System.gc();
         return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();

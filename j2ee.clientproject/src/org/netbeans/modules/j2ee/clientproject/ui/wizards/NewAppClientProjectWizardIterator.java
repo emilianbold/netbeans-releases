@@ -129,6 +129,7 @@ public class NewAppClientProjectWizardIterator implements WizardDescriptor.Progr
         createData.setLibrariesDefinition(
                 SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES)));
         createData.setServerLibraryName((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY));
+        createData.setCDIEnabled((Boolean)wiz.getProperty(ProjectServerWizardPanel.CDI));
         
         AntProjectHelper h = AppClientProjectGenerator.createProject(createData);
         

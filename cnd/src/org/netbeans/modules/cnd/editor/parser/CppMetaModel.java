@@ -54,7 +54,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import org.netbeans.modules.cnd.loaders.CppEditorSupport;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -93,27 +95,28 @@ public class CppMetaModel implements PropertyChangeListener {
     }
 
     private void checkClosed(Object o){
-        if (o instanceof Set) {
-            Set<CppEditorSupport.CppEditorComponent> editors = new HashSet<CppEditorSupport.CppEditorComponent>();
-            for(Object top : (Set)o){
-                if (top instanceof CppEditorSupport.CppEditorComponent){
-                    editors.add((CppEditorSupport.CppEditorComponent)top);
+        if (o instanceof Set<?>) {
+            Set<EditorCookie> editorCookies = new HashSet<EditorCookie>();
+            for(Object top : (Set<?>) o){
+                if (top instanceof EditorCookie){
+                    EditorCookie cookie = (EditorCookie) top;
+                    if (MIMENames.isFortranOrHeaderOrCppOrC(
+                            DocumentUtilities.getMimeType(cookie.getDocument()))) {
+                        editorCookies.add(cookie);
+                    }
                 }
             }
-            checkClosed(editors);
+            checkClosed(editorCookies);
         }
     }
-    
-    private void checkClosed(Set<CppEditorSupport.CppEditorComponent> editors){
+
+    private void checkClosed(Set<EditorCookie> editors){
         Set<String> opened = new HashSet<String>();
-        for (CppEditorSupport.CppEditorComponent editor : editors) {
-            CppEditorSupport support = editor.getSupport();
-            if (support != null) {
-                Document doc = support.getDocument();
-                if (doc != null) {
-                    String tittle = (String) doc.getProperty(Document.TitleProperty);
-                    opened.add(tittle);
-                }
+        for (EditorCookie editor : editors) {
+            Document doc = editor.getDocument();
+            if (doc != null) {
+                String tittle = (String) doc.getProperty(Document.TitleProperty);
+                opened.add(tittle);
             }
         }
         List<String> toDelete = new ArrayList<String>();

@@ -39,6 +39,14 @@
 
 package org.netbeans.modules.css.editor;
 
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
+
 /**
  *
  * @author marek
@@ -47,4 +55,41 @@ public class Css {
     
     public static final String CSS_MIME_TYPE = "text/x-css";
 
+    /** finds first ResultIterator of the given mimetype */
+    public static ResultIterator getResultIterator(ResultIterator ri, String mimetype) {
+	if(ri.getSnapshot().getMimeType().equals(mimetype)) {
+	    return ri;
+	}
+        for(Embedding e : ri.getEmbeddings() ) {
+            ResultIterator eri = ri.getResultIterator(e);
+            if(e.getMimeType().equals(mimetype)) {
+                return eri;
+            } else {
+                ResultIterator eeri = getResultIterator(eri, mimetype);
+                if(eeri != null) {
+                    return eeri;
+                }
+            }
+        }
+        return null;
+    }
+
+
+    public static CloneableEditorSupport findCloneableEditorSupport(FileObject fo) {
+	try {
+	    DataObject dob = DataObject.find(fo);
+	    Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
+	    if (obj instanceof CloneableEditorSupport) {
+		return (CloneableEditorSupport)obj;
+	    }
+	    obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
+	    if (obj instanceof CloneableEditorSupport) {
+		return (CloneableEditorSupport)obj;
+	    }
+	} catch (DataObjectNotFoundException ex) {
+	    Exceptions.printStackTrace(ex);
+	}
+        return null;
+    }
+    
 }

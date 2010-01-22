@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -68,6 +69,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.editor.Acceptor;
+import org.netbeans.lib.editor.codetemplates.AbbrevDetection;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -322,6 +327,13 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                             NotifyDescriptor.ERROR_MESSAGE
                         )
                     );
+                } else if (!checkAbbrev(newAbbrev, model.getMimeType(panelLanguage))) {
+                    DialogDisplayer.getDefault ().notify (
+                        new NotifyDescriptor.Message (
+                            loc ("CTL_Rejected_template_name"),
+                            NotifyDescriptor.ERROR_MESSAGE
+                        )
+                    );
                 } else {
                     CodeTemplatesModel.TM tableModel = (CodeTemplatesModel.TM)tTemplates.getModel();
                     int i, rows = tableModel.getRowCount ();
@@ -385,6 +397,17 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                     break;
             }
         }
+    }
+
+    private boolean checkAbbrev (String abbrev, String mimeType) {
+        MimePath mimePath = MimePath.get(mimeType);
+        Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
+        Acceptor acceptor = AbbrevDetection.getResetAcceptor(prefs, mimePath);
+        for (int i = 0; i < abbrev.length(); i++) {
+            if (acceptor.accept(abbrev.charAt(i)))
+                return false;
+        }
+        return true;
     }
     
     public void valueChanged (ListSelectionEvent e) {

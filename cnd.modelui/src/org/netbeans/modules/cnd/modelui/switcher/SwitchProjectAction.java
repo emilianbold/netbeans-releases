@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
@@ -60,11 +61,11 @@ import org.openide.util.actions.NodeAction;
  *
  * @author Vladimir Kvashin
  */
-public class SwitchProjectAction extends NodeAction {
+public final class SwitchProjectAction extends NodeAction {
     
     private JCheckBoxMenuItem presenter;
     private ModelImpl model;
-    private static boolean running = false;
+    private final AtomicBoolean running = new AtomicBoolean(false);
     
     private enum State {
         Enabled, Disabled, Indeterminate
@@ -102,18 +103,18 @@ public class SwitchProjectAction extends NodeAction {
     private JMenuItem getPresenter() {
         final Collection<NativeProject> projects = getNativeProjects(getActivatedNodes());
         if( projects == null ) {
-            presenter.setEnabled(!running);
+            presenter.setEnabled(!running.get());
             presenter.setSelected(false);
         }
         else {
 	    try {
 		State state = getState(projects);
 		if( state == State.Indeterminate ) {
-		    presenter.setEnabled(!running);
+		    presenter.setEnabled(!running.get());
 		    presenter.setSelected(false);
 		}
 		else {
-		    presenter.setEnabled(!running);
+		    presenter.setEnabled(!running.get());
 		    presenter.setSelected(state == State.Enabled);
 		}
 	    }
@@ -176,7 +177,7 @@ public class SwitchProjectAction extends NodeAction {
         if( model == null ) {
             return false;
         }
-	if( running ) {
+	if( running.get() ) {
 	    return false;
 	}
         Collection<NativeProject> projects = getNativeProjects(getActivatedNodes());
@@ -192,13 +193,15 @@ public class SwitchProjectAction extends NodeAction {
     
     /** Actually nobody but us call this since we have a presenter. */
     public void performAction(final Node[] activatedNodes) {
-	running = true;
+	if (!running.compareAndSet(false, true)) {
+            return;
+        }
 	model.enqueue(new Runnable() {
 	    public void run() {
                 try {
                     performAction(getNativeProjects(getActivatedNodes()));
                 } finally {
-                    running = false;
+                    running.set(false);
                 }
 	    }
 	}, "Switching code model ON/OFF"); //NOI18N

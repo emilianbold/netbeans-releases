@@ -117,12 +117,6 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
     }
     
     private void init() {
-        addStyleToLayerMapping(NbDocument.BREAKPOINT_STYLE_NAME,
-                               NbDocument.BREAKPOINT_STYLE_NAME + "Layer:10"); // NOI18N
-        addStyleToLayerMapping(NbDocument.ERROR_STYLE_NAME,
-                               NbDocument.ERROR_STYLE_NAME + "Layer:20"); // NOI18N
-        addStyleToLayerMapping(NbDocument.CURRENT_STYLE_NAME,
-                               NbDocument.CURRENT_STYLE_NAME + "Layer:30"); // NOI18N
         setNormalStyleName(NbDocument.NORMAL_STYLE_NAME);
         
         annoMap = new HashMap(20);

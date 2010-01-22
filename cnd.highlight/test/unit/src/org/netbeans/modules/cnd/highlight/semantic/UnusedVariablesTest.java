@@ -61,7 +61,7 @@ public class UnusedVariablesTest extends SemanticHighlightingTestBase {
     protected List<? extends CsmOffsetable> getBlocks(FileImpl testFile,int offset) {
         List<? extends CsmOffsetable> list = ModelUtils.collect(
                 testFile, new ModelUtils.UnusedVariableCollector());
-        assert list != null && list.size() > 0;
+        assertTrue(list != null && list.size() > 0);
         return list;
     }
 

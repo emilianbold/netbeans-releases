@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 2.19.1
+#Signature file v4.1
+#Version 2.23
 
 CLSS public abstract interface java.io.Serializable
 
@@ -493,7 +493,7 @@ meth public static org.netbeans.api.debugger.jpda.ListeningDICookie create(com.s
 meth public static org.netbeans.api.debugger.jpda.ListeningDICookie create(int)
 meth public static org.netbeans.api.debugger.jpda.ListeningDICookie create(java.lang.String)
 supr org.netbeans.api.debugger.jpda.AbstractDICookie
-hfds args,listeningConnector
+hfds args,isListening,listeningConnector
 
 CLSS public abstract interface org.netbeans.api.debugger.jpda.LocalVariable
 intf org.netbeans.api.debugger.jpda.Variable
@@ -730,6 +730,46 @@ CLSS public abstract interface static !annotation org.netbeans.spi.debugger.jpda
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
 intf java.lang.annotation.Annotation
 meth public abstract !hasdefault java.lang.String path()
+
+CLSS public abstract interface org.netbeans.spi.debugger.jpda.Evaluator<%0 extends java.lang.Object>
+innr public abstract interface static !annotation Registration
+innr public final static Context
+innr public final static Expression
+innr public final static Result
+meth public abstract org.netbeans.spi.debugger.jpda.Evaluator$Result evaluate(org.netbeans.spi.debugger.jpda.Evaluator$Expression<{org.netbeans.spi.debugger.jpda.Evaluator%0}>,org.netbeans.spi.debugger.jpda.Evaluator$Context) throws org.netbeans.api.debugger.jpda.InvalidExpressionException
+
+CLSS public final static org.netbeans.spi.debugger.jpda.Evaluator$Context
+cons public Context(org.openide.util.Lookup)
+meth public com.sun.jdi.ObjectReference getContextObject()
+meth public com.sun.jdi.StackFrame getStackFrame()
+meth public int getStackDepth()
+meth public org.netbeans.api.debugger.jpda.CallStackFrame getCallStackFrame()
+meth public org.netbeans.api.debugger.jpda.ObjectVariable getContextVariable()
+meth public void notifyMethodToBeInvoked()
+supr java.lang.Object
+hfds callStackFrame,contextObject,contextVariable,methodToBeInvokedNotifier,stackDepth,stackFrame
+
+CLSS public final static org.netbeans.spi.debugger.jpda.Evaluator$Expression<%0 extends java.lang.Object>
+cons public Expression(java.lang.String)
+meth public java.lang.String getExpression()
+meth public void setPreprocessedObject({org.netbeans.spi.debugger.jpda.Evaluator$Expression%0})
+meth public {org.netbeans.spi.debugger.jpda.Evaluator$Expression%0} getPreprocessedObject()
+supr java.lang.Object
+hfds expression,preprocessed
+
+CLSS public abstract interface static !annotation org.netbeans.spi.debugger.jpda.Evaluator$Registration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.String language()
+
+CLSS public final static org.netbeans.spi.debugger.jpda.Evaluator$Result
+cons public Result(com.sun.jdi.Value)
+cons public Result(org.netbeans.api.debugger.jpda.Variable)
+meth public com.sun.jdi.Value getValue()
+meth public org.netbeans.api.debugger.jpda.Variable getVariable()
+supr java.lang.Object
+hfds v,var
 
 CLSS public abstract org.netbeans.spi.debugger.jpda.SmartSteppingCallback
 cons public SmartSteppingCallback()

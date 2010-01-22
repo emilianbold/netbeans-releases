@@ -53,6 +53,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -71,13 +72,15 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
@@ -99,18 +102,37 @@ public class ConfigurationMakefileWriter {
     }
 
     public void write() {
-        Collection<MakeConfiguration> protectedConfs = getProtectedConfigurations();
-        cleanup(protectedConfs);
+        Collection<MakeConfiguration> okConfs = getOKConfigurations(true);
+        cleanup(okConfs);
         writeMakefileImpl();
-        Configuration[] confs = projectDescriptor.getConfs().getConfs();
-        for (int i = 0; i < confs.length; i++) {
-            MakeConfiguration conf = (MakeConfiguration) confs[i];
-            if (!protectedConfs.contains(conf)) {
+        for (MakeConfiguration conf : okConfs) {
+            writeMakefileConf(conf);
+            writePackagingScript(conf);
+        }
+        writeMakefileVariables(projectDescriptor);
+    }
+
+    public void writeMissingMakefiles() {
+        Collection<MakeConfiguration> okConfs = getOKConfigurations(false);
+        long xmlFileTimeStamp = new File(projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "configurations.xml").lastModified(); // NOI18N
+        for (MakeConfiguration conf : okConfs) {
+            File file = new File(getMakefilePath(conf));
+            if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {
                 writeMakefileConf(conf);
+            }
+            file = new File(getPackageScriptPath(conf));
+            if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {
                 writePackagingScript(conf);
             }
         }
-        writeMakefileVariables(projectDescriptor);
+    }
+
+    private String getMakefilePath(MakeConfiguration conf) {
+        return projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Makefile-" + conf.getName() + ".mk"; // NOI18N
+    }
+
+    private String getPackageScriptPath(MakeConfiguration conf) {
+        return projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Package-" + conf.getName() + ".bash"; // NOI18N
     }
 
     /**
@@ -118,8 +140,9 @@ public class ConfigurationMakefileWriter {
      * and Package script should not be changed. Reason for protecting
      * a configuration is missing tool collection. See IZ #168540.
      */
-    private Collection<MakeConfiguration> getProtectedConfigurations() {
-        List<MakeConfiguration> result = new ArrayList<MakeConfiguration>();
+    private Collection<MakeConfiguration> getOKConfigurations(boolean showWarning) {
+        List<MakeConfiguration> ok = new ArrayList<MakeConfiguration>();
+        List<MakeConfiguration> noCompilerSet = new ArrayList<MakeConfiguration>();
         List<MakeConfiguration> wrongPlatform = new ArrayList<MakeConfiguration>();
         Configuration[] confs = projectDescriptor.getConfs().getConfs();
         for (int i = 0; i < confs.length; i++) {
@@ -128,14 +151,16 @@ public class ConfigurationMakefileWriter {
                     CompilerSetManager.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform() != conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue()) {
                 // add configurations if local host and target platform are different (don't have the right compiler set on this platform)
                 wrongPlatform.add(conf);
-                result.add(conf);
             }
             else if (conf.getCompilerSet().getCompilerSet() == null) {
                 // add configurations with unknown compiler sets
-                result.add(conf);
+                noCompilerSet.add(conf);
+            }
+            else {
+                ok.add(conf);
             }
         }
-        if (!wrongPlatform.isEmpty()) {
+        if (!wrongPlatform.isEmpty() && showWarning && MakeOptions.getInstance().getShowConfigurationWarning()) {
             ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(HostInfoUtils.LOCALHOST);
             int platformID = CompilerSetManager.getDefault(execEnv).getPlatform();
             Platform platform = Platforms.getPlatform(platformID);
@@ -144,14 +169,16 @@ public class ConfigurationMakefileWriter {
                 list.append(getString("CONF", c.getName(), c.getDevelopmentHost().getBuildPlatformConfiguration().getName()) + "\n"); // NOI18N
             }
             final String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
+            final String title = getString("TARGET_MISMATCH_DIALOG_TITLE.TXT");
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    NotifyDescriptor.Message nd = new DialogDescriptor.Message(msg);
+                    Object[] options = new Object[]{NotifyDescriptor.OK_OPTION};
+                    DialogDescriptor nd = new DialogDescriptor(new ConfigurationWarningPanel(msg), title, true, options, NotifyDescriptor.OK_OPTION, 0, null, null);
                     DialogDisplayer.getDefault().notify(nd);
                 }
             });
         }
-        return result;
+        return ok;
     }
 
     /**
@@ -160,7 +187,16 @@ public class ConfigurationMakefileWriter {
      *
      * @param protectedConfs
      */
-    private void cleanup(Collection<MakeConfiguration> protectedConfs) {
+    private void cleanup(Collection<MakeConfiguration> okConfs) {
+        List<MakeConfiguration> protectedConfs = new ArrayList<MakeConfiguration>();
+        Configuration[] confs = projectDescriptor.getConfs().getConfs();
+        for (Configuration c : projectDescriptor.getConfs().getConfs()) {
+            MakeConfiguration conf = (MakeConfiguration)c;
+            if (!okConfs.contains(conf)) {
+               protectedConfs.add(conf);
+            }
+        }
+
         File folder = new File(projectDescriptor.getBaseDir() + '/' + "nbproject"); // UNIX path // NOI18N
         File[] children = folder.listFiles();
         for (int i = 0; i < children.length; i++) {
@@ -168,12 +204,12 @@ public class ConfigurationMakefileWriter {
             if (filename.startsWith("Makefile-") || filename.startsWith("Package-")) { // NOI18N
                 boolean protect = false;
                 for (MakeConfiguration conf : protectedConfs) {
-                    if (filename.equals("Makefile-" + conf.getName() + ".mk") // NOI18N
-                            || filename.equals("Package-" + conf.getName() + ".bash")) { // NOI18N
-                        protect = true;
-                        break;
+                        if (filename.equals("Makefile-" + conf.getName() + ".mk") // NOI18N
+                                || filename.equals("Package-" + conf.getName() + ".bash")) { // NOI18N
+                            protect = true;
+                            break;
+                        }
                     }
-                }
                 if (!protect) {
                     children[i].delete();
                 }
@@ -401,7 +437,7 @@ public class ConfigurationMakefileWriter {
 
         if (conf.isQmakeConfiguration()) {
             String qmakeSpec = conf.getQmakeConfiguration().getQmakeSpec().getValue();
-            if (qmakeSpec.length() == 0 && conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_MACOSX) {
+            if (qmakeSpec.length() == 0 && conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                 // on Mac we force spec to macx-g++, otherwise qmake generates xcode project
                 qmakeSpec = compilerSet.getQmakeSpec(conf.getDevelopmentHost().getBuildPlatform());
             }
@@ -413,7 +449,7 @@ public class ConfigurationMakefileWriter {
             // Otherwise qmake will complain that sources are not found.
             bw.write("\t${QMAKE} VPATH=. " + qmakeSpec + "-o qttmp-${CND_CONF}.mk nbproject/qt-${CND_CONF}.pro\n"); // NOI18N
             bw.write("\tmv -f qttmp-${CND_CONF}.mk nbproject/qt-${CND_CONF}.mk\n"); // NOI18N
-            if (conf.getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_WINDOWS) {
+            if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                 // qmake uses backslashes on Windows, this code corrects them to forward slashes
                 bw.write("\t@sed -e 's:\\\\\\(.\\):/\\1:g' nbproject/qt-${CND_CONF}.mk >nbproject/qt-${CND_CONF}.tmp\n"); // NOI18N
                 bw.write("\t@mv -f nbproject/qt-${CND_CONF}.tmp nbproject/qt-${CND_CONF}.mk\n"); // NOI18N
@@ -744,7 +780,7 @@ public class ConfigurationMakefileWriter {
     private static String getOutput(MakeConfiguration conf) {
         String output = conf.getOutputValue();
         switch (conf.getDevelopmentHost().getBuildPlatform()) {
-            case Platform.PLATFORM_WINDOWS:
+            case PlatformTypes.PLATFORM_WINDOWS:
                 switch (conf.getConfigurationType().getValue()) {
                     case MakeConfiguration.TYPE_APPLICATION:
                     case MakeConfiguration.TYPE_QT_APPLICATION:

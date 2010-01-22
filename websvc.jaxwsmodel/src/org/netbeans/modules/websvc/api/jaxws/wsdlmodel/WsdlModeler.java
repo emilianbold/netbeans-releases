@@ -183,14 +183,7 @@ public class WsdlModeler {
     }
 
     private void generateWsdlModel() {
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(com.sun.xml.stream.ZephyrParserFactory.class.getClassLoader());
-        try {
-            this.generateWsdlModel(new CatchFirstErrorHandler());
-        } finally {
-            Thread.currentThread().setContextClassLoader(orig);
-        }
-
+        generateWsdlModel(new CatchFirstErrorHandler());
     }
 
     private void generateWsdlModel(WsdlErrorHandler errorHandler) {

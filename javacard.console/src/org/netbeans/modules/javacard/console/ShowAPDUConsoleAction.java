@@ -41,7 +41,7 @@
 package org.netbeans.modules.javacard.console;
 
 import org.netbeans.modules.javacard.shell.ShellTopComponent;
-import org.netbeans.modules.javacard.spi.capabilities.ApduSupport;
+import org.netbeans.modules.javacard.spi.capabilities.UrlCapability;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.capabilities.PortKind;
 import org.netbeans.modules.javacard.spi.capabilities.PortProvider;
@@ -64,7 +64,7 @@ public class ShowAPDUConsoleAction extends Single<Card> {
     protected boolean isEnabled(Card target) {
         boolean result = target.getState().isRunning();
         if (result) {
-            ApduSupport p = target.getCapability(ApduSupport.class);
+            UrlCapability p = target.getCapability(UrlCapability.class);
             result = p != null;
             if (result) {
                 result = p.getContactedProtocol() != null;

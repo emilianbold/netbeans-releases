@@ -42,7 +42,6 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.Location;
 import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
@@ -69,7 +68,6 @@ import org.netbeans.modules.debugger.jpda.ExpressionPool;
 import org.netbeans.modules.debugger.jpda.JPDAStepImpl.MethodExitBreakpointListener;
 //import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
 import org.netbeans.modules.debugger.jpda.SourcePath;
-import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -98,9 +96,7 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
-import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 
 /**
@@ -281,7 +277,7 @@ implements Executor {
     }
     
     private void addMethodExitBP(ThreadReference tr, JPDAThread jtr) throws VMDisconnectedExceptionWrapper, InternalExceptionWrapper, InvalidStackFrameExceptionWrapper, ObjectCollectedExceptionWrapper {
-        if (!MethodBreakpointImpl.canGetMethodReturnValues(MirrorWrapper.virtualMachine(tr))) {
+        if (!MirrorWrapper.virtualMachine(tr).canGetMethodReturnValues()) {
             return ;
         }
         Location loc;

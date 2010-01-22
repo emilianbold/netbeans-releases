@@ -60,7 +60,6 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -85,8 +84,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiLicense;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -94,6 +92,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -118,14 +117,36 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
     private boolean licensesLoaded = true;
 
-    public static final String getPreviewPrefix() {
-        return Kenai.getDefault().getUrl().toString() +  "/projects/"; //NOI18N
+    private PropertyChangeListener kenaiListener;
+
+    public static final String getPreviewPrefix(Kenai kenai) {
+        return kenai.getUrl().toString() +  "/projects/"; //NOI18N
     } // NOI18N
+
+    private String getPreviewPrefix() {
+        return getPreviewPrefix(panel.getKenai());
+    }
 
     public NameAndLicenseWizardPanelGUI(NameAndLicenseWizardPanel pnl) {
 
         panel = pnl;
         initComponents();
+
+        panel.setKenai((Kenai) kenaiCombo.getModel().getSelectedItem());
+
+        kenaiCombo.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                if (kenaiCombo.getSelectedItem() instanceof Kenai) {
+                    panel.setKenai(((Kenai) kenaiCombo.getSelectedItem()));
+                } else {
+                    new AddInstanceAction().actionPerformed(e);
+                    panel.setKenai(((Kenai) kenaiCombo.getSelectedItem()));
+                }
+            }
+        });
+
+
         refreshUsername();
 
         prjNamePattern = Pattern.compile(PRJ_NAME_REGEXP);
@@ -169,17 +190,18 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         setupLicensesListModel();
         setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
 
-        Kenai.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+        kenaiListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (Kenai.PROP_LOGIN.equals(evt.getPropertyName())) {
-                    if (Kenai.getDefault().getPasswordAuthentication() != null) {
+                    if (panel.getKenai().getPasswordAuthentication() != null) {
                         loginButton.setEnabled(false);
                     } else {
                         loginButton.setEnabled(true);
                     }
                 }
             }
-        });
+        };
+        panel.getKenai().addPropertyChangeListener(WeakListeners.propertyChange(kenaiListener, panel.getKenai()));
 
     }
 
@@ -189,7 +211,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             public void run() {
                 Collection<KenaiLicense> licenses = null;
                 try {
-                    licenses = Kenai.getDefault().getLicenses();
+                    licenses = panel.getKenai().getLicenses();
                 } catch (KenaiException ex) {
                     // OK, list of licenses will be null
                     // XXX or show message that "Cannot connect to Kenai.com server" ???
@@ -284,6 +306,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         proxyConfigButton = new JButton();
         lowercaseLabel = new JLabel();
         licenseDescription = new JLabel();
+        kenaiCombo = new KenaiCombo(false);
 
         setLayout(new GridBagLayout());
         Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loggedInLabel.text"));
@@ -297,10 +320,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         loggedInLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loggedInLabel.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(usernameLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.notLoggedIn"));
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.anchor = GridBagConstraints.EAST;
         gridBagConstraints.weightx = 0.4;
         gridBagConstraints.insets = new Insets(0, 4, 5, 0);
         add(usernameLabel, gridBagConstraints);
@@ -314,13 +336,13 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             }
         });
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = GridBagConstraints.EAST;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 0, 5, 0);
         add(loginButton, gridBagConstraints);
-
         loginButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loginButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         projectNameLabel.setLabelFor(projectNameTextField);
         Mnemonics.setLocalizedText(projectNameLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameLabel.text"));
         gridBagConstraints = new GridBagConstraints();
@@ -360,8 +382,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 6, 16, 0);
         add(kenaiURLPreviewLabel, gridBagConstraints);
-
         kenaiURLPreviewLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.kenaiURLPreviewLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         projectTitleLabel.setLabelFor(projectTitleTextField);
         Mnemonics.setLocalizedText(projectTitleLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectTitleLabel.text"));
         gridBagConstraints = new GridBagConstraints();
@@ -380,9 +402,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         add(projectTitleTextField, gridBagConstraints);
-
         projectTitleTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectTitleTextField.AccessibleContext.accessibleName")); // NOI18N
         projectTitleTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectTitleTextField.AccessibleContext.accessibleDescription")); // NOI18N
+
         projectDescLabel.setLabelFor(projectDescTextField);
         Mnemonics.setLocalizedText(projectDescLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectDescLabel.text"));
         gridBagConstraints = new GridBagConstraints();
@@ -402,9 +424,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(4, 0, 0, 0);
         add(projectDescTextField, gridBagConstraints);
-
         projectDescTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectDescTextField.AccessibleContext.accessibleName")); // NOI18N
         projectDescTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectDescTextField.AccessibleContext.accessibleDescription")); // NOI18N
+
         projectLicenseLabel.setLabelFor(projectLicenseComboBox);
         Mnemonics.setLocalizedText(projectLicenseLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectLicenseLabel.text"));
         gridBagConstraints = new GridBagConstraints();
@@ -413,8 +435,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(4, 0, 0, 4);
         add(projectLicenseLabel, gridBagConstraints);
-
         projectLicenseLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectLicenseLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         projectLicenseComboBox.setEnabled(false);
         projectLicenseComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -483,6 +505,11 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(14, 0, 0, 0);
         add(licenseDescription, gridBagConstraints);
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        add(kenaiCombo, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.AccessibleContext.accessibleDescription")); // NOI18N
@@ -525,7 +552,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         errorChecker.post(new Runnable() {
             public void run() {
                 try {
-                    prjNameCheckMessage = KenaiProject.checkName(getProjectName());
+                    prjNameCheckMessage = panel.getKenai().checkProjectName(getProjectName());
                 } catch (KenaiException ex) {
                     String msg = ex.getAsString();
                     if (msg==null) {
@@ -547,6 +574,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     }//GEN-LAST:event_projectNameTextFieldKeyPressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JComboBox kenaiCombo;
     private JLabel kenaiURLPreviewLabel;
     private JLabel licenseDescription;
     private JLabel loggedInLabel;
@@ -635,7 +663,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     }
 
     private String checkForInfos() {
-        if (!Utilities.isUserLoggedIn()) {
+        if (panel.getKenai().getStatus() == Kenai.Status.OFFLINE) {
             return NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class,
                     "NameAndLicenseWizardPanelGUI.needLogin"); // NOI18N
         } else if (getProjectName().trim().equals("")) {
@@ -708,7 +736,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     // ----------
 
     private void refreshUsername() {
-        PasswordAuthentication passwdAuth = Kenai.getDefault().getPasswordAuthentication();
+        PasswordAuthentication passwdAuth = panel.getKenai().getPasswordAuthentication();
         if (passwdAuth != null) {
             setUsername(passwdAuth.getUserName());
             loginButton.setEnabled(false);

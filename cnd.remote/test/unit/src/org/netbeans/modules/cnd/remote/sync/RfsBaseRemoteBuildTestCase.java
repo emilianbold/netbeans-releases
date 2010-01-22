@@ -39,8 +39,9 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
-import org.netbeans.modules.cnd.remote.project.*;
+import org.netbeans.modules.cnd.remote.project.RemoteBuildTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+
 /**
  *
  * @author Vladimir Kvashin
@@ -58,5 +59,11 @@ public abstract class RfsBaseRemoteBuildTestCase extends RemoteBuildTestBase {
 
     public RfsBaseRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);       
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        setupHost("rfs");
     }
 }

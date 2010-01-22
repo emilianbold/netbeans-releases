@@ -52,7 +52,6 @@ import org.openide.DialogDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 
 /**
  * Tests Paintapp sample.
@@ -121,10 +120,8 @@ public class BuildPaintapplicationTest extends TestBase {
         ExecutorTask et = ActionUtils.runTarget(buildScript, targets, null);
         et.waitFinished();
         System.out.println("-----------------------------------------");
-      // ant task executor returns 0 on win and jdk 1.5.0_xxx
-        boolean win15 = Utilities.isWindows() && System.getProperty("java.version").startsWith("1.5.0_");
         
-        return (win15)? 0: et.result();      
+        return et.result();      
     }
     
     /**

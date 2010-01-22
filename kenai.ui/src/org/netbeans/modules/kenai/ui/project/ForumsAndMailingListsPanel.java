@@ -184,7 +184,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
         
         try {
             DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            String base = Kenai.getDefault().getUrl().toString().replaceFirst("https://", "http://"); //NOI18N
+            String base = proj.getKenai().getUrl().toString().replaceFirst("https://", "http://"); //NOI18N
             String urlStr = base + "/projects/" + proj.getName() + "/forums?format=atom"; //NOI18N
             int entriesCount = 0;
             NodeList entries = null;
@@ -372,7 +372,7 @@ public class ForumsAndMailingListsPanel extends javax.swing.JPanel implements Re
                                     ChatTopComponent ct = ChatTopComponent.findInstance();
                                     ct.open();
                                     ct.requestActive();
-                                    ct.setActiveGroup(instProj.getName());
+                                    ct.setActiveGroup(instProj.getName() + "@muc." + instProj.getKenai().getUrl().getHost());
                                 }
                             });
                         }

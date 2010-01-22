@@ -71,6 +71,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
@@ -193,6 +194,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
         support.removePropertyChangeListener(listener);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (Repository.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
             if (evt.getOldValue() != null && evt.getOldValue() instanceof Map) {
@@ -230,9 +232,11 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
             // kenai issues need instantiated repository so they can be shown in tasklist
             // but some (e.g. private kenai projects) cannot be instantiated without being logged in. So kenai issues need to be notified
             // when user loggs in so the repository can be created.
+            final Kenai kenai = (Kenai)evt.getSource();
             rp.post(new Runnable() { // do not block here
+                @Override
                 public void run() {
-                    notifyKenaiLogin();
+                    notifyKenaiLogin(kenai);
                 }
             });
         }
@@ -311,6 +315,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
 
     private void reloadAsync() {
         rp.post(new Runnable () {
+            @Override
             public void run() {
                 initializeIssues();
             }
@@ -324,6 +329,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
         }
         final BugzillaLazyIssue[] lazyIssuesToSave = lazyIssues;
         rp.post(new Runnable () {
+            @Override
             public void run() {
                 initializeIssues();
                 LOG.log(Level.FINE, "saveIntern: saving issues");       //NOI18N
@@ -377,7 +383,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
             LOG.finer("initializeIssues: reloading saved issues");      //NOI18N
             // load from storage
             Map<String, List<String>> repositoryIssues = BugzillaConfig.getInstance().getTaskListIssues();
-            if (repositoryIssues.size() == 0) {
+            if (repositoryIssues.isEmpty()) {
                 LOG.fine("initializeIssues: no saved issues");          //NOI18N
                 return;
             }
@@ -457,8 +463,8 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
             }
         }
         if (kenaiIssueAdded) {
-            Kenai.getDefault().removePropertyChangeListener(this);
-            Kenai.getDefault().addPropertyChangeListener(this);
+            KenaiManager.getDefault().removePropertyChangeListener(this);
+            KenaiManager.getDefault().addPropertyChangeListener(this);
         }
     }
 
@@ -517,6 +523,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
         final BugzillaIssue[] issue = new BugzillaIssue[1];
         if (status == IssueCache.ISSUE_STATUS_UNKNOWN) { // not yet cached
             Runnable runnable = new Runnable() {
+                @Override
                 public void run() {
                     LOG.log(Level.FINE, "getIssue: creating issue {0}", repository.getUrl() + "#" + issueId); //NOI18N
                     issue[0] = (BugzillaIssue) repository.getIssue(issueId);
@@ -541,11 +548,16 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
      * Notifies all kenai issues that user has logged on. Private kenai projects cannot be instantiated without being logged in
      * and issue tracking repository cannot be created.
      */
-    private void notifyKenaiLogin () {
+    private void notifyKenaiLogin (Kenai notifiedKenai) {
+        assert notifiedKenai != null;
         synchronized (LOCK) {
             for (BugzillaLazyIssue issue : watchedIssues.values()) {
                 if (issue instanceof KenaiBugzillaLazyIssue) {
-                    ((KenaiBugzillaLazyIssue) issue).notifyKenaiLogin();
+                    Kenai issueKenai = KenaiUtil.getKenai(issue.getUrl().toString());
+                    assert issueKenai != null;
+                    if(notifiedKenai.equals(issueKenai)) {
+                        ((KenaiBugzillaLazyIssue) issue).notifyKenaiLogin();
+                    }
                 }
             }
         }
@@ -620,6 +632,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
         private void attachIssueListener (BugzillaIssue issue) {
             if (issueListener == null) {
                 issueListener = new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         BugzillaIssue issue = issueRef.get();
                         if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName()) && issue != null) {
@@ -658,8 +671,10 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
         public List<? extends Action> getActions() {
             List<AbstractAction> actions = new LinkedList<AbstractAction>();
             actions.add(new AbstractAction(NbBundle.getMessage(BugzillaIssueProvider.class, "BugzillaIssueProvider.resolveAction")) { //NOI18N
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
                         public void run() {
                             final BugzillaIssue issue = getIssue();
                             if (issue == null) {
@@ -679,6 +694,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
                                     final String duplicateId = panel.getDuplicateId();
                                     final String comment = panel.getComment();
                                     runCancellableCommand(new Runnable () {
+                                        @Override
                                         public void run() {
                                             if (BugzillaIssue.RESOLVE_DUPLICATE.equals(resolution)) {
                                                 issue.duplicate(duplicateId);
@@ -760,7 +776,7 @@ public final class BugzillaIssueProvider extends IssueProvider implements Proper
             if (loginStatusChanged) {
                 try {
                     LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for: " + projectName);
-                    repo = KenaiUtil.getKenaiBugtrackingRepository(projectName);
+                    repo = KenaiUtil.getKenaiBugtrackingRepository(getUrl().toString(), projectName);
                 } catch (KenaiException ex) {
                     LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for " + projectName, ex);
                 }

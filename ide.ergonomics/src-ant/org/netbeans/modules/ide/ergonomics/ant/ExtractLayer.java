@@ -210,6 +210,10 @@ implements FileNameMapper, URIResolver, EntityResolver {
                         if (modname == null) {
                             continue;
                         }
+                        String skip = mf.getMainAttributes().getValue("FeaturesOnDemand-Proxy-Layer");
+                        if ("false".equals(skip)) {
+                            continue;
+                        }
                         String show = mf.getMainAttributes().getValue("AutoUpdate-Show-In-Client");
                         String base = modname.replaceFirst("/[0-9]+$", "");
                         if (!"false".equals(show)) {

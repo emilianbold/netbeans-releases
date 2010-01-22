@@ -57,8 +57,9 @@ public class ParameterImpl implements Parameter {
     private String defaultValue;
     private List<QualifiedName> types;
     private OffsetRange range;
+    private boolean isRawType;
 
-    public ParameterImpl(String name, String defaultValue, List<QualifiedName> types, OffsetRange range) {
+    public ParameterImpl(String name, String defaultValue, List<QualifiedName> types, boolean isRawType, OffsetRange range) {
         this.name = name;
         this.defaultValue = defaultValue;
         if (types == null) {
@@ -67,6 +68,7 @@ public class ParameterImpl implements Parameter {
             this.types = types;
         }
         this.range = range;
+        this.isRawType = isRawType;
     }
 
     @NonNull
@@ -103,6 +105,8 @@ public class ParameterImpl implements Parameter {
             sb.append(qualifiedName.toString());
         }
         sb.append(":");//NOI18N
+        sb.append(isRawType?1:0);
+        sb.append(":");//NOI18N
         String defValue = getDefaultValue();
         if (defValue != null) {
             sb.append(encode(defValue));
@@ -126,8 +130,9 @@ public class ParameterImpl implements Parameter {
                             qualifiedNames.add(QualifiedName.create(type));
                         }
                     }
-                    String defValue = (parts.length > 2) ? parts[2] : "";
-                    parameters.add(new ParameterImpl(paramName, (defValue.length() != 0) ? decode(defValue) : null, qualifiedNames, OffsetRange.NONE));
+                    boolean isRawType = Integer.parseInt(parts[2]) > 0 ? true : false ;
+                    String defValue = (parts.length > 3) ? parts[3] : "";
+                    parameters.add(new ParameterImpl(paramName, (defValue.length() != 0) ? decode(defValue) : null, qualifiedNames, isRawType, OffsetRange.NONE));
                 }
             }
         }
@@ -193,6 +198,10 @@ public class ParameterImpl implements Parameter {
         }
 
         return isEncodedChar;
+    }
+
+    public boolean hasRawType() {
+        return isRawType;
     }
 
 }

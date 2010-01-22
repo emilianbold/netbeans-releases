@@ -59,6 +59,7 @@ import javax.swing.JSplitPane;
 import org.netbeans.modules.gsf.testrunner.TestRunnerSettings;
 import org.netbeans.modules.gsf.testrunner.TestRunnerSettings.DividerSettings;
 import org.openide.ErrorManager;
+import org.openide.util.Lookup;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -71,7 +72,7 @@ import org.openide.windows.OutputWriter;
 final class ResultDisplayHandler {
 
     private static final Logger LOGGER = Logger.getLogger(ResultDisplayHandler.class.getName());
-    
+
     /** */
     private static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
             ResultDisplayHandler.class);
@@ -86,7 +87,9 @@ final class ResultDisplayHandler {
     private InputOutput inOut;
 
     private final TestSession session;
-    
+
+    private Lookup l;
+
     /** Creates a new instance of ResultDisplayHandler */
     public ResultDisplayHandler(TestSession session) {
         this.session = session;
@@ -128,7 +131,7 @@ final class ResultDisplayHandler {
     }
 
     private JSplitPane createDisplayComp(Component left, Component right, int orientation, final int location) {
-        
+
         final JSplitPane splitPane = new JSplitPane(orientation, left, right);
         splitPane.setDividerLocation(location);
         splitPane.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ResultPanelTree"));
@@ -317,9 +320,9 @@ final class ResultDisplayHandler {
      */
     private void displayInDispatchThread(final Method method, final Object param) {
         assert method != null;
-        
+
         final Method finalMethod = method;
-        
+
         EventQueue.invokeLater(new Runnable() {
 
             public void run() {
@@ -385,5 +388,13 @@ final class ResultDisplayHandler {
         if (sessionFinished) {
             treePanel.displayMsgSessionFinished(message);
         }
+    }
+
+    void setLookup(Lookup l) {
+        this.l = l;
+    }
+
+    Lookup getLookup() {
+        return l;
     }
 }

@@ -127,6 +127,44 @@ public class DDHelper {
             return action.getResult();
     }
     
+    /**
+     * Creates beans.xml deployment descriptor.
+     * @param j2eeProfile Java EE profile to specify which version of beans.xml should be created
+     * @param dir Directory where beans.xml should be created
+     * @return beans.xml file as FileObject
+     * @throws java.io.IOException
+     * @since 1.49
+     */
+    public static FileObject createBeansXml(Profile j2eeProfile, FileObject dir) throws IOException {
+        return createBeansXml(j2eeProfile, dir, "beans");
+    }
+
+    /**
+     * Creates beans.xml deployment descriptor.
+     * @param j2eeProfile Java EE profile to specify which version of beans.xml should be created
+     * @param dir Directory where beans.xml should be created
+     * @param name name of configuration file to create; should be always "beans" for now
+     * @return beans.xml file as FileObject
+     * @throws java.io.IOException
+     * @since 1.49
+     */
+    public static FileObject createBeansXml(Profile j2eeProfile, FileObject dir, String name) throws IOException {
+        String template = null;
+        if (Profile.JAVA_EE_6_FULL == j2eeProfile || Profile.JAVA_EE_6_WEB == j2eeProfile) {
+            template = "beans-1.0.xml"; //NOI18N
+        }
+
+        if (template == null)
+            return null;
+
+        MakeFileCopy action = new MakeFileCopy(RESOURCE_FOLDER + template, dir, name+".xml");
+        FileUtil.runAtomicAction(action);
+        if (action.getException() != null)
+            throw action.getException();
+        else
+            return action.getResult();
+    }
+
     // -------------------------------------------------------------------------
     private static class MakeFileCopy implements Runnable {
         private String fromFile;
@@ -152,6 +190,9 @@ public class DDHelper {
         public void run() {
             try {
                 // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
+                if (toDir.getFileObject(toFile) != null) {
+                    throw new IllegalStateException("file "+toFile+" already exists in "+toDir);
+                }
                 FileObject xml = FileUtil.createData(toDir, toFile);
                 String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(fromFile));
                 if (content != null) {

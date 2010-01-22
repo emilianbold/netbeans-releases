@@ -65,6 +65,7 @@ import org.netbeans.core.windows.SplitConstraint;
 import org.netbeans.core.windows.TopComponentGroupImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.WindowSystemSnapshot;
+import org.openide.windows.RetainLocation;
 import org.openide.windows.TopComponent;
 
 
@@ -249,9 +250,9 @@ final class DefaultModel implements Model {
             modesSubModel.addMode(mode, constraints);
         }
     }
-    
 
-    
+
+
     // XXX
     public void addModeToSide(ModeImpl mode, ModeImpl attachMode, String side) {
         synchronized(LOCK_MODES) {
@@ -784,7 +785,17 @@ final class DefaultModel implements Model {
     public boolean isModePermanent(ModeImpl mode) {
         ModeModel modeModel = getModelForMode(mode);
         if(modeModel != null) {
-            return modeModel.isPermanent();
+            boolean result = modeModel.isPermanent();
+            if (!result) {
+                for (TopComponent tc : mode.getTopComponents()) {
+                    result |= tc.getClass().getAnnotation(RetainLocation.class)
+                            != null;
+                    if (result) {
+                        break;
+                    }
+                }
+            }
+            return result;
         } else {
             return false;
         }

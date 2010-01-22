@@ -248,7 +248,7 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                 if (repo == null) continue;
 
                 DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                String base = Kenai.getDefault().getUrl().toString().replaceFirst("https://", "http://"); //NOI18N
+                String base = proj.getKenai().getUrl().toString().replaceFirst("https://", "http://"); //NOI18N
                 String urlStr = base + repo.getWebLocation().getPath().replaceAll("/show$", "/history.atom"); //NOI18N
                 int entriesCount = 0;
                 NodeList entries = null;
@@ -384,7 +384,7 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                         registerHTMLButton((HTMLDocument)srcFeedPane.getDocument(), id, new ActionListener() {
 
                             public void actionPerformed(ActionEvent e) {
-                                new GetSourcesFromKenaiAction(new ProjectAndFeature(instProj.getName(), repoMap.get(id), null), null).actionPerformed(e);
+                                new GetSourcesFromKenaiAction(new ProjectAndFeature(instProj, repoMap.get(id), null), null).actionPerformed(e);
                             }
                         });
                     }

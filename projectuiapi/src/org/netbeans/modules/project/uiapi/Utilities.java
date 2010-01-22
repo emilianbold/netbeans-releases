@@ -41,8 +41,12 @@
 
 package org.netbeans.modules.project.uiapi;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.swing.event.ChangeListener;
+import org.netbeans.spi.project.ui.support.BuildExecutionSupport.Item;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 
@@ -68,8 +72,14 @@ public class Utilities {
      */
     public static BuildExecutionSupportImplementation getBuildExecutionSupportImplementation() {
         BuildExecutionSupportImplementation instance = Lookup.getDefault().lookup(BuildExecutionSupportImplementation.class);
-        assert instance != null : "Need to have " + BuildExecutionSupportImplementation.class.getName() + " instance in the default lookup";
-        return instance;
+        return instance != null ? instance : new BuildExecutionSupportImplementation() {
+            public void registerFinishedItem(Item item) {}
+            public void registerRunningItem(Item item) {}
+            public void addChangeListener(ChangeListener listener) {}
+            public void removeChangeListener(ChangeListener listener) {}
+            public Item getLastItem() {return null;}
+            public List<Item> getRunningItems() {return Collections.<Item>emptyList();}
+        };
     }
     
     /** Gets the projectChooser factory from the global Lookup

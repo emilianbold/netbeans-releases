@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.31.1
+#Signature file v4.1
+#Version 1.35
 
 CLSS public abstract java.awt.Component
 cons protected Component()
@@ -272,8 +272,8 @@ meth public void transferFocusUpCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.lang.Object
-hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
-hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,SingleBufferStrategy
+hfds FOCUS_TRAVERSABLE_DEFAULT,FOCUS_TRAVERSABLE_SET,FOCUS_TRAVERSABLE_UNKNOWN,LOCK,accessibleContext,actionListenerK,adjustmentListenerK,appContext,background,backgroundEraseDisabled,boundsOp,bufferStrategy,changeSupport,coalesceEventsParams,coalesceMap,coalescingEnabled,componentListener,componentListenerK,componentOrientation,componentSerializedDataVersion,compoundShape,containerListenerK,cursor,dbg,dropTarget,enabled,eventCache,eventMask,focusListener,focusListenerK,focusLog,focusTraversalKeyPropertyNames,focusTraversalKeys,focusTraversalKeysEnabled,focusable,font,foreground,graphicsConfig,height,hierarchyBoundsListener,hierarchyBoundsListenerK,hierarchyListener,hierarchyListenerK,ignoreRepaint,incRate,inputMethodListener,inputMethodListenerK,isAddNotifyComplete,isFocusTraversableOverridden,isInc,isPacked,itemListenerK,keyListener,keyListenerK,locale,log,maxSize,maxSizeSet,minSize,minSizeSet,mixingCutoutRegion,mixingLog,mouseListener,mouseListenerK,mouseMotionListener,mouseMotionListenerK,mouseWheelListener,mouseWheelListenerK,name,nameExplicitlySet,nativeInLightFixer,newEventsOnly,objectLock,ownedWindowK,parent,peer,peerFont,popups,prefSize,prefSizeSet,privateKey,requestFocusController,serialVersionUID,textListenerK,valid,visible,width,windowClosingException,windowFocusListenerK,windowListenerK,windowStateListenerK,x,y
+hcls AWTTreeLock,BltSubRegionBufferStrategy,DummyRequestFocusController,FlipSubRegionBufferStrategy,NativeInLightFixer,ProxyCapabilities,SingleBufferStrategy
 
 CLSS public java.awt.Container
 cons public Container()
@@ -358,7 +358,7 @@ meth public void transferFocusDownCycle()
 meth public void update(java.awt.Graphics)
 meth public void validate()
 supr java.awt.Component
-hfds INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,modalAppContext,modalComp,ncomponents,printing,printingThreads,serialPersistentFields,serialVersionUID
+hfds EMPTY_ARRAY,INCLUDE_SELF,SEARCH_HEAVYWEIGHTS,component,containerListener,containerSerializedDataVersion,dbg,descendantsCount,dispatcher,focusCycleRoot,focusTraversalPolicy,focusTraversalPolicyProvider,layoutMgr,listeningBoundsChildren,listeningChildren,mixingLog,modalAppContext,modalComp,numOfHWComponents,numOfLWComponents,preserveBackgroundColor,printing,printingThreads,serialPersistentFields,serialVersionUID
 hcls DropTargetEventTargetFilter,EventTargetFilter,MouseEventTargetFilter,WakingRunnable
 
 CLSS public abstract interface java.awt.MenuContainer
@@ -872,7 +872,7 @@ meth public void putProperties(java.lang.String,org.netbeans.spi.project.support
 meth public void removeAntProjectListener(org.netbeans.spi.project.support.ant.AntProjectListener)
 meth public void setLibrariesLocation(java.lang.String)
 supr java.lang.Object
-hfds NONEXISTENT,PRIVATE_NS,PROJECT_NS,QUIETLY_SWALLOW_XML_LOAD_ERRORS,RP,db,dir,fileListener,listeners,modifiedMetadataPaths,pendingHook,pendingHookCount,privateXml,privateXmlValid,projectXml,projectXmlValid,properties,state,type,writingXML
+hfds LOG,NONEXISTENT,PRIVATE_NS,PROJECT_NS,QUIETLY_SWALLOW_XML_LOAD_ERRORS,RP,addedProjectXmlPath,db,dir,fileListener,listeners,modifiedMetadataPaths,pendingHook,pendingHookCount,privateXml,privateXmlValid,projectXml,projectXmlValid,properties,saveActions,state,type
 hcls ActionImpl,FileListener,RunnableImpl
 
 CLSS public abstract interface org.netbeans.spi.project.support.ant.AntProjectListener
@@ -882,10 +882,12 @@ meth public abstract void propertiesChanged(org.netbeans.spi.project.support.ant
 
 CLSS public final org.netbeans.spi.project.support.ant.EditableProperties
 cons public EditableProperties()
+ anno 0 java.lang.Deprecated()
 cons public EditableProperties(boolean)
 cons public EditableProperties(java.util.Map<java.lang.String,java.lang.String>)
 intf java.lang.Cloneable
 meth public java.lang.Object clone()
+meth public java.lang.String get(java.lang.Object)
 meth public java.lang.String getProperty(java.lang.String)
 meth public java.lang.String put(java.lang.String,java.lang.String)
 meth public java.lang.String setProperty(java.lang.String,java.lang.String)
@@ -897,8 +899,7 @@ meth public void load(java.io.InputStream) throws java.io.IOException
 meth public void setComment(java.lang.String,java.lang.String[],boolean)
 meth public void store(java.io.OutputStream) throws java.io.IOException
 supr java.util.AbstractMap<java.lang.String,java.lang.String>
-hfds INDENT,READING_KEY_VALUE,WAITING_FOR_KEY_VALUE,alphabetize,commentChars,itemIndex,items,keyValueSeparators,strictKeyValueSeparators,whiteSpaceChars
-hcls Item,IteratorImpl,MapEntryImpl,SetImpl
+hfds delegate
 
 CLSS public abstract org.netbeans.spi.project.support.ant.FilterPropertyProvider
 cons protected FilterPropertyProvider(org.netbeans.spi.project.support.ant.PropertyProvider)
@@ -972,8 +973,8 @@ meth public static org.netbeans.spi.project.support.ant.PropertyProvider propert
 meth public static org.netbeans.spi.project.support.ant.PropertyProvider userPropertiesProvider(org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String,java.io.File)
 meth public static void putGlobalProperties(org.netbeans.spi.project.support.ant.EditableProperties) throws java.io.IOException
 supr java.lang.Object
-hfds RELATIVE_SLASH_SEPARATED_PATH,VALID_PROPERTY_NAME,globalPropertyProviders
-hcls FilePropertyProvider,FixedPropertyProvider,SequentialPropertyEvaluator,UserPropertiesProvider
+hfds RELATIVE_SLASH_SEPARATED_PATH,VALID_PROPERTY_NAME,currentGlobalProperties,currentGlobalPropertiesFile,currentGlobalPropertiesLastModified,currentGlobalPropertiesLength,globalPropertyProviders
+hcls FilePropertyProvider,FixedPropertyProvider,UserPropertiesProvider
 
 CLSS public final org.netbeans.spi.project.support.ant.ReferenceHelper
 cons public ReferenceHelper(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.AuxiliaryConfiguration,org.netbeans.spi.project.support.ant.PropertyEvaluator)
@@ -1035,18 +1036,37 @@ CLSS public final org.netbeans.spi.project.support.ant.SourcesHelper
 cons public SourcesHelper(org.netbeans.api.project.Project,org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
 cons public SourcesHelper(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.spi.project.support.ant.PropertyEvaluator)
  anno 0 java.lang.Deprecated()
+innr public final SourceRootConfig
 meth public org.netbeans.api.project.Sources createSources()
+meth public org.netbeans.spi.project.SourceGroupModifierImplementation createSourceGroupModifierImplementation()
+meth public org.netbeans.spi.project.support.ant.SourcesHelper$SourceRootConfig sourceRoot(java.lang.String)
 meth public void addNonSourceRoot(java.lang.String)
 meth public void addOwnedFile(java.lang.String)
 meth public void addPrincipalSourceRoot(java.lang.String,java.lang.String,java.lang.String,java.lang.String,javax.swing.Icon,javax.swing.Icon)
+ anno 0 java.lang.Deprecated()
 meth public void addPrincipalSourceRoot(java.lang.String,java.lang.String,javax.swing.Icon,javax.swing.Icon)
+ anno 0 java.lang.Deprecated()
 meth public void addTypedSourceRoot(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,javax.swing.Icon,javax.swing.Icon)
+ anno 0 java.lang.Deprecated()
 meth public void addTypedSourceRoot(java.lang.String,java.lang.String,java.lang.String,javax.swing.Icon,javax.swing.Icon)
+ anno 0 java.lang.Deprecated()
 meth public void registerExternalRoots(int)
 meth public void registerExternalRoots(int,boolean)
 supr java.lang.Object
-hfds aph,evaluator,lastRegisteredRoots,minimalSubfolders,nonSourceRoots,ownedFiles,principalSourceRoots,project,propChangeL,registeredRootAlgorithm,typedSourceRoots
-hcls PropChangeL,Root,SourceRoot,SourcesImpl,TypedSourceRoot
+hfds aph,evaluator,knownSources,lastRegisteredRoots,minimalSubfolders,nonSourceRoots,ownedFiles,principalSourceRoots,project,propChangeL,registeredRootAlgorithm,typedSourceRoots
+hcls PropChangeL,Root,SourceGroupModifierImpl,SourceRoot,SourcesImpl,TypedSourceRoot
+
+CLSS public final org.netbeans.spi.project.support.ant.SourcesHelper$SourceRootConfig
+meth public org.netbeans.spi.project.support.ant.SourcesHelper$SourceRootConfig add()
+meth public org.netbeans.spi.project.support.ant.SourcesHelper$SourceRootConfig displayName(java.lang.String)
+meth public org.netbeans.spi.project.support.ant.SourcesHelper$SourceRootConfig excludes(java.lang.String)
+meth public org.netbeans.spi.project.support.ant.SourcesHelper$SourceRootConfig hint(java.lang.String)
+meth public org.netbeans.spi.project.support.ant.SourcesHelper$SourceRootConfig icon(javax.swing.Icon)
+meth public org.netbeans.spi.project.support.ant.SourcesHelper$SourceRootConfig includes(java.lang.String)
+meth public org.netbeans.spi.project.support.ant.SourcesHelper$SourceRootConfig openedIcon(javax.swing.Icon)
+meth public org.netbeans.spi.project.support.ant.SourcesHelper$SourceRootConfig type(java.lang.String)
+supr java.lang.Object
+hfds displayName,excludes,hint,icon,includes,location,openedIcon,type
 
 CLSS public org.netbeans.spi.project.support.ant.ui.StoreGroup
 cons public StoreGroup()

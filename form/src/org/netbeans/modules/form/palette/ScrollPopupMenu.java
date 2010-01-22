@@ -42,7 +42,6 @@
 package org.netbeans.modules.form.palette;
 
 import java.awt.*;
-import java.lang.reflect.Field;
 import javax.swing.*;
 
 
@@ -149,8 +148,6 @@ public class ScrollPopupMenu extends JPopupMenu {
                     d.width = 12;
                     bar.setPreferredSize(d);
                     bar.setUnitIncrement(21);
-                    // Issue 47181
-                    doNotCancelPopupHack(bar);
                 }
 
                 popWin.getContentPane().add(scrollPane, BorderLayout.CENTER);
@@ -167,24 +164,5 @@ public class ScrollPopupMenu extends JPopupMenu {
 
     public JScrollBar getScrollBar() {
         return scrollPane != null ? scrollPane.getVerticalScrollBar() : null;
-    }
-    
-    public static void doNotCancelPopupHack(JComponent component) {
-        if (System.getProperty("java.version").startsWith("1.5")) { // NOI18N
-            try {
-                Class clazz = javax.swing.plaf.basic.BasicComboBoxUI.class;
-                Field field = clazz.getDeclaredField("HIDE_POPUP_KEY"); // NOI18N
-                field.setAccessible(true);
-                component.putClientProperty("doNotCancelPopup", field.get(null)); // NOI18N
-                for (int i=0; i<component.getComponentCount(); i++) {
-                    Component comp = component.getComponent(i);
-                    if (comp instanceof JComponent) {
-                        doNotCancelPopupHack((JComponent)comp);
-                    }
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
     }
 }

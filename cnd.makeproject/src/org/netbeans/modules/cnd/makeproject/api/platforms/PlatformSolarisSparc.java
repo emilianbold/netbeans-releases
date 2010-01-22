@@ -41,10 +41,12 @@
 
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+
 public class PlatformSolarisSparc extends PlatformSolaris {
     public static final String NAME = "Solaris-Sparc"; // NOI18N
 
     public PlatformSolarisSparc() {
-        super(NAME, "Solaris Sparc", Platform.PLATFORM_SOLARIS_SPARC); // NOI18N
+        super(NAME, "Solaris Sparc", PlatformTypes.PLATFORM_SOLARIS_SPARC); // NOI18N
     }
 }

@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 0.44.1
+#Signature file v4.1
+#Version 0.52.0
 
 CLSS public abstract interface com.sun.source.tree.TreeVisitor<%0 extends java.lang.Object, %1 extends java.lang.Object>
 meth public abstract {com.sun.source.tree.TreeVisitor%0} visitAnnotation(com.sun.source.tree.AnnotationTree,{com.sun.source.tree.TreeVisitor%1})
@@ -238,11 +238,16 @@ CLSS public org.netbeans.api.java.source.BuildArtifactMapper
 cons public BuildArtifactMapper()
 innr public abstract interface static ArtifactsUpdated
 meth public static void addArtifactsUpdatedListener(java.net.URL,org.netbeans.api.java.source.BuildArtifactMapper$ArtifactsUpdated)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 meth public static void removeArtifactsUpdatedListener(java.net.URL,org.netbeans.api.java.source.BuildArtifactMapper$ArtifactsUpdated)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 
 CLSS public abstract interface static org.netbeans.api.java.source.BuildArtifactMapper$ArtifactsUpdated
 meth public abstract void artifactsUpdated(java.lang.Iterable<java.io.File>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 
 CLSS public abstract interface org.netbeans.api.java.source.CancellableTask<%0 extends java.lang.Object>
 intf org.netbeans.api.java.source.Task<{org.netbeans.api.java.source.CancellableTask%0}>
@@ -254,14 +259,27 @@ innr public final static !enum SearchKind
 innr public final static !enum SearchScope
 meth public java.util.Set<java.lang.String> getPackageNames(java.lang.String,boolean,java.util.Set<org.netbeans.api.java.source.ClassIndex$SearchScope>)
  anno 0 org.netbeans.api.annotations.common.NullUnknown()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
 meth public java.util.Set<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> getDeclaredTypes(java.lang.String,org.netbeans.api.java.source.ClassIndex$NameKind,java.util.Set<org.netbeans.api.java.source.ClassIndex$SearchScope>)
  anno 0 org.netbeans.api.annotations.common.NullUnknown()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
 meth public java.util.Set<org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>> getElements(org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>,java.util.Set<org.netbeans.api.java.source.ClassIndex$SearchKind>,java.util.Set<org.netbeans.api.java.source.ClassIndex$SearchScope>)
  anno 0 org.netbeans.api.annotations.common.NullUnknown()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
 meth public java.util.Set<org.openide.filesystems.FileObject> getResources(org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>,java.util.Set<org.netbeans.api.java.source.ClassIndex$SearchKind>,java.util.Set<org.netbeans.api.java.source.ClassIndex$SearchScope>)
  anno 0 org.netbeans.api.annotations.common.NullUnknown()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NonNull()
 meth public void addClassIndexListener(org.netbeans.api.java.source.ClassIndexListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void removeClassIndexListener(org.netbeans.api.java.source.ClassIndexListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 hfds LOGGER,bootPath,classPath,depsIndeces,listeners,oldBoot,oldCompile,oldSources,sourceIndeces,sourcePath,spiListener
 hcls ClassIndexFactoryImpl,SPIListener
@@ -308,18 +326,27 @@ meth public boolean equals(java.lang.Object)
 meth public int hashCode()
 meth public java.lang.String toString()
 meth public org.netbeans.api.java.classpath.ClassPath getClassPath(org.netbeans.api.java.source.ClasspathInfo$PathKind)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.java.source.ClassIndex getClassIndex()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.api.java.source.ClasspathInfo create(java.io.File)
  anno 0 org.netbeans.api.annotations.common.NullUnknown()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.api.java.source.ClasspathInfo create(javax.swing.text.Document)
  anno 0 org.netbeans.api.annotations.common.NullUnknown()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.api.java.source.ClasspathInfo create(org.netbeans.api.java.classpath.ClassPath,org.netbeans.api.java.classpath.ClassPath,org.netbeans.api.java.classpath.ClassPath)
  anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
 meth public static org.netbeans.api.java.source.ClasspathInfo create(org.openide.filesystems.FileObject)
  anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void addChangeListener(javax.swing.event.ChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void removeChangeListener(javax.swing.event.ChangeListener)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 hfds EMPTY_PATH,archiveProvider,backgroundCompilation,bootClassPath,cachedBootClassPath,cachedCompileClassPath,cachedSrcClassPath,compileClassPath,cpListener,fileManager,filter,ignoreExcludes,listenerList,log,memoryFileManager,outFileManager,outputClassPath,srcClassPath,usagesQuery
 hcls ClassPathListener,ClasspathInfoAccessorImpl
@@ -531,12 +558,22 @@ meth public static org.netbeans.api.java.source.Comment$Style valueOf(java.lang.
 meth public static org.netbeans.api.java.source.Comment$Style[] values()
 supr java.lang.Enum<org.netbeans.api.java.source.Comment$Style>
 
+CLSS public final org.netbeans.api.java.source.CommentCollector
+meth public static org.netbeans.api.java.source.CommentCollector getInstance()
+meth public void collect(org.netbeans.api.java.source.WorkingCopy) throws java.io.IOException
+meth public void collect(org.netbeans.api.lexer.TokenSequence<org.netbeans.api.java.lexer.JavaTokenId>,org.netbeans.api.java.source.CompilationInfo)
+supr java.lang.Object
+hfds instance,log
+hcls CommentsCollection
+
 CLSS public org.netbeans.api.java.source.CompilationController
 meth protected void doInvalidate()
 meth public org.netbeans.api.java.source.JavaSource$Phase toPhase(org.netbeans.api.java.source.JavaSource$Phase) throws java.io.IOException
  anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.api.java.source.CompilationController get(org.netbeans.modules.parsing.spi.Parser$Result)
  anno 0 org.netbeans.api.annotations.common.NullUnknown()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 supr org.netbeans.api.java.source.CompilationInfo
 
 CLSS public org.netbeans.api.java.source.CompilationInfo
@@ -552,6 +589,8 @@ meth public java.lang.String getText()
 meth public java.util.List<? extends javax.lang.model.element.TypeElement> getTopLevelElements()
  anno 0 org.netbeans.api.annotations.common.NullUnknown()
 meth public java.util.List<javax.tools.Diagnostic> getDiagnostics()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public javax.lang.model.SourceVersion getSourceVersion()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public javax.lang.model.util.Elements getElements()
  anno 0 org.netbeans.api.annotations.common.NonNull()
@@ -581,13 +620,16 @@ meth public org.openide.filesystems.FileObject getFileObject()
  anno 0 org.netbeans.api.annotations.common.NullUnknown()
 meth public static org.netbeans.api.java.source.CompilationInfo get(org.netbeans.modules.parsing.spi.Parser$Result)
  anno 0 org.netbeans.api.annotations.common.NullUnknown()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 hfds VERIFY_CONFINEMENT,elementUtilities,impl,invalid,javaSource,treeUtilities,typeUtilities
 
 CLSS public final org.netbeans.api.java.source.ElementHandle<%0 extends javax.lang.model.element.Element>
 meth public boolean equals(java.lang.Object)
 meth public boolean signatureEquals(org.netbeans.api.java.source.ElementHandle<? extends javax.lang.model.element.Element>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public boolean signatureEquals({org.netbeans.api.java.source.ElementHandle%0})
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public int hashCode()
 meth public java.lang.String getBinaryName()
  anno 0 org.netbeans.api.annotations.common.NonNull()
@@ -598,10 +640,13 @@ meth public javax.lang.model.element.ElementKind getKind()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public static <%0 extends javax.lang.model.element.Element> org.netbeans.api.java.source.ElementHandle<{%%0}> create({%%0})
  anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.api.java.source.ElementHandle<? extends javax.lang.model.element.TypeElement> from(org.netbeans.api.java.source.TypeMirrorHandle<? extends javax.lang.model.type.DeclaredType>)
  anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public {org.netbeans.api.java.source.ElementHandle%0} resolve(org.netbeans.api.java.source.CompilationInfo)
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 hfds kind,log,signatures
 hcls ElementHandleAccessorImpl
@@ -650,12 +695,14 @@ meth public java.util.List<? extends com.sun.source.tree.MethodTree> createAbstr
 meth public java.util.List<? extends com.sun.source.tree.MethodTree> createAllAbstractMethodImplementations(javax.lang.model.element.TypeElement)
 meth public java.util.List<? extends com.sun.source.tree.MethodTree> createOverridingMethods(javax.lang.model.element.TypeElement,java.lang.Iterable<? extends javax.lang.model.element.ExecutableElement>)
 meth public static org.netbeans.api.java.source.GeneratorUtilities get(org.netbeans.api.java.source.WorkingCopy)
+meth public void copyComments(com.sun.source.tree.Tree,com.sun.source.tree.Tree,boolean)
 supr java.lang.Object
 hfds copy
 hcls ClassMemberComparator
 
 CLSS public abstract org.netbeans.api.java.source.JavaParserResultTask<%0 extends org.netbeans.modules.parsing.spi.Parser$Result>
 cons protected JavaParserResultTask(org.netbeans.api.java.source.JavaSource$Phase)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public final org.netbeans.api.java.source.JavaSource$Phase getPhase()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 supr org.netbeans.modules.parsing.spi.ParserResultTask<{org.netbeans.api.java.source.JavaParserResultTask%0}>
@@ -667,21 +714,30 @@ innr public final static !enum Priority
 innr public final static InsufficientMemoryException
 meth public !varargs static org.netbeans.api.java.source.JavaSource create(org.netbeans.api.java.source.ClasspathInfo,org.openide.filesystems.FileObject[])
  anno 0 org.netbeans.api.annotations.common.NullUnknown()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 meth public java.util.Collection<org.openide.filesystems.FileObject> getFileObjects()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public java.util.concurrent.Future<java.lang.Void> runWhenScanFinished(org.netbeans.api.java.source.Task<org.netbeans.api.java.source.CompilationController>,boolean) throws java.io.IOException
  anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.java.source.ClasspathInfo getClasspathInfo()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.java.source.ModificationResult runModificationTask(org.netbeans.api.java.source.Task<org.netbeans.api.java.source.WorkingCopy>) throws java.io.IOException
  anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.api.java.source.JavaSource create(org.netbeans.api.java.source.ClasspathInfo,java.util.Collection<? extends org.openide.filesystems.FileObject>)
  anno 0 org.netbeans.api.annotations.common.NullUnknown()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.api.java.source.JavaSource forDocument(javax.swing.text.Document)
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.api.java.source.JavaSource forFileObject(org.openide.filesystems.FileObject)
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void runUserActionTask(org.netbeans.api.java.source.Task<org.netbeans.api.java.source.CompilationController>,boolean) throws java.io.IOException
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 hfds LOGGER,cachedCpInfo,classpathInfo,file2JavaSource,files,sources
 hcls JavaSourceAccessorImpl,MimeTask,MultiTask
@@ -715,6 +771,8 @@ supr java.lang.Enum<org.netbeans.api.java.source.JavaSource$Priority>
 
 CLSS public abstract org.netbeans.api.java.source.JavaSourceTaskFactory
 cons protected JavaSourceTaskFactory(org.netbeans.api.java.source.JavaSource$Phase,org.netbeans.api.java.source.JavaSource$Priority)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 meth protected abstract java.util.Collection<org.openide.filesystems.FileObject> getFileObjects()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth protected abstract org.netbeans.api.java.source.CancellableTask<org.netbeans.api.java.source.CompilationInfo> createTask(org.openide.filesystems.FileObject)
@@ -729,15 +787,20 @@ CLSS public final org.netbeans.api.java.source.ModificationResult
 innr public static Difference
 meth public int[] getSpan(java.lang.Object)
  anno 0 org.netbeans.api.annotations.common.NullUnknown()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public java.lang.String getResultingSource(org.openide.filesystems.FileObject) throws java.io.IOException
  anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public java.util.List<? extends org.netbeans.api.java.source.ModificationResult$Difference> getDifferences(org.openide.filesystems.FileObject)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public java.util.Set<? extends org.openide.filesystems.FileObject> getModifiedFileObjects()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public java.util.Set<java.io.File> getNewFiles()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.api.java.source.ModificationResult runModificationTask(java.util.Collection<org.netbeans.modules.parsing.api.Source>,org.netbeans.modules.parsing.api.UserTask) throws org.netbeans.modules.parsing.spi.ParseException
  anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 meth public void commit() throws java.io.IOException
 supr java.lang.Object
 hfds committed,diffs,sources,tag2Span
@@ -805,7 +868,7 @@ meth public static org.openide.filesystems.FileObject getFile(javax.lang.model.e
 meth public static org.openide.filesystems.FileObject getFile(org.netbeans.api.java.source.ElementHandle<? extends javax.lang.model.element.Element>,org.netbeans.api.java.source.ClasspathInfo)
 meth public static void waitScanFinished() throws java.lang.InterruptedException
 supr java.lang.Object
-hfds PACKAGE_SUMMARY
+hfds MAX_LEN,PACKAGE_SUMMARY,VOWELS
 
 CLSS public abstract interface org.netbeans.api.java.source.Task<%0 extends java.lang.Object>
 meth public abstract void run({org.netbeans.api.java.source.Task%0}) throws java.lang.Exception
@@ -872,6 +935,8 @@ meth public com.sun.source.tree.EnhancedForLoopTree EnhancedForLoop(com.sun.sour
 meth public com.sun.source.tree.ErroneousTree Erroneous(java.util.List<? extends com.sun.source.tree.Tree>)
 meth public com.sun.source.tree.ExpressionStatementTree ExpressionStatement(com.sun.source.tree.ExpressionTree)
 meth public com.sun.source.tree.ExpressionTree QualIdent(javax.lang.model.element.Element)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public com.sun.source.tree.ForLoopTree ForLoop(java.util.List<? extends com.sun.source.tree.StatementTree>,com.sun.source.tree.ExpressionTree,java.util.List<? extends com.sun.source.tree.ExpressionStatementTree>,com.sun.source.tree.StatementTree)
 meth public com.sun.source.tree.ForLoopTree addForLoopInitializer(com.sun.source.tree.ForLoopTree,com.sun.source.tree.StatementTree)
 meth public com.sun.source.tree.ForLoopTree addForLoopUpdate(com.sun.source.tree.ForLoopTree,com.sun.source.tree.ExpressionStatementTree)
@@ -952,6 +1017,8 @@ meth public com.sun.source.tree.ParameterizedTypeTree removeParameterizedTypeTyp
 meth public com.sun.source.tree.ParameterizedTypeTree removeParameterizedTypeTypeArgument(com.sun.source.tree.ParameterizedTypeTree,int)
 meth public com.sun.source.tree.ParenthesizedTree Parenthesized(com.sun.source.tree.ExpressionTree)
 meth public com.sun.source.tree.PrimitiveTypeTree PrimitiveType(javax.lang.model.type.TypeKind)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public com.sun.source.tree.ReturnTree Return(com.sun.source.tree.ExpressionTree)
 meth public com.sun.source.tree.SwitchTree Switch(com.sun.source.tree.ExpressionTree,java.util.List<? extends com.sun.source.tree.CaseTree>)
 meth public com.sun.source.tree.SwitchTree addSwitchCase(com.sun.source.tree.SwitchTree,com.sun.source.tree.CaseTree)
@@ -961,6 +1028,8 @@ meth public com.sun.source.tree.SwitchTree removeSwitchCase(com.sun.source.tree.
 meth public com.sun.source.tree.SynchronizedTree Synchronized(com.sun.source.tree.ExpressionTree,com.sun.source.tree.BlockTree)
 meth public com.sun.source.tree.ThrowTree Throw(com.sun.source.tree.ExpressionTree)
 meth public com.sun.source.tree.Tree Type(javax.lang.model.type.TypeMirror)
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public com.sun.source.tree.TryTree Try(com.sun.source.tree.BlockTree,java.util.List<? extends com.sun.source.tree.CatchTree>,com.sun.source.tree.BlockTree)
 meth public com.sun.source.tree.TryTree addTryCatch(com.sun.source.tree.TryTree,com.sun.source.tree.CatchTree)
 meth public com.sun.source.tree.TryTree insertTryCatch(com.sun.source.tree.TryTree,int,com.sun.source.tree.CatchTree)
@@ -982,6 +1051,7 @@ meth public void insertComment(com.sun.source.tree.Tree,org.netbeans.api.java.so
 meth public void removeComment(com.sun.source.tree.Tree,int,boolean)
 supr java.lang.Object
 hfds copy,delegate,handler
+hcls TreePosCleaner
 
 CLSS public final org.netbeans.api.java.source.TreePathHandle
 meth public boolean equals(java.lang.Object)
@@ -991,17 +1061,19 @@ meth public int hashCode()
 meth public java.lang.String toString()
 meth public javax.lang.model.element.Element resolveElement(org.netbeans.api.java.source.CompilationInfo)
 meth public org.openide.filesystems.FileObject getFileObject()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth public static org.netbeans.api.java.source.TreePathHandle create(com.sun.source.util.TreePath,org.netbeans.api.java.source.CompilationInfo)
 meth public static org.netbeans.api.java.source.TreePathHandle create(javax.lang.model.element.Element,org.netbeans.api.java.source.CompilationInfo)
 supr java.lang.Object
 hfds delegate,log
-hcls Delegate,ElementDelegate,TreeDelegate
+hcls CountingDelegate,Delegate,ElementDelegate,EmptyDelegate,TreeDelegate
 
 CLSS public final org.netbeans.api.java.source.TreeUtilities
 meth public boolean isAccessible(com.sun.source.tree.Scope,javax.lang.model.element.Element,javax.lang.model.type.TypeMirror)
 meth public boolean isAnnotation(com.sun.source.tree.ClassTree)
 meth public boolean isClass(com.sun.source.tree.ClassTree)
 meth public boolean isEnum(com.sun.source.tree.ClassTree)
+meth public boolean isEnumConstant(com.sun.source.tree.VariableTree)
 meth public boolean isInterface(com.sun.source.tree.ClassTree)
 meth public boolean isStaticContext(com.sun.source.tree.Scope)
 meth public boolean isSynthetic(com.sun.source.util.TreePath)
@@ -1036,7 +1108,9 @@ meth public javax.lang.model.type.TypeKind getKind()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public static <%0 extends javax.lang.model.type.TypeMirror> org.netbeans.api.java.source.TypeMirrorHandle<{%%0}> create({%%0})
  anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public {org.netbeans.api.java.source.TypeMirrorHandle%0} resolve(org.netbeans.api.java.source.CompilationInfo)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
 hfds element,kind,typeMirrors
 hcls PlaceholderType,Visitor
@@ -1092,13 +1166,20 @@ supr java.lang.Object
 CLSS public org.netbeans.api.java.source.WorkingCopy
 meth public org.netbeans.api.java.source.JavaSource$Phase toPhase(org.netbeans.api.java.source.JavaSource$Phase) throws java.io.IOException
  anno 0 org.netbeans.api.annotations.common.NonNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public org.netbeans.api.java.source.TreeMaker getTreeMaker()
  anno 0 org.netbeans.api.annotations.common.NonNull()
 meth public static org.netbeans.api.java.source.WorkingCopy get(org.netbeans.modules.parsing.spi.Parser$Result)
  anno 0 org.netbeans.api.annotations.common.NullUnknown()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void rewrite(com.sun.source.tree.Tree,com.sun.source.tree.Tree)
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 meth public void rewriteInComment(int,int,java.lang.String)
+ anno 3 org.netbeans.api.annotations.common.NonNull()
 meth public void tag(com.sun.source.tree.Tree,java.lang.Object)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
 supr org.netbeans.api.java.source.CompilationController
 hfds REWRITE_WHOLE_FILE,afterCommit,changes,externalChanges,instance,textualChanges,tree2Tag,treeMaker,userInfo
 hcls Rewriter,Translator

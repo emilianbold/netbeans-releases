@@ -81,6 +81,18 @@ public class EnumPropertyEditorTest extends NbTestCase {
         assertEquals("null", ed.getJavaInitializationString());
     }
 
+    public void testLocalizedNames() throws Exception {
+        ABProp prop = new ABProp();
+        PropertyEditor ed = PropUtils.getPropertyEditor(prop);
+        ed.setAsText("");
+        assertEquals("myA", ed.getTags()[0]);
+        assertEquals("myB", ed.getTags()[1]);
+        assertEquals(null, ed.getValue());
+        ed.setAsText("myB");
+        assertEquals("myB", ed.getAsText());
+        assertEquals(BetterToString.class.getName().replace('$', '.') + ".B", ed.getJavaInitializationString());
+    }
+
     public enum E {
         CHOCOLATE, VANILLA, STRAWBERRY
     }
@@ -103,4 +115,31 @@ public class EnumPropertyEditorTest extends NbTestCase {
 
     }
 
+    public enum BetterToString {
+        A, B;
+
+        @Override
+        public String toString() {
+            return "my" + name();
+        }
+    }
+
+    private static class ABProp extends PropertySupport.ReadWrite<BetterToString> {
+
+        private BetterToString e = BetterToString.A;
+
+        public ABProp() {
+            super("eval", BetterToString.class, "E Val", "E value");
+        }
+
+        @Override
+        public BetterToString getValue() throws IllegalAccessException, InvocationTargetException {
+            return e;
+        }
+
+        @Override
+        public void setValue(BetterToString val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            e = (BetterToString) val;
+        }
+    }
 }

@@ -227,29 +227,8 @@ public class CachingFileManager implements JavaFileManager, PropertyChangeListen
             sb.append(base.getNameWithoutExtension());
             return sb.toString();
         }
-        else if (javaFileObject instanceof SourceFileObject) {
-            org.openide.filesystems.FileObject fo = ((SourceFileObject)javaFileObject).file;
-            org.openide.filesystems.FileObject root = ((SourceFileObject)javaFileObject).root;
-            if (root != null) {
-                String relativePath = FileUtil.getRelativePath(root, fo);
-                if (relativePath != null) {
-                    int index = relativePath.lastIndexOf('.');                                    //NOI18N
-                    assert index > 0;                    
-                    final String result = relativePath.substring(0,index).replace('/','.');       //NOI18N
-                    return result;
-                }
-            }
-            else {
-                for (org.openide.filesystems.FileObject r : this.cp.getRoots()) {
-                    if (FileUtil.isParentOf(r,fo)) {
-                        String relativePath = FileUtil.getRelativePath(r,fo);
-                        int index = relativePath.lastIndexOf('.');                                    //NOI18N
-                        assert index > 0;                    
-                        final String result = relativePath.substring(0,index).replace('/','.');       //NOI18N
-                        return result;
-                    }
-                }
-            }
+        else if (javaFileObject instanceof FileObjects.InferableJavaFileObject) {
+            return ((SourceFileObject)javaFileObject).inferBinaryName();
         }
         return null;
     }

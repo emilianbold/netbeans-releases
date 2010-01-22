@@ -223,7 +223,7 @@ sub checkline {
             && ! m,findResource ?\s*\(,
             && ! m,Parameters\.\s*not,
             && ! m,Parameters\.\s*java,
-            && ! m,^\@.*,
+            && ! m,^\s*\@,
             && m,".+", 
            ); 
 }

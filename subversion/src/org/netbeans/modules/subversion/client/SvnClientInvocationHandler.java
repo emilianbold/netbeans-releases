@@ -47,6 +47,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.security.InvalidKeyException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -76,6 +78,13 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     protected static final String GET_STATUS = "getStatus"; // NOI18N
     protected static final String GET_INFO_FROM_WORKING_COPY = "getInfoFromWorkingCopy"; // NOI18N
     protected static final String CANCEL_OPERATION = "cancel"; //NOI18N
+    private static final HashSet<String> PARALLELIZABLE_METHODS = new HashSet<String>(Arrays.asList(new String[] {
+        "setConfigDirectory",                                           //NOI18N
+        "getSvnUrl",                                                    //NOI18N
+        "addNotifyListener",                                            //NOI18N
+        "getIgnoredPatterns",                                           //NOI18N
+        "removeNotifyListener"                                          //NOI18N
+    }));
     
     private static final Object semaphor = new Object();
 
@@ -296,7 +305,8 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     }
     
     private boolean parallelizable(Method method, Object[] args) {
-        return isLocalReadCommand(method, args) || isCancelCommand(method, args);
+        return isLocalReadCommand(method, args) || isCancelCommand(method, args)
+                || PARALLELIZABLE_METHODS.contains(method.getName());
     }
     
     protected boolean isLocalReadCommand(Method method, Object[] args) {

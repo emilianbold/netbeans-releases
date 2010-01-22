@@ -57,6 +57,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.openide.util.Lookup;
 
 /**
@@ -178,6 +179,10 @@ final class BrokenJavacardPlatform extends JavacardPlatform {
     @Override
     public String getPlatformKind() {
         return "_NONE";
+    }
+
+    public Set<ProjectKind> supportedProjectKinds() {
+        return ProjectKind.kindsFor(null, true);
     }
 
     private static final class CI extends Cards {

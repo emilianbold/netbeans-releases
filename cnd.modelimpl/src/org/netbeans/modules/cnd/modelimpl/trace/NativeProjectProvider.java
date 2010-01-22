@@ -114,7 +114,7 @@ public final class NativeProjectProvider {
         return NativeFileItem.Language.OTHER;
     }
 
-    private static final class NativeProjectImpl implements NativeProject {
+    public static final class NativeProjectImpl implements NativeProject {
 	
 	private final List<String> sysIncludes;
 	private final List<String> usrIncludes;
@@ -202,7 +202,32 @@ public final class NativeProjectProvider {
 		listeners.remove(listener);
 	    }
         }
-	
+
+	public void fireFileChanged(File file) {
+            NativeFileItem item = findFileItem(file);
+	    List<NativeProjectItemsListener> listenersCopy;
+	    synchronized( listenersLock ) {
+		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
+	    }
+	    for( NativeProjectItemsListener listener : listenersCopy ) {
+		listener.filePropertiesChanged(item);
+	    }
+        }
+
+        public void fireFileAdded(File file) {
+            NativeFileItem item = findFileItem(file);
+            if (item == null) {
+                item = addFile(file);
+            }
+	    List<NativeProjectItemsListener> listenersCopy;
+	    synchronized( listenersLock ) {
+		listenersCopy = new ArrayList<NativeProjectItemsListener>(listeners);
+	    }
+	    for( NativeProjectItemsListener listener : listenersCopy ) {
+		listener.fileAdded(item);
+	    }
+        }
+
 	private void fireAllFilesChanged() {
 	    List<NativeProjectItemsListener> listenersCopy;
 	    synchronized( listenersLock ) {
@@ -240,13 +265,14 @@ public final class NativeProjectProvider {
             return this.usrMacros;
         }
         
-	private void addFile(File file) {
+	private NativeFileItem addFile(File file) {
             DataObject dobj = getDataObject(file);
 	    NativeFileItem.Language lang = getLanguage(file, dobj);
 	    NativeFileItem item = new NativeFileItemImpl(file, this, lang);
 	    //TODO: put item in loockup of DataObject
             // registerItemInDataObject(dobj, item);
 	    this.files.add(item);
+            return item;
 	}
 	
         public List<NativeProject> getDependences() {

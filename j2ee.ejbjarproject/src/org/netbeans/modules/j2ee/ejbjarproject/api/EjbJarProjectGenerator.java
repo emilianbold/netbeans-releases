@@ -71,6 +71,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
@@ -209,6 +210,9 @@ public class EjbJarProjectGenerator {
             EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFile);
             ejbJar.setDisplayName(name);
             ejbJar.write(ddFile);
+        }
+        if (createData.isCDIEnabled()) {
+            DDHelper.createBeansXml(profile, confRoot);
         }
         
         return h;

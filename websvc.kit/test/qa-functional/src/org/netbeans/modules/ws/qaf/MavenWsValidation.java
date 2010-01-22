@@ -76,7 +76,7 @@ public class MavenWsValidation extends WsValidation {
 //                "testRunWsProject",
                 "testCreateWsClient",
                 "testCallWsOperationInServlet",
-// IZ# 175976              "testCallWsOperationInJSP",
+                "testCallWsOperationInJSP",
                 "testCallWsOperationInJavaClass",
                 "testRefreshClient",
                 "testWsClientHandlers",

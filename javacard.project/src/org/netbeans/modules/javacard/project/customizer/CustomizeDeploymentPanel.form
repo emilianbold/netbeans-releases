@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
-  <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="null"/>
-  </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -22,12 +19,12 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="instructionsPane" alignment="0" pref="591" max="32767" attributes="0"/>
+                  <Component id="instructionsPane" alignment="0" pref="615" max="32767" attributes="0"/>
                   <Component id="titleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="appletInstanceLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="deploymentParamsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="deploymentParamsField" alignment="0" pref="591" max="32767" attributes="0"/>
-                  <Component id="aidPnl" alignment="0" pref="591" max="32767" attributes="0"/>
+                  <Component id="deploymentParamsField" alignment="0" pref="615" max="32767" attributes="0"/>
+                  <Component id="aidPnl" alignment="0" pref="615" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="instancesPane" pref="502" max="32767" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -106,6 +103,7 @@
             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
           </Border>
         </Property>
+        <Property name="opaque" type="boolean" value="false"/>
       </Properties>
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
@@ -129,6 +127,7 @@
               <ResourceString bundle="org/netbeans/modules/javacard/project/customizer/Bundle.properties" key="CustomizeDeploymentPanel.instructionsTextArea.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})"/>
             </Property>
             <Property name="wrapStyleWord" type="boolean" value="true"/>
+            <Property name="opaque" type="boolean" value="false"/>
           </Properties>
         </Component>
       </SubComponents>

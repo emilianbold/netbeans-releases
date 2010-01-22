@@ -60,10 +60,12 @@ public class DiffAction extends ContextAction {
         return "CTL_MenuItem_Diff";    // NOI18N
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return getDirectoryEnabledStatus();
     }
 
+    @Override
     protected int getDirectoryEnabledStatus() {
         return FileInformation.STATUS_MANAGED 
              & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED; 
@@ -102,7 +104,7 @@ public class DiffAction extends ContextAction {
         
         Context ctx = getContext(nodes);
         String contextName = getContextDisplayName(nodes);
-        diff(ctx, Setup.DIFFTYPE_LOCAL, contextName);        
+        diff(ctx, SvnModuleConfig.getDefault().getLastUsedModificationContext(), contextName);
     }
    
 }

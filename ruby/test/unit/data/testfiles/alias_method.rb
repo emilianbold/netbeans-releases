@@ -17,3 +17,13 @@ class Close
 end
 
 Close.new.so_so_close
+
+class Here
+  def right_here
+  end
+  # 'alias' keyword
+  alias :right_there :right_here
+
+end
+
+Here.new.right_there

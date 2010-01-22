@@ -43,9 +43,9 @@ import java.util.List;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.SeenProperty;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssue.IssueField;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.nodes.Node.Property;
 import org.openide.util.NbBundle;
@@ -140,6 +140,7 @@ public class BugzillaIssueNode extends IssueNode {
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_ID_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_ID_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             return getBugzillaIssue().getID();
         }
@@ -159,6 +160,7 @@ public class BugzillaIssueNode extends IssueNode {
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Severity_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Severity_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.SEVERITY);
         }
@@ -179,6 +181,7 @@ public class BugzillaIssueNode extends IssueNode {
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Issue_Type_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Issue_Type_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.ISSUE_TYPE);
         }
@@ -199,6 +202,7 @@ public class BugzillaIssueNode extends IssueNode {
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Priority_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Priority_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.PRIORITY);
         }
@@ -219,6 +223,7 @@ public class BugzillaIssueNode extends IssueNode {
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Status_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Status_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.STATUS);
         }
@@ -238,6 +243,7 @@ public class BugzillaIssueNode extends IssueNode {
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Resolution_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_ID_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.RESOLUTION);
         }
@@ -258,6 +264,7 @@ public class BugzillaIssueNode extends IssueNode {
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Summary_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Summary_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             return getBugzillaIssue().getSummary();
         }
@@ -277,6 +284,7 @@ public class BugzillaIssueNode extends IssueNode {
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Assigned_Title"), // NOI18N
                   NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Assigned_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             return getBugzillaIssue().getFieldValue(IssueField.ASSIGNED_TO);
         }

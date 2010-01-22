@@ -53,10 +53,12 @@ class SlownessData {
     private final long time;
     private final byte[] npsContent;
     private final String latestActionName;
-
-    public SlownessData(long time, byte[] npsContent, String latestActionClassName) {
+    private final String slownessType;
+    
+    public SlownessData(long time, byte[] npsContent, String slownessType, String latestActionClassName) {
         this.time = time;
         this.npsContent = npsContent;
+        this.slownessType = slownessType;
         this.latestActionName = latestActionClassName;
     }
 
@@ -76,7 +78,7 @@ class SlownessData {
 
     public LogRecord getLogRec(){
         LogRecord rec = new LogRecord(Level.CONFIG, SLOWNESS_DATA);
-        rec.setParameters(new Object[]{new Long(time), latestActionName});
+        rec.setParameters(new Object[]{new Long(time), latestActionName, slownessType});
         return rec;
     }
 
@@ -86,4 +88,12 @@ class SlownessData {
     public String getLatestActionName() {
         return latestActionName;
     }
+
+    public String getSlownessType() {
+        if (slownessType == null){
+            return "LowPerformance";
+        }
+        return slownessType;
+    }
+
 }

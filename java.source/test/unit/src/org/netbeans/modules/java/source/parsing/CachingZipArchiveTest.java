@@ -41,11 +41,6 @@
 
 package org.netbeans.modules.java.source.parsing;
 
-import java.io.IOException;
-import java.util.jar.JarFile;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 /**
  *
  * @author Petr Hrebejk
@@ -59,14 +54,9 @@ public class CachingZipArchiveTest extends CachingFolderArchiveTest {
         super(testName);
     }
 
-    public static Test suite() {
-        setup = new Setup( new TestSuite( CachingZipArchiveTest.class ) );
-        return setup;
-    }
-       
     @Override
     protected Archive createArchive() {
-        return new CachingArchive( setup.rtFile, true);        
+        return new CachingArchive(rtFile, true);
     }
         
 }

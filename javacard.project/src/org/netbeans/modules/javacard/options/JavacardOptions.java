@@ -59,6 +59,7 @@ final class JavacardOptions extends javax.swing.JPanel implements ValidationUI, 
     private final JavacardOptionsPanelController controller;
     private final ValidationGroup group = ValidationGroup.create(this);
 
+    @SuppressWarnings("unchecked") //NOI18N
     JavacardOptions(JavacardOptionsPanelController controller) {
         this.controller = controller;
         initComponents();

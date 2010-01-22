@@ -7,6 +7,7 @@ package o.n.m.ws.qaf.rest.patterns;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
@@ -39,10 +40,11 @@ public class CcCI1CClass {
     }
 
     /**
-     * Sub-resource locator method for  {CcCI1URI}
+     * Sub-resource locator method for {CcCI1URI}
      */
     @Path("{CcCI1URI}")
-    public CcCI1Cl getCcCI1Cl() {
-        return new CcCI1Cl();
+    public CcCI1Cl getCcCI1Cl(@PathParam("CcCI1URI")
+    String CcCI1URI) {
+        return CcCI1Cl.getInstance(CcCI1URI);
     }
 }

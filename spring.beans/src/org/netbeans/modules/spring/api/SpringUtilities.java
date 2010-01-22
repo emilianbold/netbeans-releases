@@ -59,6 +59,8 @@ public final class SpringUtilities {
     private static final String SPRING_CLASS_NAME = "org.springframework.core.SpringVersion"; // NOI18N
     private static final String JSTL_CLASS_NAME = "javax.servlet.jsp.jstl.core.Config"; // NOI18N
     private static final String SPRING_WEBMVC_CLASS_NAME = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N
+    private static final String SPRING_WEBMVC_3_0_SPECIFIC_CLASS_NAME="org.springframework.web.servlet.config.MvcNamespaceHandler"; //NOI18N
+    private static final String SPRING_WEBMVC_2_5_SPECIFIC_CLASS_NAME="org.springframework.web.servlet.mvc.throwaway.ThrowawayController"; //NOI18N
 
     private SpringUtilities() {}
 
@@ -77,7 +79,8 @@ public final class SpringUtilities {
     }
 
     public static Library findSpringWebMVCLibrary() {
-        return getLibrary(SPRING_WEBMVC_CLASS_NAME);
+//        return getLibrary(SPRING_WEBMVC_CLASS_NAME);
+        return getLibrary(SPRING_WEBMVC_2_5_SPECIFIC_CLASS_NAME);
     }
 
     public static boolean isSpringLibrary(Library library) {

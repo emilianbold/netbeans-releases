@@ -273,7 +273,7 @@ build_cp() {
 }
 
 do_run_updater() {
-    eval "\"$jdkhome/bin/java\"" -classpath "\"${updatercp}\"" $jargs "-Dnetbeans.user=\"$userdir\"" $updater_class "$args"
+    eval "\"$jdkhome/bin/java\"" -classpath "\"${updatercp}\"" "$jargs" "-Dnetbeans.user=\"$userdir\"" $updater_class "$args"
     construct_cp
 }
 

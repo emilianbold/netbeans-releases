@@ -187,7 +187,6 @@ class GeneralOptionsModel {
         return ProxySettings.getAuthenticationUsername ();
     }
 
-    //TODO: not used yet - store valu just in case if modified
     void setAuthenticationUsername (String username) {
         getProxyPreferences ().put (ProxySettings.PROXY_AUTHENTICATION_USERNAME, username);
     }
@@ -196,9 +195,8 @@ class GeneralOptionsModel {
         return ProxySettings.getAuthenticationPassword ();
     }
     
-    //TODO: not used yet - store valu just in case if modified
     void setAuthenticationPassword(char [] password) {
-        getProxyPreferences().put(ProxySettings.PROXY_AUTHENTICATION_PASSWORD, new String(password));
+        ProxySettings.setAuthenticationPassword(password);
     }
     
     // private helper methods ..................................................

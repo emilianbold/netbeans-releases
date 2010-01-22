@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -100,6 +101,8 @@ public class CommandRunner extends BasicTask<OperationState> {
     /** Executor that serializes management tasks. 
      */
     private static ExecutorService executor;
+
+    private static Authenticator AUTH = new AdminAuthenticator();
     
     /** Returns shared executor.
      */
@@ -116,11 +119,13 @@ public class CommandRunner extends BasicTask<OperationState> {
     /** Has been the last access to  manager web app authorized? */
     private boolean authorized;
     private final CommandFactory cf;
+    private final boolean isReallyRunning;
     
     
-    public CommandRunner(CommandFactory cf, Map<String, String> properties, OperationStateListener... stateListener) {
+    public CommandRunner(boolean isReallyRunning, CommandFactory cf, Map<String, String> properties, OperationStateListener... stateListener) {
         super(properties, stateListener);
         this.cf =cf;
+        this.isReallyRunning = isReallyRunning;
     }
     
     /**
@@ -357,6 +362,11 @@ public class CommandRunner extends BasicTask<OperationState> {
     public OperationState call() {
         fireOperationStateChanged(OperationState.RUNNING, "MSG_ServerCmdRunning", // NOI18N
                 serverCmd.toString(), instanceName);
+
+        if (!isReallyRunning) {
+            return fireOperationStateChanged(OperationState.FAILED, "MSG_ServerCmdFailedIncorrectInstance", // NOI18N
+                    serverCmd.toString(), instanceName);
+        }
         
         boolean httpSucceeded = false;
         boolean commandSucceeded = false;
@@ -439,6 +449,7 @@ public class CommandRunner extends BasicTask<OperationState> {
 //                                                 "Basic " + auth); // NOI18N
 
                         // Establish the connection with the server
+                        Authenticator.setDefault(AUTH);
                         hconn.connect();
                         // Send data to server if necessary
                         handleSend(hconn);

@@ -1,8 +1,0 @@
-<?xml  version='1.0' encoding='UTF-8'?>
-
-<beans xmlns="web-beans-ns">
-	<deploy>
-		<type>type1</type>
-		<type>type2</type>
-	</deploy>
-</beans>

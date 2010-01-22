@@ -4410,14 +4410,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
         throws InstantiationException,
                IllegalAccessException
     {
-        PropertyEditor ed;
+        PropertyEditor ed = null;
         if (editorClass.equals(RADConnectionPropertyEditor.class)) {
             ed = new RADConnectionPropertyEditor(propertyType);
         } else if (editorClass.equals(ComponentChooserEditor.class)) {
             ed = new ComponentChooserEditor(new Class[] {propertyType});
-        } else if (editorClass.equals(EnumEditor.class) && (property instanceof RADProperty)) {
-            RADProperty prop = (RADProperty)property;
-            ed = prop.createEnumEditor(prop.getPropertyDescriptor());
+        } else if (editorClass.equals(EnumEditor.class)) {
+            if (property instanceof RADProperty) {
+                RADProperty prop = (RADProperty)property;
+                ed = prop.createEnumEditor(prop.getPropertyDescriptor());
+            }
             if (ed == null) {
                 ed = RADProperty.createDefaultEnumEditor(propertyType);
             }

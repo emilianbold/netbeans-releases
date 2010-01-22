@@ -73,7 +73,6 @@ import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SessionKeyAuthent
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
-import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -158,7 +157,6 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
     @Override
     protected void preGenerate() throws IOException {
         super.preGenerate();
-        addJaxbLib();
         createRestConnectionFile(getProject());
 
         if(getBean().getMethod().getSaas().getLibraryJars() == null) {
@@ -215,8 +213,8 @@ public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
         }
     }
 
+    @Deprecated
     protected void addJaxbLib() throws IOException {
-        JavaUtil.addJaxbLib(getProject());
     }
         
     @Override

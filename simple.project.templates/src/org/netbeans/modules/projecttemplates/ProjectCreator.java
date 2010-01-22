@@ -60,7 +60,12 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.*;
+import org.openide.util.MapFormat;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
+import org.openide.util.Parameters;
 
 /**
  * A simple way to define an entire project template in a properties file.

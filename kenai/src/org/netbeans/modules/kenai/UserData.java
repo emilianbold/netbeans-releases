@@ -54,4 +54,5 @@ public class UserData {
     public String last_name;
     public String user_name;
     public String role;
+    public long member_id;
 }

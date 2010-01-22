@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.util.Set;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
@@ -67,6 +68,8 @@ public class ClearcaseVCS extends VersioningSystem implements PropertyChangeList
      */
     static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged";
     
+    private VCSVisibilityQuery visibilityQuery;
+
     public ClearcaseVCS() {
         putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(ClearcaseVCS.class, "VCS_Clearcase_Name"));
         putProperty(PROP_MENU_LABEL, NbBundle.getMessage(ClearcaseVCS.class, "VCS_Clearcase_Menu_Label"));
@@ -107,6 +110,14 @@ public class ClearcaseVCS extends VersioningSystem implements PropertyChangeList
     @Override
     public CollocationQueryImplementation getCollocationQueryImplementation() {
         return collocationQueryImplementation;
+    }
+
+    @Override
+    public VCSVisibilityQuery getVisibilityQuery() {
+        if(visibilityQuery == null) {
+            visibilityQuery = new ClearcaseVisibilityQuery();
+        }
+        return visibilityQuery;
     }
 
     private final CollocationQueryImplementation collocationQueryImplementation = new CollocationQueryImplementation() {

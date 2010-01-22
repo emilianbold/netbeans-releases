@@ -42,6 +42,8 @@
 package org.netbeans.modules.j2ee.dd.impl.ejb.annotation;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.modules.j2ee.dd.api.common.PortComponentRef;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
@@ -136,9 +138,10 @@ public class SessionImplTest extends CommonTestCase {
                 assertEquals(Session.SESSION_TYPE_STATEFUL, session.getSessionType());
                 assertEquals(1, session.getBusinessLocal().length);
                 assertEquals("foo.EmployerLocal", session.getBusinessLocal()[0]);
-                assertEquals(2, session.getBusinessRemote().length);
-                assertEquals("foo.EmployerRemote", session.getBusinessRemote()[0]);
-                assertEquals("foo.EmployerRemoteAdvanced", session.getBusinessRemote()[1]);
+                List<String> remoteInterfaces = Arrays.asList(session.getBusinessRemote());
+                assertEquals(2, remoteInterfaces.size());
+                assertTrue(remoteInterfaces.contains("foo.EmployerRemote"));
+                assertTrue(remoteInterfaces.contains("foo.EmployerRemoteAdvanced"));
                 return null;
             }
         });

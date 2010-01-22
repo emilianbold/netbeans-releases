@@ -161,6 +161,16 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/main-class.png"/>
         </file>
+        <file name="Singleton.java" url="resources/Singleton.template">
+            <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+            <attr name="position" intvalue="950"/>
+            <attr name="templateCategory" stringvalue="java-classes"/>
+            <attr name="template" boolvalue="true"/>
+            <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Singleton.html"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.png"/>
+        </file>
         <file name="Empty.java" url="resources/Empty.template">
             <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
             <attr name="position" intvalue="1000"/>

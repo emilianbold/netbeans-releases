@@ -107,10 +107,7 @@ public class WebProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*im
             }
             // add JAX-WS Endorsed Classpath
             try {
-                String java_version = System.getProperty("java.version"); //NOI18N
-                if (java_version.compareTo("1.6") >= 0) {
-                    WSUtils.addJaxWsApiEndorsed(project, srcRoot);
-                }
+                WSUtils.addJaxWsApiEndorsed(project, srcRoot);
             } catch (IOException ex) {
                 Logger.getLogger(WebProjectJAXWSClientSupport.class.getName()).log(Level.FINE, "Cannot add JAX-WS-ENDORSED classpath", ex);
             }

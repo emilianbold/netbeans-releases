@@ -41,7 +41,6 @@
 
 package org.netbeans.core.windows.awt;
 
-import java.io.InputStream;
 import junit.framework.*;
 import org.netbeans.junit.*;
 import org.openide.cookies.InstanceCookie;
@@ -56,6 +55,10 @@ import org.openide.util.Lookup;
  * @author Jaroslav Tulach
  */
 public class ValidateLayerMenuTest extends NbTestCase {
+
+    static {
+        System.setProperty("java.awt.headless", "true");
+    }
 
     /** Creates a new instance of SFSTest */
     public ValidateLayerMenuTest(String name) {

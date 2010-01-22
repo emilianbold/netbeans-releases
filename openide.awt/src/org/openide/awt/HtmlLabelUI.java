@@ -48,6 +48,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
@@ -108,6 +109,10 @@ class HtmlLabelUI extends LabelUI {
     }
 
     public @Override Dimension getPreferredSize(JComponent c) {
+        if (GraphicsEnvironment.isHeadless()) {
+            // cannot create scratch graphics, so don't bother
+            return super.getPreferredSize(c);
+        }
         return calcPreferredSize((HtmlRendererImpl) c);
     }
 

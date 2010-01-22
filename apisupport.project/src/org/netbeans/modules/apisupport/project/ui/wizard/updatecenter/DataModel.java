@@ -46,8 +46,8 @@ import java.util.Map;
 import java.util.jar.Manifest;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
@@ -87,7 +87,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         String extension = (newAPI) ? AUTOUPDATE_INSTANCE_TYPE_EXT : AUTOUPDATE_SETTINGS_TYPE_EXT;
         FileObject template = newAPI ? null : CreatedModifiedFiles.getTemplate("update_center.xml"); // NOI18N
         String serviceTypeName = getModuleInfo().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; // NOI18N
-        FileSystem layer = LayerUtils.layerForProject (getProject ()).layer (false);
+        FileSystem layer = LayerHandle.forProject (getProject ()).layer (false);
         
         String pathToAutoUpdateType = AUTOUPDATE_TYPES + '/' + serviceTypeName + '.' + extension;
         int sequence = 0;

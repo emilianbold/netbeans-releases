@@ -249,6 +249,9 @@ public class WebProjectUtilities {
         final FileObject webInfFO = webFO.createFolder(WEB_INF);
 
         DDHelper.createWebXml(j2eeProfile, createData.isWebXmlRequired(), webInfFO);
+        if (createData.isCDIEnabled()) {
+            DDHelper.createBeansXml(j2eeProfile, webInfFO);
+        }
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Element data = h.getPrimaryConfigurationData(true);

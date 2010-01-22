@@ -47,6 +47,7 @@ import java.io.File;
 import javax.swing.JButton;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jemmy.operators.DialogOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
@@ -94,64 +95,49 @@ public class J2SEProject extends JConsoleTestCase {
         super(name);
     }
 
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
-
-    public static NbTestSuite suite() {
-
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new J2SEProject("runWithJConsole"));
-        suite.addTest(new J2SEProject("debugWithJConsole"));
-        suite.addTest(new J2SEProject("runWithRemoteManagement"));
-        suite.addTest(new J2SEProject("debugWithRemoteManagement"));
-
-        return suite;
-    }
-
-    public void runWithJConsole() {
+    public void testRunWithJConsole() {
         
         System.out.println("============  runWithJConsole  ============");
         
         assertTmpDir();
         String ctxt = preLocalConnection();
         selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
-        doItLocal("Run Main Project With Monitoring and Management", "run-management");
+        doItLocal("Run Main Project With Monitoring and Management", "anagrams (run-management)");
         postLocalConnection(ctxt);
     }
 
-    public void debugWithJConsole() {
+    public void testDebugWithJConsole() {
         
         System.out.println("============  debugWithJConsole  ============");
         
         assertTmpDir();
         String ctxt = preLocalConnection();
         selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
-        doItLocal("Debug Main Project With Monitoring and Management", "debug-management");
+        doItLocal("Debug Main Project With Monitoring and Management", "anagrams (debug-management)");
         postLocalConnection(ctxt);
     }
 
-    public void runWithRemoteManagement() {
-        
-        System.out.println("============  runWithRemoteManagement  ============");
-        
-        selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
-        doItRemote("Run Main Project with Remote Management...", "run-management");
-    }
-
-    public void debugWithRemoteManagement() {
-        
-        System.out.println("============  debugWithRemoteManagement  ============");
-        
-        selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
-        doItRemote("Debug Main Project with Remote Management...", "debug-management");
-    }
+//    runWithRemoteManagement was disabled in NB 6.0, rev. a9229cc3351b
+//    public void testRunWithRemoteManagement() {
+//
+//        System.out.println("============  runWithRemoteManagement  ============");
+//
+//        selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
+//        doItRemote("Run Main Project with Remote Management...", "anagrams (run-management)");
+//    }
+//
+//    debugWithRemoteManagement was disabled in NB 6.0, rev. a9229cc3351b
+//    public void testDebugWithRemoteManagement() {
+//
+//        System.out.println("============  debugWithRemoteManagement  ============");
+//
+//        selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
+//        doItRemote("Debug Main Project with Remote Management...", "anagrams (debug-management)");
+//    }
 
 
     private void doItLocal(String action, String target) {
-        
+        OutputTabOperator oto;
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
         // push "Open" toolbar button in "System" toolbar
         System.out.println("Starting " + action + "...");        
@@ -160,12 +146,12 @@ public class J2SEProject extends JConsoleTestCase {
         sleep(2000);
         
         checkOutputTabOperator(target, "Found manageable process, connecting JConsole to process...");
-        checkOutputTabOperator("-connect-jconsole", "jconsole  -interval=4");
-        terminateProcess("Processes|anagrams (-connect-jconsole)");
+        oto = checkOutputTabOperator("anagrams (-connect-jconsole)", "jconsole  -interval=4");
+        if (oto != null) terminateProcess(oto);
     }
 
     private void doItRemote(final String action, String target) {
-        
+        OutputTabOperator oto;
         //We must thread the call in order not to be locked by dialog
         Runnable r = new Runnable() {
             public void run() {
@@ -202,8 +188,8 @@ public class J2SEProject extends JConsoleTestCase {
         sleep(2000);
         
         checkOutputTabOperator(target, "Found manageable process, connecting JConsole to process...");
-        checkOutputTabOperator("-connect-jconsole", "jconsole  -interval=4");
-        terminateProcess("Processes|anagrams (-connect-jconsole)");
+        oto = checkOutputTabOperator("anagrams (-connect-jconsole)", "jconsole  -interval=4");
+        if (oto != null) terminateProcess(oto);
     }
 
     private static JButton findOkButton(Component root) {

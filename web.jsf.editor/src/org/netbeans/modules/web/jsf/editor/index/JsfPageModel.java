@@ -53,7 +53,12 @@ public abstract class JsfPageModel {
 //        this.timestamp = System.currentTimeMillis();
     }
 
-    public abstract void storeToIndex(IndexDocument document);
+    /**
+     *
+     * @param document
+     * @return a namespace of affected facelets libary
+     */
+    public abstract String storeToIndex(IndexDocument document);
 
 //    /** returns the time of the model creation */
 //    public long timestamp()  {

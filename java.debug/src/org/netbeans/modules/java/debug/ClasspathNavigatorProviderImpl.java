@@ -36,6 +36,7 @@ import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.explorer.ExplorerManager;
@@ -162,6 +163,10 @@ public class ClasspathNavigatorProviderImpl implements NavigatorPanel {
                         false,
                         getMessage(ClasspathNavigatorProviderImpl.class, "PROP_JavaNode_boot_classpath"),
                         getMessage(ClasspathNavigatorProviderImpl.class, "HINT_JavaNode_boot_classpath")),
+                        new ClasspathProperty(JavaClassPathConstants.PROCESSOR_PATH,
+                        false,
+                        getMessage(ClasspathNavigatorProviderImpl.class, "PROP_JavaNode_processorpath"),
+                        getMessage(ClasspathNavigatorProviderImpl.class, "HINT_JavaNode_processorpath")),
                         new ClasspathProperty(ClassPath.COMPILE,
                         true,
                         getMessage(ClasspathNavigatorProviderImpl.class, "PROP_JavaNode_compile_classpath_tr"),

@@ -8,7 +8,7 @@ package com.foo.bar;
 
 /**
  * Interface AttributeWrappedMBean3MBean
- * 
+ *
  * @author <author>
  */
 public interface AttributeWrappedMBean3MBean

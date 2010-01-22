@@ -75,11 +75,11 @@ import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.java.source.indexing.COSSynchronizingIndexer;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupport;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportEvent;
 import org.netbeans.modules.java.source.usages.fcs.FileChangeSupportListener;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -146,7 +146,7 @@ public class BuildArtifactMapperImpl {
         sources(targetFolder, sources);
         
         for (FileObject file : sources[0]) {
-            if (TaskCache.getDefault().isInError(file, true)) {
+            if (ErrorsCache.isInError(file, true)) {
                 JButton btnRunAnyway = new JButton();
                 org.openide.awt.Mnemonics.setLocalizedText(btnRunAnyway, org.openide.util.NbBundle.getMessage(BuildArtifactMapperImpl.class, "BTN_RunAnyway"));
                 btnRunAnyway.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BuildArtifactMapperImpl.class, "ACSN_BTN_RunAnyway"));

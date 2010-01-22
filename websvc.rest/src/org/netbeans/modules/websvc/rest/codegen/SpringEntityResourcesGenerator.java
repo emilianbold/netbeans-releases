@@ -67,6 +67,7 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
         imports.add(RestConstants.SINGLETON);
         imports.add(SpringConstants.AUTOWIRE);
         imports.add(SpringConstants.TRANSACTIONAL);
+        imports.add(RestConstants.RESOURCE_CONTEXT);
 
         return imports;
     }
@@ -74,9 +75,10 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
     @Override
     protected List<String> getAdditionalItemResourceImports(EntityResourceBean bean) {
         List<String> imports = new ArrayList<String>();
-    
+
         imports.add(SpringConstants.AUTOWIRE);
         imports.add(SpringConstants.TRANSACTIONAL);
+        imports.add(RestConstants.RESOURCE_CONTEXT);
 
         return imports;
     }

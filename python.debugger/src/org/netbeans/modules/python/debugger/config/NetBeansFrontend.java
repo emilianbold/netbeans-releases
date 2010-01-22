@@ -38,8 +38,6 @@
  */
 package org.netbeans.modules.python.debugger.config;
 
-import org.netbeans.editor.Registry;
-
 import org.openide.ErrorManager;
 
 import org.openide.filesystems.*;
@@ -48,6 +46,8 @@ import org.openide.filesystems.FileObject;
 import java.io.*;
 import javax.swing.JOptionPane;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.python.debugger.PythonDebugException;
 import org.netbeans.modules.python.debugger.PythonDebugParameters;
 import org.netbeans.modules.python.debugger.Utils;
@@ -284,10 +284,14 @@ public class NetBeansFrontend {
    * send back the current selected focussed source full path info
    */
   public String getCurrentSource() {
-    Document doc = Registry.getMostActiveDocument();
-
-    System.out.println("NB currentSource =" + Utils.getDocumentSource(doc));
-    return Utils.getDocumentSource(doc);
+    JTextComponent jtc = EditorRegistry.focusedComponent();
+    if (jtc != null) {
+      Document doc = jtc.getDocument();
+      System.out.println("NB currentSource =" + Utils.getDocumentSource(doc));
+      return Utils.getDocumentSource(doc);
+    } else {
+      return null;
+    }
   }
 
   /**

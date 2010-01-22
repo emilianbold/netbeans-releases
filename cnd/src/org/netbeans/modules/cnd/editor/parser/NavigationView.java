@@ -66,10 +66,12 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.UIManager;
 
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.settings.CppSettings;
-import org.netbeans.modules.cnd.loaders.CppEditorSupport;
+import org.netbeans.modules.cnd.utils.MIMENames;
 
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.explorer.view.NodeListModel;
 import org.openide.explorer.view.ChoiceView;
@@ -81,8 +83,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.windows.TopComponent;
-
-import org.netbeans.modules.cnd.loaders.FortranDataObject;
 
 /**
  * Loosly based on java/src/org/netbeans/modules/java/ui/NavigationView.java
@@ -97,7 +97,7 @@ public class NavigationView extends ChoiceView {
      * current source file object and editor support
      */
     private DataObject sourceObject = null;
-    private CppEditorSupport cppEditorSupport = null;
+    private EditorCookie cppEditorSupport = null;
     /**
      * Index/linenumber table - used to quickly determine context of current cursor position
      */
@@ -106,6 +106,7 @@ public class NavigationView extends ChoiceView {
      * Auto parse timers
      */
     private Timer checkModifiedTimer = null;
+    private long lastVersion = -1;
     private long lastModified = 0;
     private Timer checkCursorTimer = null;
     private int lastCursorPos = -1;
@@ -275,20 +276,22 @@ public class NavigationView extends ChoiceView {
         restartTimers();
     }
 
-    private void updateNodesIfModified(CppEditorSupport cppEditorSupport, DataObject sourceObject, JEditorPane jEditorPane) {
+    private void updateNodesIfModified(EditorCookie cppEditorSupport, DataObject sourceObject, JEditorPane jEditorPane) {
         File tmpFile = null;
 
-        if (cppEditorSupport.getLastModified() <= lastModified) {
+        long version = DocumentUtilities.getDocumentVersion(cppEditorSupport.getDocument());
+        if (version <= lastVersion) {
             // No need to update
             return;
         }
 
-        long timeSinceLastModification = System.currentTimeMillis() - cppEditorSupport.getLastModified();
+        long timeSinceLastModification = System.currentTimeMillis() - lastModified;
         if (timeSinceLastModification < CppSettings.getDefault().getParsingDelay()) {
             return;
         }
 
-        lastModified = cppEditorSupport.getLastModified();
+        lastVersion = version;
+        lastModified = System.currentTimeMillis();
         lastCursorPos = -1;
         lastCursorPosWhenChecked = 0;
 
@@ -411,7 +414,7 @@ public class NavigationView extends ChoiceView {
         if (dataObject == null) {
             return; // Should not happen...
         }
-        if (!(dataObject instanceof FortranDataObject)) {
+        if (!(dataObject.getPrimaryFile().getMIMEType().equals(MIMENames.FORTRAN_MIME_TYPE))) {
             return; // Should not happen...
         }
 
@@ -551,7 +554,7 @@ public class NavigationView extends ChoiceView {
             String scope = ctagsTokenEvent.getScope();
             int scopeKind = ctagsTokenEvent.getScopeKind();
 
-            if (sourceObject instanceof FortranDataObject) {
+            if (sourceObject.getPrimaryFile().getMIMEType().equals(MIMENames.FORTRAN_MIME_TYPE)) {
                 int scopeCluster = findFortranScopeCluster(scope, scopeKind);
                 switch (ctagsTokenEvent.getKind()) {
                     case 'l':   // labels
@@ -699,9 +702,9 @@ public class NavigationView extends ChoiceView {
         }
     }
 
-    private CppEditorSupport getCppEditorSupport() {
+    private EditorCookie getCppEditorSupport() {
         if (cppEditorSupport == null) {
-            cppEditorSupport = sourceObject.getCookie(CppEditorSupport.class);
+            cppEditorSupport = sourceObject.getCookie(EditorCookie.class);
         }
         return cppEditorSupport;
     }

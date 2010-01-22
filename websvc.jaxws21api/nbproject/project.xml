@@ -69,16 +69,16 @@ made subject to such option by the copyright holder.
                 <package>javax.xml.ws.wsaddressing</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/api/jaxws-api.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/api/jaxws-api.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/api/jsr181-api.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/api/jsr181-api.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/api/jsr250-api.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/api/jsr250-api.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jaxws21/api/saaj-api.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxws22/api/saaj-api.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

@@ -46,7 +46,6 @@ import org.netbeans.lib.profiler.heap.Heap;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.lang.ref.WeakReference;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -61,14 +60,12 @@ import org.netbeans.modules.profiler.heapwalk.HeapFragmentWalker;
 
 import org.netbeans.modules.debugger.jpda.heapwalk.HeapImpl;
 
-import org.netbeans.spi.viewmodel.Models;
 
 import org.openide.ErrorManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
@@ -78,13 +75,6 @@ import org.openide.windows.TopComponent;
  */
 public class ClassesCountsView extends TopComponent implements org.openide.util.HelpCtx.Provider {
     
-    private static final boolean IS_JDK15 = System.getProperty("java.version").startsWith("1.5"); // NOI18N
-    
-    // OLD JDK 1.5 Classes View:
-    private transient JComponent tree;
-    private transient ViewModelListener viewModelListener;
-    
-    // NEW JDK 1.6 Class Counts View:
     private transient EngineListener listener;
     private transient JPanel content;
     private transient HeapFragmentWalker hfw;
@@ -106,33 +96,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         return "org.netbeans.modules.debugger.jpda.ui.views.ClassesView"; // NOI18N
     }
     
-    // OLD JDK 1.5 Classes View:
     
-    private void componentShowing_15 () {
-        if (viewModelListener != null) {
-            viewModelListener.setUp();
-            return;
-        }
-        if (tree == null) {
-            tree = Models.createView  (Models.EMPTY_MODEL);
-            tree.setName (NbBundle.getMessage (ClassesCountsView.class, "CTL_Classes_tooltip")); // NOI18N
-            add (tree, "Center");  //NOI18N
-        }
-        if (viewModelListener != null)
-            throw new InternalError ();
-        viewModelListener = new ViewModelListener (
-            "ClassesView",
-            tree
-        );
-    }
-    
-    protected void componentHidden_15 () {
-        viewModelListener.destroy ();
-    }
-    
-    
-    // NEW JDK 1.6 Class Counts View:
-
     private void setUp() {
         if (listener == null) {
             listener = new EngineListener();
@@ -212,40 +176,27 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
     
     protected void componentShowing () {
         super.componentShowing ();
-        if (IS_JDK15) {
-            componentShowing_15();
-        } else {
             setUp();
-        }
     }
     
     protected void componentHidden () {
         super.componentHidden ();
-        if (IS_JDK15) {
-            componentHidden_15();
-        }
     }
 
     @Override
     protected void componentClosed() {
         super.componentClosed();
-        if (!IS_JDK15) {
             tearDown();
             if (listener != null) {
                 listener.stop();
                 listener = null;
             }
-        }
     }
     
     // <RAVE>
     // Implement getHelpCtx() with the correct helpID
     public org.openide.util.HelpCtx getHelpCtx() {
-        if (IS_JDK15) {
-            return new org.openide.util.HelpCtx("NetbeansDebuggerClassNode"); // NOI18N
-        } else {
             return new org.openide.util.HelpCtx("NetbeansDebuggerInstancesNode"); // NOI18N
-        }
     }
     // </RAVE>
     
@@ -255,13 +206,8 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
         
     public boolean requestFocusInWindow () {
         super.requestFocusInWindow ();
-        if (IS_JDK15) {
-            if (tree == null) return false;
-            return tree.requestFocusInWindow ();
-        } else {
             if (content == null) return false;
             return content.requestFocusInWindow ();
-        }
     }
     
     public String getName () {

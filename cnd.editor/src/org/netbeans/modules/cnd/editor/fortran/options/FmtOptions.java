@@ -321,7 +321,7 @@ public class FmtOptions {
                 }
             }
         } // End of CategorySupport.Factory class
-        
+
         // Private methods -----------------------------------------------------
 
         private void performOperation(int operation, JComponent jc, String optionID, Preferences p) {

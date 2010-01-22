@@ -1215,10 +1215,6 @@ public class Util {
         return imports;
     }
 
-    public static boolean isJDK5() {
-        return System.getProperty("java.version").startsWith("1.5") ? true : false;     //NOI18N
-    }
-
     public static boolean isContains(List<ParameterInfo> params, ParameterInfo pInfo) {
         boolean found = false;
         String name = getVariableName(pInfo.getName());

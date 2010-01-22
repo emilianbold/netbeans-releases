@@ -66,7 +66,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
-import org.netbeans.modules.j2ee.weblogic9.WLBaseDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
@@ -88,8 +88,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
-        assert WLBaseDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
-        return new J2eePlatformImplImpl((WLBaseDeploymentManager)dm);
+        assert WLDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
+        return new J2eePlatformImplImpl((WLDeploymentManager)dm);
     }
     
     private static class J2eePlatformImplImpl extends J2eePlatformImpl {
@@ -119,9 +119,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
          * The server's deployment manager, to be exact the plugin's wrapper for
          * it
          */
-        WLBaseDeploymentManager dm;
+        WLDeploymentManager dm;
         
-        public J2eePlatformImplImpl(WLBaseDeploymentManager dm) {
+        public J2eePlatformImplImpl(WLDeploymentManager dm) {
             this.dm = dm;
             
             // Allow J2EE 1.4 Projects

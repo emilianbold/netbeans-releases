@@ -51,9 +51,12 @@ import java.net.URL;
 public abstract class SourceIndexerFactory {
 
     /**
-     * Called by the indexing infrastructure to notify indexer about start of indexing
-     * @param context describes indexed root
-     * @return when false is returned all files should be rescanned, no up to date check is done
+     * Notifies the indexer that a source root is going to be scanned.
+     *
+     * @param context The indexed source root.
+     *
+     * @return <code>false</code> means that the whole root should be rescanned
+     *   (eg. no up to date check is done, etc)
      * @since 1.20
      */
     public boolean scanStarted (final Context context) {
@@ -61,8 +64,10 @@ public abstract class SourceIndexerFactory {
     }
 
     /**
-     * Called by the indexing infrastructure to notify indexer about end of indexing
-     * @param context describes indexed root
+     * Notifies the indexer that scanning of a source root just finished.
+     *
+     * @param context The indexed source root.
+     *
      * @since 1.20
      */
     public void scanFinished (final Context context) {

@@ -70,6 +70,7 @@ public final class ProjectServerWizardPanel implements WizardDescriptor.Panel, W
     public static final String CREATE_WAR = "createWAR"; // NOI18N
     public static final String CREATE_JAR = "createJAR"; // NOI18N
     public static final String CREATE_CAR = "createCAR"; // NOI18N
+    public static final String CDI = "cdi"; // NOI18N
     
     private WizardDescriptor wizardDescriptor;
     private ProjectServerPanel component;

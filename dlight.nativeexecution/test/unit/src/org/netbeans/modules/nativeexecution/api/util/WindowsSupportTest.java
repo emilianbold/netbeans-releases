@@ -135,7 +135,7 @@ public class WindowsSupportTest {
             return;
         }
 
-        String winPath = "c:\\Documents and Settings";
+        String winPath = "C:\\Documents and Settings";
         String cygwinPath = "/cygdrive/c/Documents and Settings";
         WindowsSupport instance = WindowsSupport.getInstance();
         String result = instance.convertFromCygwinPath(cygwinPath);

@@ -83,7 +83,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
     private final EjbJar ejbModule;
     private final EjbNodesFactory nodeFactory;
     private final Project project;
-    private final HashMap<Key, Node> nodesHash = new HashMap<Key, Node>();
+    private final java.util.Map<Key, Node> nodesHash = Collections.synchronizedMap(new HashMap<Key, Node>());
 
     public EjbContainerChildren(org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule, EjbNodesFactory nodeFactory, Project project) {
         this.ejbModule = ejbModule;
@@ -177,7 +177,7 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
     private void createNodesForKeys(List<Key> keys){
         nodesHash.clear();
         for(Key key: keys){
-            nodesHash.put(key, createNodes(key)[0]);
+            createNodes(key);
         }
     }
 
@@ -190,7 +190,8 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
 
     protected Node[] createNodes(Key key) {
         Node node = nodesHash.get(key);
-        if (node == null){
+        if (!nodesHash.containsKey(key)){
+            node = null;
             if (key.ejbType == Key.EjbType.SESSION) {
                 // do not create node for web service
                 if (!key.isWebService && nodeFactory != null) {
@@ -208,8 +209,9 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
                 node.setDisplayName(NbBundle.getMessage(EjbContainerChildren.class, "MSG_Scanning_EJBs")); //NOI18N
                 ((AbstractNode)node).setIconBaseWithExtension("org/netbeans/modules/j2ee/ejbjar/project/ui/wait.gif"); //NOI18N
             }
+            nodesHash.put(key, node);
         }
-        return node == null ? new Node[1] : new Node[] { node };
+        return node == null ? null : new Node[] { node };
     }
 
     public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
@@ -273,9 +275,16 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
                 return false;
             }
             final Key other = (Key) obj;
-            if (this.ejbClass != other.ejbClass && (this.ejbClass == null || !this.ejbClass.equals(other.ejbClass))) {
+            if (this.ejbClass != other.ejbClass &&
+               (this.ejbClass == null || !this.ejbClass.equals(other.ejbClass))) {
                 return false;
             }
+
+            if (this.defaultDisplayName != other.defaultDisplayName &&
+               (this.defaultDisplayName == null || !this.defaultDisplayName.equals(other.defaultDisplayName))) {
+                return false;
+            }
+
             return true;
         }
 

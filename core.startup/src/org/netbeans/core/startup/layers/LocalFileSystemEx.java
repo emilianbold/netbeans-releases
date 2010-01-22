@@ -196,7 +196,7 @@ public final class LocalFileSystemEx extends LocalFileSystem {
         }
 
         public Object readAttribute(String name, String attrName) {
-            if( "removeWritables".equals( attrName ) ) {
+            if( "removeWritables".equals( attrName ) ) { // NOI18N
                 return new WritableRemover( name );
             }
             return a.readAttribute( name, attrName );

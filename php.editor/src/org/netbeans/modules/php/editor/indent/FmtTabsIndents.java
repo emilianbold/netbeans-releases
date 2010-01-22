@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.php.editor.indent;
 
+import java.io.IOException;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
+import org.netbeans.modules.php.editor.indent.ui.Utils;
 import static  org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
 
 /**
@@ -64,8 +66,14 @@ public class FmtTabsIndents extends javax.swing.JPanel {
     }
     
     public static PreferencesCustomizer.Factory getController() {
+        String preview = "";
+        try {
+            preview = Utils.loadPreviewText(FmtTabsIndents.class.getClassLoader().getResourceAsStream("org/netbeans/modules/php/editor/indent/ui/TabsIndents.php"));
+        } catch (IOException ex) {
+            // TODO log it
+        }
         return new CategorySupport.Factory(PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtTabsIndents.class, //NOI18N
-                org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "SAMPLE_TabsIndents"), // NOI18N
+                preview, // NOI18N
                 new String[] { FmtOptions.rightMargin, "30" }, //NOI18N
                 new String[] { FmtOptions.initialIndent, "0" } //NOI18N
                 );

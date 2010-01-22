@@ -245,18 +245,21 @@ public final class MemoryCache {
                 SoftValue sv;
                 while ((sv = (SoftValue) refQueue.poll()) != null) {
                     Object value;
-                    Slice s = cache.getSilce(sv.key);
-                    s.w.lock();
-                    try{
-                        value = s.storage.get(sv.key);
-                        // check if the object has already been added by another thread
-                        // it is more efficient than blocking puts from the disk
-                        if ((value != null) && (value instanceof SoftReference) && (((SoftReference) value).get() == null)) {
-                            Object removed = s.storage.remove(sv.key);
-                            assert (value == removed);
+                    final Key key = sv.key;
+                    if (key != null) {
+                        Slice s = cache.getSilce(key);
+                        s.w.lock();
+                        try{
+                            value = s.storage.get(key);
+                            // check if the object has already been added by another thread
+                            // it is more efficient than blocking puts from the disk
+                            if ((value != null) && (value instanceof SoftReference) && (((SoftReference) value).get() == null)) {
+                                Object removed = s.storage.remove(key);
+                                assert (value == removed);
+                            }
+                        } finally {
+                            s.w.unlock();
                         }
-                    } finally {
-                        s.w.unlock();
                     }
                 }
             } finally {

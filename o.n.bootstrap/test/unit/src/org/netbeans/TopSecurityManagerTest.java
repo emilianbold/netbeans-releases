@@ -74,6 +74,43 @@ public class TopSecurityManagerTest extends TestCase {
         fail("Associating own security manager when one is already installed shall not be allowed");
     }
 
+    /* Reenable when assert checkLogger(perm) is added back:
+    public void testLoggerCannotBeReset() {
+        if (true) return;
+        boolean asserts = false;
+        assert asserts = true;
+        if (asserts) {
+            TopSecurityManager.install();
+            SecurityException ex = null;
+            try {
+                LogManager.getLogManager().reset();
+            } catch (SecurityException e) {
+                ex = e;
+            }
+            assertNotNull ("LogManager.reset() should throw a SecurityException",
+                    ex);
+        }
+    }
+
+    public void testLoggerCannotBeReconfigured() throws IOException {
+        if (true) return;
+        boolean asserts = false;
+        assert asserts = true;
+        if (asserts) {
+            TopSecurityManager.install();
+            SecurityException ex = null;
+            try {
+                LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(new byte[256]));
+            } catch (SecurityException e) {
+                ex = e;
+            }
+            assertNotNull ("LogManager.readConfiguration() should throw a SecurityException",
+                    ex);
+        }
+    }
+     */
+
+
     private static final class SecMan extends SecurityManager {
     }
 }

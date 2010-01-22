@@ -178,7 +178,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private CallStackFrame              currentCallStackFrame;
     private final Object                currentThreadAndFrameLock = new Object();
     private int                         suspend = (SINGLE_THREAD_STEPPING) ? SUSPEND_EVENT_THREAD : SUSPEND_ALL;
-    public final ReentrantReadWriteLock accessLock = new DebuggerReentrantReadWriteLock(false); // TODO: change to "true" after we stop support JDK 5. It's buggy on JDK 5 and cause deadlocks!
+    public final ReentrantReadWriteLock accessLock = new DebuggerReentrantReadWriteLock(true);
     private final Object                LOCK2 = new Object ();
     private boolean                     starting;
     private AbstractDICookie            attachingCookie;
@@ -487,30 +487,17 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }
 
     private Boolean canBeModified;
-    private Object canBeModifiedLock = new Object();
+    private final Object canBeModifiedLock = new Object();
 
     public boolean canBeModified() {
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return false;
         synchronized (canBeModifiedLock) {
             if (canBeModified == null) {
-                try {
-                    java.lang.reflect.Method canBeModifiedMethod =
-                            com.sun.jdi.VirtualMachine.class.getMethod("canBeModified", new Class[] {});
-                    Object modifiable = canBeModifiedMethod.invoke(vm, new Object[] {});
-                    canBeModified = (Boolean) modifiable;
-                } catch (NoSuchMethodException nsmex) {
-                    // On JDK 1.4 we do not know... we suppose that can
-                    canBeModified = Boolean.TRUE;
-                } catch (IllegalAccessException iaex) {
-                    canBeModified = Boolean.TRUE;
-                } catch (InvocationTargetException itex) {
-                    canBeModified = Boolean.TRUE;
-                }
+                canBeModified = vm.canBeModified();
             }
             return canBeModified.booleanValue();
         }
-        // return vm.canBeModified(); -- After we'll build on JDK 1.5
     }
 
     private SmartSteppingFilter smartSteppingFilter;
@@ -2040,7 +2027,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     @Override
     public long[] getInstanceCounts(List<JPDAClassType> classTypes) throws UnsupportedOperationException {
-        if (JPDAUtils.IS_JDK_16) {
             VirtualMachine vm;
             synchronized (virtualMachineLock) {
                 vm = virtualMachine;
@@ -2065,28 +2051,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
             } catch (VMDisconnectedExceptionWrapper e) {
                 return new long[classTypes.size()];
             }
-        } else {
-            throw new UnsupportedOperationException("Not supported.");
-        }
     }
 
     public boolean canGetInstanceInfo() {
         synchronized (virtualMachineLock) {
-            return virtualMachine != null && canGetInstanceInfo(virtualMachine);
+            return virtualMachine != null && virtualMachine.canGetInstanceInfo();
         }
-    }
-
-    private static boolean canGetInstanceInfo(VirtualMachine vm) {
-        if (JPDAUtils.IS_JDK_16) {
-            try {
-                java.lang.reflect.Method canGetInstanceInfoMethod = VirtualMachine.class.getMethod("canGetInstanceInfo", new Class[] {});
-                Object canGetInstanceInfo = canGetInstanceInfoMethod.invoke(vm, new Object[] {});
-                return Boolean.TRUE.equals(canGetInstanceInfo);
-            } catch (Exception ex) {
-                Logger.getLogger(JPDADebuggerImpl.class.getName()).log(Level.INFO, "", ex);
-            }
-        }
-        return false;
     }
 
     @Override

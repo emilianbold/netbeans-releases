@@ -56,6 +56,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.text.DateFormat;
 import java.util.*;
 import java.util.List;
 import java.text.MessageFormat;
@@ -69,6 +70,7 @@ import org.netbeans.modules.subversion.client.PanelProgressSupport;
 import org.netbeans.modules.subversion.hooks.spi.SvnHook;
 import org.netbeans.modules.subversion.hooks.spi.SvnHookContext;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.Utils;
@@ -112,6 +114,10 @@ public class CommitAction extends ContextAction {
         if(!Subversion.getInstance().checkClientAvailable()) {
             return;
         }
+        if (ctx.getRoots().size() < 1) {
+            Subversion.LOG.info("Svn context contains no files");       //NOI18N
+            return;
+        }
         commitChanges(contentTitle, ctx);
     }
 
@@ -130,7 +136,7 @@ public class CommitAction extends ContextAction {
      */
     public static void commitChanges(String contentTitle, final Context ctx) {
         final CommitPanel panel = new CommitPanel();
-        List<SvnHook> hooks = Subversion.getInstance().getHooks();
+        Collection<SvnHook> hooks = VCSHooks.getInstance().getHooks(SvnHook.class);
         File file = ctx.getRootFiles()[0];
         panel.setHooks(hooks, new SvnHookContext(new File[] { file }, null, null));
 
@@ -267,7 +273,7 @@ public class CommitAction extends ContextAction {
         return dd.getValue();
     }
 
-    private static void startCommitTask(final CommitPanel panel, final CommitTable data, final Context ctx, final List<SvnHook> hooks) {
+    private static void startCommitTask(final CommitPanel panel, final CommitTable data, final Context ctx, final Collection<SvnHook> hooks) {
         final Map<SvnFileNode, CommitOptions> commitFiles = data.getCommitFiles();
         final String message = panel.getCommitMessage();
         org.netbeans.modules.versioning.util.Utils.insert(SvnModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
@@ -451,7 +457,7 @@ public class CommitAction extends ContextAction {
         commit(getContextDisplayName(nodes), ctx);
     }
 
-    private static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, List<SvnHook> hooks) {
+    private static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, Collection<SvnHook> hooks) {
         SvnClient client = getClient(ctx, support);
         if(client == null) {
             return;
@@ -467,7 +473,7 @@ public class CommitAction extends ContextAction {
         performCommit(client, message, commitFiles, ctx, support, rootUpdate, new ArrayList<SvnHook>(0));
     }
 
-    public static void performCommit(SvnClient client, String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, boolean rootUpdate, List<SvnHook> hooks) {
+    public static void performCommit(SvnClient client, String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, boolean rootUpdate, Collection<SvnHook> hooks) {
         try {
             support.setCancellableDelegate(client);
             support.setDisplayName(org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
@@ -581,6 +587,7 @@ public class CommitAction extends ContextAction {
                 // one commit for each wc
                 List<File> commitList = itCandidates.next();
 
+                CommitCmd cmd = new CommitCmd(client, support, message, needLogEntries && hooks.size() > 0 ? logs : null);
                 // handle recursive commits - deleted and copied folders can't be commited non recursively
                 List<File> recursiveCommits = getRecursiveCommits(commitList, removeCandidates);
                 if(recursiveCommits.size() > 0) {
@@ -589,14 +596,7 @@ public class CommitAction extends ContextAction {
                     commitList.removeAll(getAllChildren(recursiveCommits, commitList));
 
                     // commit recursively
-                    File[] files = recursiveCommits.toArray(new File[recursiveCommits.size()]);
-                    long revision = client.commit(files, message, true); // true = recursive
-                    if(support.isCanceled()) {
-                        return;
-                    }
-                    if(needLogEntries && hooks.size() > 0 && files.length > 0) {
-                        addLogMessage(client, logs, files[0], revision);
-                    }
+                    cmd.commitFiles(recursiveCommits, true);
                     if(support.isCanceled()) {
                         return;
                     }
@@ -604,15 +604,7 @@ public class CommitAction extends ContextAction {
 
                 // commit the remaining files non recursively
                 if(commitList.size() > 0) {
-
-                    File[] files = commitList.toArray(new File[commitList.size()]);
-                    long revision = client.commit(files, message, false); // false = non recursive
-                    if(support.isCanceled()) {
-                        return;
-                    }
-                    if(needLogEntries && hooks.size() > 0 && files.length > 0) {
-                        addLogMessage(client, logs, files[0], revision);
-                    }
+                    cmd.commitFiles(commitList, false);
                     if(support.isCanceled()) {
                         return;
                     }
@@ -647,7 +639,49 @@ public class CommitAction extends ContextAction {
         }
     }
 
-    private static void afterCommit(List<SvnHook> hooks, List<File> files, String message, List<ISVNLogMessage> logs) {
+    private static class CommitCmd {
+        private final SvnClient client;
+        private final SvnProgressSupport supp;
+        private final List<ISVNLogMessage> logs;
+        private final String message;
+        private SVNUrl repositoryRootUrl;
+
+        public CommitCmd (SvnClient client, SvnProgressSupport supp, String message, List<ISVNLogMessage> logs) {
+            this.client = client;
+            this.supp = supp;
+            this.logs = logs;
+            this.message = message;
+        }
+        
+        private void commitFiles (List<File> commitFiles, boolean recursive) throws SVNClientException {
+            File[] files = commitFiles.toArray(new File[commitFiles.size()]);
+            long revision = client.commit(files, message, recursive);
+            if (files.length > 0 && !supp.isCanceled()) {
+                ISVNLogMessage revisionLog = getLogMessage(client, files[0], revision);
+                if (revisionLog != null) {
+                    Subversion.getInstance().getLogger(getRepositoryRootUrl(files[0])).logMessage(NbBundle.getMessage(CommitAction.class, "MSG_OutputCommitMessage",
+                            new Object[]{
+                                revisionLog.getRevision(),
+                                revisionLog.getAuthor(),
+                                DateFormat.getDateTimeInstance().format(revisionLog.getDate()),
+                                revisionLog.getMessage()
+                            }));
+                    if (logs != null) {
+                        logs.add(revisionLog);
+                    }
+                }
+            }
+        }
+
+        private SVNUrl getRepositoryRootUrl(File file) throws SVNClientException {
+            if (repositoryRootUrl == null) {
+                repositoryRootUrl = SvnUtils.getRepositoryRootUrl(file);
+            }
+            return repositoryRootUrl;
+        }
+    }
+
+    private static void afterCommit(Collection<SvnHook> hooks, List<File> files, String message, List<ISVNLogMessage> logs) {
         if(hooks.size() == 0) {
             return;
         }
@@ -662,15 +696,16 @@ public class CommitAction extends ContextAction {
     }
 
     /**
-     * Adds a log message for given revision
+     * Returns log message for given revision
      * @param client
-     * @param logs
      * @param file
      * @param revision
+     * @return log message
      * @throws org.tigris.subversion.svnclientadapter.SVNClientException
      */
-    private static void addLogMessage(ISVNClientAdapter client, List<ISVNLogMessage> logs, File file, long revision) throws SVNClientException {
+    private static ISVNLogMessage getLogMessage (ISVNClientAdapter client, File file, long revision) throws SVNClientException {
         SVNRevision rev = SVNRevision.HEAD;
+        ISVNLogMessage log = null;
         try {
             rev = SVNRevision.getRevision(String.valueOf(revision));
         } catch (ParseException ex) {
@@ -681,8 +716,9 @@ public class CommitAction extends ContextAction {
         }
         ISVNLogMessage[] ls = client.getLogMessages(SvnUtils.getRepositoryRootUrl(file), rev, rev);
         if (ls.length > 0) {
-            logs.add(ls[0]);
+            log = ls[0];
         }
+        return log;
     }
 
     /**
