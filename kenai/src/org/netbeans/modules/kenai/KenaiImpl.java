@@ -156,6 +156,16 @@ public abstract class KenaiImpl {
             PasswordAuthentication pa
             ) throws KenaiException;
 
-    public abstract void joinProject(String projectName, String userName);
+    public abstract MemberData addMember(
+            String project,
+            String user,
+            String role,
+            PasswordAuthentication pa)
+            throws KenaiException;
 
+    public abstract void deleteMember(
+            String project,
+            long member_id,
+            PasswordAuthentication pa)
+            throws KenaiException;
 }

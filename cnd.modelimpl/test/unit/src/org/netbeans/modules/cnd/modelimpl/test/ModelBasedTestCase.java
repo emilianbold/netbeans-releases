@@ -38,12 +38,18 @@
  */
 package org.netbeans.modules.cnd.modelimpl.test;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -101,5 +107,15 @@ public class ModelBasedTestCase extends CndBaseTestCase {
                 }
             }
         }
+    }
+
+    protected BaseDocument getBaseDocument(File testSourceFile) throws Exception {
+        FileObject testFileObject = FileUtil.toFileObject(testSourceFile);
+        assertNotNull("Unresolved test file " + testSourceFile, testFileObject);//NOI18N
+        DataObject testDataObject = DataObject.find(testFileObject);
+        assertNotNull("Unresolved data object for file " + testFileObject, testDataObject);//NOI18N
+        BaseDocument doc = CndCoreTestUtils.getBaseDocument(testDataObject);
+        assertNotNull("Unresolved document for data object " + testDataObject, doc);//NOI18N
+        return doc;
     }
 }

@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileSystem;
 import org.openide.nodes.Node;
 import org.openide.util.Enumerations;
@@ -89,7 +90,8 @@ public class DataFolderTimeOrderTest extends NbTestCase implements PropertyChang
         
         aa.removePropertyChangeListener (this);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #3871
     public void testLastModifiedOrderUpdatedAfterFileIsTouched() throws Exception {
         aa.setSortMode(DataFolder.SortMode.LAST_MODIFIED);
 

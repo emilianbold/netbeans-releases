@@ -70,7 +70,6 @@ import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
-import org.eclipse.mylyn.tasks.core.data.TaskAttributeMetaData;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.api.diff.PatchUtils;
@@ -89,6 +88,7 @@ import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.BugzillaCommand;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.awt.HtmlBrowser;
@@ -151,99 +151,6 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
     static final int FIELD_STATUS_MODIFIED = 4;
     private Map<String, String> seenAtributes;
     private String initialProduct = null;
-    private List<IssueField> fields;
-
-    static class IssueField {
-        static final IssueField SUMMARY = new IssueField(BugzillaAttribute.SHORT_DESC.getKey(), "LBL_SUMMARY");
-        static final IssueField WHITEBOARD = new IssueField(BugzillaAttribute.STATUS_WHITEBOARD.getKey(), "LBL_WHITEBOARD");
-        static final IssueField STATUS = new IssueField(TaskAttribute.STATUS, "LBL_STATUS");
-        static final IssueField PRIORITY = new IssueField(BugzillaAttribute.PRIORITY.getKey(), "LBL_PRIORITY");
-        static final IssueField RESOLUTION = new IssueField(TaskAttribute.RESOLUTION, "LBL_RESOLUTION");
-        static final IssueField PRODUCT = new IssueField(BugzillaAttribute.PRODUCT.getKey(), "LBL_PRODUCT");
-        static final IssueField COMPONENT = new IssueField(BugzillaAttribute.COMPONENT.getKey(), "LBL_COMPONENT");
-        static final IssueField VERSION = new IssueField(BugzillaAttribute.VERSION.getKey(), "LBL_VERSION");
-        static final IssueField PLATFORM = new IssueField(BugzillaAttribute.REP_PLATFORM.getKey(), "LBL_PLATFORM");
-        static final IssueField OS = new IssueField(BugzillaAttribute.OP_SYS.getKey(), "LBL_OS");
-        static final IssueField MILESTONE = new IssueField(BugzillaAttribute.TARGET_MILESTONE.getKey(), "LBL_MILESTONE");
-        static final IssueField REPORTER = new IssueField(BugzillaAttribute.REPORTER.getKey(), "LBL_REPORTER");
-        static final IssueField REPORTER_NAME = new IssueField(BugzillaAttribute.REPORTER_NAME.getKey(), "LBL_REPORTER_NAME");
-        static final IssueField ASSIGNED_TO = new IssueField(BugzillaAttribute.ASSIGNED_TO.getKey(), "LBL_ASSIGNED_TO");
-        static final IssueField ASSIGNED_TO_NAME = new IssueField(BugzillaAttribute.ASSIGNED_TO_NAME.getKey(), "LBL_ASSIGNED_TO_NAME");
-        static final IssueField QA_CONTACT = new IssueField(BugzillaAttribute.QA_CONTACT.getKey(), "LBL_QA_CONTACT");
-        static final IssueField QA_CONTACT_NAME = new IssueField(BugzillaAttribute.QA_CONTACT_NAME.getKey(), "LBL_QA_CONTACT_NAME");
-        static final IssueField DEPENDS_ON = new IssueField(BugzillaAttribute.DEPENDSON.getKey(), "LBL_DEPENDS_ON");
-        static final IssueField BLOCKS = new IssueField(BugzillaAttribute.BLOCKED.getKey(), "LBL_BLOCKS");
-        static final IssueField URL = new IssueField(BugzillaAttribute.BUG_FILE_LOC.getKey(), "LBL_URL");
-        static final IssueField KEYWORDS = new IssueField(BugzillaAttribute.KEYWORDS.getKey(), "LBL_KEYWORDS");
-        static final IssueField SEVERITY = new IssueField(BugzillaAttribute.BUG_SEVERITY.getKey(), "LBL_SEVERITY");
-        static final IssueField ISSUE_TYPE = new IssueField("cf_bug_type", "LBL_ISSUE_TYPE");
-        static final IssueField DESCRIPTION = new IssueField(BugzillaAttribute.LONG_DESC.getKey(), "LBL_DESCRIPTION");
-        static final IssueField CREATION = new IssueField(TaskAttribute.DATE_CREATION, "LBL_CREATION");
-        static final IssueField CC = new IssueField(BugzillaAttribute.CC.getKey(), "LBL_CC");
-        static final IssueField MODIFICATION = new IssueField(TaskAttribute.DATE_MODIFICATION, null);
-        static final IssueField NEWCC = new IssueField(BugzillaAttribute.NEWCC.getKey(), null);
-        static final IssueField REMOVECC = new IssueField(BugzillaAttribute.REMOVECC.getKey(), null);
-        static final IssueField COMMENT_COUNT = new IssueField(TaskAttribute.TYPE_COMMENT, null, false);
-        static final IssueField ATTACHEMENT_COUNT = new IssueField(TaskAttribute.TYPE_ATTACHMENT, null, false);
-
-        private final String key;
-        private final String displayNameKey;
-        private boolean singleAttribute;
-
-        IssueField(String key, String displayNameKey) {
-            this(key, displayNameKey, true);
-        }
-
-        IssueField(String key, String displayNameKey, boolean singleAttribute) {
-            this.key = key;
-            this.singleAttribute = singleAttribute;
-            this.displayNameKey = displayNameKey;
-        }
-
-        public String getKey() {
-            return key;
-        }
-        public boolean isSingleAttribute() {
-            return singleAttribute;
-        }
-        public boolean isReadOnly() {
-            return !singleAttribute;
-        }
-
-        public String getDisplayName() {
-            assert displayNameKey != null; // shouldn't be called for a field with a null display name
-            return NbBundle.getMessage(BugzillaIssue.class, displayNameKey);
-        }
-
-    }
-
-    static class CustomIssueField extends IssueField {
-        private String displayName;
-        private String type;
-        private Map<String,String> options;
-
-        CustomIssueField(TaskAttribute attr) {
-            super(attr.getId(), null);
-            TaskAttributeMetaData meta = attr.getMetaData();
-            displayName = meta.getLabel();
-            type = meta.getType();
-            options = attr.getOptions();
-        }
-
-        @Override
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public Map<String,String> getOptions() {
-            return options;
-        }
-
-    }
 
     private Map<String, String> attributes;
     private Map<String, TaskOperation> availableOperations;
@@ -385,10 +292,10 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         if(attributes == null) {
             attributes = new HashMap<String, String>();
             String value;
-            for (IssueField field : getFields()) {
+            for (IssueField field : getBugzillaRepository().getConfiguration().getFields()) {
                 value = getFieldValue(field);
                 if(value != null && !value.trim().equals("")) {                 // NOI18N
-                    attributes.put(field.key, value);
+                    attributes.put(field.getKey(), value);
                 }
             }
         }
@@ -455,7 +362,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             assert getSeenAttributes() != null;
-            for (IssueField f : getFields()) {
+            for (IssueField f : getBugzillaRepository().getConfiguration().getFields()) {
                 if (f==IssueField.MODIFICATION
                         || f==IssueField.REPORTER_NAME
                         || f==IssueField.QA_CONTACT_NAME
@@ -574,10 +481,12 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         return repository;
     }
 
+    @Override
     public String getID() {
         return getID(data);
     }
 
+    @Override
     public String getSummary() {
         return getFieldValue(IssueField.SUMMARY);
     }
@@ -587,8 +496,8 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         data = taskData;
         attributes = null; // reset
         availableOperations = null;
-        fields = null;
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 ((BugzillaIssueNode)getNode()).fireDataChanged();
                 fireDataChanged();
@@ -612,13 +521,13 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
 
     private static String getFieldValue(IssueField f, TaskData taskData) {
         if(f.isSingleAttribute()) {
-            TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
+            TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
             if(a != null && a.getValues().size() > 1) {
                 return listValues(a);
             }
             return a != null ? a.getValue() : ""; // NOI18N
         } else {
-            List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, f.key);
+            List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, f.getKey());
             // returning 0 would set status MODIFIED instead of NEW
             return "" + ( attrs != null && attrs.size() > 0 ?  attrs.size() : ""); // NOI18N
         }
@@ -635,7 +544,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         if(a == null) {
             return "";                                                          // NOI18N
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         List<String> l = a.getValues();
         for (int i = 0; i < l.size(); i++) {
             String s = l.get(i);
@@ -652,9 +561,9 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
             assert false : "can't set value into IssueField " + f.getKey();       // NOI18N
             return;
         }
-        TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
         if(a == null) {
-            a = new TaskAttribute(data.getRoot(), f.key);
+            a = new TaskAttribute(data.getRoot(), f.getKey());
         }
         if(f == IssueField.PRODUCT) {
             handleProductChange(a);
@@ -663,16 +572,16 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
     }
 
     void setFieldValues(IssueField f, List<String> ccs) {
-        TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
         if(a == null) {
-            a = new TaskAttribute(data.getRoot(), f.key);
+            a = new TaskAttribute(data.getRoot(), f.getKey());
         }
         a.setValues(ccs);
     }
 
     List<String> getFieldValues(IssueField f) {
         if(f.isSingleAttribute()) {
-            TaskAttribute a = data.getRoot().getMappedAttribute(f.key);
+            TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
             if(a != null) {
                 return a.getValues();
             } else {
@@ -844,6 +753,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
     }
 
     // XXX carefull - implicit refresh
+    @Override
     public void addComment(String comment, boolean close) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         if(comment == null && !close) {
@@ -950,6 +860,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         return true;
     }
 
+    @Override
     public boolean refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         return refresh(getID(), false);
@@ -992,50 +903,6 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
         return availableOperations;
     }
 
-    List<IssueField> getFields() {
-        if (fields == null) {
-            fields = new ArrayList<IssueField>(40);
-            fields.add(IssueField.SUMMARY);
-            fields.add(IssueField.WHITEBOARD);
-            fields.add(IssueField.STATUS);
-            fields.add(IssueField.PRIORITY);
-            fields.add(IssueField.RESOLUTION);
-            fields.add(IssueField.PRODUCT);
-            fields.add(IssueField.COMPONENT);
-            fields.add(IssueField.VERSION);
-            fields.add(IssueField.PLATFORM);
-            fields.add(IssueField.OS);
-            fields.add(IssueField.MILESTONE);
-            fields.add(IssueField.REPORTER);
-            fields.add(IssueField.REPORTER_NAME);
-            fields.add(IssueField.ASSIGNED_TO);
-            fields.add(IssueField.ASSIGNED_TO_NAME);
-            fields.add(IssueField.QA_CONTACT);
-            fields.add(IssueField.QA_CONTACT_NAME);
-            fields.add(IssueField.DEPENDS_ON);
-            fields.add(IssueField.BLOCKS);
-            fields.add(IssueField.URL);
-            fields.add(IssueField.KEYWORDS);
-            fields.add(IssueField.SEVERITY);
-            fields.add(IssueField.ISSUE_TYPE);
-            fields.add(IssueField.DESCRIPTION);
-            fields.add(IssueField.CREATION);
-            fields.add(IssueField.CC);
-            fields.add(IssueField.MODIFICATION);
-            fields.add(IssueField.NEWCC);
-            fields.add(IssueField.REMOVECC);
-            fields.add(IssueField.COMMENT_COUNT);
-            fields.add(IssueField.ATTACHEMENT_COUNT);
-            // Custom fields
-            for (Map.Entry<String,TaskAttribute> entry : getTaskData().getRoot().getAttributes().entrySet()) {
-                if (entry.getKey().startsWith("cf_")) { // NOI18N
-                    fields.add(new CustomIssueField(entry.getValue()));
-                }
-            }
-        }
-        return fields;
-    }
-
     boolean isResolveAvailable () {
         Map<String, TaskOperation> operations = getAvailableOperations();
         return operations.containsKey(BugzillaOperation.resolve.name());
@@ -1053,7 +920,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
 
     String getSeenValue(IssueField f) {
         Map<String, String> attr = getSeenAttributes();
-        String seenValue = attr != null ? attr.get(f.key) : null;
+        String seenValue = attr != null ? attr.get(f.getKey()) : null;
         if(seenValue == null) {
             seenValue = "";                                                     // NOI18N
         }
@@ -1225,6 +1092,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
             handle.start();
             handle.switchToIndeterminate();
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         File file = saveToTempFile();
@@ -1267,6 +1135,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                 handle.start();
                 handle.switchToIndeterminate();
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             getAttachementData(new FileOutputStream(file));
@@ -1291,6 +1160,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                 handle.start();
                 handle.switchToIndeterminate();
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             File file = saveToTempFile();
@@ -1325,6 +1195,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                                    "Attachment.DefaultAction.name"));   //NOI18N
             }
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Attachment.this.open();
             }
@@ -1338,6 +1209,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                                    "Attachment.SaveAction.name"));      //NOI18N
             }
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Attachment.this.saveToFile();
             }
@@ -1351,6 +1223,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                                    "Attachment.ApplyPatchAction.name"));//NOI18N
             }
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Attachment.this.applyPatch();
             }

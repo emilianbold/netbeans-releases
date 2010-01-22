@@ -52,9 +52,12 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -77,7 +80,7 @@ public final class RailsGemsHelper implements RakeTaskCustomizer {
             return;
         }
         RequiredGems requiredGems = project.getLookup().lookup(RequiredGems.class);
-        convertor = new GemsLineConvertor(requiredGems);
+        this.convertor = new GemsLineConvertor(requiredGems, project);
         taskDescriptor.addOutConvertor(convertor);
         taskDescriptor.setOutProcessorFactory(new RakeGemsInputProcessorFactory(convertor.getGems(), requiredGems));
     }
@@ -153,9 +156,11 @@ public final class RailsGemsHelper implements RakeTaskCustomizer {
 
         private final List<GemRequirement> gems = new ArrayList<GemRequirement>();
         private final RequiredGems requiredGems;
+        private final Project project;
 
-        public GemsLineConvertor(RequiredGems requiredGems) {
+        public GemsLineConvertor(RequiredGems requiredGems, Project project) {
             this.requiredGems = requiredGems;
+            this.project = project;
         }
 
         List<GemRequirement> getGems() {
@@ -177,6 +182,7 @@ public final class RailsGemsHelper implements RakeTaskCustomizer {
 
                             public void outputLineAction(OutputEvent ev) {
                                 requiredGems.setRequiredGems(gems);
+                                save();
                             }
 
                             public void outputLineCleared(OutputEvent ev) {
@@ -192,7 +198,8 @@ public final class RailsGemsHelper implements RakeTaskCustomizer {
                             }
 
                             public void outputLineAction(OutputEvent ev) {
-                                requiredGems.setRequiredGems(null);
+                                requiredGems.setRequiredGems((String) null);
+                                save();
                             }
 
                             public void outputLineCleared(OutputEvent ev) {
@@ -201,5 +208,12 @@ public final class RailsGemsHelper implements RakeTaskCustomizer {
             }
             return Collections.singletonList(ConvertedLine.forText(line, null));
         }
+
+        private void save() {
+            SharedRubyProjectProperties properties = project.getLookup().lookup(SharedRubyProjectProperties.class);
+            properties.setGemRequirements(requiredGems.getGemRequirements());
+            properties.save();
+        }
     }
+
 }

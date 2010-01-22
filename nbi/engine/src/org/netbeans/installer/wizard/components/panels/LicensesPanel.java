@@ -92,12 +92,32 @@ public class LicensesPanel extends WizardPanel {
     
     @Override
     public boolean canExecuteForward() {
-        return Registry.getInstance().getProductsToInstall().size()  > 0;
+        List <Product> products = Registry.getInstance().getProductsToInstall();
+        
+        boolean doShowPanel = true;
+        if (products.size() > 0) {
+            doShowPanel = System.getProperty(OVERALL_LICENSE_RESOURCE_PROPERTY) != null;
+            if (!doShowPanel) {
+                for (Product p : products) {
+                    if (p.isLogicDownloaded()) {
+                        try {
+                            if (p.getLogic().getLicense() != null) {
+                                doShowPanel = true;
+                            }
+                        } catch (InitializationException e) {
+                        }
+                    } else {
+                        doShowPanel = true;
+                    }
+                }
+            }
+        }
+        return products.size()  > 0 && doShowPanel;
     }
     
     @Override
     public boolean canExecuteBackward() {
-        return Registry.getInstance().getProductsToInstall().size()  > 0;
+        return canExecuteForward();
     }
     
     @Override
@@ -177,7 +197,9 @@ public class LicensesPanel extends WizardPanel {
                         System.getProperty(OVERALL_LICENSE_RESOURCE_PROPERTY));
                 final String license = SystemUtils.resolveString("$R{" + licenseValue + ";" + StringUtils.ENCODING_UTF8 + "}");
                 final String format = component.getProperty(OVERALL_LICENSE_FORMAT_PROPERTY);
-                text.append(StringUtils.format(format, license));
+                if(license!=null) {
+                    text.append(StringUtils.format(format, license));
+                }
             } else {
                 final String format = (currentProducts.size() == 1) ? 
                     component.getProperty(SINGLE_PRODUCT_LICENSE_FORMAT_PROPERTY) :
@@ -189,7 +211,7 @@ public class LicensesPanel extends WizardPanel {
                     }
                     try {
                         Text license = product.getLogic().getLicense();
-                        if(license!=null) {
+                        if(license!=null && license.getText()!=null) {
                             text.append(
                                     StringUtils.format(format, 
                                     product.getDisplayName(),

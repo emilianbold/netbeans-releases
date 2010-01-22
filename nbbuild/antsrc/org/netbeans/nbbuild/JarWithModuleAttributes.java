@@ -123,6 +123,9 @@ public class JarWithModuleAttributes extends Jar {
                     myself = mainSection.getAttributeValue("Bundle-SymbolicName");
                     isOSGiMode = myself != null;
                 }
+                if (myself == null) {
+                    throw new BuildException("No OpenIDE-Module in " + manifestFile);
+                }
                 int slash = myself.indexOf('/');
                 if (slash == -1) {
                     ownCnb = myself;

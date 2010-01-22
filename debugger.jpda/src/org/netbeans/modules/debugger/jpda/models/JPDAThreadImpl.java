@@ -81,6 +81,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.MonitorInfo;
@@ -110,7 +111,6 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.MonitorContendedEnteredRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.util.Executor;
-import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.modules.debugger.jpda.util.Operator;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
@@ -1420,7 +1420,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
 
     public List<MonitorInfo> getOwnedMonitorsAndFrames() {
-        if (JPDAUtils.IS_JDK_16 && VirtualMachineWrapper.canGetMonitorFrameInfo0(vm)) {
+        if (VirtualMachineWrapper.canGetMonitorFrameInfo0(vm)) {
             accessLock.readLock().lock();
             try {
                 if (!(isSuspended() || suspendedNoFire) || getState() == ThreadReference.THREAD_STATUS_ZOMBIE) {
@@ -1704,7 +1704,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
 
     private boolean submitMonitorEnteredFor(ObjectReference waitingMonitor) {
-        if (!JPDAUtils.IS_JDK_16 || !VirtualMachineWrapper.canRequestMonitorEvents0(vm)) {
+        if (!VirtualMachineWrapper.canRequestMonitorEvents0(vm)) {
             return false;
         }
         try {
@@ -1813,7 +1813,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         private final ReentrantReadWriteLock.WriteLock writerLock;
 
         private ThreadReentrantReadWriteLock() {
-            super(false);  // TODO: change to "true" after we stop support JDK 5. It's buggy on JDK 5 and cause deadlocks!
+            super(true);
             readerLock = new ThreadReadLock();
             writerLock = new ThreadWriteLock();
         }

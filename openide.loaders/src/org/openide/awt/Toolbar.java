@@ -96,20 +96,12 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     /* FolderInstance that will track all the changes in backingFolder */
     private Folder processor;
 
-    //needed to turn off the painting of toolbar button borders on ocean/jdk1.5
+    //needed to turn off the painting of toolbar button borders on ocean
     private static final boolean isMetalLaF =
             MetalLookAndFeel.class.isAssignableFrom(UIManager.getLookAndFeel().getClass());
-    private static final boolean isJdk15;
-    private static final boolean isJdk16;
     
     static final long serialVersionUID = 5011742660516204764L;
 
-    static {
-        String javaVersion = System.getProperty( "java.version" );
-        isJdk15 = javaVersion.startsWith( "1.5" );
-        isJdk16 = javaVersion.startsWith( "1.6" );
-    }
-    
     /** Create a new Toolbar with empty name. */
     public Toolbar () {
         this (""); // NOI18N
@@ -188,14 +180,14 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         if (c instanceof AbstractButton) {
             c.setFocusable(false);
             ((JComponent) c).setOpaque(false);
-            if( isMetalLaF && (isJdk15 || isJdk16)) {
-                //JDK 1.5 metal/ocean resets borders, so fix it this way
+            if (isMetalLaF) {
+                //metal/ocean resets borders, so fix it this way
                 ((AbstractButton) c).setBorderPainted(false);
                 ((AbstractButton) c).setOpaque(false);
             }
             //This is active for GTK L&F. It should be fixed in JDK
             //but it is not fixed in JDK 6.0.
-            if( isJdk16 && !isMetalLaF ) {
+            if (!isMetalLaF) {
                 ((AbstractButton) c).setMargin( emptyInsets );
             }
             if( null != label && c != label ) {

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.javacard.api;
 
+import org.openide.util.NbBundle;
+
 /**
  * Run modes which can be passed to StartCapability.start().  Depending
  * on the run mode, an additional debugger proxy process may be started;
@@ -66,5 +68,10 @@ public enum RunMode {
      */
     public boolean isDebug() {
         return this == DEBUG;
+    }
+
+    @Override
+    public String toString() {
+        return NbBundle.getMessage(RunMode.class, name());
     }
 }

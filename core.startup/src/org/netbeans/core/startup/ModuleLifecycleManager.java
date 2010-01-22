@@ -51,7 +51,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Rudimentary manager useful for non-GUI platform applications.
- * Superseded by NbTopManager.NbLifecycleManager.
+ * Superseded by NbLifecycleManager.
  * @see #158525
  */
 @ServiceProvider(service=LifecycleManager.class)
@@ -66,7 +66,7 @@ public class ModuleLifecycleManager extends LifecycleManager {
         if (exiting.getAndSet(true)) {
             return;
         }
-        // Simplified version of NbTopManager.doExit.
+        // Simplified version of NbLifecycleManager.doExit.
         if (Main.getModuleSystem().shutDown(new Runnable() {
             public void run() {
                 try {

@@ -243,8 +243,6 @@ implements Stamps.Updater {
             assert toInit == null : "OSGi container shall be initialized only after restored of core.netigso was called";
             Map<String,Object> configMap = new HashMap<String,Object>();
             final String cache = getNetigsoCache().getPath();
-            configMap.put("felix.cache.profiledir", cache);
-            configMap.put("felix.cache.dir", cache);
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
             activator = new NetigsoActivator();
             configMap.put("felix.bootdelegation.classloaders", activator);

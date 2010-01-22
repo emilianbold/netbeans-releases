@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
 
     <target name="compile-jnlp-launcher" depends="init,compile">
         <mkdir dir="build/jnlp-launcher-classes"/>
-        <nb-javac srcdir="jnlp-src" destdir="build/jnlp-launcher-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.5" target="1.5" includeantruntime="false">
+        <nb-javac srcdir="jnlp-src" destdir="build/jnlp-launcher-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.6" target="1.6" includeantruntime="false">
             <classpath>
                 <path path="${jnlp.cp}"/>
             </classpath>

@@ -211,6 +211,9 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="kenaiComboActionPerformed"/>
       </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new KenaiCombo(Kenai.Status.OFFLINE, true)"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

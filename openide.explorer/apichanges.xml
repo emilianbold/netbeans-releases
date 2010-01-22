@@ -47,6 +47,29 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="OutlineView.setPropertyColumns">
+        <api name="explorer"/>
+        <summary><code>OutlineView.setPropertyColumns</code>,
+                 <code>OutlineView.addPropertyColumn</code> and
+                 <code>OutlineView.removePropertyColumn</code> added.
+        </summary>
+        <version major="6" minor="25"/>
+        <date day="11" month="1" year="2010"/>
+        <author login="tboudreau"/>
+        <compatibility binary="compatible" source="compatible" deprecation="yes" deletion="no" addition="yes"/>
+        <description>
+            Added methods to manipulate the displayed columns of an OutlineView
+            without needing to create prototype property objects, both making
+            it simpler to use, and avoiding the common problem of properties
+            not appearing because the prototype property does not use the
+            exact type required.
+            <p/>
+            Deprecated <code>OutlineView.setProperties()</code>, as this was
+            only needed for ease of replacement of TreeTableView.
+        </description>
+        <class package="org.openide.explorer.view" name="OutlineView"/>
+        <issue number="179397"/>
+    </change>
     <change id="OutlineView.setTreeSortable">
         <api name="explorer"/>
         <summary><code>OutlineView.setTreeSortable</code> added.</summary>

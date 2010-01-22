@@ -56,6 +56,11 @@ import org.openide.util.Lookup;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class DynamicVerifyTest extends NbTestCase {
+
+    static {
+        System.setProperty("java.awt.headless", "true");
+    }
+
     public DynamicVerifyTest(String n) {
         super(n);
     }

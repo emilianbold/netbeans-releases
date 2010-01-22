@@ -113,8 +113,7 @@ class TabsComponent extends JPanel {
         bar.setFloatable(false);
         bar.setFocusable(true);
         if( "Windows".equals( UIManager.getLookAndFeel().getID()) 
-                && !isXPTheme()
-                && System.getProperty("java.version").startsWith("1.6") ) {
+                && !isXPTheme()) {
             bar.setRollover(true);
         } else if( AQUA ) {
             bar.setBackground(UIManager.getColor("NbExplorerView.background"));
@@ -247,11 +246,7 @@ class TabsComponent extends JPanel {
         if (b != null) {
            button.setBorder(b);
         }
-        if( "Windows".equals( UIManager.getLookAndFeel().getID() ) 
-                && !isXPTheme()
-                && System.getProperty("java.version").startsWith("1.5")) { //NOI18N
-            button.setBorderPainted(false);
-        } else if( AQUA ) {
+        if( AQUA ) {
             button.putClientProperty("JButton.buttonType", "square");
             button.putClientProperty("JComponent.sizeVariant", "small");
         }

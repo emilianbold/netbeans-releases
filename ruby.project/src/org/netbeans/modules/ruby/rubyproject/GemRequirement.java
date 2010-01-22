@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby.rubyproject;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.ruby.platform.Util;
+import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.openide.util.Parameters;
 
 /**
@@ -50,6 +51,7 @@ import org.openide.util.Parameters;
  */
 public final class GemRequirement implements Comparable<GemRequirement>{
 
+    // patterns for parsing requirement info from 'rake gems' output
     private static final Pattern STATUS = Pattern.compile("\\s*-\\s*\\[(.*)\\].*");
     private static final Pattern NAME = Pattern.compile("\\s*-\\s*\\[.*\\]\\s(\\S*).*");
     private static final Pattern VERSION = Pattern.compile(".*\\s+(\\d+[\\.\\d]*)\\s*");
@@ -112,6 +114,10 @@ public final class GemRequirement implements Comparable<GemRequirement>{
         this.status = status;
     }
 
+    public static GemRequirement forGem(Gem gem) {
+        return new GemRequirement(gem.getName(), null, null, Status.INSTALLED);
+    }
+
     Status getStatus() {
         return status;
     }
@@ -144,7 +150,15 @@ public final class GemRequirement implements Comparable<GemRequirement>{
         return version;
     }
 
+    /**
+     * Gets the version requirement, e.g. <code>">= 1.2.3"</code>.
+     * 
+     * @return the version requirement; returns an empty string if it isn't specified.
+     */
     public String getVersionRequirement() {
+        if (version == null || operator == null) {
+            return "";
+        }
         return operator + " " + version;
     }
 

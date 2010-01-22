@@ -38,44 +38,89 @@
  */
 package org.netbeans.modules.ruby.rubyproject;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
-import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.openide.util.EditableProperties;
-import org.openide.util.Exceptions;
-import org.openide.util.WeakListeners;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.ruby.platform.gems.Gem;
+import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
+import org.netbeans.modules.ruby.rubyproject.GemRequirement.Status;
+import org.openide.util.Parameters;
 
 /**
- * Represents the explicit gem requirements of a Ruby/Rails application.
+ * Helper class for dealing with the explicit gem requirements of
+ * a Ruby or Rails application. Contains info on the gem requirements, i.e. the gems
+ * and their versions that the application requires, and the gems and their versions
+ * that have actually been indexed.
  *
  * @author Erno Mononen
  */
-public final class RequiredGems implements PropertyChangeListener {
+public final class RequiredGems  {
 
+    /**
+     * The project property for required gems.
+     */
     public static final String REQUIRED_GEMS_PROPERTY = "required.gems"; //NOI18N
-    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+    /**
+     * The project property for the gems required in tests.
+     */
+    public static final String REQUIRED_GEMS_TESTS_PROPERTY = "required.gems.tests"; //NOI18N
+
+    /** @GuardedBy("this") */
     private List<GemRequirement> requirements;
-    private final RubyBaseProject project;
+    /** @GuardedBy("this") */
+    private final List<URL> indexedGems = new ArrayList<URL>();
+
+    private final boolean forTests;
+
+    private RequiredGems(boolean forTests) {
+        this.forTests = forTests;
+    }
 
     public static RequiredGems create(RubyBaseProject project) {
-        RequiredGems result = new RequiredGems(project);
-        PropertyEvaluator evaluator = project.evaluator();
-        evaluator.addPropertyChangeListener(WeakListeners.propertyChange(result, evaluator));
+        RequiredGems result = new RequiredGems(false);
+        result.setRequiredGems(fromString(project.evaluator().getProperty(REQUIRED_GEMS_PROPERTY)));
         return result;
     }
-    
-    private RequiredGems(RubyBaseProject project) {
-        this.project = project;
+
+    public static RequiredGems createForTests(RubyBaseProject project) {
+        RequiredGems result = new RequiredGems(true);
+        result.setRequiredGems(fromString(project.evaluator().getProperty(REQUIRED_GEMS_TESTS_PROPERTY)));
+        return result;
+    }
+
+    /**
+     * Looks up <code>RequiredGems</code> from the given <code>project</code>.
+     * 
+     * @param project
+     * @return an array containing <code>RequiredGems</code>; <code>[0]</code> for sources and
+     * <code>[1]</code> for tests.
+     */
+    public static RequiredGems[] lookup(Project project) {
+        Collection<? extends RequiredGems> reqGems = project.getLookup().lookupAll(RequiredGems.class);
+        assert reqGems.size() == 2;
+        RequiredGems rg = null;
+        RequiredGems rgTest = null;
+        for (RequiredGems each : reqGems) {
+            if (each.isForTests()) {
+                rgTest = each;
+            } else {
+                rg = each;
+            }
+        }
+        return new RequiredGems[]{rg, rgTest};
+    }
+    /**
+     * @return true if this represents required gems for tests.
+     */
+    public boolean isForTests() {
+        return forTests;
     }
 
     /**
@@ -85,19 +130,33 @@ public final class RequiredGems implements PropertyChangeListener {
      */
     public synchronized List<GemRequirement> getGemRequirements() {
         if (requirements == null) {
-            String required = project.evaluator().getProperty(REQUIRED_GEMS_PROPERTY);
-            if (required != null) {
-                requirements = fromString(required);
-            } else {
-                return null;
-            }
+            return null;
         }
         List<GemRequirement> result = mergeVersions(requirements);
         Collections.sort(result);
         return result;
     }
 
-    public synchronized String asString() {
+    /**
+     * Adds the given requirements.
+     * @param gemRequirements
+     */
+    public void addRequirements(Collection<GemRequirement> gemRequirements) {
+        Parameters.notNull("gemRequirements", gemRequirements);
+        synchronized (this) {
+            if (requirements == null) {
+                requirements = new ArrayList<GemRequirement>(gemRequirements);
+            } else {
+                for (GemRequirement each : gemRequirements) {
+                    if (!requirements.contains(each)) {
+                        requirements.add(each);
+                    }
+                }
+            }
+        }
+    }
+
+    public static String asString(List<GemRequirement> requirements) {
         if (requirements == null || requirements.isEmpty()) {
             return "";
         }
@@ -112,25 +171,165 @@ public final class RequiredGems implements PropertyChangeListener {
         return result.toString();
     }
 
-    private static List<GemRequirement> mergeVersions(List<GemRequirement> requirements) {
-        // XXX: performs a very basic version comparison; doesn't take into account the operator etc.
-        List<GemRequirement> result = new ArrayList<GemRequirement>();
-        Map<String, GemRequirement> map = new HashMap<String, GemRequirement>();
-        for (GemRequirement each : requirements) {
-            GemRequirement existing = map.get(each.getName());
-            if (existing != null) {
-                if(existing.compareTo(each) < 0) {
-                    map.put(each.getName(), each);
+    /**
+     * Sets the required gems. If <code>requirements</code> is <code>null</code>,
+     * clears the list of required gems.
+     * 
+     * @param requirements
+     */
+    public synchronized void setRequiredGems(List<GemRequirement> requirements) {
+        if (requirements == null) {
+            this.requirements = null;
+        } else {
+            this.requirements = new ArrayList<GemRequirement>(requirements);
+        }
+    }
+
+    /**
+     * Sets the required gems. If <code>requirements</code> is <code>null</code>,
+     * clears the list of required gems.
+     *
+     * @param requirements a comma separated list of the requirements.
+     */
+    public void setRequiredGems(String requirements) {
+        setRequiredGems(fromString(requirements));
+    }
+
+    public synchronized List<URL> getIndexedGems() {
+        return Collections.unmodifiableList(indexedGems);
+    }
+
+    public synchronized void setIndexedGems(Collection<URL> gemUrls) {
+        Parameters.notNull("gemUrls", gemUrls);
+        indexedGems.clear();
+        indexedGems.addAll(gemUrls);
+    }
+
+    /**
+     * Filters out the gems that are not required from the given <code>gemUrls</code>.
+     * 
+     * @param gemUrls 
+     * @return the filtered collection.
+     */
+    public synchronized Collection<URL> filterNotRequiredGems(Collection<URL> gemUrls) {
+        if (requirements == null) {
+            return gemUrls;
+        }
+
+        List<URL> result = new ArrayList<URL>();
+        for (URL url : gemUrls) {
+            String[] nameAndVersion = GemFilesParser.parseNameAndVersion(url);
+            if (nameAndVersion != null) {
+                String name = nameAndVersion[0];
+                String version = nameAndVersion[1];
+                // special cases, rails and rake (which are not listed by rake gems)
+                if (isRailsOrRake(name)) { //NOI18N
+                    result.add(url);
+                    continue;
                 }
-            } else {
-                map.put(each.getName(), each);
+                for (GemRequirement each : requirements) {
+                    if (each.getName().equals(name) && each.satisfiedBy(version)) {
+                        result.add(url);
+                        break;
+                    }
+                }
             }
         }
+        return result;
+    }
+
+    public synchronized List<GemIndexingStatus> getGemIndexingStatuses() {
+        // if there are no requirements, just add all the indexed gems
+        // this will also init requirements
+        boolean addAll = requirements == null;
+
+        // copy since we'll be removing elements
+        List<GemRequirement> requirementsCopy = new ArrayList<GemRequirement>();
+        if (requirements != null) {
+            requirementsCopy.addAll(requirements);
+        }
+
+        List<GemIndexingStatus> result = new ArrayList<GemIndexingStatus>();
+        for (URL gemUrl : indexedGems) {
+            String[] nameAndVersion = GemFilesParser.parseNameAndVersion(gemUrl);
+            if (nameAndVersion == null) {
+                // a warning msg already logged by GemFilesParser
+                continue;
+            }
+            boolean added = false;
+            String name = nameAndVersion[0];
+            String version = nameAndVersion[1];
+            if (addAll) { //NOI18N
+                result.add(new GemIndexingStatus(new GemRequirement(name,
+                        null, null, Status.INSTALLED), version));
+                added = true;
+            } else {
+                for (Iterator<GemRequirement> it = requirementsCopy.iterator(); it.hasNext();) {
+                    GemRequirement req = it.next();
+                    if (req.getName().equals(name)) {
+                        result.add(new GemIndexingStatus(req, version));
+                        it.remove();
+                        added = true;
+                        break;
+                    }
+                }
+            }
+            // add indexed gems that didn't have a corresponding requirement
+            if (!added) {
+                result.add(new GemIndexingStatus(new GemRequirement(name, null, null, Status.NOT_INSTALLED), version));
+            }
+        }
+        // add in reqs that didn't have a corresponding installed gem
+        if (!addAll) {
+            for (GemRequirement req : requirementsCopy) {
+                result.add(new GemIndexingStatus(req, null));
+            }
+        }
+        // add in gems that were indexed but don't have a corresponding req (typically rails gems)
+        Collections.sort(result, new Comparator<GemIndexingStatus>() {
+            public int compare(GemIndexingStatus o1, GemIndexingStatus o2) {
+                return o1.getRequirement().compareTo(o2.getRequirement());
+            }
+        });
         
-        return new ArrayList(map.values());
+        return result;
+    }
+
+    /**
+     * Removes the requirement identified by the given <code>name</code>.
+     * 
+     * @param name the name of requirement to remove.
+     */
+    public void removeRequirement(String name) {
+        List<GemIndexingStatus> statuses = new ArrayList<GemIndexingStatus>(getGemIndexingStatuses());
+        
+        synchronized(this) {
+         // can't just remove from requirements as it might not be set at all yet
+            if (this.requirements == null) {
+                List<GemRequirement> newReqs = new ArrayList<GemRequirement>();
+                for (GemIndexingStatus each : statuses) {
+                    if (!each.getRequirement().getName().equals(name)) {
+                        newReqs.add(each.getRequirement());
+                    }
+                }
+                if (newReqs.size() < statuses.size()) {
+                    setRequiredGems(newReqs);
+                }
+            } else {
+                for (Iterator<GemRequirement> it = requirements.iterator(); it.hasNext();) {
+                    GemRequirement each = it.next();
+                    if (each.getName().equals(name)) {
+                        it.remove();
+                    }
+                }
+            }
+        }
     }
 
     static List<GemRequirement> fromString(String str) {
+        if (str == null) {
+            return null;
+        }
         String[] gems = str.split(",");
         List<GemRequirement> result = new ArrayList<GemRequirement>();
         for (String gem : gems) {
@@ -142,31 +341,43 @@ public final class RequiredGems implements PropertyChangeListener {
         return result;
     }
 
-    public synchronized void setRequiredGems(List<GemRequirement> requirements) {
-        List<GemRequirement> old = this.requirements;
-        this.requirements = requirements;
-
-        UpdateHelper helper = project.getUpdateHelper();
-        EditableProperties projectProperties = helper.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
-        if (requirements == null) {
-            projectProperties.remove(REQUIRED_GEMS_PROPERTY);
-        } else {
-            projectProperties.put(REQUIRED_GEMS_PROPERTY, asString());
-        }
-        helper.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-        try {
-            ProjectManager.getDefault().saveProject(project);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    private static boolean isRailsOrRake(String name) {
+        return Gem.isRailsGem(name) || Gem.isRakeGem(name);
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (REQUIRED_GEMS_PROPERTY.equals(evt.getPropertyName())) {
-            requirements = null;
+    private static List<GemRequirement> mergeVersions(List<GemRequirement> requirements) {
+        // XXX: performs a very basic version comparison; doesn't take into account the operator etc.
+        Map<String, GemRequirement> map = new HashMap<String, GemRequirement>();
+        for (GemRequirement each : requirements) {
+            GemRequirement existing = map.get(each.getName());
+            if (existing != null) {
+                if (existing.compareTo(each) < 0) {
+                    map.put(each.getName(), each);
+                }
+            } else {
+                map.put(each.getName(), each);
+            }
         }
+
+        return new ArrayList<GemRequirement>(map.values());
     }
 
+    public static final class GemIndexingStatus {
+
+        private final GemRequirement requirement;
+        private final String indexedVersion;
+
+        private GemIndexingStatus(GemRequirement requirement, String indexedVersion) {
+            this.requirement = requirement;
+            this.indexedVersion = indexedVersion;
+        }
+
+        public String getIndexedVersion() {
+            return indexedVersion;
+        }
+
+        public GemRequirement getRequirement() {
+            return requirement;
+        }
+    }
 }

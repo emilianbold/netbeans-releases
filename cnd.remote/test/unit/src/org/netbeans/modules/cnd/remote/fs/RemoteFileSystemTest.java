@@ -92,14 +92,18 @@ public class RemoteFileSystemTest extends RemoteTestBase {
         assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
         assertFalse("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isVirtual());
         InputStream is = fo.getInputStream();
-        assertNotNull("Null input stream", is);
         BufferedReader rdr = new BufferedReader(new InputStreamReader(new BufferedInputStream(is)));
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = rdr.readLine()) != null) {
-            sb.append(line);
+        try {
+            assertNotNull("Null input stream", is);
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = rdr.readLine()) != null) {
+                sb.append(line);
+            }
+            return sb;
+        } finally {
+            rdr.close();
         }
-        return sb;
     }
 
     private String getFileName(ExecutionEnvironment execEnv, String absPath) {
@@ -232,7 +236,6 @@ public class RemoteFileSystemTest extends RemoteTestBase {
                 super(name, barrier, exceptions);
             }
             protected void work() throws Exception {
-                long time = System.currentTimeMillis();
                 CharSequence content = readFile(absPath);
                 int currSize = content.length();
                 size.compareAndSet(-1, currSize);

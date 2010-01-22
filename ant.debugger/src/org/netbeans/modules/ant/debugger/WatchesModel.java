@@ -55,6 +55,7 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.debugger.ui.Constants;
+import org.netbeans.spi.viewmodel.NodeModelFilter;
 import org.openide.text.Annotatable;
 
 import org.openide.text.Line;
@@ -63,7 +64,7 @@ import org.openide.text.Line;
  *
  * @author   Jan Jancura
  */
-public class WatchesModel implements NodeModel, TableModel {
+public class WatchesModel implements NodeModelFilter, TableModel {
 
     public static final String WATCH =
     "org/netbeans/modules/debugger/resources/watchesView/Watch";
@@ -79,7 +80,7 @@ public class WatchesModel implements NodeModel, TableModel {
     }
     
     
-    // NodeModel implementation ................................................
+    // NodeModelFilter implementation ................................................
     
     /**
      * Returns display name for given node.
@@ -90,10 +91,8 @@ public class WatchesModel implements NodeModel, TableModel {
      *          able to resolve display name for given node type
      * @return  display name for given node
      */
-    public String getDisplayName (Object node) throws UnknownTypeException {
-        if (node instanceof Watch) 
-            return ((Watch) node).getExpression ();
-        throw new UnknownTypeException (node);
+    public String getDisplayName (NodeModel model, Object node) throws UnknownTypeException {
+        return model.getDisplayName(node);
     }
     
     /**
@@ -105,10 +104,8 @@ public class WatchesModel implements NodeModel, TableModel {
      *          able to resolve icon for given node type
      * @return  icon for given node
      */
-    public String getIconBase (Object node) throws UnknownTypeException {
-        if (node instanceof Watch) 
-            return WATCH;
-        throw new UnknownTypeException (node);
+    public String getIconBase (NodeModel model, Object node) throws UnknownTypeException {
+        return model.getIconBase(node);
     }
     
     /**
@@ -120,13 +117,12 @@ public class WatchesModel implements NodeModel, TableModel {
      *          able to resolve tooltip for given node type
      * @return  tooltip for given node
      */
-    public String getShortDescription (Object node) 
-    throws UnknownTypeException {
+    public String getShortDescription (NodeModel model, Object node) throws UnknownTypeException {
         if (node instanceof Watch) {
             String expression = ((Watch) node).getExpression ();
             return debugger.getVariableValue (expression);
         }
-        throw new UnknownTypeException (node);
+        return model.getShortDescription(node);
     }
         
      

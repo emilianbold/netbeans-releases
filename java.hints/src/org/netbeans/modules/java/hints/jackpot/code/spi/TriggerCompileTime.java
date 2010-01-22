@@ -39,8 +39,12 @@
 
 package org.netbeans.modules.java.hints.jackpot.code.spi;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  *
  * @author lahvac
  */
+@Retention(RetentionPolicy.SOURCE)
 public @interface TriggerCompileTime {}

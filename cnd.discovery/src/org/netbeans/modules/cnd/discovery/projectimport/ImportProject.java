@@ -188,18 +188,22 @@ public class ImportProject implements PropertyChangeListener {
         List<SourceFolderInfo> list = new ArrayList<SourceFolderInfo>();
         list.add(new SourceFolderInfo() {
 
+            @Override
             public File getFile() {
                 return projectFolder;
             }
 
+            @Override
             public String getFolderName() {
                 return projectFolder.getName();
             }
 
+            @Override
             public boolean isAddSubfoldersSelected() {
                 return true;
             }
 
+            @Override
             public FileFilter getFileFilter() {
                 return AllSourceFileFilter.getInstance();
             }
@@ -329,6 +333,7 @@ public class ImportProject implements PropertyChangeListener {
         return resultSet;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
             if (evt.getNewValue() instanceof Project[]) {
@@ -342,6 +347,7 @@ public class ImportProject implements PropertyChangeListener {
                 //}
                 RequestProcessor.getDefault().post(new Runnable() {
 
+                    @Override
                     public void run() {
                         doWork();
                     }
@@ -378,6 +384,7 @@ public class ImportProject implements PropertyChangeListener {
                 } else {
                     RequestProcessor.getDefault().post(new Runnable() {
 
+                        @Override
                         public void run() {
                             discovery(0, null);
                         }
@@ -478,9 +485,11 @@ public class ImportProject implements PropertyChangeListener {
             //final File configureLog = createTempFile("configure");
             ExecutionListener listener = new ExecutionListener() {
 
+                @Override
                 public void executionStarted(int pid) {
                 }
 
+                @Override
                 public void executionFinished(int rc) {
                     if (rc == 0) {
                         importResult.put(Step.Configure, State.Successful);
@@ -505,6 +514,14 @@ public class ImportProject implements PropertyChangeListener {
                 CMakeAction.performAction(node, listener, null, makeProject, null);
             } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
                 QMakeAction.performAction(node, listener, null, makeProject, null);
+            } else {
+                if (TRACE) {
+                    logger.log(Level.INFO, "#Configure script does not supported"); // NOI18N
+                }
+                importResult.put(Step.Configure, State.Fail);
+                importResult.put(Step.MakeClean, State.Skiped);
+                switchModel(true);
+                postModelDiscovery(true);
             }
         } catch (DataObjectNotFoundException e) {
             isFinished = true;
@@ -612,9 +629,11 @@ public class ImportProject implements PropertyChangeListener {
         }
         ExecutionListener listener = new ExecutionListener() {
 
+            @Override
             public void executionStarted(int pid) {
             }
 
+            @Override
             public void executionFinished(int rc) {
                 if (rc == 0) {
                     importResult.put(Step.MakeClean, State.Successful);
@@ -645,9 +664,11 @@ public class ImportProject implements PropertyChangeListener {
         final File makeLog = createTempFile("make"); // NOI18N
         ExecutionListener listener = new ExecutionListener() {
 
+            @Override
             public void executionStarted(int pid) {
             }
 
+            @Override
             public void executionFinished(int rc) {
                 if (rc == 0) {
                     importResult.put(Step.Make, State.Successful);
@@ -939,6 +960,7 @@ public class ImportProject implements PropertyChangeListener {
         }
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 FollowUp.showFollowUp(ImportProject.this, project);
             }

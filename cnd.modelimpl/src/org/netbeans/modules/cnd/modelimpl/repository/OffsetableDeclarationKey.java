@@ -80,7 +80,7 @@ final class OffsetableDeclarationKey extends OffsetableKey {
             result |= 0x80000000;
         } else if( obj instanceof CsmMember) {
             // do nothing
-        } else if ((obj instanceof FunctionImplEx<?>) && (FunctionImplEx.class.equals(obj.getClass()))) {
+        } else if (FunctionImplEx.isFakeFunction(obj)) {
             result |= 0x80000000;
         } else {
             result |= 0x40000000;

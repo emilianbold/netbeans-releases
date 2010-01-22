@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.dlight.procfs.reader.api;
 
+import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.modules.dlight.procfs.api.PStatus;
@@ -90,7 +91,12 @@ public class ProcReaderTest extends NativeExecutionBaseTestCase {
         try {
             System.out.println("getProcessInfo");
             NativeProcessBuilder npb = NativeProcessBuilder.newLocalProcessBuilder();
-            npb.setExecutable("/usr/bin/amd64/pwait").setArguments("1");
+            if (new File("/usr/bin/amd64/pwait").exists()) {
+                npb.setExecutable("/usr/bin/amd64/pwait");
+            } else {
+                npb.setExecutable("/usr/bin/pwait");
+            }
+            npb.setArguments("1");
             p = npb.call();
 
             System.out.println("Process with PID " + p.getPID() + " started");

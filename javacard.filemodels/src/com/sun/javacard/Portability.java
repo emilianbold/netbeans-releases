@@ -162,7 +162,7 @@ public final class Portability {
     private static XMLReader getXmlReaderViaXmlUtil() {
         try {
             Class<?> clazz = Class.forName("org.openide.xml.XMLUtil"); //NOI18N
-            Method m = clazz.getMethod ("createXMLReader", new Class[] {
+            Method m = clazz.getMethod ("createXMLReader", new Class<?>[] {
                 Boolean.TYPE, Boolean.TYPE });
             return (XMLReader) m.invoke(null, false, false);
         } catch (Exception ex) {
@@ -222,7 +222,7 @@ public final class Portability {
 
     private static Document parseViaXmlUtil(InputStream in) throws IOException {
         try {
-            Class<?>[] types = new Class[]{InputSource.class, Boolean.TYPE, Boolean.TYPE, ErrorHandler.class, EntityResolver.class};
+            Class<?>[] types = new Class<?>[]{InputSource.class, Boolean.TYPE, Boolean.TYPE, ErrorHandler.class, EntityResolver.class};
             Class<?> clazz = Class.forName("org.openide.xml.XMLUtil"); //NOI18N
             Method m = clazz.getMethod("parse", types);
             InputSource src = new InputSource(in);

@@ -506,7 +506,6 @@ public class ModuleInitTest extends Benchmark {
             "java",
             "-Xms24m",
             "-Xmx96m",
-            "-Dorg.openide.TopManager=org.netbeans.core.NonGuiMain",
             "-Dnetbeans.security.nocheck=true",
             "-Dnetbeans.home=" + homedir.getAbsolutePath(),
             "-Dnetbeans.user=" + userdir.getAbsolutePath(),

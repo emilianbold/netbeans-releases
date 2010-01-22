@@ -48,6 +48,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -67,6 +68,7 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
+import javax.tools.Diagnostic.Kind;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClassIndex;
@@ -78,26 +80,26 @@ import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.FileObjects.InferableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
-import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.Pair;
-import org.netbeans.modules.java.source.usages.SourceAnalyser;
 import org.netbeans.modules.java.source.usages.VirtualSourceProviderQuery;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.Convertor;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.ErrorKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 
@@ -155,71 +157,71 @@ public class JavaCustomIndexer extends CustomIndexer {
 
             ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
-                    return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
-                        public Void run() throws Exception {
-                            final JavaParsingContext javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
-                            if (javaContext.uq == null)
-                                return null; //IDE is exiting, indeces are already closed.                            
-                            final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
-                            final Set<File> removedFiles = new HashSet<File> ();
-                            final List<CompileTuple> toCompile = new ArrayList<CompileTuple>(javaSources.size()+virtualSourceTuples.size());
-                            javaContext.uq.setDirty(null);
-                            for (Indexable i : javaSources) {
-                                final CompileTuple tuple = createTuple(context, javaContext, i);
-                                if (tuple != null) {
-                                    toCompile.add(tuple);
-                                }
-                                clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
+                    try {
+                        final JavaParsingContext javaContext = new JavaParsingContext(context, bootPath, compilePath, sourcePath, virtualSourceTuples);
+                        if (javaContext.uq == null)
+                            return null; //IDE is exiting, indeces are already closed.
+                        final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
+                        final Set<File> removedFiles = new HashSet<File> ();
+                        final List<CompileTuple> toCompile = new ArrayList<CompileTuple>(javaSources.size()+virtualSourceTuples.size());
+                        javaContext.uq.setDirty(null);
+                        for (Indexable i : javaSources) {
+                            final CompileTuple tuple = createTuple(context, javaContext, i);
+                            if (tuple != null) {
+                                toCompile.add(tuple);
                             }
-                            for (CompileTuple tuple : virtualSourceTuples) {
-                                clear(context, javaContext, tuple.indexable.getRelativePath(), removedTypes, removedFiles);
-                            }
-                            toCompile.addAll(virtualSourceTuples);
-                            CompileWorker.ParsingOutput compileResult = null;
-                            for (CompileWorker w : WORKERS) {
-                                compileResult = w.compile(compileResult, context, javaContext, toCompile);
-                                if (compileResult == null || context.isCancelled()) {
-                                    return null; // cancelled, IDE is sutting down
-                                }
-                                if (compileResult.success) {
-                                    break;
-                                }
-                            }
-                            assert compileResult != null;
-
-                            Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added types
-                            Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed types
-                            _at.removeAll(removedTypes);
-                            _rt.removeAll(compileResult.addedTypes);
-                            compileResult.addedTypes.retainAll(removedTypes); //Changed types
-
-                            if (!context.isSupplementaryFilesIndexing() && !context.isCancelled()) {
-                                compileResult.modifiedTypes.addAll(_rt);
-                                Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), compileResult.modifiedTypes, !_at.isEmpty());
-                                Set<URL> urls = root2Rebuild.get(context.getRootURI());
-                                if (urls != null) {
-                                    if (context.isAllFilesIndexing()) {
-                                        root2Rebuild.remove(context.getRootURI());
-                                    } else {
-                                        for (CompileTuple ct : toCompile)
-                                            urls.remove(ct.indexable.getURL());
-                                        if (urls.isEmpty())
-                                            root2Rebuild.remove(context.getRootURI());
-                                    }
-                                }
-                                for (Map.Entry<URL, Set<URL>> entry : root2Rebuild.entrySet()) {
-                                    context.addSupplementaryFiles(entry.getKey(), entry.getValue());
-                                }
-                            }
-                            javaContext.checkSums.store();
-                            javaContext.sa.store();
-                            javaContext.uq.typesEvent(_at, _rt, compileResult.addedTypes);
-                            if (!context.checkForEditorModifications()) { // #152222
-                                BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles, false);
-                            }
-                            return null;
+                            clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
                         }
-                    });
+                        for (CompileTuple tuple : virtualSourceTuples) {
+                            clear(context, javaContext, tuple.indexable.getRelativePath(), removedTypes, removedFiles);
+                        }
+                        toCompile.addAll(virtualSourceTuples);
+                        CompileWorker.ParsingOutput compileResult = null;
+                        for (CompileWorker w : WORKERS) {
+                            compileResult = w.compile(compileResult, context, javaContext, toCompile);
+                            if (compileResult == null || context.isCancelled()) {
+                                return null; // cancelled, IDE is sutting down
+                            }
+                            if (compileResult.success) {
+                                break;
+                            }
+                        }
+                        assert compileResult != null;
+
+                        Set<ElementHandle<TypeElement>> _at = new HashSet<ElementHandle<TypeElement>> (compileResult.addedTypes); //Added types
+                        Set<ElementHandle<TypeElement>> _rt = new HashSet<ElementHandle<TypeElement>> (removedTypes); //Removed types
+                        _at.removeAll(removedTypes);
+                        _rt.removeAll(compileResult.addedTypes);
+                        compileResult.addedTypes.retainAll(removedTypes); //Changed types
+
+                        if (!context.isSupplementaryFilesIndexing() && !context.isCancelled()) {
+                            compileResult.modifiedTypes.addAll(_rt);
+                            Map<URL, Set<URL>> root2Rebuild = findDependent(context.getRootURI(), compileResult.modifiedTypes, !_at.isEmpty());
+                            Set<URL> urls = root2Rebuild.get(context.getRootURI());
+                            if (urls != null) {
+                                if (context.isAllFilesIndexing()) {
+                                    root2Rebuild.remove(context.getRootURI());
+                                } else {
+                                    for (CompileTuple ct : toCompile)
+                                        urls.remove(ct.indexable.getURL());
+                                    if (urls.isEmpty())
+                                        root2Rebuild.remove(context.getRootURI());
+                                }
+                            }
+                            for (Map.Entry<URL, Set<URL>> entry : root2Rebuild.entrySet()) {
+                                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                            }
+                        }
+                        javaContext.checkSums.store();
+                        javaContext.sa.store();
+                        javaContext.uq.typesEvent(_at, _rt, compileResult.addedTypes);
+                        if (!context.checkForEditorModifications()) { // #152222
+                            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, compileResult.createdFiles, false);
+                        }
+                        return null;
+                    } catch (NoSuchAlgorithmException ex) {
+                        throw (IOException) new IOException().initCause(ex);
+                    }
                 }
             });
         } catch (InterruptedException ex) {
@@ -288,28 +290,28 @@ public class JavaCustomIndexer extends CustomIndexer {
             }
             ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
                 public Void run() throws IOException, InterruptedException {
-                    return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Void>() {
-                        public Void run() throws Exception {
-                            final JavaParsingContext javaContext = new JavaParsingContext(context);
-                            if (javaContext.uq == null)
-                                return null; //IDE is exiting, indeces are already closed.
-                            final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
-                            final Set<File> removedFiles = new HashSet<File> ();
-                            for (Indexable i : files) {
-                                clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
-                                TaskCache.getDefault().dumpErrors(context.getRootURI(), i.getURL(), Collections.<Diagnostic>emptyList());
-                                javaContext.checkSums.remove(i.getURL());
-                            }
-                            for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
-                                context.addSupplementaryFiles(entry.getKey(), entry.getValue());
-                            }
-                            javaContext.checkSums.store();
-                            javaContext.sa.store();
-                            BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, Collections.<File>emptySet(), false);
-                            javaContext.uq.typesEvent(null, removedTypes, null);
-                            return null;
+                    try {
+                        final JavaParsingContext javaContext = new JavaParsingContext(context);
+                        if (javaContext.uq == null)
+                            return null; //IDE is exiting, indeces are already closed.
+                        final Set<ElementHandle<TypeElement>> removedTypes = new HashSet <ElementHandle<TypeElement>> ();
+                        final Set<File> removedFiles = new HashSet<File> ();
+                        for (Indexable i : files) {
+                            clear(context, javaContext, i.getRelativePath(), removedTypes, removedFiles);
+                            ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
+                            javaContext.checkSums.remove(i.getURL());
                         }
-                    });
+                        for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
+                            context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                        }
+                        javaContext.checkSums.store();
+                        javaContext.sa.store();
+                        BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), JavaIndex.getClassFolder(context.getRootURI()), removedFiles, Collections.<File>emptySet(), false);
+                        javaContext.uq.typesEvent(null, removedTypes, null);
+                        return null;
+                    } catch (NoSuchAlgorithmException ex) {
+                        throw (IOException) new IOException().initCause(ex);
+                    }
                 }
             });
         } catch (InterruptedException ex) {
@@ -612,7 +614,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     urls.add(file.getURL());
 
                 if (includeFilesInError) {
-                    final List<URL> errUrls = TaskCache.getDefault().getAllFilesInError(depRoot);
+                    final Collection<? extends URL> errUrls = ErrorsCache.getAllFilesInError(depRoot);
                     if (!errUrls.isEmpty()) {
                         //new type creation may cause/fix some errors
                         //not 100% correct (consider eg. a file that has two .* imports
@@ -743,4 +745,16 @@ public class JavaCustomIndexer extends CustomIndexer {
             this(jfo,indexable,false, true);
         }
     }
+
+    static final Convertor<Diagnostic<?>> ERROR_CONVERTOR = new Convertor<Diagnostic<?>>() {
+        public ErrorKind getKind(Diagnostic<?> t) {
+            return t.getKind() == Kind.ERROR ? ErrorKind.ERROR : ErrorKind.WARNING;
+        }
+        public int getLineNumber(Diagnostic<?> t) {
+            return (int) t.getLineNumber();
+        }
+        public String getMessage(Diagnostic<?> t) {
+            return t.getMessage(null);
+        }
+    };
 }

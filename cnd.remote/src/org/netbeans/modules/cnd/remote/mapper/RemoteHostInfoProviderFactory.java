@@ -58,10 +58,8 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
     public static class RemoteHostInfo extends HostInfoProvider {
 
         private final ExecutionEnvironment executionEnvironment;
-        private String home = null;
         private Map<String, String> envCache = null;
         private Boolean isCshShell;
-        private Integer platform;
 
         @Override
         public boolean fileExists(String path) {

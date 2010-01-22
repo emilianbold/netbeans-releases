@@ -41,6 +41,7 @@
 package org.netbeans.modules.javacard.spi.capabilities;
 
 import java.util.concurrent.locks.Condition;
+import org.netbeans.modules.javacard.api.RunMode;
 import org.netbeans.modules.javacard.spi.ICardCapability;
 
 /**
@@ -60,5 +61,5 @@ public interface ResumeCapability extends ICardCapability {
      * to ensure it is really running (startup could fail for various
      * reasons such as port conflicts).
      */
-    public Condition resume();
+    public Condition resume(RunMode runMode);
 }

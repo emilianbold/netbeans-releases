@@ -44,7 +44,6 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidStackFrameException;
-import com.sun.jdi.InternalException;
 import com.sun.jdi.Location;
 import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectReference;
@@ -56,7 +55,6 @@ import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 
 import com.sun.jdi.request.EventRequest;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -608,7 +606,6 @@ public class CallStackFrameImpl implements CallStackFrame {
     }
     
     private static List<com.sun.jdi.Value> getArgumentValues(StackFrame sf) {
-        if (!JPDAUtils.IS_JDK_16) return null;
         try {
             com.sun.jdi.Method m = LocationWrapper.method(StackFrameWrapper.location(sf));
             if (MethodWrapper.isNative(m)) {

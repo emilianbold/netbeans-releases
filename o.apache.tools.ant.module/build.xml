@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
                 <path path="${src-bridge.cp}"/>
             </classpath>
         </depend>
-        <javac srcdir="src-bridge" destdir="build/bridge-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.5" target="1.5" includeantruntime="false">
+        <javac srcdir="src-bridge" destdir="build/bridge-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.6" target="1.6" includeantruntime="false">
             <classpath>
                 <path path="${src-bridge.cp}"/>
             </classpath>

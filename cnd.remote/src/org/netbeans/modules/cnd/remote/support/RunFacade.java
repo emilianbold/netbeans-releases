@@ -91,6 +91,7 @@ public abstract class RunFacade {
                         }
                     }
                     output = out.toString();
+                    reader.close();
                 }
                 process.waitFor();
                 exitValue = process.exitValue();

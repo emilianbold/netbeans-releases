@@ -133,12 +133,16 @@ public class StorageAllocator {
                 if(files[i].isDirectory()) {
                     deleteDirectory(files[i], true);
                 } else {
-                    files[i].delete();
+                    if (!files[i].delete()) {
+                        System.err.println("Cannot delete repository file "+files[i].getAbsolutePath());
+                    }
                 }
             }
-        }
-        if (deleteDir) {
-            path.delete() ;
+            if (deleteDir) {
+                if (!path.delete()) {
+                    System.err.println("Cannot delete repository folder "+path.getAbsolutePath());
+                }
+            }
         }
     }
     public void cleanRepositoryCaches() {

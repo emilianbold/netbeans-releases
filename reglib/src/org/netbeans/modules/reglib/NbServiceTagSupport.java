@@ -1028,10 +1028,7 @@ public class NbServiceTagSupport {
 
         String command = "/usr/bin/zonename";
         File f = new File(command);
-        // com.sun.servicetag package has to be compiled with JDK 5 as well
-        // JDK 5 doesn't support the File.canExecute() method.
-        // Risk not checking isExecute() for the zonename command is very low.
-        if (f.exists()) {
+        if (f.canExecute()) {
             ProcessBuilder pb = new ProcessBuilder(command);
             Process p = pb.start();
             String output = Util.commandOutput(p);

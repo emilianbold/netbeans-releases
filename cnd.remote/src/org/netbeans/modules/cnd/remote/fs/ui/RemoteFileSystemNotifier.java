@@ -181,7 +181,9 @@ public class RemoteFileSystemNotifier {
     }
     
     private void reShow() {
-        shown = false;
+        synchronized(this) {
+            shown = false;
+        }
         show();
         //notification.clear();
     }

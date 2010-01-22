@@ -442,6 +442,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         .setWorkingDirectory(folder)
         .setExecutable(command)
         .setArguments(arguments);
+        ne.redirectError();
         waitExecution(ne);
     }
 

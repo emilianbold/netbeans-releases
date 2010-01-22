@@ -54,11 +54,14 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EventObject;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -95,9 +98,11 @@ import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
+import org.openide.nodes.Node.Property;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
 /**
@@ -109,9 +114,6 @@ import org.openide.util.WeakListeners;
  * <li><a href="http://blogs.sun.com/geertjan/entry/swing_outline_component">Swing Outline Component</a>
  * </ul>
  * 
- * <p><b>Note:</b> This API is still under development and may change even in
- * incompatible way during its stabilization phase. The API will be finalized in
- * NetBeans version 6.5.</p>
  * 
  * @author David Strupl
  */
@@ -260,9 +262,129 @@ public class OutlineView extends JScrollPane {
         return popupListener != null;
     }
 
+    /**
+     * Set the properties which are shown in the non-tree columns of this
+     * Outline view.
+     * <p>
+     * The passed set of properties are typically
+     * <i>prototypes</i> - for a given Node's
+     * property to be shown in a given column, that Node must have a Property
+     * which <code>equals()</code> one of the prototype properties.  By default,
+     * this means that the return values of the prototype property's getName()
+     * and getValueType() must exactly match.
+     * <p>
+     * It is also possible to use the actual Property objects from one Node
+     * being shown, if they are available.
+     *
+     * @deprecated This method is here to enable easy replacement
+     * of TreeTableView with OutlineView.
+     * Use setPropertyColumns(), addPropertyColumn() and
+     * removePropertyColumn() instead.
+     * @param newProperties An array of prototype properties
+     */
+    @Deprecated
     public void setProperties(Node.Property[] newProperties) {
         rowModel.setProperties(newProperties);
         outline.tableChanged(null);
+    }
+
+    /**
+     * Adds a property column which will match any property with the passed
+     * name.
+     *
+     * @param name The programmatic name of the property
+     * @param displayName A localized display name for the property which can
+     * be shown in the table header
+     * @since 6.25
+     */
+    public final void addPropertyColumn(String name, String displayName) {
+        addPropertyColumn (name, displayName, null);
+    }
+    /**
+     * Adds a property column which will match any property with the passed
+     * name.
+     *
+     * @param name The programmatic name of the property
+     * @param displayName A localized display name for the property which can
+     * be shown in the table header
+     * @param description The description which will be used as a tooltip in
+     * the table header
+     * @since 6.25
+     */
+    public final void addPropertyColumn(String name, String displayName, String description) {
+        Parameters.notNull("name", name); //NOI18N
+        Parameters.notNull("displayName", displayName); //NOI18N
+        Property[] p = rowModel.getProperties();
+        Property[] nue = new Property[p.length + 1];
+        System.arraycopy(p, 0, nue, 0, p.length);
+        nue[p.length] = new PrototypeProperty(name, displayName, description);
+        setProperties (nue);
+    }
+
+    /**
+     * Remove the first property column for properties named <code>name</code>
+     * @param name The <i>programmatic</i> name of the Property, i.e. the
+     * return value of <code>Property.getName()</code>
+     *
+     * @return true if a column was removed
+     * @since 6.25
+     */
+    public final boolean removePropertyColumn(String name) {
+        Parameters.notNull("name", name); //NOI18N
+        Property[] props = rowModel.getProperties();
+        List<Property> nue = new LinkedList<Property>(Arrays.asList(props));
+        boolean found = false;
+        for (Iterator<Property> i=nue.iterator(); i.hasNext();) {
+            Property p = i.next();
+            if (name.equals(p.getName())) {
+                found = true;
+                i.remove();
+                break;
+            }
+        }
+        if (found) {
+            props = nue.toArray(new Property[props.length - 1]);
+            setProperties (props);
+        }
+        return found;
+    }
+
+    /**
+     * Set the description (table header tooltip) for the property column
+     * representing properties that have the passed programmatic (not display)
+     * name.
+     *
+     * @param columnName The programmatic name (Property.getName()) of the
+     * column
+     * @param description Tooltip text for the column header for that column
+     */
+    public final void setPropertyColumnDescription(String columnName, String description) {
+        Parameters.notNull ("columnName", columnName); //NOI18N
+        Property[] props = rowModel.getProperties();
+        for (Property p : props) {
+            if (columnName.equals(p.getName())) {
+                p.setShortDescription(description);
+            }
+        }
+    }
+
+    /**
+     * Set all of the non-tree columns property names and display names.
+     *
+     * @param namesAndDisplayNames An array, divisible by 2, of
+     * programmatic name, display name, programmatic name, display name...
+     * @since 6.25
+     */
+    public final void setPropertyColumns(String... namesAndDisplayNames) {
+        if (namesAndDisplayNames.length % 2 != 0) {
+            throw new IllegalArgumentException("Odd number of names and " + //NOI18N
+                    "display names: " + Arrays.asList(namesAndDisplayNames)); //NOI18N
+        }
+        Property[] props = new Property[namesAndDisplayNames.length / 2];
+        for (int i = 0; i < namesAndDisplayNames.length; i+=2) {
+            props[i / 2] = new PrototypeProperty (namesAndDisplayNames[i], namesAndDisplayNames[i+1]);
+        }
+        setProperties (props);
     }
     
     /** Enable/disable displaying popup menus on tree view items.
@@ -1158,4 +1280,37 @@ public class OutlineView extends JScrollPane {
         }
     }
 
+    static final class PrototypeProperty extends PropertySupport.ReadWrite<Object> {
+        PrototypeProperty (String name, String displayName) {
+            this (name, displayName, null);
+        }
+
+        PrototypeProperty (String name, String displayName, String description) {
+            super (name, Object.class, displayName, description);
+        }
+
+        @Override
+        public Object getValue() throws IllegalAccessException,
+                                        InvocationTargetException {
+            throw new AssertionError();
+        }
+
+        @Override
+        public void setValue(Object val) throws IllegalAccessException, 
+                                                IllegalArgumentException,
+                                                InvocationTargetException {
+            throw new AssertionError();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o != null && o instanceof Property &&
+                    getName().equals(((Property)o).getName());
+        }
+
+        @Override
+        public int hashCode() {
+            return getName().hashCode();
+        }
+    }
 }

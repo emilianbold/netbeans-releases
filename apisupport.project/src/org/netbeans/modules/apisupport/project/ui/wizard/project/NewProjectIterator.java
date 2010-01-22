@@ -88,7 +88,6 @@ final class NewProjectIterator extends BasicWizardIterator {
         "org.netbeans.modules.projectuiapi", // NOI18N
         "org.netbeans.modules.projectapi", // NOI18N
         "org.openide.awt", // NOI18N
-        "org.jdesktop.layout", // NOI18N
     };
     
     private NewProjectIterator() { /* Use factory method. */ };

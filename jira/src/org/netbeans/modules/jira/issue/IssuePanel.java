@@ -592,7 +592,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             fixPrefSize(createdField);
             boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
             if ((reporterStatusLabel.getIcon() == null) && isKenaiRepository) {
-                String host = ((KenaiRepository) issue.getRepository()).getUrl();
+                String host = ((KenaiRepository) issue.getRepository()).getHost();
                 KenaiUserUI ku = new KenaiUserUI(reporter + "@" + host);
                 ku.setMessage(KenaiUtil.getChatLink(issue));
                 JLabel label = ku.createUserWidget();
@@ -1820,19 +1820,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         handle.switchToIndeterminate();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                // The project meta-data may not be initialized.
-                // Their intialization must be performed outside event-dispatch thread
-                try {
-                    JiraConfiguration config =  issue.getRepository().getConfiguration();
-                    config.ensureProjectLoaded(project);
-                    if (project.getIssueTypes() == null) {
-                        // The cached project data had been created before we started
-                        // to use project specific issue types. Forcing reload.
-                        config.forceProjectReload(project);
-                    }
-                } finally {
-                    handle.finish();
-                }
                 EventQueue.invokeLater(new Runnable() {
                     public void run () {
                         boolean oldReloading = reloading;

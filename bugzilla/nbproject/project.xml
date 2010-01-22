@@ -24,6 +24,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.core.netigso</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.libs.bugtracking</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -203,7 +211,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.uihandler</friend>
+                <package>org.netbeans.modules.bugzilla.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

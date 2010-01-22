@@ -979,11 +979,32 @@ public final class AntBridge {
         public void write(byte[] b, int off, int len) {
             delegate().write(b, off, len);
         }
-        
-        // XXX printf/format with varargs cannot be overridden here (JDK 1.5 specific)
-        // nor can append(char,CharSequence)
-        // probably does not matter however...
-        
+
+        @Override
+        public PrintStream append(CharSequence csq) {
+            return delegate().append(csq);
+        }
+
+        @Override
+        public PrintStream append(char c) {
+            return delegate().append(c);
+        }
+
+        @Override
+        public PrintStream append(CharSequence csq, int start, int end) {
+            return delegate().append(csq, start, end);
+        }
+
+        @Override
+        public PrintStream format(String format, Object... args) {
+            return delegate().format(format, args);
+        }
+
+        @Override
+        public PrintStream format(Locale l, String format, Object... args) {
+            return delegate().format(l, format, args);
+        }
+
     }
     
     // Faking the system property java.class.path for the benefit of a few tasks

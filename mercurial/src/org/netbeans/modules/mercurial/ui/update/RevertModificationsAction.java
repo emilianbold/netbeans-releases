@@ -52,6 +52,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
@@ -149,7 +150,7 @@ public class RevertModificationsAction extends ContextAction {
             
             // revStr == null => no -r REV in hg revert command
             // No revisions to revert too
-            if (revStr != null && NbBundle.getMessage(RevertModificationsAction.class,
+            if (revStr != null && NbBundle.getMessage(ChangesetPickerPanel.class,
                     "MSG_Revision_Default").startsWith(revStr)) {
                 logger.output(
                         NbBundle.getMessage(RevertModificationsAction.class,

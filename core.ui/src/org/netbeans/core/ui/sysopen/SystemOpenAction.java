@@ -41,11 +41,10 @@
 
 package org.netbeans.core.ui.sysopen;
 
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -66,7 +65,6 @@ import org.openide.util.actions.Presenter;
 
 /**
  * Open the selected file(s) with the system default tool.
- * Available only on JDK 6+.
  * @author Jesse Glick
  */
 public final class SystemOpenAction extends AbstractAction implements ContextAwareAction {
@@ -75,52 +73,16 @@ public final class SystemOpenAction extends AbstractAction implements ContextAwa
         super(NbBundle.getMessage(SystemOpenAction.class, "CTL_SystemOpenAction"));
     }
 
-    public void actionPerformed(ActionEvent e) {
+    public @Override void actionPerformed(ActionEvent e) {
         new ContextAction(Utilities.actionsGlobalContext()).actionPerformed(e);
     }
 
-    public Action createContextAwareInstance(Lookup context) {
+    public @Override Action createContextAwareInstance(Lookup context) {
         return new ContextAction(context);
     }
     
     private static final class ContextAction extends AbstractAction implements Presenter.Popup {
         
-        private static interface Performer {
-            void open(File f) throws IOException;
-        }
-        private static final Performer performer;
-        static {
-            Performer _performer = null;
-            try {
-                Class desktop = Class.forName("java.awt.Desktop");
-                if ((Boolean) desktop.getMethod("isDesktopSupported").invoke(null)) {
-                    final Object desktopInstance = desktop.getMethod("getDesktop").invoke(null);
-                    Class action = Class.forName("java.awt.Desktop$Action");
-                    if ((Boolean) desktop.getMethod("isSupported", action).
-                            invoke(desktopInstance, action.getField("OPEN").get(null))) {
-                        final Method open = desktop.getMethod("open", File.class);
-                        _performer = new Performer() {
-                            public void open(File f) throws IOException {
-                                // XXX could try edit too?
-                                try {
-                                    open.invoke(desktopInstance, f);
-                                } catch (InvocationTargetException x) {
-                                    throw (IOException) x.getTargetException();
-                                } catch (Exception x) {
-                                    throw (IOException) new IOException(x.toString()).initCause(x);
-                                }
-                            }
-                        };
-                    }
-                }
-            } catch (ClassNotFoundException x) {
-                // OK, ignore
-            } catch (Exception x) {
-                Logger.getLogger(SystemOpenAction.class.getName()).log(Level.WARNING, null, x);
-            }
-            performer = _performer;
-        }
-
         private final Set<File> files;
         
         public ContextAction(Lookup context) {
@@ -136,15 +98,19 @@ public final class SystemOpenAction extends AbstractAction implements ContextAwa
             }
         }
 
-        public void actionPerformed(ActionEvent e) {
-            if (performer == null) {
-                return;
-            }
+        public @Override void actionPerformed(ActionEvent e) {
             RequestProcessor.getDefault().post(new Runnable() { // #176879: asynch
-                public void run() {
+                public @Override void run() {
+                    if (!Desktop.isDesktopSupported()) {
+                        return;
+                    }
+                    Desktop desktop = Desktop.getDesktop();
+                    if (!desktop.isSupported(Desktop.Action.OPEN)) {
+                        return;
+                    }
                     for (File f : files) {
                         try {
-                            performer.open(f);
+                            desktop.open(f);
                         } catch (IOException x) {
                             Logger.getLogger(SystemOpenAction.class.getName()).log(Level.INFO, null, x);
                             // XXX or perhaps notify user of problem
@@ -154,13 +120,13 @@ public final class SystemOpenAction extends AbstractAction implements ContextAwa
             });
         }
 
-        public JMenuItem getPopupPresenter() {
+        public @Override JMenuItem getPopupPresenter() {
             class Menu extends JMenuItem implements DynamicMenuContent {
                 public Menu() {
                     super(ContextAction.this);
                 }
-                public JComponent[] getMenuPresenters() {
-                    if (performer != null && !files.isEmpty()) {
+                public @Override JComponent[] getMenuPresenters() {
+                    if (!files.isEmpty()) {
                         if (Utilities.isWindows()) { // #144575
                             for (File f : files) {
                                 if (!f.getName().contains(".")) {
@@ -168,12 +134,12 @@ public final class SystemOpenAction extends AbstractAction implements ContextAwa
                                 }
                             }
                         }
-                        return new JComponent[] {this};
+                        return new JComponent[] {Menu.this};
                     } else {
                         return new JComponent[0];
                     }
                 }
-                public JComponent[] synchMenuPresenters(JComponent[] items) {
+                public @Override JComponent[] synchMenuPresenters(JComponent[] items) {
                     return getMenuPresenters();
                 }
             }

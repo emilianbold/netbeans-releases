@@ -224,17 +224,6 @@ public final class Main extends Object {
     // initialize the URL factory
     initializeURLFactory();
   
-    if (System.getProperties ().get ("org.openide.TopManager") == null) { // NOI18N
-      // this tells the system that we run in guy mode
-      System.setProperty ("org.openide.TopManager.GUI", "true"); // NOI18N
-      // update the top manager to our main if it has not been provided yet
-      System.getProperties().put (
-        // Note that it is no longer actually a TopManager; historical relic:
-        "org.openide.TopManager", // NOI18N
-        "org.netbeans.core.NonGui" // NOI18N
-      );
-    }
-
     CLIOptions.initialize();
     StartLog.logProgress ("Command line parsed"); // NOI18N
 

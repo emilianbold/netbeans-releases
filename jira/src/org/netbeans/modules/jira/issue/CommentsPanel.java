@@ -161,7 +161,8 @@ public class CommentsPanel extends JPanel {
         String reporter = issue.getRepository().getConfiguration().getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
         addSection(layout, description, reporter, creationTxt, horizontalGroup, verticalGroup, true);
         for (NbJiraIssue.Comment comment : issue.getComments()) {
-            String when = format.format(comment.getWhen());
+            Date date = comment.getWhen();
+            String when = (date == null) ? "" : format.format(date); // NOI18N
             addSection(layout, comment.getText(), comment.getWho(), when, horizontalGroup, verticalGroup, false);
         }
         verticalGroup.addContainerGap();

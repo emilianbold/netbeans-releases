@@ -116,6 +116,7 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
     public void testMultyThread() throws Exception {
 
         String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
+        dataPath = dataPath+"/org"; //NOI18N
 
         String[] units = new String[]{
             "FilesAccessStrategyTestUnit1", "FilesAccessStrategyTestUnit2",

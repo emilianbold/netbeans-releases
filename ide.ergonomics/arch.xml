@@ -647,6 +647,13 @@ FeaturesOnDemand-Proxy-Layer: false</pre>
         cannot be enabled at once (contain platform specific code).
         </api>
     </li>
+    <li>
+        <api name="config-Modules-attributes" category="private" group="property" type="export">
+        Ergonomics module may add attributes <code>ergonomicsUnused</code>
+        and <code>ergonomicsEnabled</code> to some files in Modules directory
+        on system file system. These are for private use.
+        </api>
+    </li>
   </ul>
  </answer>
 

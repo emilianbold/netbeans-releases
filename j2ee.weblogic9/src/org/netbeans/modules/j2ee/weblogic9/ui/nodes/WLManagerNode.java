@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import java.awt.*;
 
 import javax.enterprise.deploy.spi.*;
@@ -64,7 +65,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
      * The associated deployment manager, i.e. the plugin's wrapper for
      * the server implementation of the DEploymentManager interface
      */
-    private WLBaseDeploymentManager deploymentManager;
+    private WLDeploymentManager deploymentManager;
     
     // properties names
     private static final String DISPLAY_NAME = "displayName"; // NOI18N
@@ -92,7 +93,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
         super(children);
         
         // get the deployment manager from the lookup and save it
-        this.deploymentManager = (WLBaseDeploymentManager) lookup.lookup(DeploymentManager.class);
+        this.deploymentManager = (WLDeploymentManager) lookup.lookup(DeploymentManager.class);
                 
         // add the node itself to its cookie list
         getCookieSet().add(this);
@@ -190,7 +191,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
                        NbBundle.getMessage(WLManagerNode.class, "HINT_url")   // NOI18N
                    ) {
                        public Object getValue() {
-                           return deploymentManager.getURI();
+                           return deploymentManager.getUri();
                        }
                    };
         properties.put(property);
@@ -301,7 +302,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
         return new Customizer(new WLJ2eePlatformFactory().getJ2eePlatformImpl(deploymentManager));
     }
     
-    public WLBaseDeploymentManager getDeploymentManager() {
+    public WLDeploymentManager getDeploymentManager() {
         return deploymentManager;
     }
     

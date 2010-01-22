@@ -540,12 +540,27 @@ Property testcoverage.report.dir not set. Test coverage script may be missing in
         description="Scans a directory for list of NetBeans module JARs or OSGi bundles and generates necessary config files to make that look like NetBeans cluster"
     >
         <fail unless="cluster" message="You have to specify -Dcluster=... as a path to the root of your JAR tree"/>
+        <condition property="include.autoload" value="${include}">
+            <!-- for backward compatibility with tutorials -->
+            <isset property="include"/>
+        </condition>
+        <fail message="You have to specify one of -Dinclude.autoload=... -Dinclude.eager=... -Dinclude.enabled=...">
+            <condition>
+                <not>
+                    <or>
+                        <isset property="include.autoload"/>
+                        <isset property="include.eager"/>
+                        <isset property="include.enabled"/>
+                    </or>
+                </not>
+            </condition>
+        </fail>
         <property name="config.dir" location="${cluster}/config/Modules"/>
         <mkdir dir="${config.dir}"/>
         <createmodulexml xmldir="${config.dir}" updatetrackingroot="${cluster}" failonmissingmanifest="false">
-            <autoload dir="${cluster}">
-                <include name="${includes}"/>
-            </autoload>
+            <autoload dir="${cluster}" includes="${include.autoload}"/>
+            <eager dir="${cluster}" includes="${include.eager}"/>
+            <enabled dir="${cluster}" includes="${include.enabled}"/>
         </createmodulexml>
     </target>
 </project>

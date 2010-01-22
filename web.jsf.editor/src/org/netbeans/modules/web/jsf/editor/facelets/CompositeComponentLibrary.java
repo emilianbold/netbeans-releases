@@ -158,6 +158,9 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
             Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
             for (String cname : componentNames) {
                 CompositeComponentModel model = index().getCompositeComponentModel(getLibraryName(), cname);
+		if(model == null) {
+		    return ;
+		}
                 Map<String, Attribute> attrs = new HashMap<String, Attribute>();
                 String msgNoTld = NbBundle.getBundle(CompositeComponentLibrary.class).getString("MSG_NO_DESCRIPTOR"); //NOI18N
                 for (Map<String, String> attrsMap : model.getExistingInterfaceAttributes()) {

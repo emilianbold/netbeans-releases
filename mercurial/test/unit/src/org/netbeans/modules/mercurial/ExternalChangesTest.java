@@ -57,7 +57,6 @@ import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.modules.versioning.VersioningManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -126,7 +125,7 @@ public class ExternalChangesTest extends AbstractHgTest {
     }
 
     public void testExternalCommit () throws Exception {
-        Mercurial.getInstance().getMercurialInterceptor().pingRepositoryRootFor(modifiedFile);
+        Mercurial.getInstance().getMercurialInterceptor().pingRepositoryRootFor(workdir);
         Thread.sleep(5000); // some time for initial scans to finish
         write(modifiedFile, "testExternalCommitDirstate");
         waitForRefresh();
@@ -141,7 +140,7 @@ public class ExternalChangesTest extends AbstractHgTest {
 
     // testing if dirstate events can be disabled with the commandline switch
     public void testNoExternalEvents () throws Exception {
-        Mercurial.getInstance().getMercurialInterceptor().pingRepositoryRootFor(modifiedFile);
+        Mercurial.getInstance().getMercurialInterceptor().pingRepositoryRootFor(workdir);
         Thread.sleep(5000); // some time for initial scans to finish
         // dirstate events disabled
         System.setProperty("mercurial.handleDirstateEvents", "false");
@@ -158,7 +157,7 @@ public class ExternalChangesTest extends AbstractHgTest {
     }
 
     public void testExternalRollback () throws Exception {
-        Mercurial.getInstance().getMercurialInterceptor().pingRepositoryRootFor(modifiedFile);
+        Mercurial.getInstance().getMercurialInterceptor().pingRepositoryRootFor(workdir);
         Thread.sleep(5000); // some time for initial scans to finish
         // dirstate events enabled
         write(modifiedFile, "testExternalRollback");
@@ -180,7 +179,7 @@ public class ExternalChangesTest extends AbstractHgTest {
     }
 
     public void testExternalRevert () throws Exception {
-        Mercurial.getInstance().getMercurialInterceptor().pingRepositoryRootFor(modifiedFile);
+        Mercurial.getInstance().getMercurialInterceptor().pingRepositoryRootFor(workdir);
         Thread.sleep(5000); // some time for initial scans to finish
         // dirstate events enabled
         write(modifiedFile, "testExternalRevert");
@@ -198,7 +197,7 @@ public class ExternalChangesTest extends AbstractHgTest {
         InterceptorRefreshHandler handler = new InterceptorRefreshHandler();
         Mercurial.STATUS_LOG.addHandler(handler);
         FileUtil.refreshFor(workdir);
-        for (int i=0; i<5; ++i) {
+        for (int i=0; i<20; ++i) {
             Thread.sleep(1000);
             if (handler.refreshed) {
                 break;

@@ -82,10 +82,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     public BaseDwarfProvider() {
     }
     
+    @Override
     public boolean isApplicable(ProjectProxy project) {
         return true;
     }
     
+    @Override
     public void stop() {
         isStoped.set(true);
     }
@@ -325,13 +327,14 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     }
 
     public static class CompilerSettings{
-        private List<String> systemIncludePathsC;
-        private List<String> systemIncludePathsCpp;
-        private Map<String,String> systemMacroDefinitionsC;
-        private Map<String,String> systemMacroDefinitionsCpp;
+        private final List<String> systemIncludePathsC;
+        private final List<String> systemIncludePathsCpp;
+        private final Map<String,String> systemMacroDefinitionsC;
+        private final Map<String,String> systemMacroDefinitionsCpp;
         private Map<String,String> normalizedPaths = new ConcurrentHashMap<String, String>();
-        private String compileFlavor;
-        private String cygwinDriveDirectory;
+        private final String compileFlavor;
+        private final String cygwinDriveDirectory;
+        private final boolean isWindows;
         
         public CompilerSettings(ProjectProxy project){
             systemIncludePathsCpp = DiscoveryUtils.getSystemIncludePaths(project, true);
@@ -340,6 +343,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             systemMacroDefinitionsC = DiscoveryUtils.getSystemMacroDefinitions(project,false);
             compileFlavor = DiscoveryUtils.getCompilerFlavor(project);
             cygwinDriveDirectory = DiscoveryUtils.getCygwinDrive(project);
+            isWindows = Utilities.isWindows();
         }
         
         public List<String> getSystemIncludePaths(boolean isCPP) {
@@ -367,7 +371,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             return res;
         }
 
-        private String normalizePath(String path){
+        protected String normalizePath(String path){
             path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
             if (Utilities.isWindows()) {
                 path = path.replace('\\', '/');
@@ -381,6 +385,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
 
         public String getCygwinDrive() {
             return cygwinDriveDirectory;
+        }
+
+        public boolean isWindows(){
+            return isWindows;
         }
 
         private void dispose(){
@@ -407,6 +415,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             this.countDownLatch = countDownLatch;
             this.project = project;
         }
+        @Override
         public void run() {
             try {
                 if (!isStoped.get()) {

@@ -93,8 +93,6 @@ public class LoginPanel extends javax.swing.JPanel {
         this.kenai = kenai;
         this.credentials = credentials;
         initComponents();
-        kenaiCombo.setModel(new KenaiComboModel(Kenai.Status.OFFLINE));
-        kenaiCombo.setRenderer(new KenaiListRenderer());
         kenaiCombo.setSelectedItem(kenai);
 //        lblKenaiLogoCenter.setBorder(null);
 //        lblKenaiLogoLeft.setBorder(null);
@@ -199,7 +197,7 @@ public class LoginPanel extends javax.swing.JPanel {
         progressBar = new javax.swing.JProgressBar();
         chkIsOnline = new javax.swing.JCheckBox();
         kenaiLabel = new javax.swing.JLabel();
-        kenaiCombo = new javax.swing.JComboBox();
+        kenaiCombo = new KenaiCombo(Kenai.Status.OFFLINE, true);
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 

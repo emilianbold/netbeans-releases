@@ -139,7 +139,7 @@ public class VCSKenaiSupportImplTest extends NbTestCase {
 
     public void testForName() {
         VCSKenaiSupportImpl support = new VCSKenaiSupportImpl();
-        KenaiUser ku = support.forName(username);
+        KenaiUser ku = support.forName(username + "@testkenai.com");
         assertNotNull(ku);
         assertEquals(username, ku.getUser());
     }
@@ -148,12 +148,12 @@ public class VCSKenaiSupportImplTest extends NbTestCase {
         kenai.logout();
         VCSKenaiSupportImpl support = new VCSKenaiSupportImpl();
         assertFalse(support.isLogged("https://testkenai.com"));
-        assertFalse(support.isUserOnline(username));
+        assertFalse(support.isUserOnline(username + "@testkenai.com"));
 
         kenai.login(username, password.toCharArray());
 
         assertTrue(support.isLogged("https://testkenai.com"));
-        assertTrue(support.isUserOnline(username));
+        assertTrue(support.isUserOnline(username + "@testkenai.com"));
     }
 
     public void testHandleKenaiProjectEvent() throws URISyntaxException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, KenaiException {

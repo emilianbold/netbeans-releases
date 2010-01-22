@@ -1,9 +1,0 @@
-#set( $indent = "    " )
-UPDATE $tableName
-SET
-${indent}"endDate" = ?,
-${indent}"extracted" = ?,
-${indent}"loaded" = ?,
-${indent}"rejected" = ?,
-${indent}"exception_msg" = ?
-WHERE "startDate" = ? and "targetTable" = '$targetTable'

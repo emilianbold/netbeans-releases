@@ -56,7 +56,7 @@ public class NbStatusDisplayerTest extends NbTestCase {
     }
 
     public void testFiringWhenSameValueIsSet() {
-       StatusDisplayer d = new NbTopManager.NbStatusDisplayer();
+       StatusDisplayer d = new NbStatusDisplayer();
        d.setStatusText("ahoj");
        CountingListener lsnr = new CountingListener();
        d.addChangeListener(lsnr);

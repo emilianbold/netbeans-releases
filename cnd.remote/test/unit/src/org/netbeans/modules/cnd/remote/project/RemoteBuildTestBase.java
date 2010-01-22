@@ -42,9 +42,12 @@ package org.netbeans.modules.cnd.remote.project;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -95,21 +98,33 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         return result;
     }
 
-    protected static void instantiateSample(String name, File destdir) throws IOException {
+    protected static void instantiateSample(String name, final File destdir) throws IOException, InterruptedException, InvocationTargetException {
         if(destdir.exists()) {
             assertTrue("Can not remove directory " + destdir.getAbsolutePath(), removeDirectoryContent(destdir));
         }
-        FileObject templateFO = FileUtil.getConfigFile("Templates/Project/Samples/Native/" + name);
+        final FileObject templateFO = FileUtil.getConfigFile("Templates/Project/Samples/Native/" + name);
         assertNotNull("FileObject for " + name + " sample not found", templateFO);
-        DataObject templateDO = DataObject.find(templateFO);
+        final DataObject templateDO = DataObject.find(templateFO);
         assertNotNull("DataObject for " + name + " sample not found", templateDO);
-        MakeSampleProjectIterator projectCreator = new MakeSampleProjectIterator();
-        TemplateWizard wiz = new TemplateWizard();
-        wiz.setTemplate(templateDO);
-        projectCreator.initialize(wiz);
-        wiz.putProperty("name", destdir.getName());
-        wiz.putProperty("projdir", destdir);
-        projectCreator.instantiate(wiz);
+        final AtomicReference<IOException> exRef = new AtomicReference<IOException>();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            public void run() {
+                MakeSampleProjectIterator projectCreator = new MakeSampleProjectIterator();
+                TemplateWizard wiz = new TemplateWizard();
+                wiz.setTemplate(templateDO);
+                projectCreator.initialize(wiz);
+                wiz.putProperty("name", destdir.getName());
+                wiz.putProperty("projdir", destdir);
+                try {
+                    projectCreator.instantiate(wiz);
+                } catch (IOException ex) {
+                    exRef.set(ex);
+                }
+            }
+        });
+        if (exRef.get() != null) {
+            throw exRef.get();
+        }
         return;
     }
 
@@ -153,7 +168,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         assertFalse(HostInfoUtils.fileExists(env, root));
     }
 
-    protected FileObject prepareSampleProject(String sampleName, String projectDirShortName) throws IOException {
+    protected FileObject prepareSampleProject(String sampleName, String projectDirShortName) throws IOException, InterruptedException, InvocationTargetException {
         // reusing directories makes debugging much more difficult, so we add host name
         projectDirShortName += "_" + getTestHostName();
         File projectDir = new File(getWorkDir(), projectDirShortName);
