@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,33 +34,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.spi.dataprovider;
-
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
-import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
-
+package org.netbeans.modules.dlight.spi.storage;
 
 /**
- * Provides the data to the {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer}.
- * Along with DataProvider SPI  
- * {@link org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory} should be implemented which
- * will be used to create the data provider instance
- *
+ * This is a factory to be registered in the ServiceProvider which can open the storage using the unique
+ * key which is returned by the 
+ * @param <T> Storage instance this factory is responsible for
+ * @author Maria Tishkova
  */
+public interface PersistentDataStorageFactory<T extends PersistentDataStorage> extends DataStorageFactory<T> {
 
-public interface DataProvider extends VisualizerDataProvider{
+     /**
+      * Opens storage with the unique key <code>uniqueKey</code>
+      * @param uniqueKey unique key generated using <link>getUniqueKey(T)</link> method
+      * @return storage opened if exists, <code>null</code> it the storage doesn't exists or cannot be opened
+      */
+     T openStorage(String uniqueKey);
 
-  /**
-   * Attaches DataProvider to the>storage.
-   * All data requested by {@link org.netbeans.modules.dlight.spi.visualizer.Visualizer} will
-   * be extracted from this storage. This method is invoked  automatically by infrastructure
-   * when  Visualizer need to be displayed.
-   * It will be invoked automatically when needed.</i></b>
-   * @param storage {@link org.netbeans.modules.dlight.spi.storage.DataStorage}.
-   */
-  void attachTo(DataStorage storage);
 
+     /**
+      * Opens storage with the unique key <code>uniqueKey</code>
+      * @param uniqueKey unique key generated using <link>getUniqueKey(T)</link> method
+      * @param mode the mode the storage will be opened: ReadOnly, ReadWrite
+      * @return storage opened if exists, <code>null</code> it the storage doesn't exists or cannot be opened
+      */
+     T openStorage(String uniqueKey, Mode mode);
+
+
+     /**
+      * Unique key which can be used later to
+      * @param storage
+      * @return unique key
+      */
+     String getUniqueKey(T storage);
+
+     enum Mode{
+         ReadOnly,
+         ReadWrite
+     }
 }
