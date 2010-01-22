@@ -41,19 +41,25 @@
 package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -74,6 +80,7 @@ import javax.lang.model.type.WildcardType;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -550,5 +557,36 @@ public class Utilities {
         }
 
         return false;
+    }
+
+    public static @NonNull Collection<? extends TreePath> resolveFieldGroup(@NonNull CompilationInfo info, @NonNull TreePath variable) {
+        Tree leaf = variable.getLeaf();
+
+        if (leaf.getKind() != Kind.VARIABLE) {
+            return Collections.singleton(variable);
+        }
+
+        TreePath parentPath = variable.getParentPath();
+        Iterable<? extends Tree> children;
+
+        switch (parentPath.getLeaf().getKind()) {
+            case BLOCK: children = ((BlockTree) parentPath.getLeaf()).getStatements(); break;
+            case CLASS: children = ((ClassTree) parentPath.getLeaf()).getMembers(); break;
+            case CASE:  children = ((CaseTree) parentPath.getLeaf()).getStatements(); break;
+            default:    children = Collections.singleton(leaf); break;
+        }
+
+        List<TreePath> result = new LinkedList<TreePath>();
+        ModifiersTree currentModifiers = ((VariableTree) leaf).getModifiers();
+
+        for (Tree c : children) {
+            if (c.getKind() != Kind.VARIABLE) continue;
+
+            if (((VariableTree) c).getModifiers() == currentModifiers) {
+                result.add(new TreePath(parentPath, c));
+            }
+        }
+        
+        return result;
     }
 }
