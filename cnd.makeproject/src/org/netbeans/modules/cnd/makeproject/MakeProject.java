@@ -917,6 +917,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
         if (isOpenHookDone) {
             GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+            isOpenHookDone = false;
         }
     }
 
