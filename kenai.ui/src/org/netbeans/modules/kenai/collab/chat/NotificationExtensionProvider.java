@@ -67,6 +67,7 @@ public class NotificationExtensionProvider implements PacketExtensionProvider {
         String serviceName = parser.getAttributeValue("", "service"); // NOI18N
         String author = parser.getAttributeValue("", "user"); // NOI18N
         URI uri = new URI(parser.getAttributeValue("", "uri")); // NOI18N
+        String feature = parser.getAttributeValue("", "feature"); // NOI18N
         KenaiService.Type type = KenaiService.Type.forId(parser.getAttributeValue("", "type")); // NOI18N
 
         int tag = parser.next();
@@ -86,6 +87,6 @@ public class NotificationExtensionProvider implements PacketExtensionProvider {
             tag = parser.next();
         }
         return new NotificationExtension("notification", NAMESPACE, // NOI18N
-                new KenaiNotification(stamp,type,uri,author,serviceName,modifications));
+                new KenaiNotification(stamp,type,uri,author,serviceName, feature, modifications));
     }
 }

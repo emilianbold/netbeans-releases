@@ -95,6 +95,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         RepositoriesSupport.getInstance().addPropertyChangeListener(this);
         preparingLabel.setVisible(false);
         newButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onNewClick();
             }
@@ -143,6 +144,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             }
         }
         repositoryComboBox.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 if(e.getStateChange() == ItemEvent.SELECTED) {
                     onRepoSelected();
@@ -154,6 +156,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     public void initNoIssue(final String issueId) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 preparingLabel.setVisible(true);
                 repoPanel.setVisible(false);
@@ -294,6 +297,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             prepareTask.cancel();
         }
         Cancellable c = new Cancellable() {
+            @Override
             public boolean cancel() {
                 if(prepareTask != null) {
                     prepareTask.cancel();
@@ -303,6 +307,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         };
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueTopComponent.class, "CTL_PreparingIssue"), c); // NOI18N
         prepareTask = rp.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     handle.start();
@@ -324,6 +329,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     controller = issue.getController();
 
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             issuePanel.add(controller.getComponent(), BorderLayout.CENTER);
                             issue.addPropertyChangeListener(IssueTopComponent.this);
@@ -451,6 +457,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     private void setNameAndTooltip() throws MissingResourceException {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 if(issue != null) {
                     setName(issue.getShortenedDisplayName());
@@ -463,6 +470,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         });
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Issue.EVENT_ISSUE_DATA_CHANGED)) {
             repoPanel.setVisible(false);
@@ -473,6 +481,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 return;
             }
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if(rs != null) {
                         rs.refreshRepositoryModel();

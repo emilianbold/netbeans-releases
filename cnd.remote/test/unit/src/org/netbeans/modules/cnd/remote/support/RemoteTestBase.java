@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -137,12 +138,23 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     // we need this for tests which should run NOT for all environments
     public RemoteTestBase(String testName) {
         super(testName);
+        cleanUserDir();
         setSysProps();
     }
 
     protected RemoteTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
+        cleanUserDir();
         setSysProps();
+    }
+
+    protected void cleanUserDir()  {
+        File userDir = getUserDir();
+        if (userDir.exists()) {
+            if (!removeDirectoryContent(userDir)) {
+                assertTrue("Can not remove the content of " +  userDir.getAbsolutePath(), false);
+            }
+        }
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings("LG")

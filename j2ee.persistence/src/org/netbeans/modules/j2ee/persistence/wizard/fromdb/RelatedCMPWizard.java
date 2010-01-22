@@ -61,11 +61,14 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
+import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor;
+import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanelDS;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -75,6 +78,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -187,11 +191,26 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
                     new EntityClassesPanel.WizardPanel(),
             };
         } else {
-            return new WizardDescriptor.Panel[] {
-                    new DatabaseTablesPanel.WizardPanel(wizardTitle),
-                    new EntityClassesPanel.WizardPanel(),
-                    new MappingOptionsPanel.WizardPanel(),
-            };
+            boolean showPUStep =  false;
+            try {
+                showPUStep = !ProviderUtil.persistenceExists(project);
+            } catch (InvalidPersistenceXmlException ex) {
+                //it's handled one more time in appropriate panel, need nothing to do
+            }
+//            if(showPUStep){
+//                return new WizardDescriptor.Panel[] {
+//                        new DatabaseTablesPanel.WizardPanel(wizardTitle),
+//                        new EntityClassesPanel.WizardPanel(),
+//                        new MappingOptionsPanel.WizardPanel(),
+//                        new PersistenceUnitWizardDescriptor(project),
+//                };
+//            } else {
+                return new WizardDescriptor.Panel[] {
+                        new DatabaseTablesPanel.WizardPanel(wizardTitle),
+                        new EntityClassesPanel.WizardPanel(),
+                        new MappingOptionsPanel.WizardPanel(),
+                };
+//            }
         }
     }
     
@@ -202,11 +221,26 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
                     NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "LBL_EntityBeansLocation" : "LBL_EntityClasses"),
             };
         } else {
-            return new String[] {
-                    NbBundle.getMessage(RelatedCMPWizard.class, "LBL_DatabaseTables"),
-                    NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "LBL_EntityBeansLocation" : "LBL_EntityClasses"),
-                    NbBundle.getMessage(RelatedCMPWizard.class, "LBL_MappingOptions")
-            };
+            boolean showPUStep =  false;
+            try {
+                showPUStep = !ProviderUtil.persistenceExists(project);
+            } catch (InvalidPersistenceXmlException ex) {
+                //it's handled one more time in appropriate panel, need nothing to do
+            }
+//            if(showPUStep){
+//                 return new String[] {
+//                        NbBundle.getMessage(RelatedCMPWizard.class, "LBL_DatabaseTables"),
+//                        NbBundle.getMessage(RelatedCMPWizard.class, "LBL_EntityClasses"),
+//                        NbBundle.getMessage(RelatedCMPWizard.class, "LBL_MappingOptions"),
+//                        NbBundle.getMessage(PersistenceUnitWizardDescriptor.class,"LBL_Step1")
+//                };
+//            } else {
+                 return new String[] {
+                        NbBundle.getMessage(RelatedCMPWizard.class, "LBL_DatabaseTables"),
+                        NbBundle.getMessage(RelatedCMPWizard.class, "LBL_EntityClasses"),
+                        NbBundle.getMessage(RelatedCMPWizard.class, "LBL_MappingOptions"),
+                };
+//            }
         }
     }
     
@@ -216,11 +250,13 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
     
     public final void initialize(TemplateWizard wiz) {
         wizardDescriptor = wiz;
-        
+
+        project = Templates.getProject(wiz);
+
         panels = createPanels();
         Wizards.mergeSteps(wizardDescriptor, panels, createSteps());
         
-        project = Templates.getProject(wiz);
+        
         generator = createPersistenceGenerator(type);
         
         FileObject configFilesFolder = PersistenceLocation.getLocation(project);
@@ -241,26 +277,9 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
         Component c = WindowManager.getDefault().getMainWindow();
 
         // create the pu first if needed
-        if (helper.getPersistenceUnit() != null) {
-            
-            String providerClass = helper.getPersistenceUnit().getProvider();
-            if(providerClass != null){
-                Provider selectedProvider=ProviderUtil.getProvider(providerClass, project);
-                Library lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
-                if (lib != null && !Util.isDefaultProvider(project, selectedProvider)) {
-                    Util.addLibraryToProject(project, lib);
-                }
-           }
-
-
-            try {
-                ProviderUtil.addPersistenceUnit(helper.getPersistenceUnit(), Templates.getProject(wiz));
-            } catch (InvalidPersistenceXmlException ipx) {
-                // just log for debugging purposes, at this point the user has
-                // already been warned about an invalid persistence.xml
-                Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
-            }
-        }
+        if(helper.isCreatePU()) {
+            Util.addPersistenceUnitToProject(project, Util.buildPersistenceUnitUsingData(project, helper.getTableSource().getName(), null, null));
+       }
         
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "TXT_EjbGeneration" : "TXT_EntityClassesGeneration");
         final ProgressContributor progressContributor = AggregateProgressFactory.createProgressContributor(title);

@@ -339,6 +339,11 @@ made subject to such option by the copyright holder.
                 <folder name="HyperlinkProviders">
                     <file name="org.netbeans.modules.apisupport.project.hyperlink.ApisupportHyperlinkProvider.instance"/>
                 </folder>
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="apisupport.xml" url="../../resources/code-templates.xml"/>
+                    </folder>
+                </folder>
             </folder>
             <folder name="x-manifest">
                 <folder name="HyperlinkProviders">

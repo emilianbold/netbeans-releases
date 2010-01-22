@@ -114,9 +114,6 @@ import org.openide.util.WeakListeners;
  * <li><a href="http://blogs.sun.com/geertjan/entry/swing_outline_component">Swing Outline Component</a>
  * </ul>
  * 
- * <p><b>Note:</b> This API is still under development and may change even in
- * incompatible way during its stabilization phase. The API will be finalized in
- * NetBeans version 6.5.</p>
  * 
  * @author David Strupl
  */

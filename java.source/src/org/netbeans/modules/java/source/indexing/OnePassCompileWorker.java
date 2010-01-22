@@ -66,13 +66,13 @@ import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.parsing.OutputFileObject;
-import org.netbeans.modules.java.source.tasklist.TaskCache;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.util.LMListener;
 import org.netbeans.modules.parsing.spi.indexing.Context;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileUtil;
 
@@ -193,7 +193,7 @@ final class OnePassCompileWorker extends CompileWorker {
                     }
                 }
                 if (!active.virtual) {
-                    TaskCache.getDefault().dumpErrors(context.getRootURI(), active.indexable.getURL(), dc.getDiagnostics(active.jfo));
+                    ErrorsCache.setErrors(context.getRootURI(), active.indexable, dc.getDiagnostics(active.jfo), JavaCustomIndexer.ERROR_CONVERTOR);
                 }
                 Log.instance(jt.getContext()).nerrors = 0;
                 finished.add(active.indexable);

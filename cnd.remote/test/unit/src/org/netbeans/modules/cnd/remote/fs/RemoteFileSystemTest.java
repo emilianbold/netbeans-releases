@@ -76,10 +76,18 @@ public class RemoteFileSystemTest extends RemoteTestBase {
         this.execEnv = execEnv;
         fs = RemoteFileSystemManager.getInstance().get(execEnv);
         assertNotNull("Null remote file system", fs);
-        removeDirectoryContent(fs.getCache());
         rootFO = fs.getRoot();
         assertNotNull("Null root file object", rootFO);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        File cache = fs.getCache();
+        removeDirectoryContent(cache);
+        assertTrue("Can not create directory " + cache.getAbsolutePath(), cache.exists() || cache.mkdirs());
+    }
+
 
 //    private void checkFileExistance(String absPath) throws Exception {
 //        FileObject fo = rootFO.getFileObject(absPath);

@@ -53,6 +53,7 @@ import org.openide.nodes.PropertySupport.Reflection;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 public final class ClusterizeInfo extends FilterNode
 implements Comparable<ClusterizeInfo> {
@@ -62,10 +63,6 @@ implements Comparable<ClusterizeInfo> {
     final File jar;
     private ClusterizeAction state = ClusterizeAction.IGNORE;
     private Sheet sheet;
-
-    static Property[] allProperties() {
-        return new ClusterizeInfo("", null, null).getPropertySets()[0].getProperties(); // NOI18N
-    }
 
     private static Node findNode(File f) {
         try {
@@ -127,15 +124,15 @@ implements Comparable<ClusterizeInfo> {
             sheet = Sheet.createDefault();
             Set ss = sheet.get(Sheet.PROPERTIES);
             final Reflection<String> cnb = new PropertySupport.Reflection<String>(this, String.class, "getCodeName", null); // NOI18N
-            cnb.setDisplayName(org.openide.util.NbBundle.getMessage(ClusterizeInfo.class, "MSG_ClusterizeCodeNameBase"));
+            cnb.setDisplayName(NbBundle.getMessage(ClusterizeInfo.class, "MSG_ClusterizeCodeNameBase"));
             cnb.setName("cnb"); // NOI18N
             ss.put(cnb); // NOI18N
             final Reflection<ClusterizeAction> act = new PropertySupport.Reflection<ClusterizeAction>(this, ClusterizeAction.class, "action"); // NOI18N
-            act.setDisplayName(org.openide.util.NbBundle.getMessage(ClusterizeInfo.class, "MSG_ClusterizeActivateAs"));
+            act.setDisplayName(NbBundle.getMessage(ClusterizeInfo.class, "MSG_ClusterizeActivateAs"));
             act.setName("action"); // NOI18N
             ss.put(act); // NOI18N
             final Reflection<Integer> count = new PropertySupport.Reflection<Integer>(this, Integer.class, "getSelectedFilesCount", null); // NOI18N
-            count.setDisplayName(org.openide.util.NbBundle.getMessage(ClusterizeInfo.class, "MSG_ClusterizeNumberOfModules"));
+            count.setDisplayName(NbBundle.getMessage(ClusterizeInfo.class, "MSG_ClusterizeNumberOfModules"));
             count.setName("selectedFilesCount"); // NOI18N
             ss.put(act); // NOI18N
             return sheet.toArray();

@@ -71,6 +71,10 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="text">
             <folder name="x-jsp">
+                <file name="JspImportProcesor.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.completion.JspTagLibImportProcessor$JspImportProcessor"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor"/>
+                </file>
                 <folder name="text">
                     <folder name="x-java">
                         <file name="org-netbeans-modules-web-core-syntax-indent-JspJavaIndentTaskFactory.instance"/>
@@ -206,6 +210,10 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-web-core-syntax-indent-ExpressionLanguageIndentTaskFactory.instance"/>
             </folder>
             <folder name="x-tag">
+                <file name="TagImportProcesor.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.completion.JspTagLibImportProcessor$TagImportProcessor"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor"/>
+                </file>
                 <folder name="Preferences">
                     <file name="org-netbeans-modules-jsp-editor-preferences.xml" url="Preferences.xml"/>
                 </folder>

@@ -56,6 +56,8 @@ import javax.swing.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import org.openide.loaders.SaveAsCapable;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
 /**
@@ -88,6 +90,9 @@ public class EditorViewElement implements MultiViewElement, Serializable {
         ArrayList<Object> lookupObjects = DataEditorViewLookupFactoryRegistry.getLookupObjects(context, view);
         ArrayList<Lookup> lookups = DataEditorViewLookupFactoryRegistry.getLookups(context, view);
         lookupObjects.add(view);
+        if (view.getKind() == DataEditorView.Kind.MODEL) {
+            lookups.add(Lookups.exclude(context.getDataObject().getLookup(), Node.class, SaveAsCapable.class));
+        }
         lookups.add(Lookups.fixed(lookupObjects.toArray()));
         lookup = new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
         IOSupport.getDocumentSerializer(context.getDataObject()).startLoadingDocument();

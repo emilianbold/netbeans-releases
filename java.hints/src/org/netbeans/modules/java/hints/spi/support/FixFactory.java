@@ -49,6 +49,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -74,6 +75,56 @@ public final class FixFactory {
     private static final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
     
     private FixFactory() {}
+
+    /** Creates a fix, which when invoked adds a set of modifiers to the existing ones
+     * @param compilationInfo CompilationInfo to work on
+     * @param treePath TreePath to a ModifiersTree.
+     * @param toAdd set of Modifiers to add
+     * @param text text displayed as a fix description
+     */
+    public static final Fix addModifiersFix(CompilationInfo compilationInfo, TreePath treePath, Set<Modifier> toAdd, String text) {
+        Parameters.notNull("compilationInfo", compilationInfo);
+        Parameters.notNull("treePath", treePath);
+        Parameters.notNull("toAdd", toAdd);
+        Parameters.notNull("text", text);
+
+        return changeModifiersFix(compilationInfo, treePath, toAdd, Collections.<Modifier>emptySet(), text);
+    }
+
+    /** Creates a fix, which when invoked removes a set of modifiers from the existing ones
+     * @param compilationInfo CompilationInfo to work on
+     * @param treePath TreePath to a ModifiersTree.
+     * @param toRemove set of Modifiers to remove
+     * @param text text displayed as a fix description
+     */
+    public static final Fix removeModifiersFix(CompilationInfo compilationInfo, TreePath treePath, Set<Modifier> toRemove, String text) {
+        Parameters.notNull("compilationInfo", compilationInfo);
+        Parameters.notNull("treePath", treePath);
+        Parameters.notNull("toRemove", toRemove);
+        Parameters.notNull("text", text);
+
+        return changeModifiersFix(compilationInfo, treePath, Collections.<Modifier>emptySet(), toRemove, text);
+    }
+
+    /** Creates a fix, which when invoked changes the existing modifiers
+     * @param compilationInfo CompilationInfo to work on
+     * @param treePath TreePath to a ModifiersTree.
+     * @param toAdd set of Modifiers to add
+     * @param toRemove set of Modifiers to remove
+     * @param text text displayed as a fix description
+     */
+    public static final Fix changeModifiersFix(CompilationInfo compilationInfo, TreePath treePath, Set<Modifier> toAdd, Set<Modifier> toRemove, String text) {
+        Parameters.notNull("compilationInfo", compilationInfo);
+        Parameters.notNull("treePath", treePath);
+        Parameters.notNull("toAdd", toAdd);
+        Parameters.notNull("toRemove", toRemove);
+        Parameters.notNull("text", text);
+
+        if (treePath.getLeaf().getKind() != Kind.MODIFIERS) {
+            return null;
+        }
+        return new ChangeModifiersFixImpl(TreePathHandle.create(treePath, compilationInfo), toAdd, toRemove, text);
+    }
 
     /** Creates a fix, which when invoked adds @SuppresWarnings(keys) to
      * nearest declaration.
@@ -324,7 +375,74 @@ public final class FixFactory {
             hash = 79 * hash + (this.file != null ? this.file.hashCode() : 0);
             return hash;
         }
+    }
 
-        
+    private static final class ChangeModifiersFixImpl implements Fix {
+
+        private final TreePathHandle modsHandle;
+        private final Set<Modifier> toAdd;
+        private final Set<Modifier> toRemove;
+        private final String text;
+
+        public ChangeModifiersFixImpl(TreePathHandle modsHandle, Set<Modifier> toAdd, Set<Modifier> toRemove, String text) {
+            this.modsHandle = modsHandle;
+            this.toAdd = toAdd;
+            this.toRemove = toRemove;
+            this.text = text;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public ChangeInfo implement() throws Exception {
+            JavaSource.forFileObject(modsHandle.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
+
+                public void run(WorkingCopy wc) throws Exception {
+                    wc.toPhase(Phase.RESOLVED);
+                    TreePath path = modsHandle.resolve(wc);
+                    if (path == null) {
+                        return;
+                    }
+                    ModifiersTree mt = (ModifiersTree) path.getLeaf();
+                    Set<Modifier> modifiers = EnumSet.copyOf(mt.getFlags());
+                    modifiers.addAll(toAdd);
+                    modifiers.removeAll(toRemove);
+                    ModifiersTree newMod = wc.getTreeMaker().Modifiers(modifiers, mt.getAnnotations());
+                    wc.rewrite(mt, newMod);
+                }
+            }).commit();
+            return null;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ChangeModifiersFixImpl other = (ChangeModifiersFixImpl) obj;
+            if (this.modsHandle != other.modsHandle && (this.modsHandle == null || !this.modsHandle.equals(other.modsHandle))) {
+                return false;
+            }
+            if (this.toAdd != other.toAdd && (this.toAdd == null || !this.toAdd.equals(other.toAdd))) {
+                return false;
+            }
+            if (this.toRemove != other.toRemove && (this.toRemove == null || !this.toRemove.equals(other.toRemove))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 71 * hash + (this.modsHandle != null ? this.modsHandle.hashCode() : 0);
+            hash = 71 * hash + (this.toAdd != null ? this.toAdd.hashCode() : 0);
+            hash = 71 * hash + (this.toRemove != null ? this.toRemove.hashCode() : 0);
+            return hash;
+        }
     }
 }

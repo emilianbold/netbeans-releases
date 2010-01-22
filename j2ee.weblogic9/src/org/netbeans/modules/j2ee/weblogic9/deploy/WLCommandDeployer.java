@@ -77,14 +77,11 @@ import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.URLWait;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentStatus;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
-import org.netbeans.modules.j2ee.weblogic9.WLTargetModuleID;
 import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicWebApp;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.JarFileSystem;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 
@@ -104,9 +101,12 @@ public final class WLCommandDeployer {
 
     private static boolean showConsole = Boolean.getBoolean(WLCommandDeployer.class.getName() + ".showConsole");
 
+    private final WLDeploymentFactory factory;
+
     private final InstanceProperties ip;
 
-    public WLCommandDeployer(InstanceProperties ip) {
+    public WLCommandDeployer(WLDeploymentFactory factory, InstanceProperties ip) {
+        this.factory = factory;
         this.ip = ip;
     }
 
@@ -118,7 +118,7 @@ public final class WLCommandDeployer {
                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
                 NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deploying", file.getAbsolutePath())));
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        factory.getExecutorService().submit(new Runnable() {
 
             public void run() {
                 ExecutionService service = createService("-deploy", null, file.getAbsolutePath()); // NOI18N
@@ -130,7 +130,7 @@ public final class WLCommandDeployer {
                                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
                                 NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Failed")));
                     } else {
-                        waitForUrlReady(moduleId, progress);
+                        waitForUrlReady(factory, moduleId, progress);
                         progress.fireProgressEvent(null, new WLDeploymentStatus(
                                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED,
                                 NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Completed")));
@@ -152,7 +152,7 @@ public final class WLCommandDeployer {
                             NbBundle.getMessage(WLCommandDeployer.class, "MSG_Deployment_Failed_With_Message")));
                 }
             }
-        }, 0, Thread.NORM_PRIORITY);
+        });
 
         return progress;
     }
@@ -164,7 +164,7 @@ public final class WLCommandDeployer {
                 ActionType.EXECUTE, CommandType.UNDEPLOY, StateType.RUNNING,
                 NbBundle.getMessage(WLCommandDeployer.class, "MSG_Undeployment_Started")));
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        factory.getExecutorService().submit(new Runnable() {
 
             public void run() {
                 boolean failed = false;
@@ -216,7 +216,7 @@ public final class WLCommandDeployer {
                             NbBundle.getMessage(WLCommandDeployer.class, "MSG_Undeployment_Completed")));
                 }
             }
-        }, 0, Thread.NORM_PRIORITY);
+        });
 
         return progress;
     }
@@ -228,7 +228,7 @@ public final class WLCommandDeployer {
                 ActionType.EXECUTE, CommandType.START, StateType.RUNNING,
                 NbBundle.getMessage(WLCommandDeployer.class, "MSG_Start_Started")));
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        factory.getExecutorService().submit(new Runnable() {
 
             public void run() {
                 boolean failed = false;
@@ -280,7 +280,7 @@ public final class WLCommandDeployer {
                             NbBundle.getMessage(WLCommandDeployer.class, "MSG_Start_Completed")));
                 }
             }
-        }, 0, Thread.NORM_PRIORITY);
+        });
 
         return progress;
     }
@@ -292,7 +292,7 @@ public final class WLCommandDeployer {
                 ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
                 NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Started")));
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        factory.getExecutorService().submit(new Runnable() {
 
             public void run() {
                 boolean failed = false;
@@ -344,7 +344,7 @@ public final class WLCommandDeployer {
                             NbBundle.getMessage(WLCommandDeployer.class, "MSG_Stop_Completed")));
                 }
             }
-        }, 0, Thread.NORM_PRIORITY);
+        });
 
         return progress;
     }
@@ -436,8 +436,8 @@ public final class WLCommandDeployer {
         return "";
     }
 
-    private static void waitForUrlReady(TargetModuleID moduleID, WLProgressObject progressObject)
-            throws InterruptedException, TimeoutException {
+    private static void waitForUrlReady(WLDeploymentFactory factory,
+            TargetModuleID moduleID, WLProgressObject progressObject) throws InterruptedException, TimeoutException {
 
         String webUrl = moduleID.getWebURL();
         if (webUrl == null) {
@@ -465,7 +465,7 @@ public final class WLCommandDeployer {
                 }
                 long start = System.currentTimeMillis();
                 while (System.currentTimeMillis() - start < TIMEOUT) {
-                    if (URLWait.waitForUrlReady(url, 1000)) {
+                    if (URLWait.waitForUrlReady(factory.getExecutorService(), url, 1000)) {
                         break;
                     }
                 }

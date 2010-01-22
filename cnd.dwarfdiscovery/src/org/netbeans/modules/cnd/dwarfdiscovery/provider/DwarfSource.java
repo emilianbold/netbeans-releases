@@ -109,7 +109,7 @@ public class DwarfSource implements SourceFileProperties{
         File file = new File(fullName);
         fullName = CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath());
         fullName = linkSupport(fullName);
-        if (fullName != null && Utilities.isWindows()) {
+        if (fullName != null && normilizeProvider.isWindows()) {
             fullName = fullName.replace('/', '\\');
         }
         fullName = PathCache.getString(fullName);
@@ -126,7 +126,7 @@ public class DwarfSource implements SourceFileProperties{
            //        System.out.println("\t"+s); // NOI18N
            //    }
            //}
-           if (Utilities.isWindows()) {
+           if (compilerSettings.isWindows()) {
                if (FULL_TRACE) {System.out.println("CompileFlavor:"+compilerSettings.getCompileFlavor());} // NOI18N
                if ("Cygwin".equals(compilerSettings.getCompileFlavor())) { // NOI18N
                    cygwinPath = compilerSettings.getCygwinDrive();
@@ -165,22 +165,27 @@ public class DwarfSource implements SourceFileProperties{
         normilizeProvider = compilerSettings;
     }
     
+    @Override
     public String getCompilePath() {
         return compilePath;
     }
     
+    @Override
     public String getItemPath() {
         return fullName;
     }
     
+    @Override
     public String getItemName() {
         return sourceName;
     }
     
+    @Override
     public List<String> getUserInludePaths() {
         return userIncludes;
     }
     
+    @Override
     public List<String> getSystemInludePaths() {
         return systemIncludes;
     }
@@ -189,14 +194,17 @@ public class DwarfSource implements SourceFileProperties{
         return includedFiles;
     }
     
+    @Override
     public Map<String, String> getUserMacros() {
         return userMacros;
     }
     
+    @Override
     public Map<String, String> getSystemMacros() {
         return systemMacros;
     }
     
+    @Override
     public ItemProperties.LanguageKind getLanguageKind() {
         return language;
     }
@@ -205,7 +213,7 @@ public class DwarfSource implements SourceFileProperties{
         if (fileName == null){
             return fileName;
         }
-        if (Utilities.isWindows()) {
+        if (normilizeProvider.isWindows()) {
             //replace /cygdrive/<something> prefix with <something>:/ prefix:
             if (FULL_TRACE) {System.out.println("Try to fix win name:"+fileName);} // NOI18N
             if (fileName.startsWith(CYG_DRIVE_UNIX)) {
@@ -249,7 +257,7 @@ public class DwarfSource implements SourceFileProperties{
     }
     
     private String linkSupport(String name){
-        if (Utilities.isWindows()) {
+        if (normilizeProvider.isWindows()) {
             if (!new File(name).exists()){
                 String link = name+".lnk"; // NOI18N
                 if (new File(link).exists()){
@@ -417,7 +425,7 @@ public class DwarfSource implements SourceFileProperties{
         if (path.startsWith(CYG_DRIVE_UNIX)){
             path = fixFileName(path);
         }
-        if (Utilities.isWindows()) {
+        if (normilizeProvider.isWindows()) {
             path = path.replace('\\', '/');
         }
         return path;
@@ -519,6 +527,7 @@ public class DwarfSource implements SourceFileProperties{
     }
 
     private void processPath(String path, List<String> list, DwarfStatementList dwarfTable, boolean isPath) {
+        path = path.replace('\\', '/'); // NOI18N
         String includeFullName = path;
         if (FULL_TRACE) {
             System.out.println("Included file original:" + path); // NOI18N
@@ -533,7 +542,7 @@ public class DwarfSource implements SourceFileProperties{
             includeFullName = fixCygwinPath(path);
             includeFullName = normalizePath(includeFullName);
         }
-        if (Utilities.isWindows()) {
+        if (normilizeProvider.isWindows()) {
             includeFullName = includeFullName.replace('\\', '/'); // NOI18N
         }
         if (isPath) {
@@ -559,7 +568,7 @@ public class DwarfSource implements SourceFileProperties{
     }
 
     private void cutFolderPrefix(String path, final DwarfStatementList dwarfTable) {
-        if (Utilities.isWindows()) {
+        if (normilizeProvider.isWindows()) {
             path = path.replace('\\', '/'); // NOI18N
         }
         if (path.indexOf('/')>0){ // NOI18N

@@ -109,11 +109,6 @@ public class CppFile {
 //	classFoldRecords = new ArrayList();
         blockFoldRecords = new ArrayList<CppFoldRecord>();
     }
-    private int parseCount = 0;
-
-    private synchronized int getCount() {
-        return ++parseCount;
-    }
 
     public void startParsing(Document doc) {
 //        int curCount = getCount();
@@ -158,6 +153,7 @@ public class CppFile {
             final BadLocationException exc[] = new BadLocationException[]{null};
             doc.render(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         text[0] = doc.getText(0, doc.getLength());

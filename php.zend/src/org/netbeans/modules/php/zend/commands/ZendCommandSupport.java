@@ -171,12 +171,13 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
             if (!StringUtils.hasText(line)) {
                 return;
             }
-            String trimmed = line.trim();
-            List<String> exploded = StringUtils.explode(trimmed, SEPARATOR);
-            if (exploded.size() == 1) {
+            if (!line.contains(SEPARATOR)) {
                 // error occured
                 return;
             }
+            String trimmed = line.trim();
+            List<String> exploded = StringUtils.explode(trimmed, SEPARATOR);
+            assert exploded.size() > 0;
             String command = exploded.get(0);
             String description = ""; // NOI18N
             if (exploded.size() > 1) {

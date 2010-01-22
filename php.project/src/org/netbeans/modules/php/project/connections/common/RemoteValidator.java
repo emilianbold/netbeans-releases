@@ -51,14 +51,6 @@ public final class RemoteValidator {
     private RemoteValidator() {
     }
 
-    public static String validateRememberPassword(char[] password) {
-        assert password != null;
-        if (password.length > 0) {
-            return NbBundle.getMessage(RemoteValidator.class, "MSG_PasswordRememberDangerous");
-        }
-        return null;
-    }
-
     public static String validateHost(String host) {
         assert host != null;
         if (host.trim().length() == 0) {

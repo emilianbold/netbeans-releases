@@ -70,7 +70,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.util.NbBundle;
@@ -136,14 +136,8 @@ public final class WLStartServer extends StartServer {
             proc = serverProcess;
         }
 
-        if (proc != null) {
-            try {
-                proc.exitValue();
-                // process is stopped
-                return false;
-            } catch (IllegalThreadStateException e) {
-                // process is running
-            }
+        if (!isRunning(proc)) {
+            return false;
         }
 
         String host = dm.getHost();
@@ -315,6 +309,19 @@ public final class WLStartServer extends StartServer {
         }
     }
 
+    private static boolean isRunning(Process process) {
+        if (process != null) {
+            try {
+                process.exitValue();
+                // process is stopped
+                return false;
+            } catch (IllegalThreadStateException e) {
+                // process is running
+            }
+        }
+        return true;
+    }
+
     private class WLStartTask implements Runnable {
 
         /**
@@ -479,7 +486,6 @@ public final class WLStartServer extends StartServer {
             String username = dm.getInstanceProperties().getProperty(InstanceProperties.USERNAME_ATTR);
             String password = dm.getInstanceProperties().getProperty(InstanceProperties.PASSWORD_ATTR);
 
-            String uri = dm.getInstanceProperties().getProperty(InstanceProperties.URL_ATTR);
             // it is guaranteed it is WL
             String[] parts = uri.substring(WLDeploymentFactory.URI_PREFIX.length()).split(":");
 
@@ -519,8 +525,7 @@ public final class WLStartServer extends StartServer {
                         InstanceProperties.DISPLAY_NAME_ATTR);
 
                 while ((System.currentTimeMillis() - start) < TIMEOUT) {
-                    if (isRunning()) {
-                        // FIXME check if the stop process is running
+                    if (isRunning() && isRunning(stopProcess)) {
                         serverProgress.notifyStop(StateType.RUNNING,
                                 NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS", serverName));
                         try {
@@ -540,8 +545,14 @@ public final class WLStartServer extends StartServer {
                             Thread.currentThread().interrupt();
                             return;
                         }
-                        serverProgress.notifyStop(StateType.COMPLETED,
+
+                        if (isRunning()) {
+                            serverProgress.notifyStop(StateType.FAILED,
+                                NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_FAILED", serverName));
+                        } else {
+                            serverProgress.notifyStop(StateType.COMPLETED,
                                 NbBundle.getMessage(WLStartServer.class, "MSG_SERVER_STOPPED", serverName));
+                        }
                         return;
                     }
                 }

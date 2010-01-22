@@ -411,6 +411,7 @@ public class CommentsPanel extends JPanel {
     private ActionListener getReplyListener() {
         if (replyListener == null) {
             replyListener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     Object source = e.getSource();
                     if (source instanceof JComponent) {
@@ -438,6 +439,7 @@ public class CommentsPanel extends JPanel {
         void openIssue(String hyperlinkText) {
             final String issueNo = issueFinder.getIssueId(hyperlinkText);
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     Issue is = issue.getRepository().getIssue(issueNo);
                     if (is != null) {

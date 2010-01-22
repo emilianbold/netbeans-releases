@@ -101,20 +101,20 @@ final class NetigsoModule extends Module {
         throw new UnsupportedOperationException();
     }
 
-    final void start() {
+    final void start() throws IOException {
         if (bundle != null) {
             return;
         }
+        Bundle b = null;
         try {
             BundleContext bc = NetigsoModuleFactory.getContainer().getBundleContext();
-            bundle = bc.installBundle(jar.toURI().toURL().toExternalForm());
-            loader.init(bundle);
-            bundle.start();
-        } catch (IOException ex) {
-            LOG.log(Level.WARNING, "Cannot initialize: " + jar, ex);
+            b = bc.installBundle(jar.toURI().toURL().toExternalForm());
+            loader.init(b);
+            b.start();
         } catch (BundleException ex) {
-            LOG.log(Level.WARNING, "Cannot initialize: " + jar, ex);
+            throw (IOException)new IOException(ex.getMessage()).initCause(ex);
         }
+        bundle = b;
     }
 
     @Override

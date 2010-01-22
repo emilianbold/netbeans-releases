@@ -241,15 +241,6 @@ made subject to such option by the copyright holder.
     </folder>
   </folder>
 
-    <folder name="TaskList">
-        <folder name="Scanners">
-            <file name="JavaErrorsProvider.instance">
-                <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.FileTaskScanner"/>
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.tasklist.JavaTaskProvider"/>
-            </file>
-        </folder>
-    </folder>
-
     <folder name="Editors">
         <file name="JavaBinaryIndexer.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.indexing.JavaBinaryIndexer$Factory"/>

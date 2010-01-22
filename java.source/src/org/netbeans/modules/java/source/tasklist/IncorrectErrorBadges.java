@@ -54,6 +54,7 @@ import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
+import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -107,9 +108,9 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
             }
 
             final FileObject file = info.getFileObject();
-            boolean hasErrorBadge = TaskCache.getDefault().isInError(file, false);
+            boolean hasErrorBadge = ErrorsCache.isInError(file, false);
             if (hasErrorBadge) {
-                LOG.log(Level.FINE, "TaskCache.isInError: {0}", info.getFileObject());
+                LOG.log(Level.FINE, "Errorscache.isInError: {0}", info.getFileObject());
             }
 
             if (containsError == hasErrorBadge) {
@@ -163,7 +164,7 @@ public class IncorrectErrorBadges implements CancellableTask<CompilationInfo> {
             }
 
             LOG.log(Level.WARNING, "Going to recompute root={0}, files in error={1}.",
-                    new Object[] {FileUtil.getFileDisplayName(root), TaskCache.getDefault().getAllFilesInError(root.getURL())});
+                    new Object[] {FileUtil.getFileDisplayName(root), ErrorsCache.getAllFilesInError(root.getURL())});
 
 // XXX:            RepositoryUpdater.getDefault().rebuildRoot(root.getURL(), true);
             IndexingManager.getDefault().refreshIndex(root.getURL(), null);

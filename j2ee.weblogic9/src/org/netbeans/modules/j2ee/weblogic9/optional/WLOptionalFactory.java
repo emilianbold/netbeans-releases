@@ -41,11 +41,14 @@
 package org.netbeans.modules.j2ee.weblogic9.optional;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentManager;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.ui.wizard.WLInstantiatingIterator;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 
@@ -58,14 +61,14 @@ import org.openide.WizardDescriptor.InstantiatingIterator;
  * @author Kirill Sorokin
  */
 public class WLOptionalFactory extends OptionalDeploymentManagerFactory {
-    
+
     /**
      * Returns an object responsible for starting a particular server instance.
-     * The information about the instance is fetched from the supplied 
+     * The information about the instance is fetched from the supplied
      * deployment manager.
-     * 
+     *
      * @param dm the server's deployment manager
-     * 
+     *
      * @return an object for starting/stopping the server
      */
     @Override
@@ -75,12 +78,12 @@ public class WLOptionalFactory extends OptionalDeploymentManagerFactory {
 
     /**
      * Returns an object responsible for performing incremental deployment on
-     * a particular server instance. The instance information should be fetched 
+     * a particular server instance. The instance information should be fetched
      * from the supplied deployment manager.
      * We do not support that, thus return null
-     * 
+     *
      * @param dm the server's deployment manager
-     * 
+     *
      * @return an object for performing the incremental deployment, i.e. null
      */
     @Override
@@ -89,13 +92,13 @@ public class WLOptionalFactory extends OptionalDeploymentManagerFactory {
     }
 
     /**
-     * Returns an object responsible for finding a corresponsing servlet for a 
-     * given jsp deployed on a particular server instance. Instance data should 
+     * Returns an object responsible for finding a corresponsing servlet for a
+     * given jsp deployed on a particular server instance. Instance data should
      * be fetched from the supplied deployment manager.
      * We do not support that, thus return null
-     * 
+     *
      * @param dm the server's deployment manager
-     * 
+     *
      * @return an object for finding the servlet, i.e. null
      */
     @Override
@@ -105,12 +108,52 @@ public class WLOptionalFactory extends OptionalDeploymentManagerFactory {
 
     /**
      * Returns an instance of the custom wizard for adding a server instance.
-     * 
+     *
      * @return a custom wizard
      */
     @Override
     public InstantiatingIterator getAddInstanceIterator() {
         return new WLInstantiatingIterator();
     }
-    
+
+    @Override
+    public ServerInstanceDescriptor getServerInstanceDescriptor(DeploymentManager dm) {
+        return new WLServerInstanceDescriptor((WLDeploymentManager) dm);
+    }
+
+    private static class WLServerInstanceDescriptor implements ServerInstanceDescriptor {
+
+        private final String host;
+
+        private int port;
+
+        public WLServerInstanceDescriptor(WLDeploymentManager manager) {
+            String uri = manager.getInstanceProperties().getProperty(InstanceProperties.URL_ATTR);
+            // it is guaranteed it is WL
+            String[] parts = uri.substring(WLDeploymentFactory.URI_PREFIX.length()).split(":");
+
+            host = parts[0];
+            try {
+                port = parts.length > 1 ? Integer.parseInt(parts[1]) : WLDeploymentFactory.DEFAULT_PORT;
+            } catch (NumberFormatException ex) {
+                // leave default
+                port = WLDeploymentFactory.DEFAULT_PORT;
+            }
+        }
+
+        @Override
+        public String getHostname() {
+            return host;
+        }
+
+        @Override
+        public int getHttpPort() {
+            return port;
+        }
+
+        @Override
+        public boolean isLocal() {
+            return true;
+        }
+    }
 }
