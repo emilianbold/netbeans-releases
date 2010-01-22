@@ -138,7 +138,7 @@ public final class ParserQueue {
 
         public String toString(boolean detailed) {
             StringBuilder retValue = new StringBuilder();
-            retValue.append("ParserQueue.Entry " + file + " of project " + file.getProject()); // NOI18N
+            retValue.append("ParserQueue.Entry ").append(file).append(" of project ").append(file.getProject()); // NOI18N
             if (detailed) {
                 retValue.append("\nposition: ").append(position); // NOI18N
                 retValue.append(", serial: ").append(serial); // NOI18N
@@ -191,6 +191,7 @@ public final class ParserQueue {
             this.ppState = new ArrayList<APTPreprocHandler.State>(ppStates);
         }
 
+        @Override
         public int compareTo(Entry that) {
             int cmp = this.position.compareTo(that.position);
             if (cmp == 0) {
@@ -798,7 +799,7 @@ public final class ParserQueue {
     }
 
     private void handleLastProjectFile(ProjectBase project, ProjectData data) {
-        project.onParseFinish(false);
+        project.onParseFinish();
         boolean last = false;
         synchronized (lock) {
             data.pendingActivity--;
