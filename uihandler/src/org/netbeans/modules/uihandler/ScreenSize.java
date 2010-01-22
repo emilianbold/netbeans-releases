@@ -55,6 +55,9 @@ public class ScreenSize {
     static final String MESSAGE = "SCREEN SIZE";
 
     static void logScreenSize() {
+        if (GraphicsEnvironment.isHeadless()) {
+            return;
+        }
         LogRecord log = new LogRecord(Level.FINEST, MESSAGE); // NOI18N
         List<Object> params = new ArrayList<Object>(2);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();

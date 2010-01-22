@@ -40,13 +40,11 @@
  */
 package org.netbeans.modules.javacard.project;
 
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
 import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -63,6 +61,8 @@ import javax.swing.event.ChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.spi.project.support.ant.SourcesHelper.SourceRootConfig;
 
 /**
  * Sources of Java Card project.
@@ -183,10 +183,8 @@ public class JCProjectSources implements Sources, ChangeListener,
             String prop = propNames[i];
             String displayName = roots.getRootDisplayName(rootNames[i], prop);
             String loc = "${" + prop + "}"; // NOI18N
-            String includes = "${" + ProjectProperties.INCLUDES + "}"; // NOI18N
-            String excludes = "${" + ProjectProperties.EXCLUDES + "}"; // NOI18N
-            sourcesHelper.addPrincipalSourceRoot(loc, includes, excludes, displayName, null, null); // NOI18N
-            sourcesHelper.addTypedSourceRoot(loc, includes, excludes, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, null, null); // NOI18N
+            sourcesHelper.sourceRoot(loc).displayName(displayName).type(
+                    JavaProjectConstants.SOURCES_TYPE_JAVA).add();
         }
     }
 

@@ -43,7 +43,9 @@ import java.util.List;
 import java.util.Set;
 import org.jrubyparser.ast.Colon2ConstNode;
 import org.jrubyparser.ast.Colon2Node;
+import org.jrubyparser.ast.INameNode;
 import org.jrubyparser.ast.IScopingNode;
+import org.jrubyparser.ast.IterNode;
 import org.jrubyparser.ast.MethodDefNode;
 import org.jrubyparser.ast.Node;
 import org.jrubyparser.ast.NodeType;
@@ -206,6 +208,9 @@ public final class RubyTypeInferencer {
                 MethodDefNode methodDefNode = (MethodDefNode) node;
                 type = inferMethodNode(methodDefNode);
                 break;
+            case ITERNODE:
+                type = inferIterNode((IterNode) node);
+                break;
             case SELFNODE:
                 type = inferSelf(node);
                 break;
@@ -256,6 +261,19 @@ public final class RubyTypeInferencer {
             return null;
         }
         return RubyType.create(AstUtilities.getClassOrModuleName(clazz));
+    }
+
+    private RubyType inferIterNode(IterNode iterNode) {
+        Node body = iterNode.getBodyNode();
+        RubyType result = new RubyType();
+        if (body != null) {
+            Set<Node> exits = new LinkedHashSet<Node>();
+            AstUtilities.findExitPoints(body, exits);
+            for (Node exit : exits) {
+                result.append(inferType(exit));
+            }
+        }
+        return result;
     }
 
     private RubyType inferMethodNode(MethodDefNode methodDefNode) {

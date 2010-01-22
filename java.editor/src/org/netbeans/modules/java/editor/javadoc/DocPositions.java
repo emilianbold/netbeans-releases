@@ -72,6 +72,8 @@ public final class DocPositions {
     private Map<Tag, int[]> positions; // inclusive, exclusive
     private List<TagEntry> sortedTags;
     private int blockSectionStart;
+    /** flag broken DocPositions */
+    private final boolean broken;
     
     // context that should be descarded after resolve()
     private Env env;
@@ -86,6 +88,12 @@ public final class DocPositions {
     
     private DocPositions(Env env) {
         this.env = env;
+        this.broken = false;
+    }
+
+    /** use to handle broken positions, e.g. out of sync state */
+    private DocPositions() {
+        this.broken = true;
     }
 
     /**
@@ -139,6 +147,9 @@ public final class DocPositions {
 
         this.positions = new WeakHashMap<Tag, int[]>();
         this.sortedTags = new ArrayList<DocPositions.TagEntry>();
+        if (broken) {
+            return;
+        }
         try {
             env.prepare();
             if (env.javadoc == null || env.jdts.isEmpty()) {
@@ -191,9 +202,14 @@ public final class DocPositions {
         } catch (Throwable t) {
             // for debug purposes
             tokenSequenceDump = String.valueOf(env.jdts);
-            throw new IllegalStateException(
-                    '\'' + env.javadoc.getRawCommentText() + "'\n" + this.toString(), // NOI18N
-                    t);
+            try {
+                JavadocCompletionUtils.dumpOutOfSyncError(env.snapshot, env.jdts, env.javadoc, true);
+            } catch (IllegalStateException ex) {
+                ex.initCause(t);
+                throw new IllegalStateException(
+                        '\'' + env.javadoc.getRawCommentText() + "'\n" + this.toString(), // NOI18N
+                        ex);
+            }
         } finally {
             if (isTestMode) {
                 tokenSequenceDump = String.valueOf(env.jdts);
@@ -500,8 +516,13 @@ public final class DocPositions {
             Map<Doc, DocPositions> docsCache = getDocsCache(javac);
             DocPositions dp = docsCache.get(javadoc);
             if (dp == null) {
-                Snapshot snapshot = javac.getSnapshot();
-                dp = new DocPositions(new Env(jdts, snapshot, javadoc));
+                if (JavadocCompletionUtils.isInvalidDocInstance(javadoc, jdts)) {
+                    JavadocCompletionUtils.dumpOutOfSyncError(javac, jdts, javadoc, false);
+                    dp = new DocPositions();
+                } else {
+                    Snapshot snapshot = javac.getSnapshot();
+                    dp = new DocPositions(new Env(jdts, snapshot, javadoc));
+                }
                 docsCache.put(javadoc, dp);
             }
             return dp;

@@ -215,19 +215,21 @@ made subject to such option by the copyright holder.
                                     </xsl:element>
                                 </xsl:if>
                                 <xsl:if test="wsdl:fault">
-                                    <xsl:element name="fault" namespace="http://schemas.xmlsoap.org/wsdl/">
-                                        <xsl:if test="wsdl:fault/@name">
-                                            <xsl:attribute name="name">
-                                                <xsl:value-of select="wsdl:fault/@name"/>
-                                            </xsl:attribute>
-                                        </xsl:if>
-                                        <xsl:element name="fault" namespace="http://schemas.xmlsoap.org/wsdl/soap/">
-                                            <xsl:attribute name="name">
-                                                <xsl:value-of select="wsdl:fault/@name"/>
-                                            </xsl:attribute>
-                                            <xsl:attribute name="use">literal</xsl:attribute>
+                                    <xsl:for-each select="wsdl:fault">
+                                        <xsl:element name="fault" namespace="http://schemas.xmlsoap.org/wsdl/">
+                                            <xsl:if test="@name">
+                                                <xsl:attribute name="name">
+                                                    <xsl:value-of select="@name"/>
+                                                </xsl:attribute>
+                                            </xsl:if>
+                                            <xsl:element name="fault" namespace="http://schemas.xmlsoap.org/wsdl/soap/">
+                                                <xsl:attribute name="name">
+                                                    <xsl:value-of select="@name"/>
+                                                </xsl:attribute>
+                                                <xsl:attribute name="use">literal</xsl:attribute>
+                                            </xsl:element>
                                         </xsl:element>
-                                    </xsl:element>
+                                    </xsl:for-each>
                                 </xsl:if>
                             </xsl:element>
                         </xsl:for-each>

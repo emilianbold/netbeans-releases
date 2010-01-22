@@ -206,6 +206,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV") // it's ok to ignore File.createNewFile() return value
     private void syncDirStruct(final File dir, final String remoteDir) throws IOException, CancellationException {
         if (dir.exists()) {
             CndUtils.assertTrue(dir.isDirectory(), dir.getAbsolutePath() + " is not a directory"); //NOI18N
@@ -214,7 +215,7 @@ public class RemoteFileSupport implements RemoteFileSystemNotifier.Callback {
         NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(execEnv);
         // TODO: error processing
         //processBuilder.setWorkingDirectory(remoteDir);
-        processBuilder.setCommandLine("sh -c 'test -d " + remoteDir + " && cd "  + remoteDir + " && for D in *; do if [ -d $D ]; then echo D $D; else echo F $D; fi; done'"); // NOI18N
+        processBuilder.setCommandLine("sh -c 'test -d " + remoteDir + " && cd "  + remoteDir + " && for D in `ls`; do if [ -d $D ]; then echo D $D; else echo F $D; fi; done'"); // NOI18N
         NativeProcess process = processBuilder.call();
         final InputStream is = process.getInputStream();
         final InputStream er = process.getErrorStream();

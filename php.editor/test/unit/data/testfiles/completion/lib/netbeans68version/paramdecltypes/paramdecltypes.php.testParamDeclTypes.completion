@@ -1,7 +1,7 @@
 Code completion result for source line:
 function paramsfnc($a,$b,$c,$d) {|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-CLASS      clsA                                       paramdecltypes.php
+CLASS      clsA                            [PUBLIC]   paramdecltypes.php
 CLASS      ifaceA                                     paramdecltypes.php
 METHOD     paramsfnc($a, $b, $c, $d)                  paramdecltypes.php
 VARIABLE   ? $a                                       paramdecltypes.php

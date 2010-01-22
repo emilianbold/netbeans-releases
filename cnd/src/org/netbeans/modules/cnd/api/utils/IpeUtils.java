@@ -51,14 +51,11 @@ import java.util.StringTokenizer;
 import javax.swing.JButton;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
-import org.netbeans.modules.cnd.loaders.CDataObject;
 import org.netbeans.modules.cnd.loaders.CoreElfObject;
 import org.netbeans.modules.cnd.loaders.ExeObject;
-import org.netbeans.modules.cnd.loaders.MakefileDataObject;
 import org.netbeans.modules.cnd.loaders.OrphanedElfObject;
-import org.netbeans.modules.cnd.loaders.ShellDataObject;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -672,23 +669,23 @@ public class IpeUtils {
         return (DataNode) node;
     }
 
-    // From PicklistUtils. FIXUP: probably not really needed anymore
-    public static ExecutionSupport findExecutionSupport(DataNode executionNode) {
-        if (executionNode == null) {
-            return null;
-        }
-        if (executionNode.getDataObject() instanceof CDataObject) {
-            return null;
-        }
-        if (executionNode.getDataObject() instanceof CoreElfObject) {
-            return null;
-        }
-        if (executionNode.getDataObject() instanceof MakefileDataObject) {
-            return null;
-        }
-        ExecutionSupport bes = executionNode.getCookie(ExecutionSupport.class);
-        return bes;
-    }
+//    // From PicklistUtils. FIXUP: probably not really needed anymore
+//    public static ExecutionSupport findExecutionSupport(DataNode executionNode) {
+//        if (executionNode == null) {
+//            return null;
+//        }
+//        if (executionNode.getDataObject() instanceof CDataObject) {
+//            return null;
+//        }
+//        if (executionNode.getDataObject() instanceof CoreElfObject) {
+//            return null;
+//        }
+//        if (executionNode.getDataObject() instanceof MakefileDataObject) {
+//            return null;
+//        }
+//        ExecutionSupport bes = executionNode.getCookie(ExecutionSupport.class);
+//        return bes;
+//    }
 
     public static DataNode findDebuggableNode(String filePath) {
         if (filePath == null) {
@@ -804,6 +801,7 @@ public class IpeUtils {
                     string.charAt(i) == '$' ||
                     string.charAt(i) == '{' ||
                     string.charAt(i) == '}' ||
+                    string.charAt(i) == ':' ||
                     string.charAt(i) == '\\') {
             } else {
                 return true;
@@ -935,7 +933,7 @@ public class IpeUtils {
         } catch (DataObjectNotFoundException e) {
             return false;
         }
-        if (dataObject instanceof ExeObject || dataObject instanceof ShellDataObject) {
+        if (dataObject instanceof ExeObject || dataObject.getPrimaryFile().getMIMEType().equals(MIMENames.SHELL_MIME_TYPE)) {
             if (dataObject instanceof OrphanedElfObject || dataObject instanceof CoreElfObject) {
                 return false;
             }

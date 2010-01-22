@@ -43,6 +43,8 @@ package org.netbeans.modules.settings.convertors;
 
 import java.beans.*;
 import java.util.*;
+import org.netbeans.core.startup.Main;
+import org.netbeans.core.startup.MainLookup;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
@@ -86,7 +88,7 @@ final class ModuleInfoManager {
     private Lookup.Result<ModuleInfo> getModulesResult() {
         synchronized (this) {
             if (modulesResult == null) {
-                Lookup lookup = org.netbeans.core.NbTopManager.getModuleLookup();
+                Lookup lookup = getModuleLookup();
                 modulesResult = lookup.
                     lookup(new Lookup.Template<ModuleInfo>(ModuleInfo.class));
                 modulesResult.addLookupListener(new LookupListener() {
@@ -105,6 +107,14 @@ final class ModuleInfoManager {
             }
             return modulesResult;
         }
+    }
+
+    private static Lookup getModuleLookup() {
+        Lookup l = Lookup.getDefault();
+        if (l instanceof MainLookup) {
+            l = Main.getModuleSystem().getManager().getModuleLookup();
+        }
+        return l;
     }
 
     /** notify registered listeners about reloaded modules

@@ -97,18 +97,11 @@ public class ModulesActivator {
     
     private RequestProcessor.Task createEnableTask () {
         assert enableTask == null || enableTask.isFinished () : "The Enable Task cannot be started nor scheduled.";
-        enableTask = FeatureManager.getInstance().create (doEnable);
+        enableTask = FeatureManager.getInstance().create (new InstallOrActivateTask(this));
         return enableTask;
     }
-    
-    private Runnable doEnable = new Runnable () {
-        public void run() {
-            enableModules ();
-        }
 
-    };
-    
-    private void enableModules () {
+    final void enableModules () {
         try {
             doEnableModules ();
         } catch (OperationException ex) {

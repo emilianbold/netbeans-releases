@@ -60,11 +60,12 @@ public final class MainLookup extends ProxyLookup {
     /** dynamic lookup service for this top mangager */
     private static Lookup instanceLookup = new AbstractLookup (instanceContent);
 
-    /** Someone called NbTopManager.get().
+    /**
+     * GuiRunLevel has started up.
      * That means that subsequent calls to lookup on ModuleInfo
      * need not try to get it again.
      */
-    public static void startedNbTopManager() {
+    public static void started() {
         started = true;
     }
     
@@ -74,8 +75,6 @@ public final class MainLookup extends ProxyLookup {
         return started;
     } 
 
-    /** Initialize the lookup to delegate to NbTopManager.
-    */
     public MainLookup () {
         super (new Lookup[] {
                    // #14722: pay attention also to META-INF/services/class.Name resources:
@@ -136,7 +135,7 @@ public final class MainLookup extends ProxyLookup {
 
     public static final void modulesClassPathInitialized () {
         //System.err.println("mCPI");
-    //StartLog.logStart ("NbTopManager$MainLookup: initialization of FolderLookup"); // NOI18N
+    //StartLog.logStart ("MainLookup: initialization of FolderLookup"); // NOI18N
 
         // replace the lookup by new one
         Lookup lookup = Lookup.getDefault ();
@@ -193,7 +192,7 @@ public final class MainLookup extends ProxyLookup {
 
         setLookups (arr);
         StartLog.logProgress ("Lookups set"); // NOI18N
-    //StartLog.logEnd ("NbTopManager$MainLookup: initialization of FolderLookup"); // NOI18N
+    //StartLog.logEnd ("MainLookup: initialization of FolderLookup"); // NOI18N
     }
 
     @Override

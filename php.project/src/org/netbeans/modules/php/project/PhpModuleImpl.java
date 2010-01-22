@@ -43,6 +43,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author Tomas Mysik
@@ -93,5 +94,10 @@ public class PhpModuleImpl extends PhpModule {
             }
         }
         return properties;
+    }
+
+    @Override
+    public String toString() {
+        return getDisplayName() + " (" + FileUtil.getFileDisplayName(getSourceDirectory()) + ")"; // NOI18N
     }
 }

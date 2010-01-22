@@ -1,12 +1,12 @@
-class NewClass {
+class NewClassIZ144679 {
 public:
-    static int AAA;
-    static int BBB;
-    static int CCC;
+    static int AAAIZ144679;
+    static int BBBIZ144679;
+    static int CCCIZ144679;
 private:
 
 };
 
-int NewClass::AAA = 10;
-int NewClass::BBB(AAA);
-int NewClass::CCC = BBB;
+int NewClassIZ144679::AAAIZ144679 = 10;
+int NewClassIZ144679::BBBIZ144679(AAAIZ144679);
+int NewClassIZ144679::CCCIZ144679 = BBBIZ144679;

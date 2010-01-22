@@ -79,7 +79,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     }
 
     public String getDefaultNamespace() {
-        return JsfUtils.COMPOSITE_LIBRARY_NS + "/" + getLibraryName();
+        return JsfUtils.getCompositeLibraryURL(getLibraryName());
     }
 
     @Override
@@ -158,6 +158,9 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
             Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
             for (String cname : componentNames) {
                 CompositeComponentModel model = index().getCompositeComponentModel(getLibraryName(), cname);
+		if(model == null) {
+		    return ;
+		}
                 Map<String, Attribute> attrs = new HashMap<String, Attribute>();
                 String msgNoTld = NbBundle.getBundle(CompositeComponentLibrary.class).getString("MSG_NO_DESCRIPTOR"); //NOI18N
                 for (Map<String, String> attrsMap : model.getExistingInterfaceAttributes()) {
@@ -179,7 +182,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 sb.append("</p>");//NOI18N
                 sb.append("<p style=\"color: red\">" + msgNoTld + "</p>"); //NOI18N
 
-                Tag t = new Tag(cname, sb.toString(), attrs);
+                Tag t = new TagImpl(cname, sb.toString(), attrs);
                 cctags.put(cname, t);
             }
         }

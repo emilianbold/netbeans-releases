@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.*;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -68,6 +69,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
+import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
@@ -186,7 +188,7 @@ public class FolderChildrenTest extends NbTestCase {
         r.run ();
         assertNotNull ("But running without mutexs works better - children filled", r.children);
         assertEquals ("One child", 1, r.children.length);
-        DataObject obj = (DataObject)r.children[0].getCookie (DataObject.class);
+        DataObject obj = r.children[0].getCookie(DataObject.class);
         assertNotNull ("There is data object", obj);
         assertEquals ("It belongs to our file", a, obj.getPrimaryFile ());
     }
@@ -314,7 +316,7 @@ public class FolderChildrenTest extends NbTestCase {
         assertEquals("Accepts only Ahoj", 1, arr.length);
         LOG.info("The one node" + arr[0]);
 
-        WeakReference ref = new WeakReference(ch);
+        WeakReference<Children> ref = new WeakReference<Children>(ch);
         ch = null;
         arr = null;
 
@@ -334,7 +336,7 @@ public class FolderChildrenTest extends NbTestCase {
 	Node[] arr = n.getChildren().getNodes(true);
 	assertEquals("Both are visible", 2, arr.length);
 
-	WeakReference ref = new WeakReference(arr[0]);
+	WeakReference<Node> ref = new WeakReference<Node>(arr[0]);
 	arr = null;
 	assertGC("Nodes can disappear", ref);
 
@@ -393,9 +395,9 @@ public class FolderChildrenTest extends NbTestCase {
         }
 
         @Override
-        public Node.Cookie getCookie (Class c) {
-            if (c == getClass ()) {
-                return this;
+        public <T extends Node.Cookie> T getCookie(Class<T> type) {
+            if (type == getClass()) {
+                return type.cast(this);
             }
             return null;
         }
@@ -478,11 +480,9 @@ public class FolderChildrenTest extends NbTestCase {
 
 
 
-        LocalFileSystem fs = new LocalFileSystem();
-        fs.setRootDirectory(getWorkDir());
-        Repository.getDefault().addFileSystem(fs);
-        final FileObject workDir = FileUtil.createFolder (FileUtil.getConfigRoot(), "workFolder");
-        final FileObject sibling = FileUtil.createFolder (FileUtil.getConfigRoot(), "unimportantSibling");
+        FileObject rootFO = FileUtil.toFileObject(getWorkDir());
+        final FileObject workDir = FileUtil.createFolder(rootFO, "workFolder");
+        final FileObject sibling = FileUtil.createFolder(rootFO, "unimportantSibling");
 
         workDir.addFileChangeListener(fcl);
 
@@ -500,44 +500,20 @@ public class FolderChildrenTest extends NbTestCase {
         } else {
             newFile = new File(FileUtil.toFile(workDir), FILE_NAME);
             new FileOutputStream(newFile).close();
+            workDir.refresh();
         }
-
-        // first or second run (second run is after caling workDir.refresh())
-        boolean firstRun = true;
 
         synchronized (waitObj) {
 
-            for(;;) {
-                // wait for create notification
-                if (!fcl.created)
-                    waitObj.wait(5000);
-
-                if (!fcl.created) {
-                    System.out.println("Not received file create notification, can't test.");
-                    if (firstRun) {
-                        // didn't get a notification, we should get one by calling refresh()
-                        firstRun = false;
-                        workDir.refresh();
-                        continue;
-                    }
-                    else {
-                        // didn't get a notification even after second run
-                        // FolderChildren probably didn't get a notification neither
-                        // so it doesn't know anything about the new file => nothing to test
-                        return;
-                    }
-                } else {
-                    break;
-                }
+            // wait for create notification
+            if (!fcl.created) {
+                waitObj.wait(1000);
             }
 
             // wait for FolderChildren to receive and process the create notification
             int cnt = 10;
             while (cnt-- > 0 && fc.getNodes ().length < 1) {
-                try {
-                    Thread.sleep(300);
-                }
-                catch (InterruptedException e) {}
+                Thread.sleep(100);
             }
 
             assertEquals("FolderChildren doesn't contain " + newFile, 1, fc.getNodes().length);
@@ -554,7 +530,6 @@ public class FolderChildrenTest extends NbTestCase {
         };
 
         FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
-        Repository.getDefault().addFileSystem(lfs);
 
         FileObject fo = lfs.findResource("AA/a.test");
         assertNotNull("file not found", fo);
@@ -581,14 +556,7 @@ public class FolderChildrenTest extends NbTestCase {
     }
 
     public void testRefreshInvalidDO() throws Exception {
-        String fsstruct [] = new String [] {
-            "AA/a.test"
-        };
-
-        FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir(), fsstruct);
-        Repository.getDefault().addFileSystem(lfs);
-
-        FileObject fo = lfs.findResource("AA/a.test");
+        FileObject fo = FileUtil.createData(new File(getWorkDir(), "AA/a.test"));
         assertNotNull("file not found", fo);
         DataObject obj = DataObject.find(fo);
 
@@ -797,6 +765,55 @@ public class FolderChildrenTest extends NbTestCase {
         fo1.setAttribute("position", 100);
         testNode.getChildren().getNodes(true);
         assertNotNull("Node " + childNode + " has a parent.", childNode.getParentNode());
+    }
+
+    /** #175220 - Tests that children keys are not changed when node and underlying
+     * data object are garbage collected. It caused collapsing of tree.
+     */
+    public void testNodeKeysNotChanged() throws Exception {
+        FileObject rootFolder = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject fo1 = rootFolder.createData("file1.java");
+        assertNotNull(fo1);
+        FileObject fo2 = rootFolder.createData("file2.java");
+        DataObject do2 = DataObject.find(fo2);
+        assertNotNull(fo2);
+        Node folderNode = DataFolder.findFolder(rootFolder).getNodeDelegate();
+        final AtomicInteger removedEventCount = new AtomicInteger(0);
+        folderNode.addNodeListener(new NodeAdapter() {
+
+            @Override
+            public void childrenRemoved(NodeMemberEvent ev) {
+                removedEventCount.incrementAndGet();
+            }
+        });
+        if (folderNode.getChildren().getClass().equals(FolderChildrenEager.class)) {
+            // TODO - investigate further why assertGC("Cannot GC childNode2", ref) fails
+            return;
+        }
+
+        // refresh children
+        folderNode.getChildren().getNodes(true);
+        Node childNode1 = folderNode.getChildren().getNodeAt(0);
+        assertNotNull(childNode1);
+        Node childNode2 = folderNode.getChildren().getNodeAt(1);
+        assertNotNull(childNode2);
+
+        // GC node 2
+        WeakReference<Node> ref = new WeakReference<Node>(childNode2);
+        childNode2 = null;
+        assertGC("Cannot GC childNode2", ref);
+        // GC data object 2
+        WeakReference<DataObject> refDO = new WeakReference<DataObject>(do2);
+        do2 = null;
+        assertGC("Cannot GC do2", refDO);
+
+        // add new data object
+        FileObject fo3 = rootFolder.createData("file3.java");
+        assertNotNull(fo3);
+        // refresh children
+        folderNode.getChildren().getNodes(true);
+        assertNotSame("Node 2 should not be the same when GC'd before.", childNode2, folderNode.getChildren().getNodeAt(1));
+        assertEquals("No node should be removed.", 0, removedEventCount.intValue());
     }
 
     public static final class VisQ implements VisibilityQueryImplementation, DataFilter.FileBased {

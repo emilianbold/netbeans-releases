@@ -289,13 +289,13 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     }
 
     private void fireActionEvent(ActionEvent e) {
-        Iterator it;
+        Iterator<ActionListener> it;
 
         synchronized (actionListenerList) {
             it = new HashSet<ActionListener>(actionListenerList).iterator();
         }
         while (it.hasNext()) {
-            ((ActionListener) it.next()).actionPerformed(e);
+            it.next().actionPerformed(e);
         }
     }
     /** Look up i18n strings here */

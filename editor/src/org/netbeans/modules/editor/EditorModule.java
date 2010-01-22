@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.editor;
 
+import java.awt.GraphicsEnvironment;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
@@ -277,6 +278,10 @@ public class EditorModule extends ModuleInstall {
          timer.start();
          */
          //TEMP end
+
+         if (GraphicsEnvironment.isHeadless()) {
+             return;
+         }
 
          EditorApiPackageAccessor.get().setIgnoredAncestorClass(TabbedContainer.class);
          if (topComponentRegistryListener == null) {

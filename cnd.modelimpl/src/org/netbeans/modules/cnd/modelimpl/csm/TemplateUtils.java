@@ -113,8 +113,14 @@ public class TemplateUtils {
                 if (grandChild != null) {
                     addSpecializationSuffix(grandChild, sb, parameters);
                 }
-                sb.append('>');
+                addGREATERTHAN(sb);
                 sb.append(' ');
+            } else if (child.getType() == CPPTokenTypes.GREATERTHAN) {
+                addGREATERTHAN(sb);
+                depth--;
+                if (depth == 0) {
+                    break;
+                }
             } else {
                 String text = child.getText();
                 if (parameters != null) {
@@ -134,15 +140,16 @@ public class TemplateUtils {
                     }
                 }
                 sb.append(text);
-
-                if (child.getType() == CPPTokenTypes.GREATERTHAN) {
-                    depth--;
-                    if (depth == 0) {
-                        break;
-                    }
-                }
             }
         }
+    }
+
+    public static void addGREATERTHAN(StringBuilder sb) {
+        // IZ#179276
+        if (sb.length() > 0 && sb.charAt(sb.length() - 1) == '>') {
+            sb.append(' ');
+        }
+        sb.append('>');
     }
     
     public static boolean isPartialClassSpecialization(AST ast) {
@@ -363,14 +370,12 @@ public class TemplateUtils {
 
     public static Map<CsmTemplateParameter, CsmSpecializationParameter> gatherMapping(CsmInstantiation inst) {
         Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
-        while(inst != null) {
-            newMapping.putAll(inst.getMapping());
+        if (inst != null) {
             CsmOffsetableDeclaration decl = inst.getTemplateDeclaration();
             if(decl instanceof CsmInstantiation) {
-                inst = (CsmInstantiation) decl;
-            } else {
-                break;
+                newMapping.putAll(gatherMapping((CsmInstantiation) decl));
             }
+            newMapping.putAll(inst.getMapping());
         }
         return newMapping;
     }

@@ -46,6 +46,21 @@ made subject to such option by the copyright holder.
 <apidef name="csl.api">Common Scripting Language API</apidef>
 </apidefs>
 <changes>
+    <change id="Error.Badging">
+        <api name="csl.api"/>
+        <summary>Added Error.BadgeError</summary>
+        <version major="1" minor="18"/>
+        <date day="21" month="1" year="2010"/>
+        <author login="jlahoda"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+            Adding Error.Badging class to allow showing error badges in the projects tab.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.csl.api" name="Error"/>
+        <issue number="179459"/>
+    </change>
     <change id="Error.isLineError">
         <api name="csl.api"/>
         <summary>Add Error.isLineError</summary>

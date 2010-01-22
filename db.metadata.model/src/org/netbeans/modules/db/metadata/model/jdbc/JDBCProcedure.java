@@ -167,7 +167,9 @@ public class JDBCProcedure extends ProcedureImplementation {
                     }
                 }
             } finally {
-                rs.close();
+                if (rs != null) {
+                    rs.close();
+                }
             }
         } catch (SQLException e) {
             throw new MetadataException(e);

@@ -117,9 +117,12 @@ public final class RemoteConnections {
     public boolean openManager(RemoteConfiguration remoteConfiguration) {
         initPanel();
         assert panel != null;
+        // original remote configurations
+        List<RemoteConfiguration> remoteConfigurations = getRemoteConfigurations();
+
         boolean changed = panel.open(remoteConfiguration);
         if (changed) {
-            saveRemoteConnections();
+            saveRemoteConnections(remoteConfigurations);
         }
         return changed;
     }
@@ -248,7 +251,7 @@ public final class RemoteConnections {
         return configs;
     }
 
-    private void saveRemoteConnections() {
+    private void saveRemoteConnections(List<RemoteConfiguration> originalRemoteConfigurations) {
         Preferences remoteConnections = getPreferences();
         for (Map.Entry<String, Map<String, String>> entry : configProvider.getConfigs().entrySet()) {
             String config = entry.getKey();
@@ -256,19 +259,38 @@ public final class RemoteConnections {
                 // no default config
                 continue;
             }
+
             Map<String, String> cfg = entry.getValue();
             if (cfg == null) {
                 // config was deleted
                 try {
                     remoteConnections.node(config).removeNode();
+                    // remove password from keyring
+                    for (RemoteConfiguration remoteConfiguration : originalRemoteConfigurations) {
+                        if (remoteConfiguration.getName().equals(config)) {
+                            remoteConfiguration.notifyDeleted();
+                            break;
+                        }
+                    }
                 } catch (BackingStoreException bse) {
                     LOGGER.log(Level.INFO, "Error while removing unused remote connection: " + config, bse);
                 }
             } else {
                 // add/update
+                Configuration configuration = configManager.configurationFor(config);
+                assert configuration != null;
+                RemoteConfiguration remoteConfiguration = getRemoteConfiguration(configuration);
+                assert remoteConfiguration != null;
+
                 Preferences node = remoteConnections.node(config);
                 for (Map.Entry<String, String> cfgEntry : cfg.entrySet()) {
-                    node.put(cfgEntry.getKey(), cfgEntry.getValue());
+                    String key = cfgEntry.getKey();
+                    String value = cfgEntry.getValue();
+                    if (remoteConfiguration.saveProperty(key, value)) {
+                        node.remove(key);
+                    } else {
+                        node.put(key, value);
+                    }
                 }
             }
         }

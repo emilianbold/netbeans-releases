@@ -67,6 +67,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
+import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
@@ -173,7 +174,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         boolean isAnnotate = !managedBeanPanel.isAddBeanToConfig();
         DataObject dobj = null;
 
-        if (isAnnotate && Utilities.isJavaEE6(wizard)) {
+        if (isAnnotate && (Utilities.isJavaEE6(wizard) || (JSFUtils.isJSF20(wm) && JSFUtils.isJavaEE5(wizard)))) {
             HashMap<String, String> templateProperties = new HashMap<String, String>();
             templateProperties.put("classAnnotation", "@ManagedBean(name=\""+beanName+"\")");   //NOI18N
             templateProperties.put("scopeAnnotation", SCOPES.get(scope).toString());    //NOI18N

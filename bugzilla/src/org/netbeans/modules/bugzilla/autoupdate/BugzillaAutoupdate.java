@@ -68,7 +68,7 @@ public class BugzillaAutoupdate {
     static final BugzillaVersion SUPPORTED_BUGZILLA_VERSION;
     static {
         String version = System.getProperty("netbeans.t9y.bugzilla.supported.version"); // NOI18N
-        SUPPORTED_BUGZILLA_VERSION = version != null ? new BugzillaVersion(version) : new BugzillaVersion("3.2.2"); // NOI18N
+        SUPPORTED_BUGZILLA_VERSION = version != null ? new BugzillaVersion(version) : new BugzillaVersion("3.4"); // NOI18N
     }
     static final String BUGZILLA_MODULE_CODE_NAME = "org.netbeans.modules.bugzilla"; // NOI18N
 
@@ -139,13 +139,16 @@ public class BugzillaAutoupdate {
                     for (UpdateElement updateElement : elements) {
                         String desc = updateElement.getDescription();
                         BugzillaVersion version = getVersion(desc);
-                        if(version != null && SUPPORTED_BUGZILLA_VERSION.compareTo(version) < 0) {
-                            return true;
-                        }
-                    }
-                    return elements.size() > 0; // looks like we weren't able to
+                        if(version != null){
+                            if(SUPPORTED_BUGZILLA_VERSION.compareTo(version) < 0){
+                                return true;
+                            }
+                        } else {
+                            return elements.size() > 0; // looks like we weren't able to
                                                 // parse the version; on the other hand ->
                                                 // there is something so lets be optimistic
+                        }
+                    }                    
                 } else {
                     return false;
                 }

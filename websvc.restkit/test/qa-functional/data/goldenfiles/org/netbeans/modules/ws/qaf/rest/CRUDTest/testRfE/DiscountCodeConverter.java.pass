@@ -162,8 +162,10 @@ public class DiscountCodeConverter {
     public DiscountCode resolveEntity(EntityManager em) {
         Collection<Customer> customerCollection = entity.getCustomerCollection();
         Collection<Customer> newcustomerCollection = new java.util.ArrayList<Customer>();
-        for (Customer item : customerCollection) {
-            newcustomerCollection.add(em.getReference(Customer.class, item.getCustomerId()));
+        if (customerCollection != null) {
+            for (Customer item : customerCollection) {
+                newcustomerCollection.add(em.getReference(Customer.class, item.getCustomerId()));
+            }
         }
         entity.setCustomerCollection(newcustomerCollection);
         return entity;

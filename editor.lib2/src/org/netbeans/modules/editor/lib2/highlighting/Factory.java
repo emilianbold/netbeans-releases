@@ -68,6 +68,13 @@ public class Factory implements HighlightsLayerFactory {
         ArrayList<HighlightsLayer> layers = new ArrayList<HighlightsLayer>();
         
         layers.add(HighlightsLayer.create(
+            ReadOnlyFilesHighlighting.LAYER_TYPE_ID,
+            ZOrder.BOTTOM_RACK.forPosition(-1000),
+            true,
+            new ReadOnlyFilesHighlighting(context.getDocument()))
+        );
+
+        layers.add(HighlightsLayer.create(
             CaretBasedBlockHighlighting.CaretRowHighlighting.LAYER_TYPE_ID,
             ZOrder.CARET_RACK,
             true,

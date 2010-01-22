@@ -96,6 +96,10 @@ import org.openide.util.NbCollections;
  */
 public class ValidateLayerConsistencyTest extends NbTestCase {
 
+    static {
+        System.setProperty("java.awt.headless", "true");
+    }
+
     private static final String SFS_LB = "SystemFileSystem.localizingBundle";
 
     private ClassLoader contextClassLoader;   
@@ -162,6 +166,17 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         return Level.FINER;
     }
     */
+
+    /** whether an attribute will be handled in testInstantiateAllInstances anyway */
+    private static boolean isInstanceAttribute(String attributeName) {
+        if (attributeName.equals("instanceCreate")) {
+            return true;
+        }
+        if (attributeName.equals("component")) {
+            return true; // probably being used by TopComponent.openAction
+        }
+        return false;
+    }
     
     public void testAreAttributesFine () {
         List<String> errors = new ArrayList<String>();
@@ -198,8 +213,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             while (attrs.hasMoreElements()) {
                 String name = attrs.nextElement();
 
-                if (name.equals("instanceCreate")) {
-                    continue; // will be handled in testInstantiateAllInstances anyway
+                if (isInstanceAttribute(name)) {
+                    continue;
                 }
                 
                 Object attr = fo.getAttribute(name);
@@ -839,7 +854,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         Enumeration<String> en = fo.getAttributes();
         while (en.hasMoreElements()) {
             String attrName = en.nextElement();
-            if (attrName.equals("instanceCreate")) {
+            if (isInstanceAttribute(attrName)) {
                 continue;
             }
             Object attr = fo.getAttribute(attrName);
@@ -870,6 +885,11 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     
     private boolean skipFile(FileObject fo) {
         String s = fo.getPath();
+
+        if (s.startsWith("Windows2/Components/")) {
+            // cannot be loaded with a headless toolkit, so we have to skip these for now
+            return true;
+        }
 
         if (s.startsWith ("Templates/") && !s.startsWith ("Templates/Services")) {
             if (s.endsWith (".shadow") || s.endsWith (".java")) {

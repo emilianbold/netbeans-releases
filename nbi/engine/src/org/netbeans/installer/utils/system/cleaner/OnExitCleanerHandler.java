@@ -37,26 +37,16 @@
 package org.netbeans.installer.utils.system.cleaner;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
  * @author Dmitry Lipin
  */
 public abstract class OnExitCleanerHandler extends Thread {
-    protected static List <File> fileList = new ArrayList <File>();
-    public static final String DELETING_FILES_LIST = "deleteNbiFiles";
     
     public abstract void run() ;
-    
-     public void removeDeleteOnExitFile(File file) {
-        fileList.remove(file);
-    }
-      public void addDeleteOnExitFile(File file) {        
-        if(!fileList.contains(file)) {
-            fileList.add(file);
-        }
-    }
+
+    public abstract void removeDeleteOnExitFile(File file);
+
+    public abstract void addDeleteOnExitFile(File file);
 }

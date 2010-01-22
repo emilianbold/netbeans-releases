@@ -43,7 +43,6 @@ package org.netbeans.modules.mercurial;
 
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
-import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 
 import javax.swing.*;
@@ -52,6 +51,7 @@ import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
 import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
 
 /**
  * Container menu for branch actions.
@@ -88,14 +88,14 @@ public class MergeMenu extends AbstractAction implements DynamicMenuContent {
         JMenu menu = new JMenu(this);
         org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(MergeMenu.class, "CTL_MenuItem_MergeMenu"));
         
-        JMenuItem item = menu.add(new MergeAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Merge"), ctx));
-        org.openide.awt.Mnemonics.setLocalizedText(item , NbBundle.getMessage(MergeMenu.class, "CTL_PopupMenuItem_Merge"));
+        JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(MergeAction.class), NbBundle.getMessage(MergeMenu.class, "CTL_PopupMenuItem_Merge"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
-        item = menu.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Resolve"), ctx)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item , NbBundle.getMessage(MergeMenu.class, "CTL_PopupMenuItem_Resolve"));
+        item = menu.add(new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), NbBundle.getMessage(MergeMenu.class, "CTL_PopupMenuItem_Resolve"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         if(bShowMarkAsResolved){
-            item = menu.add(new ConflictResolvedAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_MarkResolved"), ctx)); // NOI18N
-            org.openide.awt.Mnemonics.setLocalizedText(item , NbBundle.getMessage(MergeMenu.class, "CTL_PopupMenuItem_MarkResolved"));
+            item = menu.add(new SystemActionBridge(SystemAction.get(ConflictResolvedAction.class), NbBundle.getMessage(MergeMenu.class, "CTL_PopupMenuItem_MarkResolved"))); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         }
         return menu;
     }

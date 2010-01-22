@@ -125,7 +125,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         }
         
         WebContentData webData = parseWebContent(model.getEclipseProjectFolder());
-        if (webData == null) {
+        if (webData == null || /* #178018 */webData.webRoot == null/* || webData.contextRoot == null*/) {
             importProblems.add(org.openide.util.NbBundle.getMessage(WebProjectFactory.class, "MSG_MissingExtraWebFiles")); //NOI18N
             return null;
         }

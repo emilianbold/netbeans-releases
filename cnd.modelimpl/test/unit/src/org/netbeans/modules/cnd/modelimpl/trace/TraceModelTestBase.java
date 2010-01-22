@@ -296,30 +296,4 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             assertTrue(buf.toString(), false); // NOI18N
         }
     }
-
-    private void showDiff(File diffOutputFile, StringBuilder buf) {
-        if (diffOutputFile != null && diffOutputFile.exists()) {
-            int i = 0;
-            try {
-                BufferedReader in = new BufferedReader(new FileReader(diffOutputFile));
-                while (true) {
-                    String line = in.readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    if (i > 50) {
-                        break;
-                    }
-                    if (i == 0) {
-                        buf.append("\nBeginning of diff:");
-                    }
-                    buf.append("\n\t" + line);
-                    i++;
-                }
-                in.close();
-            } catch (IOException ex) {
-                //
-            }
-        }
-    }
 }

@@ -42,10 +42,7 @@ package org.netbeans.test.utilities.operators;
 
 import java.awt.Component;
 import org.netbeans.jellytools.TopComponentOperator;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.operators.JToggleButtonOperator;
-import org.netbeans.test.utilities.actions.SearchResultsViewAction;
 
 /**
  * This Operator operates Search Results Window

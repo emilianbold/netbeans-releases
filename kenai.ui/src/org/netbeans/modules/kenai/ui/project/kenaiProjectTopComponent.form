@@ -144,7 +144,7 @@
                                       <Component id="wwwLabel" min="-2" max="-2" attributes="0"/>
                                       <Component id="downloadsLabel" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace pref="354" max="32767" attributes="0"/>
+                                  <EmptySpace pref="356" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -316,7 +316,7 @@
                               <Group type="102" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="projectsDetailsHeader" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jScrollPane1" alignment="0" pref="520" max="32767" attributes="0"/>
+                                      <Component id="jScrollPane1" alignment="0" pref="512" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                               </Group>
@@ -328,7 +328,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="projectsDetailsHeader" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="jScrollPane1" pref="85" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane1" pref="76" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -448,7 +448,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="projectImage" pref="176" max="32767" attributes="0"/>
+                              <Component id="projectImage" pref="160" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -457,7 +457,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="projectImage" pref="172" max="32767" attributes="0"/>
+                              <Component id="projectImage" pref="156" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>

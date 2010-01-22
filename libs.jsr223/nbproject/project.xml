@@ -46,13 +46,7 @@ made subject to such option by the copyright holder.
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.libs.jsr223</code-name-base>
             <module-dependencies/>
-            <public-packages>
-                <package>javax.script</package>
-            </public-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/script-api.jar</runtime-relative-path>
-                <binary-origin>external/jsr223-api.jar</binary-origin>
-            </class-path-extension>
+            <public-packages/>
         </data>
     </configuration>
 </project>

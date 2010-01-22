@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.openide.util.lookup
+OpenIDE-Module-Implementation-Version: 1
+OpenIDE-Module-Localizing-Bundle: org/openide/util/lookup/Bundle.properties
+

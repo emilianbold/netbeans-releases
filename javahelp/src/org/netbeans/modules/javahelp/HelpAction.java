@@ -84,7 +84,7 @@ public class HelpAction extends SystemAction
         private static WindowActivatedDetector detector = null;
 
         static synchronized void install() {
-            if (detector == null) {
+            if (detector == null && !GraphicsEnvironment.isHeadless()) {
                 detector = new WindowActivatedDetector();
                 Toolkit.getDefaultToolkit ().addAWTEventListener(detector, AWTEvent.WINDOW_EVENT_MASK);
             }
@@ -122,7 +122,7 @@ public class HelpAction extends SystemAction
         Component focused = (w != null) ? SwingUtilities.findFocusOwner(w) : null;
         HelpCtx help = (focused == null) ? HelpCtx.DEFAULT_HELP : HelpCtx.findHelp(focused);
 
-        Installer.log.fine("HelpCtx " + help.toString() + " from " + focused);
+        Installer.log.fine("HelpCtx " + help + " from " + focused);
         return help;
     }
     

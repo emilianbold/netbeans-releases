@@ -62,6 +62,7 @@ import org.openide.util.Lookup;
 public class RemoteFile extends File {
 
     private final ExecutionEnvironment execEnv;
+    private final String path;
 
     public ExecutionEnvironment getExecutionEnvironment() {
         return execEnv;
@@ -74,7 +75,7 @@ public class RemoteFile extends File {
             return new RemoteFile(execEnv, pathname);
         }
     }
-
+    
     public static Reader createReader(File file) throws FileNotFoundException {
         if (file instanceof RemoteFile) {
             RemoteFile rfile = (RemoteFile) file;
@@ -94,8 +95,34 @@ public class RemoteFile extends File {
 
     private RemoteFile(ExecutionEnvironment execEnv, String pathname) {
         super(pathname);
+        path = pathname;
         assert execEnv.isRemote(); //TODO: invent smth clever to split up remote ones from local
         this.execEnv = execEnv;
+    }
+
+    @Override
+    public String getPath() {
+        return path;
+    }
+
+    @Override
+    public File getAbsoluteFile() {
+        return new RemoteFile(execEnv, getAbsolutePath());
+    }
+
+    @Override
+    public String getAbsolutePath() {
+        return path;
+    }
+
+    @Override
+    public File getCanonicalFile() throws IOException {
+        return new RemoteFile(execEnv, path);
+    }
+
+    @Override
+    public String getCanonicalPath() throws IOException {
+        return super.getCanonicalPath();
     }
 
     @Override

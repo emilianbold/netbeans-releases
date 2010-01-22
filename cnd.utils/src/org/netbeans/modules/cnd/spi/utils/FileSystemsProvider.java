@@ -75,10 +75,12 @@ public abstract class FileSystemsProvider {
         return getDefault().getCaseInsensitivePathImpl(path);
     }
 
+    /** It can return null */
     public static Data get(File file) {
         return getDefault().getImpl(file);
     }
-    
+
+    /** It can return null */
     public static Data get(CharSequence path) {
         return getDefault().getImpl(path);
     }

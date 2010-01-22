@@ -118,7 +118,6 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         RestConstants.HTTP_RESPONSE,
         RestConstants.CONTEXT,
         RestConstants.URI_INFO,
-        RestConstants.RESOURCE_CONTEXT,
         Constants.ENTITY_MANAGER_TYPE
     };
     private static final String[] ITEM_IMPORTS = {
@@ -132,7 +131,6 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         RestConstants.DEFAULT_VALUE,
         RestConstants.CONTEXT,
         RestConstants.URI_INFO,
-        RestConstants.RESOURCE_CONTEXT,
         RestConstants.WEB_APPLICATION_EXCEPTION,
         Constants.NO_RESULT_EXCEPTION,
         Constants.ENTITY_MANAGER_TYPE
@@ -165,6 +163,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
     protected EntityResourceBeanModel model;
     protected Project project;
     protected boolean injectEntityManager = false;
+    protected boolean useEjbInjections = false;
     private static final String GET_ENTITY_MANAGER_STMT = "EntityManager em = PersistenceService.getInstance().getEntityManager();";
 
     public EntityResourcesGenerator() {
@@ -720,14 +719,34 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         }
 
         // Add @Context UriInfo context
-        String[] annotations = annotations = new String[]{RestConstants.CONTEXT_ANNOTATION};
-
-        modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
-                annotations, null, "resourceContext", RestConstants.RESOURCE_CONTEXT);  //NOI18N
-
+        String[] annotations = new String[]{RestConstants.CONTEXT_ANNOTATION};
         modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
                 annotations, null, "uriInfo", RestConstants.URI_INFO);  //NOI18N
 
+        if (!useEjbInjections) {
+            modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
+                    annotations, null, "resourceContext", RestConstants.RESOURCE_CONTEXT);  //NOI18N
+        } else {
+            annotations = new String[]{RestConstants.EJB};
+            modifiers = new Modifier[]{Modifier.PRIVATE};
+            if (bean.isContainer()) {
+                for (RelatedEntityResource subResource: bean.getSubResources()) {
+                    EntityResourceBean subResourceBean = subResource.getResourceBean();
+                    String subResourceType = getResourceType(subResourceBean);
+                    String subResourceId = lowerCaseFirstLetter(getResourceName(subResourceBean));
+                    modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
+                            annotations, null, subResourceId, subResourceType);
+                }
+            } else {
+                for (RelatedEntityResource relatedResource : bean.getSubResources()) {
+                    FieldInfo fieldInfo = relatedResource.getFieldInfo();
+                    String subResourceType = capitalizeFirstLetter(getResourceNameFromField(fieldInfo));
+                    String subResourceId = lowerCaseFirstLetter(getResourceNameFromField(fieldInfo));
+                    modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
+                            annotations, null, subResourceId , subResourceType);
+                }
+            }
+        }
 
         return modifiedTree;
     }
@@ -926,7 +945,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         Modifier[] modifiers = new Modifier[]{Modifier.PUBLIC};
         String[] annotations = new String[]{RestConstants.PATH_ANNOTATION};
         String[] annotationAttrs = new String[]{subBean.getUriTemplate()};
-        Object returnType = getResourceType(subBean);
+        String returnType = getResourceType(subBean);
         String resourceName = getResourceName(subBean);
         String methodName = "get" + resourceName;
 
@@ -935,19 +954,22 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         String[] paramAnnotations = getIdFieldUriParamArray(subBean, false, null);
         Object[] paramAnnotationAttrs = getIdFieldNameArray(subBean, false, null);
 
-        String bodyText = "{$CLASS$ resource = resourceContext.getResource($CLASS$.class);";
-
-        bodyText = bodyText.replace("$CLASS$", getResourceName(subBean));
+        String subResourceId = lowerCaseFirstLetter(resourceName);
+        String bodyText = "{"; //NOI18N
+        if (!useEjbInjections) {
+            bodyText = "{$CLASS$ "+ subResourceId + " = resourceContext.getResource($CLASS$.class);";
+            bodyText = bodyText.replace("$CLASS$", getResourceName(subBean));
+        }
 
         for (int i = 0; i < parameters.length; i++) {
             String id = parameters[i];
-            bodyText += "resource.set" + capitalizeFirstLetter(id) + "(" + id + ");";
+            bodyText += subResourceId + ".set" + capitalizeFirstLetter(id) + "(" + id + ");";
             if (injectEntityManager) {
-                bodyText += "resource.setEm(em);";
+                bodyText += subResourceId + ".setEm(em);";
             }
         }
 
-        bodyText += "return resource;}";
+        bodyText += "return " + subResourceId + ";}";
 
         String comment = "Returns a dynamic instance of $RESOURCE$ used for entity navigation.\n\n" +
                 "@return an instance of $RESOURCE$";
@@ -1040,7 +1062,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
                 "$ENTITY_CLASS$ oldEntity = value.$REVERSE_GETTER$();" +
                 "value.$REVERSE_SETTER$(entity);" +
                 "if (oldEntity != null) {" +
-                "oldEntity.$GETTER$().remove(entity);" +
+                "oldEntity.$GETTER$().remove(value);" +
                 "}" +
                 "}";                                                //NOI18N
 
@@ -1270,10 +1292,16 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         Modifier[] modifiers = new Modifier[]{Modifier.PUBLIC, Modifier.STATIC};
         String resourceName = getResourceName(subBean);
         String parentEntityClass = bean.getEntityClassInfo().getName();
-        String className = capitalizeFirstLetter(fieldInfo.getName()) + RESOURCE_SUFFIX + "Sub";     //NOI18N
+        String className = capitalizeFirstLetter(getResourceNameFromField(fieldInfo));
 
+        String[] annotations = null;
+        Object[] annotationAttributes = null;
+        if (useEjbInjections) {
+            annotations = new String[] {RestConstants.STATELESS_ANNOTATION};
+        }
+        
         ClassTree classTree = JavaSourceHelper.createInnerClass(copy, modifiers,
-                className, resourceName);
+                className, resourceName, annotations, annotationAttributes);
 
         classTree = JavaSourceHelper.addField(copy, classTree, new Modifier[]{Modifier.PRIVATE},
                 null, null, "parent", parentEntityClass);
@@ -1284,7 +1312,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
         modifiers = new Modifier[]{Modifier.PROTECTED};
         String methodName = null;
         Object returnType = null;
-        String[] annotations = new String[] {"Override"};
+        annotations = new String[] {"Override"}; //NOI18N
         String[] params = null;
         String[] paramTypes = null;
         String getterName = getGetterName(fieldInfo);
@@ -1350,15 +1378,17 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
                 getAdditionalItemGetResourceMethodAnnotationAttrs());
         Object returnType = getResourceType(subBean);
         String methodName = getGetterName(fieldInfo) + RESOURCE_SUFFIX;     //NOI18N
-  
-        String bodyText = "{" +
-                "$CLASS$ resource = resourceContext.getResource($CLASS$.class);" +
-                "resource.setParent(getEntity());" +
-                "return resource;" +
-                "}";
+        String subResourceId = lowerCaseFirstLetter(getResourceNameFromField(fieldInfo));
 
-        bodyText = bodyText.replace("$CLASS$", 
-                capitalizeFirstLetter(fieldInfo.getName()) + RESOURCE_SUFFIX + "Sub"); //NOI18N
+        String bodyText = "{"; //NOI18N
+        if (!useEjbInjections) {
+            bodyText = "{$CLASS$ " + subResourceId + " = resourceContext.getResource($CLASS$.class);"; //NOI18N
+            bodyText = bodyText.replace("$CLASS$",  //NOI18N
+                    capitalizeFirstLetter(getResourceNameFromField(fieldInfo)));
+        }
+        bodyText += subResourceId+".setParent(getEntity());" + //NOI18N
+                    "return " + subResourceId + ";" + //NOI18N
+                    "}"; //NOI18N
 
         String comment = "Returns a dynamic instance of $RESOURCE$ used for entity navigation.\n\n" +
                 "@param id identifier for the parent entity\n" +
@@ -2140,7 +2170,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
 
     private EntityResourceBean getItemSubResource(EntityResourceBean containerResource) {
         Collection<RelatedEntityResource> subResources = containerResource.getSubResources();
-
+        
         return subResources.iterator().next().getResourceBean();
     }
 
@@ -2198,6 +2228,9 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
     private String getSetterName(FieldInfo fieldInfo) {
         return "set" + capitalizeFirstLetter(fieldInfo.getName());      //NOI18N
 
+    }
+    private String getResourceNameFromField(FieldInfo fieldInfo) {
+        return fieldInfo.getName() + RESOURCE_SUFFIX + "Sub"; //NOI18N
     }
 
     private String getIdFieldType(EntityResourceBean bean) {

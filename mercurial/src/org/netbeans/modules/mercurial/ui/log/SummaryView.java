@@ -45,8 +45,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import javax.swing.*;
@@ -59,13 +57,11 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.List;
-import java.util.logging.Level;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.mercurial.kenai.HgKenaiSupport;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.VersionsCache;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
@@ -77,10 +73,6 @@ import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.Linker;
 import org.netbeans.modules.versioning.util.HyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSKenaiSupport.KenaiUser;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 
 /**
@@ -142,9 +134,10 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 kenaiUsersMap = new HashMap<String, KenaiUser>();
                 for (RepositoryRevision repositoryRevision : results) {
                     String author = repositoryRevision.getLog().getAuthor();
-                    if(author != null && !author.equals("")) {
+                    String username = repositoryRevision.getLog().getUsername();
+                    if(author != null && !author.equals("") && username != null && !"".equals(username)) {
                         if(!kenaiUsersMap.keySet().contains(author)) {
-                            KenaiUser kenaiUser = HgKenaiSupport.getInstance().forName(author);
+                            KenaiUser kenaiUser = HgKenaiSupport.getInstance().forName(username, url);
                             if(kenaiUser != null) {
                                 kenaiUsersMap.put(author, kenaiUser);
                             }
@@ -341,7 +334,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
         final boolean revertToEnabled = !missingFile && !revisionSelected && oneRevisionMultiselected;
         final boolean backoutChangeEnabled = !missingFile && oneRevisionMultiselected && (drev.length == 0); // drev.length == 0 => the whole revision was selected
-        final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && drev[0].getFile().exists() &&  !drev[0].getFile().isDirectory();
+        final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && !drev[0].getFile().isDirectory();
+        final boolean annotationsEnabled = viewEnabled && drev[0].getChangedPath().getAction() != HgLogMessage.HgDelStatus;
         final boolean diffToPrevEnabled = selection.length == 1;
         
         if (revision > 0) {
@@ -383,7 +377,19 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
-                            view(selection[0]);
+                            view(selection[0], false);
+                        }
+                    });
+                }
+            }));
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
+                {
+                    setEnabled(annotationsEnabled);
+                }
+                public void actionPerformed(ActionEvent e) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            view(selection[0], true);
                         }
                     });
                 }
@@ -393,11 +399,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                     setEnabled(viewEnabled);
                 }
                 public void actionPerformed(ActionEvent e) {
-                    RequestProcessor.getDefault().post(new Runnable() {
-                        public void run() {
-                            exportFileDiff(selection[0]);
-                        }
-                    });
+                    exportFileDiff(selection[0]);
                 }
             }));
         }
@@ -512,36 +514,12 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         
     }
 
-    private void view(int idx) {
+    private void view (int idx, boolean showAnnotations) {
         Object o = dispResults.get(idx);
         if (o instanceof RepositoryRevision.Event) {
             try {
-                RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
-                File file = VersionsCache.getInstance().getFileRevision(drev.getFile(), drev.getLogInfoHeader().getLog().getRevision());
-
-                if (file == null) { // can be null if the file does not exist or is empty in the given revision
-                    file = File.createTempFile("tmp", "-" + drev.getFile().getName()); //NOI18N
-                    file.deleteOnExit();
-                }
-
-                final FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-                final String revision = drev.getLogInfoHeader().getLog().getRevision();
-                EditorCookie ec = null;
-                OpenCookie oc = null;
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    ec = dobj.getCookie(EditorCookie.class);
-                    oc = dobj.getCookie(OpenCookie.class);
-                } catch (DataObjectNotFoundException ex) {
-                    Mercurial.LOG.log(Level.FINE, null, ex);
-                }
-                if (ec != null) {
-                    org.netbeans.modules.versioning.util.Utils.openFile(fo, revision);
-                } else if (oc != null) {
-                    oc.open();
-                } else {
-                    org.netbeans.modules.versioning.util.Utils.openFile(fo, revision);
-                }
+                final RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
+                HgUtils.openInRevision(drev.getFile(), drev.getLogInfoHeader().getLog().getRevision(), showAnnotations);
             } catch (IOException ex) {
                 // Ignore if file not available in cache
             }

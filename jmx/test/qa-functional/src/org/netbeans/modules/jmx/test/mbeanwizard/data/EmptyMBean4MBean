@@ -8,7 +8,7 @@ package com.foo.bar;
 
 /**
  * Interface EmptyMBean4MBean
- * 
+ *
  * @author <author>
  */
 public interface EmptyMBean4MBean

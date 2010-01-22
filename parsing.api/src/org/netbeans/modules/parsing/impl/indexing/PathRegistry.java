@@ -44,7 +44,6 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -189,7 +188,13 @@ public final class PathRegistry implements Runnable {
                     null,
                     Collections.singleton(owner)));
         }
-        LOGGER.log(Level.FINE, "registerUnknownSourceRoots: " + Arrays.asList(roots)); // NOI18N
+        if (LOGGER.isLoggable(Level.FINE)) {
+            List<URL> l = new LinkedList<URL>();
+            for(URL r : roots) {
+                l.add(r);
+            }
+            LOGGER.log(Level.FINE, "registerUnknownSourceRoots: {0}", l); // NOI18N
+        }
         firerTask.schedule(0);
     }
 
@@ -199,6 +204,7 @@ public final class PathRegistry implements Runnable {
             if (this.sourcePaths != null) {
                 return this.sourcePaths;
             }
+            LOGGER.fine("Computing data due to getSources"); //NOI18N
             request = new Request (
                 getTimeStamp(),
                 getSourcePaths(),
@@ -242,6 +248,7 @@ public final class PathRegistry implements Runnable {
             if (this.libraryPath != null) {
                 return this.libraryPath;
             }
+            LOGGER.fine("Computing data due to getLibraries"); //NOI18N
             request = new Request (
                 this.getTimeStamp(),
                 getSourcePaths(),
@@ -285,6 +292,7 @@ public final class PathRegistry implements Runnable {
             if (this.binaryLibraryPath != null) {
                 return this.binaryLibraryPath;
             }
+            LOGGER.fine("Computing data due to getBinaryLibraries"); //NOI18N
             request = new Request (
                 this.getTimeStamp(),
                 getSourcePaths(),
@@ -328,6 +336,7 @@ public final class PathRegistry implements Runnable {
             if (this.unknownSourcePath != null) {
                 return unknownSourcePath;
             }
+            LOGGER.fine("Computing data due to getUnknownRoots"); //NOI18N
             request = new Request (
                 getTimeStamp(),
                 getSourcePaths(),
@@ -458,6 +467,7 @@ public final class PathRegistry implements Runnable {
             if (this.rootPathIds != null) {
                 return rootPathIds;
             }
+            LOGGER.fine("Computing data due to getRootPathIds"); //NOI18N
             request = new Request (
                 getTimeStamp(),
                 getSourcePaths(),
@@ -501,6 +511,7 @@ public final class PathRegistry implements Runnable {
             if (this.pathIdToRoots != null) {
                 return pathIdToRoots;
             }
+            LOGGER.fine("Computing data due to getPathIdToRoots"); //NOI18N
             request = new Request (
                 getTimeStamp(),
                 getSourcePaths(),
@@ -788,7 +799,7 @@ public final class PathRegistry implements Runnable {
                 ids = PathRecognizerRegistry.getDefault().getBinaryLibraryIds();
                 break;
             default:
-                LOGGER.warning("Not expecting PathKind of " + kind); //NOI18N
+                LOGGER.log(Level.WARNING, "Not expecting PathKind of {0}", kind); //NOI18N
                 return Collections.<TaggedClassPath>emptySet();
         }
 

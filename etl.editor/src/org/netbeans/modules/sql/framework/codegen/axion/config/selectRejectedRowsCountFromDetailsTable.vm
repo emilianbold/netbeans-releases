@@ -1,3 +1,0 @@
-#set( $indent = "    " )
-SELECT COUNT(*) FROM $targetTable T
-WHERE T."executionId" = ?

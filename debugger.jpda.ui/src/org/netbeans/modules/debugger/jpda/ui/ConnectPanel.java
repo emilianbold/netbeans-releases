@@ -186,7 +186,7 @@ public class ConnectPanel extends JPanel implements ActionListener {
     /**
      * Adds options for a selected connector type to this panel.
      */
-    private void refresh (int index) {
+    private void refresh (int index, Properties properties) {
         removeAll();
         
         Connector connector = (Connector) connectors.get (index);
@@ -255,7 +255,7 @@ public class ConnectPanel extends JPanel implements ActionListener {
         add (tfTransport);
         
         // other lines
-        Map args = getSavedArgs (connector);
+        Map args = getSavedArgs (connector, properties);
         tfParams = new JTextField [args.size ()];
         Iterator it = new TreeSet (args.keySet ()).iterator ();
         int i = 0;
@@ -312,7 +312,7 @@ public class ConnectPanel extends JPanel implements ActionListener {
      * This method is called when a user selects new connector type.
      */
     public void actionPerformed (ActionEvent e) {
-        refresh (((JComboBox) e.getSource ()).getSelectedIndex ());
+        refresh (((JComboBox) e.getSource ()).getSelectedIndex (), Properties.getDefault ().getProperties ("debugger"));
         Component w = getParent ();
         while ( (w != null) && 
                 !(w instanceof Window))
@@ -404,13 +404,12 @@ public class ConnectPanel extends JPanel implements ActionListener {
 //        return settings.getLastConnector ();
 //    }
     
-    private static Map getSavedArgs (Connector connector) {
+    private static Map getSavedArgs (Connector connector, Properties properties) {
         // 1) get default set of args
         Map args = connector.defaultArguments ();
 
         // 2) load saved version of args
-        Map savedArgs = Properties.getDefault ().getProperties ("debugger").
-                getMap ("connection_settings", new HashMap ());
+        Map savedArgs = properties.getMap ("connection_settings", new HashMap ());
         savedArgs = (Map) savedArgs.get (connector.name ());
         if (savedArgs == null) return args;
         
@@ -566,7 +565,7 @@ public class ConnectPanel extends JPanel implements ActionListener {
         }
     }
 
-    private class ConnectController implements Controller {
+    public class ConnectController implements Controller {
 
         PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         private boolean valid = true;
@@ -658,6 +657,81 @@ public class ConnectPanel extends JPanel implements ActionListener {
             //System.out.println("Before return from ConnectPanel.ok()");
             return true;
         }
+
+        public boolean load(Properties props) {
+            String connectorName = props.getString ("attaching_connector", "");
+            int index, k = connectors.size ();
+            boolean found = false;
+            for (index = 0; index < k; index++) {
+                Connector connector = (Connector) connectors.get (index);
+                if (connector.name ().equals (connectorName)) {
+                    cbConnectors.setSelectedIndex(index);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return false;
+            }
+            refresh(index, props);
+            return true;
+        }
+
+        public void save(Properties props) {
+            int index = cbConnectors.getSelectedIndex ();
+            final Connector connector = (Connector) connectors.get (index);
+            final Map args = getEditedArgs (tfParams, connector);
+            if (args == null) return; // nothing stored
+            Map defaultValues = connector.defaultArguments ();
+            Map argsToSave = new HashMap ();
+            Iterator i = args.keySet ().iterator ();
+            while (i.hasNext()) {
+                String argName = (String) i.next ();
+                Argument value = (Argument) args.get (argName);
+                Argument defaultValue = (Argument) defaultValues.get (argName);
+                if (value != null && value != defaultValue && !value.equals (defaultValue)) {
+                    argsToSave.put (argName, value.value ());
+                } // if
+            } // while
+
+            Map m = new HashMap();
+            String name = connector.name ();
+            m.put (name, argsToSave);
+            props.setMap ("connection_settings", m);
+            props.setString ("attaching_connector", connector.name());
+        }
+
+        public String getDisplayName() {
+            int index = cbConnectors.getSelectedIndex ();
+            final Connector connector = (Connector) connectors.get (index);
+            final Map args = getEditedArgs (tfParams, connector);
+            if (args == null) return ""; // NOI18N
+            if (connector instanceof AttachingConnector) {
+                AttachingDICookie c = AttachingDICookie.create ((AttachingConnector) connector, args);
+                if (c.getHostName () != null) {
+                    return new MessageFormat (NbBundle.getMessage(ConnectPanel.class, "CTL_Attach_to_socket")).format(
+                        new Object[] {c.getHostName(), String.valueOf(c.getPortNumber())});
+                } else if (c.getSharedMemoryName() != null) {
+                    return new MessageFormat (NbBundle.getMessage(ConnectPanel.class, "CTL_Attach_to_shmem")).format(
+                        new Object[] {c.getSharedMemoryName()});
+                } else if (c.getArgs().get("pid") != null) {
+                    return new MessageFormat (NbBundle.getMessage(ConnectPanel.class, "CTL_Attach_to_pid")).format(
+                        new Object[] {c.getArgs().get("pid").toString()});
+                }
+            }
+            if (connector instanceof ListeningConnector) {
+                ListeningDICookie c = ListeningDICookie.create((ListeningConnector) connector, args);
+                if (c.getSharedMemoryName() != null) {
+                    return new MessageFormat (NbBundle.getMessage(ConnectPanel.class, "CTL_Listen_on_shmem")).format(
+                        new Object[] {c.getSharedMemoryName()});
+                } else if (c.getPortNumber() > 0) {
+                    return new MessageFormat (NbBundle.getMessage(ConnectPanel.class, "CTL_Listen_on_socket")).format(
+                        new Object[] {String.valueOf(c.getPortNumber ())});
+                }
+            }
+            return ""; // NOI18N
+        }
+
 
         /**
          * Return <code>true</code> whether value of this customizer

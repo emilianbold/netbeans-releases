@@ -42,7 +42,6 @@
 package org.netbeans.modules.debugger.jpda;
 
 import com.sun.jdi.IncompatibleThreadStateException;
-import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.StepRequest;
@@ -58,7 +57,6 @@ import com.sun.jdi.VirtualMachine;
 
 import com.sun.jdi.event.StepEvent;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -79,7 +77,6 @@ import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 
-import org.netbeans.modules.debugger.jpda.breakpoints.MethodBreakpointImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.util.Executor;
@@ -108,7 +105,6 @@ import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.ReturnVariableImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
-import org.openide.util.Exceptions;
 
 
 public class JPDAStepImpl extends JPDAStep implements Executor {
@@ -283,7 +279,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             String methodName = lastOperation.getMethodName();
             // We can not get return values from constructors. Do not submit method exit breakpoint.
             if (methodName != null && !INIT.equals(methodName) &&
-                MethodBreakpointImpl.canGetMethodReturnValues(vm)) {
+                vm.canGetMethodReturnValues()) {
 
                 // TODO: Would be nice to know which ObjectReference we're executing the method on
                 MethodBreakpoint mb = MethodBreakpoint.create(lastOperation.getMethodClassType(), methodName);
@@ -412,10 +408,10 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 lastMethodExitBreakpointListener.destroy();
                 lastMethodExitBreakpointListener = null;
                 lastOperation.setReturnValue(returnValue);
-            } else if (MethodBreakpointImpl.canGetMethodReturnValues(vm) &&
+            } else if (vm.canGetMethodReturnValues() &&
                        lastOperation != null && INIT.equals(lastOperation.getMethodName())) {
                 // Set Void as a return value of constructor:
-                lastOperation.setReturnValue(new ReturnVariableImpl((JPDADebuggerImpl) debugger, /*vm.mirrorOfVoid() - JDK 6 and newer only!!!*/null, "", INIT));
+                lastOperation.setReturnValue(new ReturnVariableImpl((JPDADebuggerImpl) debugger, vm.mirrorOfVoid(), "", INIT));
             }
             if (lastOperation != null) {
                 tr.addLastOperation(lastOperation);

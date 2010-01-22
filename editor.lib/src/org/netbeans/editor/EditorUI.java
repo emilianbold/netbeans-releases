@@ -86,10 +86,13 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.editor.lib.ColoringMap;
+import org.netbeans.modules.editor.lib.drawing.DrawLayerList;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib.drawing.EditorUiAccessor;
+import org.netbeans.modules.editor.lib.drawing.HighlightingDrawLayer;
 import org.openide.util.WeakListeners;
 
 /**
@@ -155,9 +158,6 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
 
     /** Document for the case ext ui is constructed without the component */
     private BaseDocument printDoc;
-
-    /** Draw layer chain */
-    private DrawLayerList drawLayerList = new DrawLayerList();
 
     /** Map holding the [name, coloring] pairs */
     private ColoringMap coloringMap;
@@ -272,12 +272,13 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     private Preferences prefs = null;
     private final Listener listener = new Listener();
     private PreferenceChangeListener weakPrefsListener = null;
-    
+
+    private final DrawLayerList drawLayerList = new DrawLayerList();
+
     /** Construct extended UI for the use with a text component */
     public EditorUI() {
         focusL = new FocusAdapter() {
                      public @Override void focusGained(FocusEvent evt) {
-                         Registry.activate(getComponent());
                          /* Fix of #25475 - copyAction's enabled flag
                           * must be updated on focus change
                           */
@@ -289,7 +290,6 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                      }
                  };
 
-        HighlightingDrawLayer.hookUp(this);
         getToolTipSupport();
     }
 
@@ -310,14 +310,11 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
      */
     public EditorUI(BaseDocument printDoc, boolean usePrintColoringMap, boolean lineNumberEnabled) {
         this.printDoc = printDoc;
-
         listener.preferenceChange(null);
-
         setLineNumberEnabled(lineNumberEnabled);
-
         updateLineNumberWidth(0);
-
-        drawLayerList.add(printDoc.getDrawLayerList());
+        // when printing there is no JTextComponent and EditorUI us not installed/uninstalled
+        // hence we have to hookup the huighlighting layers here
         HighlightingDrawLayer.hookUp(this);
     }
     
@@ -366,7 +363,10 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         // initialize rendering hints
         FontColorSettings fcs = MimeLookup.getLookup(mimePath).lookup(FontColorSettings.class);
         renderingHints = (Map<?, ?>) fcs.getFontColors(FontColorNames.DEFAULT_COLORING).getAttribute(EditorStyleConstants.RenderingHints);
-        
+
+        // Initialize draw layers
+        HighlightingDrawLayer.hookUp(this);
+
         synchronized (getComponentLock()) {
             this.component = c;
             
@@ -396,9 +396,11 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         
         // fix for issue #16352
         getDefaultColoring().apply(component);
-        
-        // enable drag and drop feature
-        component.setDragEnabled(true);
+
+        if (!GraphicsEnvironment.isHeadless()) {
+            // enable drag and drop feature
+            component.setDragEnabled(true);
+        }
     }
 
     /** Called when the <tt>BaseTextUI</tt> is being uninstalled
@@ -562,17 +564,10 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     }
 
     protected void modelChanged(BaseDocument oldDoc, BaseDocument newDoc) {
-        if (oldDoc != null) {
-            // remove all document layers
-            drawLayerList.remove(oldDoc.getDrawLayerList());
-        }
-
         if (newDoc != null) {
             coloringMap = ColoringMap.get(Utilities.getMimeType(newDoc));
             listener.preferenceChange(null);
 
-            // add all document layers
-            drawLayerList.add(newDoc.getDrawLayerList());
             checkUndoManager(newDoc);
         }
     }
@@ -963,49 +958,6 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         return statusBar;
     }
     
-
-    final DrawLayerList getDrawLayerList() {
-        return drawLayerList;
-    }
-
-    /** 
-     * Find the layer with some layer name in the layer hierarchy.
-     * 
-     * <p>Using of <code>DrawLayer</code>s has been deprecated.
-     * 
-     * @deprecated Please use Highlighting SPI instead, for details see
-     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
-     */
-    public DrawLayer findLayer(String layerName) {
-        return drawLayerList.findLayer(layerName);
-    }
-
-    /** 
-     * Add new layer and use its priority to position it in the chain.
-     * If there's the layer with same visibility then the inserted layer
-     * will be placed after it.
-     *
-     * <p>Using of <code>DrawLayer</code>s has been deprecated.
-     * 
-     * @param layer layer to insert into the chain
-     * 
-     * @deprecated Please use Highlighting SPI instead, for details see
-     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
-     */
-    public boolean addLayer(DrawLayer layer, int visibility) {
-        return drawLayerList.add(layer, visibility);
-    }
-
-    /**
-     * Using of <code>DrawLayer</code>s has been deprecated.
-     * 
-     * @deprecated Please use Highlighting SPI instead, for details see
-     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
-     */
-    public DrawLayer removeLayer(String layerName) {
-        return drawLayerList.remove(layerName);
-    }
-
     public void repaint(int startY) {
         repaint(startY, component.getHeight());
     }
@@ -1767,4 +1719,108 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     public void setPopupMenu(JPopupMenu popupMenu) {
         this.popupMenu = popupMenu;
     }
+
+    static {
+        EditorUiAccessor.register(new Accessor());
+    }
+
+    private static final class Accessor extends EditorUiAccessor {
+
+        @Override
+        public boolean isLineNumberVisible(EditorUI eui) {
+            return eui.lineNumberVisible;
+        }
+
+        @Override
+        public Coloring getColoring(EditorUI eui, String coloringName) {
+            return eui.getColoring(coloringName);
+        }
+
+        @Override
+        public int getLineNumberMaxDigitCount(EditorUI eui) {
+            return eui.lineNumberMaxDigitCount;
+        }
+
+        @Override
+        public int getLineNumberWidth(EditorUI eui) {
+            return eui.lineNumberWidth;
+        }
+
+        @Override
+        public int getLineNumberDigitWidth(EditorUI eui) {
+            return eui.lineNumberDigitWidth;
+        }
+
+        @Override
+        public Insets getLineNumberMargin(EditorUI eui) {
+            return eui.getLineNumberMargin();
+        }
+
+        @Override
+        public int getLineHeight(EditorUI eui) {
+            return eui.getLineHeight();
+        }
+
+        @Override
+        public Coloring getDefaultColoring(EditorUI eui) {
+            return eui.getDefaultColoring();
+        }
+
+        @Override
+        public int getDefaultSpaceWidth(EditorUI eui) {
+            return eui.defaultSpaceWidth;
+        }
+
+        @Override
+        public Map<?, ?> getRenderingHints(EditorUI eui) {
+            return eui.renderingHints;
+        }
+
+        @Override
+        public Rectangle getExtentBounds(EditorUI eui) {
+            return eui.getExtentBounds();
+        }
+
+        @Override
+        public Insets getTextMargin(EditorUI eui) {
+            return eui.getTextMargin();
+        }
+
+        @Override
+        public int getTextLeftMarginWidth(EditorUI eui) {
+            return eui.textLeftMarginWidth;
+        }
+
+        @Override
+        public boolean getTextLimitLineVisible(EditorUI eui) {
+            return eui.textLimitLineVisible;
+        }
+
+        @Override
+        public Color getTextLimitLineColor(EditorUI eui) {
+            return eui.getTextLimitLineColor();
+        }
+
+        @Override
+        public int getTextLimitWidth(EditorUI eui) {
+            return eui.textLimitWidth;
+        }
+
+        @Override
+        public int getLineAscent(EditorUI eui) {
+            return eui.getLineAscent();
+        }
+
+        @Override
+        public void paint(EditorUI eui, Graphics g) {
+            eui.paint(g);
+        }
+
+        @Override
+        public DrawLayerList getDrawLayerList(EditorUI eui) {
+            return eui.drawLayerList;
+        }
+
+    } // End of Accessor class
+    
 }

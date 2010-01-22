@@ -50,6 +50,7 @@ import javax.swing.JComponent;
 import org.netbeans.spi.print.PrintPage;
 import org.netbeans.spi.print.PrintProvider;
 import org.netbeans.modules.print.util.Percent;
+import static org.netbeans.modules.print.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

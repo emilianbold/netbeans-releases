@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.13.1
+#Signature file v4.1
+#Version 1.16.0
 
 CLSS public java.lang.Object
 cons public Object()
@@ -44,6 +44,13 @@ meth public static org.netbeans.api.progress.ProgressHandle createSystemHandle(j
 meth public static org.netbeans.api.progress.ProgressHandle createSystemHandle(java.lang.String,org.openide.util.Cancellable)
 meth public static org.netbeans.api.progress.ProgressHandle createSystemHandle(java.lang.String,org.openide.util.Cancellable,javax.swing.Action)
 supr java.lang.Object
+
+CLSS public final org.netbeans.api.progress.ProgressUtils
+meth public static void runOffEventDispatchThread(java.lang.Runnable,java.lang.String,java.util.concurrent.atomic.AtomicBoolean,boolean)
+meth public static void runOffEventDispatchThread(java.lang.Runnable,java.lang.String,java.util.concurrent.atomic.AtomicBoolean,boolean,int,int)
+supr java.lang.Object
+hfds DISPLAY_DIALOG_MS,DISPLAY_WAIT_CURSOR_MS,PROVIDER
+hcls Trivial
 
 CLSS public final org.netbeans.api.progress.aggregate.AggregateProgressFactory
 meth public static javax.swing.JComponent createProgressComponent(org.netbeans.api.progress.aggregate.AggregateProgressHandle)

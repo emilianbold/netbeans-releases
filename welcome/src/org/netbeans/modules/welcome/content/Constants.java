@@ -79,7 +79,8 @@ public interface Constants {
     static final String IMAGE_TOPBAR_CENTER = "org/netbeans/modules/welcome/resources/topbar_center.png"; // NOI18N
     static final String IMAGE_TOPBAR_LEFT = "org/netbeans/modules/welcome/resources/topbar_left.png"; // NOI18N
     static final String IMAGE_TOPBAR_RIGHT = "org/netbeans/modules/welcome/resources/topbar_right.png"; // NOI18N
-    
+    static final String IMAGE_TOPBAR_LOGO = "org/netbeans/modules/welcome/resources/nb_logo.png"; // NOI18N
+
     static final String BROKEN_IMAGE = "org/netbeans/modules/welcome/resources/broken_image.png"; // NOI18N
     static final String IMAGE_PICTURE_FRAME = "org/netbeans/modules/welcome/resources/picture_frame.png"; // NOI18N
 

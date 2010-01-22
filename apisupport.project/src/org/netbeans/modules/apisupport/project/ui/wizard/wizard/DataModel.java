@@ -126,7 +126,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.dialogs")); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.awt")); // NOI18N
-        cmf.add(cmf.addModuleDependency("org.jdesktop.layout")); // NOI18N
         
         // generate .java for wizard iterator
         if (fileTemplateType || branching) {

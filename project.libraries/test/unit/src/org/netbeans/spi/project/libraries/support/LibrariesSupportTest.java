@@ -124,10 +124,6 @@ public class LibrariesSupportTest extends NbTestCase {
                 new URI(null, null, "../a folder/", null));
         assertEquals(new URI(new File(getWorkDir().getParentFile(), "a folder").toURI().toString() + "/"), u);
         // UNC paths
-        if(System.getProperty("java.version").startsWith("1.5")) {
-            // URI.toURL() doesn't work for UNC on 1.5.
-            return;
-        }
         URI uncBaseURI = URI.create("file:////computerName/sharedFolder/a/b/c/d.properties");
         URI uncEntryURI = URI.create("e/e.jar");
         URI expectedURI = new File(new File(uncBaseURI).getParent(), uncEntryURI.getPath()).toURI();

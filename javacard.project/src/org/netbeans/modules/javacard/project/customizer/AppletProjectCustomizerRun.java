@@ -48,9 +48,14 @@ import java.util.Map;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import org.netbeans.modules.javacard.common.GuiUtils;
+import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.ValidationGroupProvider;
 import org.openide.util.HelpCtx;
 
-public final class AppletProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener {
+public final class AppletProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener, ValidationGroupProvider, ListDataListener {
     private Map<Object, String> selection2url;
     private static final int SELECTING_SERVLET = 1;
     private static final int SELECTING_PAGE = 2;
@@ -58,14 +63,43 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
 
     public AppletProjectCustomizerRun(AppletProjectProperties props) {
         initComponents();
+        GuiUtils.prepareContainer(this);
         platformAndDevicePanel21.setPlatformAndCard(props);
+        platformAndDevicePanel21.setProjectKind(props.getProject().kind());
         servletComboBox.setModel(props.SCRIPTS);
         servletComboBox.setRenderer(new CRen());
+        servletComboBox.getModel().addListDataListener(this);
         launchBrowserCheckBox.setModel(props.SEND_SCRIPT);
         selection2url = new HashMap<Object, String>();
         selecting = SELECTING_SERVLET;
         updateSelection();
         HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.RunPanel"); //NOI18N
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        intervalAdded(null);
+    }
+
+    public ValidationGroup getValidationGroup() {
+        return platformAndDevicePanel21.getValidationGroup();
+    }
+
+    public void intervalAdded(ListDataEvent e) {
+        boolean hasScripts = servletComboBox.getModel().getSize() > 0;
+        launchBrowserCheckBox.setEnabled(hasScripts);
+        if (!launchBrowserCheckBox.isEnabled()) {
+            launchBrowserCheckBox.setSelected(false);
+        }
+    }
+
+    public void intervalRemoved(ListDataEvent e) {
+        intervalAdded(e);
+    }
+
+    public void contentsChanged(ListDataEvent e) {
+        intervalAdded(e);
     }
 
     private static final class CRen extends DefaultListCellRenderer {
@@ -175,7 +209,9 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
 }//GEN-LAST:event_servletComboBoxActionPerformed
 
     private void launchBrowserCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_launchBrowserCheckBoxActionPerformed
-
+        if (servletComboBox.getSelectedItem() == null && servletComboBox.getModel().getSize() > 0) {
+            servletComboBox.setSelectedIndex(0);
+        }
 }//GEN-LAST:event_launchBrowserCheckBoxActionPerformed
 
     private void launchBrowserCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_launchBrowserCheckBoxStateChanged
@@ -195,6 +231,10 @@ public final class AppletProjectCustomizerRun extends javax.swing.JPanel impleme
     }
     
     private void updateUrl() {
+        if (selection2url == null) {
+            //superclass call
+            return;
+        }
         Object selectedObject = getSelectedServletOrPage();
         String url = selection2url.get(selectedObject);
         if (url == null) {

@@ -500,6 +500,8 @@ public class WebCustomizer extends AllClassesOfTypeExplorerPanel implements Docu
     WebXmlModel getModelFromUI() {
         WebXmlModel result = FileModelFactory.webXmlModel(
                 mgr.getRootContext().getChildren().getNodes());
+        result.setDefaultServlet(nameField.getText().trim());
+        result.setDefaultMapping(mappingField.getText().trim());
         result.setDisplayName(displayNameField.getText());
         return result;
     }

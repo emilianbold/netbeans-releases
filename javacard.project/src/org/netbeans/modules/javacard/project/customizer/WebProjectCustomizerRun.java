@@ -42,13 +42,14 @@ package org.netbeans.modules.javacard.project.customizer;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
+import javax.swing.ButtonGroup;
 import javax.swing.event.ChangeListener;
+import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.ValidationGroupProvider;
 import org.openide.util.NbBundle;
-
-import javax.swing.*;
 import org.openide.util.HelpCtx;
 
-public class WebProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener {
+public class WebProjectCustomizerRun extends javax.swing.JPanel implements ActionListener, ItemListener, ChangeListener, ValidationGroupProvider {
 
     private static final int SELECTING_SERVLET = 1;
     private static final int SELECTING_PAGE = 2;
@@ -59,6 +60,7 @@ public class WebProjectCustomizerRun extends javax.swing.JPanel implements Actio
     public WebProjectCustomizerRun(WebProjectProperties props) {
         initComponents();
         platformAndDevicePanel21.setPlatformAndCard(props);
+        platformAndDevicePanel21.setProjectKind(props.getProject().kind());
         pageComboBox.setModel(props.PAGES);
         servletRadioButton.setModel(props.SELECT_SERVLET);
         pageRadioButton.setModel(props.SELECT_PAGE);
@@ -307,4 +309,8 @@ private void urlRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JRadioButton urlRadioButton;
     private javax.swing.JTextField urlTextField;
     // End of variables declaration//GEN-END:variables
+
+    public ValidationGroup getValidationGroup() {
+        return platformAndDevicePanel21.getValidationGroup();
+    }
 }

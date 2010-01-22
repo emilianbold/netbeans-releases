@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.apt.support;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.File;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
@@ -70,7 +71,22 @@ public abstract class APTAbstractWalker extends APTWalker {
         this.preprocHandler = preprocHandler;
         this.cacheEntry = cacheEntry;
     }
-    
+
+    @Override
+    protected void preInit() {
+        super.preInit();
+        if (preprocHandler != null) {
+            APTIncludeHandler includeHandler = preprocHandler.getIncludeHandler();
+            if (APTHandlersSupportImpl.isFirstLevel(includeHandler)) {
+                // special handling of "-include file" feature of preprocessor
+                for (IncludeDirEntry includeDirEntry : APTHandlersSupportImpl.extractIncludeFileEntries(includeHandler)) {
+                    APT fake = new APTIncludeFake(includeDirEntry.getAsSharedCharSequence().toString());
+                    onInclude(fake);
+                }
+            }
+        }
+    }
+
     protected void onInclude(APT apt) {
         if (getIncludeHandler() != null) {
             APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);

@@ -41,6 +41,7 @@
 
 package org.netbeans.api.java.source;
 
+import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -80,6 +81,8 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -112,6 +115,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -271,27 +275,39 @@ public class SourceUtils {
             return fqn;
         
         //not imported/visible so far by any means:
-        if (info instanceof WorkingCopy) {
-            CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).getChangeSet().get(cut);
-            cut = nue != null ? nue : cut;
-            ((WorkingCopy)info).rewrite(info.getCompilationUnit(), addImports(cut, Collections.singletonList(fqn), ((WorkingCopy)info).getTreeMaker()));
-        } else {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    try {
-                        ModificationResult.runModificationTask(Collections.singletonList(info.getSnapshot().getSource()), new UserTask() {
-                            @Override
-                            public void run(ResultIterator resultIterator) throws Exception {
-                                WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
-                                copy.toPhase(Phase.ELEMENTS_RESOLVED);
-                                copy.rewrite(copy.getCompilationUnit(), addImports(copy.getCompilationUnit(), Collections.singletonList(fqn), copy.getTreeMaker()));                                
-                            }
-                        }).commit();
-                    } catch (Exception e) {
-                        Exceptions.printStackTrace(e);
+        String topLevelLanguageMIMEType = info.getFileObject().getMIMEType();
+        if ("text/x-java".equals(topLevelLanguageMIMEType)){ //NOI18N
+            if (info instanceof WorkingCopy) {
+                CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).getChangeSet().get(cut);
+                cut = nue != null ? nue : cut;
+                ((WorkingCopy)info).rewrite(info.getCompilationUnit(), addImports(cut, Collections.singletonList(fqn), ((WorkingCopy)info).getTreeMaker()));
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        try {
+                            ModificationResult.runModificationTask(Collections.singletonList(info.getSnapshot().getSource()), new UserTask() {
+                                @Override
+                                public void run(ResultIterator resultIterator) throws Exception {
+                                    WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
+                                    copy.toPhase(Phase.ELEMENTS_RESOLVED);
+                                    copy.rewrite(copy.getCompilationUnit(), addImports(copy.getCompilationUnit(), Collections.singletonList(fqn), copy.getTreeMaker()));
+                                }
+                            }).commit();
+                        } catch (Exception e) {
+                            Exceptions.printStackTrace(e);
+                        }
                     }
-                }
-            });
+                });
+            }
+        } else { // embedded java, look up the handler for the top level language
+            Lookup lookup = MimeLookup.getLookup(MimePath.get(topLevelLanguageMIMEType));
+            Lookup.Result result = lookup.lookup(new Lookup.Template(ImportProcessor.class));
+            Collection<ImportProcessor> instances = result.allInstances();
+
+            for (ImportProcessor importsProcesor : instances) {
+                importsProcesor.addImport(info.getDocument(), fqn);
+            }
+            
         }
         TypeElement te = info.getElements().getTypeElement(fqn);
         if (te != null) {

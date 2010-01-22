@@ -142,9 +142,8 @@ public class AnnotationsTest extends J2eeTestCase {
 //        runTest("issue110333.css");
 //    }
 
-    //should be 7 after fixing issue 165278
     public void testIssue127289() throws Exception {
-        runTest("issue127289.html", 6);
+        runTest("issue127289.html", 7);
     }
 
     public void testIssue141159() throws Exception{

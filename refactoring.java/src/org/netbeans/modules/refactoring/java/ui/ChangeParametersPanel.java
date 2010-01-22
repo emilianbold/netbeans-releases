@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.util.TreePath;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -58,6 +59,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.LocalVarScanner;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.util.Exceptions;
@@ -78,6 +80,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     
     private static Action editAction = null;
     private String returnType;
+    private String enclosingClassName;
     
     private static final String[] modifierNames = {
         "public", // NOI18N
@@ -127,6 +130,10 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                         info.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
                         ExecutableElement e = (ExecutableElement) refactoredObj.resolveElement(info);
                         returnType = e.getReturnType().toString();
+                        TreePath enclosingClass = JavaRefactoringUtils.findEnclosingClass(info, refactoredObj.resolve(info), true, true, true, true, true);
+                        TreePathHandle tph = TreePathHandle.create(enclosingClass, info);
+                        Element enclosingElement = tph.resolveElement(info);
+                        enclosingClassName = enclosingElement.getSimpleName().toString();
                         if (inheritedFromInterface(e, info.getElementUtilities())) {
                             modifiersCombo.setEnabled(false);
                         }
@@ -599,8 +606,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             buf.append(' ');
             name = RetoucheUtils.getSimpleName(refactoredObj);
         } else {
-            // for constructor, get name from the declaring class
-            name = RetoucheUtils.getSimpleName(refactoredObj);
+            // for constructor, get name from the declaring class            
+            // name = RetoucheUtils.getSimpleName(refactoredObj);
+            name = enclosingClassName;
         }
         buf.append(name);
         buf.append('(');

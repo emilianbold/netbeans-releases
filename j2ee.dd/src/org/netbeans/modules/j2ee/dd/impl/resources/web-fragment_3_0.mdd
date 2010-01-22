@@ -861,4 +861,38 @@ public void setUrlPattern(String value) {
                 org.netbeans.modules.j2ee.dd.api.web.RelativeOrderingOthersItem
             </implements>
         </meta-element>
+
+<!-- changes added for EE6: -->
+
+        <meta-element>
+            <dtd-name>handlerType</dtd-name>
+            <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+            <bean-name>ServiceRefHandler</bean-name>
+            <comparator-class>org.netbeans.modules.j2ee.dd.impl.common.Comparator</comparator-class>
+            <extends>org.netbeans.modules.j2ee.dd.impl.common.ComponentBeanMultiple</extends>
+            <implements>
+                org.netbeans.modules.j2ee.dd.api.common.ServiceRefHandler, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
+            </implements>
+            <user-code>
+                public String getKeyProperty() { return "HandlerName"; }
+            </user-code>
+        </meta-element>
+        <meta-element>
+               <dtd-name>handler-chainsType</dtd-name>
+               <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+               <bean-name>ServiceRefHandlerChains</bean-name>
+               <implements>org.netbeans.modules.j2ee.dd.api.common.ServiceRefHandlerChains</implements>
+        </meta-element>
+        <meta-element>
+            <dtd-name>handler-chainType</dtd-name>
+            <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+            <bean-name>ServiceRefHandlerChainType</bean-name>
+            <implements>org.netbeans.modules.j2ee.dd.api.common.ServiceRefHandlerChain</implements>
+        </meta-element>
+        <meta-element>
+            <dtd-name>dewey-versionType</dtd-name>
+            <namespace>http://java.sun.com/xml/ns/javaee</namespace>
+            <bean-name>version</bean-name>
+            <wrapper-class>java.math.BigDecimal</wrapper-class>
+        </meta-element>
 </metaDD>

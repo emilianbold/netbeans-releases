@@ -733,10 +733,10 @@ class J2SEActionProvider implements ActionProvider {
             if (doJavaChecks) {
                 final Collection<ElementHandle<TypeElement>> mainClasses = J2SEProjectUtil.getMainMethods (file);
                 if (!hasMainClassFromTest && mainClasses.isEmpty()) {
-                    if (AppletSupport.isApplet(file)) {
+                    if (!isTest && AppletSupport.isApplet(file)) {
 
                         EditableProperties ep = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        String jvmargs = ep.getProperty("run.jvmargs");
+                        String jvmargs = ep.getProperty(J2SEProjectProperties.RUN_JVM_ARGS);
 
                         URL url = null;
 
@@ -744,9 +744,9 @@ class J2SEActionProvider implements ActionProvider {
                         if ((jvmargs == null) || !(jvmargs.indexOf("java.security.policy") > 0)) {  //NOI18N
                             AppletSupport.generateSecurityPolicy(project.getProjectDirectory());
                             if ((jvmargs == null) || (jvmargs.length() == 0)) {
-                                ep.setProperty("run.jvmargs", "-Djava.security.policy=applet.policy"); //NOI18N
+                                ep.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, "-Djava.security.policy=applet.policy"); //NOI18N
                             } else {
-                                ep.setProperty("run.jvmargs", jvmargs + " -Djava.security.policy=applet.policy"); //NOI18N
+                                ep.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, jvmargs + " -Djava.security.policy=applet.policy"); //NOI18N
                             }
                             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                             try {

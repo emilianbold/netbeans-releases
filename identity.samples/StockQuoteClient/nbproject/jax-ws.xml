@@ -73,6 +73,10 @@ made subject to such option by the copyright holder.
           <wsimport-option-name>package</wsimport-option-name>
           <wsimport-option-value>org.netbeans.identity.samples</wsimport-option-value>
         </wsimport-option>
+        <wsimport-option>
+          <wsimport-option-name>target</wsimport-option-name>
+          <wsimport-option-value>2.1</wsimport-option-value>
+        </wsimport-option>
       </wsimport-options>
     </client>
   </clients>

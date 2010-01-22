@@ -42,13 +42,9 @@
 package org.netbeans.modules.mercurial.ui.commit;
 
 import org.openide.util.NbBundle;
-import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.HgModuleConfig;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
@@ -114,7 +110,7 @@ public class CommitTableModel extends AbstractTableModel {
 
     void setNodes(HgFileNode [] nodes) {
         this.nodes = nodes;
-        defaultCommitOptions();
+        commitOptions = HgUtils.createDefaultCommitOptions(nodes);
         fireTableDataChanged();
     }
     
@@ -202,27 +198,6 @@ public class CommitTableModel extends AbstractTableModel {
             fireTableCellUpdated(rowIndex, columnIndex);
         } else {
             throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
-        }
-    }
-
-    private void defaultCommitOptions() {
-        boolean excludeNew = System.getProperty("netbeans.mercurial.excludeNewFiles") != null; // NOI18N
-        commitOptions = new CommitOptions[nodes.length];
-        for (int i = 0; i < nodes.length; i++) {
-            HgFileNode node = nodes[i];
-            File file = node.getFile();
-            if (HgModuleConfig.getDefault().isExcludedFromCommit(file.getAbsolutePath())) {
-                commitOptions[i] = CommitOptions.EXCLUDE;
-            } else {
-                switch (node.getInformation().getStatus()) {
-                case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
-                case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
-                    commitOptions[i] = CommitOptions.COMMIT_REMOVE;
-                    break;
-                default:
-                    commitOptions[i] = CommitOptions.COMMIT;
-                }
-            }
         }
     }
 

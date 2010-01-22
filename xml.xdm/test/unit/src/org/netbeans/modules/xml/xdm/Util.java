@@ -73,9 +73,14 @@ public class Util {
         StringBuffer sbuf = new StringBuffer();
         try {
             String line = null;
+            boolean firstLine = true;
             while ((line = br.readLine()) != null) {
+                if (firstLine) {
+                    firstLine = false;
+                } else {
+                    sbuf.append(System.getProperty("line.separator"));
+                }
                 sbuf.append(line);
-                sbuf.append(System.getProperty("line.separator"));
             }
         } finally {
             br.close();

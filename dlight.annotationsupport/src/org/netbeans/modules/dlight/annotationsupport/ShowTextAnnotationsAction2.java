@@ -41,8 +41,8 @@
 package org.netbeans.modules.dlight.annotationsupport;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
-import org.openide.filesystems.FileUtil;
+import javax.swing.JEditorPane;
+import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -82,9 +82,9 @@ public class ShowTextAnnotationsAction2 extends BooleanStateAction {
     }
 
     private boolean hasAnnotations() {
-        if (AnnotatedSourceSupportImpl.getInstance() == null) {
-            return false;
-        }
+//        if (AnnotatedSourceSupportImpl.getInstance() == null) {
+//            return false;
+//        }
         Node[] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();
 
         if (nodes == null || nodes.length != 1) {
@@ -100,31 +100,27 @@ public class ShowTextAnnotationsAction2 extends BooleanStateAction {
         if (dataObject == null) {
             return true; // Maybe
         }
-
-        File file = FileUtil.toFile(dataObject.getPrimaryFile());
-        String filePath = FileUtil.normalizeFile(file).getAbsolutePath();
-        FileAnnotationInfo fileAnnotationInfo = AnnotatedSourceSupportImpl.getInstance().getFileAnnotationInfo(filePath);
-        return fileAnnotationInfo != null;
-
-//        EditorCookie editorCookie = dataObject.getCookie(EditorCookie.class);
-//        if (editorCookie == null) {
-//            return true; // Maybe
-//        }
 //
-//        JEditorPane panes[] = editorCookie.getOpenedPanes();
-//        boolean annotated = false;
-//        for (JEditorPane pane : panes) {
-//            AnnotationBar ab = (AnnotationBar) pane.getClientProperty(AnnotationBarManager.BAR_KEY);
-//            FileAnnotationInfo fileAnnotationInfo = ab.getFileAnnotationInfo();
-//            if (fileAnnotationInfo != null && fileAnnotationInfo.isAnnotated()) {
-//                annotated = true;
-//                break;
-//            }
-//        }
-//        if (!annotated) {
-//            return false;
-//        }
-//
-//        return true; // Maybe
+//        File file = FileUtil.toFile(dataObject.getPrimaryFile());
+//        String filePath = FileUtil.normalizeFile(file).getAbsolutePath();
+//        FileAnnotationInfo fileAnnotationInfo = AnnotatedSourceSupportImpl.getInstance().getFileAnnotationInfo(filePath);
+//        return fileAnnotationInfo != null;
+
+        EditorCookie editorCookie = dataObject.getCookie(EditorCookie.class);
+        if (editorCookie == null) {
+            return true; // Maybe
+        }
+
+        JEditorPane panes[] = editorCookie.getOpenedPanes();
+        boolean annotated = false;
+        for (JEditorPane pane : panes) {
+            AnnotationBar ab = (AnnotationBar) pane.getClientProperty(AnnotationBarManager.BAR_KEY);
+            if (ab.hasAnnotations()) {
+                annotated = true;
+                break;
+            }
+        }
+
+        return annotated; // Probably
     }
 }

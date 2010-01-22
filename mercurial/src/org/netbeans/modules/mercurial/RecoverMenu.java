@@ -43,7 +43,6 @@ package org.netbeans.modules.mercurial;
 
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
-import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 
 import javax.swing.*;
@@ -53,6 +52,7 @@ import org.netbeans.modules.mercurial.ui.rollback.RollbackAction;
 import org.netbeans.modules.mercurial.ui.rollback.StripAction;
 import org.netbeans.modules.mercurial.ui.rollback.VerifyAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
 
 /**
  * Container menu for branch actions.
@@ -87,17 +87,17 @@ public class RecoverMenu extends AbstractAction implements DynamicMenuContent {
         JMenu menu = new JMenu(this);
         org.openide.awt.Mnemonics.setLocalizedText(menu, NbBundle.getMessage(RecoverMenu.class, "CTL_MenuItem_RecoverMenu"));
         
-        JMenuItem item = menu.add(new StripAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Strip"), ctx));
-        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(RecoverMenu.class, "CTL_PopupMenuItem_Strip"));
+        JMenuItem item = menu.add(new SystemActionBridge(SystemAction.get(StripAction.class), NbBundle.getMessage(RecoverMenu.class, "CTL_PopupMenuItem_Strip"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         
-        item = menu.add(new BackoutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Backout"), ctx)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(RecoverMenu.class, "CTL_PopupMenuItem_Backout"));
+        item = menu.add(new SystemActionBridge(SystemAction.get(BackoutAction.class), NbBundle.getMessage(RecoverMenu.class, "CTL_PopupMenuItem_Backout"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         
-        item = menu.add(new RollbackAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Rollback"), ctx)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(RecoverMenu.class, "CTL_PopupMenuItem_Rollback"));
+        item = menu.add(new SystemActionBridge(SystemAction.get(RollbackAction.class), NbBundle.getMessage(RecoverMenu.class, "CTL_PopupMenuItem_Rollback"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
         
-        item = menu.add(new VerifyAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Verify"), ctx)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(item, NbBundle.getMessage(RecoverMenu.class, "CTL_PopupMenuItem_Verify"));
+        item = menu.add(new SystemActionBridge(SystemAction.get(VerifyAction.class), NbBundle.getMessage(RecoverMenu.class, "CTL_PopupMenuItem_Verify"))); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
 
         return menu;
     }

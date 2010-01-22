@@ -51,7 +51,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFilesFactory;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFilesFactory.ModifyManifest;
-import org.netbeans.modules.apisupport.project.EditableManifest;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;

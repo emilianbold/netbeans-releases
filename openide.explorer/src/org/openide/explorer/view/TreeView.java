@@ -63,6 +63,7 @@ import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -254,7 +255,9 @@ public abstract class TreeView extends JScrollPane {
 //
 //            // note: drag target is activated on focus gained
 //        }
-        setDropTarget( DragDropUtilities.dragAndDropEnabled );
+        if (!GraphicsEnvironment.isHeadless()) {
+            setDropTarget(DragDropUtilities.dragAndDropEnabled);
+        }
 
         setPopupAllowed(popupAllowed);
         setDefaultActionAllowed(defaultAction);
@@ -308,6 +311,10 @@ public abstract class TreeView extends JScrollPane {
         treeModel.addView(this);
 
         tree = new ExplorerTree(treeModel);
+
+        if (GraphicsEnvironment.isHeadless()) {
+            return;
+        }
 
         NodeRenderer rend = new NodeRenderer();
         tree.setCellRenderer(rend);
@@ -1770,8 +1777,10 @@ public abstract class TreeView extends JScrollPane {
             }
 
             setupSearch();
-            
-            setDragEnabled( true );
+
+            if (!GraphicsEnvironment.isHeadless()) {
+                setDragEnabled(true);
+            }
         }
 
         /** removeNotify() call count sometimes does not match addNotify(), use special flag */
@@ -1951,6 +1960,9 @@ public abstract class TreeView extends JScrollPane {
 
                         final KeyStroke stroke = KeyStroke.getKeyStrokeForEvent(e);
                         origSelectionPaths = getSelectionPaths();
+                        if (origSelectionPaths != null && origSelectionPaths.length == 0) {
+                            origSelectionPaths = null;
+                        }
                         searchTextField.setText(String.valueOf(stroke.getKeyChar()));
 
                         displaySearchField();

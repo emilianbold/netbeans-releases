@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 public class JCImportantFilesNodeFactory implements NodeFactory {
 
 
-    public NodeList createNodes(Project p) {
+    public NodeList<?> createNodes(Project p) {
         JCProject realProject = p.getLookup().lookup(JCProject.class);
         assert realProject != null;
         ProjectKind kind = realProject.kind();

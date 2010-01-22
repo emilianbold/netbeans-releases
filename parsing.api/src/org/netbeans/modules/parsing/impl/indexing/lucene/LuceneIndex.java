@@ -42,7 +42,6 @@ package org.netbeans.modules.parsing.impl.indexing.lucene;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
@@ -222,10 +221,11 @@ public class LuceneIndex implements IndexImpl, Evictable {
     // Public implementation
     // -----------------------------------------------------------------------
 
-    public LuceneIndex(final URL root) throws IOException {
-        assert root != null;
+    public LuceneIndex(final URL indexFolderUrl) throws IOException {
+        assert indexFolderUrl != null;
         try {
-            indexFolder = new File(root.toURI());
+            this.indexFolderUrl = indexFolderUrl;
+            indexFolder = new File(indexFolderUrl.toURI());
             directory = createDirectory(indexFolder);
         } catch (URISyntaxException e) {
             IOException ioe = new IOException();
@@ -321,7 +321,9 @@ public class LuceneIndex implements IndexImpl, Evictable {
                     LuceneIndexManager.getDefault().writeAccess(new LuceneIndexManager.Action<Void>() {
                         public Void run() throws IOException {
                             _closeReader();
-                            LOGGER.fine("Evicted index: " + indexFolder.getAbsolutePath()); //NOI18N
+                            if (LOGGER.isLoggable(Level.FINE)) {
+                                LOGGER.fine("Evicted index: " + indexFolder.getAbsolutePath()); //NOI18N
+                            }
                             return null;
                         }
                     });
@@ -343,6 +345,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
     /* package */ static final int VERSION = 1;
     private static final String CACHE_LOCK_PREFIX = "nb-lock";  //NOI18N
 
+    private final URL indexFolderUrl;
     private final File indexFolder;
 
     //@GuardedBy (LuceneIndexManager.writeAccess)
@@ -359,12 +362,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
     private final Set<String> staleFiles = new HashSet<String>();
 
     private void _hit() {
-        try {
-            final URL url = this.indexFolder.toURI().toURL();
-            IndexCacheFactory.getDefault().getCache().put(url, this);
-        } catch (MalformedURLException e) {
-            Exceptions.printStackTrace(e);
-        }
+        IndexCacheFactory.getDefault().getCache().put(indexFolderUrl, this);
     }
 
     // called under LuceneIndexManager.writeAccess
@@ -466,9 +464,15 @@ public class LuceneIndex implements IndexImpl, Evictable {
                 }
             case PREFIX:
                 if (value.length() == 0) {
-                    //Special case (all) handle in different way
-                    emptyPrefixSearch(in, fieldsToLoad, result);
-                    return result;
+                    if (fieldName.length() == 0) {
+                        //Special case (all) handle in different way
+                        emptyPrefixSearch(in, fieldsToLoad, result);
+                        return result;
+                    } else {
+                        final Term nameTerm = new Term (fieldName, value);
+                        fieldSearch(nameTerm, in, toSearch);
+                        break;
+                    }
                 }
                 else {
                     final Term nameTerm = new Term (fieldName, value);
@@ -477,9 +481,15 @@ public class LuceneIndex implements IndexImpl, Evictable {
                 }
             case CASE_INSENSITIVE_PREFIX:
                 if (value.length() == 0) {
-                    //Special case (all) handle in different way
-                    emptyPrefixSearch(in, fieldsToLoad, result);
-                    return result;
+                    if (fieldName.length() == 0) {
+                        //Special case (all) handle in different way
+                        emptyPrefixSearch(in, fieldsToLoad, result);
+                        return result;
+                    } else {
+                        final Term nameTerm = new Term (fieldName, value);
+                        fieldSearch(nameTerm, in, toSearch);
+                        break;
+                    }
                 }
                 else {
                     final Term nameTerm = new Term (fieldName,value.toLowerCase());     //XXX: I18N, Locale
@@ -540,9 +550,15 @@ public class LuceneIndex implements IndexImpl, Evictable {
                 }
             case CASE_INSENSITIVE_CAMEL_CASE:
                 if (value.length() == 0) {
-                    //Special case (all) handle in different way
-                    emptyPrefixSearch(in, fieldsToLoad, result);
-                    return result;
+                    if (fieldName.length() == 0) {
+                        //Special case (all) handle in different way
+                        emptyPrefixSearch(in, fieldsToLoad, result);
+                        return result;
+                    } else {
+                        final Term nameTerm = new Term (fieldName, value);
+                        fieldSearch(nameTerm, in, toSearch);
+                        break;
+                    }
                 }
                 else {
                     final Term nameTerm = new Term(fieldName,value.toLowerCase());     //XXX: I18N, Locale
@@ -570,13 +586,12 @@ public class LuceneIndex implements IndexImpl, Evictable {
                 throw new UnsupportedOperationException (kind.toString());
         }
         TermDocs tds = in.termDocs();
-        final Iterator<Term> it = toSearch.iterator();
         Set<Integer> docNums = new TreeSet<Integer>();
         int[] docs = new int[25];
         int[] freq = new int [25];
         int len;
-        while (it.hasNext()) {
-            tds.seek(it.next());
+        for(Term t : toSearch) {
+            tds.seek(t);
             while ((len = tds.read(docs, freq))>0) {
                 for (int i = 0; i < len; i++) {
                     docNums.add (docs[i]);
@@ -765,6 +780,24 @@ public class LuceneIndex implements IndexImpl, Evictable {
                     result.add (new LuceneDocument(doc));
                 }
             }
+        }
+    }
+
+    private static void fieldSearch (final Term valueTerm, final IndexReader in, final Set<? super Term> toSearch) throws IOException {
+        final Object prefixField = valueTerm.field(); // It's Object only to silence the stupid hint
+        final TermEnum en = in.terms(valueTerm);
+        try {
+            do {
+                Term term = en.term();
+                if (term != null && prefixField == term.field()) {
+                    toSearch.add (term);
+                }
+                else {
+                    break;
+                }
+            } while (en.next());
+        } finally {
+            en.close();
         }
     }
 

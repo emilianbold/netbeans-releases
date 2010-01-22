@@ -39,6 +39,7 @@
 package org.netbeans.modules.kenai.api;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Iterator;
 import org.junit.After;
@@ -50,6 +51,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.kenai.utils.ServicesChecker;
 import static org.junit.Assert.*;
 import org.netbeans.modules.kenai.utils.ServicesChecker.ServiceDescr;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -59,6 +61,14 @@ public class KenaiServiceTest extends NbTestCase {
 
     private static ServicesChecker servicesChecker = null;
     private static Collection<KenaiService> services = null;
+    private static Kenai kenai;
+    static {
+        try {
+            kenai = KenaiManager.getDefault().createKenai("testkenai.com", "https://testkenai.com");
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
     public KenaiServiceTest(String name) {
         super(name);
@@ -76,14 +86,13 @@ public class KenaiServiceTest extends NbTestCase {
     @Override
     public void setUp() {
         try {
-            System.setProperty("kenai.com.url", "https://testkenai.com");
             if (servicesChecker == null) {
                 final String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "services.data";
                 System.out.println(_fileName);
                 servicesChecker = new ServicesChecker(_fileName);
             }
             if (services == null) {
-                services = Kenai.getDefault().getServices();
+                services = kenai.getServices();
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -115,7 +124,7 @@ public class KenaiServiceTest extends NbTestCase {
 
     public void setServicesChecker(ServicesChecker sc) throws KenaiException {
         servicesChecker = sc;
-        services = Kenai.getDefault().getServices();
+        services = kenai.getServices();
     }
 
     /**

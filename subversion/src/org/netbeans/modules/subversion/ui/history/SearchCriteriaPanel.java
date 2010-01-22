@@ -58,9 +58,7 @@ import java.text.ParseException;
 import java.util.Date;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import static org.jdesktop.layout.GroupLayout.BASELINE;
-import static org.jdesktop.layout.GroupLayout.DEFAULT_SIZE;
 import static org.jdesktop.layout.GroupLayout.LEADING;
-import static org.jdesktop.layout.GroupLayout.PREFERRED_SIZE;
 import static org.jdesktop.layout.LayoutStyle.RELATED;
 
 /**
@@ -107,7 +105,10 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         for (int i = 0; i < SearchExecutor.dateFormats.length; i++) {
             DateFormat dateformat = SearchExecutor.dateFormats[i];
             try {
-                return dateformat.parse(s);
+                Date date = dateformat.parse(s);
+                if (s.equals(dateformat.format(date))) {
+                    return date;
+                }
             } catch (ParseException e) {
                 // try the next one
             }

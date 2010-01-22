@@ -108,6 +108,7 @@ public class ExportDiffAction extends AbstractSystemAction {
     /**
      * First look for DiffSetupSource name then for super (context name).
      */
+    @Override
     public String getName() {
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
@@ -120,10 +121,12 @@ public class ExportDiffAction extends AbstractSystemAction {
         return super.getName();
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return enabledForStatus;
     }
 
+    @Override
     public boolean enable(Node[] nodes) {
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
@@ -218,6 +221,7 @@ public class ExportDiffAction extends AbstractSystemAction {
 
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

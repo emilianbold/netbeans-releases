@@ -92,7 +92,7 @@ public final class JsfModelFactory {
             return null;
         }
         FileObject fileObject = getFileObject( module );
-        Project project = FileOwnerQuery.getOwner( fileObject );
+        Project project = (fileObject == null) ? null : FileOwnerQuery.getOwner( fileObject );
         if ( project == null ){
             return null;
         }

@@ -262,7 +262,7 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
         return o == null ? "null" : o.getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
     }
 
-    private static final class SimpleHighlightsSequence implements HighlightsSequence {
+    public static final class SimpleHighlightsSequence implements HighlightsSequence {
         
         private int startOffset;
         private int endOffset;

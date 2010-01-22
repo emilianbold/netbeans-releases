@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 7.22.1
+#Signature file v4.1
+#Version 7.31.0
 
 CLSS public java.awt.datatransfer.Clipboard
 cons public Clipboard(java.lang.String)
@@ -362,6 +362,30 @@ meth public java.lang.String toString()
 meth public void clear()
 supr java.lang.Object
 
+CLSS public abstract java.util.AbstractMap<%0 extends java.lang.Object, %1 extends java.lang.Object>
+cons protected AbstractMap()
+innr public static SimpleEntry
+innr public static SimpleImmutableEntry
+intf java.util.Map<{java.util.AbstractMap%0},{java.util.AbstractMap%1}>
+meth protected java.lang.Object clone() throws java.lang.CloneNotSupportedException
+meth public abstract java.util.Set<java.util.Map$Entry<{java.util.AbstractMap%0},{java.util.AbstractMap%1}>> entrySet()
+meth public boolean containsKey(java.lang.Object)
+meth public boolean containsValue(java.lang.Object)
+meth public boolean equals(java.lang.Object)
+meth public boolean isEmpty()
+meth public int hashCode()
+meth public int size()
+meth public java.lang.String toString()
+meth public java.util.Collection<{java.util.AbstractMap%1}> values()
+meth public java.util.Set<{java.util.AbstractMap%0}> keySet()
+meth public void clear()
+meth public void putAll(java.util.Map<? extends {java.util.AbstractMap%0},? extends {java.util.AbstractMap%1}>)
+meth public {java.util.AbstractMap%1} get(java.lang.Object)
+meth public {java.util.AbstractMap%1} put({java.util.AbstractMap%0},{java.util.AbstractMap%1})
+meth public {java.util.AbstractMap%1} remove(java.lang.Object)
+supr java.lang.Object
+hfds keySet,values
+
 CLSS public abstract java.util.AbstractSet<%0 extends java.lang.Object>
 cons protected AbstractSet()
 intf java.util.Set<{java.util.AbstractSet%0}>
@@ -398,6 +422,23 @@ meth public java.lang.Object getSource()
 meth public java.lang.String toString()
 supr java.lang.Object
 hfds serialVersionUID
+
+CLSS public abstract interface java.util.Map<%0 extends java.lang.Object, %1 extends java.lang.Object>
+innr public abstract interface static Entry
+meth public abstract boolean containsKey(java.lang.Object)
+meth public abstract boolean containsValue(java.lang.Object)
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract boolean isEmpty()
+meth public abstract int hashCode()
+meth public abstract int size()
+meth public abstract java.util.Collection<{java.util.Map%1}> values()
+meth public abstract java.util.Set<java.util.Map$Entry<{java.util.Map%0},{java.util.Map%1}>> entrySet()
+meth public abstract java.util.Set<{java.util.Map%0}> keySet()
+meth public abstract void clear()
+meth public abstract void putAll(java.util.Map<? extends {java.util.Map%0},? extends {java.util.Map%1}>)
+meth public abstract {java.util.Map%1} get(java.lang.Object)
+meth public abstract {java.util.Map%1} put({java.util.Map%0},{java.util.Map%1})
+meth public abstract {java.util.Map%1} remove(java.lang.Object)
 
 CLSS public abstract interface java.util.Set<%0 extends java.lang.Object>
 intf java.util.Collection<{java.util.Set%0}>
@@ -480,6 +521,7 @@ cons protected LifecycleManager()
 meth public abstract void exit()
 meth public abstract void saveAll()
 meth public static org.openide.LifecycleManager getDefault()
+meth public void markForRestart()
 supr java.lang.Object
 hcls Trivial
 
@@ -543,7 +585,7 @@ meth public void addChangeListener(javax.swing.event.ChangeListener)
 meth public void fireChange()
 meth public void removeChangeListener(javax.swing.event.ChangeListener)
 supr java.lang.Object
-hfds listeners,source
+hfds LOG,listeners,source
 
 CLSS public abstract interface org.openide.util.ContextAwareAction
 intf javax.swing.Action
@@ -551,6 +593,25 @@ meth public abstract javax.swing.Action createContextAwareInstance(org.openide.u
 
 CLSS public abstract interface org.openide.util.ContextGlobalProvider
 meth public abstract org.openide.util.Lookup createGlobalContext()
+
+CLSS public final org.openide.util.EditableProperties
+cons public EditableProperties(boolean)
+intf java.lang.Cloneable
+meth public java.lang.Object clone()
+meth public java.lang.String get(java.lang.Object)
+meth public java.lang.String getProperty(java.lang.String)
+meth public java.lang.String put(java.lang.String,java.lang.String)
+meth public java.lang.String setProperty(java.lang.String,java.lang.String)
+meth public java.lang.String setProperty(java.lang.String,java.lang.String[])
+meth public java.lang.String[] getComment(java.lang.String)
+meth public java.util.Set<java.util.Map$Entry<java.lang.String,java.lang.String>> entrySet()
+meth public org.openide.util.EditableProperties cloneProperties()
+meth public void load(java.io.InputStream) throws java.io.IOException
+meth public void setComment(java.lang.String,java.lang.String[],boolean)
+meth public void store(java.io.OutputStream) throws java.io.IOException
+supr java.util.AbstractMap<java.lang.String,java.lang.String>
+hfds INDENT,READING_KEY_VALUE,WAITING_FOR_KEY_VALUE,alphabetize,state
+hcls Item,IteratorImpl,MapEntryImpl,SetImpl,State
 
 CLSS public final org.openide.util.Enumerations
 innr public abstract interface static Processor
@@ -610,9 +671,11 @@ meth public final static java.awt.Image mergeImages(java.awt.Image,java.awt.Imag
 meth public final static java.lang.String getImageToolTip(java.awt.Image)
 meth public final static javax.swing.Icon image2Icon(java.awt.Image)
 meth public final static javax.swing.ImageIcon loadImageIcon(java.lang.String,boolean)
+meth public static java.awt.Image createDisabledImage(java.awt.Image)
+meth public static javax.swing.Icon createDisabledIcon(javax.swing.Icon)
 supr java.lang.Object
 hfds ERR,NO_ICON,PNG_READER,TOOLTIP_SEPAR,cache,component,compositeCache,currentLoader,extraInitialSlashes,imageToolTipCache,loaderQuery,localizedCache,mediaTrackerID,noLoaderWarned,tracker
-hcls ActiveRef,CompositeImageKey,ToolTipImage,ToolTipImageKey
+hcls ActiveRef,CompositeImageKey,DisabledButtonFilter,LazyDisabledIcon,ToolTipImage,ToolTipImageKey
 
 CLSS public abstract org.openide.util.Lookup
 cons public Lookup()
@@ -746,6 +809,7 @@ CLSS public org.openide.util.NbBundle
 cons public NbBundle()
  anno 0 java.lang.Deprecated()
 innr public abstract interface static ClassLoaderFinder
+meth public !varargs static java.lang.String getMessage(java.lang.Class,java.lang.String,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object[])
 meth public final static java.util.ResourceBundle getBundle(java.lang.String)
 meth public final static java.util.ResourceBundle getBundle(java.lang.String,java.util.Locale)
 meth public final static java.util.ResourceBundle getBundle(java.lang.String,java.util.Locale,java.lang.ClassLoader)
@@ -826,6 +890,7 @@ cons public RequestProcessor()
 cons public RequestProcessor(java.lang.String)
 cons public RequestProcessor(java.lang.String,int)
 cons public RequestProcessor(java.lang.String,int,boolean)
+cons public RequestProcessor(java.lang.String,int,boolean,boolean)
 innr public final Task
 intf java.util.concurrent.Executor
 meth public boolean isRequestProcessorThread()
@@ -846,8 +911,8 @@ meth public static org.openide.util.RequestProcessor$Task postRequest(java.lang.
 meth public void execute(java.lang.Runnable)
 meth public void stop()
 supr java.lang.Object
-hfds DEFAULT,SLOW,UNLIMITED,counter,interruptThread,logger,name,processorLock,processors,queue,running,starterThread,stopped,throughput
-hcls EnqueueTask,Item,Processor
+hfds DEFAULT,SLOW,UNLIMITED,counter,enableStackTraces,interruptThread,logger,name,processorLock,processors,queue,running,starterThread,stopped,throughput
+hcls EnqueueTask,FastItem,Item,Processor,SlowItem
 
 CLSS public final org.openide.util.RequestProcessor$Task
 intf org.openide.util.Cancellable
@@ -922,6 +987,13 @@ meth public java.lang.String toString()
 supr java.lang.Exception
 hfds counter,dualGraph,edges,result,vertexes
 hcls Vertex
+
+CLSS public abstract interface !annotation org.openide.util.URLStreamHandlerRegistration
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault int position()
+meth public abstract java.lang.String[] protocol()
 
 CLSS public abstract org.openide.util.Union2<%0 extends java.lang.Object, %1 extends java.lang.Object>
 intf java.io.Serializable
@@ -1024,6 +1096,7 @@ meth public static java.lang.String getShortClassName(java.lang.Class)
 meth public static java.lang.String keyToString(javax.swing.KeyStroke)
 meth public static java.lang.String keyToString(javax.swing.KeyStroke,boolean)
 meth public static java.lang.String replaceString(java.lang.String,java.lang.String,java.lang.String)
+ anno 0 java.lang.Deprecated()
 meth public static java.lang.String translate(java.lang.String)
 meth public static java.lang.String wrapString(java.lang.String,int,boolean,boolean)
  anno 0 java.lang.Deprecated()

@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.remote.support;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.Project;
@@ -48,6 +49,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupp
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.remote.sync.SharabilityFilter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileUtil;
 
@@ -93,53 +95,60 @@ public class RemoteProjectSupport {
             return new File[] { baseDir };
         }
         // the project itself
-        Set<File> extraSourceRoots = new HashSet<File>();
+        Set<File> sourceFilesAndDirs = new HashSet<File>();
+        sourceFilesAndDirs.add(baseDir);
+
         MakeConfigurationDescriptor mcs = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
         for(String soorceRoot : mcs.getSourceRoots()) {
             String path = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), soorceRoot);
             File file = new File(path); // or canonical?
-            extraSourceRoots.add(file);
+            sourceFilesAndDirs.add(file);
         }
-        addExtraFiles(mcs, extraSourceRoots, baseDir);
+        addExtraFiles(mcs, sourceFilesAndDirs);
         // Make sure 1st level subprojects are visible remotely
         // First, remembr all subproject locations
         for (String subprojectDir : conf.getSubProjectLocations()) {
             subprojectDir = IpeUtils.toAbsolutePath(baseDir.getAbsolutePath(), subprojectDir);
-            extraSourceRoots.add(new File(subprojectDir));
+            sourceFilesAndDirs.add(new File(subprojectDir));
         }
         // Then go trough open subprojects and add their external source roots
         for (Project subProject : conf.getSubProjects()) {
-            File subProjectDir = FileUtil.toFile(subProject.getProjectDirectory());
             MakeConfigurationDescriptor subMcs =
                     MakeConfigurationDescriptor.getMakeConfigurationDescriptor(subProject);
             for(String soorceRoot : mcs.getSourceRoots()) {
                 File file = new File(soorceRoot).getAbsoluteFile(); // or canonical?
-                extraSourceRoots.add(file);
+                sourceFilesAndDirs.add(file);
             }
-            addExtraFiles(subMcs, extraSourceRoots, subProjectDir);
+            addExtraFiles(subMcs, sourceFilesAndDirs);
         }
-        Set<File> allFiles = new HashSet<File>(extraSourceRoots.size() + 1);
-        allFiles.add(baseDir);
-        allFiles.addAll(extraSourceRoots);
-        return allFiles.toArray(new File[allFiles.size()]);
+        return sourceFilesAndDirs.toArray(new File[sourceFilesAndDirs.size()]);
     }
 
-    private static void addExtraFiles(MakeConfigurationDescriptor subMcs, Set<File> filesToSync, File projectDir) {
+    private static void addExtraFiles(MakeConfigurationDescriptor subMcs, Set<File> filesToSync) {
+        FileFilter filter = new SharabilityFilter();
         for (Item item : subMcs.getProjectItems()) {
-            String alreadyAddedPath = projectDir.getAbsolutePath() + '/'; //NOI18N
-            String itemAbsPath = item.getNormalizedFile().getAbsolutePath();
-            if (itemAbsPath.startsWith(alreadyAddedPath)) {
-                continue;
+            File normFile = item.getNormalizedFile();
+            if (!filter.accept(normFile)) {
+                // user explicitely added file -> copy it even
+                filesToSync.add(normFile);
+                File parentFile = normFile.getParentFile();
+            } else if (!isContained(normFile, filesToSync)) {
+                // directory containing file is not yet added => copy it
+                filesToSync.add(normFile);
             }
-            for (File file : filesToSync) {
-                if (file.isDirectory()) {
-                    alreadyAddedPath = file.getAbsolutePath() + '/'; //NOI18N
-                    if (itemAbsPath.startsWith(alreadyAddedPath)) {
-                        continue;
-                    }
+        }
+    }
+
+    private static boolean isContained(File normFile, Set<File> files) {
+        String itemAbsPath = normFile.getAbsolutePath();
+        for (File dir : files) {
+            if (dir.isDirectory()) {
+                String alreadyAddedPath = dir.getAbsolutePath() + File.separatorChar;
+                if (itemAbsPath.startsWith(alreadyAddedPath)) {
+                    return true;
                 }
             }
-            filesToSync.add(item.getNormalizedFile().getAbsoluteFile());
         }
+        return false;
     }
 }

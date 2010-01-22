@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.15.1
+#Signature file v4.1
+#Version 1.20
 
 CLSS public abstract interface java.io.Externalizable
 intf java.io.Serializable
@@ -53,6 +53,7 @@ fld public final static java.lang.String ATTR_IS_EXPANDED = "isExpanded"
 fld public final static java.lang.String ATTR_IS_READONLY = "isReadonly"
 fld public final static java.lang.String ATTR_IS_VISIBLE = "isVisible"
 fld public final static java.lang.String ATTR_ITEM_WIDTH = "itemWidth"
+fld public final static java.lang.String ATTR_PALETTE_DEFAULT_VISIBILITY = "paletteDefaultVisible"
 fld public final static java.lang.String ATTR_SHOW_ITEM_NAMES = "showItemNames"
 fld public final static java.lang.String PROP_SELECTED_ITEM = "selectedItem"
 meth public org.openide.util.Lookup getRoot()

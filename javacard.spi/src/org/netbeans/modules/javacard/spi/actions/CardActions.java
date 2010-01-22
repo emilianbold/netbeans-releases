@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.javacard.spi.actions;
 
+import org.netbeans.modules.javacard.api.RunMode;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.spi.actions.ContextAction;
 import org.netbeans.spi.actions.LookupProviderAction;
@@ -57,6 +58,11 @@ import org.openide.nodes.Node;
 public final class CardActions {
     private CardActions(){}
 
+    public static ContextAction<?> createDeleteAction() {
+        return LookupProviderAction.createIndirectAction(Node.class,
+                LookupProviderAction.createIndirectAction(Card.class, new DeleteCardAction()));
+    }
+
     public static ContextAction<?> createStartAction() {
         //sensitive to StartCapability in lookup of Card in lookup of Node in Global Selection Lookup
         ContextAction<?> a = LookupProviderAction.createIndirectAction(Node.class,
@@ -72,7 +78,13 @@ public final class CardActions {
 
     public static ContextAction<?> createResumeAction() {
         ContextAction<?> a = LookupProviderAction.createIndirectAction(Node.class,
-                LookupProviderAction.createIndirectAction(Card.class, new ResumeCardAction()));
+                LookupProviderAction.createIndirectAction(Card.class, new ResumeCardAction(RunMode.RUN)));
+        return a;
+    }
+
+    public static ContextAction<?> createResumeIntoDebugModeAction() {
+        ContextAction<?> a = LookupProviderAction.createIndirectAction(Node.class,
+                LookupProviderAction.createIndirectAction(Card.class, new ResumeCardDebugAction(RunMode.DEBUG)));
         return a;
     }
 

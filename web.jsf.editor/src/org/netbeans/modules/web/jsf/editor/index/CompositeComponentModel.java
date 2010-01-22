@@ -116,7 +116,7 @@ public class CompositeComponentModel extends JsfPageModel {
     }
 
     @Override
-    public void storeToIndex(IndexDocument document) {
+    public String storeToIndex(IndexDocument document) {
         //store library name
         String libraryName = getLibraryPath();
         document.addPair(LIBRARY_NAME_KEY, libraryName, true, true);
@@ -146,6 +146,8 @@ public class CompositeComponentModel extends JsfPageModel {
         //store implementation mark
         document.addPair(HAS_IMPLEMENTATION_KEY, Boolean.toString(hasImplementation), false, true);
 
+	return JsfUtils.getCompositeLibraryURL(libraryName);
+
     }
 
     private String getLibraryPath() {
@@ -161,7 +163,9 @@ public class CompositeComponentModel extends JsfPageModel {
     private static boolean isCompositeLibraryMember(FileObject file) {
         FileObject resourcesFolder = getResourcesDirectory(file);
         if (resourcesFolder != null) {
-                if (FileUtil.isParentOf(resourcesFolder, file)) {
+                //test if the file is an indirect ancestor of the resources folder.
+                //the file cannot be in the resources folder itself
+                if (FileUtil.isParentOf(resourcesFolder, file) && !file.getParent().equals(resourcesFolder)) {
                     return true;
                 }
             }

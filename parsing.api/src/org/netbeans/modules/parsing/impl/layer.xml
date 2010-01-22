@@ -67,5 +67,13 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
-</filesystem>
+    <folder name="TaskList">
+        <folder name="Scanners">
+            <file name="JavaErrorsProvider.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.PushTaskScanner"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.parsing.impl.indexing.errors.TaskProvider"/>
+            </file>
+        </folder>
+    </folder>
 
+</filesystem>

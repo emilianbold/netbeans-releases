@@ -212,10 +212,16 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             StateImpl other = (StateImpl)obj;
             // we do not compare macroStates because in case of 
             // parsing from the same include sequence they are equal
-            return this.isCompileContext() == other.isCompileContext() &&
-                    this.isValid() == other.isValid() && 
-                    ( (this.inclState == null && other.inclState == null) ||
-                      (this.inclState.equals(other.inclState)));
+            if (this.isCompileContext() != other.isCompileContext()) {
+                return false;
+            }
+            if (this.isValid() != other.isValid()) {
+                return false;
+            }
+            if (this.inclState != other.inclState && (this.inclState == null || !this.inclState.equals(other.inclState))) {
+                return false;
+            }
+            return true;
         }
 
         @Override

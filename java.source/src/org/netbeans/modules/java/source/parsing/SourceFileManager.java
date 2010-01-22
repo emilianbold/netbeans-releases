@@ -189,26 +189,17 @@ public class SourceFileManager implements JavaFileManager {
     public ClassLoader getClassLoader (Location l) {
         return null;
     }
-    
-    public String inferBinaryName (final Location l, final JavaFileObject jfo) {        
-        try {                        
+
+    public String inferBinaryName (final Location l, final JavaFileObject jfo) {
+        try {
             if (jfo instanceof FileObjects.InferableJavaFileObject) {
                 final String result = ((FileObjects.InferableJavaFileObject)jfo).inferBinaryName();
                 if (result != null) {
                     return result;
                 }
             }
-            FileObject fo;
+            FileObject fo = URLMapper.findFileObject(jfo.toUri().toURL());
             FileObject root = null;
-            if (jfo instanceof SourceFileObject) {
-                fo = ((SourceFileObject)jfo).file;
-                root = ((SourceFileObject)jfo).root;
-            }
-            else {
-                //Should never happen in the IDE
-                fo = URLMapper.findFileObject(jfo.toUri().toURL());
-            }            
-            
             if (root == null) {
                 for (FileObject rc : this.sourceRoots.getRoots()) {
                     if (FileUtil.isParentOf(rc,fo)) {
@@ -216,24 +207,26 @@ public class SourceFileManager implements JavaFileManager {
                     }
                 }
             }
-            
+
             if (root != null) {
                 String relativePath = FileUtil.getRelativePath(root,fo);
                 int index = relativePath.lastIndexOf('.');
-                assert index > 0;                    
-                final String result = relativePath.substring(0,index).replace('/','.');                    
+                assert index > 0;
+                final String result = relativePath.substring(0,index).replace('/','.');
                 return result;
             }
         } catch (MalformedURLException e) {
             if (log.isLoggable(Level.SEVERE))
                 log.log(Level.SEVERE, e.getMessage(), e);
-        }        
+        }
         return null;
     }
 
     public boolean isSameFile(javax.tools.FileObject fileObject, javax.tools.FileObject fileObject0) {
-        return fileObject instanceof SourceFileObject 
-               && fileObject0 instanceof SourceFileObject
-               && ((SourceFileObject)fileObject).file == ((SourceFileObject)fileObject0).file;
+        return
+            fileObject instanceof SourceFileObject  &&
+            fileObject0 instanceof SourceFileObject &&
+            ((SourceFileObject)fileObject).handle.file != null &&
+            ((SourceFileObject)fileObject).handle.file == ((SourceFileObject)fileObject0).handle.file;
     }
 }

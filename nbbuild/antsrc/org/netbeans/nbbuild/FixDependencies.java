@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.FileScanner;
 import org.apache.tools.ant.Project;
@@ -66,7 +68,7 @@ public class FixDependencies extends Task {
     /** files to fix */
     private FileSet set;
     /** verify target */
-    private String target;
+    private String tgt;
     /** clean target */
     private String clean;
     /** relative path from module file to build script to use for verification */
@@ -75,6 +77,7 @@ public class FixDependencies extends Task {
     private boolean onlyChanged;
     /** fail on error */
     private boolean fail;
+    private boolean doSanity = true;
     
     
     /** tasks to be executed */
@@ -95,9 +98,13 @@ public class FixDependencies extends Task {
         this.set = new FileSet();
         return this.set;
     }
+
+    public void setSanityCheck(boolean s) {
+        doSanity = s;
+    }
     
     public void setBuildTarget (String s) {
-        target = s;
+        tgt = s;
     }
     
     public void setCleanTarget (String s) {
@@ -116,6 +123,7 @@ public class FixDependencies extends Task {
         fail = b;
     }
 
+    @Override
     public void execute () throws org.apache.tools.ant.BuildException {
         FileScanner scan = this.set.getDirectoryScanner(getProject());
         File dir = scan.getBasedir();
@@ -128,7 +136,7 @@ public class FixDependencies extends Task {
             File script = null;
             Ant task = null;
             Ant cleanTask = null;
-            if (ant != null && target != null) {
+            if (ant != null && tgt != null) {
                 task = (org.apache.tools.ant.taskdefs.Ant)getProject ().createTask ("ant");
                 script = FileUtils.getFileUtils().resolveFile(xml, ant);
                 if (!script.exists ()) {
@@ -141,7 +149,7 @@ public class FixDependencies extends Task {
                 }
                 task.setAntfile (script.getPath ());
                 task.setDir (script.getParentFile ());
-                task.setTarget (target);
+                task.setTarget (tgt);
                 if (clean != null) {
                     cleanTask = (Ant) getProject().createTask("ant");
                     cleanTask.setAntfile (script.getPath ());
@@ -155,14 +163,16 @@ public class FixDependencies extends Task {
                         log ("Cleaning " + clean + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
                         cleanTask.execute ();
                     }
-                    log ("Sanity check executes " + target + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
-                    task.execute ();
+                    if (doSanity) {
+                        log ("Sanity check executes " + tgt + " in " + script, org.apache.tools.ant.Project.MSG_INFO);
+                        task.execute ();
+                    }
                 } catch (BuildException ex) {
                     if (fail) {
                         throw ex;
                     }
 
-                    log("Skipping. Could not execute " + target + " in " + script, org.apache.tools.ant.Project.MSG_ERR);
+                    log("Skipping. Could not execute " + tgt + " in " + script, org.apache.tools.ant.Project.MSG_ERR);
                     continue;
                 }
             }
@@ -199,14 +209,25 @@ public class FixDependencies extends Task {
         data = null;
 
         for (Replace r : replaces) {
-            int idx = stream.indexOf ("<code-name-base>" + r.codeNameBase + "</code-name-base>");
-            if (idx == -1) continue;
-            
+            int md = stream.indexOf("<module-dependencies");
+            if (md == -1) {
+                throw new BuildException("No module dependencies in " + file);
+            }
+
+            int ed = stream.indexOf ("</module-dependencies>", md);
+            ed = ed == -1 ? stream.indexOf ("<module-dependencies/>", md) : ed;
+            if (ed == -1) {
+                ed = stream.length();
+            }
+
+            int idx = stream.indexOf ("<code-name-base>" + r.codeNameBase + "</code-name-base>", md);
+            if (idx == -1 || idx > ed) continue;
+
             int from = stream.lastIndexOf ("<dependency>", idx);
             if (from == -1) throw new BuildException ("No <dependency> tag before index " + idx);
             int after = stream.indexOf ("</dependency>", idx);
             if (after == -1) throw new BuildException ("No </dependency> tag after index " + idx);
-            after = findNonSpace (stream, after + "</dependency>".length ());
+            after = after + "</dependency>".length ();
             
             String remove = stream.substring (from, after);
             if (r.addCompileTime && remove.indexOf ("compile-dependency") == -1) {
@@ -218,10 +239,34 @@ public class FixDependencies extends Task {
             
             StringBuffer sb = new StringBuffer ();
             sb.append (stream.substring (0, from));
+            boolean prefix = false;
             
             for (Module m : r.modules) {
-                if (stream.indexOf ("<code-name-base>" + m.codeNameBase + "</code-name-base>") != -1) {
-                    continue;
+                if (m.codeNameBase.equals(r.codeNameBase)) {
+                    if (remove.contains("<implementation-version/>")) {
+                        return false;
+                    }
+
+                    String b = "<specification-version>";
+                    int specBeg = remove.indexOf(b);
+                    int specEnd = remove.indexOf("</specification-version>");
+                    if (specBeg != -1 && specEnd != -1) {
+                        String v = remove.substring(specBeg + b.length(), specEnd);
+                        if (olderThanOrEqual(m.specVersion, v)) {
+                            return false;
+                        }
+                    }
+                } else {
+                    if (stream.indexOf ("<code-name-base>" + m.codeNameBase + "</code-name-base>") != -1) {
+                        continue;
+                    }
+                }
+
+                if (prefix) {
+                    sb.append('\n');
+                    for (int i = from - 1; stream.charAt(i) == ' '; i--) {
+                        sb.append(' ');
+                    }
                 }
 
                 int beg = remove.indexOf (r.codeNameBase);
@@ -243,6 +288,7 @@ public class FixDependencies extends Task {
                 }
                 
                 sb.append (a);
+                prefix = true;
             }
             
             sb.append (stream.substring (after));
@@ -263,7 +309,7 @@ public class FixDependencies extends Task {
     private void simplify (
         File file, File script, org.apache.tools.ant.taskdefs.Ant task, org.apache.tools.ant.taskdefs.Ant cleanTask
     ) throws IOException, BuildException {
-        if (ant == null || target == null) {
+        if (ant == null || tgt == null) {
             return;
         }
         
@@ -328,7 +374,7 @@ public class FixDependencies extends Task {
 
             String result;
             try {
-                log ("Executing target " + target + " in " + script, Project.MSG_INFO);
+                log ("Executing target " + tgt + " in " + script, Project.MSG_INFO);
                 task.execute ();
                 result = "Ok";
                 success.append (dep);
@@ -349,10 +395,9 @@ public class FixDependencies extends Task {
             fw.close ();
         }
         
-        log ("Final verification runs " + target + " in " + script, Project.MSG_INFO);
+        log ("Final verification runs " + tgt + " in " + script, Project.MSG_INFO);
         // now verify, if there is a failure then something is wrong now
         task.execute ();
-        
         if (success.length () == 0) {
             log ("No dependencies removed from " + script);
         } else {
@@ -365,6 +410,22 @@ public class FixDependencies extends Task {
             from++;
         }
         return from;
+    }
+
+    private static boolean olderThanOrEqual(String v1, String v2) {
+        String[] arr1 = v1.split("\\.");
+        String[] arr2 = v2.split("\\.");
+        int min = Math.min(arr1.length, arr2.length);
+        for (int i = 0; i < min; i++) {
+            int i1 = Integer.parseInt(arr1[i]);
+            int i2 = Integer.parseInt(arr2[i]);
+
+            if (i1 == i2) {
+                continue;
+            }
+            return i1 < i2;
+        }
+        return arr1.length <= arr2.length;
     }
 
     public static final class Replace extends Object {

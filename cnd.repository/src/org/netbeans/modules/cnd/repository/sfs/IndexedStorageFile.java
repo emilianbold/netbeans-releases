@@ -100,7 +100,9 @@ class IndexedStorageFile extends FileStorage {
                 recreate = true;
             }
 
-            indexFile.delete();
+            if (!indexFile.delete()) {
+                System.err.println("Cannot delete repository index file "+indexFile.getAbsolutePath()); // NOI18N
+            }
 
             if (usedSize == 0) {
                 fileRWAccess.truncate(0);
@@ -113,7 +115,9 @@ class IndexedStorageFile extends FileStorage {
             fileRWAccess.truncate(0);
 
             if (indexFile.exists()) {
-                indexFile.delete();
+                if (!indexFile.delete()) {
+                    System.err.println("Cannot delete repository index file "+indexFile.getAbsolutePath()); // NOI18N
+                }
             }
 
             usedSize = 0;

@@ -54,19 +54,18 @@ import java.util.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
+import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
 
 /**
  * Hides folders that have 'Localy removed' status.
  * 
  * @author Maros Sandor
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.VisibilityQueryImplementation.class)
-public class CvsVisibilityQuery implements VisibilityQueryImplementation2, VersioningListener {
+public class CvsVisibilityQuery extends VCSVisibilityQuery implements VersioningListener {
 
     private static CvsVisibilityQuery instance;
     private static final String MARKER_CVS_REMOVED = "CVS/.nb-removed";
 
-    private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private final RequestProcessor.Task refreshVisibilityTask;
 
     public CvsVisibilityQuery() {
@@ -79,14 +78,12 @@ public class CvsVisibilityQuery implements VisibilityQueryImplementation2, Versi
         });        
     }
 
-    public boolean isVisible(FileObject fileObject) {
+    public boolean isVisible(File file) {
         long t = System.currentTimeMillis();
-        CvsVersioningSystem.LOG.log(Level.FINE, "isVisible {0}", new Object[] { fileObject });
+        CvsVersioningSystem.LOG.log(Level.FINE, "isVisible {0}", new Object[] { file });
         boolean ret = true;
         try {
-            if (fileObject.isData()) return ret;
-            File file = FileUtil.toFile(fileObject);
-            ret = isVisible(file);
+            ret = file == null || file.isFile() || !isHiddenFolder(file);
             return ret;
         } finally {
             if(CvsVersioningSystem.LOG.isLoggable(Level.FINE)) {
@@ -95,22 +92,6 @@ public class CvsVisibilityQuery implements VisibilityQueryImplementation2, Versi
         }
     }
     
-    public boolean isVisible(File file) {
-        return file == null || file.isFile() || !isHiddenFolder(file);
-    }
-
-    public synchronized void addChangeListener(ChangeListener l) {
-        ArrayList<ChangeListener> newList = new ArrayList<ChangeListener>(listeners);
-        newList.add(l);
-        listeners = newList;
-    }
-
-    public synchronized void removeChangeListener(ChangeListener l) {
-        ArrayList<ChangeListener> newList = new ArrayList<ChangeListener>(listeners);
-        newList.remove(l);
-        listeners = newList;
-    }
-
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
             File file = (File) event.getParams()[0];
@@ -150,13 +131,6 @@ public class CvsVisibilityQuery implements VisibilityQueryImplementation2, Versi
         }
     }
     
-    private synchronized void fireVisibilityChanged() {
-        ChangeEvent event = new ChangeEvent(this);
-        for (ChangeListener listener : listeners) {
-            listener.stateChanged(event);          
-        }          
-    }
-
     private static void refreshVisibility() {
         if (instance != null) {
             instance.refreshVisibilityTask.schedule(100);

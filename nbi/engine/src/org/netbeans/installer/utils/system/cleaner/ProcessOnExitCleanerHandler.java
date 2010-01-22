@@ -51,12 +51,13 @@ import org.netbeans.installer.utils.helper.ErrorLevel;
  */
 
 
-public abstract class ProcessOnExitCleanerHandler extends OnExitCleanerHandler {
+public abstract class ProcessOnExitCleanerHandler extends SystemPropertyOnExitCleanerHandler {
     protected List <String> runningCommand;
     private String cleanerFileName ;
-    
-    protected ProcessOnExitCleanerHandler(String cleanerFileName) {
-        this.cleanerFileName = cleanerFileName;
+    private static final String DELETING_FILES_LIST = "deleteNbiFiles";
+
+    protected ProcessOnExitCleanerHandler(String cleanerFileName) {        
+        this.cleanerFileName = cleanerFileName;        
     }
     protected File getCleanerFile() throws IOException{
         String name = cleanerFileName;
@@ -69,25 +70,26 @@ public abstract class ProcessOnExitCleanerHandler extends OnExitCleanerHandler {
         return File.createTempFile(name, ext, SystemUtils.getTempDirectory());        
     }
     
-    protected File getListFile() throws IOException{
+    protected File createTempFileWithFilesList() throws IOException{
         return File.createTempFile(DELETING_FILES_LIST,null, SystemUtils.getTempDirectory());        
     }
     
     protected abstract void writeCleaningFileList(File listFile, List <String> files) throws IOException;
     protected abstract void writeCleaner(File cleanerFile) throws IOException;
-    
-    public void init(){
-        if(fileList.size() > 0) {
+
+    public void init(){        
+        List <String> fileList = getFilesList();
+
+        if(fileList.size() > 0) {            
             try {
-            File listFile = getListFile();
-            
-            List <String> paths = new ArrayList <String> ();
-            for(File f : fileList) {
-                paths.add(f.getAbsolutePath());
-            }
-            Collections.sort(paths, Collections.reverseOrder());
-            
-            
+                List<String> paths = new ArrayList<String>();
+                for (String s : fileList) {
+                    if (!paths.contains(s)) {
+                            paths.add(s);
+                    }
+                }
+                Collections.sort(paths, Collections.reverseOrder());
+                File listFile = createTempFileWithFilesList();
                 writeCleaningFileList(listFile, paths);                
                 File cleanerFile = getCleanerFile();
                 writeCleaner(cleanerFile);

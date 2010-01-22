@@ -295,7 +295,7 @@ final public class PersistenceHandler implements PersistenceObserver {
     }
     
     
-    /** Implements <code>NbTopManager.WindowSystem</code> interface method. */
+    /** Implements <code>WindowSystem</code> interface method. */
     public synchronized void save() {
         if(DEBUG) {
             debugLog("## PersistenceHandler.save"); // NOI18N

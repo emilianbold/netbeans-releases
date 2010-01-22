@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.jmx.test.mbeanwizard;
 
-import java.util.ArrayList;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.Attribute;
 import org.netbeans.modules.jmx.test.helpers.MBean;
 import org.netbeans.modules.jmx.test.helpers.Operation;
@@ -68,20 +66,6 @@ public class CreateOneFeatureMBean extends MBeanWizardTestCase {
         super(name);
     }
     
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateOneFeatureMBean("createOneFeatureMBean1"));
-        suite.addTest(new CreateOneFeatureMBean("createOneFeatureMBean2"));
-        suite.addTest(new CreateOneFeatureMBean("createOneFeatureMBean3"));
-        return suite;
-    }
-    
     public void setUp() {
         // Select project node
         selectNode(PROJECT_NAME_MBEAN_FUNCTIONAL);
@@ -98,7 +82,7 @@ public class CreateOneFeatureMBean extends MBeanWizardTestCase {
      * MBean from existing java class
      * with one simple attribute and one two parameter operation
      */
-    public void createOneFeatureMBean1() {
+    public void testCreateOneFeatureMBean1() {
         
         System.out.println("============  createOneFeatureMBean1  ============");
         
@@ -118,7 +102,7 @@ public class CreateOneFeatureMBean extends MBeanWizardTestCase {
      * MBean from existing java class wrapped as MXBean
      * with one simple attribute and one two parameter operation
      */
-    public void createOneFeatureMBean2() {
+    public void testCreateOneFeatureMBean2() {
         
         System.out.println("============  createOneFeatureMBean2  ============");
         
@@ -138,7 +122,7 @@ public class CreateOneFeatureMBean extends MBeanWizardTestCase {
      * StandardMBean with metadata
      * with one simple attribute and one two parameter operation
      */
-    public void createOneFeatureMBean3() {
+    public void testCreateOneFeatureMBean3() {
         
         System.out.println("============  createOneFeatureMBean3  ============");
         
