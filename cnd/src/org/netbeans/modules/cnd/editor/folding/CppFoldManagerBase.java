@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor;
+package org.netbeans.modules.cnd.editor.folding;
 
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.spi.editor.fold.FoldManager;
@@ -50,7 +50,7 @@ import org.netbeans.spi.editor.fold.FoldManager;
  *  in the java/editor module.
  */
 
-public abstract class CppFoldManagerBase implements FoldManager {
+abstract class CppFoldManagerBase implements FoldManager {
 
     public static final FoldType INITIAL_COMMENT_FOLD_TYPE =
 		    new FoldType("initial-comment"); // NOI18N

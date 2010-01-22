@@ -62,7 +62,7 @@ made subject to such option by the copyright holder.
         <folder name="text">
 
             <folder name="x-cnd-sourcefile">
-                <file name="org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance">
+                <file name="org-netbeans-modules-cnd-editor-folding-FakeHighlightsFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
                 </file>
             </folder>
@@ -71,18 +71,18 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
 
                 <file name="FakeHighlightsFactory.shadow">
-                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance"/>
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-editor-folding-FakeHighlightsFactory.instance"/>
                 </file>
 
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
+                    <file name="org-netbeans-modules-cnd-editor-folding-CppCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="2500"/>
                     </file>
                 </folder>
                 
                 <folder name="FoldManager">
                     <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
-                    <file name="org-netbeans-modules-cnd-editor-CppFoldManager$Factory.instance"/>
+                    <file name="org-netbeans-modules-cnd-editor-folding-CppFoldManager$Factory.instance"/>
                 </folder>
 
                 <folder name="Popup">
@@ -95,18 +95,18 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
 
                 <file name="FakeHighlightsFactory.shadow">
-                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance"/>
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-editor-folding-FakeHighlightsFactory.instance"/>
                 </file>
 
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
+                    <file name="org-netbeans-modules-cnd-editor-folding-CppCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="2500"/>
                     </file>
                 </folder>
 
                 <folder name="FoldManager">
                     <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
-                    <file name="org-netbeans-modules-cnd-editor-CppFoldManager$Factory.instance"/>
+                    <file name="org-netbeans-modules-cnd-editor-folding-CppFoldManager$Factory.instance"/>
                 </folder>
 
                 <folder name="Popup">
@@ -120,18 +120,18 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
 
                 <file name="FakeHighlightsFactory.shadow">
-                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-editor-parser-FakeHighlightsFactory.instance"/>
+                    <attr name="originalFile" stringvalue="Editors/text/x-cnd-sourcefile/org-netbeans-modules-cnd-editor-folding-FakeHighlightsFactory.instance"/>
                 </file>
 
                 <folder name="SideBar">
-                    <file name="org-netbeans-modules-cnd-editor-CppCodeFoldingSideBarFactory.instance">
+                    <file name="org-netbeans-modules-cnd-editor-folding-CppCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="2500"/>
                     </file>
                 </folder>
                 
                 <folder name="FoldManager">
                     <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
-                    <file name="org-netbeans-modules-cnd-editor-CppFoldManager$Factory.instance"/>
+                    <file name="org-netbeans-modules-cnd-editor-folding-CppFoldManager$Factory.instance"/>
                 </folder>
                 <folder name="Popup">
                     <file name="generate-fold-popup">
@@ -144,7 +144,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
                 <folder name="Toolbars">
                     <folder name="Default">
-                        <file name="org-netbeans-modules-cnd-editor-parser-NavigateAction.instance">
+                        <file name="org-netbeans-modules-cnd-editor-parser-ctags-NavigateAction.instance">
                             <attr name="position" intvalue="900"/>
                         </file>
                     </folder>

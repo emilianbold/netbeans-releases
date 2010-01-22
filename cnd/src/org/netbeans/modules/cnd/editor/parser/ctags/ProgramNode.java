@@ -39,13 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package  org.netbeans.modules.cnd.editor.parser;
+package  org.netbeans.modules.cnd.editor.parser.ctags;
 
 import org.openide.loaders.DataObject;
 
 public class ProgramNode extends ViewNode {
     public ProgramNode(DataObject dao, String name, int lineno, char kind, String scope, int scopeCluster, int cluster) {
         super(name, dao, lineno, kind, scope, scopeCluster, cluster);
-        setIconBaseWithExtension("org/netbeans/modules/cnd/editor/parser/program.gif"); // NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/cnd/editor/parser/ctags/program.gif"); // NOI18N
     }
 }

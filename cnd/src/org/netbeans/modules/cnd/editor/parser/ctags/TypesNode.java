@@ -39,57 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package  org.netbeans.modules.cnd.editor.parser;
+package  org.netbeans.modules.cnd.editor.parser.ctags;
 
-public class CtagsTokenEvent {
-    private String token = null;
-    private char kind = (char)0;
-    private String scope = null;
-    private int scopeKind = -1;
-    private int lineNo = 0;
+import org.openide.loaders.DataObject;
 
-    public static final int SCOPE_CLASS = 0; // C, C++
-    public static final int SCOPE_STRUCT = 1; // C, C++
-    public static final int SCOPE_UNION = 2; // C, C++
-    public static final int SCOPE_NAMESPACE = 3; // C, C++
-    public static final int SCOPE_MODULE = 4; // Fortran
-    public static final int SCOPE_TYPE = 5; // Fortran
-    public static final int SCOPE_SUBROUTINE = 6; // Fortran
-    public static final int SCOPE_BLOCK_DATA = 7; // Fortran
-    
-    /** Creates a new instance of CtagsParserEvent */
-    public CtagsTokenEvent(String token, int lineNo) {
-        this.token = token;
-        this.lineNo = lineNo;
-    }
-
-    
-    /** Creates a new instance of CtagsParserEvent */
-    public CtagsTokenEvent(String token, char kind, String scope, int scopeKind, int lineNo) {
-        this.token = token;
-        this.kind = kind;
-        this.scope = scope;
-        this.scopeKind = scopeKind;
-        this.lineNo = lineNo;
-    }
-    
-    public String getToken() {
-        return token;
-    }
-    
-    public char getKind() {
-        return kind;
-    }
-    
-    public String getScope() {
-        return scope;
-    }
-    
-    public int getScopeKind() {
-        return scopeKind;
-    }
-    
-    public int getLineNo() {
-        return lineNo;
+public class TypesNode extends ViewNode {
+    public TypesNode(DataObject dao, String name, int lineno, char kind, String scope, int scopeCluster, int cluster) {
+        super(name, dao, lineno, kind, scope, scopeCluster, cluster);
+        setIconBaseWithExtension("org/netbeans/modules/cnd/editor/parser/ctags/types.gif"); // NOI18N
     }
 }

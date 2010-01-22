@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.cnd.remote.fs;
 
+import junit.framework.Test;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 
 /**
  *
@@ -65,5 +67,9 @@ public class RemoteFileSupportTest extends CndBaseTestCase {
             assertEquals(pair[1], RemoteFileSupport.fixCaseSensitivePathIfNeeded(pair[0]));
             assertEquals(pair[0], RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(pair[1]));
         }
+    }
+
+    public static Test suite() {
+        return new NativeExecutionBaseTestSuite(RemoteFileSupportTest.class);
     }
 }

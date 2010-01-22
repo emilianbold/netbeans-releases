@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.parser;
+package org.netbeans.modules.cnd.editor.folding;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -55,13 +55,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.cnd.editor.parser.CppFile;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 
-public class CppMetaModel implements PropertyChangeListener {
+final class CppMetaModel implements PropertyChangeListener {
 
     // TODO: need to get reparse time from settings
     private int reparseDelay = 1000;
@@ -88,6 +89,7 @@ public class CppMetaModel implements PropertyChangeListener {
     	return instance;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (TopComponent.Registry.PROP_OPENED.equals(evt.getPropertyName())){
             checkClosed(evt.getNewValue());
@@ -166,6 +168,7 @@ public class CppMetaModel implements PropertyChangeListener {
 			getShortName(doc));
             }
 	    task = getCppParserRP().post(new Runnable() {
+                @Override
 		public void run() {
 		    CppFile file = new CppFile(title);
 		    map.put(title, file);
@@ -179,6 +182,7 @@ public class CppMetaModel implements PropertyChangeListener {
 			getShortName(doc));
             }
 	    task = getCppParserRP().post(new Runnable() {
+                @Override
 		public void run() {
 		    file.startParsing(doc);
                     fireObjectParsed(doc);
@@ -235,10 +239,4 @@ public class CppMetaModel implements PropertyChangeListener {
 //	}
     }
 
-    private /*synchronized*/ void fireParsingEvent(ParsingEvent evt) {
-        List<ParsingListener> list = new ArrayList<ParsingListener>(listeners);
-	for (ParsingListener listener : list) {
-	    listener.objectParsed(evt);
-	}
-    }
 }

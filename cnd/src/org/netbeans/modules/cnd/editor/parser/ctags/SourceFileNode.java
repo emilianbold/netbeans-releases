@@ -39,24 +39,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor;
+package  org.netbeans.modules.cnd.editor.parser.ctags;
 
-import javax.swing.JComponent;
-import javax.swing.text.JTextComponent;
-import org.netbeans.editor.CodeFoldingSideBar;
-import org.netbeans.editor.SideBarFactory;
+import java.awt.Image;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 
-/**
- *  C/C++ Code Folding Side Bar Factory, responsible for creating CodeFoldingSideBar
- *  Plugged via layer.xml
- */
-public class CppCodeFoldingSideBarFactory implements SideBarFactory{
+public class SourceFileNode extends ViewNode {
 
-    public CppCodeFoldingSideBarFactory() {
+    private final Node delegate;
+
+    public SourceFileNode(DataObject dao, String name, int lineno,
+		char kind, String scope, int scopeCluster, int cluster) {
+        super(name, dao, lineno, kind, scope, scopeCluster, cluster);
+        this.delegate = dao.getNodeDelegate();
     }
 
-    public JComponent createSideBar(JTextComponent target) {
-        return new CodeFoldingSideBar(target);
+    @Override
+    public Image getIcon(int type) {
+        return delegate.getIcon(type);
     }
-
 }

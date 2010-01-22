@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package  org.netbeans.modules.cnd.editor.parser;
+package  org.netbeans.modules.cnd.editor.parser.ctags;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -100,6 +100,7 @@ public class CtagsParser {
 	    this.skipAll = skipAll;
         }
         
+        @Override
         public void run() {
 	    String line;
 
@@ -297,8 +298,9 @@ public class CtagsParser {
                 }
             }
             tokenNo++;
-            if (tokenNo > 1)
+            if (tokenNo > 1) {
                 break;
+            }
         }
         if (ctagsTokenListener != null) {
             ctagsTokenListener.gotToken(new CtagsTokenEvent(name, lineno));
@@ -350,8 +352,9 @@ public class CtagsParser {
 	    }
 	}
 	
-	if (ctagsCommandPlusOptions == null)
-	    System.err.println("cpp - cannot locate ctags utility..."); // NOI18N
+	if (ctagsCommandPlusOptions == null) {
+            System.err.println("cpp - cannot locate ctags utility..."); // NOI18N
+        }
 
 	return ctagsCommandPlusOptions;
     }
@@ -401,10 +404,10 @@ public class CtagsParser {
         int exit = 0;
         
 	String ctagsCommand = getCtagsCommand();
-	if (ctagsCommand == null)
-	    return -1;
+	if (ctagsCommand == null) {
+            return -1;
+        }
 
-        String dir = System.getProperty("user.dir");
         Process proc = Runtime.getRuntime().exec(ctagsCommand + " " + inputFileName); // NOI18N
         OutputMonitor emonitor = new OutputMonitor(new InputStreamReader(proc.getErrorStream()), true);
         emonitor.start();
