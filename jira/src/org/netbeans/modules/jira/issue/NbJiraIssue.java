@@ -254,6 +254,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         attributes = null; // reset
         availableOperations = null;
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 ((JiraIssueNode)getNode()).fireDataChanged();
                 fireDataChanged();
@@ -261,10 +262,12 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         });
     }
 
+    @Override
     public JiraRepository getRepository() {
         return repository;
     }
 
+    @Override
     public String getID() {
 //        return taskData.getTaskId(); // XXX id or key ???
         return getID(taskData);
@@ -274,6 +277,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         return getID(taskData);
     }
 
+    @Override
     public String getSummary() {
         return getSummary(taskData);
     }
@@ -475,6 +479,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      * Reloads the task data
      * @return true if successfully refreshed
      */
+    @Override
     public boolean refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         return refresh(getID(), false);
@@ -753,6 +758,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     }
 
     // XXX carefull - implicit double refresh
+    @Override
     public void addComment(String comment, boolean close) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         if (Jira.LOG.isLoggable(Level.FINE)) {
@@ -777,6 +783,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         }
 
         JiraCommand submitCmd = new JiraCommand() {
+            @Override
             public void execute() throws CoreException, IOException {
                 submitAndRefresh();
             }
@@ -818,6 +825,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         final TaskAttribute attAttribute = new TaskAttribute(taskData.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
         mapper.applyTo(attAttribute);
         JiraCommand cmd = new JiraCommand() {
+            @Override
             public void execute() throws CoreException, IOException {
 //                refresh(); // XXX no refreshing may cause a midair collision - we should refresh in such a case and attach then
                 if (Jira.LOG.isLoggable(Level.FINER)) {
@@ -1207,6 +1215,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
             Jira.LOG.finest("submitAndRefresh: id: " + getID() + ", new: " + wasNew);
         }
         JiraCommand submitCmd = new JiraCommand() {
+            @Override
             public void execute() throws CoreException {
                 // submit
                 if (Jira.LOG.isLoggable(Level.FINEST)) {
@@ -1224,6 +1233,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         }
         
         JiraCommand refreshCmd = new JiraCommand() {
+            @Override
             public void execute() throws CoreException {
                 if (Jira.LOG.isLoggable(Level.FINEST)) {
                     Jira.LOG.finest("submitAndRefresh, refreshCmd: id: " + getID() + ", new: " + wasNew);
@@ -1471,6 +1481,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         public void getAttachementData(final OutputStream os) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
             JiraCommand cmd = new JiraCommand() {
+                @Override
                 public void execute() throws CoreException, IOException {
                     if (Jira.LOG.isLoggable(Level.FINER)) {
                         Jira.LOG.finer("getAttachmentData: id: " + Attachment.this.getId() + ", issue: " + getKey());
