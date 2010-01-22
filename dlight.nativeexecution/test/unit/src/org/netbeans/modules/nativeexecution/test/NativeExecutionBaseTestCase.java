@@ -55,6 +55,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 public class NativeExecutionBaseTestCase extends NbTestCase {
@@ -255,4 +256,12 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         }
     }
 
+    /** A convenience wrapper for Thread.sleep */
+    protected static void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 }
