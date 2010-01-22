@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -314,8 +313,12 @@ public final class SuiteProject implements Project {
     }
 
     public void refreshBuildScripts(boolean checkForProjectXmlModified) throws IOException {
+        NbPlatform platform = getPlatform(true);
+        if (platform == null) { // #169855
+            return;
+        }
         String buildImplPath =
-                getPlatform(true).getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
+                platform.getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
                 || eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
                 ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
         genFilesHelper.refreshBuildScript(
