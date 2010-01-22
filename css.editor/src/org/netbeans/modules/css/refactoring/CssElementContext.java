@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.refactoring;
+package org.netbeans.modules.css.refactoring;
 
 import java.util.Collection;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
