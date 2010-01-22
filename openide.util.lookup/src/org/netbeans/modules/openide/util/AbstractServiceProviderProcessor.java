@@ -72,8 +72,6 @@ import javax.tools.StandardLocation;
 /**
  * Infrastructure for generating {@code META-INF/services/*} and
  * {@code META-INF/namedservices/*} registrations from annotations.
- *
- * NOTE: This class is duplicated in openide.util and openide.util.lookup to prevent implementation dependency.
  */
 public abstract class AbstractServiceProviderProcessor extends AbstractProcessor {
 
