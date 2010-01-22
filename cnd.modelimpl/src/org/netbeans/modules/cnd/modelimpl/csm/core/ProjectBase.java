@@ -729,7 +729,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 time = System.currentTimeMillis();
             }
 
-            if (disposing) {
+            if (isDisposing()) {
                 if (TraceFlags.TRACE_MODEL_STATE) {
                     System.err.printf("filling parser queue interrupted for %s\n", getName());
                 }
@@ -838,7 +838,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (enougth.get()) {
             return false;
         }
-        if (disposing) {
+        if (isDisposing()) {
             if (TraceFlags.TRACE_MODEL_STATE) {
                 System.err.printf("filling parser queue interrupted for %s\n", getName());
             }
@@ -939,23 +939,23 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private void onAddedToModelImpl(boolean isRestored) {
 
-        if (disposing) {
+        if (isDisposing()) {
             return;
         }
 
         try {
             disposeLock.readLock().lock();
-            if (disposing) {
+            if (isDisposing()) {
                 return;
             }
 
             ensureFilesCreated();
-            if (disposing) {
+            if (isDisposing()) {
                 return;
             }
 
             ensureChangedFilesEnqueued();
-            if (disposing) {
+            if (isDisposing()) {
                 return;
             }
             Notificator.instance().flush();
@@ -969,7 +969,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         try {
             disposeLock.readLock().lock();
-            if (isRestored && !disposing) {
+            if (isRestored && !isDisposing()) {
                 // FIXUP for #109105 fix the reason instead!
                 try {
                     // TODO: refactor this - remove waiting here!
@@ -981,7 +981,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     DiagnosticExceptoins.register(e);
                 }
             }
-            if (disposing) {
+            if (isDisposing()) {
                 return;
             }
             Notificator.instance().flush();
@@ -1255,7 +1255,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, APTMacroMap.State postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
         FileImpl csmFile = null;
-        if (disposing) {
+        if (isDisposing()) {
             return null;
         }
         csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
@@ -1265,7 +1265,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             preprocHandler.getMacroMap().setState(postIncludeState);
             return csmFile;
         }
-        if (disposing) {
+        if (isDisposing()) {
             return csmFile;
         }
         APTPreprocHandler.State newState = preprocHandler.getState();
@@ -1299,7 +1299,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         boolean updateFileContainer = false;
         try {
-            if (disposing) {
+            if (isDisposing()) {
                 return csmFile;
             }
             if (triggerParsingActivity) {
@@ -1396,7 +1396,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             return csmFile;
         } finally {
-            if (!disposing && updateFileContainer) {
+            if (!isDisposing() && updateFileContainer) {
                 getFileContainer().put();
             }
         }
@@ -1951,11 +1951,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public final boolean isValid() {
-        return platformProject != null && !disposing;
+        return platformProject != null && !isDisposing();
     }
 
     public void setDisposed() {
-        disposing = true;
+        disposing.set(true);
         synchronized (initializationTaskLock) {
             if (initializationTask != null) {
                 initializationTask.cancel();
@@ -1967,7 +1967,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public final boolean isDisposing() {
-        return disposing;
+        return disposing.get();
     }
 
     public final void dispose(final boolean cleanPersistent) {
@@ -2086,8 +2086,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public boolean isStable(CsmFile skipFile) {
-        if (status == Status.Ready && !disposing) {
-            return !ParserQueue.instance().hasFiles(this, (FileImpl) skipFile);
+        if (status == Status.Ready && !isDisposing()) {
+            return !ParserQueue.instance().hasPendingProjectRelatedWork(this, (FileImpl) skipFile);
         }
         return false;
     }
@@ -2103,7 +2103,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         try {
             disposeLock.readLock().lock();
 
-            if (!disposing) {
+            if (!isDisposing()) {
                 fixFakeRegistration(libsAlreadyParsed);
             }
         } catch (Exception e) {
@@ -2118,6 +2118,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
             if (!libsAlreadyParsed) {
                 ParseFinishNotificator.onParseFinish(this);
+            }
+            // notify client waiting for end of fake registration
+            synchronized (waitParseLock) {
+                waitParseLock.notifyAll();
             }
         }
         if (TraceFlags.PARSE_STATISTICS) {
@@ -2162,7 +2166,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     break;
                 }
             }
-            FixRegistrationRunnable r = new FixRegistrationRunnable(countDownLatch, list, libsAlreadyParsed);
+            FixRegistrationRunnable r = new FixRegistrationRunnable(countDownLatch, list, libsAlreadyParsed, disposing);
             PROJECT_FILES_WORKER.post(r);
         }
         try {
@@ -2690,7 +2694,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * when the project is being disposed)
      *
      */
-    private volatile boolean disposing;
+    private final AtomicBoolean disposing = new AtomicBoolean(false);
     private final ReadWriteLock disposeLock = new ReentrantReadWriteLock();
     private CharSequence uniqueName = null; // lazy initialized
     private final Map<CharSequence, CsmUID<CsmNamespace>> namespaces;
@@ -2897,15 +2901,19 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         private final CountDownLatch countDownLatch;
         private final List<CsmUID<CsmFile>> files;
         private final boolean libsAlreadyParsed;
-
-        private FixRegistrationRunnable(CountDownLatch countDownLatch, List<CsmUID<CsmFile>> files, boolean libsAlreadyParsed){
+        private final AtomicBoolean cancelled;
+        private FixRegistrationRunnable(CountDownLatch countDownLatch, List<CsmUID<CsmFile>> files, boolean libsAlreadyParsed, AtomicBoolean cancelled){
             this.countDownLatch = countDownLatch;
             this.files = files;
             this.libsAlreadyParsed = libsAlreadyParsed;
+            this.cancelled = cancelled;
         }
         public void run() {
             try {
                 for(CsmUID<CsmFile> file : files) {
+                    if (cancelled.get()) {
+                        return;
+                    }
                     if (file == null){
                         return;
                     }
