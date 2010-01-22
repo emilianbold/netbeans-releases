@@ -105,7 +105,6 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 //            Exceptions.printStackTrace(ex);
 //        }
 //    }
-
     /**
      * This test assures that only first call to getHostInfo does the job.
      * So any subsequent call should return cached result.
@@ -130,6 +129,7 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 
             Thread fetchingThread = new Thread(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         HostInfoUtils.getHostInfo(local);
@@ -230,7 +230,6 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 //            System.setProperty("dlight.nativeexecution.SlowHostInfoProviderEnabled", "false"); // NOI18N
 //        }
 //    }
-
 //    @Test
 //    public void testGetPlatformLocal() throws Exception {
 //        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
@@ -264,12 +263,10 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
 //                break;
 //        }
 //    }
-
 //    @Test
 //    public void testGetPlatformRemote() throws Exception {
 //        testGetPlatform("my_host", "my_login", 22, "pwd", "SOLARIS", "86");
 //    }
-
 //    private void testGetPlatform(String host, String user, int port, String passwd,
 //            String osTypeShouldContain, String hardwareTypeShouldContain) throws Exception {
 //        ExecutionEnvironment env = ExecutionEnvironmentFactory.createNew(user, host, port);
@@ -337,6 +334,11 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
             return;
         }
 
+        if (!info.getOSFamily().isUnix()) {
+            System.out.println("Skipped on " + info.getOSFamily().name()); // NOI18N
+            return;
+        }
+
         File testDir = new File(info.getTempDirFile(), "some dir"); // NOI18N
         testDir.mkdir();
         File testFile = File.createTempFile("some (", ") file", testDir); // NOI18N
@@ -383,6 +385,7 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
         assertNotNull(info);
 
         if (info.getOSFamily() != HostInfo.OSFamily.WINDOWS) {
+            System.out.println("Skipped on " + info.getOSFamily().name()); // NOI18N
             return;
         }
 
@@ -426,7 +429,6 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
             testDir.delete();
         }
     }
-
 //    private void testLoggers() {
 //        Logger logger = Logger.getAnonymousLogger();
 //        logger.setLevel(Level.FINEST);
