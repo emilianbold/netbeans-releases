@@ -235,12 +235,15 @@ public class MakeActionProvider implements ActionProvider {
         return projectDescriptor;
     }
 
+    @Override
     public String[] getSupportedActions() {
         return supportedActions;
     }
 
+    @Override
     public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
+            project.setDeleted();
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return;
         }
@@ -352,6 +355,7 @@ public class MakeActionProvider implements ActionProvider {
                 public boolean cancel() {
                     return actionWorker.cancel();
                 }
+                @Override
                 public void runImpl() {
                     try {
                         if (!ConnectionManager.getInstance().isConnectedTo(record.getExecutionEnvironment())) {
@@ -368,6 +372,7 @@ public class MakeActionProvider implements ActionProvider {
                         final String message = MessageFormat.format(getString("ERR_Cant_Connect"), record.getDisplayName()); //NOI18N
                         final String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
                                         message, title, JOptionPane.ERROR_MESSAGE);
@@ -979,6 +984,7 @@ public class MakeActionProvider implements ActionProvider {
         return targetNames;
     }
 
+    @Override
     public boolean isActionEnabled(String command, Lookup context) {
         if (!isProjectDescriptorLoaded()) {
             return false;
@@ -1416,6 +1422,7 @@ public class MakeActionProvider implements ActionProvider {
 
         protected abstract void runImpl();
 
+        @Override
         public final void run() {
             thread = Thread.currentThread();
             if (!cancelled.get()) {
@@ -1423,6 +1430,7 @@ public class MakeActionProvider implements ActionProvider {
             }
         }
 
+        @Override
         public boolean cancel() {
             cancelled.set(true);
             if (thread != null) { // we never set it back to null => no sync
@@ -1477,6 +1485,7 @@ public class MakeActionProvider implements ActionProvider {
             return command;
         }
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             if (evt.getSource() == buildButton) {
                 command = COMMAND_BUILD;

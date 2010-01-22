@@ -166,6 +166,9 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
 
     private void addExecutables(File dir, List<String> filesAdded) {
         File[] files = dir.listFiles();
+        if (files == null) {
+            return;
+        }
         for (int i = 0; i < files.length; i++) {
             if (files[i].isDirectory()) {
                 // FIXUP: is this the best way to deal with files under SCCS?

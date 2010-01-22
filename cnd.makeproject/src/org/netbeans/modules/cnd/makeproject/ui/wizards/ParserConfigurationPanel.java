@@ -104,11 +104,14 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                     if (dir != null) {
                         buf.append(dir.getAbsolutePath());
                         if (dir.isDirectory()) {
-                            for (File sub : dir.listFiles()){
-                                if (sub.isDirectory()) {
-                                    if (sub.getName().toLowerCase().endsWith("include")) { // NOI18N
-                                        buf.append(';');
-                                        buf.append(sub.getAbsolutePath());
+                            final File[] listFiles = dir.listFiles();
+                            if (listFiles != null) {
+                                for (File sub : listFiles){
+                                    if (sub.isDirectory()) {
+                                        if (sub.getName().toLowerCase().endsWith("include")) { // NOI18N
+                                            buf.append(';');
+                                            buf.append(sub.getAbsolutePath());
+                                        }
                                     }
                                 }
                             }
