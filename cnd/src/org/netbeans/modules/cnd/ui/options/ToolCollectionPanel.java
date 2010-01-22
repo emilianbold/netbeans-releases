@@ -72,7 +72,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentListener, ItemListener  {
+/*package-local*/ class ToolCollectionPanel extends javax.swing.JPanel implements DocumentListener, ItemListener  {
 
     private final String MAKE_NAME = "make"; // NOI18N
     private final String DEBUGGER_NAME = "debugger"; // NOI18N
@@ -505,8 +505,7 @@ public class ToolCollectionPanel extends javax.swing.JPanel implements DocumentL
             }
             if (!ok) {
                 // try users path
-                ArrayList<String> paths = Path.getPath();
-                for (String p : paths) {
+                for (String p : Path.getPath()) {
                     file = new File(p + File.separatorChar + txt);
                     ok = file.exists() && !file.isDirectory();
                     if (ok) {

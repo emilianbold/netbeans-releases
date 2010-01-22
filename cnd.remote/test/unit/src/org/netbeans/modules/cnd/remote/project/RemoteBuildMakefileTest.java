@@ -86,6 +86,7 @@ public class RemoteBuildMakefileTest extends RemoteBuildTestBase {
 
             assertTrue(projectDirFile.exists());
 
+            clearRemoteSyncRoot();
             FileObject projectDirFO = FileUtil.toFileObject(projectDirFile);
             MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
             assertNotNull("project is null", makeProject);

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.makefile.utils;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

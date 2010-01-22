@@ -250,6 +250,14 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                                     if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                                         return "-spec macx-g++ QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
                                     } else {
+                                        if (Utilities.isWindows()) {
+                                            for (CompilerSet set : CompilerSetManager.getDefault().getCompilerSets()){
+                                                if (set.getCompilerFlavor().getToolchainDescriptor().getName().startsWith("MinGW")) {
+                                                    CompilerSetManager.getDefault().setDefault(set);
+                                                    break;
+                                                }
+                                            }
+                                        }
                                         return "QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
                                     }
                                 }
@@ -345,10 +353,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         if (map.isEmpty()) {
             return true;
         }
-        ArrayList<String> list = new ArrayList<String>(Path.getPath());
-        //String additionalPath = CndCoreTestUtils.getDownloadBase().getAbsolutePath()+File.separatorChar+"cmake-2.6.4/bin";
-        //list.add(additionalPath);
-        for (String path : list) {
+        for (String path : Path.getPath()) {
             for(Map.Entry<String, String> entry : map.entrySet()){
                 if (entry.getValue() == null) {
                     String task = path+File.separatorChar+entry.getKey();

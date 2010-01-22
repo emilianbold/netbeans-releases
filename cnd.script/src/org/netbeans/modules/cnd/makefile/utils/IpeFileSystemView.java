@@ -39,11 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.makefile.utils;
 
 import java.io.File;
 import java.io.IOException;
 import javax.swing.filechooser.FileSystemView;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 
 /**
  *  Replace the default FileSystemView with one which understands tilde and
@@ -69,6 +70,7 @@ public class IpeFileSystemView extends FileSystemView {
      *  Creates a JDK File object from the filename. In our case, we may change
      *  the original filename if it contains either ~ or $.
      */
+    @Override
     public File createFileObject(String path) {
 	return new File(IpeUtils.expandPath(path));
     }
@@ -79,6 +81,7 @@ public class IpeFileSystemView extends FileSystemView {
      *  our case, we may change the original filename if it contains either
      *  ~ or $.
      */
+    @Override
     public File createFileObject(File dir, String path) {
 	String newPath = IpeUtils.expandPath(path);
 	if (dir == null) {
@@ -142,6 +145,7 @@ public class IpeFileSystemView extends FileSystemView {
 
 
     /** Tells if a file is the root directory */
+    @Override
     public boolean isRoot(File f) {
 	return fsv.isRoot(f);
     }
@@ -154,12 +158,14 @@ public class IpeFileSystemView extends FileSystemView {
 
 
     /** Tells if the file is hidden or not */
+    @Override
     public boolean isHiddenFile(File f) {
 	return fsv.isHiddenFile(f);
     }
 
 
     /** Return the root partitions on this system */
+    @Override
     public File[] getRoots() {
 	return fsv.getRoots();
     }

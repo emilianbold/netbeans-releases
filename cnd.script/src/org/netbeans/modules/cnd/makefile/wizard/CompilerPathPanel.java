@@ -53,7 +53,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import org.netbeans.modules.cnd.api.utils.IpeFileSystemView;
+import org.netbeans.modules.cnd.makefile.utils.IpeFileSystemView;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 
 /**

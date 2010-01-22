@@ -43,7 +43,7 @@ package  org.netbeans.modules.cnd.makefile.wizard;
 
 import java.io.File;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.cnd.api.utils.IpeFileSystemView;
+import org.netbeans.modules.cnd.makefile.utils.IpeFileSystemView;
 
 /**
  * The DirectoryChooserPanel extends the FileChooserPanel but makes the

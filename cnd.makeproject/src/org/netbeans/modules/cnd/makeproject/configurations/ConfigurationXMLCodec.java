@@ -49,7 +49,6 @@ import java.util.Vector;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -130,11 +129,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     // interface XMLDecoder
+    @Override
     public String tag() {
         return tag;
     }
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) throws VersionException {
         String what = "project configuration"; // NOI18N
         checkVersion(atts, what, CURRENT_VERSION);
@@ -146,6 +147,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
         Configuration[] confsA = new Configuration[confs.size()];
         confsA = confs.toArray(confsA);
@@ -153,6 +155,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
         if (element.equals(CONF_ELEMENT)) {
             int confType = 0;
@@ -387,6 +390,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
         if (element.equals(CONF_ELEMENT)) {
             confs.add(currentConf);
