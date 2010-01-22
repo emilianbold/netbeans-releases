@@ -256,6 +256,7 @@ public class ActionManager {
         if (scanQueue == null) {
             scanQueue = Collections.synchronizedList(new ArrayList<FileObject>());
             rescanTimer = new Timer(3000, new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     // Note: this code is called in AWT thread, as well stopAutoRescan.
                     if (scanQueue == null || scanQueue.isEmpty()) {
@@ -337,6 +338,7 @@ public class ActionManager {
         FileObject sourceFile = getFileForClass(action.getClassname());
         try {
             Integer result = new ActionMethodTask<Integer>(sourceFile, action.getMethodName()) {
+                @Override
                 Integer run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                     return (int) controller.getTrees().getSourcePositions().getStartPosition(
                             controller.getCompilationUnit(), methodTree);
@@ -385,6 +387,7 @@ public class ActionManager {
         FileObject sourceFile = getFileForClass(className);
         try {
             Boolean result = new ActionMethodTask<Boolean>(sourceFile, methodName) {
+                @Override
                 Boolean run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                     return true;
                 }
@@ -417,8 +420,10 @@ public class ActionManager {
             }
             JavaSource js = JavaSource.forFileObject(sourceFile);
             ModificationResult result = js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(WorkingCopy workingCopy) throws Exception {
                     workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -503,6 +508,7 @@ public class ActionManager {
                 }
                 Document doc = ec.getDocument();
                 Integer methodEndPosition = new ActionMethodTask<Integer>(sourceFile, action.getMethodName()) {
+                    @Override
                     Integer run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                         return (int) controller.getTrees().getSourcePositions().getEndPosition(
                                 controller.getCompilationUnit(), methodTree);
@@ -542,6 +548,7 @@ public class ActionManager {
         FileObject sourceFile = getFileForClass(className);
         try {
             String result = new ClassTask<String>(sourceFile) {
+                @Override
                 String run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
                     for (TypeElement el: ElementFilter.typesIn(classElement.getEnclosedElements())) {
                         if (el.getSimpleName().toString().equals(taskName)) {
@@ -777,8 +784,10 @@ public class ActionManager {
             }
             JavaSource js = JavaSource.forFileObject(sourceFile);
             ModificationResult result = js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(WorkingCopy workingCopy) throws Exception {
                     workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -885,6 +894,7 @@ public class ActionManager {
             // generate Task impl class if does not already exist
             if (newTaskName != null) {
                 Integer methodEndPosition = new ActionMethodTask<Integer>(sourceFile, action.getMethodName()) {
+                    @Override
                     Integer run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                         return (int) controller.getTrees().getSourcePositions().getEndPosition(
                                 controller.getCompilationUnit(), methodTree);
@@ -952,6 +962,7 @@ public class ActionManager {
             } else {
                 // in general java source add at the end of the class
                 Integer result = new ClassTask<Integer>(sourceFile) {
+                    @Override
                     Integer run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
                         return (int) controller.getTrees().getSourcePositions().getEndPosition(
                                 controller.getCompilationUnit(), classTree);
@@ -1035,6 +1046,7 @@ public class ActionManager {
 
     private static int[] getAnnotationPositions(ProxyAction action, FileObject sourceFile) throws IOException {
         return new ActionMethodTask<int[]>(sourceFile, action.getMethodName()) {
+            @Override
             int[] run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                 CompilationUnitTree cut = controller.getCompilationUnit();
                 Trees trees = controller.getTrees();
@@ -1191,6 +1203,7 @@ public class ActionManager {
         }
         try {
             List<ProxyAction> result = new ClassTask<List<ProxyAction>>(sourceFile) {
+                @Override
                 List<ProxyAction> run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
                     // collect the superclasses (e.g. to get actions also from the base Application class)
                     List<TypeElement> classList = new LinkedList<TypeElement>();
@@ -1259,6 +1272,7 @@ public class ActionManager {
     static List<String> findBooleanProperties(FileObject fo) {
         try {
             return new ClassTask<List<String>>(fo) {
+                @Override
                 List<String> run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
                     List<String> props = new java.util.ArrayList<String>();
                     // loop through the methods in this class
@@ -1283,6 +1297,7 @@ public class ActionManager {
     static void initActionFromSource(final ProxyAction action, FileObject sourceFile) {
         try {
             new ActionMethodTask<Object>(sourceFile, action.getMethodName()) {
+                @Override
                 Object run(CompilationController controller, MethodTree methodTree, ExecutableElement methodElement) {
                     org.jdesktop.application.Action ann = methodElement.getAnnotation(org.jdesktop.application.Action.class);
                     if (ann != null) {
@@ -1381,6 +1396,7 @@ public class ActionManager {
     
     private void fireStructureChanged() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 PropertyChangeEvent pce = new PropertyChangeEvent(ActionManager.this,"allActions",null,actions);//NOI18N
                 for(PropertyChangeListener pcl : pcls) {
@@ -1393,6 +1409,7 @@ public class ActionManager {
     // hack: make it change just the action
     private void fireActionChanged(final ProxyAction act) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 for(ActionChangedListener acl : acls) {
                     acl.actionChanged(act);
@@ -1424,10 +1441,12 @@ public class ActionManager {
         abstract T run(CompilationController controller, ClassTree classTree, TypeElement classElement);
         
         // CancellableTask
+        @Override
         public void cancel() {
         }
         
         // CancellableTask
+        @Override
         public void run(CompilationController controller) throws Exception {
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
@@ -1455,6 +1474,7 @@ public class ActionManager {
             this.methodName = methodName;
         }
         
+        @Override
         T run(CompilationController controller, ClassTree classTree, TypeElement classElement) {
             for (ExecutableElement el : ElementFilter.methodsIn(classElement.getEnclosedElements())) {
                 if (el.getSimpleName().toString().equals(methodName)
@@ -1481,6 +1501,7 @@ public class ActionManager {
         }
         
         formModel.addFormModelListener(new FormModelListener() {
+            @Override
             public void formChanged(FormModelEvent[] events) {
                 if(events != null) {
                     for(FormModelEvent e : events) {
@@ -1492,6 +1513,7 @@ public class ActionManager {
                             final FormModelListener ths = this;
                             final FormModel mod = e.getFormModel();
                             SwingUtilities.invokeLater(new Runnable() {
+                                @Override
                                 public void run() {
                                     mod.removeFormModelListener(ths);
                                     registeredForms.remove(mod);

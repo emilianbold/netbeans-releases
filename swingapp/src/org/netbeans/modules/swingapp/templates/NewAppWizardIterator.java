@@ -150,6 +150,7 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         steps = thisSteps;
     }
 
+    @Override
     public void initialize(WizardDescriptor wiz) {
         wizard = wiz;
         panelIndex = 0;
@@ -158,14 +159,17 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         updateSteps();
     }
 
+    @Override
     public String name() {
         return current().getComponent().getName();
     }
 
+    @Override
     public WizardDescriptor.Panel current() {
          return panelIndex < panels.length ? panels[panelIndex] : appShellIterator.current();
     }
 
+    @Override
     public boolean hasNext() {
         if (panelIndex+1 < panels.length)
             return true;
@@ -177,10 +181,12 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         return false;
     }
 
+    @Override
     public boolean hasPrevious() {
         return panelIndex > 0;
     }
 
+    @Override
     public void nextPanel() {
         panelIndex++;
         if (panelIndex > panels.length) {
@@ -190,6 +196,7 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         updateSteps();
     }
 
+    @Override
     public void previousPanel() {
         panelIndex--;
         if (panelIndex >= panels.length) {
@@ -199,12 +206,14 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         updateSteps();
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         if (listenerList == null)
             listenerList = new EventListenerList();
         listenerList.add(ChangeListener.class, listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         if (listenerList != null)
             listenerList.remove(ChangeListener.class, listener);
@@ -226,10 +235,12 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
     }
 
     // called from appShellIterator - refire
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireStateChanged();
     }
     
+    @Override
     public Set instantiate(/*TemplateWizard wiz*/) throws IOException {
         File tempProjectDirectory = (File) wizard.getProperty("projdir"); // NOI18N
         if (tempProjectDirectory == null) // || projectName == null)
@@ -305,6 +316,7 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
                 // postpone shareablelib setting stuff until the project is opened
                 OpenProjects.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
 
+                    @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         for (Project p : OpenProjects.getDefault().getOpenProjects()) {
                             File dir = FileUtil.toFile(p.getProjectDirectory());
@@ -414,6 +426,7 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         }
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
     }
 
