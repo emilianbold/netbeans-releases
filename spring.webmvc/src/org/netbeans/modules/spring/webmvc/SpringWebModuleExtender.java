@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -306,13 +307,18 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
             DataFolder webInfDO = DataFolder.findFolder(webInf);
             final List<File> newConfigFiles = new ArrayList<File>(2);
-            FileObject configFile = createFromTemplate("applicationContext.xml", webInfDO, "applicationContext"); // NOI18N
+            HashMap<String, Object> params = new HashMap<String, Object>();
+            if (version.startsWith("3.0")) {    //NOI18N
+                params.put("springVersion3", Boolean.TRUE); //NOI18N
+            }
+            FileObject configFile = createFromTemplate("applicationContext.xml", webInfDO, "applicationContext",params); // NOI18N
             addFileToOpen(configFile);
             newConfigFiles.add(FileUtil.toFile(configFile));
             String fullIndexUrl = SpringWebFrameworkUtils.instantiateDispatcherMapping(dispatcherMapping, "index"); // NOI18N
             String simpleIndexUrl = SpringWebFrameworkUtils.getSimpleDispatcherURL(fullIndexUrl);
             Map<String, ?> indexUrlParams = Collections.singletonMap("index", Collections.singletonMap("url", simpleIndexUrl)); // NOI18N
-            configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet", indexUrlParams); // NOI18N
+            params.putAll(indexUrlParams);
+            configFile = createFromTemplate("dispatcher-servlet.xml", webInfDO, getComponent().getDispatcherName() + "-servlet", params); // NOI18N
             addFileToOpen(configFile);
             newConfigFiles.add(FileUtil.toFile(configFile));
             addFileToOpen(createFromTemplate("index.jsp", DataFolder.findFolder(jsp), "index")); // NOI18N
