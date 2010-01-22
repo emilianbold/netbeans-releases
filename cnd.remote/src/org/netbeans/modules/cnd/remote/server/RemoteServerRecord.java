@@ -152,6 +152,8 @@ public class RemoteServerRecord implements ServerRecord {
 //        if (ostate == State.UNINITIALIZED) {
 //            checkX11Forwarding();
 //        }
+        boolean initPathMap = false;
+
         synchronized (stateLock) {
             if (rss.isCancelled()) {
                 state = State.CANCELLED;
@@ -159,9 +161,12 @@ public class RemoteServerRecord implements ServerRecord {
                 state = State.OFFLINE;
                 reason = rss.getReason();
             } else {
-                RemotePathMap.getPathMap(getExecutionEnvironment()).init();
+                initPathMap = true;
                 state = State.ONLINE;
             }
+        }
+        if (initPathMap) {
+            RemotePathMap.getPathMap(getExecutionEnvironment()).init();
         }
         if (pcs != null) {
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);
