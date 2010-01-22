@@ -416,7 +416,9 @@ public abstract class RemotePathMap extends PathMap {
             if (!loadFromPrefs()) {
                 // 2. Automated mappings gathering entry point
                 HostMappingsAnalyzer ham = new HostMappingsAnalyzer(execEnv);
-                map.putAll(ham.getMappings());
+                synchronized( map ) {
+                    map.putAll(ham.getMappings());
+                }
                 // TODO: what about consequent runs. User may share something, we need to check it
             }
         }
