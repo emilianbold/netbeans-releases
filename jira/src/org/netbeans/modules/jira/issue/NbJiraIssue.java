@@ -1138,7 +1138,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
         if(a == null) {
             return "";                                                          // NOI18N
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         List<String> l = a.getValues();
         for (int i = 0; i < l.size(); i++) {
             String s = l.get(i);
