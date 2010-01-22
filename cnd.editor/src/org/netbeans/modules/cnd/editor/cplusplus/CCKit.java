@@ -298,8 +298,16 @@ public class CCKit extends NbEditorKit {
         protected void insertString(BaseDocument doc, int dotPos,
                 Caret caret, String str,
                 boolean overwrite) throws BadLocationException {
+            boolean blockCommentStart = false;
+            if (dotPos > 0 && str.charAt(0) == '*') {
+                TokenItem<CppTokenId> tokenAtDot = CndTokenUtilities.getToken(doc, dotPos-1, true);
+                if (tokenAtDot.id() == CppTokenId.SLASH) {
+                    // this is begin of block comment
+                    blockCommentStart = true;
+                }
+            }
             super.insertString(doc, dotPos, caret, str, overwrite);
-            BracketCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
+            BracketCompletion.charInserted(doc, dotPos, caret, str.charAt(0), blockCommentStart);
         }
     } // end class CCDefaultKeyTypedAction
 

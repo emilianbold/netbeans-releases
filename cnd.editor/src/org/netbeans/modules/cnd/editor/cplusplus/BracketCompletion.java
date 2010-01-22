@@ -86,7 +86,7 @@ public class BracketCompletion {
     static void charInserted(BaseDocument doc,
             int dotPos,
             Caret caret,
-            char ch) throws BadLocationException {
+            char ch, boolean blockCommentStart) throws BadLocationException {
         if (!completionSettingEnabled(doc)) {
             return;
         }
@@ -129,6 +129,12 @@ public class BracketCompletion {
                     doc.insertString(dotPos, "->", null);// NOI18N
                     caret.setDot(dotPos + 2);
                 }
+            }
+        } else if (ch == '*' && blockCommentStart) {
+            // complete /* with /*|*/
+            if (tokenAtDot.id() == CppTokenId.BLOCK_COMMENT) {
+                doc.insertString(dotPos + 1, "*/", null);// NOI18N
+                caret.setDot(dotPos + 1);
             }
         }
     }
