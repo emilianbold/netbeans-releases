@@ -41,7 +41,13 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -197,4 +203,62 @@ public final class ClassLoadUnloadBreakpoint extends JPDABreakpoint {
     public String toString () {
         return "ClassLoadUnloadBreakpoint " + Arrays.toString(classFilters);
     }
+
+    //@Override
+    private Object/*public GroupProperties*/ getGroupProperties() {
+        return new ClassGroupProperties();
+    }
+
+
+    private final class ClassGroupProperties {//extends GroupProperties {
+
+        public String getType() {
+            return "Class Load/Unload";
+        }
+
+        public String getLanguage() {
+            return "Java";
+        }
+
+        public FileObject[] getFiles() {
+            String[] filters = getClassFilters();
+            String[] exfilters = getClassExclusionFilters();
+            List<FileObject> files = new ArrayList<FileObject>();
+            for (int i = 0; i < filters.length; i++) {
+                // TODO: annotate also other matched classes
+                if (!filters[i].startsWith("*") && !filters[i].endsWith("*")) {
+                    fillFilesForClass(filters[i], files);
+                }
+            }
+            return files.toArray(new FileObject[] {});
+        }
+
+        public Project[] getProjects() {
+            FileObject[] files = getFiles();
+            List<Project> projects = new ArrayList<Project>();
+            for (FileObject f : files) {
+                while (f != null) {
+                    f = f.getParent();
+                    if (f != null && ProjectManager.getDefault().isProject(f)) {
+                        break;
+                    }
+                }
+                if (f != null) {
+                    try {
+                        projects.add(ProjectManager.getDefault().findProject(f));
+                    } catch (IOException ex) {
+                    } catch (IllegalArgumentException ex) {
+                    }
+                }
+            }
+            return projects.toArray(new Project[] {});
+        }
+
+        public boolean isHidden() {
+            return ClassLoadUnloadBreakpoint.this.isHidden();
+        }
+
+    }
+
+
 }
