@@ -20,7 +20,7 @@
                 <dependency>
                     <code-name-base>org.netbeans.modules.php.editor</code-name-base>
                     <run-dependency>
-                        <specification-version>1.8.0</specification-version>
+                        <specification-version>1.8.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
