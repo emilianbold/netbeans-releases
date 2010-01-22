@@ -116,7 +116,7 @@ public class WindowsSupportTest {
         if (na()) {
             return;
         }
-        
+
         String winPath = "C:\\Documents and Settings";
         String cygwinPath = "/cygdrive/c/Documents and Settings";
         WindowsSupport instance = WindowsSupport.getInstance();
@@ -139,7 +139,7 @@ public class WindowsSupportTest {
         String cygwinPath = "/cygdrive/c/Documents and Settings";
         WindowsSupport instance = WindowsSupport.getInstance();
         String result = instance.convertFromCygwinPath(cygwinPath);
-        assertEquals(winPath, result);
+        assertEquals(winPath.toLowerCase(), result.toLowerCase());
     }
 
     /**
@@ -157,7 +157,7 @@ public class WindowsSupportTest {
         String msysPath = "/c/Documents and Settings";
         WindowsSupport instance = WindowsSupport.getInstance();
         String result = instance.convertToMSysPath(winPath);
-        assertEquals(msysPath, result);
+        assertEquals(msysPath.toLowerCase(), result.toLowerCase());
     }
 
     /**
@@ -175,7 +175,7 @@ public class WindowsSupportTest {
         String msysPath = "/c/Documents and Settings";
         WindowsSupport instance = WindowsSupport.getInstance();
         String result = instance.convertFromMSysPath(msysPath);
-        assertEquals(winPath, result);
+        assertEquals(winPath.toLowerCase(), result.toLowerCase());
     }
 
     /**
