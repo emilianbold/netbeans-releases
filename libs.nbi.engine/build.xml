@@ -9,6 +9,8 @@
     <target name="build-nbi-engine" depends="init">
          <ant dir="${basedir}/../nbi/engine" target="jar" inheritAll="false">
             <property name="platforms.JDK_1.5.home" value="${nbjdk.home}"/>
+            <property name="javac.source"           value="${javac.source}"/>
+            <property name="javac.target"           value="${javac.source}"/>
          </ant>
     </target>
 
