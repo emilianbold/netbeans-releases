@@ -53,7 +53,8 @@ public class FileModelTest3 extends TraceModelTestBase {
     protected void setUp() throws Exception {
         System.setProperty("parser.report.errors", "true");
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
-        System.setProperty("cnd.modelimpl.trace.registration", "true");
+//        System.setProperty("cnd.modelimpl.trace.registration", "true");
+//        System.setProperty("cnd.modelimpl.parser.threads", "1");
         super.setUp();
     }
 
@@ -72,5 +73,10 @@ public class FileModelTest3 extends TraceModelTestBase {
     // it behaved differently on 1-st and subsequent runs
     public void testResolverClassString_02() throws Exception {
         performTest("resolver_class_string.cc"); // NOI18N
+    }
+
+    @Override
+    protected Class<?> getTestCaseDataClass() {
+        return FileModelTest.class;
     }
 }

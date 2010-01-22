@@ -88,7 +88,11 @@ public final class ConfigureUtils {
     }
 
     private static String detectQTProject(File folder){
-        for(File file : folder.listFiles()){
+        final File[] listFiles = folder.listFiles();
+        if (listFiles == null) {
+            return null;
+        }
+        for(File file : listFiles){
             if (file.getAbsolutePath().endsWith(".pro")){ // NOI18N
                 if (AbstractExecutorRunAction.findTools("qmake") != null){ // NOI18N
                     return file.getAbsolutePath();
