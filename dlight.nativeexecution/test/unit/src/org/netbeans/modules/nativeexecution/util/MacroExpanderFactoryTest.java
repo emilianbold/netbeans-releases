@@ -104,7 +104,7 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
     @ForAllEnvironments(section = "remote.platforms")
     public void testGetExpander_ExecutionEnvironment_String() {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        
+
         try {
             // Make sure that host is connected!
             ConnectionManager.getInstance().connectTo(execEnv);
@@ -113,7 +113,7 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
         } catch (CancellationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
+
         System.out.println("--- getExpander --- " + execEnv.toString()); // NOI18N
         MacroExpander expander = MacroExpanderFactory.getExpander(execEnv);//, "SunStudio"); // NOI18N
 
@@ -128,11 +128,11 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
         System.out.println(myenv.toString());
 
         String mspec = NativeExecutionTestSupport.getMspec(execEnv);
-        
+
         String os;
 
         int mpos = mspec.indexOf('-');
-        
+
         if (mpos > 0) {
             os = mspec.substring(mpos + 1);
             if (os.equals("S2")) {
@@ -153,8 +153,17 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
     }
 
     @org.junit.Test
+    @ForAllEnvironments(section = "remote.platforms")
     public void testPath() {
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "localhost", 0); // NOI18N
+        doTestPath(getTestExecutionEnvironment());
+    }
+
+    @org.junit.Test
+    public void testPathLocal() {
+        doTestPath(ExecutionEnvironmentFactory.getLocal());
+    }
+
+    private void doTestPath(final ExecutionEnvironment execEnv) {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
         npb.setExecutable("env"); // NOI18N
         MacroMap env = npb.getEnvironment();
