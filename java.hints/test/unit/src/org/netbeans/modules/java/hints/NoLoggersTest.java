@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.java.hints;
 
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.spi.editor.hints.Fix;
 
 /**
  *
@@ -65,7 +67,7 @@ public class NoLoggersTest extends TestBase {
                        "public class Test {\n" +
                        "}",
                        "1:13-1:17:verifier:No logger declared for test.Test class",
-                       "FixImpl",
+                       "NoLoggersFix",
                        ("package test;\n" +
                        "import java.util.logging.Logger;\n" +
                        "public class Test {\n" +
@@ -81,7 +83,7 @@ public class NoLoggersTest extends TestBase {
                        "    private String LOG;" +
                        "}",
                        "1:13-1:17:verifier:No logger declared for test.Test class",
-                       "FixImpl",
+                       "NoLoggersFix",
                        ("package test;\n" +
                        "import java.util.logging.Logger;\n" +
                        "public class Test {\n" +
@@ -99,7 +101,7 @@ public class NoLoggersTest extends TestBase {
                        "    private String LOGGER;" +
                        "}",
                        "1:13-1:17:verifier:No logger declared for test.Test class",
-                       "FixImpl",
+                       "NoLoggersFix",
                        ("package test;\n" +
                        "import java.util.logging.Logger;\n" +
                        "public class Test {\n" +
@@ -140,4 +142,10 @@ public class NoLoggersTest extends TestBase {
                             "}"
                             );
     }
+
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return f.getClass().getSimpleName();
+    }
+
 }

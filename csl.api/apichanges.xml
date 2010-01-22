@@ -46,6 +46,25 @@ made subject to such option by the copyright holder.
 <apidef name="csl.api">Common Scripting Language API</apidef>
 </apidefs>
 <changes>
+    <change id="LanguageRegistration-annotation">
+        <api name="csl.api"/>
+        <summary>Adding @LanguageRegistration annotation</summary>
+        <version major="1" minor="19"/>
+        <date day="22" month="1" year="2010"/>
+        <author login="vstejskal"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+            A new annotation <code>@LanguageRegistration</code> was added as a replacement
+            for <code>CslJar</code> ant task. The language plugins now do not have to
+            customize their 'jar' build target and run <code>CslJar</code> task. Instead they
+            should annotate their language class (ie. subclass of <code>DefaultLanguageConfig</code>) with
+            the <code>@LanguageRegistration</code>.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.csl.spi" name="LanguageRegistration"/>
+        <issue number="169991"/>
+    </change>
     <change id="Error.Badging">
         <api name="csl.api"/>
         <summary>Added Error.BadgeError</summary>

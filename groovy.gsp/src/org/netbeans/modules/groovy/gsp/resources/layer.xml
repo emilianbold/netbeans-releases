@@ -226,18 +226,4 @@
         </folder>
     </folder>
 
-    <folder name="CslPlugins">
-        <folder name="text">
-            <folder name="x-gsp">
-                <attr name="useCustomEditorKit" boolvalue="true"/>
-                <file name="language.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.gsp.GspLanguage"/>
-                </file>
-                <file name="structure.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.gsp.GspStructureScanner"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-
 </filesystem>

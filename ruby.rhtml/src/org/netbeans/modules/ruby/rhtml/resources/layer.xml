@@ -273,18 +273,5 @@
             </folder>
         </folder>
     </folder>
-    <folder name="CslPlugins">
-        <folder name="application">
-            <folder name="x-httpd-eruby">
-                <attr name="useCustomEditorKit" boolvalue="true"/>
-                <file name="language.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rhtml.RhtmlLanguage"/>
-                </file>
-                <file name="structure.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.RubyStructureAnalyzer"/>
-                </file> 
-            </folder>
-        </folder>
-    </folder>
 
 </filesystem>

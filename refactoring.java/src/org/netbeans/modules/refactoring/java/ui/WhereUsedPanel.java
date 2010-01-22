@@ -445,21 +445,21 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             }
         });
 
-        org.jdesktop.layout.GroupLayout scopePanelLayout = new org.jdesktop.layout.GroupLayout(scopePanel);
+        javax.swing.GroupLayout scopePanelLayout = new javax.swing.GroupLayout(scopePanel);
         scopePanel.setLayout(scopePanelLayout);
         scopePanelLayout.setHorizontalGroup(
-            scopePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(scopePanelLayout.createSequentialGroup()
+            scopePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(scopePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .add(scopeLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(scope, 0, 266, Short.MAX_VALUE)
+                .addComponent(scopeLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(scope, 0, 266, Short.MAX_VALUE)
                 .addContainerGap())
         );
         scopePanelLayout.setVerticalGroup(
-            scopePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-            .add(scopeLabel)
-            .add(scope, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, Short.MAX_VALUE)
+            scopePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+            .addComponent(scopeLabel)
+            .addComponent(scope, javax.swing.GroupLayout.PREFERRED_SIZE, 20, Short.MAX_VALUE)
         );
 
         scope.getAccessibleContext().setAccessibleDescription("N/A");

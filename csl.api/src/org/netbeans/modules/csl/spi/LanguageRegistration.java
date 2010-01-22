@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,79 +31,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.languages.yaml;
+package org.netbeans.modules.csl.spi;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.InstantRenamer;
-import org.netbeans.modules.csl.api.KeystrokeHandler;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.parsing.spi.Parser;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * GSF Configuration for YAML
- *
- * @author Tor Norbye
+ * @since 1.19
+ * @author vita
  */
-@LanguageRegistration(mimeType="text/x-yaml") //NOI18N
-public class YamlLanguage extends DefaultLanguageConfig {
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.TYPE)
+public @interface LanguageRegistration {
 
-    @Override
-    public Language getLexerLanguage() {
-        return YamlTokenId.language();
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "YAML";
-    }
-
-    @Override
-    public String getLineCommentPrefix() {
-        return "#"; // NOI18N
-    }
-
-    @Override
-    public Parser getParser() {
-        return new YamlParser();
-    }
-
-    @Override
-    public boolean hasStructureScanner() {
-        return true;
-    }
-
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new YamlScanner();
-    }
-
-    @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
-        return new YamlSemanticAnalyzer();
-    }
-
-    @Override
-    public KeystrokeHandler getKeystrokeHandler() {
-        return new YamlKeystrokeHandler();
-    }
-
-    @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        return new YamlCompletion();
-    }
-
-    @Override
-    public InstantRenamer getInstantRenamer() {
-        return null;
-    }
+    String [] mimeType();
+    boolean useCustomEditorKit() default false;
+    
 }

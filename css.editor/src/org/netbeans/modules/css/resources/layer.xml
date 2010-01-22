@@ -2,19 +2,6 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
-    <folder name="CslPlugins">
-        <folder name="text">
-            <folder name="x-css">
-                <file name="language.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.css.gsf.CssLanguage"/>
-                </file>
-                <file name="structure.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.css.gsf.CssStructureScanner"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-    
     <folder name="Editors">
         <folder name="text">
             <folder name="x-css">
@@ -23,7 +10,6 @@
 		    <file name="org-netbeans-modules-css-editor-refactoring-CssCodeGenerators$Factory.instance"/>
 		</folder>
 		<folder name="Popup">
-		    <file name="in-place-refactoring_hidden"/> <!-- hide GSF's refactoring action -->
 		    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
 			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
 			<attr name="position" intvalue="1333"/>
