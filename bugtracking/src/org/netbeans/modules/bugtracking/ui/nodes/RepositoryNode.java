@@ -43,7 +43,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.bugtracking.RepositoriesSupport;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
@@ -102,8 +101,7 @@ public class RepositoryNode extends AbstractNode {
                     if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
                         RequestProcessor.getDefault().post(new Runnable() {
                             public void run() {
-                                repository.remove();
-                                RepositoriesSupport.getInstance().fireRepositoriesChanged();
+                                repository.remove();                                
                             }
                         });
                     }

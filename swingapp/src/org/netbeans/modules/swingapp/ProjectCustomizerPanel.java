@@ -222,10 +222,12 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel implements HelpCt
         fileChooser.setControlButtonsAreShown(true);
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override
             public boolean accept(File f) {
                 return f.isDirectory()
                        || f.getName().toLowerCase().endsWith(".jar"); // NOI18N
             }
+            @Override
             public String getDescription() {
                 return NbBundle.getMessage(ProjectCustomizerPanel.class, "CTL_JarArchivesMask"); // NOI18N
             }
@@ -333,6 +335,7 @@ public class ProjectCustomizerPanel extends javax.swing.JPanel implements HelpCt
     private javax.swing.JTextField vendorIdTextField;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("org.netbeans.modules.swingapp.ProjectCustomizerPanel"); // NOI18N
     }

@@ -78,6 +78,7 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
         { "application.homepage", "Application.homepage" }, // NOI18N
     };
 
+    @Override
     public Category createCategory(Lookup context) {
         Category cat;
         Project project = context.lookup(Project.class);
@@ -95,6 +96,7 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
         return cat;
     }
 
+    @Override
     public JComponent createComponent(Category category, Lookup context) {
         ProjectCustomizerPanel panel = new ProjectCustomizerPanel();
         Project project = context.lookup(Project.class);
@@ -146,6 +148,7 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
             this.project = project;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             for (String[] propNames : APP_PROPERTIES) {
@@ -174,10 +177,12 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
             this.project = project;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             RequestProcessor.getDefault().post(this);
         }
 
+        @Override
         public void run() {
             DesignResourceMap resMap = ResourceUtils.getAppDesignResourceMap(project);
             if (resMap == null) {

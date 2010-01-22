@@ -97,9 +97,11 @@ public class IssueLinksPanel extends JPanel {
         this.issue = issue;
         recalculateMap();
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 reloadIssueDetails();
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         rebuildLayout();
                     }
@@ -198,8 +200,10 @@ public class IssueLinksPanel extends JPanel {
             putValue(Action.NAME, issueKey);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                public void run() {
                    repository.getIssue(issueKey).open();
                }

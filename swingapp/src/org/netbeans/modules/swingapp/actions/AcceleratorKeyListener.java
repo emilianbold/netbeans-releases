@@ -65,6 +65,7 @@ public class AcceleratorKeyListener implements KeyListener {
         this.panel = panel;
     }
     
+    @Override
     public void keyPressed(KeyEvent ke) {
         ke.consume();
         JTextField tf = (JTextField) ke.getSource();
@@ -84,9 +85,11 @@ public class AcceleratorKeyListener implements KeyListener {
         }
     }
 
+    @Override
     public void keyReleased(KeyEvent ke) {
     }
 
+    @Override
     public void keyTyped(KeyEvent ke) {
         ke.consume();
     }

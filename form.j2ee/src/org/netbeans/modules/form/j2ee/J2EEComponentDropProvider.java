@@ -68,6 +68,7 @@ public class J2EEComponentDropProvider implements NewComponentDropProvider {
      * <code>transferable</code> or <code>null</code> if this provider
      * don't understand to or don't want to process this data transfer.
      */
+    @Override
     public NewComponentDrop processTransferable(FormModel formModel, Transferable transferable) {
         try {
             if (transferable.isDataFlavorSupported(DatabaseMetaDataTransfer.CONNECTION_FLAVOR)) {
