@@ -62,12 +62,14 @@ import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
@@ -217,6 +219,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         assert iop instanceof CndTestIOProvider;
         ((CndTestIOProvider) iop).addListener(new CndTestIOProvider.Listener() {
 
+            @Override
             public void linePrinted(String line) {
                 if (line != null) {
                     if (line.startsWith(successLine)) {
@@ -267,16 +270,10 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         assertTrue("build failed: RC=" + build_rc.get(), build_rc.get() == 0);
     }
 
-    protected void removeRemoteHome() {
-        String cmd = "rm -rf ${HOME}/.netbeans/remote/*";
-        int rc = RemoteCommandSupport.run(getTestExecutionEnvironment(), cmd);
-        assertEquals("Failed to run " + cmd, 0, rc);
-    }
-
-    protected void removeRemoteHomeSubdir(String subdir) {
-        String cmd = "rm -rf ${HOME}/.netbeans/remote/" + subdir;
-        int rc = RemoteCommandSupport.run(getTestExecutionEnvironment(), cmd);
-        assertEquals("Failed to run " + cmd, 0, rc);
+    protected void clearRemoteSyncRoot() {
+        String dirToRemove = RemotePathMap.getRemoteSyncRoot(getTestExecutionEnvironment()) + "/*";
+        boolean isOk = ProcessUtils.execute(getTestExecutionEnvironment(), "rm", "-rf", dirToRemove).isOK();
+        assertTrue("Failed to remove " + dirToRemove, isOk);
     }
 
     protected void addPropertyFromRcFile(String section, String varName) throws IOException, FormatException {
