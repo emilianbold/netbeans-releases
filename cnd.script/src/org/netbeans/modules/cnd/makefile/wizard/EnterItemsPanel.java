@@ -71,9 +71,9 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.cnd.api.utils.IpeFileSystemView;
+import org.netbeans.modules.cnd.makefile.utils.IpeFileSystemView;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.UnixRE;
+import org.netbeans.modules.cnd.makefile.utils.UnixRE;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -509,12 +509,15 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 		    int pos = 2;
 		    while (plevel > 0) {
 			for (int i = pos; i < tok.length(); i++) {
-			    if (tok.charAt(i) == '(')
-				plevel++;
-			    if (tok.charAt(i) == ')')
-				plevel--;
-			    if (plevel <= 0)
-				break;
+			    if (tok.charAt(i) == '(') {
+                                plevel++;
+                            }
+			    if (tok.charAt(i) == ')') {
+                                plevel--;
+                            }
+			    if (plevel <= 0) {
+                                break;
+                            }
 			}
 			if (plevel > 0) {
 			    if (st.hasMoreTokens()) {
@@ -528,7 +531,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 		    }
 		}
 
-		LinkedList tmp = expandToken(tok, type);
+		LinkedList<ListItem> tmp = expandToken(tok, type);
 		tcount++;
 
 		if (tmp.size() == 0) {
@@ -537,9 +540,9 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 			neFileAdded = true;
 		    }
 		} else {
-		    ListIterator iter = tmp.listIterator();
+		    ListIterator<ListItem> iter = tmp.listIterator();
 		    while (iter.hasNext()) {
-			ListItem item = (ListItem) iter.next();
+			ListItem item = iter.next();
 			File file = new File(item.getName());
 
 			if (expandDirs && file.isDirectory()) {
@@ -584,7 +587,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
      *  @param list	The list of token matches
      *  @param nefiles	True if non existant files were specified or matched
      */
-    protected boolean checkErrorConditions(int tcount, LinkedList list, boolean nefiles) {
+    protected boolean checkErrorConditions(int tcount, LinkedList<ListItem> list, boolean nefiles) {
 	return tcount == 1 && (list.size() == 0 || nefiles);
     }
 
@@ -621,10 +624,10 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 		if (rem == null) {
 		    files.addAll(alist);
 		} else {
-		    ListIterator iter = alist.listIterator();
+		    ListIterator<ListItem> iter = alist.listIterator();
 
 		    while (iter.hasNext()) {
-			ListItem item = (ListItem) iter.next();
+			ListItem item = iter.next();
 			StringBuilder buf = new StringBuilder(256);
 
 			buf.append(item.getName());
@@ -872,10 +875,11 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 		String path = IpeUtils.getRelativePath(
 			cwd, ((ListItem) objects[i]).getName());
 		if (!model.contains(path)) {	// expensive! but necessary
-		    if (addBeginning)
-		        model.add(0, path);
-		    else
-		        model.addElement(path);
+		    if (addBeginning) {
+                        model.add(0, path);
+                    } else {
+                        model.addElement(path);
+                    }
 		}
 	    }
 	}

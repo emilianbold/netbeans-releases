@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.makefile.utils;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -154,7 +154,7 @@ public class FortranParser {
 	parser = new FortranParser(file, null);
 	parser.verbose = verbose;
 
-	ArrayList list = parser.parser();
+	ArrayList<String> list = parser.parser();
 
 	System.out.println("FortranParser: list has " + list.size() + " elements");// NOI18N
 	for (int i = 0; i < list.size(); i++) {

@@ -58,7 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
-import org.netbeans.modules.cnd.api.utils.FortranParser;
+import org.netbeans.modules.cnd.makefile.utils.FortranParser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
@@ -710,10 +710,10 @@ public class MakefileGenerator {
 
                 buf.replace(0, buf.length(),
                         getString("MFG_CreateTargetDir"));	// NOI18N
-                Iterator iter = mkhash.iterator();
+                Iterator<TargetData> iter = mkhash.iterator();
 
                 while (iter.hasNext()) {
-                    TargetData t = (TargetData) iter.next();
+                    TargetData t = iter.next();
                     var.setTargetName(t.getName());
 
                     // Create a rmdir command the directory
