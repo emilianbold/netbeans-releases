@@ -79,6 +79,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
      * @return <code>true</code> if some properties were removed/added,
      * returns <code>false</code> otherwise.
      */
+    @Override
     public boolean modifyProperties(RADComponent metacomp, List<RADProperty> prefProps, List<RADProperty> normalProps, List<RADProperty> expertProps) {
         String className = metacomp.getBeanClass().getName();
         if (className.equals("javax.persistence.EntityManager")) { // NOI18N

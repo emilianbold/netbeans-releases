@@ -213,6 +213,7 @@ class AppProjectGenerator {
             matchCounts = new int[toReplace.length];
         }
 
+        @Override
         public void write(int b) throws IOException {
             int completeMatch = -1;
             boolean charMatch = false;

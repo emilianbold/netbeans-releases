@@ -43,7 +43,6 @@ package org.netbeans.modules.form.j2ee;
 import java.awt.dnd.DropTargetDragEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ImageIcon;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -57,7 +56,6 @@ import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  * Result of DB connection drop.
@@ -93,6 +91,7 @@ public class DBConnectionDrop implements NewComponentDrop {
      * @param dtde corresponding drop target drag event.
      * @return <code>EntityManager</code> palette item.
      */
+    @Override
     public PaletteItem getPaletteItem(DropTargetDragEvent dtde) {
         PaletteItem pItem = new PaletteItem(new ClassSource("javax.persistence.EntityManager", // NOI18N
                 new ClassSource.LibraryEntry(LibraryManager.getDefault().getLibrary("toplink"))), // NOI18N
@@ -107,6 +106,7 @@ public class DBConnectionDrop implements NewComponentDrop {
      * @param componentId ID of the corresponding component.
      * @param droppedOverId ID of a component the new component has been dropped over.
      */
+    @Override
     public void componentAdded(String componentId, String droppedOverId) {
         try {
             FileObject formFile = FormEditor.getFormDataObject(model).getFormFile();

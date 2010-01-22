@@ -196,6 +196,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         support.removePropertyChangeListener(listener);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (Repository.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
             if (evt.getOldValue() != null && evt.getOldValue() instanceof Map) {
@@ -235,6 +236,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
             // when user loggs in so the repository can be created.
             final Kenai kenai = (Kenai)evt.getSource();
             rp.post(new Runnable() { // do not block here
+                @Override
                 public void run() {
                     notifyKenaiLogin(kenai);
                 }
@@ -315,6 +317,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
 
     private void reloadAsync() {
         rp.post(new Runnable () {
+            @Override
             public void run() {
                 initializeIssues();
             }
@@ -328,6 +331,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         }
         final JiraLazyIssue[] lazyIssuesToSave = lazyIssues;
         rp.post(new Runnable () {
+            @Override
             public void run() {
                 initializeIssues();
                 LOG.log(Level.FINE, "saveIntern: saving issues");       //NOI18N
@@ -381,7 +385,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
             LOG.finer("initializeIssues: reloading saved issues");      //NOI18N
             // load from storage
             Map<String, List<String>> repositoryIssues = JiraStorageManager.getInstance().getTaskListIssues();
-            if (repositoryIssues.size() == 0) {
+            if (repositoryIssues.isEmpty()) {
                 LOG.fine("initializeIssues: no saved issues");          //NOI18N
                 return;
             }
@@ -521,6 +525,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         final NbJiraIssue[] issue = new NbJiraIssue[1];
         if (status == IssueCache.ISSUE_STATUS_UNKNOWN) { // not yet cached
             Runnable runnable = new Runnable() {
+                @Override
                 public void run() {
                     LOG.log(Level.FINE, "getIssue: creating issue {0}", repository.getUrl() + "#" + issueKey); //NOI18N
                     issue[0] = (NbJiraIssue) repository.getIssue(issueKey);
@@ -628,6 +633,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         private void attachIssueListener (NbJiraIssue issue) {
             if (issueListener == null) {
                 issueListener = new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         NbJiraIssue issue = issueRef.get();
                         if (Issue.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName()) && issue != null) {
@@ -666,8 +672,10 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
         public List<? extends Action> getActions() {
             List<AbstractAction> actions = new LinkedList<AbstractAction>();
             actions.add(new AbstractAction(NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.resolveAction")) { //NOI18N
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
                         public void run() {
                             final NbJiraIssue issue = getIssue();
                             if (issue == null) {
@@ -687,6 +695,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                                     final Resolution resolution = panel.getSelectedResolution();
                                     final String comment = panel.getComment();
                                     runCancellableCommand(new Runnable () {
+                                        @Override
                                         public void run() {
                                             issue.resolve(resolution, comment);
                                             if (issue.submitAndRefresh()) {
@@ -712,8 +721,10 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                 }
             });
             actions.add(new AbstractAction(NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.logWorkDoneAction")) { //NOI18N
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
                         public void run() {
                             final NbJiraIssue issue = getIssue();
                             if (issue == null) {
@@ -725,6 +736,7 @@ public final class JiraIssueProvider extends IssueProvider implements PropertyCh
                                     String pattern = NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.logWorkDoneMessage"); // NOI18N
                                     String message = MessageFormat.format(pattern, issue.getID());
                                     runCancellableCommand(new Runnable() {
+                                        @Override
                                         public void run() {
                                             issue.addWorkLog(panel.getStartDate(), panel.getTimeSpent(), panel.getDescription());
                                             int remainingEstimate = panel.getRemainingEstimate();
