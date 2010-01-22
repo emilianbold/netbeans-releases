@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -280,7 +282,11 @@ public final class GenerateAction extends NodeAction {
                             StatefulConvertor convertor = new StatefulConvertor(locator,
                                     RailsProjectGenerator.RAILS_GENERATOR_PATTERN, RubyLineConvertorFactory.EXT_RE, 2, -1);
                             String displayName = NbBundle.getMessage(GenerateAction.class, "RailsGenerator");
-
+			    Map<String, String> env = new HashMap<String, String>();
+			    String railsEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
+                            if (railsEnv != null) {
+                                env.put("RAILS_ENV", railsEnv);
+                            }
                             RubyExecutionDescriptor descriptor =
                                     new RubyExecutionDescriptor(RubyPlatform.platformFor(project), displayName, pwd, script)
                                     .additionalArgs(argv)
@@ -288,6 +294,7 @@ public final class GenerateAction extends NodeAction {
                                     .addStandardRecognizers()
                                     .addOutConvertor(convertor)
                                     .addErrConvertor(convertor);
+                            descriptor.addAdditionalEnv(env);
 
                             RubyProcessCreator rpc = new RubyProcessCreator(descriptor, charsetName);
                             Future<Integer> execution =

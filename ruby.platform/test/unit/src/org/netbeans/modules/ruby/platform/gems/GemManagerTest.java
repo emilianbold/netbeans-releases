@@ -299,7 +299,7 @@ public class GemManagerTest extends RubyTestBase {
         for (GemInfo gemInfo : gemManager.getVersions(gem)) {
             versions.add(gemInfo.getVersion());
         }
-        assertEquals("versions sorted", Arrays.asList("0.1.2", "0.1.3"), versions);
+        assertEquals("versions sorted", Arrays.asList("0.1.3", "0.1.2"), versions);
     }
 
     public void testEqualsAndHashCode() throws IOException {
