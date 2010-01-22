@@ -233,12 +233,12 @@ public class SourceAccessorImpl extends SourceAccessor {
 
     public static class ProjectAndFeature {
 
-        public KenaiProject projectName;
+        public KenaiProject kenaiProject;
         public KenaiFeature feature;
         public String externalScmType;
 
         public ProjectAndFeature(KenaiProject name, KenaiFeature ftr, String externalScmType) {
-            projectName = name;
+            kenaiProject = name;
             feature = ftr;
             this.externalScmType=externalScmType;
         }
