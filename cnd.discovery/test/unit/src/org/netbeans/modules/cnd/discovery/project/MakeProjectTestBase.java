@@ -250,6 +250,14 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                                     if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                                         return "-spec macx-g++ QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
                                     } else {
+                                        if (Utilities.isWindows()) {
+                                            for (CompilerSet set : CompilerSetManager.getDefault().getCompilerSets()){
+                                                if (set.getCompilerFlavor().isMinGWCompiler()) {
+                                                    CompilerSetManager.getDefault().setDefault(set);
+                                                    break;
+                                                }
+                                            }
+                                        }
                                         return "QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
                                     }
                                 }
