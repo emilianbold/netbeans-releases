@@ -45,8 +45,10 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
 
+@LanguageRegistration(mimeType={"text/x-jsp", "text/x-tag"}, useCustomEditorKit=true) //NOI18N
 public class JspLanguage extends DefaultLanguageConfig {
     
     //XXX no line comment in jsp!

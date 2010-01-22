@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.groovy.editor.api.BracketCompleter;
 import org.netbeans.modules.groovy.editor.api.GroovyDeclarationFinder;
 import org.netbeans.modules.groovy.editor.api.GroovyIndexer;
@@ -75,6 +76,7 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
  * @author Tor Norbye
  * @author Martin Adamek
  */
+@LanguageRegistration(mimeType="text/x-groovy")
 public class GroovyLanguage extends DefaultLanguageConfig {
     
     public GroovyLanguage() {

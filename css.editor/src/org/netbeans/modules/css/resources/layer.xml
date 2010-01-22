@@ -2,19 +2,6 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
-    <folder name="CslPlugins">
-        <folder name="text">
-            <folder name="x-css">
-                <file name="language.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.css.gsf.CssLanguage"/>
-                </file>
-                <file name="structure.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.css.gsf.CssStructureScanner"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-    
     <folder name="Editors">
         <folder name="text">
             <folder name="x-css">

@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
@@ -62,11 +63,7 @@ import org.netbeans.modules.ruby.lexer.RubyTokenId;
  *
  * @author Tor Norbye
  */
-/*
- * Language/lexing configuration for Ruby
- *
- * @author Tor Norbye
- */
+@LanguageRegistration(mimeType="text/x-ruby")
 public class RubyLanguage extends DefaultLanguageConfig {
 
     public final static String BOOT = "ruby/classpath/boot";

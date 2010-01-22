@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.php.editor.indent.PHPBracketCompleter;
@@ -73,6 +74,7 @@ import org.netbeans.modules.php.project.api.PhpSourcePath;
  *
  * @author Petr Pisl
  */
+@LanguageRegistration(mimeType="text/x-php5") //NOI18N
 public class PHPLanguage extends DefaultLanguageConfig {
 
     @Override
