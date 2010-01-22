@@ -47,6 +47,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -54,8 +55,11 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
+import org.netbeans.api.debugger.DebuggerManager;
 
 import org.netbeans.api.debugger.Properties;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.debugger.ui.actions.AddBreakpointAction;
 import org.netbeans.modules.debugger.ui.models.BreakpointGroup.Group;
 import org.openide.DialogDescriptor;
@@ -107,17 +111,11 @@ public class BreakpointsViewButtons {
                 for (Group group : Group.values()) {
                     menu.add(createJRadioButtonMenuItem(group, brkpGroup));
                 }
-                boolean openProjectsOnly = props.getBoolean("fromOpenProjects", true);
-                String openProjectsOnlyText = NbBundle.getMessage(BreakpointsViewButtons.class, "LBL_BreakpointsFromOpenProjectsOnly");
-                final JCheckBoxMenuItem openProjectsOnlyMenu = new JCheckBoxMenuItem(openProjectsOnlyText, openProjectsOnly);
-                openProjectsOnlyMenu.addItemListener(new ItemListener() {
-                    public void itemStateChanged(ItemEvent e) {
-                        boolean openProjectsOnly = openProjectsOnlyMenu.isSelected();
-                        props.setBoolean("fromOpenProjects", openProjectsOnly);
-                    }
-                });
                 menu.addSeparator();
-                menu.add(openProjectsOnlyMenu);
+                menu.add(createCheckBoxMenuItem("LBL_BreakpointsFromOpenProjectsOnly", "fromOpenProjects", props));
+                if (currentSessionHaveProjects()) {
+                    menu.add(createCheckBoxMenuItem("LBL_BreakpointsFromCurrentDebugSessionOnly", "fromCurrentSessionProjects", props));
+                }
                 menu.show(button, 16, 0);
 
             }
@@ -129,6 +127,29 @@ public class BreakpointsViewButtons {
         JRadioButtonMenuItem gb = new JRadioButtonMenuItem(new GroupChangeAction(group));
         gb.setSelected(brkpGroup.equals(group.name()));
         return gb;
+    }
+
+    private static JCheckBoxMenuItem createCheckBoxMenuItem(String text, final String propName, final Properties props) {
+        boolean selected = props.getBoolean(propName, true);
+        text = NbBundle.getMessage(BreakpointsViewButtons.class, text);
+        final JCheckBoxMenuItem chb = new JCheckBoxMenuItem(text, selected);
+        chb.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                boolean selected = chb.isSelected();
+                props.setBoolean(propName, selected);
+            }
+        });
+        return chb;
+    }
+
+    private static boolean currentSessionHaveProjects() {
+        // TODO: Perhaps the session could provide it's breakpoints directly somehow.
+        Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
+        if (currentSession == null) {
+            return false;
+        }
+        List<? extends Project> sessionProjects = currentSession.lookup(null, Project.class);
+        return sessionProjects.size() > 0;
     }
 
     private static JButton createButton (String iconPath, String tooltip) {

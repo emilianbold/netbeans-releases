@@ -53,6 +53,7 @@ import java.util.Set;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Properties;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -139,6 +140,7 @@ public class BreakpointGroup {
         //props.addPropertyChangeListener(null);
         String[] groupNames = (String[]) props.getArray("Grouping", new String[] { Group.CUSTOM.name() });
         boolean openProjectsOnly = props.getBoolean("fromOpenProjects", true);
+        boolean sessionProjectsOnly = props.getBoolean("fromCurrentSessionProjects", true);
         Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
         if (groupNames.length == 0 || groupNames[0].equals(Group.NO.name())) {
             return bs;
@@ -159,11 +161,18 @@ public class BreakpointGroup {
         List<BreakpointGroup> parentGroups = new ArrayList<BreakpointGroup>();
         List<BreakpointGroup> rootGroups = new ArrayList<BreakpointGroup>();
 
-        Set openProjects;
+        Set<Project> openProjects;
         if (openProjectsOnly) {
-            openProjects = new HashSet(Arrays.asList(OpenProjects.getDefault().getOpenProjects()));
+            openProjects = new HashSet<Project>(Arrays.asList(OpenProjects.getDefault().getOpenProjects()));
         } else {
             openProjects = null;
+        }
+        Set<Project> sessionProjects;
+        if (sessionProjectsOnly) {
+            // TODO: Perhaps, better, ask for the session breakpoints somehow directly
+            sessionProjects = getCurrentSessionProjects();
+        } else {
+            sessionProjects = null;
         }
         
         for (int bi = 0; bi < bs.length; bi++) {
@@ -174,20 +183,11 @@ public class BreakpointGroup {
                 if (bprops.isHidden()) {
                     continue;
                 }
-                if (openProjects != null) {
-                    Project ps[] = bprops.getProjects();
-                    if (ps != null) {
-                        boolean contains = false;
-                        for (Project p : ps) {
-                            if (openProjects.contains(p)) {
-                                contains = true;
-                                break;
-                            }
-                        }
-                        if (!contains) {
-                            continue;
-                        }
-                    }
+                if (openProjects != null && !contains(openProjects, bprops.getProjects())) {
+                    continue;
+                }
+                if (sessionProjects != null && !contains(sessionProjects, bprops.getProjects())) {
+                    continue;
                 }
             }
             parentGroups.clear();
@@ -357,6 +357,33 @@ public class BreakpointGroup {
         groupsAndBreakpoints.addAll(groups);
         groupsAndBreakpoints.addAll(breakpoints);
         return groupsAndBreakpoints.toArray();
+    }
+
+    private static boolean contains(Set<Project> openProjects, Project[] projects) {
+        if (projects != null) {
+            boolean contains = false;
+            for (Project p : projects) {
+                if (openProjects.contains(p)) {
+                    contains = true;
+                    break;
+                }
+            }
+            return contains;
+        } else {
+            return true;
+        }
+    }
+
+    private static Set<Project> getCurrentSessionProjects() {
+        Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
+        if (currentSession == null) {
+            return null;
+        }
+        List<? extends Project> sessionProjects = currentSession.lookup(null, Project.class);
+        if (sessionProjects.size() == 0) {
+            return null;
+        }
+        return new HashSet<Project>(sessionProjects);
     }
 
     private static final class NestedGroupKey {
