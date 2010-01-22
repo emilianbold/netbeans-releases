@@ -308,7 +308,8 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
                 DELETE_ALL_ACTION,
                 null
             };
-        if (node instanceof String)
+        if (node instanceof BreakpointGroup &&
+            ((BreakpointGroup) node).getGroup() == BreakpointGroup.Group.CUSTOM)
             return new Action [] {
                 SET_GROUP_NAME_ACTION,
                 null,
@@ -352,7 +353,7 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
     public void performDefaultAction (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) 
             return;
-        if (node instanceof String) 
+        if (node instanceof BreakpointGroup)
             return;
         if (node instanceof Breakpoint) 
             return;
@@ -387,19 +388,22 @@ public class BreakpointsActionsProvider implements NodeActionsProvider {
            int i, k = nodes.length;
             String newName = descriptor.getInputText ();
             for (i = 0; i < k; i++) {
-                if (nodes [i] instanceof String) {
-                    String oldName = (String) nodes [i];
-                    Breakpoint[] bs = DebuggerManager.getDebuggerManager ().
-                        getBreakpoints ();
-                    int j, jj = bs.length;
-                    for (j = 0; j < jj; j++)
-                        if (bs[j].getGroupName().equals(oldName)) {
-                            bs[j].setGroupName(newName);
-                        }
+                if (nodes [i] instanceof BreakpointGroup) {
+                    BreakpointGroup g = (BreakpointGroup) nodes[i];
+                    setGroupName(g, newName);
                 } else if (nodes [i] instanceof Breakpoint) {
                     ((Breakpoint) nodes [i]).setGroupName ( newName );
                 }
             }
+        }
+    }
+
+    private static void setGroupName(BreakpointGroup group, String name) {
+        for (BreakpointGroup g : group.getSubGroups()) {
+            setGroupName(g, name);
+        }
+        for (Breakpoint b : group.getBreakpoints()) {
+            b.setGroupName(name);
         }
     }
 

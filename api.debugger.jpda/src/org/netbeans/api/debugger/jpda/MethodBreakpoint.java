@@ -41,11 +41,17 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.openide.filesystems.FileObject;
 
 /**
  * Notifies about method entry events.
@@ -346,8 +352,14 @@ public class MethodBreakpoint extends JPDABreakpoint {
                 ((methodSignature != null) ? " '"+methodSignature+"'" : "");
     }
     
+    
     private static final class MethodBreakpointImpl extends MethodBreakpoint implements ChangeListener {
         
+        //@Override
+        public Object /*GroupProperties*/ getGroupProperties() {
+            return new MethodGroupProperties();
+        }
+
         public void stateChanged(ChangeEvent chev) {
             Object source = chev.getSource();
             if (source instanceof Breakpoint.VALIDITY) {
@@ -356,5 +368,57 @@ public class MethodBreakpoint extends JPDABreakpoint {
                 throw new UnsupportedOperationException(chev.toString());
             }
         }
+
+        
+        private final class MethodGroupProperties { //extends GroupProperties {
+
+            public String getType() {
+                return "Method";
+            }
+
+            public String getLanguage() {
+                return "Java";
+            }
+
+            public FileObject[] getFiles() {
+                String[] filters = getClassFilters();
+                String[] exfilters = getClassExclusionFilters();
+                List<FileObject> files = new ArrayList<FileObject>();
+                for (int i = 0; i < filters.length; i++) {
+                    // TODO: annotate also other matched classes
+                    if (!filters[i].startsWith("*") && !filters[i].endsWith("*")) {
+                        fillFilesForClass(filters[i], files);
+                    }
+                }
+                return files.toArray(new FileObject[] {});
+            }
+
+            public Project[] getProjects() {
+                FileObject[] files = getFiles();
+                List<Project> projects = new ArrayList<Project>();
+                for (FileObject f : files) {
+                    while (f != null) {
+                        f = f.getParent();
+                        if (f != null && ProjectManager.getDefault().isProject(f)) {
+                            break;
+                        }
+                    }
+                    if (f != null) {
+                        try {
+                            projects.add(ProjectManager.getDefault().findProject(f));
+                        } catch (IOException ex) {
+                        } catch (IllegalArgumentException ex) {
+                        }
+                    }
+                }
+                return projects.toArray(new Project[] {});
+            }
+
+            public boolean isHidden() {
+                return MethodBreakpointImpl.this.isHidden();
+            }
+
+        }
+
     }
 }
