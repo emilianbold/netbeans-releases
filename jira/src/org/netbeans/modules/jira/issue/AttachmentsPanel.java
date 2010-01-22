@@ -240,6 +240,7 @@ public class AttachmentsPanel extends JPanel {
     ActionListener getDeletedListener() {
         if (deletedListener == null) {
             deletedListener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     JComponent comp = (JComponent)e.getSource();
                     comp.setVisible(false);
@@ -264,6 +265,7 @@ public class AttachmentsPanel extends JPanel {
     ActionListener getBrowseListener() {
         if (browseListener == null) {
             browseListener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     File attachment = new FileChooserBuilder(AttachmentsPanel.class).showOpenDialog();
                     if (attachment != null) {
@@ -317,6 +319,7 @@ public class AttachmentsPanel extends JPanel {
             this.verticalGroup = verticalGroup;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             JTextField nameField = new JTextField();
             nameField.setColumns(30);
@@ -362,6 +365,7 @@ public class AttachmentsPanel extends JPanel {
             putValue(Action.NAME, NbBundle.getMessage(DefaultAttachmentAction.class, "AttachmentsPanel.DefaultAttachmentAction.name")); // NOI18N
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             String progressFormat = NbBundle.getMessage(DefaultAttachmentAction.class, "AttachmentsPanel.DefaultAttachmentAction.progress"); // NOI18N
             String progressMessage = MessageFormat.format(progressFormat, attachment.getFilename());
@@ -369,6 +373,7 @@ public class AttachmentsPanel extends JPanel {
             handle.start();
             handle.switchToIndeterminate();
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         File file = saveToTempFile(attachment);
@@ -450,6 +455,7 @@ public class AttachmentsPanel extends JPanel {
             putValue(Action.NAME, NbBundle.getMessage(SaveAttachmentAction.class, "AttachmentsPanel.SaveAttachmentAction.name")); // NOI18N
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             final File file = new FileChooserBuilder(AttachmentsPanel.class)
                     .setFilesOnly(true).showSaveDialog();
@@ -460,6 +466,7 @@ public class AttachmentsPanel extends JPanel {
                 handle.start();
                 handle.switchToIndeterminate();
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             attachment.getAttachementData(new FileOutputStream(file));
