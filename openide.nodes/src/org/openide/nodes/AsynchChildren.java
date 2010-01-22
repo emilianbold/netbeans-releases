@@ -45,6 +45,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.openide.util.RequestProcessor;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Children object which creates its keys on a background thread.  To use,
@@ -58,8 +60,9 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
                                                           Runnable {
     private final ChildFactory<T> factory;
     private final RequestProcessor.Task task;
-    private final RequestProcessor PROC = new RequestProcessor("Asynch " //NOI18N
-             + "children creator " + this, Thread.NORM_PRIORITY, true); //NOI18N
+    private static final RequestProcessor PROC = new RequestProcessor("Asynch " //NOI18N
+             + "children creator ", 4, true); //NOI18N
+    private static final Logger logger = Logger.getLogger(AsynchChildren.class.getName());
     /**
      * Create a new AsyncChildren instance with the passed provider object
      * which will manufacture key objects and nodes.
@@ -74,6 +77,7 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
     
     volatile boolean initialized = false;
     protected @Override void addNotify() {
+        logger.log (Level.FINER, "addNotify on {0}", new Object[] { this });
         if ((!initialized && task.isFinished()) || cancelled) {
             cancelled = false;
             Node n = factory.getWaitNode();
@@ -85,6 +89,7 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
     }
     
     protected @Override void removeNotify() {
+        logger.log (Level.FINER, "removeNotify on {0}", new Object[] { this });
         try {
             cancelled = true;
             task.cancel();
@@ -110,6 +115,11 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
      */ 
     public void refresh(boolean immediate) {
         immediate &= !EventQueue.isDispatchThread();
+        logger.log (Level.FINE, "Refresh on {0} immediate {1}", new Object[]  //NOI18N
+            { this, immediate });
+        if (logger.isLoggable(Level.FINEST)) {
+            logger.log (Level.FINEST, "Refresh: ", new Exception()); //NOI18N
+        }
         if (immediate) {
             boolean done;
             List <T> keys = new LinkedList <T> ();
@@ -153,7 +163,10 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
     volatile boolean notified;
     private final Object notifyLock = new Object();
     public void run() {
-        if (cancelled || Thread.interrupted()) {
+        boolean fail = cancelled || Thread.interrupted();
+        logger.log (Level.FINE, "Running background children creation on " + //NOI18N
+                "{0} fail = {1}", new Object[] { this, fail }); //NOI18N
+        if (fail) {
             setKeys (Collections.<T>emptyList());
             return;
         }
@@ -178,5 +191,10 @@ final class AsynchChildren <T> extends Children.Keys <Object> implements
             setKeys (new LinkedList <T> (keys));
         } while (!done && !Thread.interrupted() && !cancelled);
         initialized = done;
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + "[" + factory + "]";
     }
 }
