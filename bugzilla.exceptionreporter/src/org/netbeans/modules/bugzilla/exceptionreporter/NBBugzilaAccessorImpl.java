@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,78 +34,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira;
+package org.netbeans.modules.bugzilla.exceptionreporter;
 
-import java.awt.Image;
-import org.netbeans.modules.bugtracking.spi.IssueFinder;
-import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.jira.issue.JiraIssueFinder;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.lib.uihandler.NBBugzillaAccessor;
+import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 
 /**
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
-public class JiraConnector extends BugtrackingConnector {
-
-    private JiraIssueFinder issueFinder;
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.lib.uihandler.NBBugzillaAccessor.class)
+public class NBBugzilaAccessorImpl extends NBBugzillaAccessor {
 
     @Override
-    public String getID() {
-        return "org.netbeans.modules.jira";                                     //  NOI18N
+    public void openIssue(String issueID) {
+        NBBugzillaUtils.openIssue(issueID);
     }
 
     @Override
-    public Image getIcon() {
-        return null;
-    }
-
-    public String getDisplayName() {
-        return getConnectorName();
-    }
-
-    public String getTooltip() {
-        return "Jira Issue Tracking System";
+    public String getNBUsername() {
+        return NBBugzillaUtils.getNBUsername();
     }
 
     @Override
-    public Repository createRepository() {
-        return new JiraRepository();
+    public char[] getNBPassword() {
+        return NBBugzillaUtils.getNBPassword();
     }
 
     @Override
-    public Repository[] getRepositories() {
-        return Jira.getInstance().getRepositories();
-    }
-
-    public static String getConnectorName() {
-        return NbBundle.getMessage(JiraConnector.class, "LBL_ConnectorName");           // NOI18N
-    }
-
-
-    @Override
-    public IssueFinder getIssueFinder() {
-        if (issueFinder == null) {
-            issueFinder = Lookup.getDefault().lookup(JiraIssueFinder.class);
-        }
-        return issueFinder;
-    }
-
-    public Lookup getLookup() {
-        return Lookups.singleton(Jira.getInstance().getKenaiSupport());
+    public void saveNBUsername(String username) {
+        NBBugzillaUtils.saveNBUsername(username);
     }
 
     @Override
-    public void fireRepositoriesChanged() {
-        super.fireRepositoriesChanged();
+    public void saveNBPassword(char[] password) {
+        NBBugzillaUtils.saveNBPassword(password);
     }
 
 }
