@@ -252,7 +252,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                                     } else {
                                         if (Utilities.isWindows()) {
                                             for (CompilerSet set : CompilerSetManager.getDefault().getCompilerSets()){
-                                                if (set.getCompilerFlavor().isMinGWCompiler()) {
+                                                if (set.getCompilerFlavor().getToolchainDescriptor().getName().startsWith("MinGW")) {
                                                     CompilerSetManager.getDefault().setDefault(set);
                                                     break;
                                                 }
