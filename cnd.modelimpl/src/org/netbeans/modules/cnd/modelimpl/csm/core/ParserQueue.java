@@ -799,17 +799,19 @@ public final class ParserQueue {
 
     private void handleLastProjectFile(ProjectBase project, ProjectData data) {
         project.onParseFinish(false);
-        boolean notifyListeners = false;
+        boolean last = false;
         synchronized (lock) {
             data.pendingActivity--;
             if (data.isEmpty() && (data.pendingActivity == 0)) {
                 projectData.remove(project);
-                notifyListeners = data.notifyListeners;
-                project.notifyOnWaitParseLock();
+                last = true;
             }
         }
-        if (notifyListeners) {
-            ProgressSupport.instance().fireProjectParsingFinished(project);
+        if (last) {
+            project.notifyOnWaitParseLock();
+            if (data.notifyListeners) {
+                ProgressSupport.instance().fireProjectParsingFinished(project);
+            }
         }
     }
 
