@@ -505,8 +505,7 @@ import org.openide.util.Utilities;
             }
             if (!ok) {
                 // try users path
-                ArrayList<String> paths = Path.getPath();
-                for (String p : paths) {
+                for (String p : Path.getPath()) {
                     file = new File(p + File.separatorChar + txt);
                     ok = file.exists() && !file.isDirectory();
                     if (ok) {

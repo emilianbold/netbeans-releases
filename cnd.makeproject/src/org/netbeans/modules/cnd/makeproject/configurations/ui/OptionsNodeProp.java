@@ -46,7 +46,7 @@ import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.OptionsConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.AllOptionsProvider;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -82,10 +82,12 @@ public class OptionsNodeProp extends PropertySupport<String> {
         }
     }
 
+    @Override
     public String getValue() {
         return commandLineConfiguration.getValue();
     }
 
+    @Override
     public void setValue(String v) {
         String s = CppUtils.reformatWhitespaces(v);
         commandLineConfiguration.setValue(s);
@@ -157,6 +159,7 @@ public class OptionsNodeProp extends PropertySupport<String> {
             return true;
         }
 
+        @Override
         public void attachEnv(PropertyEnv env) {
             this.env = env;
         }

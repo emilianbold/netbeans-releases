@@ -345,10 +345,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         if (map.isEmpty()) {
             return true;
         }
-        ArrayList<String> list = new ArrayList<String>(Path.getPath());
-        //String additionalPath = CndCoreTestUtils.getDownloadBase().getAbsolutePath()+File.separatorChar+"cmake-2.6.4/bin";
-        //list.add(additionalPath);
-        for (String path : list) {
+        for (String path : Path.getPath()) {
             for(Map.Entry<String, String> entry : map.entrySet()){
                 if (entry.getValue() == null) {
                     String task = path+File.separatorChar+entry.getKey();

@@ -381,18 +381,7 @@ public class CtagsParser {
             ctagsPath = "C:\\cygwin\\bin\\ctags.exe "; // NOI18N
         }
         if( ctagsPath == null || ! fileExists(ctagsPath) ) {
-            String path = Path.getPathAsString();
-            if( path != null ) {
-                StringTokenizer tokenizer = new StringTokenizer(path, System.getProperty("path.separator")); // NOI18N
-                while( tokenizer.hasMoreTokens() ) {
-                    String pathElement = tokenizer.nextToken();
-                    File file = new File(pathElement, "ctags.exe"); // NOI18N
-                    if( file.exists() ) {
-                        ctagsPath = file.getAbsolutePath();
-                        break;
-                    }
-                }
-            }
+            ctagsPath = Path.findCommand("ctags.exe"); // NOI18N
         }
         return fileExists(ctagsPath) ? ctagsPath : null ;
     }

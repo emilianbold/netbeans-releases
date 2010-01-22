@@ -108,6 +108,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
 
@@ -333,8 +334,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     }
 
     public static String findTools(String toolName){
-        List<String> list = new ArrayList<String>(Path.getPath());
-        for (String path : list) {
+        for (String path : Path.getPath()) {
             String task = path+File.separatorChar+toolName;
             File tool = new File(task);
             if (tool.exists() && tool.isFile()) {
@@ -402,6 +402,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return envMap;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP; // FIXUP ???
     }
@@ -567,6 +568,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             this.syncWorker = syncWorker;
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             if (!(e instanceof NativeProcessChangeEvent)) {
                 return;
@@ -592,6 +594,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     }
                     shutdownSyncWorker();
                     postRunnable = new Runnable() {
+                        @Override
                         public void run() {
                             String message = getString("Output."+resourceKey+"Terminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                             String statusMessage = getString("Status."+resourceKey+"Terminated"); // NOI18N
@@ -612,6 +615,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     }
                     shutdownSyncWorker();
                     postRunnable = new Runnable() {
+                        @Override
                         public void run() {
                             String message = getString("Output."+resourceKey+"FailedToStart"); // NOI18N
                             String statusMessage = getString("Status."+resourceKey+"FailedToStart"); // NOI18N
@@ -632,6 +636,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     }
                     shutdownSyncWorker();
                     postRunnable = new Runnable() {
+                        @Override
                         public void run() {
                             String message;
                             String statusMessage;
@@ -655,6 +660,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
 
+        @Override
         public void run() {
             if (postRunnable != null) {
                 postRunnable.run();
@@ -671,6 +677,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
 
+        @Override
         public LineConvertor newLineConvertor() {
             return new LineConvertor() {
                 @Override
