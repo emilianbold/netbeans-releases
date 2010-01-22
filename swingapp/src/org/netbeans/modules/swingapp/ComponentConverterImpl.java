@@ -56,10 +56,12 @@ import org.openide.filesystems.FileObject;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.ComponentConverter.class)
 public class ComponentConverterImpl implements ComponentConverter {
 
+    @Override
     public Class getDesignClass(String componentClassName, FileObject fileFromProject) {
         return null;
     }
 
+    @Override
     public Class getDesignClass(Class componentClass, FileObject fileFromProject) {
         if (isViewClass(componentClass)) {
             try {
@@ -124,6 +126,7 @@ public class ComponentConverterImpl implements ComponentConverter {
     }
 
     private static class PlaceholderApp extends org.jdesktop.application.Application {
+        @Override
         protected void startup() {
         }
     }
