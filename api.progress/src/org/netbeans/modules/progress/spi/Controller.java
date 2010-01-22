@@ -40,9 +40,10 @@
  */
 
 
-package org.netbeans.progress.module;
+package org.netbeans.modules.progress.spi;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,19 +55,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import org.netbeans.progress.spi.InternalHandle;
-import org.netbeans.progress.spi.ProgressEvent;
-import org.netbeans.progress.spi.ProgressUIWorker;
-import org.netbeans.progress.spi.ProgressUIWorkerProvider;
-import org.netbeans.progress.spi.ProgressUIWorkerWithModel;
-import org.netbeans.progress.spi.TaskModel;
+import org.netbeans.progress.module.TrivialProgressUIWorkerProvider;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Milos Kleint (mkleint@netbeans.org)
+ * @since org.netbeans.api.progress/1 1.18
  */
-public /* final - because of tests */ class Controller implements Runnable, ActionListener {
+public /* final - because of tests */ class Controller {
     
     // non-private so that it can be accessed from the tests
     public static Controller defaultInstance;
@@ -87,26 +84,27 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
     
     /** Creates a new instance of Controller */
     public Controller(ProgressUIWorker comp) {
-        this();
         component = comp;
-    }
-    protected Controller() {
         model = new TaskModel();
         eventQueue = new ArrayList<ProgressEvent>();
         dispatchRunning = false;
-        timer = new Timer(TIMER_QUANTUM, this);
+        timer = new Timer(TIMER_QUANTUM, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                runNow();
+            }
+        });
         timer.setRepeats(false);
     }
 
     public static synchronized Controller getDefault() {
         if (defaultInstance == null) {
-            defaultInstance = new Controller();
+            defaultInstance = new Controller(null);
         }
         return defaultInstance;
     }
     
     // to be called on the default instance only..
-    Component getVisualComponent() {
+    public Component getVisualComponent() {
         if (component == null) {
             getProgressUIWorker();
         }
@@ -136,7 +134,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
         return model;
     }
     
-    public void start(InternalHandle handle) {
+    void start(InternalHandle handle) {
         ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_START, isWatched(handle));
         if (this == getDefault() && handle.getInitialDelay() > 100) {
             // default controller
@@ -146,34 +144,34 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
         }
     }
     
-    public void finish(InternalHandle handle) {
+    void finish(InternalHandle handle) {
         ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_FINISH, isWatched(handle));
         postEvent(event);
     }
     
-    public void toIndeterminate(InternalHandle handle) {
+    void toIndeterminate(InternalHandle handle) {
         ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_SWITCH, isWatched(handle));
         postEvent(event);
     }
     
-    public void toSilent(InternalHandle handle, String message) {
+    void toSilent(InternalHandle handle, String message) {
         ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_SILENT, isWatched(handle), message);
         postEvent(event);
     }
     
     
-    public void toDeterminate(InternalHandle handle) {
+    void toDeterminate(InternalHandle handle) {
         ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_SWITCH, isWatched(handle));
         postEvent(event);
     }    
     
-    public void progress(InternalHandle handle, String msg, 
+    void progress(InternalHandle handle, String msg, 
                   int units, double percentage, long estimate) {
         ProgressEvent event = new ProgressEvent(handle, msg, units, percentage, estimate, isWatched(handle));
         postEvent(event);
     }
     
-    public ProgressEvent snapshot(InternalHandle handle, String msg, 
+    ProgressEvent snapshot(InternalHandle handle, String msg, 
                   int units, double percentage, long estimate) {
         if (handle.isInSleepMode()) {
             return new ProgressEvent(handle, ProgressEvent.TYPE_SILENT, isWatched(handle), msg);
@@ -182,7 +180,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
     }
     
     
-    public void explicitSelection(InternalHandle handle) {
+    void explicitSelection(InternalHandle handle) {
         InternalHandle old = model.getExplicitSelection();
         model.explicitlySelect(handle);
         Collection<ProgressEvent> evnts = new ArrayList<ProgressEvent>();
@@ -194,7 +192,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
         runImmediately(evnts);
     }
     
-    public void displayNameChange(InternalHandle handle, int units, double percentage, long estimate, String display) {
+    void displayNameChange(InternalHandle handle, int units, double percentage, long estimate, String display) {
         Collection<ProgressEvent> evnts = new ArrayList<ProgressEvent>();
         evnts.add(new ProgressEvent(handle, null, units, percentage, estimate, isWatched(handle), display));
         runImmediately(evnts);
@@ -204,9 +202,6 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
         return model.getExplicitSelection() == hndl;
     }
     
-    /**
-     * 
-     */ 
     void runImmediately(Collection<ProgressEvent> events) {
         synchronized (this) {
             // need to add to queue immediately in the current thread
@@ -215,9 +210,13 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
         }
         // trigger ui update as fast as possible.
         if (SwingUtilities.isEventDispatchThread()) {
-           run();
+           runNow();
         } else {
-           SwingUtilities.invokeLater(this);
+           SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    runNow();
+                }
+            });
         }
         
     }
@@ -256,10 +255,8 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
     }
      
     
-    /**
-     * can be run from awt only.
-     */
-    public void run() {
+    public void runNow() {
+        // not true in tests: assert EventQueue.isDispatchThread();
         HashMap<InternalHandle, ProgressEvent> map = new HashMap<InternalHandle, ProgressEvent>();
         boolean hasShortOne = false;
         long minDiff = TIMER_QUANTUM;
@@ -284,7 +281,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
                 {
                     model.removeHandle(event.getSource());
                 }
-                ProgressEvent lastEvent = (ProgressEvent)map.get(event.getSource());
+                ProgressEvent lastEvent = map.get(event.getSource());
                 if (lastEvent != null && event.getType() == ProgressEvent.TYPE_FINISH && 
                         justStarted.contains(event.getSource()) && isShort)
                 {
@@ -316,7 +313,7 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
                     model.addHandle(hndl);
                 } else {
                     eventQueue.add(new ProgressEvent(hndl, ProgressEvent.TYPE_START, isWatched(hndl)));
-                    ProgressEvent evnt = (ProgressEvent)map.remove(hndl);
+                    ProgressEvent evnt = map.remove(hndl);
                     if (evnt.getType() != ProgressEvent.TYPE_START) {
                         eventQueue.add(evnt);
                     }
@@ -349,14 +346,5 @@ public /* final - because of tests */ class Controller implements Runnable, Acti
             }
         }
     }
-
-    /**
-     * used by Timer
-     */
-    public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
-        run();
-    }
-
-    
 
 }

@@ -38,34 +38,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-/*
- * TabbedContainerBridgeImpl.java
- *
- * Created on June 1, 2004, 6:42 PM
- */
 
-package org.netbeans.core.windows.view.ui.tabcontrol;
+package org.netbeans.modules.openide.explorer;
 
 import java.util.List;
-import java.util.Arrays;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.swing.tabcontrol.ComponentConverter;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.TabDataModel;
-import org.netbeans.modules.openide.explorer.TabbedContainerBridge;
 
-/**
- * Implementation of org.netbeans.modules.explorer.TabbedContainerBridge, as
- * used by the property sheet.  This class allows the property sheet to use
- * TabbedContainer without openide explicitly depending on the TabControl
- * library (currently impossible).
- *
- * @author  Tim Boudreau
- */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.openide.explorer.TabbedContainerBridge.class)
-public class TabbedContainerBridgeImpl extends TabbedContainerBridge {
+class TabbedContainerBridgeImpl extends TabbedContainerBridge {
     
     /** Creates a new instance of TabbedContainerBridgeImpl */
     public TabbedContainerBridgeImpl() {

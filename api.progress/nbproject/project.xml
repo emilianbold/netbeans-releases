@@ -93,6 +93,7 @@ made subject to such option by the copyright holder.
             <public-packages>
                 <package>org.netbeans.api.progress</package>
                 <package>org.netbeans.api.progress.aggregate</package>
+                <package>org.netbeans.modules.progress.spi</package>
             </public-packages>
         </data>
     </configuration>

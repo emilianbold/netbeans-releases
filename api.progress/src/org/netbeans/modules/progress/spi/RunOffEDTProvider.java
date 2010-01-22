@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,24 +31,21 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.progress.module;
+package org.netbeans.modules.progress.spi;
 
-import org.netbeans.modules.progress.spi.Controller;
-import java.awt.Component;
-import org.openide.awt.StatusLineElementProvider;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Implementation of StatusLineElementProvider which allows to dock the progress
- * component into the status bar.
- * @author  Milos Kleint
+ * Interface for ProgressUtils.runOffEventDispatchThread() methods
+ * @author Tomas Holy
+ * @since org.netbeans.api.progress/1 1.18
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.awt.StatusLineElementProvider.class, position=-13)
-public final class ProgressVisualizerProvider implements StatusLineElementProvider {
-
-    public Component getStatusLineElement () {
-        return Controller.getDefault().getVisualComponent();
-    }
-    
+public interface RunOffEDTProvider {
+    void runOffEventDispatchThread(Runnable operation, String operationDescr, AtomicBoolean cancelOperation, boolean waitForCanceled, int waitCursorAfter, int dialogAfter);
 }

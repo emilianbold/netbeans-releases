@@ -40,7 +40,7 @@
  */
 
 
-package org.netbeans.progress.spi;
+package org.netbeans.modules.progress.spi;
 
 import javax.swing.DefaultListModel;
 import javax.swing.DefaultListSelectionModel;
@@ -51,6 +51,7 @@ import org.netbeans.progress.module.*;
 /**
  *
  * @author Milos Kleint (mkleint@netbeans.org)
+ * @since org.netbeans.api.progress/1 1.18
  */
 public final class TaskModel {
     private DefaultListSelectionModel selectionModel;

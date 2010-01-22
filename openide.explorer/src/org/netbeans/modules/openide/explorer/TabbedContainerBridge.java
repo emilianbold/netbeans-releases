@@ -43,30 +43,16 @@ package org.netbeans.modules.openide.explorer;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.openide.util.Lookup;
 
 /**
- * An architectural hack - until PropertySheet is separated and openide
- * split up, openide cannot depend on module code due to classloader
- * restrictions.  So we have an interface which will supply a bridge to
- * the tabcontrol code; an implementation of this interface is provided
- * over org.netbeans.swing.tabcontrol.TabbedContainer (in core/swing/tabcontrol)
- * by the window system which depends on it.
- *
- * @see org.netbeans.core.windows.view.ui.tabcontrol.TabbedContainerBridgeImpl
- * @author  Tim Boudreau
+ * A separate class only for historical reasons. Could be inlined into PSheet if desired.
  */
 public abstract class TabbedContainerBridge {
     
     protected TabbedContainerBridge(){};
     
     public static TabbedContainerBridge getDefault() {
-        TabbedContainerBridge result = Lookup.getDefault().lookup (TabbedContainerBridge.class);
-        if (result == null) {
-            //unit test or standalone library operation
-            return new TrivialTabbedContainerBridgeImpl();
-        }
-        return result;
+        return new TabbedContainerBridgeImpl();
     }
 
     public abstract JComponent createTabbedContainer();

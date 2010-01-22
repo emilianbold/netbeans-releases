@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,18 +39,19 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.progress.spi;
+package org.netbeans.modules.progress.spi;
 
-import org.netbeans.progress.module.*;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 
 /**
  *
  * @author mkleint
+ * @since org.netbeans.api.progress/1 1.18
  */
-public interface ProgressUIWorker {
-
-    void processProgressEvent(ProgressEvent event);
-    void processSelectedProgressEvent(ProgressEvent event);
+public interface ExtractedProgressUIWorker extends ProgressUIWorker {
     
-    
+    JComponent getProgressComponent();
+    JLabel getMainLabelComponent();
+    JLabel getDetailLabelComponent();
 }

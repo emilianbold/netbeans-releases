@@ -41,7 +41,6 @@
 
 package org.openide.util;
 
-import org.netbeans.modules.openide.util.ActiveQueue;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -105,9 +104,10 @@ import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import org.netbeans.modules.openide.util.AWTBridge;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.implspi.ActiveQueue;
+import org.openide.util.actions.ActionPresenterProvider;
 
 /** Otherwise uncategorized useful static methods.
 *
@@ -2737,10 +2737,10 @@ widthcheck:  {
                     }
                 } else {
                     // We need to correctly handle mnemonics with '&' etc.
-                     item = AWTBridge.getDefault().createPopupPresenter(action);
+                     item = ActionPresenterProvider.getDefault().createPopupPresenter(action);
                 }
 
-                for (Component c : AWTBridge.getDefault().convertComponents(item)) {
+                for (Component c : ActionPresenterProvider.getDefault().convertComponents(item)) {
                     if (c instanceof JSeparator) {
                         components.add(null);
                     } else {
@@ -2753,7 +2753,7 @@ widthcheck:  {
         }
 
         // Now create actual menu. Strip adjacent, leading, and trailing separators.
-        JPopupMenu menu = AWTBridge.getDefault().createEmptyPopup();
+        JPopupMenu menu = ActionPresenterProvider.getDefault().createEmptyPopup();
         boolean nonempty = false; // has anything been added yet?
         boolean pendingSep = false; // should there be a separator before any following item?
         for (Component c : components) {

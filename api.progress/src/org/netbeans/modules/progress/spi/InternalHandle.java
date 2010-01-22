@@ -40,7 +40,7 @@
  */
 
 
-package org.netbeans.progress.spi;
+package org.netbeans.modules.progress.spi;
 
 import java.awt.event.ActionEvent;
 import java.util.logging.Level;
@@ -56,6 +56,7 @@ import org.openide.util.Lookup;
  * Instances provided by the ProgressHandleFactory allow the users of the API to
  * notify the progress bar UI about changes in the state of the running task.
  * @author Milos Kleint (mkleint@netbeans.org)
+ * @since org.netbeans.api.progress/1 1.18
  */
 public final class InternalHandle {
 
