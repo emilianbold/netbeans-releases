@@ -225,7 +225,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         private static Collection<CsmUID<FunctionImplEx>> toUIDCollection(Collection<FakePair> fakePairs) {
             Collection<CsmUID<FunctionImplEx>> out = new ArrayList<CsmUID<FunctionImplEx>>(fakePairs.size());
             for (FakePair pair: fakePairs) {
-                out.add(pair.uid);
+                if (pair != null) {
+                    out.add(pair.uid);
+                }
             }
             return out;
         }
@@ -1712,9 +1714,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public final void onFakeRegisration(FunctionImplEx decl, AST fakeRegistrationAst) {
         synchronized (fakeRegistrationPairs) {
             CsmUID<FunctionImplEx> uidDecl = UIDCsmConverter.declarationToUID(decl);
-            if (alreadyInFixFakeRegistrations && CndUtils.isUnitTestMode()) {
-                new Exception("onFakeRegistration " + decl.getClass() + " from fixRegistration for " + uidDecl + " decl = " + decl + " fqn = " + decl.getQualifiedName()).printStackTrace(System.err); // NOI18N
-            }
             fakeRegistrationPairs.add(new FakePair(uidDecl, fakeRegistrationAst));
         }
     }

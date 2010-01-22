@@ -293,15 +293,19 @@ public final class ParserQueue {
         // there are no more simultaneously parsing files than threads, so LinkedList suites even better
         private final Collection<FileImpl> filesBeingParsed = new LinkedHashSet<FileImpl>();
         private volatile boolean notifyListeners;
-
+        private volatile int pendingActivity;
         ProjectData(boolean notifyListeners) {
             this.notifyListeners = notifyListeners;
+            this.pendingActivity = 0;
         }
 
         public boolean isEmpty() {
             return filesInQueue.isEmpty() && filesBeingParsed.isEmpty();
         }
-
+        
+        public boolean noActivity() {
+            return filesInQueue.isEmpty() && filesBeingParsed.isEmpty() && (pendingActivity == 0);
+        }
         public int size() {
             return filesInQueue.size();
         }
@@ -540,12 +544,11 @@ public final class ParserQueue {
 
         ProjectBase project;
         boolean lastFileInProject;
-        boolean notifyListeners;
 
         FileImpl file = null;
 
+        ProjectData data;
         synchronized (lock) {
-            ProjectData data = null;
             e = findFirstNotBeeingParsedEntry(true);
             if (e == null) {
                 return null;
@@ -555,11 +558,7 @@ public final class ParserQueue {
             data = getProjectData(project, true);
             data.filesInQueue.remove(file);
             data.filesBeingParsed.add(file);
-            lastFileInProject = data.filesInQueue.isEmpty() && data.filesBeingParsed.isEmpty();
-            if (lastFileInProject) {
-                removeProjectData(project);
-            }
-            notifyListeners = lastFileInProject && data.notifyListeners;
+            lastFileInProject = markLastProjectFileActivityIfNeeded(data);
             if (TraceFlags.TIMING && stopWatch != null && !stopWatch.isRunning()) {
                 stopWatch.start();
                 System.err.println("=== Starting parser queue stopwatch " + project.getName()); // NOI18N
@@ -568,10 +567,7 @@ public final class ParserQueue {
         // TODO: think over, whether this should be under if( notifyListeners
         ProgressSupport.instance().fireFileParsingStarted(file);
         if (lastFileInProject) {
-            project.onParseFinish(false);
-            if (notifyListeners) {
-                ProgressSupport.instance().fireProjectParsingFinished(project);
-            }
+            handleLastProjectFile(project, data);
         }
         if (TraceFlags.TRACE_PARSER_QUEUE_POLL) {
             System.err.printf("ParserQueue: polling %s with %d states in thread %s\n", // NOI18N
@@ -584,11 +580,10 @@ public final class ParserQueue {
 
         ProjectBase project;
         boolean lastFileInProject = false;
-        boolean notifyListeners = false;
-
+        ProjectData data;
         synchronized (lock) {
             project = file.getProjectImpl(true);
-            ProjectData data = getProjectData(project, true);
+            data = getProjectData(project, true);
             if (data.filesInQueue.contains(file)) {
                 //queue.remove(file); //TODO: think over / profile, probably this line is expensive
                 Entry e = findEntry(file);//TODO: think over / profile, probably this line is expensive
@@ -596,19 +591,12 @@ public final class ParserQueue {
                     queue.remove(e);
                 }
                 data.filesInQueue.remove(file);
-                lastFileInProject = data.filesInQueue.isEmpty() && data.filesBeingParsed.isEmpty();
-                if (lastFileInProject) {
-                    removeProjectData(project);
-                }
-                notifyListeners = lastFileInProject && data.notifyListeners;
+                lastFileInProject = markLastProjectFileActivityIfNeeded(data);
             }
         }
 
         if (lastFileInProject) {
-            project.onParseFinish(false);
-            if (notifyListeners) {
-                ProgressSupport.instance().fireProjectParsingFinished(project);
-            }
+            handleLastProjectFile(project, data);
         }
     }
 
@@ -637,16 +625,10 @@ public final class ParserQueue {
         boolean lastFileInProject;
         synchronized (lock) {
             data = _clean(project);
-            lastFileInProject = data.filesBeingParsed.isEmpty();
-            if (lastFileInProject) {
-                removeProjectData(project);
-            }
+            lastFileInProject = markLastProjectFileActivityIfNeeded(data);
         }
         if (lastFileInProject) {
-            project.onParseFinish(false);
-            if (data.notifyListeners) {
-                ProgressSupport.instance().fireProjectParsingFinished(project);
-            }
+            handleLastProjectFile(project, data);
         }
     }
 
@@ -683,14 +665,10 @@ public final class ParserQueue {
         return false;
     }
 
-    public boolean hasFiles(ProjectBase project, FileImpl skipFile) {
-        return hasFiles(project, skipFile, true);
-    }
-
-    private boolean hasFiles(ProjectBase project, FileImpl skipFile, boolean create) {
+    public boolean hasPendingProjectRelatedWork(ProjectBase project, FileImpl skipFile) {
         synchronized (lock) {
-            ProjectData data = getProjectData(project, create);
-            if (data == null || data.isEmpty()) {
+            ProjectData data = getProjectData(project, false);
+            if (data == null || data.noActivity()) {
                 // nothing in queue and nothing in progress => no files
                 return false;
             } else {
@@ -700,9 +678,9 @@ public final class ParserQueue {
                 } else {
                     if (data.filesBeingParsed.contains(skipFile) ||
                             data.filesInQueue.contains(skipFile)) {
-                        return data.filesBeingParsed.size() + data.filesInQueue.size() > 1;
+                        return data.filesBeingParsed.size() + data.filesInQueue.size() + data.pendingActivity > 1;
                     }
-                    return !data.isEmpty();
+                    return !data.noActivity();
                 }
             }
         }
@@ -785,9 +763,8 @@ public final class ParserQueue {
             project = file.getProjectImpl(true);
             data = getProjectData(project, true);
             data.filesBeingParsed.remove(file);
-            lastFileInProject = data.filesInQueue.isEmpty() && data.filesBeingParsed.isEmpty();
+            lastFileInProject = markLastProjectFileActivityIfNeeded(data);
             if (lastFileInProject) {
-                removeProjectData(project);
                 idle = projectData.isEmpty();
                 // this work only for a single project
                 // but on the other hand in the case of multiple projects such measuring will never work
@@ -803,15 +780,35 @@ public final class ParserQueue {
             if (TraceFlags.TRACE_CLOSE_PROJECT) {
                 System.err.println("Last file in project " + project.getName()); // NOI18N
             }
-            project.onParseFinish(false);
-            if (data.notifyListeners) {
-                ProgressSupport.instance().fireProjectParsingFinished(project);
-            }
+            handleLastProjectFile(project, data);
             if (idle) {
                 ProgressSupport.instance().fireIdle();
             }
             // notify all "wait" empty listeners
             notifyWaitEmpty(project);
+        }
+    }
+
+    private boolean markLastProjectFileActivityIfNeeded(ProjectData data) {
+        if (data.filesInQueue.isEmpty() && data.filesBeingParsed.isEmpty()) {
+            data.pendingActivity++;
+            return true;
+        }
+        return false;
+    }
+
+    private void handleLastProjectFile(ProjectBase project, ProjectData data) {
+        project.onParseFinish(false);
+        boolean notifyListeners = false;
+        synchronized (lock) {
+            data.pendingActivity--;
+            if (data.isEmpty() && (data.pendingActivity == 0)) {
+                projectData.remove(project);
+                notifyListeners = data.notifyListeners;
+            }
+        }
+        if (notifyListeners) {
+            ProgressSupport.instance().fireProjectParsingFinished(project);
         }
     }
 
@@ -833,7 +830,7 @@ public final class ParserQueue {
         if (TraceFlags.TRACE_CLOSE_PROJECT) {
             System.err.println("Waiting Empty Project " + project.getName()); // NOI18N
         }
-        while (hasFiles(project, null, false)) {
+        while (hasPendingProjectRelatedWork(project, null)) {
             if (TraceFlags.TRACE_CLOSE_PROJECT) {
                 System.err.println("Waiting Empty Project 2 " + project.getName()); // NOI18N
             }
