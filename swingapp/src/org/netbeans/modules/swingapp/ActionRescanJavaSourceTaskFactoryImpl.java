@@ -47,7 +47,6 @@ import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.form.FormDataObject;
-import org.netbeans.modules.form.FormEditor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
