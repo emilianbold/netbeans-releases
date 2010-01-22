@@ -49,10 +49,10 @@ import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.progress.module.Controller;
-import org.netbeans.progress.spi.InternalHandle;
-import org.netbeans.progress.spi.ProgressEvent;
-import org.netbeans.progress.spi.ProgressUIWorker;
+import org.netbeans.modules.progress.spi.Controller;
+import org.netbeans.modules.progress.spi.InternalHandle;
+import org.netbeans.modules.progress.spi.ProgressEvent;
+import org.netbeans.modules.progress.spi.ProgressUIWorker;
 import org.openide.util.Cancellable;
 
 /**

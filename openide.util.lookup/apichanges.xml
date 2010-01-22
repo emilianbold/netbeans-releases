@@ -46,6 +46,26 @@ made subject to such option by the copyright holder.
     <apidef name="lookup">Lookup API</apidef>
 </apidefs>
 <changes>
+    <change id="named.services.provider">
+        <api name="lookup"/>
+        <summary>Introducing semihidden SPI</summary>
+        <version major="8" minor="1"/>
+        <date day="15" month="1" year="2010"/>
+        <author login="jtulach"/>
+        <compatibility
+            addition="yes"
+            binary="compatible" deletion="no" deprecation="no"
+            modification="no" semantic="compatible" source="compatible"
+        />
+        <description>
+            <p>
+                Adding SPI interface package for those who implement
+                the NetBeans platform. This package is not shown in Javadoc
+                as it does not form a generally available public API.
+            </p>
+        </description>
+        <issue number="179289"/>
+    </change>
     <change id="lookup.is.free">
         <api name="lookup"/>
         <summary>Separate module for Lookup API</summary>

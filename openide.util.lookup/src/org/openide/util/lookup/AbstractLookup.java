@@ -40,15 +40,9 @@
  */
 package org.openide.util.lookup;
 
-import java.io.PrintStream;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -63,9 +57,11 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-
 import java.util.concurrent.Executor;
-import org.netbeans.modules.openide.util.ActiveQueue;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.lookup.implspi.ActiveQueue;
 
 
 /** Implementation of the lookup from OpenAPIs that is based on the

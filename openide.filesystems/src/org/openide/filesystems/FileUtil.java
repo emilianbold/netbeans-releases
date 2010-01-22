@@ -1470,7 +1470,7 @@ public final class FileUtil extends Object {
     public static List<String> getMIMETypeExtensions(String mimeType) {
         Parameters.notEmpty("mimeType", mimeType);  //NOI18N
         HashMap<String, String> extensionToMime = new HashMap<String, String>();
-        for (FileObject mimeResolverFO : MIMEResolverImpl.getOrderedResolvers().values()) {
+        for (FileObject mimeResolverFO : MIMEResolverImpl.getOrderedResolvers()) {
             Map<String, Set<String>> mimeToExtensions = MIMEResolverImpl.getMIMEToExtensions(mimeResolverFO);
             for (Map.Entry<String, Set<String>> entry : mimeToExtensions.entrySet()) {
                 String mimeKey = entry.getKey();

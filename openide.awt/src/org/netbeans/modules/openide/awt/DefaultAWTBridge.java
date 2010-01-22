@@ -56,11 +56,13 @@ import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.actions.ActionPresenterProvider;
 
 /** Default implementaiton of presenters for various action types.
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.openide.util.AWTBridge.class)
-public final class DefaultAWTBridge extends org.netbeans.modules.openide.util.AWTBridge {
+@ServiceProvider(service=ActionPresenterProvider.class)
+public final class DefaultAWTBridge extends ActionPresenterProvider {
     public JMenuItem createMenuPresenter (Action action) {
         if (action instanceof BooleanStateAction) {
             BooleanStateAction b = (BooleanStateAction)action;

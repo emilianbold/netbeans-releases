@@ -39,8 +39,8 @@ fi
 
 #export PATH=$NATIVEPYTHONHOME/bin:$PATH
 CLUSTERS=$NBHGHOME/nbbuild/netbeans
-PYTHON=$CLUSTERS/python1
-GSF=$CLUSTERS/gsf1
+PYTHON=$CLUSTERS/python
+GSF=$CLUSTERS/gsf
 unset GEM_HOME
 
 if test ! -f $CLUSTERS/extra/modules/org-netbeans-modules-gsf-tools.jar ; then

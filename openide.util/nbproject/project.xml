@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <implementation-version/>
+                        <specification-version>8.1</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -77,9 +77,8 @@ made subject to such option by the copyright holder.
             <public-packages>
                 <package>org.openide</package>
                 <package>org.openide.util</package>
-                <package>org.openide.util.datatransfer</package>
                 <package>org.openide.util.actions</package>
-                <package>org.openide.util.lookup</package>
+                <package>org.openide.util.datatransfer</package>
                 <package>org.openide.util.io</package>
                 <package>org.openide.xml</package>
             </public-packages>

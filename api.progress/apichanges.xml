@@ -105,6 +105,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+    <change id="spi">
+        <api name="progress_api"/>
+        <summary>SPI added</summary>
+        <version major="1" minor="18"/>
+        <date day="8" month="1" year="2010"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                An internal SPI package was exposed. Normal modules should not
+                need to access this package.
+            </p>
+        </description>
+        <issue number="177945"/>
+    </change>
     <change id="ProgressUtils">
         <api name="progress_api"/>
         <summary><code>ProgressUtils</code> class with <code>runOffEventDispatchThread</code> methods was added.</summary>

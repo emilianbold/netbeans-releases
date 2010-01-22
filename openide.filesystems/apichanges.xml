@@ -46,6 +46,24 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="MIMEResolverImpl">
+            <api name="filesystems"/>
+            <summary>Access methods added to <code>MIMEResolver.UIHelpers</code></summary>
+            <version major="7" minor="34"/>
+            <date day="8" month="1" year="2010"/>
+            <author login="jglick"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Several internal methods were added to nested class
+                    of <code>MIMEResolver</code> - <code>UIHelpers</code>
+                    for use from other parts of the NetBeans Platform. Use from
+                    other modules is not supported.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="MIMEResolver"/>
+            <issue number="179289"/>
+        </change>
           <change id="recursive-listener">
              <api name="filesystems"/>
              <summary>Support for recursive listeners</summary>

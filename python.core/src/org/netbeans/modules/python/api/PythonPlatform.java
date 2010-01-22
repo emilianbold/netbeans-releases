@@ -257,8 +257,8 @@ public final class PythonPlatform implements Serializable, Comparable<PythonPlat
 
         for (String item : sortedPath) {
             File file = new File(item);
-            if (file.getName().equals("python1")) { // NOI18N
-                // For some reason, Jython's load path includes our python1 NetBeans cluster directory.... why?
+            if (file.getName().equals("python")) { // NOI18N
+                // For some reason, Jython's load path includes our python NetBeans cluster directory.... why?
                 // We shouldn't include it here, since pythonstubs is added manually.
                 continue;
             }

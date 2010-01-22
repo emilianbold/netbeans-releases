@@ -41,7 +41,7 @@ package org.netbeans.api.progress;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
-import org.netbeans.progress.spi.RunOffEDTProvider;
+import org.netbeans.modules.progress.spi.RunOffEDTProvider;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;

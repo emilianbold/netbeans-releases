@@ -42,7 +42,7 @@
 package org.netbeans.modules.j2me.cdc.project.savaje;
 
 // IMPORTANT! You need to compile this class against ant.jar. So add the
-// JAR ide5/ant/lib/ant.jar from your IDE installation directory (or any
+// JAR ide/ant/lib/ant.jar from your IDE installation directory (or any
 // other version of Ant you wish to use) to your classpath. Or if
 // writing your own build target, use e.g.:
 // <classpath>

@@ -145,7 +145,10 @@ public abstract class AbstractOutputTab extends JComponent implements Accessible
     protected abstract AbstractOutputPane createOutputPane();
     
     protected abstract void inputSent (String txt);
-    
+
+    /**
+     * Accessed reflectively from org.netbeans.jellytools.OutputTabOperator.
+     */
     public final AbstractOutputPane getOutputPane() {
         return outputPane;
     }
