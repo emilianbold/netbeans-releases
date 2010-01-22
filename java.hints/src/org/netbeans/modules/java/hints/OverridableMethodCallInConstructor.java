@@ -45,6 +45,7 @@ import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -52,13 +53,11 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
@@ -114,14 +113,17 @@ public class OverridableMethodCallInConstructor {
     private static Fix[] computeFixes(ExecutableElement ee, HintContext ctx) {
         List<Fix> result = new ArrayList<Fix>();
         MethodTree mt = ctx.getInfo().getTrees().getTree(ee);
-        result.add(JavaFix.rewriteFix(ctx,
-            NbBundle.getMessage(OverridableMethodCallInConstructor.class,
-                "FIX_MakeMethod", "private", mt.getName()),
+        Set<Modifier> flags = mt.getModifiers().getFlags();
+        result.add(FixFactory.changeModifiersFix(
+            ctx.getInfo(),
             TreePath.getPath(
                 ctx.getInfo().getCompilationUnit(),
-                mt
+                mt.getModifiers()
             ),
-            "private "));
+            Collections.singleton(Modifier.PRIVATE),
+            flags,
+            NbBundle.getMessage(OverridableMethodCallInConstructor.class,
+                "FIX_MakeMethod", "private", mt.getName())));
         return result.toArray(new Fix[result.size()]);
     }
 }
