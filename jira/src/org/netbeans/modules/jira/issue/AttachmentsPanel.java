@@ -249,7 +249,7 @@ public class AttachmentsPanel extends JPanel {
                     JComponent browseButton = (JComponent)comp.getClientProperty(BROWSE_CP);
                     browseButton.setVisible(false);
                     newAttachments.remove(nameField);
-                    if (hadNoAttachments && (newAttachments.size() == 0)) {
+                    if (hadNoAttachments && newAttachments.isEmpty()) {
                         // The last attachment deleted
                         noneLabel.setVisible(true);
                         switchHelper();
