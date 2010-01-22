@@ -28,18 +28,6 @@
             </folder>
         </folder>
     </folder>
-    <folder name="CslPlugins">
-        <folder name="text">
-            <folder name="x-php5">
-                <file name="language.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.PHPLanguage"/>
-                </file>
-                <file name="structure.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.php.editor.parser.PhpStructureScanner"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
     <folder name="Editors">
         <folder name="text">
             <folder name="x-php5">

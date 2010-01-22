@@ -41,22 +41,22 @@
 package org.netbeans.modules.ruby.rhtml;
 
 
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.DeclarationFinder;
-import org.netbeans.modules.csl.api.Formatter;
-import org.netbeans.modules.csl.api.IndexSearcher;
-import org.netbeans.modules.csl.api.InstantRenamer;
-import org.netbeans.modules.csl.api.KeystrokeHandler;
-import org.netbeans.modules.csl.api.OccurrencesFinder;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.ruby.RubyIndexer;
 import org.netbeans.modules.ruby.RubyStructureAnalyzer;
+import org.netbeans.modules.ruby.RubyUtils;
 
-public class RhtmlLanguage extends RubyLanguage {
+@LanguageRegistration(mimeType="application/x-httpd-eruby", useCustomEditorKit=true) //NOI18N
+public class RhtmlLanguage extends DefaultLanguageConfig {
     
     public RhtmlLanguage() {
     }
@@ -82,58 +82,8 @@ public class RhtmlLanguage extends RubyLanguage {
     }
 
     @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        return null;
-    }
-
-    @Override
-    public DeclarationFinder getDeclarationFinder() {
-        return null;
-    }
-
-    @Override
-    public boolean hasFormatter() {
-        return false;
-    }
-
-    @Override
-    public Formatter getFormatter() {
-        return null;
-    }
-
-    @Override
-    public IndexSearcher getIndexSearcher() {
-        return null;
-    }
-
-    @Override
-    public InstantRenamer getInstantRenamer() {
-        return null;
-    }
-
-    @Override
-    public KeystrokeHandler getKeystrokeHandler() {
-        return null;
-    }
-
-    @Override
-    public boolean hasOccurrencesFinder() {
-        return false;
-    }
-
-    @Override
-    public OccurrencesFinder getOccurrencesFinder() {
-        return null;
-    }
-
-    @Override
     public Parser getParser() {
         return new RhtmlParser();
-    }
-
-    @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
-        return null;
     }
 
     @Override
@@ -151,6 +101,31 @@ public class RhtmlLanguage extends RubyLanguage {
         public Configuration getConfiguration() {
             return new Configuration(false, false, 0);
         }
+    }
+
+    @Override
+    public EmbeddingIndexerFactory getIndexerFactory() {
+        return new RubyIndexer.Factory();
+    }
+
+    @Override
+    public Set<String> getSourcePathIds() {
+        return Collections.singleton(RubyLanguage.SOURCE);
+    }
+
+    @Override
+    public Set<String> getLibraryPathIds() {
+        return Collections.singleton(RubyLanguage.BOOT);
+    }
+
+    @Override
+    public String getLineCommentPrefix() {
+        return RubyUtils.getLineCommentPrefix();
+    }
+
+    @Override
+    public boolean isIdentifierChar(char c) {
+        return RubyUtils.isIdentifierChar(c);
     }
 
 }

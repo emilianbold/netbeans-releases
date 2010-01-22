@@ -50,8 +50,10 @@ import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
 
+@LanguageRegistration(mimeType="text/html", useCustomEditorKit=true) //NOI18N
 public class HtmlLanguage extends DefaultLanguageConfig {
     
     public HtmlLanguage() {
@@ -114,11 +116,6 @@ public class HtmlLanguage extends DefaultLanguageConfig {
     @Override
     public SemanticAnalyzer getSemanticAnalyzer() {
         return new HtmlSemanticAnalyzer();
-    }
-
-    @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        return null;
     }
 
     @Override

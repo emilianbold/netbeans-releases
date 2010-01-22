@@ -52,12 +52,14 @@ import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
 
 
+@LanguageRegistration(mimeType="text/x-gsp", useCustomEditorKit=true) //NOI18N
 public class GspLanguage extends DefaultLanguageConfig {
 
     public GspLanguage() {
