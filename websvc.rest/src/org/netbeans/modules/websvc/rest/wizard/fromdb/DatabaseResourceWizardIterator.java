@@ -335,8 +335,8 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             String wizardTitle = NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey); // NOI18N
             panels = new WizardDescriptor.Panel[]{
                         //new DatabaseResourceWizardPanel1()
-                        new DatabaseTablesWizardPanel(wizardTitle, wizard),
-                        new EntityClassesPanel.WizardPanel(),
+                        new org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel.WizardPanel(wizardTitle),
+                        new EntityClassesPanel.WizardPanel(true),
                         new EntityResourcesSetupPanel(NbBundle.getMessage(EntityResourcesIterator.class,
                         "LBL_RestResourcesAndClasses"), wizard)
                     };
