@@ -222,7 +222,7 @@ public class PresenceIndicator {
         public void processPacket(Packet packet) {
             PresenceIndicator.getDefault().label.setText(KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1+"":""); // NOI18N
             PresenceIndicator.getDefault().label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip", KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1:""));
-            for (MultiUserChat muc : KenaiConnection.getDefault(KenaiManager.getDefault().getKenai("https://kenai.com")).getChats()) {
+            for (MultiUserChat muc : KenaiConnection.getDefault(KenaiConnection.getKenai(StringUtils.parseBareAddress(packet.getFrom()))).getChats()) {
                 String chatName = StringUtils.parseName(muc.getRoom());
                 assert chatName != null : "muc.getRoom() = " + muc.getRoom(); // NOI18N
                 ChatNotifications.getDefault().getMessagingHandle(KenaiConnection.getKenaiProject(muc)).setOnlineCount(muc.getOccupantsCount());
