@@ -48,7 +48,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
-import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.beans.*;
 import java.io.IOException;
@@ -77,12 +76,10 @@ import org.netbeans.spi.palette.PaletteController;
 
 import org.openide.*;
 import org.openide.awt.UndoRedo;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Mutex;
-import org.openide.windows.*;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.form.project.ClassSource;
@@ -207,24 +204,22 @@ public class FormEditor {
         return bindingSupport;
     }
 
+    /**
+     * To be used just before loading a form to set a persistence manager that
+     * already has the form recognized and superclass determined
+     * (i.e. potentially long java parsing already done).
+     */
+    void setPersistenceManager(PersistenceManager pm) {
+        persistenceManager = pm;
+    }
+
     boolean isFormLoaded() {
         return formLoaded;
     }
     
     /** This methods loads the form, reports errors, creates the FormDesigner */
     void loadFormDesigner() {
-        JFrame mainWin = (JFrame) WindowManager.getDefault().getMainWindow();
-
-        // set status text "Opening Form: ..."
-        StatusDisplayer.getDefault().setStatusText(
-            FormUtils.getFormattedBundleString(
-                "FMT_OpeningForm", // NOI18N
-                new Object[] { formDataObject.getFormFile().getName() }));
-        javax.swing.RepaintManager.currentManager(mainWin).paintDirtyRegions();
-
-        // set wait cursor [is not very reliable, but...]
-        mainWin.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        mainWin.getGlassPane().setVisible(true);
+        getFormDataObject().getFormEditorSupport().showOpeningStatus("FMT_OpeningForm"); // NOI18N
 
         preCreationUpdate();
 
@@ -243,12 +238,7 @@ public class FormEditor {
             }
         }
 
-        // clear status text
-        StatusDisplayer.getDefault().setStatusText(""); // NOI18N
-
-        // clear wait cursor
-        mainWin.getGlassPane().setVisible(false);
-        mainWin.getGlassPane().setCursor(null);
+        getFormDataObject().getFormEditorSupport().hideOpeningStatus();
 
         // report errors during loading
         reportErrors(LOADING);
@@ -312,7 +302,9 @@ public class FormEditor {
         resetPersistenceErrorLog(); // clear log of errors
 
         // first find PersistenceManager for loading the form
-        persistenceManager = recognizeForm(formDataObject);
+        if (persistenceManager == null) {
+            persistenceManager = recognizeForm(formDataObject);
+        }
 
         // create and register new FormModel instance
         formModel = new FormModel();
@@ -332,31 +324,29 @@ public class FormEditor {
         formModel.getSettings().getAutoSetComponentName();
 
         // load the form data (FormModel) and report errors
-        synchronized(persistenceManager) {
-            try {
-                FormLAF.executeWithLookAndFeel(formModel, new Mutex.ExceptionAction() {
-                    public Object run() throws Exception {
-                        persistenceManager.loadForm(formDataObject,
-                                                    formModel,
-                                                    persistenceErrors);
-                        return null;
-                    }
-                });
-            }
-            catch (PersistenceException ex) { // some fatal error occurred
-                persistenceManager = null;
-                openForms.remove(formModel);
-                formModel = null;
-                throw ex;
-            }
-            catch (Exception ex) { // should not happen, but for sure...
-                ex.printStackTrace();
-                persistenceManager = null;
-                openForms.remove(formModel);
-                formModel = null;
-                return;
-            }
-        }                                     
+        try {
+            FormLAF.executeWithLookAndFeel(formModel, new Mutex.ExceptionAction() {
+                public Object run() throws Exception {
+                    persistenceManager.loadForm(formDataObject,
+                                                formModel,
+                                                persistenceErrors);
+                    return null;
+                }
+            });
+        }
+        catch (PersistenceException ex) { // some fatal error occurred
+            persistenceManager = null;
+            openForms.remove(formModel);
+            formModel = null;
+            throw ex;
+        }
+        catch (Exception ex) { // should not happen, but for sure...
+            ex.printStackTrace();
+            persistenceManager = null;
+            openForms.remove(formModel);
+            formModel = null;
+            return;
+        }
                                 
         // form is successfully loaded...
         formLoaded = true;
@@ -408,11 +398,7 @@ public class FormEditor {
 
             resetPersistenceErrorLog();
 
-            synchronized(persistenceManager) {
-                persistenceManager.saveForm(formDataObject,
-                                            formModel,
-                                            persistenceErrors);
-            }
+            persistenceManager.saveForm(formDataObject, formModel, persistenceErrors);
         }
     }
     
