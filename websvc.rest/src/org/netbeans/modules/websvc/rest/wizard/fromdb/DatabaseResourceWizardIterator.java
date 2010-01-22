@@ -139,16 +139,27 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
     public Set instantiate() throws IOException {
         // create the pu first if needed
-        if (helper.getPersistenceUnit() != null) {
+        // create the pu first if needed
+        if(helper.isCreatePU()) {
+            Project project = Templates.getProject(wizard);
+            org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit persistenceUnit = org.netbeans.modules.j2ee.persistence.wizard.Util.buildPersistenceUnitUsingData(project, helper.getTableSource().getName(), null, null);
+             String providerClass = persistenceUnit.getProvider();
+            if(providerClass != null){
+                org.netbeans.modules.j2ee.persistence.provider.Provider selectedProvider=org.netbeans.modules.j2ee.persistence.provider.ProviderUtil.getProvider(providerClass, project);
+//                org.netbeans.api.project.libraries.Library lib = org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport.getLibrary(selectedProvider);
+//                if (lib != null && !org.netbeans.modules.j2ee.persistence.wizard.Util.isDefaultProvider(project, selectedProvider)) {
+//                    org.netbeans.modules.j2ee.persistence.wizard.Util.addLibraryToProject(project, lib);
+//                }
+           }
+
             try {
-                ProviderUtil.addPersistenceUnit(helper.getPersistenceUnit(), Templates.getProject(wizard));
+                org.netbeans.modules.j2ee.persistence.provider.ProviderUtil.addPersistenceUnit(persistenceUnit, project);
             } catch (InvalidPersistenceXmlException ipx) {
                 // just log for debugging purposes, at this point the user has
                 // already been warned about an invalid persistence.xml
                 Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
-
             }
-        }
+       }
 
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, "TXT_EntityClassesGeneration");
         final ProgressContributor progressContributor = AggregateProgressFactory.createProgressContributor(title);
