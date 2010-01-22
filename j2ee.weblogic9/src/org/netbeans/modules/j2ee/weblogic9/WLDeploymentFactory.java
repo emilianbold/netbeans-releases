@@ -62,6 +62,8 @@ public class WLDeploymentFactory implements DeploymentFactory {
 
     public static final String URI_PREFIX = "deployer:WebLogic:http://"; // NOI18N
 
+    public static final int DEFAULT_PORT = 7001;
+
     private static final Logger LOGGER = Logger.getLogger(WLDeploymentFactory.class.getName());
 
     private ExecutorService executorService = Executors.newCachedThreadPool();
