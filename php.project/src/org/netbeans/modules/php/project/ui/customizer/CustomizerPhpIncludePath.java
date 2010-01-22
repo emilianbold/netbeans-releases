@@ -41,12 +41,13 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
 import java.io.File;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
 import org.netbeans.modules.php.project.ui.PathUiSupport;
 import javax.swing.JPanel;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
@@ -108,53 +109,53 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
 
 
 
-
         includePathList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathList.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(addFolderButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_AddFolder")); // NOI18N
         Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_Remove"));
         Mnemonics.setLocalizedText(moveUpButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_MoveUp"));
         Mnemonics.setLocalizedText(moveDownButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_MoveDown"));
+
         includePathLabel.setLabelFor(includePathList);
 
         Mnemonics.setLocalizedText(includePathLabel, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_PhpIncludePath"));
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(includePathLabel)
-                    .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(includePathLabel)
+                    .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(moveDownButton)
-                            .add(moveUpButton)
-                            .add(removeButton)
-                            .add(addFolderButton))))
-                .add(0, 0, 0))
+                        .addComponent(includePathScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(moveDownButton)
+                            .addComponent(moveUpButton)
+                            .addComponent(removeButton)
+                            .addComponent(addFolderButton))))
+                .addGap(0, 0, 0))
         );
 
-        layout.linkSize(new Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton}, GroupLayout.HORIZONTAL);
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(includePathLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(addFolderButton)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(removeButton)
-                        .addPreferredGap(LayoutStyle.UNRELATED)
-                        .add(moveUpButton)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(moveDownButton))
-                    .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE))
-                .add(0, 0, 0))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(includePathLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(addFolderButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(removeButton)
+                        .addPreferredGap(ComponentPlacement.UNRELATED)
+                        .addComponent(moveUpButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(moveDownButton))
+                    .addComponent(includePathScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE))
+                .addGap(0, 0, 0))
         );
 
         includePathScrollPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathScrollPane.AccessibleContext.accessibleName")); // NOI18N

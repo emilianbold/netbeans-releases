@@ -46,9 +46,7 @@
 package org.netbeans.modules.php.symfony.ui.options;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -57,16 +55,17 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.symfony.SymfonyScript;
@@ -185,51 +184,7 @@ public class SymfonyOptionsPanel extends JPanel {
         learnMoreLabel = new JLabel();
         errorLabel = new JLabel();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return searchButton;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return searchButton;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return defaultParametersForAppsTextField;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  searchButton){
-                    return defaultParametersForProjectTextField;
-                }
-                if(aComponent ==  defaultParametersForProjectTextField){
-                    return defaultParametersForAppsTextField;
-                }
-                if(aComponent ==  browseButton){
-                    return searchButton;
-                }
-                if(aComponent ==  symfonyTextField){
-                    return browseButton;
-                }
-                return searchButton;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  defaultParametersForProjectTextField){
-                    return searchButton;
-                }
-                if(aComponent ==  defaultParametersForAppsTextField){
-                    return defaultParametersForProjectTextField;
-                }
-                if(aComponent ==  searchButton){
-                    return browseButton;
-                }
-                if(aComponent ==  browseButton){
-                    return symfonyTextField;
-                }
-                return defaultParametersForAppsTextField;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         symfonyLabel.setLabelFor(symfonyTextField);
 
@@ -288,106 +243,106 @@ public class SymfonyOptionsPanel extends JPanel {
         errorLabel.setLabelFor(this);
 
         Mnemonics.setLocalizedText(errorLabel, "ERROR");
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(includePathInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addComponent(includePathInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(138, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(installationInfoLabel)
+                .addComponent(installationInfoLabel)
                 .addContainerGap(206, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addComponent(learnMoreLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(509, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(0, 0, 0)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(defaultParametersLabel)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(defaultParametersLabel)
                         .addContainerGap())
-                    .add(layout.createParallelGroup(GroupLayout.LEADING)
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(runningInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(runningInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addContainerGap())
-                            .add(layout.createSequentialGroup()
-                                .add(errorLabel)
-                                .add(447, 447, 447))
-                            .add(layout.createSequentialGroup()
-                                .add(symfonyLabel)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                                    .add(layout.createSequentialGroup()
-                                        .add(symfonyScriptUsageLabel)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(errorLabel)
+                                .addGap(447, 447, 447))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(symfonyLabel)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(symfonyScriptUsageLabel)
                                         .addContainerGap())
-                                    .add(layout.createSequentialGroup()
-                                        .add(symfonyTextField, GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
-                                        .addPreferredGap(LayoutStyle.RELATED)
-                                        .add(browseButton)
-                                        .addPreferredGap(LayoutStyle.RELATED)
-                                        .add(searchButton)
-                                        .add(0, 0, 0)))))
-                        .add(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
-            .add(layout.createSequentialGroup()
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(symfonyTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                                        .addPreferredGap(ComponentPlacement.RELATED)
+                                        .addComponent(browseButton)
+                                        .addPreferredGap(ComponentPlacement.RELATED)
+                                        .addComponent(searchButton)
+                                        .addGap(0, 0, 0)))))
+                        .addComponent(noteLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(defaultParametersForAppsLabel)
-                    .add(defaultParametersForProjectLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(defaultParametersForAppsLabel)
+                    .addComponent(defaultParametersForProjectLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
                         .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(defaultParametersForProjectTextField, GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
-                            .add(defaultParametersForAppsTextField, GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE))
-                        .add(0, 0, 0))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(defaultParametersForProjectTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
+                            .addComponent(defaultParametersForAppsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE))
+                        .addGap(0, 0, 0))))
         );
 
-        layout.linkSize(new Component[] {browseButton, searchButton}, GroupLayout.HORIZONTAL);
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {browseButton, searchButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(symfonyLabel)
-                    .add(symfonyTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(searchButton)
-                    .add(browseButton))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(symfonyScriptUsageLabel)
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(runningInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
-                .add(defaultParametersLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(defaultParametersForProjectLabel)
-                    .add(defaultParametersForProjectTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(jLabel1)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(defaultParametersForAppsLabel)
-                    .add(defaultParametersForAppsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(includePathInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
-                .add(installationInfoLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(errorLabel)
-                .add(0, 0, 0))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(symfonyLabel)
+                    .addComponent(symfonyTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(searchButton)
+                    .addComponent(browseButton))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(symfonyScriptUsageLabel)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(runningInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(defaultParametersLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(defaultParametersForProjectLabel)
+                    .addComponent(defaultParametersForProjectTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(jLabel1)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(defaultParametersForAppsLabel)
+                    .addComponent(defaultParametersForAppsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(noteLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(includePathInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(installationInfoLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(learnMoreLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(errorLabel)
+                .addGap(0, 0, 0))
         );
 
         symfonyLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SymfonyOptionsPanel.class, "SymfonyOptionsPanel.symfonyLabel.AccessibleContext.accessibleName")); // NOI18N

@@ -39,21 +39,18 @@
 
 package org.netbeans.modules.php.project.connections.ui;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
@@ -175,33 +172,7 @@ public class NewRemoteConnectionPanel extends JPanel {
         connectionTypeLabel = new JLabel();
         connectionTypeComboBox = new JComboBox();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return connectionTypeComboBox;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return connectionTypeComboBox;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return connectionTypeComboBox;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  connectionNameTextField){
-                    return connectionTypeComboBox;
-                }
-                return connectionTypeComboBox;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  connectionTypeComboBox){
-                    return connectionNameTextField;
-                }
-                return connectionTypeComboBox;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         connectionNameLabel.setLabelFor(connectionNameTextField);
 
@@ -211,34 +182,34 @@ public class NewRemoteConnectionPanel extends JPanel {
         connectionTypeLabel.setLabelFor(connectionTypeComboBox);
 
         Mnemonics.setLocalizedText(connectionTypeLabel, NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionTypeLabel.text"));
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(connectionNameLabel)
-                    .add(connectionTypeLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(connectionTypeComboBox, 0, 221, Short.MAX_VALUE)
-                    .add(GroupLayout.LEADING, connectionNameTextField, GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(connectionNameLabel)
+                    .addComponent(connectionTypeLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addComponent(connectionTypeComboBox, 0, 221, Short.MAX_VALUE)
+                    .addComponent(connectionNameTextField, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(connectionNameLabel)
-                    .add(connectionNameTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(connectionTypeLabel)
-                    .add(connectionTypeComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(connectionNameLabel)
+                    .addComponent(connectionNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(connectionTypeLabel)
+                    .addComponent(connectionTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         connectionNameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionNameLabel.AccessibleContext.accessibleName")); // NOI18N
