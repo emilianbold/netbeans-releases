@@ -77,7 +77,6 @@
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/style_sheet_16.png"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/css/resources/style_sheet_16.png"/>
                 <!-- eof GSF -->
-                
                 <folder name="Actions">
                     <file name="org-openide-actions-CopyAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
@@ -107,10 +106,15 @@
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
                         <attr name="position" intvalue="1300"/>
                     </file>
-                    <file name="org-openide-actions-RenameAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
-                        <attr name="position" intvalue="800"/>
-                    </file>
+                    
+		    <file name="RefactoringAll.shadow">
+			<attr name="originalFile" stringvalue="Actions/Refactoring/RefactoringAll.instance"/>
+			<attr name="position" intvalue="800"/>
+		    </file>
+		    <file name="RefactoringSeparator-1.instance">
+			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+			<attr name="position" intvalue="850"/>
+		    </file>
                     <file name="org-openide-actions-SaveAsTemplateAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
                         <attr name="position" intvalue="1000"/>

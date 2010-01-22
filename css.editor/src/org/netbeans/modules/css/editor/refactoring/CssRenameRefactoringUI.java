@@ -59,6 +59,7 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
     private final AbstractRefactoring refactoring;
     private CssElementContext context;
     private RenamePanel panel;
+    private boolean folderRename;
 
     public CssRenameRefactoringUI(CssElementContext context) {
 	this.context = context;

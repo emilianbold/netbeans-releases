@@ -36,9 +36,9 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.editor.refactoring;
 
+import java.util.Collection;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.SimpleNode;
@@ -49,37 +49,74 @@ import org.openide.filesystems.FileObject;
  *
  * @author marekfukala
  */
-public class CssElementContext {
+public abstract class CssElementContext {
 
-    private CssParserResult result;
+    public abstract boolean isRefactoringAllowed();
 
-    public CssElementContext(CssParserResult result) {
-	this.result = result;
+    public abstract String getElementName();
+
+    public abstract FileObject getFileObject();
+
+    public static abstract class AbstractFileContext extends CssElementContext {
+
+	private FileObject fo;
+
+	public AbstractFileContext(FileObject fo) {
+	    this.fo = fo;
+	}
+
+	@Override
+	public FileObject getFileObject() {
+	    return fo;
+	}
+
+	@Override
+	public String getElementName() {
+	    return getFileObject().getName();
+	}
     }
 
-    public CssParserResult getResult() {
-	return result;
+    public static class Folder extends AbstractFileContext {
+
+	public Folder(FileObject folder) {
+	    super(folder);
+	}
+
+	@Override
+	public boolean isRefactoringAllowed() {
+	    return true;
+	}
     }
 
-    public FileObject getFileObject() {
-	return result.getSnapshot().getSource().getFileObject();
-    }
+    public static class File extends AbstractFileContext {
 
-    public String getElementName() {
-	return result.getSnapshot().getSource().getFileObject().getName();
-    }
+	private Collection<CssParserResult> results;
+	private FileObject fileObject; //store this separately even if all the parser results refers to it
 
-    public boolean isRefactoringAllowed() {
-	return true;
+	public File(FileObject fileObject, Collection<CssParserResult> result) {
+	    super(fileObject);
+	    this.results = result;
+	}
+
+	public Collection<CssParserResult> getParserResults() {
+	    return results;
+	}
+
+	@Override
+	public boolean isRefactoringAllowed() {
+	    return true;
+	}
     }
 
     public static class Editor extends CssElementContext {
+
 	private int caretOffset;
 	private int selectionFrom, selectionTo;
 	private SimpleNode element;
+	private CssParserResult result;
 
 	public Editor(CssParserResult result, int caretOffset, int selectionFrom, int selectionTo) {
-	    super(result);
+	    this.result = result;
 	    this.caretOffset = caretOffset;
 	    this.selectionFrom = selectionFrom;
 	    this.selectionTo = selectionTo;
@@ -90,9 +127,18 @@ public class CssElementContext {
 
 	//XXX make it only caret position sensitive for now
 	private SimpleNode findCurrentElement() {
-	    SimpleNode root = super.getResult().root();
-	    int astOffset = super.getResult().getSnapshot().getEmbeddedOffset(caretOffset);
+	    SimpleNode root = getParserResult().root();
+	    int astOffset = getParserResult().getSnapshot().getEmbeddedOffset(caretOffset);
 	    return SimpleNodeUtil.findDescendant(root, astOffset);
+	}
+
+	public CssParserResult getParserResult() {
+	    return result;
+	}
+
+	@Override
+	public FileObject getFileObject() {
+	    return getParserResult().getSnapshot().getSource().getFileObject();
 	}
 
 	public int getCaret() {
@@ -120,7 +166,5 @@ public class CssElementContext {
 	public boolean isRefactoringAllowed() {
 	    return null != SimpleNodeUtil.getAncestorByType(getElement(), CssParserTreeConstants.JJTSIMPLESELECTOR);
 	}
-	
     }
-
 }
