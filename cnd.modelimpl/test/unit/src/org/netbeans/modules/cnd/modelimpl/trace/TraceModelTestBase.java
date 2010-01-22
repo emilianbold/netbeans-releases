@@ -221,6 +221,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
 
     protected void performTest(String source, String goldenDataFileName, String goldenErrFileName, Object... params) throws Exception {
         File testFile = getDataFile(source);
+        assertTrue("no test file " + testFile.getAbsolutePath(), testFile.exists());
         performTest(new String[]{testFile.getAbsolutePath()}, goldenDataFileName, goldenErrFileName, params);
     }
 
