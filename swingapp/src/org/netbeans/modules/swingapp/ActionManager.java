@@ -1389,7 +1389,7 @@ public class ActionManager {
     
     private String getKey(ProxyAction act) {
         if(act == null) { return "null"; } // NOI18N
-        String s = new String(act.getId() + ":"+act.getClassname()).intern();//NOI18N
+        String s = (act.getId()+":"+act.getClassname()).intern(); //NOI18N
         return s;
     }
     
