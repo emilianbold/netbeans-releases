@@ -10,7 +10,6 @@
 		    <file name="org-netbeans-modules-css-editor-refactoring-CssCodeGenerators$Factory.instance"/>
 		</folder>
 		<folder name="Popup">
-		    <file name="in-place-refactoring_hidden"/> <!-- hide GSF's refactoring action -->
 		    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
 			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
 			<attr name="position" intvalue="1333"/>
