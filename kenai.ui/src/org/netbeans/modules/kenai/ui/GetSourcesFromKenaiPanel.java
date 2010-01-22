@@ -118,7 +118,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         if (prjAndFeature==null) {
             kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
         } else {
-            kenai = prjAndFeature.projectName.getKenai();
+            kenai = prjAndFeature.kenaiProject.getKenai();
         }
 
         refreshUsername();
@@ -538,7 +538,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                                                 KenaiFeatureListItem item = new KenaiFeatureListItem(project, feature);
                                                 addElement(item);
                                                 if (prjAndFeature != null &&
-                                                    prjAndFeature.projectName.equals(project.getName()) &&
+                                                    prjAndFeature.kenaiProject.getName().equals(project.getName()) &&
                                                     prjAndFeature.feature.equals(feature)) {
                                                     setSelectedItem(item);
                                                 }
