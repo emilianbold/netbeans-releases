@@ -41,31 +41,13 @@
 
 package org.netbeans.modules.websvc.rest.nodes;
 
-import com.sun.source.tree.ClassTree;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.modules.websvc.rest.client.ClientJavaSourceHelper;
-import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
-import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
-import org.netbeans.modules.websvc.rest.support.AbstractTask;
-import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.text.ActiveEditorDrop;
-import org.openide.util.Exceptions;
 
 /** Implementation of ActiveEditorDrop
  *
@@ -79,6 +61,7 @@ public class ResourceToEditorDrop implements ActiveEditorDrop {
         this.resourceNode=resourceNode;
     }
 
+    @Override
     public boolean handleTransfer(JTextComponent targetComponent) {
         Object mimeType = targetComponent.getDocument().getProperty("mimeType"); //NOI18N
         ResourceUriProvider resourceUriProvider = resourceNode.getLookup().lookup(ResourceUriProvider.class);
@@ -90,49 +73,8 @@ public class ResourceToEditorDrop implements ActiveEditorDrop {
             try {
                 FileObject targetFo = NbEditorUtilities.getFileObject(targetComponent.getDocument());
                 if (targetFo != null) {
-
-                    // add REST and Jersey dependencies
-                    ClassPath cp = ClassPath.getClassPath(targetFo, ClassPath.COMPILE);
-                    List<Library> restLibs = new ArrayList<Library>();
-                    if (cp.findResource("javax/ws/rs/WebApplicationException.class") == null) {
-                        Library lib = LibraryManager.getDefault().getLibrary("restapi"); //NOI18N
-                        if (lib != null) {
-                            restLibs.add(lib);
-                        }
-                    }
-                    if (cp.findResource("com/sun/jersey/api/clientWebResource.class") == null) {
-                        Library lib = LibraryManager.getDefault().getLibrary("restlib"); //NOI18N
-                        if (lib != null) {
-                            restLibs.add(lib);
-                        }
-                    }
-                    if (restLibs.size() > 0) {
-                        try {
-                            ProjectClassPathModifier.addLibraries(
-                                    restLibs.toArray(new Library[restLibs.size()]),
-                                    targetFo,
-                                    ClassPath.COMPILE);
-                        } catch (java.io.IOException ex) {
-                            Logger.getLogger(ResourceToEditorDrop.class.getName()).log(Level.INFO, "Cannot add Jersey libraries" , ex);
-                        }
-                    }
-
-                    RestServiceDescription desc = resourceNode.getLookup().lookup(RestServiceDescription.class);
-                    List<RestMethodDescription> methods =  desc.getMethods();
-                    String uriTemplate = desc.getUriTemplate();
-                    if (!uriTemplate.startsWith("/")) {
-                        uriTemplate = "/"+uriTemplate;
-                    }
-                    Project prj = resourceNode.getLookup().lookup(Project.class);
-                    String resourceUri =
-                            (prj == null ? uriTemplate : ClientJavaSourceHelper.getResourceURL(prj, uriTemplate));
-
-                    addJerseyClientClass(
-                            JavaSource.forFileObject(targetFo),
-                            desc.getName(),
-                            resourceUri,
-                            methods);
-
+                    // Generate Jersey Client
+                    ClientJavaSourceHelper.generateJerseyClient(resourceNode, targetFo);
                     // logging usage of action
                     Object[] params = new Object[2];
                     params[0] = LogUtils.WS_STACK_JAXRS;
@@ -146,31 +88,5 @@ public class ResourceToEditorDrop implements ActiveEditorDrop {
             }
         }
         return false;
-    }
-
-    private void addJerseyClientClass(
-            JavaSource source,
-            final String resourceName,
-            final String resourceUri,
-            final List<RestMethodDescription> restMethodDesc) {
-        try {
-            ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
-
-                public void run(WorkingCopy copy) throws java.io.IOException {
-                    copy.toPhase(JavaSource.Phase.RESOLVED);
-
-                    ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
-                    String className = resourceName+"_JerseyClient"; //NOI18N
-                    ClassTree modifiedTree = ClientJavaSourceHelper.addJerseyClientClass(copy, tree, className, resourceUri, restMethodDesc);
-
-                    copy.rewrite(tree, modifiedTree);
-                }
-            });
-
-            result.commit();
-        } catch (java.io.IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
+    }   
 }

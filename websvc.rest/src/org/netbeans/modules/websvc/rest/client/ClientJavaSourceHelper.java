@@ -57,9 +57,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -69,13 +75,91 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.rest.model.api.HttpMethod;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
+import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
+import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Milan Kuchtiak
  */
 public class ClientJavaSourceHelper {
+
+    public static void generateJerseyClient(Node resourceNode, FileObject targetFo) {
+
+        // add REST and Jersey dependencies
+        ClassPath cp = ClassPath.getClassPath(targetFo, ClassPath.COMPILE);
+        List<Library> restLibs = new ArrayList<Library>();
+        if (cp.findResource("javax/ws/rs/WebApplicationException.class") == null) {
+            Library lib = LibraryManager.getDefault().getLibrary("restapi"); //NOI18N
+            if (lib != null) {
+                restLibs.add(lib);
+            }
+        }
+        if (cp.findResource("com/sun/jersey/api/clientWebResource.class") == null) {
+            Library lib = LibraryManager.getDefault().getLibrary("restlib"); //NOI18N
+            if (lib != null) {
+                restLibs.add(lib);
+            }
+        }
+        if (restLibs.size() > 0) {
+            try {
+                ProjectClassPathModifier.addLibraries(
+                        restLibs.toArray(new Library[restLibs.size()]),
+                        targetFo,
+                        ClassPath.COMPILE);
+            } catch (java.io.IOException ex) {
+                Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(Level.INFO, "Cannot add Jersey libraries" , ex);
+            }
+        }
+
+        RestServiceDescription desc = resourceNode.getLookup().lookup(RestServiceDescription.class);
+        List<RestMethodDescription> methods =  desc.getMethods();
+        String uriTemplate = desc.getUriTemplate();
+        if (!uriTemplate.startsWith("/")) {
+            uriTemplate = "/"+uriTemplate;
+        }
+        Project prj = resourceNode.getLookup().lookup(Project.class);
+        String resourceUri =
+                (prj == null ? uriTemplate : ClientJavaSourceHelper.getResourceURL(prj, uriTemplate));
+
+        // add inner Jersey Client class
+        addJerseyClientClass(
+                JavaSource.forFileObject(targetFo),
+                desc.getName(),
+                resourceUri,
+                methods);
+    }
+
+
+    private static void addJerseyClientClass(
+            JavaSource source,
+            final String resourceName,
+            final String resourceUri,
+            final List<RestMethodDescription> restMethodDesc) {
+        try {
+            ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+
+                @Override
+                public void run(WorkingCopy copy) throws java.io.IOException {
+                    copy.toPhase(JavaSource.Phase.RESOLVED);
+
+                    ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
+                    String className = resourceName+"_JerseyClient"; //NOI18N
+                    ClassTree modifiedTree = ClientJavaSourceHelper.addJerseyClientClass(copy, tree, className, resourceUri, restMethodDesc);
+
+                    copy.rewrite(tree, modifiedTree);
+                }
+            });
+
+            result.commit();
+        } catch (java.io.IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
     public static ClassTree addJerseyClientClass (
             WorkingCopy copy,
