@@ -72,12 +72,7 @@ public class QueryRefreshTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {    
-        JiraCorePlugin jcp = new JiraCorePlugin();
-        try {
-            jcp.start(null);
-        } catch (Exception ex) {
-            throw ex;
-        }
+        Jira.getInstance(); // force JiraCorePlugin init
         BugtrackingManager.getInstance();
         // need this to initialize cache -> server defined status values & co
         JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));        

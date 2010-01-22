@@ -111,6 +111,6 @@ public interface DataStorage {
      * Returns the storage services provided by the DataStorage
      * @return
      */
-    Collection<DataStorageService> getDataStorageServices();
+  //  Collection<DataStorageService> getDataStorageServices();
 
 }

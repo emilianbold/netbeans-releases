@@ -124,8 +124,6 @@ class FormToolBar extends JToolBar {
         paletteButton.setToolTipText(
             FormUtils.getBundleString("CTL_BeansButtonHint")); // NOI18N
         HelpCtx.setHelpIDString(paletteButton, "gui.components.adding"); // NOI18N
-        // Issue 46673
-        ScrollPopupMenu.doNotCancelPopupHack(paletteButton);
         initButton(paletteButton);
 
         // status label

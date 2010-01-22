@@ -21,4 +21,21 @@
             </file>
         </folder>
     </folder>
+    <folder name="Projects">
+        <folder name="org-netbeans-modules-maven">
+            <folder name="Archetypes">
+                <file name="osgi-archetype">
+                    <attr name="position" intvalue="329"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.osgi.Bundle"/>
+                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
+                    <attr name="artifactId" stringvalue="osgi-archetype"/>
+                    <attr name="version" stringvalue="1.0-SNAPSHOT"/>
+                    <attr name="repository" stringvalue="http://snapshots.repository.codehaus.org"/>
+                    <attr name="nameBundleKey" stringvalue="TIT_OSGI_Archetype"/>
+                    <attr name="descriptionBundleKey" stringvalue="DESC_OSGI_Archetype"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>

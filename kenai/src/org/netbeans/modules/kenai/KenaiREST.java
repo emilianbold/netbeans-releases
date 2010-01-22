@@ -52,7 +52,6 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codeviation.pojson.*;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 
 /**
@@ -210,8 +209,58 @@ public class KenaiREST extends KenaiImpl {
     }
 
     @Override
-    public void joinProject(String projectName, String userName) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public MemberData addMember(String project, String user, String role, PasswordAuthentication pa) throws KenaiException {
+        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects/" + project + "/members.json", pa);
+        RestResponse resp = null;
+        PojsonSave<MemberData> save = PojsonSave.create(MemberData.class);
+        MemberData mdata = new MemberData();
+        mdata.member.username = user;
+        mdata.member.role = role;
+
+        long start = 0;
+        if (TIMER.isLoggable(Level.FINE)) {
+            start = System.currentTimeMillis();
+            System.err.println("Add member " + user + " to project " + project);
+        }
+        try {
+            resp = conn.post(null, save.asString(mdata));
+        } catch (IOException iOException) {
+            throw new KenaiException(iOException);
+        }
+        if (TIMER.isLoggable(Level.FINE)) {
+            System.err.println("User " + user + " add in " + (System.currentTimeMillis()-start) + " ms");
+        }
+
+        if (resp.getResponseCode() != 200)
+            throw new KenaiException(resp.getResponseMessage(),resp.getDataAsString());
+
+        String response = resp.getDataAsString();
+
+        PojsonLoad pload = PojsonLoad.create();
+        return pload.load(response, MemberData.class);
+    }
+
+    @Override
+    public void deleteMember(String project, long member_id, PasswordAuthentication pa) throws KenaiException {
+        RestConnection conn = new RestConnection(baseURL.toString() + "/api/projects/" + project + "/members/" + member_id + ".json", pa);
+        RestResponse resp = null;
+
+        long start = 0;
+        if (TIMER.isLoggable(Level.FINE)) {
+            start = System.currentTimeMillis();
+            System.err.println("Removing member " + member_id + " from project " + project);
+        }
+        try {
+            resp = conn.delete(null);
+        } catch (IOException iOException) {
+            throw new KenaiException(iOException);
+        }
+        if (TIMER.isLoggable(Level.FINE)) {
+            System.err.println("User " + member_id + " removed in " + (System.currentTimeMillis()-start) + " ms");
+        }
+
+        if (resp.getResponseCode() != 200)
+            throw new KenaiException(resp.getResponseMessage(),resp.getDataAsString());
     }
 
     private class LazyList<COLLECTION extends ListData, ITEM> extends AbstractCollection<ITEM> {

@@ -70,6 +70,8 @@ public final class AppClientProjectCreateData {
 
     private File libFolder;
 
+    private boolean cdiEnabled;
+    
     public AppClientProjectCreateData() {
     }
 
@@ -159,6 +161,14 @@ public final class AppClientProjectCreateData {
 
     public void setTestFolders(File[] testFolders) {
         this.testFolders = testFolders;
+    }
+
+    public boolean isCDIEnabled() {
+        return cdiEnabled;
+    }
+
+    public void setCDIEnabled(boolean cdiEnabled) {
+        this.cdiEnabled = cdiEnabled;
     }
 
 }

@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.web.jsf.editor.facelets;
 
+import java.io.IOException;
+import java.util.Enumeration;
 import org.netbeans.modules.web.jsf.editor.facelets.mojarra.FaceletsTaglibConfigProcessor;
 import com.sun.faces.config.DocumentInfo;
 import com.sun.faces.spi.ConfigurationResourceProvider;
@@ -143,9 +145,13 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
         return jsfSupport;
     }
 
+    //called by JsfIndexer when scanning finishes
     public synchronized void librariesChanged(Collection<String> librariesNamespaces) {
 	//just check if the library already exist and if not, refresh all libs
-	if(!getLibraries().keySet().containsAll(librariesNamespaces)) {
+
+	//if faceletsLibraries are null, we cannot call getLibraries() which could
+	//call back to the indexing
+	if(faceletsLibraries != null && !getLibraries().keySet().containsAll(librariesNamespaces)) {
 	    faceletsLibraries = null;
 	}
     }
@@ -223,7 +229,24 @@ public class FaceletsLibrarySupport implements PropertyChangeListener {
             }
         }
         
-        ClassLoader proxyLoader = new URLClassLoader(urlsToLoad.toArray(new URL[]{}), originalLoader);
+        ClassLoader proxyLoader = new URLClassLoader(urlsToLoad.toArray(new URL[]{}), originalLoader) {
+
+	    //prevent services loading from mojarra's sources
+	    @Override
+	    public URL findResource(String name) {
+		return name.startsWith("META-INF/services") ? null : super.findResource(name); //NOI18N
+	    }
+
+	    @Override
+	    public Enumeration<URL> findResources(String name) throws IOException {
+		if(name.startsWith("META-INF/services")) { //NOI18N
+		    return Collections.enumeration(Collections.<URL>emptyList());
+		} else {
+		    return super.findResources(name);
+		}
+	    }
+	    
+	};
 
         try {
             Thread.currentThread().setContextClassLoader(proxyLoader);

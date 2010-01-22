@@ -54,11 +54,6 @@ public class KenaiConfiguration extends JiraConfiguration {
     private Project[] projects;
     private String projectName;
 
-    /**
-     * One instance for all kenai projects
-     */
-    private static ConfigurationData kenaiData;
-
     protected KenaiConfiguration(JiraClient jiraClient, JiraRepository repository) {
         super(jiraClient, repository);
     }
@@ -80,29 +75,4 @@ public class KenaiConfiguration extends JiraConfiguration {
         return projects;
     }
 
-    @Override
-    public JiraClientData getData() {
-        if(kenaiData == null) {
-            kenaiData = initializeCached();
-            if (kenaiData == null) {
-                kenaiData = new KenaiConfigurationData();
-            }
-        } else {
-            // do not forget to set flags for initialized projects
-            // in JiraConfiguration this is done in initializeCached, but since kenaiData is static and probably not null,
-            // initializeCached might not be called
-            setLoadedProjects(kenaiData);
-        }
-        return kenaiData;
-    }
-
-    static class KenaiConfigurationData extends ConfigurationData {
-        
-    }
-
-    @Override
-    protected void clearCached() {
-        super.clearCached();
-        projects = null;
-    }
 }

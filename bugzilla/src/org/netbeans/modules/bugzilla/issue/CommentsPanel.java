@@ -92,6 +92,7 @@ import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser;
@@ -197,7 +198,7 @@ public class CommentsPanel extends JPanel {
         verticalGroup.addContainerGap();
         layout.setVerticalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(verticalGroup));
         DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT);
-        String creationTxt = issue.getFieldValue(BugzillaIssue.IssueField.CREATION);
+        String creationTxt = issue.getFieldValue(IssueField.CREATION);
         try {
             Date creation = dateTimeFormat.parse(creationTxt);
             creationTxt = format.format(creation);
@@ -205,9 +206,9 @@ public class CommentsPanel extends JPanel {
             Bugzilla.LOG.log(Level.INFO, null, pex);
         }
         addSection(layout,
-            issue.getFieldValue(BugzillaIssue.IssueField.DESCRIPTION),
-            issue.getFieldValue(BugzillaIssue.IssueField.REPORTER),
-            issue.getFieldValue(BugzillaIssue.IssueField.REPORTER_NAME),
+            issue.getFieldValue(IssueField.DESCRIPTION),
+            issue.getFieldValue(IssueField.REPORTER),
+            issue.getFieldValue(IssueField.REPORTER_NAME),
             creationTxt, horizontalGroup, verticalGroup, true);
         for (BugzillaIssue.Comment comment : issue.getComments()) {
             String when = format.format(comment.getWhen());
@@ -410,6 +411,7 @@ public class CommentsPanel extends JPanel {
     private ActionListener getReplyListener() {
         if (replyListener == null) {
             replyListener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     Object source = e.getSource();
                     if (source instanceof JComponent) {
@@ -437,6 +439,7 @@ public class CommentsPanel extends JPanel {
         void openIssue(String hyperlinkText) {
             final String issueNo = issueFinder.getIssueId(hyperlinkText);
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     Issue is = issue.getRepository().getIssue(issueNo);
                     if (is != null) {

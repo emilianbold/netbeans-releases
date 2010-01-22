@@ -153,15 +153,7 @@ public class ScrollPaneSupport extends AbstractLayoutSupport {
                 // components with a lightweight peer into a Panel
                 // This collides with our fake peers and can result
                 // in a NPE on JDK1.5. The correct peer for this
-                // Panel is set below.
-            }
-            if (System.getProperty("java.version").startsWith("1.5") // NOI18N
-                && (scroll.getPeer() != null)) {
-                Component comp = scroll.getComponent(0);
-                comp.removeNotify();
-                ensureFakePeerAttached(comp);
-                comp.addNotify();
-                scroll.validate();
+                // Panel used to be set below.
             }
             // hack for AWT components - we must attach the fake peer again
             // to the component that was removed by adding new component

@@ -438,6 +438,7 @@ public class HintsTestBase extends NbTestCase {
                 Writer hintsWriter = new FileWriter(fixesDump);
                 
                 for (Fix f : fixes) {
+                    if (!includeFix(f)) continue;
                     if (f.getText().indexOf(performHint) != (-1)) {
                         toPerform = f;
                     }
@@ -493,5 +494,8 @@ public class HintsTestBase extends NbTestCase {
             LifecycleManager.getDefault().saveAll();
         }
     }
-    
+
+    protected boolean includeFix(Fix f) {
+        return true;
+    }
 }

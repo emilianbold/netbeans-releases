@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.openide.util.Exceptions;
 
@@ -161,17 +162,22 @@ public final class ClassIndexManager {
     public boolean holdsWriteLock () {
         return this.lock.isWriteLockedByCurrentThread();
     }
-    
-    public ClassIndexImpl getUsagesQuery (final URL root) {
+
+    public ClassIndexImpl getUsagesQuery (URL root) {
         synchronized (internalLock) {
             assert root != null;
             if (invalid) {
                 return null;
             }
-            return this.instances.get (root);
+            ClassIndexImpl index = this.instances.get (root);
+            if (index != null) {
+                return index;
+            }
+            root = AptCacheForSourceQuery.getSourceFolder(root);
+            return root == null ? null : this.instances.get(root);
         }
     }
-    
+
     public ClassIndexImpl createUsagesQuery (final URL root, final boolean source) throws IOException {
         assert root != null;
         synchronized (internalLock) {

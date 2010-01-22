@@ -359,6 +359,32 @@ public final class KenaiProject {
         return members;
     }
 
+    /**
+     * Add member to this project. User must be logged in.
+     * @param user
+     * @param role
+     * @throws KenaiException
+     */
+    public synchronized void addMember(KenaiUser user, KenaiProjectMember.Role role) throws KenaiException {
+        members = null;
+        kenai.addMember(this, user, role);
+        firePropertyChange(PROP_PROJECT_CHANGED, null, user);
+    }
+
+    /**
+     * Removes member from project.
+     * @param user
+     * @throws KenaiException
+     */
+    public synchronized void deleteMember(KenaiUser user) throws KenaiException {
+        members = null;
+        //if (user.data.href==null) {
+            getMembers();
+        //}
+        kenai.deleteMember(this, user);
+        firePropertyChange(PROP_PROJECT_CHANGED, user, null);
+    }
+
     public synchronized KenaiUser getOwner() throws KenaiException {
         fetchDetailsIfNotAvailable();
         if (data.owner==null) {
@@ -425,10 +451,6 @@ public final class KenaiProject {
         KenaiFeature feature = kenai.createProjectFeature(getName(), name, display_name, description, service, url, repository_url, browse_url);
         refresh();
         return feature;
-    }
-
-    private void join() throws KenaiException {
-        kenai.joinProject(this);
     }
 
     void fillInfo(ProjectData prj) {

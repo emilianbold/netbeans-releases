@@ -40,7 +40,6 @@
 package org.netbeans.modules.java.hints.bugs;
 
 import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -108,7 +107,4 @@ public class CastVSInstanceOfTest extends TestBase {
                             "5:19-5:25:verifier:CastVSInstanceOf");
     }
 
-    static {
-        NbBundle.setBranding("test");
-    }
 }

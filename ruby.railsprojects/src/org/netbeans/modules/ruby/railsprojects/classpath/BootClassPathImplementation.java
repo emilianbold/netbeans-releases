@@ -41,7 +41,6 @@
 package org.netbeans.modules.ruby.railsprojects.classpath;
 
 import org.netbeans.modules.ruby.rubyproject.RequiredGems;
-import org.netbeans.modules.ruby.rubyproject.GemRequirement;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -63,10 +62,12 @@ import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.platform.RubyPreferences;
 import org.netbeans.modules.ruby.platform.Util;
+import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
+import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -85,10 +86,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     // Flag for controlling last-minute workaround for issue #120231
     private static final boolean INCLUDE_NONLIBPLUGINS = Boolean.getBoolean("ruby.include_nonlib_plugins");
 
-    private static final String[] RAILS_GEMS =  new String[] {"actionmailer", "actionpack", "activerecord",  // NOI18N
-                                         "activeresource", "activesupport", "rails", // NOI18N
-                                         "actionwebservice" }; // NOI18N    actionwebservice is Rails 1.x only
-    
     private File projectDirectory;
     private final RailsProject project;
     private final PropertyEvaluator evaluator;
@@ -97,6 +94,8 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private final RequiredGems requiredGems;
     private final boolean forTests;
     private final GemFilter gemFilter;
+    private RubyPlatform platform;
+
 
     public BootClassPathImplementation(RailsProject project, File projectDirectory, PropertyEvaluator evaluator, boolean forTests) {
         this.project = project;
@@ -105,9 +104,11 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         this.evaluator = evaluator;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
         RubyPreferences.addPropertyChangeListener(WeakListeners.propertyChange(this, RubyPreferences.getInstance()));
-        this.requiredGems = project.getLookup().lookup(RequiredGems.class);
         this.forTests = forTests;
+        RequiredGems[] reqs = RequiredGems.lookup(project);
+        this.requiredGems = forTests ? reqs[1] : reqs[0];
         this.gemFilter = new GemFilter(evaluator);
+        this.platform = new RubyPlatformProvider(evaluator).getPlatform();
     }
 
     public synchronized List<PathResourceImplementation> getResources() {
@@ -121,7 +122,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 Exceptions.printStackTrace(ex);
             }
 
-            RubyPlatform platform = new RubyPlatformProvider(evaluator).getPlatform();
+//            RubyPlatform platform = new RubyPlatformProvider(evaluator).getPlatform();
             if (platform == null) {
                 LOGGER.severe("Cannot resolve platform for project: " + projectDirectory);
                 return Collections.emptyList();
@@ -158,17 +159,15 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 for (URL url : vendorPlugins) {
                     result.add(ClassPathSupport.createResource(url));
                 }
-
-                
                 // TODO - handle multiple gem versions in the same repository
                 List<URL> combinedGems = mergeVendorGems(vendor,
                         new HashMap<String, String>(gemVersions),
                         new HashMap<String, URL>(gemUrls));
 
-                addGems(filterNotRequiredGems(combinedGems), result);
+                filterAndAddGems(combinedGems, result);
 
             } else {
-                addGems(filterNotRequiredGems(gemUrls.values()), result);
+                filterAndAddGems(gemUrls.values(), result);
             }
             
             resourcesCache = Collections.unmodifiableList (result);
@@ -177,9 +176,10 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         return this.resourcesCache;
     }
 
-    private void addGems(Collection<URL> gemsToAdd, List<PathResourceImplementation> result) {
-        for (URL url : gemsToAdd) {
-            String gem = getGemName(url);
+    private void filterAndAddGems(Collection<URL> gemsToAdd, List<PathResourceImplementation> result) {
+        Collection<URL> filtered = requiredGems.filterNotRequiredGems(gemsToAdd);
+        for (URL url : filtered) {
+            String gem = Gem.getGemName(url);
             if (gemFilter.include(gem)) {
                 result.add(ClassPathSupport.createResource(url));
                 continue;
@@ -189,52 +189,12 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             }
             result.add(ClassPathSupport.createResource(url));
         }
-    }
-
-    private List<URL> filterNotRequiredGems(Collection<URL> gemUrls) {
-        List<GemRequirement> required = requiredGems.getGemRequirements();
-        if (required == null || forTests) { // use all gems for tests boot class (until we can actually resolve requires in tests)
-            return new ArrayList<URL>(gemUrls);
-        }
-
-        List<URL> result = new ArrayList<URL>();
-        for (URL url : gemUrls) {
-            String[] nameAndVersion = GemFilesParser.parseNameAndVersion(getGemName(url));
-            if (nameAndVersion != null) {
-                String name = nameAndVersion[0];
-                String version = nameAndVersion[1];
-                // special cases, rails and rake (which are not listed by rake gems)
-                if (isRailsGem(name) || "rake".equals(name)) { //NOI18N
-                    result.add(url);
-                    continue;
-                }
-                for (GemRequirement each : required) {
-                    if (each.getName().equals(name) && each.satisfiedBy(version)) {
-                        result.add(url);
-                        break;
-                    }
-                }
-            }
-        }
-        for (URL url : result) {
-            LOGGER.fine("Including in boot class path: " + url);
-        }
-        return result;
+        requiredGems.setIndexedGems(filtered);
     }
 
     private boolean useVendorGemsOnly() {
         return new File(projectDirectory, "vendor" + File.separator + "gems").exists() //NOI18N
                 && RubyPreferences.isIndexVendorGemsOnly();
-    }
-
-    private static String getGemName(URL gemUrl) {
-        String urlString = gemUrl.getFile();
-        if (urlString.endsWith("/lib/")) {
-            urlString = urlString.substring(urlString.lastIndexOf('/', urlString.length()-6)+1,
-                    urlString.length()-5);
-        }
-        
-        return urlString;
     }
 
     /** Adjust the gem urls according to the RAILS_GEM_VERSION specified in config/environment.rb */
@@ -283,7 +243,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         gemUrls.get("actionwebservice");
 
         boolean first = true;
-        for (String gemName : RAILS_GEMS) { // NOI18N
+        for (String gemName : Gem.getRailsGems()) { // NOI18N
             URL url = gemUrls.get(gemName);
             if (url != null) {
                 String urlString = url.toExternalForm();
@@ -314,15 +274,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         return gemUrls;
     }
 
-    private boolean isRailsGem(String name) {
-        for (String each : RAILS_GEMS) {
-            if (each.equals(name)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         this.support.addPropertyChangeListener (listener);
     }
@@ -336,27 +287,18 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 || evt.getSource() == RubyPreferences.getInstance() && evt.getPropertyName().equals(RubyPreferences.VENDOR_GEMS_PROPERTY)) {
             resetCache();
         }
-        if (evt.getPropertyName().equals(RequiredGems.REQUIRED_GEMS_PROPERTY)) {
+        if (evt.getPropertyName().equals(SharedRubyProjectProperties.PLATFORM_ACTIVE)) {
+            platform = RubyPlatformProvider.getPlatform((String) evt.getNewValue());
             resetCache();
         }
-//        if (evt.getSource() == this.evaluator && evt.getPropertyName().equals(PLATFORM_ACTIVE)) {
-//            //Active platform was changed
-//            resetCache ();
-//        }
-//        else if (evt.getSource() == this.platformManager && JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(evt.getPropertyName()) && activePlatformName != null) {
-//            //Platform definitions were changed, check if the platform was not resolved or deleted
-//            if (this.isActivePlatformValid) {
-//                if (RubyProjectUtil.getActivePlatform (this.activePlatformName) == null) {
-//                    //the platform was not removed
-//                    this.resetCache();
-//                }
-//            }
-//            else {
-//                if (RubyProjectUtil.getActivePlatform (this.activePlatformName) != null) {
-//                    this.resetCache();
-//                }
-//            }
-//        }
+        if (evt.getPropertyName().equals(RequiredGems.REQUIRED_GEMS_TESTS_PROPERTY) && forTests) {
+            requiredGems.setRequiredGems((String) evt.getNewValue());
+            resetCache();
+        }
+        if (evt.getPropertyName().equals(RequiredGems.REQUIRED_GEMS_PROPERTY) && !forTests) {
+            requiredGems.setRequiredGems((String) evt.getNewValue());
+            resetCache();
+        }
     }
 
     /**

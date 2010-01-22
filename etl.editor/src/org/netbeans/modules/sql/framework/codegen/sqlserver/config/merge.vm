@@ -1,2 +1,0 @@
-#parse("org/netbeans/modules/sql/framework/codegen/sqlserver/config/update.vm")
-#parse("org/netbeans/modules/sql/framework/codegen/base/config/insertSelect.vm")

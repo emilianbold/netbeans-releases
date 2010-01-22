@@ -34,14 +34,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.javacard.ri.card;
 
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.util.Map;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Properties;
 import java.util.WeakHashMap;
 import org.netbeans.modules.javacard.common.KeysAndValues;
@@ -58,16 +59,17 @@ import org.netbeans.validation.api.ui.ValidationGroup;
  * @author Tim Boudreau
  */
 public class CustomizerProvider implements CardCustomizerProvider {
-    private final Map<Card, CardCustomizer> m = new WeakHashMap<Card, CardCustomizer>();
+    private final WeakHashMap<Card, Reference<CardCustomizer>> m = new WeakHashMap<Card, Reference<CardCustomizer>>();
     public CardCustomizer getCardCustomizer(Card card) {
         CardProperties props = card.getCapability(CardProperties.class);
         if (props != null) {
             synchronized (this) {
-                CardCustomizer cc = m.get(card);
+                Reference<CardCustomizer> ref = m.get(card);
+                CardCustomizer cc = ref == null ? null : ref.get();
                 if (cc == null) {
                     Properties p = props.toProperties();
                     cc = new CC(p);
-                    m.put(card, cc);
+                    m.put(card, new WeakReference<CardCustomizer>(cc));
                 }
                 return cc;
             }

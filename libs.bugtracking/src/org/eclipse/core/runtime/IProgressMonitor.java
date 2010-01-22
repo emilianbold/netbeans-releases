@@ -58,4 +58,8 @@ public interface IProgressMonitor {
     void subTask(String name);
     
     void setTaskName(String name);
+
+    void internalWorked(double internalWorked);
+
+    void setCanceled(boolean canceled);
 }

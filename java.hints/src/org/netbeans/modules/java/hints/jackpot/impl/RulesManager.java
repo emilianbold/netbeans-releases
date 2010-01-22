@@ -80,7 +80,7 @@ public class RulesManager {
 
     private RulesManager() {
         for (HintProvider p : Lookup.getDefault().lookupAll(HintProvider.class)) {
-            Map<HintMetadata, Collection<? extends HintDescription>> pHints = p.computeHints();
+            Map<HintMetadata, ? extends Collection<? extends HintDescription>> pHints = p.computeHints();
 
             for (Collection<? extends HintDescription> v : pHints.values()) {
                 sortOut( v, kind2Hints, pattern2Hint);

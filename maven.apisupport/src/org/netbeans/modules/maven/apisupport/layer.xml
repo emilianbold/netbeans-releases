@@ -78,8 +78,8 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.apisupport.Bundle"/>
                     <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
                     <attr name="artifactId" stringvalue="netbeans-platform-app-archetype"/>
-                    <attr name="version" stringvalue="1.2.1"/>
-                    <!--attr name="repository" stringvalue=""/-->
+                    <attr name="version" stringvalue="1.3-SNAPSHOT"/>
+                    <attr name="repository" stringvalue="http://snapshots.repository.codehaus.org/"/>
                     <attr name="nameBundleKey" stringvalue="TIT_Platform_Application_Archetype"/>
                     <attr name="descriptionBundleKey" stringvalue="DESC_Platform_Application_Archetype"/>
                 </file>

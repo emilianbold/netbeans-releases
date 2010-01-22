@@ -45,7 +45,13 @@ made subject to such option by the copyright holder.
 
     <property name="nbroot" location=".."/>
 
-    <target name="-init-modules">
+    <target name="-init-tasks">
+        <taskdef name="sortmodules"
+                classname="org.netbeans.nbbuild.SortSuiteModules"
+                classpath="${nbroot}/nbbuild/nbantext.jar"/>
+    </target>
+
+    <target name="-init-modules" depends="-init-tasks">
         <loadproperties srcfile="${nbroot}/nbbuild/cluster.properties"/>
         <pathconvert property="cnd.modules.fullpath">
             <path>
@@ -53,6 +59,7 @@ made subject to such option by the copyright holder.
             </path>
             <mapper type="identity"/>
         </pathconvert>
+        <sortmodules unsortedmodules="${cnd.modules.fullpath}" sortedmodulesproperty="cnd.modules.sorted" sorttests="true"/>
         <pathconvert property="cnd.modules.xref.fullpath">
             <path>
                 <dirset dir="${nbroot}" includes="cnd.completion, cnd.refactoring, cnd.navigation, cnd.highlight"/>
@@ -81,12 +88,6 @@ made subject to such option by the copyright holder.
         </subant>
     </target>
 
-    <target name="test-build" depends="-init-modules">
-        <subant buildpath="${cnd.modules.fullpath}" target="test-build">
-            <property name="cluster.config" value="cnd"/>
-        </subant>
-    </target>
-
     <target name="build-test-dist">
         <subant buildpath="${nbroot}" target="build-test-dist">
             <property name="cluster.config" value="cnd"/>
@@ -94,8 +95,14 @@ made subject to such option by the copyright holder.
         </subant>
     </target>
 
+    <target name="test-build" depends="-init-modules">
+        <subant buildpath="${cnd.modules.sorted}" target="test-build">
+            <property name="cluster.config" value="cnd"/>
+        </subant>
+    </target>
+
     <target name="test" depends="-init-modules">
-        <subant buildpath="${cnd.modules.fullpath}" target="test">
+        <subant buildpath="${cnd.modules.sorted}" target="test">
             <property name="cluster.config" value="cnd"/>
         </subant>
     </target>
@@ -107,7 +114,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="coverage-report" depends="-init-modules">
-        <subant buildpath="${cnd.modules.fullpath}" target="coverage-report">
+        <subant buildpath="${cnd.modules.sorted}" target="coverage-report">
             <property name="cluster.config" value="cnd"/>
             <property name="coverage.report.format" value="xml"/>
         </subant>

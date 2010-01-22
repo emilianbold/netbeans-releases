@@ -90,7 +90,6 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.MethodEntryRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.MethodExitRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
-import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -108,25 +107,6 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
         super (breakpoint, debugger, session);
         this.breakpoint = breakpoint;
         set ();
-    }
-    
-    public static boolean canGetMethodReturnValues(VirtualMachine vm) {
-        if (!JPDAUtils.IS_JDK_16) return false;
-        boolean canGetMethodReturnValues = false;
-        java.lang.reflect.Method m = null;
-        try {
-            m = vm.getClass().getMethod("canGetMethodReturnValues", new Class[] {});
-        } catch (Exception ex) {
-        }
-        if (m != null) {
-            try {
-                m.setAccessible(true);
-                Object ret = m.invoke(vm, new Object[] {});
-                canGetMethodReturnValues = Boolean.TRUE.equals(ret);
-            } catch (Exception ex) {
-            }
-        }
-        return canGetMethodReturnValues;
     }
     
     protected void setRequests () {
@@ -215,27 +195,9 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                 Set methodNames = (Set) EventRequestWrapper.getProperty(EventWrapper.request(event), "methodNames");
                 if (methodNames == null || methodNames.contains(methodName)) {
                     Value returnValue = null;
-                    /* JDK 1.6.0 code */
-                    if (JPDAUtils.IS_JDK_16) { // Retrieval of the return value
-                        VirtualMachine vm = MirrorWrapper.virtualMachine(event);
-                        // vm.canGetMethodReturnValues();
-                        if (canGetMethodReturnValues(vm)) {
-                            //Value returnValue = ((MethodExitEvent) event).returnValue();
-                            java.lang.reflect.Method m = null;
-                            try {
-                                m = event.getClass().getDeclaredMethod("returnValue", new Class[] {});
-                            } catch (Exception ex) {
-                                m = null;
-                            }
-                            if (m != null) {
-                                try {
-                                    m.setAccessible(true);
-                                    Object ret = m.invoke(event, new Object[] {});
-                                    returnValue = (Value) ret;
-                                } catch (Exception ex) {
-                                }
-                            }
-                        }
+                    VirtualMachine vm = MirrorWrapper.virtualMachine(event);
+                    if (vm.canGetMethodReturnValues()) {
+                        returnValue = ((MethodExitEvent) event).returnValue();
                     }
                     boolean success = processCondition(event, breakpoint.getCondition (),
                                 LocatableEventWrapper.thread((MethodExitEvent) event), returnValue);

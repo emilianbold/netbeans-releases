@@ -51,10 +51,14 @@ made subject to such option by the copyright holder.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.favorites.Bundle#ACT_View"/>
             </file>
             <file name="org-netbeans-modules-favorites-Add.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.add"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.favorites.Bundle#ACT_Add"/>
+                <attr name="delegate" methodvalue="org.netbeans.modules.favorites.Actions.add"/>
             </file>
             <file name="org-netbeans-modules-favorites-Remove.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.remove"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.favorites.Bundle#ACT_Remove"/>
+                <attr name="delegate" methodvalue="org.netbeans.modules.favorites.Actions.remove"/>
             </file>
             <folder name="SelectDocumentNode">
                 <file name="org-netbeans-modules-favorites-Select.instance">

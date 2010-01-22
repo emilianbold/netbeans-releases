@@ -130,8 +130,7 @@ public class KenaiSearchPanel extends JPanel {
 
     private KenaiProjectsListModel listModel;
 
-    //TODO: init;
-    private Kenai kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
+    private static Kenai kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
 
     /** Creates new form KenaiProjectsListPanel */
     public KenaiSearchPanel(PanelType type, boolean multiSel) {
@@ -139,27 +138,14 @@ public class KenaiSearchPanel extends JPanel {
         panelType = type;
         multiSelection = multiSel;
         initComponents();
-        kenaiCombo.setModel(new KenaiComboModel());
-        kenaiCombo.setRenderer(new KenaiListRenderer());
-        kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
 
-        kenaiCombo.addActionListener(new ActionListener() {
+        searchTextField.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                if (kenaiCombo.getSelectedItem() instanceof Kenai) {
-                    kenai = ((Kenai) kenaiCombo.getSelectedItem());
-                    kenaiFeaturedProjectsList=null;
-                    kenaiRecentProjectsList=null;
-                    kenaiFeaturedProjectsListWithRepos=null;
-                    kenaiRecentProjectsListWithRepos=null;
-                    if (panelType == PanelType.OPEN) {
-                        setOpenPanels();
-                    } else {
-                        setBrowsePanels();
-                    }
+                if (SearchField.SEARCH.equals(e.getActionCommand())) {
+                    invokeSearch();
                 } else {
-                    new AddInstanceAction().actionPerformed(e);
-                    kenai = ((Kenai) kenaiCombo.getSelectedItem());
+                    kenai = ((Kenai) searchTextField.getSelectedKenai());
                     kenaiFeaturedProjectsList=null;
                     kenaiRecentProjectsList=null;
                     kenaiFeaturedProjectsListWithRepos=null;
@@ -404,12 +390,11 @@ public class KenaiSearchPanel extends JPanel {
         GridBagConstraints gridBagConstraints;
 
         searchButtonPanel = new JPanel();
+        searchTextField = new SearchField(kenai);
         searchLabel = new JLabel();
         searchButton = new JButton();
         searchInfoLabel = new JLabel();
         projectsLabel = new JLabel();
-        searchTextField = new JTextField();
-        kenaiCombo = new JComboBox();
         createButtonPanel = new JPanel();
         createNewProjectButton = new JButton();
         kenaiProjectsTabPane = new JTabbedPane();
@@ -426,10 +411,18 @@ public class KenaiSearchPanel extends JPanel {
         setLayout(new BorderLayout());
 
         searchButtonPanel.setLayout(new GridBagLayout());
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        searchButtonPanel.add(searchTextField, gridBagConstraints);
 
         searchLabel.setLabelFor(searchTextField);
         Mnemonics.setLocalizedText(searchLabel, NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchLabel.text"));
         gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         searchButtonPanel.add(searchLabel, gridBagConstraints);
 
@@ -441,7 +434,7 @@ public class KenaiSearchPanel extends JPanel {
             }
         });
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
@@ -467,24 +460,6 @@ public class KenaiSearchPanel extends JPanel {
         searchButtonPanel.add(projectsLabel, gridBagConstraints);
 
         projectsLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.projectsLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        searchTextField.setText(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchTextField.text")); // NOI18N
-        searchTextField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                searchTextFieldActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        searchButtonPanel.add(searchTextField, gridBagConstraints);
-
-        searchTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchTextField.AccessibleContext.accessibleName")); // NOI18N
-        searchTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(KenaiSearchPanel.class, "KenaiSearchPanel.searchTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        searchButtonPanel.add(kenaiCombo, new GridBagConstraints());
-
         add(searchButtonPanel, BorderLayout.NORTH);
 
         createButtonPanel.setLayout(new GridBagLayout());
@@ -537,10 +512,6 @@ public class KenaiSearchPanel extends JPanel {
     private void searchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
         invokeSearch();
     }//GEN-LAST:event_searchButtonActionPerformed
-
-    private void searchTextFieldActionPerformed(ActionEvent evt) {//GEN-FIRST:event_searchTextFieldActionPerformed
-        invokeSearch();
-    }//GEN-LAST:event_searchTextFieldActionPerformed
 
     private void createNewProjectButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_createNewProjectButtonActionPerformed
         new NewKenaiProjectAction().actionPerformed(evt);
@@ -860,7 +831,6 @@ public class KenaiSearchPanel extends JPanel {
     private JPanel createButtonPanel;
     private JButton createNewProjectButton;
     private JPanel featuredProjectPanel;
-    private JComboBox kenaiCombo;
     private JList kenaiProjectsList;
     private JTabbedPane kenaiProjectsTabPane;
     private JLabel projectsLabel;
@@ -873,7 +843,7 @@ public class KenaiSearchPanel extends JPanel {
     private JLabel searchInfoLabel;
     private JLabel searchLabel;
     private JPanel searchResultsPanel;
-    private JTextField searchTextField;
+    private SearchField searchTextField;
     // End of variables declaration//GEN-END:variables
 
     private JPanel createLabelPanel(JLabel label) {

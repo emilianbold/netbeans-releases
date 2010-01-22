@@ -41,10 +41,13 @@ package org.netbeans.modules.maven.osgi;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -57,14 +60,11 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
     private NbMavenProject mavenProject;
     private Project project;
     private WeakReference<List<Pattern>> ref;
-    
-    private static final String MANIFEST_PATH = "src/main/nbm/manifest.mf"; //NOI18N
-    private static final String ATTR_PUBLIC_PACKAGE = "OpenIDE-Module-Public-Packages"; //NOI18N
+    static List<Pattern> DEFAULT_IMP = Collections.singletonList(Pattern.compile(".*"));
     
     public AccessQueryImpl(Project prj) {
         project = prj;
         mavenProject = prj.getLookup().lookup(NbMavenProject.class);
-        
     }
     
     /**
@@ -78,103 +78,79 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
             String path = FileUtil.getRelativePath(srcdir, pkg);
             if (path != null) {
                 String name = path.replace('/', '.');
-                //TODO cache somehow..
-                List<Pattern> pp = getPublicPackagesPatterns();
-                if (pp.size() > 0) {
-                    return check(pp, name);
-                }
+                return check(name);
             }
         }
         
         return null;
     }
     
-    private boolean check(List<Pattern> patt, String value) {
+    private Boolean check(String value) {
         boolean matches = false;
-        for (Pattern pattern : patt) {
+        String[] exps = PluginPropertyUtils.getPluginPropertyList(mavenProject.getMavenProject(),
+                OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN, 
+                OSGIConstants.PARAM_INSTRUCTIONS, OSGIConstants.EXPORT_PACKAGE,
+                OSGIConstants.GOAL_MANIFEST);
+        String[] imps = PluginPropertyUtils.getPluginPropertyList(mavenProject.getMavenProject(),
+                OSGIConstants.GROUPID_FELIX, OSGIConstants.ARTIFACTID_BUNDLE_PLUGIN, 
+                OSGIConstants.PARAM_INSTRUCTIONS, OSGIConstants.PRIVATE_PACKAGE,
+                OSGIConstants.GOAL_MANIFEST);
+        String exp = null;
+        if (exps != null && exps.length == 1) {
+            exp = exps[0];
+        }
+        String imp = null;
+        if (imps != null && imps.length == 1) {
+            imp = imps[0];
+        }
+        if (exp != null) {
+            List<Pattern> pubPatt = preparePackagesPatterns(exp);
+            for (Pattern pattern : pubPatt) {
+                matches = pattern.matcher(value).matches();
+                if (matches) {
+                    return Boolean.TRUE;
+                }
+            }
+        } 
+        List<Pattern> privPatt = imp != null ? preparePackagesPatterns(imp) : DEFAULT_IMP;
+        for (Pattern pattern : privPatt) {
             matches = pattern.matcher(value).matches();
             if (matches) {
-                break;
+                return Boolean.FALSE;
             }
         }
-        return matches;
+        if (exp == null) {
+            //handle default behaviour if not defined..
+            //TODO handle 1.x bundle plugin defaults..
+            if (!value.contains(".impl") && !value.contains(".internal")) { //NOI18N
+                return Boolean.TRUE;
+            }
+
+        }
+        return null;
     }
     
     
-    List<Pattern> getPublicPackagesPatterns() {
-        if (ref != null) {
-            List<Pattern> patterns = ref.get();
-            if (patterns != null) {
-                return patterns;
+    static List<Pattern> preparePackagesPatterns(String value) {
+        List<Pattern> toRet = new ArrayList<Pattern>();
+        if (value != null) {
+            StringTokenizer tok = new StringTokenizer(value, " ,", false); //NOI18N
+            while (tok.hasMoreTokens()) {
+                String token = tok.nextToken();
+                token = token.trim();
+                boolean recursive = false;
+                if (token.endsWith(".*")) { //NOI18N
+                    token = token.substring(0, token.length() - ".*".length()); //NOI18N
+                    recursive = true;
+                }
+                token = token.replace(".","\\."); //NOI18N
+                if (recursive) {
+                    token = token + ".*"; //NOI18N
+                }
+                toRet.add(Pattern.compile(token));
             }
         }
-        List<Pattern> toRet = new ArrayList<Pattern>();
-//        String[] params = PluginPropertyUtils.getPluginPropertyList(project,
-//                "org.codehaus.mojo", "nbm-maven-plugin", //NOI18N
-//                "publicPackages", "publicPackage", "manifest"); //NOI18N
-//        if (params != null) {
-//            toRet = preparePublicPackagesPatterns(params);
-//        } else {
-//            FileObject obj = project.getProjectDirectory().getFileObject(MANIFEST_PATH);
-//            if (obj != null) {
-//                InputStream in = null;
-//                try {
-//                    in = obj.getInputStream();
-//                    Manifest man = new Manifest();
-//                    man.read(in);
-//                    String value = man.getMainAttributes().getValue(ATTR_PUBLIC_PACKAGE);
-//                    toRet = preparePublicPackagesPatterns(value);
-//                } catch (Exception ex) {
-//                    Exceptions.printStackTrace(ex);
-//                } finally {
-//                    IOUtil.close(in);
-//                }
-//            }
-//        }
-        ref = new WeakReference<List<Pattern>>(toRet);
         return toRet;
     }
-//    static List<Pattern> preparePublicPackagesPatterns(String[] values) {
-//        List<Pattern> toRet = new ArrayList<Pattern>();
-//        for (String token : values) {
-//                token = token.trim();
-//                boolean recursive = false;
-//                if (token.endsWith(".**")) { //NOI18N
-//                    token = token.substring(0, token.length() - ".**".length()); //NOI18N
-//                    recursive = true;
-//                }
-//                token = token.replace(".","\\."); //NOI18N
-//                if (recursive) {
-//                    token = token + ".*"; //NOI18N
-//                }
-//                toRet.add(Pattern.compile(token));
-//            }
-//        return toRet;
-//    }
-//
-//    static List<Pattern> preparePublicPackagesPatterns(String value) {
-//        List<Pattern> toRet = new ArrayList<Pattern>();
-//        if (value != null) {
-//            StringTokenizer tok = new StringTokenizer(value, " ,", false); //NOI18N
-//            while (tok.hasMoreTokens()) {
-//                String token = tok.nextToken();
-//                token = token.trim();
-//                boolean recursive = false;
-//                if (token.endsWith(".*")) { //NOI18N
-//                    token = token.substring(0, token.length() - ".*".length()); //NOI18N
-//                    recursive = false;
-//                } else if (token.endsWith(".**")) { //NOI18N
-//                    token = token.substring(0, token.length() - ".**".length()); //NOI18N
-//                    recursive = true;
-//                }
-//                token = token.replace(".","\\."); //NOI18N
-//                if (recursive) {
-//                    token = token + ".*"; //NOI18N
-//                }
-//                toRet.add(Pattern.compile(token));
-//            }
-//        }
-//        return toRet;
-//    }
     
 }

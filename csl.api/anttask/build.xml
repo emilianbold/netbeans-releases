@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
 
   <target name="compile">
     <mkdir dir="build/classes"/>
-    <javac srcdir="src" destdir="build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" target="1.5" source="1.5" >
+    <javac srcdir="src" destdir="build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" target="1.6" source="1.6" >
 	  <classpath>
                 <!-- cmdline Ant -->
                 <pathelement location="${ant.core.lib}"/>

@@ -39,10 +39,7 @@
 
 package org.netbeans.modules.php.project.connections.ftp;
 
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
@@ -96,12 +93,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
     }
 
     public boolean isValidConfiguration() {
-        // remember password is dangerous
-        // just warning - do it every time
-        String err = RemoteValidator.validateRememberPassword(passwordTextField.getPassword());
-        setWarning(err);
-
-        err = RemoteValidator.validateHost(hostTextField.getText());
+        String err = RemoteValidator.validateHost(hostTextField.getText());
         if (err != null) {
             setError(err);
             return false;

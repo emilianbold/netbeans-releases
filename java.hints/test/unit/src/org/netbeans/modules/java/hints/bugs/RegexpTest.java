@@ -40,7 +40,6 @@
 package org.netbeans.modules.java.hints.bugs;
 
 import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,7 +62,4 @@ public class RegexpTest extends TestBase {
                             "3:40-3:43:verifier:Invalid regular expression");
     }
 
-    static {
-        NbBundle.setBranding("test");
-    }
 }

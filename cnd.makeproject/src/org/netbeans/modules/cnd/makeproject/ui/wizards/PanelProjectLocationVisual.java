@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -118,6 +117,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         return this.projectNameTextField.getText();
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("NewAppWizard"); // NOI18N
     }
@@ -287,7 +287,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
     private void browseLocationAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocationAction
         JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setCurrentDirectory(null);
         chooser.setDialogTitle(NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_SelectProjectLocation")); // NOI18N
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         String path = this.projectLocationTextField.getText();
@@ -344,6 +344,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         return ok;
     }
 
+    @Override
     boolean valid(WizardDescriptor wizardDescriptor) {
 
         if (!isValidProjectName(projectNameTextField.getText())) {
@@ -412,6 +413,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         return true;
     }
 
+    @Override
     void store(WizardDescriptor d) {
 
         String projectName = projectNameTextField.getText().trim();
@@ -450,6 +452,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }
 
+    @Override
     void read(WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty("projdir");  //NOI18N
         if (projectLocation == null) {
@@ -491,16 +494,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private javax.swing.JCheckBox setAsMainCheckBox;
     // End of variables declaration//GEN-END:variables
 
-    // Private methods ---------------------------------------------------------
-    private static JFileChooser createChooser() {
-        JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setAcceptAllFileFilterUsed(false);
-        chooser.setName("Select Project Directory"); // XXX // NOI18N
-        return chooser;
-    }
-
     private String validFreeProjectName(final File parentFolder, final String formater, final int index) {
         String projectName = MessageFormat.format(formater, new Object[]{Integer.valueOf(index)});
         File file = new File(parentFolder, projectName);
@@ -508,6 +501,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     }
 
     // Implementation of DocumentListener --------------------------------------
+    @Override
     public void changedUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
@@ -515,6 +509,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
@@ -522,6 +517,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
@@ -531,14 +527,17 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
     class MakefileDocumentListener implements DocumentListener {
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             makefileNameChanged = true;
         }
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             makefileNameChanged = true;
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             makefileNameChanged = true;
         }

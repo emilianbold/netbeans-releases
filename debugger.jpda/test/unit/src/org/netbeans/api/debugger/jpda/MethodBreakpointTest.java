@@ -284,7 +284,7 @@ public class MethodBreakpointTest extends NbTestCase {
                 event.getThread ().getMethodName ()
             );
             
-            if (returnValue != null && !System.getProperty("java.version").startsWith("1.5")) {
+            if (returnValue != null) {
                 Variable retVar = event.getVariable();
                 assertNotNull(
                         "Breakpoint event: The return value must not be null!",

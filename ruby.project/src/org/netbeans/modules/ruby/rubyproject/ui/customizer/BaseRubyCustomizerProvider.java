@@ -57,6 +57,8 @@ import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.DialogDescriptor;
+import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;

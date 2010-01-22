@@ -641,13 +641,10 @@ public class SourceAnalyser {
                                     rsList.add(sourceName);
                                 }
                             }
-                            final FileObject fo = URLMapper.findFileObject(this.siblingUrl);
-                            if (fo != null) {
-                                final ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                                if (cp != null) {
-                                    resourceName = cp.getResourceName(fo, '/', true);   //NOI18N
-                                }
-                            }
+                            final StringBuilder rnBuilder = new StringBuilder(FileObjects.convertPackage2Folder(sourceName));
+                            rnBuilder.append('.');  //NOI18N
+                            rnBuilder.append(FileObjects.getExtension(siblingUrl.getPath()));
+                            resourceName =  rnBuilder.toString();
                         }
                         else {
                             crossedTopLevel = true;

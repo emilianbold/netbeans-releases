@@ -41,28 +41,11 @@
 package org.netbeans.modules.masterfs.filebasedfs;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.test.TestFileUtils;
 import org.netbeans.modules.masterfs.filebasedfs.FileUtilTest.EventType;
@@ -81,6 +64,7 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
      * {@link FileObject#addRecursiveListener(org.openide.filesystems.FileChangeListener) }.
      * It is expected that all events from sub folders are delivered just once.
      */
+    @RandomlyFails // NB-Core-Build #3874: Wrong number of events when file deleted. expected:<5> but was:<4>
     public void testAddRecursiveListenerToFileObjectFolder() throws Exception {
         checkFolderRecursiveListener(false);
     }
@@ -155,7 +139,7 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
         // atomic action
         FileUtil.runAtomicAction(new Runnable() {
 
-            public void run() {
+            public @Override void run() {
                 try {
                     FileObject rootFO = FileUtil.toFileObject(rootF);
                     rootFO.createFolder("fakedir");  // no events

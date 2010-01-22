@@ -65,7 +65,7 @@ import org.openide.util.WeakListeners;
  * named rather then typed but the name express their type.
  * The volume is a list of resoruces.
  * <p>
- * For more details see <a href="package-summary.html">libraries overview</a>.
+ * For more details see {@linkplain org.netbeans.api.project.libraries the overview}.
  * @author Petr Kuzel, Tomas Zezula
  */
 public final class Library {

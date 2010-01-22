@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.editor.lexer;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -711,6 +712,24 @@ public class LexUtilities {
         if (!lookfor.contains(ts.token().id())) {
             while (ts.movePrevious() && !lookfor.contains(ts.token().id())) {}
         }
+        return ts.token();
+    }
+
+    /**
+     * The method returns the last token on the line.
+     * @param ts
+     * @return
+     */
+    public static Token<?extends PHPTokenId> findEndOfLine(TokenSequence<?extends PHPTokenId> ts) {
+        do {
+            Token<?extends PHPTokenId> token = findNextToken(ts,
+                    Arrays.asList(PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT));
+            for(int i = token.text().length() - 1; i > -1; i--) {
+                if (token.text().charAt(i) == '\n') {
+                    return token;
+                }
+            }
+        } while (ts.moveNext());
         return ts.token();
     }
 }

@@ -40,8 +40,12 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
-import org.netbeans.junit.RandomlyFails;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.java.hints.errors.ImportClass.FixImport;
 import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
+import org.netbeans.spi.editor.hints.Fix;
 
 /**
  *
@@ -54,12 +58,10 @@ public class ImportClassTest extends HintsTestBase {
         super(name);
     }
 
-    @RandomlyFails
     public void testImportHint() throws Exception {
         performTest("ImportTest", "java.util.List", 22, 13);
     }
 
-    @RandomlyFails
     public void testImportHint2() throws Exception {
         performTest("ImportTest2", "java.util.List", 18, 13);
     }
@@ -105,5 +107,22 @@ public class ImportClassTest extends HintsTestBase {
     protected String layer() {
         return "org/netbeans/modules/java/hints/errors/only-imports-layer.xml";
     }
-    
+
+    private static final Set<String> IGNORED_IMPORTS = new HashSet<String>(Arrays.asList("com.sun.tools.javac.util.List", "com.sun.xml.internal.bind.v2.schemagen.xmlschema.List"));
+    @Override
+    protected boolean includeFix(Fix f) {
+        if (!(f instanceof FixImport)) {
+            return true;
+        }
+
+        for (String ignore : IGNORED_IMPORTS) {
+            if (f.getText().contains(ignore)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+
 }

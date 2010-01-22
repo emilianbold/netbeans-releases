@@ -46,16 +46,13 @@ import com.sun.jdi.ArrayType;
 import com.sun.jdi.CharValue;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
-import com.sun.jdi.IntegerValue;
 import com.sun.jdi.InterfaceType;
 import com.sun.jdi.Method;
-import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.Type;
-import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -93,8 +90,6 @@ import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
-import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -855,7 +850,6 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
     public List<ObjectVariable> getReferringObjects(long maxReferrers) {
         Value v = getJDIValue();
         if (v instanceof ObjectReference) {
-            if (JPDAUtils.IS_JDK_16) {
                 final String name = Long.toString(getUniqueID());
                 final List<ObjectReference> referrers;
                 try {
@@ -880,9 +874,6 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                         return referrers.size();
                     }
                 };
-            } else {
-                return Collections.emptyList();
-            }
         } else {
             return Collections.emptyList();
         }

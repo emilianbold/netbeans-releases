@@ -49,14 +49,10 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import javax.lang.model.element.Modifier;
 import java.util.ArrayList;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
@@ -166,17 +162,8 @@ public class JavaUtil {
         }
     }
 
+    @Deprecated
     public static void addJaxbLib(Project p) throws IOException {
-        if (Util.isJDK5()) {
-            //Add JAXB libs if not available (if using JDK1.5)
-            Library library = LibraryManager.getDefault().getLibrary(JAXB_LIB);
-            SourceGroup[] sgs = ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            if (sgs == null || sgs.length < 1) {
-                throw new IOException("Project has no Java sources"); //NOI18N
-            }
-            FileObject sourceRoot = sgs[0].getRootFolder();
-            ProjectClassPathModifier.addLibraries(new Library[]{library}, sourceRoot, ClassPath.COMPILE);
-        }
     }
 
     public static void addImportsToSource(JavaSource source, List<String> imports) throws IOException {

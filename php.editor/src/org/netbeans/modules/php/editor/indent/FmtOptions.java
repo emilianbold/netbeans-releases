@@ -42,8 +42,13 @@ package org.netbeans.modules.php.editor.indent;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,6 +56,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -64,7 +71,11 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.netbeans.modules.php.api.util.FileUtils;
@@ -83,6 +94,8 @@ import org.openide.util.NbBundle;
  */
 public class FmtOptions {
 
+    private static final Logger LOGGER = Logger.getLogger(FmtOptions.class.getName());
+
     public static final String expandTabToSpaces = SimpleValueNames.EXPAND_TABS;
     public static final String tabSize = SimpleValueNames.TAB_SIZE;
     public static final String spacesPerTab = SimpleValueNames.SPACES_PER_TAB;
@@ -93,7 +106,23 @@ public class FmtOptions {
     public static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
     public static final String openingBraceStyle = "openingBraceStyle"; //NOI18N
     public static final String initialIndent = "init.indent"; //NOI18N
-    
+
+    public static final String blankLinesBeforeNamespace = "blankLinesBeforeNamespace"; //NOI18N
+    public static final String blankLinesAfterNamespace = "blankLinesAfterNamespace"; //NOI18N
+    public static final String blankLinesBeforeUse = "blankLinesBeforeUse"; //NOI18N
+    public static final String blankLinesAfterUse = "blankLinesAfterUse"; //NOI18N
+    public static final String blankLinesBeforeClass = "blankLinesBeforeClass"; //NOI18N
+    public static final String blankLinesBeforeClassEnd = "blankLinesBeforeClassEnd"; //NOI18N
+    public static final String blankLinesAfterClass = "blankLinesAfterClass"; //NOI18N
+    public static final String blankLinesAfterClassHeader = "blankLinesAfterClassHeader"; //NOI18N
+    public static final String blankLinesBeforeField = "blankLinesBeforeField"; //NOI18N
+    public static final String blankLinesAfterField = "blankLinesAfterField"; //NOI18N
+    public static final String blankLinesBeforeFunction = "blankLinesBeforeFunction"; //NOI18N
+    public static final String blankLinesAfterFunction = "blankLinesAfterFunction"; //NOI18N
+    public static final String blankLinesBeforeFunctionEnd = "blankLinesBeforeFunctionEnd"; //NOI18N
+
+    public static CodeStyleProducer codeStyleProducer;
+
     private FmtOptions() {}
 
     public static int getDefaultAsInt(String key) {
@@ -134,7 +163,21 @@ public class FmtOptions {
             { indentHtml, TRUE }, //NOI18N
             { rightMargin, "80"}, //NOI18N
             { openingBraceStyle, OBRACE_SAMELINE},
-            { initialIndent, "0"}
+            { initialIndent, "0"}, //NOI18N
+
+            { blankLinesBeforeNamespace, "1"}, //NOI18N
+            { blankLinesAfterNamespace, "1"}, //NOI18N
+            { blankLinesBeforeUse, "1"}, //NOI18N
+            { blankLinesAfterUse, "1"}, //NOI18N
+            { blankLinesBeforeClass, "1"}, //NOI18N
+            { blankLinesAfterClass, "1"}, //NOI18N
+            { blankLinesAfterClassHeader, "0"}, //NOI18N
+            { blankLinesBeforeClassEnd, "0"}, //NOI18N
+            { blankLinesBeforeField, "1"}, //NOI18N
+            { blankLinesAfterField, "1"}, //NOI18N
+            { blankLinesBeforeFunction, "1"}, //NOI18N
+            { blankLinesAfterFunction, "1"}, //NOI18N
+            { blankLinesBeforeFunctionEnd, "0"} //NOI18N
         };
         
         defaults = new HashMap<String,String>();
@@ -255,26 +298,44 @@ public class FmtOptions {
         }
 
         public void refreshPreview() {
-//            JEditorPane jep = (JEditorPane) getPreviewComponent();
-//            try {
-//                int rm = previewPrefs.getInt(rightMargin, getDefaultAsInt(rightMargin));
-//                jep.putClientProperty("TextLimitLine", rm); //NOI18N
-//            }
-//            catch( NumberFormatException e ) {
-//                // Ignore it
-//            }
-//            try {
-//                Class.forName(CodeStyle.class.getName(), true, CodeStyle.class.getClassLoader());
-//            } catch (ClassNotFoundException cnfe) {
-//                // ignore
-//            }
-//
-//            CodeStyle codeStyle = codeStyleProducer.create(previewPrefs);
-//            jep.setIgnoreRepaint(true);
-//            jep.setText(Reformatter.reformat(previewText, codeStyle));
-//            jep.setIgnoreRepaint(false);
-//            jep.scrollRectToVisible(new Rectangle(0,0,10,10) );
-//            jep.repaint(100);
+            JEditorPane pane = (JEditorPane) getPreviewComponent();
+            try {
+                int rm = previewPrefs.getInt(rightMargin, getDefaultAsInt(rightMargin));
+                pane.putClientProperty("TextLimitLine", rm); //NOI18N
+            }
+            catch( NumberFormatException e ) {
+                // Ignore it
+            }
+
+            Rectangle visibleRectangle = pane.getVisibleRect();
+            pane.setText(previewText);
+            pane.setIgnoreRepaint(true);
+
+            final Document doc = pane.getDocument();
+            if (doc instanceof BaseDocument) {
+                final Reformat reformat = Reformat.get(doc);
+                reformat.lock();
+                try {
+                    ((BaseDocument) doc).runAtomic(new Runnable() {
+                        public void run() {
+
+                            try {
+                                reformat.reformat(0, doc.getLength());
+                            } catch (BadLocationException ble) {
+                                LOGGER.log(Level.WARNING, null, ble);
+                            }
+                        }
+                    });
+                } finally {
+                    reformat.unlock();
+                }
+            } else {
+                LOGGER.warning("Can't format " + doc + "; it's not BaseDocument."); //NOI18N
+            }
+            pane.setIgnoreRepaint(false);
+            pane.scrollRectToVisible(visibleRectangle);
+            pane.repaint(100);
+
         }
 
         // PreferencesCustomizer implementation --------------------------------

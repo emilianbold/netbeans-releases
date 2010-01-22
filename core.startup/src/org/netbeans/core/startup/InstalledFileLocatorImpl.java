@@ -100,7 +100,7 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     private static Map<String,Map<File,Set<String>>> fileCache = null;
     
     /**
-     * Called from <code>NonGui.run</code> early in the startup sequence to indicate
+     * Called from <code>Main.run</code> early in the startup sequence to indicate
      * that available files should be cached from now on. Should be matched by a call to
      * {@link #discardCache} since the cache will be invalid if the user
      * e.g. installs a new NBM without restarting.

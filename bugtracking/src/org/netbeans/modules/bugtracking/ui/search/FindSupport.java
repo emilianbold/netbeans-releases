@@ -321,6 +321,7 @@ public class FindSupport {
 
     private class FindAction extends AbstractAction {
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (bar.isVisible()) {
                 findNext();

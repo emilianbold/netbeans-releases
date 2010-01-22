@@ -257,10 +257,7 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
     }
 
     public void addJaxWsApiEndorsed(FileObject srcRoot) throws IOException {
-        String java_version = System.getProperty("java.version"); //NOI18N
-        if (java_version.compareTo("1.6") >= 0) {
-            WSUtils.addJaxWsApiEndorsed(project, srcRoot);
-        }
+        WSUtils.addJaxWsApiEndorsed(project, srcRoot);
     }
      
      /** Returns the default value for the http.nonProxyHosts system property. <br>

@@ -63,6 +63,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.CRC32;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
@@ -456,8 +457,9 @@ import org.openide.util.Lookup;
     public static SuiteProject generateSuite(File workDir, String prjDir, String platformID) throws IOException {
         File prjDirF = file(workDir, prjDir);
         SuiteProjectGenerator.createSuiteProject(prjDirF, platformID, false);
-        return (SuiteProject) ProjectManager.getDefault().findProject(
-                FileUtil.toFileObject(prjDirF));
+        Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
+        assert project instanceof SuiteProject : "From " + prjDirF + " got " + project + " (try MockLookup.setLayersAndInstances())";
+        return (SuiteProject) project;
     }
     
     /**

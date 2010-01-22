@@ -1240,8 +1240,7 @@ public class Actions {
             }
 
             if (!popup) {
-                boolean jdk16orNewer = "1.6".compareTo(System.getProperty("java.version")) <= 0;
-                button.setIcon(ImageUtilities.loadImageIcon(jdk16orNewer ? "org/openide/resources/actions/empty.gif" : "org/openide/resources/actions/gap.gif", true)); // NOI18N
+                button.setIcon(ImageUtilities.loadImageIcon("org/openide/resources/actions/empty.gif", true)); // NOI18N
             }
         }
 
