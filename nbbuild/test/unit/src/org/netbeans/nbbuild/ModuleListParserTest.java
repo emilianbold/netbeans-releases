@@ -255,7 +255,7 @@ public class ModuleListParserTest extends NbTestCase {
     
     public void testScanSourcesAndBinariesForExternalStandaloneModule() throws Exception {
         Hashtable<String,String> properties = new Hashtable<String,String>();
-        properties.put("cluster.path.final", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite3/nbplatform/platform") +
+        properties.put("cluster.path.final", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite3/nbplatform/platform5") +
                 File.pathSeparator + filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite3/nbplatform/random"));
         properties.put("basedir", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite3/dummy-project"));
         properties.put("project", filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite3/dummy-project"));
