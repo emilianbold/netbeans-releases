@@ -66,24 +66,24 @@ public class ContainsErrorsWarning extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(doNotAskAgain, org.openide.util.NbBundle.getBundle(ContainsErrorsWarning.class).getString("ContainsErrorsWarning.doNotAskAgain.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1)
-                    .add(doNotAskAgain))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addComponent(doNotAskAgain))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap(20, Short.MAX_VALUE)
-                .add(jLabel1)
-                .add(18, 18, 18)
-                .add(doNotAskAgain))
+                .addComponent(jLabel1)
+                .addGap(18, 18, 18)
+                .addComponent(doNotAskAgain))
         );
 
         doNotAskAgain.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainsErrorsWarning.class, "ACSN_CB_ContainsErrorsWarning.doNotAskAgain.text")); // NOI18N
