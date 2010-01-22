@@ -48,6 +48,37 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="ActionInvoker-ActionPresenterProvider">
+        <api name="actions"/>
+        <summary>Action SPI interfaces added</summary>
+        <version major="8" minor="1"/>
+        <date day="21" month="1" year="2010"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added some internal SPI interfaces.
+            </p>
+        </description>
+        <class package="org.openide.util.actions" name="ActionInvoker"/>
+        <class package="org.openide.util.actions" name="ActionPresenterProvider"/>
+        <issue number="179289"/>
+    </change>
+    <change id="NbPreferences.Provider">
+        <api name="util"/>
+        <summary><code>NbPreferences.Provider</code> added</summary>
+        <version major="8" minor="1"/>
+        <date day="21" month="1" year="2010"/>
+        <author login="jglick"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added an internal SPI interface.
+            </p>
+        </description>
+        <class package="org.openide.util" name="NbPreferences"/>
+        <issue number="179289"/>
+    </change>
     <change id="lookup.is.free">
         <api name="util"/>
         <summary>Lookup API extracted</summary>

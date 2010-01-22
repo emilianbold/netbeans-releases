@@ -45,15 +45,17 @@ import java.io.Serializable;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.Executor;
-import junit.framework.*;
-import org.netbeans.junit.*;
-import org.netbeans.modules.openide.util.ActiveQueue;
+import junit.framework.Test;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.lookup.implspi.ActiveQueue;
 
 /** Runs all NbLookupTest tests on ProxyLookup and adds few additional.
  */

@@ -41,10 +41,12 @@
 
 package org.openide.util.lookup;
 
-import java.util.*;
-import org.netbeans.junit.*;
-import org.netbeans.modules.openide.util.ActiveQueue;
+import java.util.Arrays;
+import java.util.Collections;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.implspi.ActiveQueue;
 
 /** Testing memory consumption of various AbstractLookup aspects.
  */

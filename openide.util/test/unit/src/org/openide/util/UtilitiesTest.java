@@ -128,12 +128,12 @@ import javax.swing.KeyStroke;
 import junit.framework.Assert;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.openide.util.AWTBridge;
-import org.netbeans.modules.openide.util.NamedServicesProvider;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.implspi.NamedServicesProvider;
+import org.openide.util.actions.ActionPresenterProvider;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -342,53 +342,7 @@ public class UtilitiesTest extends NbTestCase {
     }
 
     public void testActionsForPath() throws Exception {
-        MockLookup.setInstances(new NamedServicesProvider() {
-            public Lookup create(String path) {
-                if (!path.equals("stuff/")) {
-                    return Lookup.EMPTY;
-                }
-                InstanceContent content = new InstanceContent();
-                InstanceContent.Convertor<String,Action> actionConvertor = new InstanceContent.Convertor<String,Action>() {
-                    public Action convert(final String obj) {
-                        return new AbstractAction() {
-                            public void actionPerformed(ActionEvent e) {}
-                            public @Override String toString() {
-                                return obj;
-                            }
-
-                        };
-                    }
-                    public Class<? extends Action> type(String obj) {
-                        return AbstractAction.class;
-                    }
-                    public String id(String obj) {
-                        return obj;
-                    }
-                    public String displayName(String obj) {
-                        return id(obj);
-                    }
-                };
-                InstanceContent.Convertor<Boolean,JSeparator> separatorConvertor = new InstanceContent.Convertor<Boolean,JSeparator>() {
-                    public JSeparator convert(Boolean obj) {
-                        Assert.fail("should not be creating the JSeparator yet");
-                        return new JSeparator();
-                    }
-                    public Class<? extends JSeparator> type(Boolean obj) {
-                        return JSeparator.class;
-                    }
-                    public String id(Boolean obj) {
-                        return "sep";
-                    }
-                    public String displayName(Boolean obj) {
-                        return id(obj);
-                    }
-                };
-                content.add("hello", actionConvertor);
-                content.add(true, separatorConvertor);
-                content.add("there", actionConvertor);
-                return new AbstractLookup(content);
-            }
-        });
+        MockLookup.setInstances(new NamedServicesProviderImpl());
         // #156829: ensure that no tree lock is acquired.
         final Semaphore ready = new Semaphore(0);
         final Semaphore done = new Semaphore(0);
@@ -618,7 +572,7 @@ public class UtilitiesTest extends NbTestCase {
         }
     }
 
-    public static final class AwtBridgeImpl extends AWTBridge {
+    public static final class AwtBridgeImpl extends ActionPresenterProvider {
         public JPopupMenu createEmptyPopup() {
             return new JPopupMenu();
         }
@@ -637,6 +591,69 @@ public class UtilitiesTest extends NbTestCase {
             } else {
                 return new Component[] {comp};
             }
+        }
+    }
+
+    private class NamedServicesProviderImpl extends NamedServicesProvider {
+
+        public NamedServicesProviderImpl() {
+        }
+
+        public Lookup create(String path) {
+            if (!path.equals("stuff/")) {
+                return Lookup.EMPTY;
+            }
+            InstanceContent content = new InstanceContent();
+            InstanceContent.Convertor<String, Action> actionConvertor = new InstanceContent.Convertor<String, Action>() {
+
+                public Action convert(final String obj) {
+                    return new AbstractAction() {
+
+                        public void actionPerformed(ActionEvent e) {
+                        }
+
+                        @Override
+                        public String toString() {
+                            return obj;
+                        }
+                    };
+                }
+
+                public Class<? extends Action> type(String obj) {
+                    return AbstractAction.class;
+                }
+
+                public String id(String obj) {
+                    return obj;
+                }
+
+                public String displayName(String obj) {
+                    return id(obj);
+                }
+            };
+            InstanceContent.Convertor<Boolean, JSeparator> separatorConvertor = new InstanceContent.Convertor<Boolean, JSeparator>() {
+
+                public JSeparator convert(Boolean obj) {
+                    Assert.fail("should not be creating the JSeparator yet");
+                    return new JSeparator();
+                }
+
+                public Class<? extends JSeparator> type(Boolean obj) {
+                    return JSeparator.class;
+                }
+
+                public String id(Boolean obj) {
+                    return "sep";
+                }
+
+                public String displayName(Boolean obj) {
+                    return id(obj);
+                }
+            };
+            content.add("hello", actionConvertor);
+            content.add(true, separatorConvertor);
+            content.add("there", actionConvertor);
+            return new AbstractLookup(content);
         }
     }
     

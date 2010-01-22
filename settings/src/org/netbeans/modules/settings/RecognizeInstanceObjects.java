@@ -34,7 +34,6 @@ package org.netbeans.modules.settings;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Logger;
-import org.netbeans.modules.openide.util.NamedServicesProvider;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -50,12 +49,18 @@ import org.openide.util.LookupListener;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.implspi.NamedServicesProvider;
 
 /** Use FolderLookup to find out intances of named services.
  *
  * @author Jaroslav Tulach
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.openide.util.NamedServicesProvider.class, position=200, supersedes="org.netbeans.modules.openide.filesystems.RecognizeInstanceFiles")
+@ServiceProvider(
+    service=NamedServicesProvider.class,
+    position=200,
+    supersedes="org.netbeans.modules.openide.filesystems.RecognizeInstanceFiles"
+)
 public final class RecognizeInstanceObjects extends NamedServicesProvider {
     private static final Logger LOG = Logger.getLogger(RecognizeInstanceObjects.class.getName());
     

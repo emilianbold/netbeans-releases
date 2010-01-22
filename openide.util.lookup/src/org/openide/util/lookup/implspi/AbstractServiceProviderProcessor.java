@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.openide.util;
+package org.openide.util.lookup.implspi;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -72,8 +72,7 @@ import javax.tools.StandardLocation;
 /**
  * Infrastructure for generating {@code META-INF/services/*} and
  * {@code META-INF/namedservices/*} registrations from annotations.
- *
- * NOTE: This class is duplicated in openide.util and openide.util.lookup to prevent implementation dependency.
+ * @since 8.1
  */
 public abstract class AbstractServiceProviderProcessor extends AbstractProcessor {
 
@@ -81,8 +80,18 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
     private final Map<ProcessingEnvironment,Map<String,List<Element>>> originatingElementsByProcessor = new WeakHashMap<ProcessingEnvironment,Map<String,List<Element>>>();
     private final Map<TypeElement,Boolean> verifiedClasses = new WeakHashMap<TypeElement,Boolean>();
 
-    /** For access by subclasses. */
-    protected AbstractServiceProviderProcessor() {}
+    /** Throws IllegalStateException. For access by selected subclasses. */
+    protected AbstractServiceProviderProcessor() {
+        if (getClass().getName().equals("org.netbeans.modules.openide.util.ServiceProviderProcessor")) { // NOI18N
+            // OK subclass
+            return;
+        }
+        if (getClass().getName().equals("org.netbeans.modules.openide.util.URLStreamHandlerRegistrationProcessor")) { // NOI18N
+            // OK subclass
+            return;
+        }
+        throw new IllegalStateException();
+    }
 
     public @Override final boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (roundEnv.errorRaised()) {

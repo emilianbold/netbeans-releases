@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.openide.util;
+package org.openide.util.actions;
 
 import java.awt.Component;
 import javax.swing.Action;
@@ -52,19 +52,23 @@ import org.openide.util.Lookup;
  * should be able to derive its menu, popup menu and toolbar
  * presenter.
  * <P>
- * In order to provide greater flexibility is made as a pluggable component
- * to allow more enhanced parts of the system to provide more enhanced
- * visualitions.
+ * In order to provide greater flexibility this is made as a pluggable component
+ * to allow other parts of the system to provide more enhanced
+ * visualizations.
+ * @since 8.1
  */
-public abstract class AWTBridge extends Object {
-    /** Finds out the global implementtion of the object
+public abstract class ActionPresenterProvider extends Object {
+    /** Gets the default implementation from lookup.
      * @return the presenter
      */
-    public static AWTBridge getDefault () {
-        AWTBridge ap = Lookup.getDefault().lookup(AWTBridge.class);
+    public static ActionPresenterProvider getDefault () {
+        ActionPresenterProvider ap = Lookup.getDefault().lookup(ActionPresenterProvider.class);
         return ap == null ? new Default () : ap;
     }
     
+    /** Subclass constructor. */
+    protected ActionPresenterProvider() {}
+
     /** Creates a default empty implementation of popup menu.
      * @return popup menu
      */
@@ -88,14 +92,18 @@ public abstract class AWTBridge extends Object {
     */
     public abstract Component createToolbarPresenter (Action action);
     
-    
+    /**
+     * Used for implementation of <a href="@org-openide-awt@/org/openide/awt/DynamicMenuContent.html"><code>DynamicMenuContent</code></a>.
+     * @param comp a component
+     * @return zero or more components to display in its place
+     */
     public abstract Component[] convertComponents(Component comp);
     
     //
     // Default implementation of the the presenter
     // 
     
-    private static final class Default extends AWTBridge {
+    private static final class Default extends ActionPresenterProvider {
         
         public JMenuItem createMenuPresenter(Action action) {
             return new JMenuItem(action);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,32 +31,13 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.openide.util;
-
-import java.util.prefs.Preferences;
 
 /**
- *
- * @author Radek Matous
+ * Interfaces intended to be used within the NetBeans Platform.
  */
-public interface PreferencesProvider {
-    /**
-     * Returns user preference node. {@link Preferences#absolutePath} of such
-     * a node depends whether class provided as a parameter was loaded as a part of any module
-     * or not. If so, then absolute path corresponds to slashified code name base of module.
-     * If not, then absolute path corresponds to class's package.
-     *
-     * @param cls the class for which a user preference node is desired.
-     * @return the user preference node
-     */
-    Preferences preferencesForModule(Class cls);
-    
-    /**
-     * Returns the root preference node.
-     *
-     * @return the root preference node.
-     */    
-    Preferences preferencesRoot();    
-}
+package org.openide.util.lookup.implspi;

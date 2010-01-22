@@ -1,4 +1,4 @@
-package org.netbeans.modules.openide.util;
+package org.openide.util.lookup.implspi;
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
@@ -7,31 +7,38 @@ import java.util.logging.Logger;
 
 /**
  * Implementation of the active reference queue.
- *
- * NOTE: This class is duplicated in openide.util and openide.util.lookup to prevent implementation dependency.
+ * @since 8.1
  */
-public final class ActiveQueue extends ReferenceQueue<Object> implements Runnable {
+public final class ActiveQueue {
+
+    private ActiveQueue() {}
 
     private static final Logger LOGGER = Logger.getLogger(ActiveQueue.class.getName().replace('$', '.'));
-    private static ActiveQueue activeReferenceQueue;
-    
-    /** number of known outstanding references */
-    private int count;
-    private boolean deprecated;
+    private static Impl activeReferenceQueue;
 
-    ActiveQueue(boolean deprecated) {
-        super();
-        this.deprecated = deprecated;
-    }
-
+    /**
+     * Gets the active reference queue.
+     * @return the singleton queue
+     */
     public static synchronized ReferenceQueue<Object> queue() {
         if (activeReferenceQueue == null) {
-            activeReferenceQueue = new ActiveQueue(false);
+            activeReferenceQueue = new Impl(false);
         }
 
         activeReferenceQueue.ping();
 
         return activeReferenceQueue;
+    }
+
+    private static final class Impl extends ReferenceQueue<Object> implements Runnable {
+
+    /** number of known outstanding references */
+    private int count;
+    private boolean deprecated;
+
+    Impl(boolean deprecated) {
+        super();
+        this.deprecated = deprecated;
     }
 
     @Override
@@ -107,4 +114,7 @@ public final class ActiveQueue extends ReferenceQueue<Object> implements Runnabl
         }
         count++;
     }
+
+    }
+
 }

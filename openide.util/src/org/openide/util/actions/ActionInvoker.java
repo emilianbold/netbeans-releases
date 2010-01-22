@@ -39,34 +39,64 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.openide.util;
+package org.openide.util.actions;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.ServiceProvider;
 
-/** Allows Node action to get access to special tricks in CallableSystemAction.
+/** A mixture of a utility class allowing to invoke actions and also a
+ * <a href="http://wiki.apidesign.org/wiki/CodeInjection">
+ * code injection mechanism</a> to allow overall system to be aware of invoked
+ * actions.
+ * <p>
+ * Callers shall use the {@link #invokeAction(javax.swing.Action, java.awt.event.ActionEvent, boolean, java.lang.Runnable)}
+ * method.
+ * <p>
+ * Implementors register an implementation of this class via {@link ServiceProvider}
+ * annotation.
+ *
+ * @since 8.1
  */
-public abstract class ActionsBridge extends Object {
+public abstract class ActionInvoker extends Object {
     /** thread to run actions in */
-    private static RequestProcessor RP = new RequestProcessor("Module-Actions", Integer.MAX_VALUE); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Module-Actions", Integer.MAX_VALUE); // NOI18N
     
+    /** Subclass constructor. */
+    protected ActionInvoker() {}
     
-    /** Invokes an action.
+    /** An infrastructure method that handles invocation of an an action.
+     * @param action the action to invoke
+     * @param ev the event used during invocation
      */
     protected abstract void invokeAction(Action action, ActionEvent ev);
 
-    public static void doPerformAction(CallableSystemAction action, final ActionsBridge.ActionRunnable r) {
-        implPerformAction(action, r);
+    /** Invokes the action in the currently registered ActionsBridge.
+     *
+     * @param action the action that is to be invoked
+     * @param ev the event used to invoke the action
+     * @param asynchronous shall the execution be performed in a background thread?
+     * @param invoker the actual code that shall be performed to "run" the action. If null, action.actionPerformed(ev) will be called
+     */
+    public static void invokeAction(Action action, ActionEvent ev, boolean asynchronous, final Runnable invoker) {
+        ActionRunnable r = new ActionRunnable(ev, action, asynchronous) {
+            @Override
+            protected void run() {
+                if (invoker == null) {
+                    action.actionPerformed(ev);
+                } else {
+                    invoker.run();
+                }
+            }
+        };
+        doPerformAction(action, r);
     }
-    public static void doPerformAction(Action action, final ActionsBridge.ActionRunnable r) {
-        implPerformAction(action, r);
-    }
-    private static void implPerformAction(Action action, final ActionsBridge.ActionRunnable r) {
+
+    private static void doPerformAction(Action action, final ActionInvoker.ActionRunnable r) {
         assert java.awt.EventQueue.isDispatchThread() : "Action " + action.getClass().getName() +
         " may not be invoked from the thread " + Thread.currentThread().getName() +
         ", only the event queue: http://www.netbeans.org/download/4_1/javadoc/OpenAPIs/apichanges.html#actions-event-thread";
@@ -87,7 +117,7 @@ public abstract class ActionsBridge extends Object {
     /** Special class that can be passed to invokeAction and delegates
      * to correct values
      */
-    public static abstract class ActionRunnable implements Action {
+    private static abstract class ActionRunnable implements Action {
         final ActionEvent ev;
         final Action action;
         final boolean async;
@@ -115,7 +145,7 @@ public abstract class ActionsBridge extends Object {
         }
 
         public final void doRun() {
-            ActionsBridge bridge = Lookup.getDefault().lookup(ActionsBridge.class);
+            ActionInvoker bridge = Lookup.getDefault().lookup(ActionInvoker.class);
             if (bridge != null) {
                 bridge.invokeAction (this, ev);
             } else {

@@ -168,6 +168,11 @@ public abstract class NodeAction extends CallableSystemAction implements Context
     */
     @Override
     public boolean isEnabled() {
+        if (
+            (SOURCE.get() instanceof Node) || (SOURCE.get() instanceof Node[])
+        ) {
+            return true;
+        }
         Node[] ns = null;
         Boolean b = null;
 
@@ -242,6 +247,7 @@ public abstract class NodeAction extends CallableSystemAction implements Context
         }
     }
 
+    private final ThreadLocal<Object> SOURCE = new ThreadLocal<Object>();
     /** Perform the action with a specific action event.
      * Normally this simply calls {@link #performAction()}, that is using
      * the global node selection.
@@ -261,28 +267,17 @@ public abstract class NodeAction extends CallableSystemAction implements Context
     @Override
     public void actionPerformed(final ActionEvent ev) {
         final Object s = (ev == null) ? null : ev.getSource();
-
-        if (s instanceof Node) {
-            org.netbeans.modules.openide.util.ActionsBridge.doPerformAction(
-                this,
-                new org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable(ev, this, amIasynchronous()) {
-                    public void run() {
-                        performAction(new Node[] { (Node) s });
-                    }
-                }
-            );
-        } else if (s instanceof Node[]) {
-            org.netbeans.modules.openide.util.ActionsBridge.doPerformAction(
-                this,
-                new org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable(ev, this, amIasynchronous()) {
-                    public void run() {
-                        performAction((Node[]) s);
-                    }
-                }
-            );
-        } else {
-            super.actionPerformed(ev);
+        Object prev = SOURCE.get();
+        try {
+            SOURCE.set(s);
+            superActionPerformed(ev);
+        } finally {
+            SOURCE.set(prev);
         }
+    }
+
+    final void superActionPerformed(ActionEvent ev) {
+        super.actionPerformed(ev);
     }
 
     /** Performs the action.
@@ -293,7 +288,14 @@ public abstract class NodeAction extends CallableSystemAction implements Context
      */
     @Deprecated
     public void performAction() {
-        performAction(getActivatedNodes());
+        Object s = SOURCE.get();
+        if (s instanceof Node) {
+            performAction(new Node[]{(Node) s});
+        } else if (s instanceof Node[]) {
+            performAction((Node[]) s);
+        } else {
+            performAction(getActivatedNodes());
+        }
     }
 
     /** Get the currently activated nodes.
@@ -382,12 +384,6 @@ public abstract class NodeAction extends CallableSystemAction implements Context
                 Logger.getLogger(NodeAction.class.getName()).log(Level.WARNING, null, e);
             }
         }
-    }
-    
-    /** Package private accessor.
-     */
-    final boolean amIasynchronous() {
-        return asynchronous();
     }
     
     /** Node listener to check whether the action is enabled or not
@@ -582,14 +578,13 @@ OUTER:
         /** Invoked when an action occurs.
          */
         public void actionPerformed(ActionEvent e) {
-            org.netbeans.modules.openide.util.ActionsBridge.doPerformAction (
-                delegate,
-                new org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable(e, delegate, delegate.amIasynchronous()) {
-                    public void run() {
-                        delegate.performAction(nodes());
-                    }
-                }
-            );
+            Object prev = delegate.SOURCE.get();
+            try {
+                delegate.SOURCE.set(nodes());
+                delegate.superActionPerformed(e);
+            } finally {
+                delegate.SOURCE.set(prev);
+            }
         }
 
         public void addPropertyChangeListener(PropertyChangeListener listener) {

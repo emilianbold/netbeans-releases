@@ -54,7 +54,7 @@ import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.progress.spi.RunOffEDTProvider;
+import org.netbeans.modules.progress.spi.RunOffEDTProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -67,7 +67,7 @@ import org.openide.windows.WindowManager;
  * Default RunOffEDTProvider implementation for ProgressUtils.runOffEventDispatchThread() methods
  * @author Jan Lahoda, Tomas Holy
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.progress.spi.RunOffEDTProvider.class, position = 100)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.progress.spi.RunOffEDTProvider.class, position = 100)
 public class RunOffEDTImpl implements RunOffEDTProvider {
 
     private static final RequestProcessor WORKER = new RequestProcessor(ProgressUtils.class.getName());

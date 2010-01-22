@@ -22,6 +22,7 @@
             <public-packages>
                 <package>org.openide.util</package>
                 <package>org.openide.util.lookup</package>
+                <package>org.openide.util.lookup.implspi</package>
             </public-packages>
         </data>
     </configuration>

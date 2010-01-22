@@ -38,16 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.progress.ui;
 
-package org.netbeans.progress.spi;
+import org.netbeans.modules.progress.spi.Controller;
+import org.netbeans.modules.progress.spi.InternalHandle;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CallableSystemAction;
 
-/**
- *
- * @author mkleint
- */
-public interface ProgressUIWorkerProvider {
-
-    public ProgressUIWorkerWithModel getDefaultWorker();
+public final class CancelAction extends CallableSystemAction {
     
-    public ExtractedProgressUIWorker getExtractedComponentWorker();
+    public void performAction() {
+        // TODO implement action body
+        InternalHandle handle = Controller.getDefault().getModel().getSelectedHandle();
+        if (handle != null) {
+            handle.requestCancel();
+        }
+    }
+    
+    public String getName() {
+        return NbBundle.getMessage(CancelAction.class, "CTL_CancelAction");
+    }
+    
+    protected void initialize() {
+        super.initialize();
+        // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
+        putValue("noIconInMenu", Boolean.TRUE);
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+    
+    protected boolean asynchronous() {
+        return true;
+    }
+    
 }

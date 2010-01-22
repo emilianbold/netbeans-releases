@@ -39,57 +39,19 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.progress.module;
+package org.netbeans.modules.progress.spi;
 
-import javax.swing.AbstractAction;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListDataListener;
-import org.netbeans.progress.spi.ProgressUIWorkerWithModel;
-import org.openide.util.NbBundle;
+import org.netbeans.progress.module.*;
 
 /**
  *
  * @author mkleint
+ * @since org.netbeans.api.progress/1 1.18
  */
-public class ProgressListAction extends AbstractAction implements ListDataListener, Runnable {
+public interface ProgressUIWorker {
 
-    /** Creates a new instance of ProcessListAction */
-    public ProgressListAction() {
-        this(NbBundle.getMessage(ProgressListAction.class, "CTL_ProcessListAction"));
-    }
-    
-    public ProgressListAction(String name) {
-        putValue(NAME, name);
-//        putValue(MNEMONIC_KEY, new Integer((int)NbBundle.getMessage(ProgressListAction.class, "ProcessListAction.mnemonic").charAt(0)));
-        Controller.getDefault().getModel().addListDataListener(this);
-        updateEnabled();
-    }
-    
-    /** Perform the action. Sets/unsets maximzed mode. */
-    public void actionPerformed(java.awt.event.ActionEvent ev) {
-       //need to invoke later becauseotherwise the awtlistener possibly catches a mouse event
-        SwingUtilities.invokeLater(this);
-    }
-    
-    public void run() {
-        ((ProgressUIWorkerWithModel)Controller.getDefault().getVisualComponent()).showPopup();
-    }
-
-    private void updateEnabled() {
-        setEnabled(Controller.getDefault().getModel().getSize() != 0);
-    }    
-
-    public void contentsChanged(javax.swing.event.ListDataEvent listDataEvent) {
-        updateEnabled();
-    }
-
-    public void intervalAdded(javax.swing.event.ListDataEvent listDataEvent) {
-        updateEnabled();
-    }
-
-    public void intervalRemoved(javax.swing.event.ListDataEvent listDataEvent) {
-        updateEnabled();
-    }
+    void processProgressEvent(ProgressEvent event);
+    void processSelectedProgressEvent(ProgressEvent event);
     
     
 }

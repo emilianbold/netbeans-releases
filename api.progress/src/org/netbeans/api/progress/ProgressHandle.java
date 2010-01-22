@@ -45,7 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import org.netbeans.progress.spi.InternalHandle;
+import org.netbeans.modules.progress.spi.InternalHandle;
 
 /**
  * Instances provided by the ProgressHandleFactory allow the users of the API to

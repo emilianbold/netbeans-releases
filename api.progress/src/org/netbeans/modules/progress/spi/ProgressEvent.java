@@ -40,11 +40,12 @@
  */
 
 
-package org.netbeans.progress.spi;
+package org.netbeans.modules.progress.spi;
 
 /**
  *
  * @author Milos Kleint (mkleint@netbeans.org)
+ * @since org.netbeans.api.progress/1 1.18
  */
 public final class ProgressEvent {
 
