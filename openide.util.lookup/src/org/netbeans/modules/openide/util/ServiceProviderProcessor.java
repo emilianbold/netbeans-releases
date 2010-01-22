@@ -60,6 +60,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
+import org.openide.util.lookup.implspi.AbstractServiceProviderProcessor;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class ServiceProviderProcessor extends AbstractServiceProviderProcessor {

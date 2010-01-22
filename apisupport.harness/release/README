@@ -1123,12 +1123,12 @@ overrides.
 branding.token - optional token defining an application branding.
 
 enabled.clusters - comma-separated list of cluster names in the target platform
-(e.g. "platform6") which should be included in the application. Should be stored
+(e.g. "platform") which should be included in the application. Should be stored
 in platform.properties, not project.properties. Available since 5.0u1. Since 6.5,
 can elide version numbers from the end, e.g. just "platform" suffices.
 
 disabled.clusters - comma-separated list of cluster names in the target platform
-(e.g. "ide6") which should be completely excluded from the application.
+(e.g. "ide") which should be completely excluded from the application.
 DEPRECATED since 5.0u1 in favor of ${enabled.clusters} and ignored if that is nonempty.
 
 disabled.modules - comma-separated list of code name bases of modules in the

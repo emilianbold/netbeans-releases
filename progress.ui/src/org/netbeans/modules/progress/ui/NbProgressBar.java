@@ -47,9 +47,9 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.UIManager;
-import org.netbeans.progress.spi.ExtractedProgressUIWorker;
-import org.netbeans.progress.spi.InternalHandle;
-import org.netbeans.progress.spi.ProgressEvent;
+import org.netbeans.modules.progress.spi.ExtractedProgressUIWorker;
+import org.netbeans.modules.progress.spi.InternalHandle;
+import org.netbeans.modules.progress.spi.ProgressEvent;
 
 
 /**

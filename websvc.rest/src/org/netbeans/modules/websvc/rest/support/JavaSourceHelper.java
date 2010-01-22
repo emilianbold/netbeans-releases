@@ -618,7 +618,7 @@ public class JavaSourceHelper {
         return maker.Assignment(maker.Identifier(variable), maker.Literal(value));
     }
 
-    private static Tree createTypeTree(WorkingCopy copy, Object type) {
+    public static ExpressionTree createTypeTree(WorkingCopy copy, Object type) {
         if (type instanceof String) {
             TypeElement element = copy.getElements().getTypeElement((String) type);
             if (element != null) {
@@ -627,7 +627,7 @@ public class JavaSourceHelper {
                 return copy.getTreeMaker().Identifier((String) type);
             }
         } else {
-            return (Tree) type;
+            return (ExpressionTree) type;
         }
     }
 
@@ -806,7 +806,7 @@ public class JavaSourceHelper {
     }
 
     public static boolean annotationHasAttributeValue(AnnotationMirror am, String attr, String value) {
-        return value.equals(am.getElementValues().get(attr));
+        return value.equals(am.getElementValues().get(attr).getValue());
     }
 
     public static boolean annotationHasAttributeValue(AnnotationMirror am, String value) {

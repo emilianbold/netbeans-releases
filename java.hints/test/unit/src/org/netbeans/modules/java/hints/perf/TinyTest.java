@@ -228,6 +228,98 @@ public class TinyTest extends TestBase {
                         "}\n").replaceAll("[\t\n ]+", " "));
     }
 
+    public void testGetClassInsteadOfDotClass1() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private Class<?> test() {\n" +
+                       "         return new String().getClass();\n" +
+                       "     }\n" +
+                       "}\n",
+                       "3:16-3:39:verifier:ERR_GetClassInsteadOfDotClass",
+                       "FIX_GetClassInsteadOfDotClass",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "     private Class<?> test() {\n" +
+                        "         return String.class;\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
+    public void testGetClassInsteadOfDotClass2() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.util.LinkedList;\n" +
+                       "public class Test {\n" +
+                       "     private Class<?> test() {\n" +
+                       "         return new LinkedList(java.util.Arrays.asList(1, 2)).getClass();\n" +
+                       "     }\n" +
+                       "}\n",
+                       "4:16-4:72:verifier:ERR_GetClassInsteadOfDotClass",
+                       "FIX_GetClassInsteadOfDotClass",
+                       ("package test;\n" +
+                        "import java.util.LinkedList;\n" +
+                        "public class Test {\n" +
+                        "     private Class<?> test() {\n" +
+                        "         return LinkedList.class;\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
+    public void testConstantIntern1() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private String test() {\n" +
+                       "         return \"foo-bar\".intern();\n" +
+                       "     }\n" +
+                       "}\n",
+                       "3:16-3:34:verifier:ERR_ConstantIntern",
+                       "FIX_ConstantIntern",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                       "     private String test() {\n" +
+                       "         return \"foo-bar\";\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
+    public void testConstantIntern2() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private String test() {\n" +
+                       "         return (\"foo\" + \"-\" + \"bar\").intern();\n" +
+                       "     }\n" +
+                       "}\n",
+                       "3:16-3:46:verifier:ERR_ConstantIntern",
+                       "FIX_ConstantIntern",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                       "     private String test() {\n" +
+                       "         return \"foo\" + \"-\" + \"bar\";\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
+    public void testConstantIntern3() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "     private int test() {\n" +
+                       "         return (\"foo\" + \"-\" + \"bar\").intern().length();\n" +
+                       "     }\n" +
+                       "}\n",
+                       "3:16-3:46:verifier:ERR_ConstantIntern",
+                       "FIX_ConstantIntern",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "     private int test() {\n" +
+                        "         return (\"foo\" + \"-\" + \"bar\").length();\n" +
+                        "     }\n" +
+                        "}\n").replaceAll("[\t\n ]+", " "));
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

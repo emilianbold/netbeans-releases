@@ -40,6 +40,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import javax.swing.JPanel;
 import org.openide.explorer.ExplorerManager;
+import org.openide.util.NbBundle;
 
 final class ClusterizeVisualPanel2 extends JPanel
 implements ExplorerManager.Provider {
@@ -52,7 +53,8 @@ implements ExplorerManager.Provider {
         this.panel = panel;
 
         initComponents();
-        view.setProperties(ClusterizeInfo.allProperties());
+        view.addPropertyColumn("cnb", NbBundle.getMessage(ClusterizeInfo.class, "MSG_ClusterizeCodeNameBase")); // NOI18N
+        view.addPropertyColumn("action", NbBundle.getMessage(ClusterizeInfo.class, "MSG_ClusterizeActivateAs")); // NOI18N
         view.setPopupAllowed(false);
         
         putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(1));

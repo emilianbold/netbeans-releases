@@ -59,11 +59,11 @@
         <subant target="default" inheritAll="false">
             <property name="complete.validation"           value="false"/>
             <property name="esb.netbeans.home"             location="${home}/nbbuild/netbeans"/>
-            <property name="ide.module.install.dir"        location="${home}/nbbuild/netbeans/ide10/modules"/>
-            <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa2/modules"/>
-            <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml2/modules"/>
-            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java3/modules"/>
-            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise6/modules"/>
+            <property name="ide.module.install.dir"        location="${home}/nbbuild/netbeans/ide/modules"/>
+            <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa/modules"/>
+            <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml/modules"/>
+            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java/modules"/>
+            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise/modules"/>
 
             <!-- BPEL sample 1 -->
             <buildpath location="${bpel.samples}/Asynchronous/Asynchronous/build.xml"/>
@@ -83,11 +83,11 @@
         <subant target="default" inheritAll="false">
             <property name="complete.validation"           value="false"/>
             <property name="esb.netbeans.home"             location="${home}/nbbuild/netbeans"/>
-            <property name="ide.module.install.dir"        location="${home}/nbbuild/netbeans/ide10/modules"/>
-            <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa2/modules"/>
-            <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml2/modules"/>
-            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java3/modules"/>
-            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise6/modules"/>
+            <property name="ide.module.install.dir"        location="${home}/nbbuild/netbeans/ide/modules"/>
+            <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa/modules"/>
+            <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml/modules"/>
+            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java/modules"/>
+            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise/modules"/>
 
             <!-- BPEL sample 2 -->
             <buildpath location="${bpel.samples}/BluePrint3/BluePrint3/build.xml"/>
@@ -103,11 +103,11 @@
         <subant target="default" inheritAll="false">
             <property name="complete.validation"           value="false"/>
             <property name="esb.netbeans.home"             location="${home}/nbbuild/netbeans"/>
-            <property name="ide.module.install.dir"        location="${home}/nbbuild/netbeans/ide10/modules"/>
-            <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa2/modules"/>
-            <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml2/modules"/>
-            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java3/modules"/>
-            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise6/modules"/>
+            <property name="ide.module.install.dir"        location="${home}/nbbuild/netbeans/ide/modules"/>
+            <property name="soa.module.install.dir"        location="${home}/nbbuild/netbeans/soa/modules"/>
+            <property name="xml.module.install.dir"        location="${home}/nbbuild/netbeans/xml/modules"/>
+            <property name="java.module.install.dir"       location="${home}/nbbuild/netbeans/java/modules"/>
+            <property name="enterprise.module.install.dir" location="${home}/nbbuild/netbeans/enterprise/modules"/>
 
             <!-- XSLT sample -->
             <buildpath location="${xslt.samples}/Welcome/Welcome/build.xml"/>

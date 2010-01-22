@@ -49,6 +49,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import org.openide.util.URLStreamHandlerRegistration;
+import org.openide.util.lookup.implspi.AbstractServiceProviderProcessor;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class URLStreamHandlerRegistrationProcessor extends AbstractServiceProviderProcessor {

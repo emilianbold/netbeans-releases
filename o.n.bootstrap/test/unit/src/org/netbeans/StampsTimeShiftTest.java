@@ -71,10 +71,10 @@ public class StampsTimeShiftTest extends NbTestCase implements Stamps.Updater{
         clearWorkDir();
 
         install = new File(getWorkDir(), "install");
-        platform = new File(install, "platform7");
+        platform = new File(install, "platform");
         platform.mkdirs();
         new File(platform, ".lastModified").createNewFile();
-        ide = new File(install, "ide8");
+        ide = new File(install, "ide");
         ide.mkdirs();
         new File(ide, ".lastModified").createNewFile();
         extra = new File(install, "extra");

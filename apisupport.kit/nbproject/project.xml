@@ -12,6 +12,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.apisupport.crudsample</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.apisupport.feedreader</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
@@ -25,12 +31,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.apisupport.tc.cobertura</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.apisupport.paintapp</code-name-base>
                     <run-dependency>
                         <specification-version>1.1</specification-version>
@@ -41,6 +41,12 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.33</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.apisupport.tc.cobertura</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

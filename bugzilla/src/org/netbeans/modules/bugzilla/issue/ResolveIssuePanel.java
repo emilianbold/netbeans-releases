@@ -234,19 +234,23 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
                 true, new Object[]{ok, DialogDescriptor.CANCEL_OPTION}, ok,
                 DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(ResolveIssuePanel.class), null);
         duplicateField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 checkDuplicateId();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 checkDuplicateId();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 checkDuplicateId();
             }
         });
         resolutionCombo.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 resolutionComboSelectionChanged();
             }

@@ -40,13 +40,18 @@
 package org.netbeans.modules.java.hints.perf;
 
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.ParameterizedTypeTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import java.util.EnumSet;
+import java.util.Set;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
@@ -171,4 +176,47 @@ public class Tiny {
         return ErrorDescriptionFactory.forTree(ctx, toSearch, displayName, f);
     }
 
+    @Hint(category="performance", enabled=false)
+    @TriggerPattern(value="new $O($params$).getClass()")
+    public static ErrorDescription getClassInsteadOfDotClass(HintContext ctx) {
+        TreePath O = ctx.getVariables().get("$O");
+        if (O.getLeaf().getKind() == Kind.PARAMETERIZED_TYPE) {
+            O = new TreePath(O, ((ParameterizedTypeTree) O.getLeaf()).getType());
+        }
+        ctx.getVariables().put("$OO", O);//XXX: hack
+        String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_GetClassInsteadOfDotClass");
+        Fix f = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$OO.class");
+        String displayName = NbBundle.getMessage(Tiny.class, "ERR_GetClassInsteadOfDotClass");
+
+        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, f);
+    }
+
+    private static final Set<Kind> KEEP_PARENTHESIS = EnumSet.of(Kind.MEMBER_SELECT);
+    
+    @Hint(category="performance", enabled=false)
+    @TriggerPattern(value="$str.intern()",
+                    constraints=@Constraint(variable="$str", type="java.lang.String"))
+    public static ErrorDescription constantIntern(HintContext ctx) {
+        TreePath str = ctx.getVariables().get("$str");
+        TreePath constant;
+        if (str.getLeaf().getKind() == Kind.PARENTHESIZED) {
+            constant = new TreePath(str, ((ParenthesizedTree) str.getLeaf()).getExpression());
+        } else {
+            constant = str;
+        }
+        if (!Utilities.isConstantString(ctx.getInfo(), constant))
+            return null;
+        String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_ConstantIntern");
+        String target;
+        if (constant != str && KEEP_PARENTHESIS.contains(ctx.getPath().getParentPath().getLeaf().getKind())) {
+            target = "$str";
+        } else {
+            target = "$constant";
+            ctx.getVariables().put("$constant", constant);//XXX: hack
+        }
+        Fix f = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), target);
+        String displayName = NbBundle.getMessage(Tiny.class, "ERR_ConstantIntern");
+
+        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, f);
+    }
 }

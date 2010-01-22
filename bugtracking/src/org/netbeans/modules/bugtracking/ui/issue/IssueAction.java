@@ -68,25 +68,30 @@ public class IssueAction extends SystemAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(IssueAction.class, "CTL_IssueAction");
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(IssueAction.class);
     }
 
+    @Override
     public void actionPerformed(ActionEvent ev) {
         createIssue();
     }
 
     public static void openIssue(final Issue issue, final boolean refresh) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 IssueTopComponent tc = IssueTopComponent.find(issue);
                 tc.open();
                 tc.requestActive();
                 rp.post(new Runnable() {
+                    @Override
                     public void run() {
                         ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueAction.class, "LBL_REFRESING_ISSUE", new Object[]{issue.getID()}));
                         try {
@@ -115,6 +120,7 @@ public class IssueAction extends SystemAction {
     private static void createIssue(final Repository repository, final Node[] context) {
         final boolean repositoryGiven = repository != null;
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 IssueTopComponent tc = new IssueTopComponent();
                 tc.initNewIssue(repository, !repositoryGiven, context);
@@ -127,6 +133,7 @@ public class IssueAction extends SystemAction {
     public static void openIssue(final Repository repository, final String issueId) {
         assert issueId != null;
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 final IssueTopComponent tc = IssueTopComponent.find(issueId);
                 final boolean tcOpened = tc.isOpened();
@@ -140,6 +147,7 @@ public class IssueAction extends SystemAction {
                 }
                 tc.requestActive();
                 rp.post(new Runnable() {
+                    @Override
                     public void run() {
                         ProgressHandle handle = null;
                         try {
@@ -156,6 +164,7 @@ public class IssueAction extends SystemAction {
                                     // because whatever happend, there is nothing else
                                     // we can do at this point
                                     SwingUtilities.invokeLater(new Runnable() {
+                                        @Override
                                         public void run() {
                                             if(!tcOpened) {
                                                 tc.close();
@@ -165,7 +174,7 @@ public class IssueAction extends SystemAction {
                                     return;
                                 }
                                 SwingUtilities.invokeLater(new Runnable() {
-
+                                    @Override
                                     public void run() {
                                         tc.setIssue(issue[0]);
                                     }
@@ -183,6 +192,7 @@ public class IssueAction extends SystemAction {
 
     public static void closeIssue(final Issue issue) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 IssueTopComponent tc = IssueTopComponent.find(issue);
                 if(tc != null) {

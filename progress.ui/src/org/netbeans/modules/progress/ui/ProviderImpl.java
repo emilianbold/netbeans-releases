@@ -41,15 +41,15 @@
 
 package org.netbeans.modules.progress.ui;
 
-import org.netbeans.progress.spi.ExtractedProgressUIWorker;
-import org.netbeans.progress.spi.ProgressUIWorkerProvider;
-import org.netbeans.progress.spi.ProgressUIWorkerWithModel;
+import org.netbeans.modules.progress.spi.ExtractedProgressUIWorker;
+import org.netbeans.modules.progress.spi.ProgressUIWorkerProvider;
+import org.netbeans.modules.progress.spi.ProgressUIWorkerWithModel;
 
 /**
  *
  * @author mkleint
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.progress.spi.ProgressUIWorkerProvider.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.progress.spi.ProgressUIWorkerProvider.class)
 public class ProviderImpl implements ProgressUIWorkerProvider {
     
     /** Creates a new instance of ProviderImpl */

@@ -10,7 +10,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -29,10 +29,7 @@
               </Group>
               <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="cbX11" pref="301" max="32767" attributes="0"/>
-                  </Group>
+                  <Component id="cbX11" alignment="1" pref="305" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="tfHost" pref="194" max="32767" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -40,9 +37,9 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="tfPort" min="-2" pref="54" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="tfUser" pref="301" max="32767" attributes="0"/>
-                  <Component id="tfName" alignment="1" pref="301" max="32767" attributes="0"/>
-                  <Component id="cbSync" alignment="1" pref="301" max="32767" attributes="0"/>
+                  <Component id="tfUser" pref="305" max="32767" attributes="0"/>
+                  <Component id="tfName" alignment="1" pref="305" max="32767" attributes="0"/>
+                  <Component id="cbSync" alignment="1" pref="305" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>

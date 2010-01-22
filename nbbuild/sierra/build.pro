@@ -111,5 +111,5 @@
     <property name="jbi" location="${cache}/test/${test.cvs.path}"/>
     <property name="bpel.samples" value="${home}/bpel.samples/resources"/>
     <property name="xslt.samples" value="${home}/xslt.samples/resources"/>
-    <property name="build.number" value="${home}/nbbuild/netbeans/platform11/build_number"/>
+    <property name="build.number" value="${home}/nbbuild/netbeans/platform/build_number"/>
 </project>

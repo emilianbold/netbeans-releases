@@ -41,9 +41,14 @@
 
 package org.openide.util.lookup;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
-import org.netbeans.modules.openide.util.NamedServicesProvider;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.implspi.NamedServicesProvider;
 
 /**
  * Static factory methods for creating common lookup implementations.
@@ -214,7 +219,10 @@ public class Lookups {
      * @since 7.9
      */
     public static Lookup forPath(String path) {
-        return NamedServicesProvider.find(path);
+        if (!path.endsWith("/")) {
+            path = path + "/";
+        }
+        return NamedServicesProvider.forPath(path);
     }
     
     /** Creates a lookup that wraps another one and filters out instances

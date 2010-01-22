@@ -45,6 +45,7 @@ import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URLClassLoader;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.lookup.implspi.ActiveQueue;
 
 /**
  *

@@ -104,6 +104,7 @@ import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.impl.indexing.IndexerCache.IndexerInfo;
+import org.netbeans.modules.parsing.impl.indexing.errors.TaskCache;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingActivityInterceptor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -131,6 +132,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -1556,6 +1558,22 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         protected final boolean index(
+                final Collection<IndexableImpl> resources, // out-of-date (new/modified) files
+                final Collection<IndexableImpl> allResources, // all files
+                final URL root,
+//                final boolean allFiles,
+                final boolean sourceForBinaryRoot,
+                final SourceIndexers indexers,
+                final Map<SourceIndexerFactory,Boolean> votes
+        ) throws IOException {
+            return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Boolean>() {
+                public Boolean run() throws IOException {
+                    return doIndex(resources, allResources, root, sourceForBinaryRoot, indexers, votes);
+                }
+            });
+        }
+
+        private boolean doIndex(
                 Collection<IndexableImpl> resources, // out-of-date (new/modified) files
                 Collection<IndexableImpl> allResources, // all files
                 final URL root,

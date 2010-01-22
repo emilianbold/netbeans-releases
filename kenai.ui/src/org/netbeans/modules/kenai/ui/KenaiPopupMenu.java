@@ -301,7 +301,12 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                                 if (kp != null) {
                                     if (kp.getFeatures(Type.ISSUES).length > 0) {
                                         final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                        DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                        SwingUtilities.invokeLater( new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                            }
+                                        });
                                         QueryAccessor.getDefault().getFindIssueAction(pHandle).actionPerformed(e);
                                         return;
                                     } else {
@@ -342,7 +347,12 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                                 if (kp != null) {
                                     if (kp.getFeatures(Type.ISSUES).length > 0) {
                                         final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                        DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                        SwingUtilities.invokeLater( new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                            }
+                                        });
                                         QueryAccessor.getDefault().getCreateIssueAction(pHandle).actionPerformed(e);
                                         return;
                                     } else {
@@ -390,7 +400,12 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                                 final KenaiProject kp = getActualKenaiProject(proj, kenaiProjectUniqueName);
                                 if (kp != null) {
                                     final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                    DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                        SwingUtilities.invokeLater( new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                            }
+                                        });
                                 }
                             } catch (KenaiException e) {
                                 String err = e.getLocalizedMessage();

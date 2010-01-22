@@ -107,6 +107,22 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="errors-cache">
+      <api name="ParsingAPI"/>
+      <summary>Adding ErrorsCache</summary>
+      <version major="1" minor="30"/>
+      <date day="21" month="1" year="2010"/>
+      <author login="jlahoda"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Added <code>ErrorsCache</code>, that allows the indexers to simply set errors that should be show as badges in the projects tab and
+              in the tasklist.
+          </p>
+      </description>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="ErrorsCache"/>
+      <issue number="179459"/>
+  </change>
   <change id="BinaryIndexerFactory-scanStarted-scanFinished">
       <api name="ParsingAPI"/>
       <summary>Methods scanStarted and scanFinished added to BinaryIndexerFactory</summary>

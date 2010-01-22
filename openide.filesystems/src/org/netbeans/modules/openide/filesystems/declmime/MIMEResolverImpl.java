@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -244,13 +245,12 @@ public final class MIMEResolverImpl {
         });
     }
 
-    /** Returns map of all registered MIMEResolver instances in revers order,
+    /** Lists registered MIMEResolver instances in reverse order,
      * i.e. first are ones with lower priority (position attribute higher)
      * and last are ones with highest prority (position attribute lower).
-     * @return map of all registered MIMEResolver instances in revers order
-     * (highest priority last)
+     * @return list of all registered MIMEResolver instances in reverse order
      */
-    public static Map<Integer, FileObject> getOrderedResolvers() {
+    public static Collection<? extends FileObject> getOrderedResolvers() {
         // scan resolvers and order them to be able to assign extension to mime type from resolver with the lowest position
         FileObject[] resolvers = FileUtil.getConfigFile(MIME_RESOLVERS_PATH).getChildren();
         TreeMap<Integer, FileObject> orderedResolvers = new TreeMap<Integer, FileObject>(Collections.reverseOrder());
@@ -264,7 +264,7 @@ public final class MIMEResolverImpl {
             }
             orderedResolvers.put(position, mimeResolverFO);
         }
-        return orderedResolvers;
+        return orderedResolvers.values();
     }
 
     // MIMEResolver ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
