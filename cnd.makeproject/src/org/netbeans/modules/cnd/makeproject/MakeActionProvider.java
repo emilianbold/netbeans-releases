@@ -83,7 +83,6 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -97,7 +96,6 @@ import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
@@ -391,10 +389,6 @@ public class MakeActionProvider implements ActionProvider {
         ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
     }
 
-    //debug variables
-    public final static boolean useRsync = Boolean.getBoolean("cnd.remote.useRsync");
-    public static final String REMOTE_BASE_PATH = "~/NetBeansProjects/remote"; //NOI18N
-
     public void addAction(ArrayList<ProjectActionEvent> actionEvents, String projectName,
             MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context,
             AtomicBoolean cancelled) throws IllegalArgumentException {
@@ -472,43 +466,6 @@ public class MakeActionProvider implements ActionProvider {
             }
             if (!ProjectSupport.saveAllProjects(getString("NeedToSaveAllText"))) { // NOI18N
                 return false;
-            }
-
-            if (useRsync && !conf.getDevelopmentHost().isLocalhost()) {
-                final String rsyncLocalPath = "rsync"; //NOI18N
-                CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-                int result = provider.run(conf.getDevelopmentHost().getExecutionEnvironment(), "which rsync", null); //NOI18N
-                    String rsyncRemotePath = (result != 0 || provider.getOutput().indexOf(' ')>-1) ? "/opt/csw/bin/rsync" : provider.getOutput(); //NOI18N //YESCHEAT
-                // do sync
-                RunProfile runSyncProfile = conf.getProfile().clone(conf);
-                // TODO: remote and local rsync paths from toolchain
-                // TODO: real project name
-                String lpath = project.getProjectDirectory().getNameExt();
-                String remotePath = REMOTE_BASE_PATH + pi.separator() + lpath;
-                //String rsyncLocalPath = HostFacadeFactory.createLocalHostFacade().findInPath("rsync");
-                if (rsyncRemotePath == null || rsyncRemotePath.length() == 0 || rsyncLocalPath == null || rsyncLocalPath.length() == 0) {
-                    System.err.println("Rsync not fould in Toolchain: sources can not be synchronized");
-                    return false;
-                } else {
-                    // TODO: using getName() does not suite for non-standard ssh port
-                    String rsyncArgs = " --rsh=ssh --recursive --verbose --perms --links --delete --rsync-path=" + rsyncRemotePath + //NOI18N
-                            " --exclude \"build*\" --exclude \"dist*\" --cvs-exclude . " + //NOI18N
-                            conf.getDevelopmentHost().getHostKey() + ":" + remotePath; //NOI18N
-                    runSyncProfile.setArgs(rsyncArgs);
-                    runSyncProfile.getConsoleType().setValue(RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
-
-                    MakeConfiguration syncConf = (MakeConfiguration) conf.clone();
-                    syncConf.setDevelopmentHost(new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.getLocal())); // rsync should be ran only locally
-                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                            project,
-                            actionEvent,
-                            projectName + " (Sync)", // NOI18N
-                            rsyncLocalPath, // NOI18N
-                            syncConf,
-                            runSyncProfile,
-                            false);
-                    actionEvents.add(projectActionEvent);
-                }
             }
         } else if (targetName.equals(RUN_STEP) || targetName.equals(DEBUG_STEP) || targetName.equals(DEBUG_STEPINTO_STEP) || targetName.equals(DEBUG_LOAD_ONLY_STEP)) {
 //            if (!validateBuildSystem(pd, conf, validated.get(), cancelled)) {
@@ -631,14 +588,14 @@ public class MakeActionProvider implements ActionProvider {
                         if (extPath == null) {
                             if (cancelled.get()) {
                                 return false; // getEnv() might be costly for remote host
-                                }
-                            extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
                             }
+                            extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
+                        }
                         if (extPath != null) {
                             path.append(":" + extPath); // NOI18N
-                            }
-                        runProfile.getEnvironment().putenv("LD_LIBRARY_PATH", path.toString()); // NOI18N
                         }
+                        runProfile.getEnvironment().putenv("LD_LIBRARY_PATH", path.toString()); // NOI18N
+                    }
                 }
 
                 if (platform == PlatformTypes.PLATFORM_MACOSX ||
