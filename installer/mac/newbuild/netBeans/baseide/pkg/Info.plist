@@ -48,7 +48,7 @@
 			<key>Level</key>
 			<string>requires</string>
 			<key>SpecArgument</key>
-			<string>/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0</string>
+			<string>/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0</string>
 			<key>SpecType</key>
 			<string>file</string>
 			<key>TestObject</key>

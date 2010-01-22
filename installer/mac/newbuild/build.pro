@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project name="Mac Installer Properties" basedir="." >
+
+    <property name="packagemaker.path" value="/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker"/>
    
     <property name="translatedfiles.src" value="${basedir}/../../../src"/>
         

@@ -10,7 +10,7 @@ if [ -n "$2" ] && [ -n "$3" ] ; then
    doVerify=1
 fi
 
-javaPath="/System/Library/Frameworks/JavaVM.framework/Versions/1.5/Home"
+javaPath="/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home"
 unpackCommand="$javaPath/bin/unpack200"
 javaCommand="$javaPath/bin/java"
 packCommand="$javaPath/bin/pack200"
