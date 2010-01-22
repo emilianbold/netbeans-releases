@@ -423,14 +423,17 @@ public class WorkLogPanel extends javax.swing.JPanel {
 
     class WorkLogFormatListener implements DocumentListener {
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             changedUpdate(e);
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             changedUpdate(e);
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             Document document = e.getDocument();
             if (document == timeSpentField.getDocument()) {
@@ -454,6 +457,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
 
     class EstimateAdjustmentTypeListener implements ChangeListener {
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             if (reduceEstimatedTimeChoice.isSelected()) {
                 checkReduceEstimateTime();
