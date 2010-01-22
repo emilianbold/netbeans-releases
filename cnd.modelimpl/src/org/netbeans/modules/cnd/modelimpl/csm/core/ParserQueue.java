@@ -805,6 +805,7 @@ public final class ParserQueue {
             if (data.isEmpty() && (data.pendingActivity == 0)) {
                 projectData.remove(project);
                 notifyListeners = data.notifyListeners;
+                project.notifyOnWaitParseLock();
             }
         }
         if (notifyListeners) {

@@ -1480,6 +1480,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
+    void notifyOnWaitParseLock() {
+        // notify client waiting for end of fake registration
+        synchronized (waitParseLock) {
+            waitParseLock.notifyAll();
+        }
+    }
+
     enum ComparisonResult {
 
         BETTER,
@@ -2118,10 +2125,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
             if (!libsAlreadyParsed) {
                 ParseFinishNotificator.onParseFinish(this);
-            }
-            // notify client waiting for end of fake registration
-            synchronized (waitParseLock) {
-                waitParseLock.notifyAll();
             }
         }
         if (TraceFlags.PARSE_STATISTICS) {
