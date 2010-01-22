@@ -593,9 +593,13 @@ public class DwarfSourceReaderTest extends NbTestCase {
         grep.firstMacroLine=4;
         String name = "/net/dxespb04x127x81/export/devarea/osprojects/ACE_TAO/ACE_wrappers/TAO/orbsvcs/orbsvcs/HTIOP/HTIOP_Acceptor_Impl.cpp";
         if (Utilities.isWindows()) {
-            name = "D:\\net\\dxespb04x127x81\\export\\devarea\\osprojects\\ACE_TAO\\ACE_wrappers\\TAO\\orbsvcs\\orbsvcs\\HTIOP\\HTIOP_Acceptor_Impl.cpp";
+            name = "C:\\net\\dxespb04x127x81\\export\\devarea\\osprojects\\ACE_TAO\\ACE_wrappers\\TAO\\orbsvcs\\orbsvcs\\HTIOP\\HTIOP_Acceptor_Impl.cpp";
         }
         grepBase.put(name, grep);
+        if (Utilities.isWindows()) {
+            name = "D:\\net\\dxespb04x127x81\\export\\devarea\\osprojects\\ACE_TAO\\ACE_wrappers\\TAO\\orbsvcs\\orbsvcs\\HTIOP\\HTIOP_Acceptor_Impl.cpp";
+            grepBase.put(name, grep);
+        }
         DwarfSource source = getDwarfSource("/org/netbeans/modules/cnd/dwarfdiscovery/provider/x86_64-redhat-4.1.2.o", system, ignore, grepBase, false, null);
         assertNotNull(source);
         TreeMap<String, String> map = new TreeMap<String, String>(source.getUserMacros());
