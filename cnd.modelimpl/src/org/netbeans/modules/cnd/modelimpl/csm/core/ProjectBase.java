@@ -508,7 +508,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private void waitParseImpl() {
         synchronized (waitParseLock) {
-            while (ParserQueue.instance().hasFiles(this, null)) {
+            while (ParserQueue.instance().hasPendingProjectRelatedWork(this, null)) {
                 try {
                     //FIXUP - timeout is a workaround for #146436 hang on running unit tests
                     waitParseLock.wait(10000);
