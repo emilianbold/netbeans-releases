@@ -413,7 +413,7 @@ public class GenerateJNLPApplicationTest extends TestBase {
 //        );
 //        File platformC = openideUtil.getParentFile().getParentFile();
 //
-//        File copyP = new File(new File(getWorkDir(), "netbeans"), "platform10");
+//        File copyP = new File(new File(getWorkDir(), "netbeans"), "platform");
 //        copyP.mkdirs();
 //
 //        copyFiles(platformC, copyP);

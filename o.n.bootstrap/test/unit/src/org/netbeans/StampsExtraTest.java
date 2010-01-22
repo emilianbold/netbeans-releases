@@ -72,9 +72,9 @@ public class StampsExtraTest extends NbTestCase {
         clearWorkDir();
         
         install = new File(getWorkDir(), "install");
-        platform = new File(install, "platform7");
+        platform = new File(install, "platform");
         platform.mkdirs();
-        ide = new File(install, "ide8");
+        ide = new File(install, "ide");
         ide.mkdirs();
         extra = new File(install, "extra");
         userdir = new File(getWorkDir(), "tmp");

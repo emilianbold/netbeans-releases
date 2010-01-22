@@ -284,7 +284,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
         // Filter out JavaScript stuff
         return url.indexOf("jsstubs") == -1 && // NOI18N
                 // Filter out Ruby stuff
-                url.indexOf("/ruby2/") == -1 &&  // NOI18N
+                url.indexOf("/ruby/") == -1 &&  // NOI18N
                 url.indexOf("/gems/") == -1 &&  // NOI18N
                 url.indexOf("lib/ruby/") == -1; // NOI18N
      }
