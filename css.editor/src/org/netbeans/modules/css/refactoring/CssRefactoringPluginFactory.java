@@ -36,91 +36,28 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.refactoring;
+package org.netbeans.modules.css.refactoring;
 
-import java.io.IOException;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
-import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
-import org.netbeans.modules.refactoring.spi.ui.RefactoringUIBypass;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 
 /**
  *
  * @author marekfukala
  */
-public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position = 120)
+public class CssRefactoringPluginFactory implements RefactoringPluginFactory {
 
-    private final AbstractRefactoring refactoring;
-    private CssElementContext context;
-    private RenamePanel panel;
-
-    public CssRenameRefactoringUI(CssElementContext context) {
-	this.context = context;
-	this.refactoring = new RenameRefactoring(Lookups.fixed(context));
-    }
-
-    public String getName() {
-	return NbBundle.getMessage(CssRenameRefactoringUI.class, "LBL_Rename");
-    }
-
-    public String getDescription() {
-	return "TODO";
-    }
-
-    public boolean isQuery() {
-	return false;
-    }
-
-    public CustomRefactoringPanel getPanel(ChangeListener parent) {
-	if (panel == null) {
-	    panel = new RenamePanel(context.getElementName(), parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename"), true, true);
-	}
-
-	return panel;
-    }
-
-    public Problem setParameters() {
-	String newName = panel.getNameValue();
+    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
 	if (refactoring instanceof RenameRefactoring) {
-	    ((RenameRefactoring) refactoring).setNewName(newName);
-	}
-	return refactoring.checkParameters();
-    }
-
-    public Problem checkParameters() {
-	if (!panel.isUpdateReferences()) {
-	    return null;
-	}
-	if (refactoring instanceof RenameRefactoring) {
-	    ((RenameRefactoring) refactoring).setNewName(panel.getNameValue());
+	    if (null != refactoring.getRefactoringSource().lookup(CssElementContext.class)) {
+		return new CssRenameRefactoringPlugin((RenameRefactoring)refactoring);
+	    }
 	}
 
-	return refactoring.fastCheckParameters();
-    }
-
-    public boolean hasParameters() {
-	return true;
-    }
-
-    public AbstractRefactoring getRefactoring() {
-	return this.refactoring;
-    }
-
-    public HelpCtx getHelpCtx() {
 	return null;
-    }
 
-    public boolean isRefactoringBypassRequired() {
-	return false; //TODO fix this
-    }
-
-    public void doRefactoringBypass() throws IOException {
-	//TODO implement
     }
 }
