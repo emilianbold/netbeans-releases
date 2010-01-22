@@ -211,7 +211,7 @@ public class BreakpointGroup {
                     case FILE:
                         if (bprops != null) {
                             FileObject[] files = bprops.getFiles();
-                            if (files != null) {
+                            if (files != null && files.length > 0) {
                                 if (files.length == 1) {
                                     propertyName = files[0].getPath();
                                     id = files[0];
@@ -233,7 +233,7 @@ public class BreakpointGroup {
                     case PROJECT:
                         if (bprops != null) {
                             Project[] prjs = bprops.getProjects();
-                            if (prjs != null) {
+                            if (prjs != null && prjs.length > 0) {
                                 if (prjs.length == 1) {
                                     propertyName = ProjectUtils.getInformation(prjs[0]).getDisplayName();
                                     id = prjs[0];
@@ -360,7 +360,7 @@ public class BreakpointGroup {
     }
 
     private static boolean contains(Set<Project> openProjects, Project[] projects) {
-        if (projects != null) {
+        if (projects != null && projects.length > 0) {
             boolean contains = false;
             for (Project p : projects) {
                 if (openProjects.contains(p)) {
