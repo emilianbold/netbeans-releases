@@ -212,4 +212,12 @@ public class FieldEncapsulationTest extends TestBase {
                             "}");
     }
 
+    public void testFieldGroup() throws Exception {
+        performAnalysisTest("test/Galois.java",
+                            "package test;\n" +
+                            "public class Galois {\n" +
+                            "    public int a, b, c;\n" +
+                            "}",
+                            "2:15-2:16:verifier:Public Field");
+    }
 }

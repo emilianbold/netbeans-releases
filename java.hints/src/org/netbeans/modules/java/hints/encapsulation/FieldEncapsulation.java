@@ -47,6 +47,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -57,6 +58,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
@@ -124,6 +126,10 @@ public class FieldEncapsulation {
         final VariableTree vt = (VariableTree) tp.getLeaf();
         final ModifiersTree mt = vt.getModifiers();
         if (mt.getFlags().contains(Modifier.FINAL) || !hasRequiredVisibility(mt.getFlags(),visibility)) {
+            return null;
+        }
+        final Collection<? extends TreePath> fieldGroup = Utilities.resolveFieldGroup(ctx.getInfo(), tp);
+        if (fieldGroup.size() != 1 && fieldGroup.iterator().next().getLeaf() != tp.getLeaf()) {
             return null;
         }
         return ErrorDescriptionFactory.forName(ctx, tp, message,
