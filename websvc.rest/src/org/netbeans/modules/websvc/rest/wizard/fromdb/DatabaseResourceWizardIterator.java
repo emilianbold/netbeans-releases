@@ -137,17 +137,12 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
     }
 
+    @Override
     public Set instantiate() throws IOException {
         // create the pu first if needed
-        if (helper.getPersistenceUnit() != null) {
-            try {
-                ProviderUtil.addPersistenceUnit(helper.getPersistenceUnit(), Templates.getProject(wizard));
-            } catch (InvalidPersistenceXmlException ipx) {
-                // just log for debugging purposes, at this point the user has
-                // already been warned about an invalid persistence.xml
-                Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
-
-            }
+        if(helper.isCreatePU()) {
+            Project project = Templates.getProject(wizard);
+            org.netbeans.modules.j2ee.persistence.wizard.Util.addPersistenceUnitToProject(project,org.netbeans.modules.j2ee.persistence.wizard.Util.buildPersistenceUnitUsingData(project, helper.getTableSource().getName(), null, null));
         }
 
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, "TXT_EntityClassesGeneration");
@@ -159,6 +154,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
         final Runnable r = new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     aggregateHandle.start();
