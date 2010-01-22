@@ -56,10 +56,12 @@ import org.netbeans.modules.form.ViewConverter;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.ViewConverter.class)
 public class ViewConverterImpl implements ViewConverter {
 
+    @Override
     public boolean canVisualize(Class componentClass) {
         return isViewClass(componentClass);
     }
 
+    @Override
     public Convert convert(Object component, boolean root, boolean designRestrictions) {
         if (root && component != null && isViewClass(component.getClass())) {
             return new ConvertResult(
@@ -145,9 +147,11 @@ public class ViewConverterImpl implements ViewConverter {
             this.converted = converted;
             this.enclosed = enclosed;
         }
+        @Override
         public Object getConverted() {
             return converted;
         }
+        @Override
         public Object getEnclosed() {
             return enclosed;
         }

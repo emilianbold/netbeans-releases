@@ -104,6 +104,7 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
         classRadio.setSelected(true);
     }
 
+    @Override
     public void init(String key, boolean enable) {
         lastValue = null;
 
@@ -134,6 +135,7 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
         updateControls();
     }
 
+    @Override
     public void setValue(Object value, String stringValue, String cpResourceName) {
         if (!isEditingEnabled())
             return;
@@ -179,10 +181,12 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
         setValidValue(value != ResourceValue.IGNORED_VALUE);
     }
 
+    @Override
     public ResourceValue getResource() {
         return resourceValue;
     }
 
+    @Override
     public synchronized void addChangeListener(ChangeListener l) {
         if (listeners == null)
             listeners = new LinkedList<ChangeListener>();
@@ -191,11 +195,13 @@ class ResourcePanelImpl extends javax.swing.JPanel implements ResourcePanel {
         listeners.add(l);
     }
 
+    @Override
     public synchronized void removeChangeListener(ChangeListener l) {
         if (listeners != null)
             listeners.remove(l);
     }
 
+    @Override
     public JComponent getComponent() {
         return this;
     }

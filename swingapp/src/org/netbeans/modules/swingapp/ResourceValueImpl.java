@@ -91,6 +91,7 @@ final class ResourceValueImpl implements ResourceValue {
     }
 
     // ResourceValue implementation
+    @Override
     public String getKey() {
         return key;
     }
@@ -104,6 +105,7 @@ final class ResourceValueImpl implements ResourceValue {
     }
 
     // ResourceValue implementation
+    @Override
     public Object getValue() {
         return value;
     }
@@ -117,6 +119,7 @@ final class ResourceValueImpl implements ResourceValue {
     }
 
     // ResourceValue implementation
+    @Override
     public String getClassPathResourceName() {
         return classPathResourceName;
     }
@@ -158,6 +161,7 @@ final class ResourceValueImpl implements ResourceValue {
     }
 
     // ResourceValue implementation
+    @Override
     public String getJavaInitializationCode() {
         String pre = null;
         String resMapCode = ResourceUtils.getResourceMapCode(sourceFile);
@@ -201,21 +205,25 @@ final class ResourceValueImpl implements ResourceValue {
     }
 
     // FormDesignValue implementation
+    @Override
     public Object getDesignValue() {
         return value;
     }
 
     // FormDesignValue implementation
+    @Override
     public Object getDesignValue(Object target) {
         return null;
     }
 
     // FormDesignValue implementation
+    @Override
     public String getDescription() {
         return "<" + getKey() + ">"; // NOI18N
     }
 
     // FormDesignValue implementation
+    @Override
     public Object copy(FormProperty targetFormProperty) {
         // TBD...
         return getDesignValue();
