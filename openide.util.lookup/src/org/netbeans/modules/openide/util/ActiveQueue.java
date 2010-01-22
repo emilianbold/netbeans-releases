@@ -7,8 +7,6 @@ import java.util.logging.Logger;
 
 /**
  * Implementation of the active reference queue.
- *
- * NOTE: This class is duplicated in openide.util and openide.util.lookup to prevent implementation dependency.
  */
 public final class ActiveQueue extends ReferenceQueue<Object> implements Runnable {
 
