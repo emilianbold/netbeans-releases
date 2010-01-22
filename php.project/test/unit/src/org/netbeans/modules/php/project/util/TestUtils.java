@@ -66,7 +66,7 @@ public final class TestUtils {
 
         @Override
         public File locate(String name, String codeNameBase, boolean localized) {
-            if (name.equals("NetBeansSuite.php")) {
+            if (name.equals("phpunit/NetBeansSuite.php")) {
                 try {
                     // create dummy file and return it
                     File tmpFile = File.createTempFile("nb-test-file", null);
