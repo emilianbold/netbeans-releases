@@ -278,23 +278,7 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
 
         // create the pu first if needed
         if(helper.isCreatePU()) {
-            PersistenceUnit persistenceUnit = Util.buildPersistenceUnitUsingData(project, helper.getTableSource().getName(), null, null);
-             String providerClass = persistenceUnit.getProvider();
-            if(providerClass != null){
-                Provider selectedProvider=ProviderUtil.getProvider(providerClass, project);
-                Library lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
-                if (lib != null && !Util.isDefaultProvider(project, selectedProvider)) {
-                    Util.addLibraryToProject(project, lib);
-                }
-           }
-
-            try {
-                ProviderUtil.addPersistenceUnit(persistenceUnit, Templates.getProject(wiz));
-            } catch (InvalidPersistenceXmlException ipx) {
-                // just log for debugging purposes, at this point the user has
-                // already been warned about an invalid persistence.xml
-                Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
-            }
+            Util.addPersistenceUnitToProject(project, Util.buildPersistenceUnitUsingData(project, helper.getTableSource().getName(), null, null));
        }
         
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "TXT_EjbGeneration" : "TXT_EntityClassesGeneration");

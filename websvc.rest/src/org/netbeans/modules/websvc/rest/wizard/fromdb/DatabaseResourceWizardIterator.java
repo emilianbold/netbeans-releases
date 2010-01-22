@@ -137,29 +137,13 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
     }
 
+    @Override
     public Set instantiate() throws IOException {
-        // create the pu first if needed
         // create the pu first if needed
         if(helper.isCreatePU()) {
             Project project = Templates.getProject(wizard);
-            org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit persistenceUnit = org.netbeans.modules.j2ee.persistence.wizard.Util.buildPersistenceUnitUsingData(project, helper.getTableSource().getName(), null, null);
-             String providerClass = persistenceUnit.getProvider();
-            if(providerClass != null){
-                org.netbeans.modules.j2ee.persistence.provider.Provider selectedProvider=org.netbeans.modules.j2ee.persistence.provider.ProviderUtil.getProvider(providerClass, project);
-//                org.netbeans.api.project.libraries.Library lib = org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport.getLibrary(selectedProvider);
-//                if (lib != null && !org.netbeans.modules.j2ee.persistence.wizard.Util.isDefaultProvider(project, selectedProvider)) {
-//                    org.netbeans.modules.j2ee.persistence.wizard.Util.addLibraryToProject(project, lib);
-//                }
-           }
-
-            try {
-                org.netbeans.modules.j2ee.persistence.provider.ProviderUtil.addPersistenceUnit(persistenceUnit, project);
-            } catch (InvalidPersistenceXmlException ipx) {
-                // just log for debugging purposes, at this point the user has
-                // already been warned about an invalid persistence.xml
-                Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
-            }
-       }
+            org.netbeans.modules.j2ee.persistence.wizard.Util.addPersistenceUnitToProject(project,org.netbeans.modules.j2ee.persistence.wizard.Util.buildPersistenceUnitUsingData(project, helper.getTableSource().getName(), null, null));
+        }
 
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, "TXT_EntityClassesGeneration");
         final ProgressContributor progressContributor = AggregateProgressFactory.createProgressContributor(title);
@@ -170,6 +154,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
         final Runnable r = new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     aggregateHandle.start();

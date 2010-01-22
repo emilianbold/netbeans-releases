@@ -78,6 +78,7 @@ import org.netbeans.modules.j2ee.persistence.spi.moduleinfo.JPAModuleInfo;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.wizard.entity.WrapperPanel;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPWizard;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel;
@@ -85,6 +86,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPa
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanelJdbc;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -476,6 +478,30 @@ public class Util {
         pud.save();
         return true;
     }
+
+    /**
+     * add pu to the project, add persistence libraries if appropriate and known
+     * @param project
+     * @param pu
+     */
+    public static void addPersistenceUnitToProject(Project project, PersistenceUnit persistenceUnit){
+        String providerClass = persistenceUnit.getProvider();
+        if(providerClass != null){
+            Provider selectedProvider=ProviderUtil.getProvider(providerClass, project);
+            Library lib = PersistenceLibrarySupport.getLibrary(selectedProvider);
+            if (lib != null && !Util.isDefaultProvider(project, selectedProvider)) {
+                Util.addLibraryToProject(project, lib);
+            }
+       }
+
+        try {
+            ProviderUtil.addPersistenceUnit(persistenceUnit, project);
+        } catch (InvalidPersistenceXmlException ipx) {
+            // just log for debugging purposes, at this point the user has
+            // already been warned about an invalid persistence.xml
+            Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
+        }
+   }
 
     /**
      * Creates a persistence unit with the default table generation strategy using the PU wizard and adds the created
