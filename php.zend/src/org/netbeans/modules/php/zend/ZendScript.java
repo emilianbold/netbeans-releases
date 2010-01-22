@@ -66,6 +66,8 @@ public class ZendScript extends PhpProgram {
 
     public static final String OPTIONS_SUB_PATH = "Zend"; // NOI18N
 
+    public static final String ENV_INCLUDE_PATH_PREPEND = "ZEND_TOOL_INCLUDE_PATH_PREPEND"; // NOI18N
+
     public static final String CMD_INIT_PROJECT = "create"; // NOI18N
     public static final String[] CMD_INIT_PROJECT_ARGS = new String[] {"project", "."}; // NOI18N
     public static final String[] CMD_INIT_PROJECT_ARGS_TITLE = new String[] {"project"}; // NOI18N
