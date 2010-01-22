@@ -10,8 +10,8 @@ OUTPUT_DIR="$DIST/installers"
 export OUTPUT_DIR
 
 #disable Mac build until we find a new system with Java6
-NATIVE_MAC_MACHINE=
-MAC_PATH=
+#NATIVE_MAC_MACHINE=
+#MAC_PATH=
 
 if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer $MAC_PATH/reglib/src
