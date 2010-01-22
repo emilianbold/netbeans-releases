@@ -91,17 +91,4 @@ public class IllegalInstanceOfTest extends TreeRuleTestBase {
         return new IllegalInstanceOf().run(info, path);
     }
 
-    @Override
-    protected FileObject[] extraClassPath() {
-        if (!Utilities.isMac()) {
-            FileObject api = URLMapper.findFileObject(Tree.class.getProtectionDomain().getCodeSource().getLocation());
-
-            assertNotNull(api);
-
-            return new FileObject[]{FileUtil.getArchiveRoot(api)};
-        } else {
-            return super.extraClassPath();
-        }
-    }
-
 }
