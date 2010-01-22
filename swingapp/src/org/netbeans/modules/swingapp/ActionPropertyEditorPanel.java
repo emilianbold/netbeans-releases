@@ -364,7 +364,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel implements Hel
         } else {
             sig.append(" void"); // NOI18N
         }
-        sig.append(" " + act.getMethodName()); // NOI18N
+        sig.append(" ").append(act.getMethodName()); // NOI18N
         sig.append("()"); // NOI18N
         
         actionsField.setText(act.getId());
