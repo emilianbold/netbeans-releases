@@ -2099,7 +2099,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return false;
     }
 
-    public final void onParseFinish(boolean libsAlreadyParsed) {
+    public final void onParseFinish() {
+        onParseFinishImpl(false);
+    }
+
+    private final void onParseFinishImpl(boolean libsAlreadyParsed) {
         synchronized (waitParseLock) {
             waitParseLock.notifyAll();
         }
@@ -2179,8 +2183,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
 
-    public final void onLibParseFinish() {
-        onParseFinish(true);
+    /*package*/final void onLibParseFinish() {
+        onParseFinishImpl(true);
     }
 
     /**

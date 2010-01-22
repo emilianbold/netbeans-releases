@@ -798,7 +798,7 @@ public final class ParserQueue {
     }
 
     private void handleLastProjectFile(ProjectBase project, ProjectData data) {
-        project.onParseFinish(false);
+        project.onParseFinish();
         boolean last = false;
         synchronized (lock) {
             data.pendingActivity--;
