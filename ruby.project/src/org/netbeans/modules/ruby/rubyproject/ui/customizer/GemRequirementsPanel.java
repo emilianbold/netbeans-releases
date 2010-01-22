@@ -40,6 +40,7 @@
 package org.netbeans.modules.ruby.rubyproject.ui.customizer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
@@ -91,8 +92,7 @@ public class GemRequirementsPanel extends javax.swing.JPanel {
     private void enableButtons(boolean enabled) {
         addButton.setEnabled(enabled);
         removeButton.setEnabled(enabled);
-
-        editButton.setVisible(false);
+        editButton.setVisible(enabled);
     }
 
     private DefaultTableModel createTableModel() {
@@ -205,6 +205,11 @@ public class GemRequirementsPanel extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.editButton.text")); // NOI18N
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(gemManagerButton, org.openide.util.NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementsPanel.gemManagerButton.text")); // NOI18N
         gemManagerButton.addActionListener(new java.awt.event.ActionListener() {
@@ -321,6 +326,42 @@ public class GemRequirementsPanel extends javax.swing.JPanel {
     private void gemManagerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gemManagerButtonActionPerformed
         GemAction.showGemManager(project.getPlatform(), false);
     }//GEN-LAST:event_gemManagerButtonActionPerformed
+
+    private String[] getSelection() {
+        JTable table = getSelectedTable();
+        int index = table.getSelectedRow();
+        if (index == -1) {
+            return null;
+        }
+        String[] result = new String[3];
+        result[0] = (String) table.getValueAt(index, 0);
+        result[1] = (String) table.getValueAt(index, 1);
+        result[2] = (String) table.getValueAt(index, 2);
+        return result;
+
+    }
+
+    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+        String[] selected = getSelection();
+        if (selected == null) {
+            return;
+        }
+        GemRequirementDetailsPanel panel = new GemRequirementDetailsPanel(getGemManager(), selected[0], selected[1], selected[2]);
+        DialogDescriptor dd = new DialogDescriptor(panel, 
+                NbBundle.getMessage(GemRequirementsPanel.class, "GemRequirementDetailsPanel.title",
+                selected[0]));
+        
+        dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+        dd.setModal(true);
+        dd.setHelpCtx(new HelpCtx(GemRequirementsPanel.class));
+        Object result = DialogDisplayer.getDefault().notify(dd);
+        if (result.equals(NotifyDescriptor.OK_OPTION)) {
+            GemRequirement req = panel.getGemRequirement();
+            getSelectedRequiredGems().removeRequirement(req.getName());
+            getSelectedRequiredGems().addRequirements(Collections.singleton(req));
+            getSelectedTable().setModel(createTableModel());
+        }
+    }//GEN-LAST:event_editButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
