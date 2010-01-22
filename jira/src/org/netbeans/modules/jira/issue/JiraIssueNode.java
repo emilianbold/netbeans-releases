@@ -90,6 +90,7 @@ public class JiraIssueNode extends IssueNode {
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_ID_Title"), // NOI18N
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_ID_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             return getNbJiraIssue().getFieldValue(IssueField.KEY);
         }
@@ -129,6 +130,7 @@ public class JiraIssueNode extends IssueNode {
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Type_Title"), // NOI18N
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Type_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             IssueType type = getNbJiraIssue().getType();
             return type != null ? type.getName() : "";                          // NOI18N
@@ -153,6 +155,7 @@ public class JiraIssueNode extends IssueNode {
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Priority_Title"), // NOI18N
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Priority_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             Priority priority = getPriority();
             return priority != null ? priority.getName() : "";                  // NOI18N
@@ -181,6 +184,7 @@ public class JiraIssueNode extends IssueNode {
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Status_Title"), // NOI18N
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Status_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             JiraStatus status = getNbJiraIssue().getStatus();
             return status != null ? status.getName() : "";                      // NOI18N
@@ -201,6 +205,7 @@ public class JiraIssueNode extends IssueNode {
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Resolution_Title"), // NOI18N
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_ID_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             Resolution resolution = getNbJiraIssue().getResolution();
             return resolution != null ? resolution.getName() : "";              // NOI18N
@@ -227,6 +232,7 @@ public class JiraIssueNode extends IssueNode {
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Summary_Title"), // NOI18N
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Summary_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             return getNbJiraIssue().getSummary();
         }
@@ -246,6 +252,7 @@ public class JiraIssueNode extends IssueNode {
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Assigned_Title"), // NOI18N
                   NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Assigned_Desc")); // NOI18N
         }
+        @Override
         public String getValue() {
             return getNbJiraIssue().getFieldValue(IssueField.ASSIGNEE);
         }
