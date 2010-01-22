@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
     <change id="LanguageRegistration-annotation">
         <api name="csl.api"/>
         <summary>Adding @LanguageRegistration annotation</summary>
-        <version major="1" minor="18"/>
+        <version major="1" minor="19"/>
         <date day="22" month="1" year="2010"/>
         <author login="vstejskal"/>
         <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible"/>

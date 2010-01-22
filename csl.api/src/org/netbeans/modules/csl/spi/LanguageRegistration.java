@@ -45,7 +45,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- *
+ * @since 1.19
  * @author vita
  */
 @Retention(RetentionPolicy.SOURCE)
