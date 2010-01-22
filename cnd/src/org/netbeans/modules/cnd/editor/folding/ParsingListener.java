@@ -39,13 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.parser;
+package org.netbeans.modules.cnd.editor.folding;
 
 import java.util.EventListener;
 
-import org.netbeans.modules.cnd.editor.parser.ParsingEvent;
 
-
-public interface ParsingListener extends EventListener {
+interface ParsingListener extends EventListener {
     public void objectParsed(ParsingEvent evt);
 }

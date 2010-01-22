@@ -39,24 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package  org.netbeans.modules.cnd.editor.parser;
+package  org.netbeans.modules.cnd.editor.parser.ctags;
 
-import java.awt.Image;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 
-public class SourceFileNode extends ViewNode {
-
-    private final Node delegate;
-
-    public SourceFileNode(DataObject dao, String name, int lineno,
-		char kind, String scope, int scopeCluster, int cluster) {
+public class OtherNode extends ViewNode {
+    public OtherNode(DataObject dao, String name, int lineno, char kind, String scope, int scopeCluster, int cluster) {
         super(name, dao, lineno, kind, scope, scopeCluster, cluster);
-        this.delegate = dao.getNodeDelegate();
-    }
-
-    @Override
-    public Image getIcon(int type) {
-        return delegate.getIcon(type);
+        setIconBaseWithExtension("org/netbeans/modules/cnd/editor/parser/ctags/other.gif"); // NOI18N
     }
 }

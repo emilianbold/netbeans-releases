@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.editor.parser;
+package org.netbeans.modules.cnd.editor.folding;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

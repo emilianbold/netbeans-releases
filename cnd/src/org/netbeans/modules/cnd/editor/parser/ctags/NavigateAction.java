@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package  org.netbeans.modules.cnd.editor.parser;
+package  org.netbeans.modules.cnd.editor.parser.ctags;
 
 
 import java.awt.BorderLayout;
@@ -70,6 +70,7 @@ public class NavigateAction extends CookieAction {
         return NbBundle.getMessage(NavigateAction.class, key);
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return null;
     }
@@ -77,6 +78,7 @@ public class NavigateAction extends CookieAction {
     /**
      * Return the display name for the action.
      */
+    @Override
     public String getName() {
         return getString("LAB_NavigateAction"); // NOI18N
     }
@@ -84,10 +86,12 @@ public class NavigateAction extends CookieAction {
     /**
      * The action accepts only one node with a java source on it.
      */
+    @Override
     protected int mode() {
         return MODE_EXACTLY_ONE;
     }
     
+    @Override
     protected Class[] cookieClasses() {
         return REQUIRED_COOKIES;
     }
@@ -95,10 +99,12 @@ public class NavigateAction extends CookieAction {
     /**
      * performAction will activate the associated choice navigation component.
      */
+    @Override
     protected void performAction(Node[] activatedNodes) {
         // PENDING: activate the presenter -- what presenter ??
     }
     
+    @Override
     public java.awt.Component getToolbarPresenter() {
         java.awt.Component c = new ToolbarPresenter();
         return c;
@@ -116,12 +122,15 @@ public class NavigateAction extends CookieAction {
             initComponents();
         }
         
+        @Override
         public void addNotify() {
-            if (manager == null)
+            if (manager == null) {
                 manager = ExplorerManager.find(this);
+            }
             super.addNotify();
         }
         
+        @Override
         public ExplorerManager getExplorerManager() {
             return manager;
         }
@@ -148,11 +157,13 @@ public class NavigateAction extends CookieAction {
             //}
         }
         
+        @Override
         public java.awt.Dimension getMinimumSize() {
             // minimum width to prevent excessive horizontal shrinking
             return new java.awt.Dimension(FIXED_WIDTH, getPreferredSize().height);
         }
         
+        @Override
         public java.awt.Dimension getMaximumSize() {
             // minimum width to prevent moving of the remaining contents of the toolbar
             return new java.awt.Dimension(FIXED_WIDTH, getPreferredSize().height);

@@ -39,8 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package  org.netbeans.modules.cnd.editor.parser;
+package  org.netbeans.modules.cnd.editor.parser.ctags;
 
-public interface CtagsTokenListener {
-    public void gotToken(CtagsTokenEvent ctagsTokenEvent);
+import org.openide.loaders.DataObject;
+
+public class FuncSubNode extends ViewNode {
+    public FuncSubNode(DataObject dao, String name, int lineno, char kind, String scope, int scopeCluster, int cluster) {
+        super(name, dao, lineno, kind, scope, scopeCluster, cluster);
+        setIconBaseWithExtension("org/netbeans/modules/cnd/editor/parser/ctags/funcMethod.gif"); // NOI18N
+    }
 }

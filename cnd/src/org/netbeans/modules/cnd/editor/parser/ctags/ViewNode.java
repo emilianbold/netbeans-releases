@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.editor.parser;
+package org.netbeans.modules.cnd.editor.parser.ctags;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.AbstractNode;

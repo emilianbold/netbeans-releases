@@ -39,13 +39,25 @@
  * made subject to such option by the copyright holder.
  */
 
-package  org.netbeans.modules.cnd.editor.parser;
+package org.netbeans.modules.cnd.editor.folding;
 
-import org.openide.loaders.DataObject;
+import javax.swing.JComponent;
+import javax.swing.text.JTextComponent;
+import org.netbeans.editor.CodeFoldingSideBar;
+import org.netbeans.editor.SideBarFactory;
 
-public class OtherNode extends ViewNode {
-    public OtherNode(DataObject dao, String name, int lineno, char kind, String scope, int scopeCluster, int cluster) {
-        super(name, dao, lineno, kind, scope, scopeCluster, cluster);
-        setIconBaseWithExtension("org/netbeans/modules/cnd/editor/parser/other.gif"); // NOI18N
+/**
+ *  C/C++ Code Folding Side Bar Factory, responsible for creating CodeFoldingSideBar
+ *  Plugged via layer.xml
+ */
+public class CppCodeFoldingSideBarFactory implements SideBarFactory{
+
+    public CppCodeFoldingSideBarFactory() {
     }
+
+    @Override
+    public JComponent createSideBar(JTextComponent target) {
+        return new CodeFoldingSideBar(target);
+    }
+
 }

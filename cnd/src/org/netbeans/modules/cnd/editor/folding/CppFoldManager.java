@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.editor;
+package org.netbeans.modules.cnd.editor.folding;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -62,9 +62,6 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.cnd.editor.parser.CppFile;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
-import org.netbeans.modules.cnd.editor.parser.CppMetaModel;
-import org.netbeans.modules.cnd.editor.parser.ParsingEvent;
-import org.netbeans.modules.cnd.editor.parser.ParsingListener;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
@@ -156,6 +153,7 @@ final class CppFoldManager extends CppFoldManagerBase
         //assert Thread.currentThread().getName().equals("CPP-Folds");
         Runnable hierarchyUpdate = new Runnable() {
 
+            @Override
             public void run() {
                 if (!getOperation().isReleased()) {
                     Document doc = getDocument();
@@ -311,6 +309,7 @@ final class CppFoldManager extends CppFoldManagerBase
     }
 
     // Implement Runnable
+    @Override
     public void run() {
         try {
             if ((new File(getFilename())).exists()) {
@@ -346,6 +345,7 @@ final class CppFoldManager extends CppFoldManagerBase
 
     // Implementing FoldManager...
     /** Initialize this manager */
+    @Override
     public void init(FoldOperation operation) {
         this.operation = operation;
         EditorKit kit = org.netbeans.editor.Utilities.getKit(operation.getHierarchy().getComponent());
@@ -363,6 +363,7 @@ final class CppFoldManager extends CppFoldManagerBase
         }
     }
 
+    @Override
     public void initFolds(FoldHierarchyTransaction transaction) {
         if (getFilename() != null && getFilename().length() > 0) {
             if (log.isLoggable(Level.FINE)){
@@ -384,6 +385,7 @@ final class CppFoldManager extends CppFoldManagerBase
         }
     }
 
+    @Override
     public void insertUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
         if (log.isLoggable(Level.FINE)){
             log.log(Level.FINE, "FoldManager.insertUpdate: " + evt.getDocument().toString());
@@ -391,11 +393,13 @@ final class CppFoldManager extends CppFoldManagerBase
         scheduleParsing(evt.getDocument());
     }
 
+    @Override
     public void removeUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
         log.log(Level.FINE, "FoldManager.removeUpdate");
         scheduleParsing(evt.getDocument());
     }
 
+    @Override
     public void changedUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
         log.log(Level.FINE, "FoldManager.changeUpdate");
 //        scheduleParsing(evt.getDocument());
@@ -411,23 +415,28 @@ final class CppFoldManager extends CppFoldManagerBase
         }
     }
 
+    @Override
     public void removeEmptyNotify(Fold emptyFold) {
         removeFoldNotify(emptyFold);
         removeFoldInfo(emptyFold);
     }
 
+    @Override
     public void removeDamagedNotify(Fold damagedFold) {
         removeFoldNotify(damagedFold);
         removeFoldInfo(damagedFold);
     }
 
+    @Override
     public void expandNotify(Fold expandedFold) {
     }
 
+    @Override
     public void release() {
     }
 
     // Implementing ParsingListener
+    @Override
     public void objectParsed(ParsingEvent evt) {
         DataObject dob = (DataObject) evt.getSource();
         String path = getFilename();
@@ -624,6 +633,7 @@ final class CppFoldManager extends CppFoldManagerBase
             CppMetaModel.getDefault().addParsingListener(this);
         }
 
+        @Override
         public void objectParsed(ParsingEvent evt) {
             ParsingListener listener = ref.get();
             if (listener != null) {
@@ -643,6 +653,7 @@ final class CppFoldManager extends CppFoldManagerBase
         public Factory() {
         }
 
+        @Override
         public FoldManager createFoldManager() {
             return new CppFoldManager();
         }

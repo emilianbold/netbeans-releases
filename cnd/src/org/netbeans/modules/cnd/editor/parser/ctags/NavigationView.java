@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.editor.parser;
+package org.netbeans.modules.cnd.editor.parser.ctags;
 
 import java.io.FileWriter;
 import java.io.BufferedWriter;
@@ -48,8 +48,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Collections;
 import java.util.ResourceBundle;
-import java.util.Vector;
-import java.util.Enumeration;
 import java.awt.event.KeyAdapter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -160,12 +158,14 @@ public class NavigationView extends ChoiceView {
         if (CppSettings.getDefault().getParsingDelay() > 0) {
             checkModifiedTimer = new Timer(CppSettings.getDefault().getParsingDelay(), new ActionListener() {
 
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                     checkModified();
                 }
             });
             checkCursorTimer = new Timer(250, new ActionListener() {
 
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                     checkCursor();
                 }
@@ -479,6 +479,7 @@ public class NavigationView extends ChoiceView {
 
     static class IndexLineNumberComparator implements Comparator<IndexLineNumber> {
 
+        @Override
         public int compare(IndexLineNumber iln1, IndexLineNumber iln2) {
             if (iln1.getLineNumber() < iln2.getLineNumber()) {
                 return -1;
@@ -492,6 +493,7 @@ public class NavigationView extends ChoiceView {
 
     static class NodesComparator implements Comparator<ViewNode> {
 
+        @Override
         public int compare(ViewNode iln1, ViewNode iln2) {
             return iln1.getSortName().compareTo(iln2.getSortName());
         }
@@ -531,20 +533,8 @@ public class NavigationView extends ChoiceView {
             }
             return cluster;
         }
-        private Vector scopeList = new Vector(0);
 
-        private boolean checkInScopeList(String scope) {
-            if (scope != null) {
-                for (Enumeration e = scopeList.elements(); e.hasMoreElements();) {
-                    String s = ((String) e.nextElement());
-                    if (s.equals(scope)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
+        @Override
         public void gotToken(CtagsTokenEvent ctagsTokenEvent) {
             ViewNode node;
 
@@ -662,6 +652,7 @@ public class NavigationView extends ChoiceView {
      */
     private class SelectionManager extends KeyAdapter implements JComboBox.KeySelectionManager {
 
+        @Override
         public int selectionForKey(char key, ComboBoxModel comboBoxModel) {
             Node[] children = getComboboxChildren();
             boolean gotOne = false;

@@ -39,14 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.parser;
+package org.netbeans.modules.cnd.editor.folding;
 
-import java.util.EventListener;
 import java.util.EventObject;
 import org.openide.loaders.DataObject;
 
 
-public class ParsingEvent extends EventObject {
+final class ParsingEvent extends EventObject {
 
     ParsingEvent(DataObject dob) {
 	super(dob);

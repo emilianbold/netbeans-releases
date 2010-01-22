@@ -39,13 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package  org.netbeans.modules.cnd.editor.parser;
+package  org.netbeans.modules.cnd.editor.parser.ctags;
 
 import org.openide.loaders.DataObject;
 
-public class BlockDataNode extends ViewNode {
-    public BlockDataNode(DataObject dao, String name, int lineno, char kind, String scope, int scopeCluster, int cluster) {
+public class LabelNode extends ViewNode {
+    public LabelNode(DataObject dao, String name, int lineno, char kind, String scope, int scopeCluster, int cluster) {
         super(name, dao, lineno, kind, scope, scopeCluster, cluster);
-        setIconBaseWithExtension("org/netbeans/modules/cnd/editor/parser/blockdata.gif"); // NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/cnd/editor/parser/ctags/label.gif"); // NOI18N
     }
 }
