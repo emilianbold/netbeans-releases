@@ -41,111 +41,53 @@ package org.netbeans.core.netigso;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
-import org.apache.felix.framework.ModuleImpl;
-import org.apache.felix.framework.ModuleImpl.ModuleClassLoader;
 import org.netbeans.Module;
 import org.openide.modules.ModuleInfo;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleEvent;
-import org.osgi.framework.SynchronousBundleListener;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class NetigsoActivator
-implements BundleActivator, SynchronousBundleListener {
-    private Set<Module> all = new CopyOnWriteArraySet<Module>();
+final class NetigsoActivator extends HashMap<Bundle,ClassLoader> {
+    private static final Set<Module> all = new CopyOnWriteArraySet<Module>();
 
     public NetigsoActivator() {
     }
-    private BundleContext m_context = null;
 
-    public void start(BundleContext context) {
-        m_context = context;
-        context.addBundleListener(this);
-    }
-
-    public void stop(BundleContext context) {
-        context.removeBundleListener(this);
-        m_context = null;
-    }
-
-    public Bundle[] getBundles() {
-        if (m_context != null) {
-            return m_context.getBundles();
+    @Override
+    public ClassLoader get(Object o) {
+        if (o instanceof Bundle) {
+            String loc = ((Bundle) o).getLocation();
+            final String pref = "netigso://"; // NOI18N
+            if (loc != null && loc.startsWith(pref)) {
+                String cnb = loc.substring(pref.length());
+                for (ModuleInfo mi : all) {
+                    if (cnb.equals(mi.getCodeNameBase())) {
+                        return new DelegateLoader(mi);
+                    }
+                }
+            }
         }
         return null;
     }
 
-    public void bundleChanged(BundleEvent ev) {
-        String loc = ev.getBundle().getLocation();
-        NetigsoModule.LOG.log(Level.FINER, "bundleChanged {0}", ev);
-        final String pref = "netigso://"; // NOI18N
-        if (ev.getType() == BundleEvent.RESOLVED && loc != null && loc.startsWith(pref)) {
-            String cnb = loc.substring(pref.length());
-            for (ModuleInfo mi : all) {
-                if (cnb.equals(mi.getCodeNameBase())) {
-                join(ev.getBundle(), mi);
-                    return;
-                }
-            }
-            NetigsoModule.LOG.log(Level.WARNING, "No join for {0}", cnb);
-        }
-    }
-
-    void register(Module m) {
+    static void register(Module m) {
         NetigsoModule.LOG.log(Level.FINER, "register module {0}", m.getCodeNameBase());
         all.add(m);
     }
 
+    private static final class DelegateLoader extends ClassLoader {
 
-    /** Injects classloader of mi to Felix's bundle.
-     */
-    private void join(Bundle bundle, ModuleInfo mi) {
-        try {
-            Field modules = findField(bundle, "m_modules");
-            Object[] arr = (Object[])modules.get(bundle);
-            Field loader = null;
-            for (int i = 0; i < arr.length; i++) {
-                ModuleImpl impl = (ModuleImpl)arr[i];
-                if (loader == null) {
-                    loader = findField(impl, "m_classLoader");
-                }
-                loader.set(impl, new DelegateLoader(impl, mi));
-            }
-        } catch (Exception ex) {
-            throw new IllegalStateException(ex);
-        }
-    }
-    private static Field findField(Object obj, String name) throws Exception {
-        Exception first = null;
-        Class<?> c = obj.getClass();
-        while (c != null) {
-            try {
-                Field m = c.getDeclaredField(name);
-                m.setAccessible(true);
-                return m;
-            } catch (Exception e) {
-                first = e;
-            }
-            c = c.getSuperclass();
-        }
-        throw first;
-    }
-
-    private static final class DelegateLoader extends ModuleClassLoader {
         private final ModuleInfo mi;
-        public DelegateLoader(ModuleImpl impl, ModuleInfo mi) {
-            impl.super(null);
+
+        public DelegateLoader(ModuleInfo mi) {
             this.mi = mi;
         }
 
