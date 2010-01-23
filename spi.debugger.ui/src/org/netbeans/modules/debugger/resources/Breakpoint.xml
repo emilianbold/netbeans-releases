@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
     glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/Breakpoint.png'
     highlight='0xFC9D9F'
     type='line'
-    actions='BreakpointActions'
+    actions='BreakpointActionsWithToggleNew'
     severity='ok'
     priority='100'
     custom_sidebar_color='0xFF8FD5'
