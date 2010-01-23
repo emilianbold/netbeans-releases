@@ -491,11 +491,14 @@ No emulator found at ${emulator.executable}]]>
                         <xsl:comment>
                             <nb-jcServerInfo serverId="${{jcserverid}}" contactedPortProperty="javacard.device.contactedPort" toolsClassPathProperty="card.tools.jars"/>
                         </xsl:comment>
+                        <antcall target="run-script" inheritall="true" inheritrefs="true"/>
+                    </target>
+
+                    <target name="run-script" if="run.script">
                         <property name="script.target" value="${{basedir}}/${{run.script}}"/>
                         <available file="${{script.target}}" property="script.target.found"/>
                         <fail unless="script.target.found">No file found at ${script.target}</fail>
                         <echo><![CDATA[Invoking apdutool on ${script.target}]]></echo>
-
                         <java classname="${{javacard.apdutoolClass}}" dir="${{javacard.home}}/bin" classpath="${{javacard.toolClassPath}}" fork="true" failonerror="${{param_failonerror}}">
                             <arg value="${{javacard.device.apdutool.contactedProtocol}}"/>
                             <arg value="-p"/>
