@@ -142,7 +142,7 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME python "python*"
     rm -rf python*
 
-    pack_component $DIST_DIR/zip/moduleclusters $NAME nb6.0-etc "*"
+    pack_component $DIST_DIR/zip/moduleclusters $NAME nb-etc "*"
 }
 
 pack_all_components $DIST $BASENAME

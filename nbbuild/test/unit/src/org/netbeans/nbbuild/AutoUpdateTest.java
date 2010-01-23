@@ -110,18 +110,18 @@ public class AutoUpdateTest extends NbTestCase {
         );
 
         File xml = new File(
-            new File(new File(target, "platform11"), "update_tracking"),
+            new File(new File(target, "platform"), "update_tracking"),
             "org-netbeans-api-annotations-common.xml"
         );
         assertTrue("xml file created", xml.exists());
 
         File jar = new File(
-            new File(new File(target, "platform11"), "modules"),
+            new File(new File(target, "platform"), "modules"),
             "org-netbeans-api-annotations-common.jar"
         );
         assertTrue("jar file created", jar.exists());
 
-        File lastM = new File(new File(target, "platform11"), ".lastModified");
+        File lastM = new File(new File(target, "platform"), ".lastModified");
         assertTrue("Last modified file created", lastM.exists());
     }
 
@@ -279,20 +279,20 @@ public class AutoUpdateTest extends NbTestCase {
         File target = new File(getWorkDir(), "target");
         target.mkdirs();
         File m = new File(
-            new File(new File(target, "platform11"), "modules"),
+            new File(new File(target, "platform"), "modules"),
             "org-netbeans-api-annotations-common.jar"
         );
         m.getParentFile().mkdirs();
         m.createNewFile();
         File e = new File(
-            new File(new File(new File(target, "platform11"), "modules"), "ext"),
+            new File(new File(new File(target, "platform"), "modules"), "ext"),
             "extra.jar"
         );
         e.getParentFile().mkdirs();
         e.createNewFile();
 
         File x = new File(
-            new File(new File(target, "platform11"), "update_tracking"),
+            new File(new File(target, "platform"), "update_tracking"),
             "org-netbeans-api-annotations-common.xml"
         );
         x.getParentFile().mkdirs();
@@ -311,7 +311,7 @@ public class AutoUpdateTest extends NbTestCase {
         osx.write(txtx.getBytes());
         osx.close();
 
-        File lastM = new File(new File(target, "platform11"), ".lastModified");
+        File lastM = new File(new File(target, "platform"), ".lastModified");
         lastM.createNewFile();
 
         Thread.sleep(1000);
@@ -325,13 +325,13 @@ public class AutoUpdateTest extends NbTestCase {
         );
 
         File xml = new File(
-            new File(new File(new File(target, "platform11"), "config"), "Modules"),
+            new File(new File(new File(target, "platform"), "config"), "Modules"),
             "org-netbeans-api-annotations-common.xml"
         );
         assertTrue("xml file created", xml.exists());
 
         File jar = new File(
-            new File(new File(target, "platform11"), "modules"),
+            new File(new File(target, "platform"), "modules"),
             "org-netbeans-api-annotations-common.jar"
         );
         assertTrue("jar file created", jar.exists());
@@ -365,20 +365,20 @@ public class AutoUpdateTest extends NbTestCase {
         File target = new File(getWorkDir(), "target");
         target.mkdirs();
         File m = new File(
-            new File(new File(target, "platform11"), "modules"),
+            new File(new File(target, "platform"), "modules"),
             "org-netbeans-api-annotations-common.jar"
         );
         m.getParentFile().mkdirs();
         m.createNewFile();
         File e = new File(
-            new File(new File(new File(target, "platform11"), "modules"), "ext"),
+            new File(new File(new File(target, "platform"), "modules"), "ext"),
             "extra.jar"
         );
         e.getParentFile().mkdirs();
         e.createNewFile();
 
         File x = new File(
-            new File(new File(target, "platform11"), "update_tracking"),
+            new File(new File(target, "platform"), "update_tracking"),
             "org-netbeans-api-annotations-common.xml"
         );
         x.getParentFile().mkdirs();
@@ -397,7 +397,7 @@ public class AutoUpdateTest extends NbTestCase {
         osx.write(txtx.getBytes());
         osx.close();
 
-        File lastM = new File(new File(target, "platform11"), ".lastModified");
+        File lastM = new File(new File(target, "platform"), ".lastModified");
         lastM.createNewFile();
 
         Thread.sleep(1000);
@@ -412,13 +412,13 @@ public class AutoUpdateTest extends NbTestCase {
         );
 
         File xml = new File(
-            new File(new File(new File(target, "platform11"), "config"), "Modules"),
+            new File(new File(new File(target, "platform"), "config"), "Modules"),
             "org-netbeans-api-annotations-common.xml"
         );
         assertTrue("xml file created", xml.exists());
 
         File jar = new File(
-            new File(new File(target, "platform11"), "modules"),
+            new File(new File(target, "platform"), "modules"),
             "org-netbeans-api-annotations-common.jar"
         );
         assertTrue("jar file created", jar.exists());

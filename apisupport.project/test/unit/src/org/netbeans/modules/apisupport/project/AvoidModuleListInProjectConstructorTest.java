@@ -62,7 +62,7 @@ public class AvoidModuleListInProjectConstructorTest extends TestBase {
 
     @RandomlyFails  // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
     public void testNetBeansOrgModules() throws Exception {
-        assertEquals("no scans of netbeans.org initially", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/ide6/org-apache-tools-ant-module.jar")).size());
+        assertEquals("no scans of netbeans.org initially", 0, ModuleList.getKnownEntries(file("nbbuild/netbeans/ide/org-apache-tools-ant-module.jar")).size());
         FileObject fo = nbRoot().getFileObject("o.apache.tools.ant.module");
         Project p = ProjectManager.getDefault().findProject(fo);
         assertNotNull(p);

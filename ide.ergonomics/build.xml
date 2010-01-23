@@ -48,12 +48,12 @@
             dir="${netbeans.dest.dir}"
             includes="${ergonomic.clusters.includes}"
         >
-            <exclude name="harness*"/>
-            <exclude name="ide1*"/>
-            <exclude name="platform*"/>
-            <exclude name="ergonomics*"/>
-            <exclude name="extra*"/>
-            <exclude name="nb*.*"/>
+            <exclude name="harness"/>
+            <exclude name="ide"/>
+            <exclude name="platform"/>
+            <exclude name="ergonomics"/>
+            <exclude name="extra"/>
+            <exclude name="nb"/>
         </dirset>
     </target>
 

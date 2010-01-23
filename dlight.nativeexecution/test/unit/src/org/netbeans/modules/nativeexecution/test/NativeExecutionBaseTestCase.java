@@ -218,9 +218,9 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     }
 
     protected File getNetBeansPlatformDir() throws URISyntaxException {
-        File result = getIdeUtilJar(). // should be ${NBDIST}/platform10/lib/org-openide-util.jar
-                getParentFile().  // platform10/lib
-                getParentFile();  // platform10
+        File result = getIdeUtilJar(). // should be ${NBDIST}/platform/lib/org-openide-util.jar
+                getParentFile().  // platform/lib
+                getParentFile();  // platform
         return result;
     }
 

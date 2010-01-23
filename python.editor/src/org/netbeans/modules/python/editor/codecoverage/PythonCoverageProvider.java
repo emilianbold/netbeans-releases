@@ -696,7 +696,7 @@ public final class PythonCoverageProvider implements CoverageProvider {
 
         public List<ConvertedLine> convert(String line) {
             // What about Windows? Do \\ instead?
-            if (line.contains("/python1/coverage/coverage")) { // NOI18N
+            if (line.contains("/python/coverage/coverage")) { // NOI18N
                 lastWasCulled = true;
                 return Collections.emptyList();
             } else if (lastWasCulled) {
