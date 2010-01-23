@@ -204,9 +204,6 @@ made subject to such option by the copyright holder.
         <property name="build.javahelp.dir" location="build/javahelp"/>
         <property name="javahelp.base" value="${code.name.base.slashes}/docs"/>
         <property name="javahelp.search" value="JavaHelpSearch"/>
-        <path id="javacimpl">
-            <fileset dir="${harness.dir}/antlib" includes="*javac*.jar"/>
-        </path>
     </target>
 
     <target name="test-lib-init" depends="init">

@@ -106,14 +106,10 @@ if [ -z "$CACHE_DIR" ] ; then
     echo "NBI Cache : $CACHE_DIR"
 fi
 
-if [ -z "$ANT_OPTS" ] ; then
-    ANT_OPTS="-Xmx768m"
-fi
-
-export ANT_OPTS
 
 
-if [ -n "$JDK_HOME" ] && [ -z "$JAVA_HOME" ] ; then
+
+if [ -n "$JDK_HOME" ] ; then
 JAVA_HOME="$JDK_HOME"
 fi
 
@@ -127,6 +123,18 @@ JDK_HOME=`echo "$JDK_HOME"   | sed "s/\\\\\\/\//g"`
 
 export JAVA_HOME JDK_HOME
 
+
+if [ -z "$ANT_OPTS" ] ; then
+    ANT_OPTS="-Xmx768m"
+fi
+
+java6output=`"$JAVA_HOME/bin/java" -version 2>&1 | grep 1.6.0`
+
+if [ -n "$java6output" ] ; then
+    ANT_OPTS="$ANT_OPTS -Djavac.target=1.6 -Djavac.source=1.6"
+fi
+
+export ANT_OPTS
 
 if [ -z "$USE_JARSIGNER" ] ; then
     if [ -n "$JARSIGNER_KEYSTORE" ] ; then

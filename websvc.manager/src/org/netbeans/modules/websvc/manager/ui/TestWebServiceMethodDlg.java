@@ -121,7 +121,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         method = saasMethod.getJavaMethod();
         wsData = saasMethod.getSaas();
         port = saasMethod.getWsdlPort();
-        assert wsData.getWsdlData().getJaxWsDescriptor() != null;
+        //assert wsData.getWsdlData().getJaxWsDescriptor() != null;
 
         initComponents();
         myInitComponents();
@@ -185,8 +185,10 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
                 /**
                  * Delegate to the module's classloader since core/startup/NbInstaller
                  * overrides the JAX-WS 2.0 jars present in JDK 6
+                 *
+                 * The above it no longer true but I am not sure why, yet.
                  */
-                runtimeClassLoader = new URLClassLoader(urls, this.getClass().getClassLoader());
+                runtimeClassLoader = new URLClassLoader(urls); //this.getClass().getClassLoader());
             } catch (IOException mfu) {
                 ErrorManager.getDefault().notify(mfu);
                 ErrorManager.getDefault().log(this.getClass().getName() + ":IOException=" + mfu);

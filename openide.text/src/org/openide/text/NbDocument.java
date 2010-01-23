@@ -78,22 +78,30 @@ public final class NbDocument extends Object {
 
     /** Name of style attached to documents to mark a paragraph (line)
     * as a (debugger) breakpoint.
+    * @deprecated since 6.29. Use {@link Annotation} instead.
     */
+    @Deprecated
     public static final String BREAKPOINT_STYLE_NAME = "NbBreakpointStyle"; // NOI18N
 
     /** Name of style attached to documents to mark a paragraph (line)
     * as erroneous.
+    * @deprecated since 6.29. Use {@link Annotation} instead.
     */
+    @Deprecated
     public static final String ERROR_STYLE_NAME = "NbErrorStyle"; // NOI18N
 
     /** Name of style attached to documents to mark a paragraph (line)
     * as current (in a debugger).
+    * @deprecated since 6.29. Use {@link Annotation} instead.
     */
+    @Deprecated
     public static final String CURRENT_STYLE_NAME = "NbCurrentStyle"; // NOI18N
 
     /** Name of style attached to documents to unmark a paragraph (line)
     * as anything special.
+    * @deprecated since 6.29. Use {@link Annotation} instead.
     */
+    @Deprecated
     public static final String NORMAL_STYLE_NAME = "NbNormalStyle"; // NOI18N
     
     private NbDocument() {

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -58,15 +59,17 @@ import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
+import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
@@ -81,12 +84,36 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     protected static final Logger log = RemoteUtil.LOGGER;
 
+    public static enum Sync {
+        FTP("ftp"),
+        RFS("rfs"),
+        ZIP("scp");
+        public final String ID;
+        Sync(String id) {
+            this.ID = id;
+        }
+    }
+
+    public static enum Toolchain {
+        GNU("GNU"),
+        SUN("SunStudio");
+        public final String ID;
+        Toolchain(String id) {
+            this.ID = id;
+        }
+    }
+
     private final static String successLine = "BUILD SUCCESSFUL";
     private final static String failureLine = "BUILD FAILED";
     private final static String[] errorLines = new String[] {
             "Error copying project files",
             "CLEAN FAILED"
         };
+
+    static {
+        System.setProperty("jsch.connection.timeout", "30000");
+        System.setProperty("socket.connection.timeout", "30000");
+    }
 
     static {
         log.addHandler(new Handler() {
@@ -113,23 +140,35 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     // we need this for tests which should run NOT for all environments
     public RemoteTestBase(String testName) {
         super(testName);
+        cleanUserDir();
         setSysProps();
     }
 
     protected RemoteTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
+        cleanUserDir();
         setSysProps();
     }
 
+    protected void cleanUserDir()  {
+        File userDir = getUserDir();
+        if (userDir.exists()) {
+            if (!removeDirectoryContent(userDir)) {
+                assertTrue("Can not remove the content of " +  userDir.getAbsolutePath(), false);
+            }
+        }
+    }
+
+    @org.netbeans.api.annotations.common.SuppressWarnings("LG")
     private void setSysProps() {
         try {
-            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "cnd.remote.logger.level");
-            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "nativeexecution.support.logger.level");
-            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "cnd.remote.force.setup", "true");
-            addPropertyFromRcFile(RemoteDevelopmentTest.DEFAULT_SECTION, "socket.connection.timeout", "10000");
-            if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentTest.DEFAULT_SECTION, "logging.finest")) {
-                Logger.getLogger("cnd.remote.logger").setLevel(Level.ALL);
+            addPropertyFromRcFile(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "cnd.remote.logger.level");
+            addPropertyFromRcFile(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "nativeexecution.support.logger.level");
+            addPropertyFromRcFile(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "cnd.remote.force.setup", "true");
+            addPropertyFromRcFile(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "socket.connection.timeout", "10000");
+            if (NativeExecutionTestSupport.getBoolean(RemoteDevelopmentTestSuite.DEFAULT_SECTION, "logging.finest")) {
                 Logger.getLogger("nativeexecution.support.logger.level").setLevel(Level.FINEST);
+                Logger.getLogger("cnd.remote.logger").setLevel(Level.ALL);
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -140,12 +179,20 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.err.printf("\n###> setUp    %s\n", getClass().getName() + '.' + getName());
         super.setUp();
         final ExecutionEnvironment env = getTestExecutionEnvironment();
         if (env != null) {
             // the password should be stored in the initialization phase
             ConnectionManager.getInstance().connectTo(env);
         }
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        ConnectionManager.getInstance().disconnect(getTestExecutionEnvironment());
+        System.err.printf("\n###< tearDown %s\n", getClass().getName() + '.' + getName());
     }
 
     protected static void setupHost(ExecutionEnvironment execEnv) {
@@ -172,6 +219,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         assert iop instanceof CndTestIOProvider;
         ((CndTestIOProvider) iop).addListener(new CndTestIOProvider.Listener() {
 
+            @Override
             public void linePrinted(String line) {
                 if (line != null) {
                     if (line.startsWith(successLine)) {
@@ -218,19 +266,14 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
                 assertTrue("Timeout: could not build within " + timeout + " " + unit.toString().toLowerCase(), false);
             }
         }
+        Thread.sleep(500); // give building thread time to finish and to kill rfs_controller
         assertTrue("build failed: RC=" + build_rc.get(), build_rc.get() == 0);
     }
 
-    protected void removeRemoteHome() {
-        String cmd = "rm -rf ${HOME}/.netbeans/remote/*";
-        int rc = RemoteCommandSupport.run(getTestExecutionEnvironment(), cmd);
-        assertEquals("Failed to run " + cmd, 0, rc);
-    }
-
-    protected void removeRemoteHomeSubdir(String subdir) {
-        String cmd = "rm -rf ${HOME}/.netbeans/remote/" + subdir;
-        int rc = RemoteCommandSupport.run(getTestExecutionEnvironment(), cmd);
-        assertEquals("Failed to run " + cmd, 0, rc);
+    protected void clearRemoteSyncRoot() {
+        String dirToRemove = RemotePathMap.getRemoteSyncRoot(getTestExecutionEnvironment()) + "/*";
+        boolean isOk = ProcessUtils.execute(getTestExecutionEnvironment(), "rm", "-rf", dirToRemove).isOK();
+        assertTrue("Failed to remove " + dirToRemove, isOk);
     }
 
     protected void addPropertyFromRcFile(String section, String varName) throws IOException, FormatException {

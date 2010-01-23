@@ -67,7 +67,7 @@ public final class SftpConfiguration extends RemoteConfiguration {
         host = cfg.getValue(SftpConnectionProvider.HOST);
         port = Integer.parseInt(cfg.getValue(SftpConnectionProvider.PORT));
         userName = cfg.getValue(SftpConnectionProvider.USER);
-        password = cfg.getValue(SftpConnectionProvider.PASSWORD, true);
+        password = readPassword(cfg, SftpConnectionProvider.PASSWORD);
         knownHostsFile = cfg.getValue(SftpConnectionProvider.KNOWN_HOSTS_FILE);
         identityFile = cfg.getValue(SftpConnectionProvider.IDENTITY_FILE);
         initialDirectory = cfg.getValue(SftpConnectionProvider.INITIAL_DIRECTORY);
@@ -115,6 +115,21 @@ public final class SftpConfiguration extends RemoteConfiguration {
             path += directory;
         }
         return "sftp://" + host + path.replaceAll(PATH_SEPARATOR + "{2,}", PATH_SEPARATOR); // NOI18N
+    }
+
+    @Override
+    public boolean saveProperty(String key, String value) {
+        if (SftpConnectionProvider.PASSWORD.equals(key)) {
+            // value cannot be used (is scrambled)
+            savePassword(password, SftpConnectionProvider.get().getDisplayName());
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void notifyDeleted() {
+        deletePassword();
     }
 
     @Override

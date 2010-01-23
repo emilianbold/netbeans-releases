@@ -42,7 +42,7 @@ package org.netbeans.modules.bugtracking.spi;
 import java.io.File;
 
 /**
- *
+ * Entry point for VCS specific functionality accesed from the issuetracking modules
  * @author Tomas Stupka
  */
 public abstract class VCSSupport {

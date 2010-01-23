@@ -89,6 +89,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.basic.BasicTextFieldUI;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
@@ -152,14 +153,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     public IssuePanel() {
         initComponents();
-        createdField.setBackground(getBackground());
-        updatedField.setBackground(getBackground());
-        originalEstimateField.setBackground(getBackground());
-        remainingEstimateField.setBackground(getBackground());
-        timeSpentField.setBackground(getBackground());
-        resolutionField.setBackground(getBackground());
-        projectField.setBackground(getBackground());
-        statusField.setBackground(getBackground());
+        updateReadOnlyField(createdField);
+        updateReadOnlyField(updatedField);
+        updateReadOnlyField(originalEstimateField);
+        updateReadOnlyField(remainingEstimateField);
+        updateReadOnlyField(timeSpentField);
+        updateReadOnlyField(resolutionField);
+        updateReadOnlyField(projectField);
+        updateReadOnlyField(statusField);
         customFieldPanelLeft.setBackground(getBackground());
         customFieldPanelRight.setBackground(getBackground());
         parentHeaderPanel.setBackground(getBackground());
@@ -177,20 +178,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         attachHideStatusListener();
     }
 
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        if (issue != null) {
-            issue.opened();
+    private void updateReadOnlyField(JTextField field) {
+        if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
+            field.setUI(new BasicTextFieldUI());
         }
+        field.setBackground(getBackground());
     }
 
-    @Override
-    public void removeNotify() {
-        super.removeNotify();
-        if(issue != null) {
-            issue.closed();
-        }
+    NbJiraIssue getIssue() {
+        return issue;
     }
 
     void setIssue(NbJiraIssue issue) {
@@ -284,6 +280,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private void initAssigneeCombo() {
         assigneeCombo.setRenderer(new RepositoryUserRenderer());
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 final Collection<RepositoryUser> users = issue.getRepository().getUsers();
                 final DefaultComboBoxModel assignedModel = new DefaultComboBoxModel();
@@ -291,6 +288,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     assignedModel.addElement(user);
                 }
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         reloading = true;
                         try {
@@ -326,6 +324,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private void initCommentsPanel() {
         commentsPanel = new CommentsPanel();
         commentsPanel.setNewCommentHandler(new CommentsPanel.NewCommentHandler() {
+            @Override
             public void append(String text) {
                 addCommentArea.append(text);
                 addCommentArea.requestFocus();
@@ -407,14 +406,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void attachHideStatusListener() {
         assigneeField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 changedUpdate(e);
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 changedUpdate(e);
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 if (!reloading) {
                     assigneeStatusLabel.setVisible(false);
@@ -423,7 +425,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         });
     }
 
-    private void reloadForm(boolean force) {
+    void reloadForm(boolean force) {
         if (skipReload) {
             return;
         }
@@ -518,6 +520,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         boolean hasParent = (parentKey != null) && (parentKey.trim().length() > 0);
         if  (hasParent) {
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     Issue parentIssue = issue.getRepository().getIssueCache().getIssue(parentKey);
                     if (parentIssue == null) {
@@ -525,6 +528,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     }
                     final Issue parent = parentIssue;
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             parentHeaderPanel.setVisible(true);
                             parentHeaderPanel.removeAll();
@@ -533,6 +537,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             JLabel parentLabel = new JLabel();
                             parentLabel.setText(parent.getSummary());
                             LinkButton parentButton = new LinkButton(new AbstractAction() {
+                                @Override
                                 public void actionPerformed(ActionEvent e) {
                                     parent.open();
                                 }
@@ -596,7 +601,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             fixPrefSize(createdField);
             boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
             if ((reporterStatusLabel.getIcon() == null) && isKenaiRepository) {
-                KenaiUserUI ku = new KenaiUserUI(reporter);
+                String host = ((KenaiRepository) issue.getRepository()).getHost();
+                KenaiUserUI ku = new KenaiUserUI(reporter + "@" + host);
                 ku.setMessage(KenaiUtil.getChatLink(issue));
                 JLabel label = ku.createUserWidget();
                 label.setText(null);
@@ -624,7 +630,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             String assignee = issue.getFieldValue(NbJiraIssue.IssueField.ASSIGNEE);
             String selectedAssignee = (assigneeField.getParent() == null) ? assigneeCombo.getSelectedItem().toString() : assigneeField.getText();
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
-                KenaiUserUI ku = new KenaiUserUI(assignee);
+                String host = ((KenaiRepository) issue.getRepository()).getHost();
+                KenaiUserUI ku = new KenaiUserUI(assignee + "@" + host);
                 ku.setMessage(KenaiUtil.getChatLink(issue));
                 JLabel label = ku.createUserWidget();
                 label.setText(null);
@@ -708,9 +715,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     subTaskScrollPane = new JScrollPane(subTaskTable);
                 }
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         final SubtaskTableModel tableModel = new SubtaskTableModel(issue);
                         EventQueue.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 TableSorter sorter = new TableSorter(tableModel);
                                 subTaskTable.setModel(sorter);
@@ -970,6 +979,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadForm(force);
         } else {
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     reloadForm(force);
                 }
@@ -978,6 +988,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     PropertyChangeListener cacheListener = new PropertyChangeListener() {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource() != issue) {
                 return;
@@ -990,6 +1001,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void attachIssueListener(final NbJiraIssue issue) {
         issue.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getSource() != issue) {
                     return;
@@ -1101,6 +1113,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private void updateTasklistButton() {
         tasklistButton.setEnabled(false);
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 JiraIssueProvider provider = JiraIssueProvider.getInstance();
                 if (provider == null || issue.isNew()) { // do not enable button for new issues
@@ -1111,6 +1124,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     attachTasklistListener(provider);
                 }
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         String tasklistMessage = NbBundle.getMessage(IssuePanel.class,
                                 isInTasklist ? "IssuePanel.tasklistButton.remove" : "IssuePanel.tasklistButton.add"); // NOI18N
@@ -1127,9 +1141,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             // listens on events comming from the tasklist, like when an issue is removed, etc.
             // needed to correctly update tasklistButton label and status
             tasklistListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (JiraIssueProvider.PROPERTY_ISSUE_REMOVED.equals(evt.getPropertyName()) && issue.equals(evt.getOldValue())) {
                         Runnable inAWT = new Runnable() {
+                            @Override
                             public void run() {
                                 updateTasklistButton();
                             }
@@ -1152,11 +1168,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         handle.switchToIndeterminate();
         skipReload = true;
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     change.run();
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             skipReload = false;
                         }
@@ -1395,12 +1413,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         environmentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.environmentLabel.text")); // NOI18N
 
+        environmentArea.setLineWrap(true);
         environmentArea.setRows(5);
         environmentScrollPane.setViewportView(environmentArea);
 
         addCommentLabel.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentLabel.text")); // NOI18N
 
         addCommentScrollPane.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+        addCommentArea.setLineWrap(true);
         addCommentScrollPane.setViewportView(addCommentArea);
 
         submitButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text")); // NOI18N
@@ -1569,7 +1590,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             .add(separator)
             .add(dummyCommentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(475, Short.MAX_VALUE)
+                .addContainerGap(467, Short.MAX_VALUE)
                 .add(logWorkButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
@@ -1616,7 +1637,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             .add(dummyAttachmentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(dummySubtaskPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(originalEstimateFieldNew, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(originalEstimateHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(originalEstimateHint)
                             .add(customFieldPanelRight, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(dummyIssueLinksPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
@@ -1674,15 +1695,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addContainerGap())
         );
 
-        layout.linkSize(new java.awt.Component[] {issueTypeCombo, priorityCombo, projectCombo, resolutionCombo, statusCombo}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.linkSize(new java.awt.Component[] {affectsVersionScrollPane, componentScrollPane, fixVersionScrollPane}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        layout.linkSize(new java.awt.Component[] {cancelButton, submitButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.linkSize(new java.awt.Component[] {originalEstimateField, remainingEstimateField, timeSpentField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.linkSize(new java.awt.Component[] {assigneeField, dueField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        layout.linkSize(new java.awt.Component[] {issueTypeCombo, priorityCombo, projectCombo, resolutionCombo, statusCombo}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
+        layout.linkSize(new java.awt.Component[] {cancelButton, submitButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -1787,7 +1808,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .add(originalEstimateFieldNew, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(originalEstimateLabelNew))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(originalEstimateHint)
+                .add(originalEstimateHint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(submitButton)
@@ -1798,11 +1819,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .add(dummyCommentPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        layout.linkSize(new java.awt.Component[] {originalEstimateField, originalEstimatePanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {remainingEstimateField, remainingEstimatePanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         layout.linkSize(new java.awt.Component[] {timeSpentField, timeSpentPanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
-        layout.linkSize(new java.awt.Component[] {remainingEstimateField, remainingEstimatePanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
+        layout.linkSize(new java.awt.Component[] {originalEstimateField, originalEstimatePanel}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1818,21 +1839,21 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         handle.start();
         handle.switchToIndeterminate();
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
+
                 // The project meta-data may not be initialized.
                 // Their intialization must be performed outside event-dispatch thread
                 try {
-                    JiraConfiguration config =  issue.getRepository().getConfiguration();
+                    JiraConfiguration config = issue.getRepository().getConfiguration();
                     config.ensureProjectLoaded(project);
-                    if (project.getIssueTypes() == null) {
-                        // The cached project data had been created before we started
-                        // to use project specific issue types. Forcing reload.
-                        config.forceProjectReload(project);
-                    }
+                    config.ensureIssueTypes(project);
                 } finally {
                     handle.finish();
                 }
+
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run () {
                         boolean oldReloading = reloading;
                         reloading = wasReloading;
@@ -1900,6 +1921,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         handle.start();
         handle.switchToIndeterminate();
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 IssueCache cache = issue.getRepository().getIssueCache();
                 String parentKey = issue.getParentKey();
@@ -1969,6 +1991,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             issue.addComment(addCommentArea.getText());
         }
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 boolean ret = false;
                 boolean wasNew = issue.isNew();
@@ -1983,6 +2006,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     }
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             skipReload = false;
                         }
@@ -2026,6 +2050,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.startProgressMessage"); // NOI18N
         String message = MessageFormat.format(pattern, issue.getKey());
         submitChange(new Runnable() {
+            @Override
             public void run() {
                 issue.startProgress();
                 issue.submitAndRefresh();
@@ -2037,6 +2062,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.stopProgressMessage"); // NOI18N
         String message = MessageFormat.format(pattern, issue.getKey());
         submitChange(new Runnable() {
+            @Override
             public void run() {
                 issue.stopProgress();
                 issue.submitAndRefresh();
@@ -2053,6 +2079,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             final Resolution resolution = panel.getSelectedResolution();
             final String comment = panel.getComment();
             submitChange(new Runnable() {
+                @Override
                 public void run() {
                     issue.resolve(resolution, comment);
                     issue.submitAndRefresh();
@@ -2080,6 +2107,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             String message = MessageFormat.format(pattern, issue.getKey());
             final String comment = panel.getComment();
             submitChange(new Runnable() {
+                @Override
                 public void run() {
                     issue.close(newResolution, comment);
                     issue.submitAndRefresh();
@@ -2093,6 +2121,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reopenIssueMessage"); // NOI18N
         String message = MessageFormat.format(pattern, issue.getKey());
         submitChange(new Runnable() {
+            @Override
             public void run() {
                 issue.reopen(null);
                 issue.submitAndRefresh();
@@ -2106,6 +2135,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.logWorkMessage"); // NOI18N
             String message = MessageFormat.format(pattern, issue.getKey());
             submitChange(new Runnable() {
+                @Override
                 public void run() {
                     issue.addWorkLog(panel.getStartDate(), panel.getTimeSpent(), panel.getDescription());
                     int remainingEstimate = panel.getRemainingEstimate();
@@ -2249,18 +2279,22 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         return getMinimumSize(); // Issue 176085
     }
 
+    @Override
     public Dimension getPreferredScrollableViewportSize() {
         return getPreferredSize();
     }
 
+    @Override
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
         return getUnitIncrement();
     }
 
+    @Override
     public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
         return (orientation==SwingConstants.VERTICAL) ? visibleRect.height : visibleRect.width;
     }
 
+    @Override
     public boolean getScrollableTracksViewportWidth() {
         JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
         if (scrollPane!=null) {
@@ -2285,6 +2319,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         return true;
     }
 
+    @Override
     public boolean getScrollableTracksViewportHeight() {
         return false;
     }
@@ -2307,22 +2342,27 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             this.label = label;
         }
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             cancelHighlight(label);
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             cancelHighlight(label);
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             cancelHighlight(label);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             cancelHighlight(label);
         }
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting()) {
                 return;
@@ -2334,20 +2374,24 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     class RevalidatingListener implements DocumentListener, Runnable {
         private boolean ignoreUpdate;
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             changedUpdate(e);
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             changedUpdate(e);
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             if (ignoreUpdate) return;
             ignoreUpdate = true;
             EventQueue.invokeLater(this);
         }
 
+        @Override
         public void run() {
             revalidate();
             repaint();

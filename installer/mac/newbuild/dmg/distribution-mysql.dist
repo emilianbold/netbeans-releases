@@ -60,25 +60,13 @@ function checkSystemversion() {
 		my.result.message = system.localizedStringWithFormat('ERR_INVALID_VERSION_MSG');
 	} else {
 		try {
-			result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.5') == true;
+                    result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.6') == true;
 		} catch (e) {}
-
-		if(!result) {
-		    try {
-                        result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0') == true;
-		    } catch (e) {}
-		}
-		if(!result) {
-		    try {
-                        result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.6') == true;
-		    } catch (e) {}
-		}
 		if(!result) {
 		    try {
                         result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0') == true;
 		    } catch (e) {}
 		}
-		
 
 		if(!result) {
 			my.result.type = 'Fatal';
@@ -145,11 +133,11 @@ function checkChoiceUpgradeAction() {
     <choice id="mysqlstartup" title="mysqlstartup-title" description="mysqlstartup-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.mysqlstartup.selected &amp;&amp; choices.mysql.selected" enabled="choices.mysql.selected">
         <pkg-ref id="com.mysql.mysqlstartup"></pkg-ref>
     </choice>
-    <pkg-ref id="ident.pkg.glassfish" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISH@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.ruby" version="0.0.0.0.1" installKBytes="@SIZE_RUBY@" auth="Root" onConclusion="None">file:./Contents/Packages/ruby.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.glassfish" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISH@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish-@GLASSFISH_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.javaee" version="0.0.0.0.1" installKBytes="@SIZE_JAVAEE@" auth="Root" onConclusion="None">file:./Contents/Packages/javaee-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.ruby" version="0.0.0.0.1" installKBytes="@SIZE_RUBY@" auth="Root" onConclusion="None">file:./Contents/Packages/ruby-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="com.mysql.mysql" version="5.0.67.0.0" installKBytes="@SIZE_MYSQL@" auth="Root" onConclusion="None">file:./Contents/Packages/mysql.pkg</pkg-ref>
     <pkg-ref id="com.mysql.mysqlstartup" version="1.0.0.1.0" installKBytes="@SIZE_MYSQLSTARTUP@" auth="Root" onConclusion="None">file:./Contents/Packages/mysqlstartup.pkg</pkg-ref>
     

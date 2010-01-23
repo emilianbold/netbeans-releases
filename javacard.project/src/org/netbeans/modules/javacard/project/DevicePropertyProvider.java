@@ -54,11 +54,15 @@ final class DevicePropertyProvider extends PlatformPropertyProvider {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected PropertiesAdapter findAdapter() {
         PropertyProvider projectProps = antHelper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String deviceName = projectProps.getProperties().get(ProjectPropertyNames.PROJECT_PROP_ACTIVE_DEVICE);
         String platformName = projectProps.getProperties().get(ProjectPropertyNames.PROJECT_PROP_ACTIVE_PLATFORM);
         if (deviceName != null && platformName != null) {
+            //findDeviceForPlatform valid here - if it is not using standard
+            //properties files, it will simply be omitted from the project's
+            //resolver - no harm done
             DataObject dob = Utils.findDeviceForPlatform(platformName, deviceName);
             if (dob != null) {
                 PropertiesAdapter adap = dob.getLookup().lookup(PropertiesAdapter.class);

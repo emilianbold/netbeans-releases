@@ -41,6 +41,7 @@ package org.netbeans.modules.kenai.ui;
 
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.kenai.api.Kenai;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -55,7 +56,10 @@ public class SummaryWizardPanel implements WizardDescriptor.Panel, WizardDescrip
 
     private final ChangeSupport     changeSupport = new ChangeSupport(this);
 
-    public SummaryWizardPanel() {
+    private NewKenaiProjectWizardIterator iter;
+
+    public SummaryWizardPanel(NewKenaiProjectWizardIterator iter) {
+        this.iter=iter;
     }
 
     public Component getComponent() {
@@ -95,5 +99,9 @@ public class SummaryWizardPanel implements WizardDescriptor.Panel, WizardDescrip
 
     public boolean isFinishPanel() {
         return true;
+    }
+
+    public Kenai getKenai() {
+        return iter.getKenai();
     }
 }

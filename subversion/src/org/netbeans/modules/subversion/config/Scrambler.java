@@ -43,7 +43,6 @@
  *****************************************************************************/
 package org.netbeans.modules.subversion.config;
 
-import java.io.IOException;
 import org.netbeans.modules.proxy.Base64Encoder;
 
 /**
@@ -310,21 +309,6 @@ public class Scrambler {
         }
         return instance;
     }
-
-    /**
-     * Scramble text, turning it into a String of scrambled data
-     * @return a String of scrambled data
-     */
-    public String scramble(String text) {
-        StringBuffer buf = new StringBuffer("A"); //NOI18N
-
-        if (text != null) {
-            for (int i = 0; i < text.length(); ++i) {
-                buf.append(scramble(text.charAt(i)));
-            }
-        }        
-        return new String(encode(buf.toString().getBytes()));
-    }
     
     public String descramble(String scrambledText) {        
         StringBuffer buf = new StringBuffer(); 
@@ -345,9 +329,5 @@ public class Scrambler {
     
     private byte[] decode(String str) {        
             return Base64Encoder.decode(str);
-    }
-    
-    private byte[] encode(byte[] encode) {        
-        return Base64Encoder.encode(encode).getBytes();                   
     }
 }

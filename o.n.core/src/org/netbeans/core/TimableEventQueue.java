@@ -91,6 +91,7 @@ implements Runnable {
     private volatile long start;
     private volatile ActionListener stoppable;
     private volatile boolean isWaitCursor;
+    static volatile Thread eq;
 
     public TimableEventQueue() {
         TIMEOUT = RP.create(this);
@@ -120,6 +121,7 @@ implements Runnable {
 
     @Override
     protected void dispatchEvent(AWTEvent event) {
+        eq = Thread.currentThread();
         try {
             tick("dispatchEvent"); // NOI18N
             super.dispatchEvent(event);

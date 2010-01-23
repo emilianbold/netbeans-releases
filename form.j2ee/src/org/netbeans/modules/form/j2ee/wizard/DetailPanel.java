@@ -99,12 +99,15 @@ public class DetailPanel implements WizardDescriptor.Panel {
         availableList.setModel(new DefaultListModel());
         includeList.setModel(new DefaultListModel());
         ListDataListener listener = new ListDataListener() {
+            @Override
             public void intervalAdded(ListDataEvent e) {
                 contentsChanged(e);
             }
+            @Override
             public void intervalRemoved(ListDataEvent e) {
                 contentsChanged(e);
             }
+            @Override
             public void contentsChanged(ListDataEvent e) {
                 Object source = e.getSource();
                 if (source == availableList.getModel()) {
@@ -619,6 +622,7 @@ public class DetailPanel implements WizardDescriptor.Panel {
      *
      * @return component that represents this wizard panel.
      */
+    @Override
     public Component getComponent() {
         if (masterPanel == null) {
             initGUI();
@@ -631,11 +635,13 @@ public class DetailPanel implements WizardDescriptor.Panel {
      *
      * @return default help.
      */
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx("org.netbeans.modules.form.j2ee.wizard.DetailPanel"); // NOI18N
     }
 
     private boolean defaultPreselect = true;
+    @Override
     public void readSettings(Object settings) {
         WizardDescriptor wizard = (WizardDescriptor) settings;
         wizardDesc = wizard;
@@ -682,6 +688,7 @@ public class DetailPanel implements WizardDescriptor.Panel {
      *
      * @param settings wizard descriptor to store the settings in.
      */
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor wizard = (WizardDescriptor) settings;
         ForeignKey key = getForeignKey();
@@ -699,6 +706,7 @@ public class DetailPanel implements WizardDescriptor.Panel {
      * @return <code>true</code> if we can proceed to the next
      * panel, returns <code>false</code> otherwise.
      */
+    @Override
     public boolean isValid() {
         return valid;
     }
@@ -719,6 +727,7 @@ public class DetailPanel implements WizardDescriptor.Panel {
      *
      * @param listener listener to add.
      */
+    @Override
     public void addChangeListener(ChangeListener listener) {
         if (listenerList == null) {
             listenerList = new EventListenerList();
@@ -731,6 +740,7 @@ public class DetailPanel implements WizardDescriptor.Panel {
      *
      * @param listener listener to remove.
      */
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         if (listenerList != null) {
             listenerList.remove(ChangeListener.class, listener);

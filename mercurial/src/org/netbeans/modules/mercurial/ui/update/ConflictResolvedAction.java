@@ -42,8 +42,6 @@
 package org.netbeans.modules.mercurial.ui.update;
 
 import java.io.File;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.HgException;
@@ -56,6 +54,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import  org.openide.util.NbBundle;
 
@@ -66,14 +65,20 @@ import  org.openide.util.NbBundle;
  */
 public class ConflictResolvedAction extends ContextAction {
 
-    private final VCSContext context;
- 
-    public ConflictResolvedAction(String name, VCSContext context) {        
-        this.context =  context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
+        return cache.containsFileOfStatus(context, FileInformation.STATUS_VERSIONED_CONFLICT, false);
     }
 
-    public void performAction(ActionEvent e) {
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_MarkResolved";                             //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         resolved(context);
     }
 
@@ -86,15 +91,6 @@ public class ConflictResolvedAction extends ContextAction {
         conflictResolved(root, files);
 
         return;
-    }
-
-    public boolean isEnabled() {
-        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();        
-        // XXX containsFileOfStatus would be better (do not test exclusions from commit)
-        if(cache.listFiles(context, FileInformation.STATUS_VERSIONED_CONFLICT).length != 0)
-            return true;
-
-        return false;
     }
 
     public static void conflictResolved(File repository, final File[] files) {
@@ -129,7 +125,7 @@ public class ConflictResolvedAction extends ContextAction {
         HgCommand.deleteConflictFile(file.getAbsolutePath());
         Mercurial.LOG.log(Level.FINE, "ConflictResolvedAction.perform(): DELETE CONFLICT File: {0}", // NOI18N
                 new Object[] {file.getAbsolutePath() + HgCommand.HG_STR_CONFLICT_EXT} );
-        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        cache.refresh(file);
     }
     
     public static void resolved(final File file) {

@@ -146,6 +146,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
         List<String> hiddenColumns = accessor.getHiddenColumnNames(configuration);
         List<Property<?>> result = new ArrayList<Property<?>>();
         List<Column> columns = new ArrayList<Column>();
+        List<String> columnProperties = new ArrayList<String>();
         for (String columnName : configuration.getMetadata().getColumnNames()) {
             if (!nodeColumnName.equals(columnName) && !nodeRowColumnID.equals(columnName) && !hiddenColumns.contains(columnName)) {
                 final Column c = configuration.getMetadata().getColumnByName(columnName);
@@ -162,10 +163,13 @@ final class AdvancedTableViewVisualizer extends JPanel implements
                     }
                 };
                 result.add(property);
+                columnProperties.add(c.getColumnName());
+                columnProperties.add(c.getColumnUName());
             }
         }
         outlineView.getOutline().setDefaultRenderer(Node.Property.class, new FunctionsListSheetCell.OutlineSheetCell(outlineView.getOutline(), columns));
-        outlineView.setProperties(result.toArray(new Property<?>[0]));
+        //outlineView.setProperties(result.toArray(new Property<?>[0]));
+        outlineView.setPropertyColumns(columnProperties.toArray(new String[0]));
         outlineView.setPopupAllowed(false);
         outlineView.setDragSource(false);
         outlineView.setDropTarget(false);
@@ -216,7 +220,7 @@ final class AdvancedTableViewVisualizer extends JPanel implements
 //            });
         }
         outline.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        outlineView.setProperties(result.toArray(new Property[0]));
+//        outlineView.setProperties(result.toArray(new Property[0]));
         VisualizerTopComponentTopComponent.findInstance().addComponentListener(this);
 
         KeyStroke returnKey = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true);

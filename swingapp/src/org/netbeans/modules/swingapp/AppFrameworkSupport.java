@@ -305,8 +305,10 @@ class AppFrameworkSupport {
         JavaSource js = JavaSource.forFileObject(fo);
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
@@ -437,8 +439,10 @@ class AppFrameworkSupport {
         JavaSource js = JavaSource.forFileObject(fo);
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     for (Tree t: controller.getCompilationUnit().getTypeDecls()) {

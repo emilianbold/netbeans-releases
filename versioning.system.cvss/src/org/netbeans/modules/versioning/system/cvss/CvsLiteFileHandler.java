@@ -47,7 +47,6 @@ import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
-import org.openide.util.Utilities;
 
 import java.io.File;
 import java.io.IOException;
@@ -127,21 +126,7 @@ class CvsLiteFileHandler extends DefaultFileHandler implements FileReadOnlyHandl
     }
 
     public void setFileReadOnly(File file, boolean readOnly) throws IOException {
-        String [] command = new String[3];
-        // TODO: update for JDK 6
-        if (Utilities.isWindows()) {
-            command[0] = "attrib";
-            command[1] = readOnly ? "+R" : "-R";
-        } else {
-            command[0] = "chmod";
-            command[1] = readOnly ? "u-w" : "u+w";
-        }
-        command[2] = file.getAbsolutePath();
-        try {
-            Runtime.getRuntime().exec(command);
-        } catch (Exception e) {
-            // probably does not work, ignore
-        }
+        file.setWritable(readOnly);
     }
         
     private static class LockedOutputStream extends OutputStream {

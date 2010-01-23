@@ -55,6 +55,7 @@ public final class KenaiNotification {
     private URI uri;
     private String author;
     private String service;
+    private String feature;
 
     private List<Modification> modifications;
 
@@ -67,15 +68,17 @@ public final class KenaiNotification {
      * @param uri uri of change
      * @param author author of change
      * @param service service name
+     * @param featureName feature name
      * @param modifications modifications in this change
      */
-    public KenaiNotification(Date stamp, Type type, URI uri, String author, String service, List<Modification> modifications) {
+    public KenaiNotification(Date stamp, Type type, URI uri, String author, String service,  String featureName, List<Modification> modifications) {
         this.stamp = stamp;
         this.type = type;
         this.uri = uri;
         this.author = author;
         this.service = service;
         this.modifications = Collections.unmodifiableList(modifications);
+        this.feature = featureName;
     }
 
     /**
@@ -124,6 +127,10 @@ public final class KenaiNotification {
      */
     public String getServiceName() {
         return service;
+    }
+
+    public String getFeatureName() {
+        return feature;
     }
 
     public static final class Modification {

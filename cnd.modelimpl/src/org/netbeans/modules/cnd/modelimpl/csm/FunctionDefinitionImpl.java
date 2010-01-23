@@ -96,7 +96,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
     public CsmFunction getDeclaration(Resolver parent) {
         CsmFunction declaration = _getDeclaration();
-        if (declaration == null || isFakeFunction(declaration)) {
+        if (declaration == null || FunctionImplEx.isFakeFunction(declaration)) {
             int newCount = FileImpl.getParseCount();
             if (newCount == parseCount) {
                 return null;
@@ -188,7 +188,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
                 CsmFunction decl = (CsmFunction) o;
                 if (decl.getName().equals(name)) {
                     out = decl;
-                    if (!isFakeFunction(decl)) {
+                    if (!FunctionImplEx.isFakeFunction(decl)) {
                         break;
                     }
                 }
@@ -245,9 +245,5 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
         // read cached declaration
         this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-    }
-
-    private static boolean isFakeFunction(CsmFunction declaration) {
-        return declaration instanceof FunctionImplEx;
     }
 }

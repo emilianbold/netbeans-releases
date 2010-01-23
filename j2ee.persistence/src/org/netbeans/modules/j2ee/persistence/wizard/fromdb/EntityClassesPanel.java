@@ -48,7 +48,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -62,13 +61,10 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
-import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
-import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
-import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -98,10 +94,12 @@ public class EntityClassesPanel extends javax.swing.JPanel {
     private String tableSourceName; //either Datasource or a connection
 
     private SelectedTables selectedTables;
+    private final boolean puRequired;
 
-    private PersistenceUnit persistenceUnit;
 
-    public EntityClassesPanel() {
+    private EntityClassesPanel(boolean puRequired) {
+        this.puRequired = puRequired;
+
         initComponents();
 
         classNamesTable.getParent().setBackground(classNamesTable.getBackground());
@@ -111,14 +109,17 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         Document packageComboBoxDocument = packageComboBoxEditor.getDocument();
         packageComboBoxDocument.addDocumentListener(new DocumentListener() {
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 packageChanged();
             }
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 packageChanged();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 packageChanged();
             }
@@ -173,7 +174,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             Mnemonics.setLocalizedText(specifyNamesLabel, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "LBL_SpecifyBeansLocation"));
         }
 
-        updatePersistenceUnitButton();
+        updatePersistenceUnitButton(true);
     }
 
     public void update(TableClosure tableClosure, String tableSourceName) {
@@ -181,6 +182,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             if (selectedTables == null) {
                 selectedTables = new SelectedTables(persistenceGen, tableClosure, getLocationValue(), getPackageName());
                 selectedTables.addChangeListener(new ChangeListener() {
+                    @Override
                     public void stateChanged(ChangeEvent event) {
                         changeSupport.fireChange();
                     }
@@ -217,8 +219,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         return generateFinderMethodsCheckBox.isSelected();
     }
 
-    public PersistenceUnit getPersistenceUnit() {
-        return persistenceUnit;
+    public boolean getCreatePersistenceUnit() {
+        return createPUCheckbox.isVisible() && createPUCheckbox.isSelected();
     }
 
     private void locationChanged() {
@@ -244,22 +246,26 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         }
     }
 
-    private void updatePersistenceUnitButton() {
+    private void updatePersistenceUnitButton(boolean initial) {
         String warning = " "; // NOI18N
         try{
 
             boolean showWarning = !cmp
-                    && !ProviderUtil.persistenceExists(project)
-                    && getPersistenceUnit() == null;
+                    && !ProviderUtil.persistenceExists(project);
 
-            createPUButton.setVisible(showWarning);
+            if(initial){
+                createPUCheckbox.setVisible(showWarning);
+                createPUCheckbox.setSelected(showWarning);
+                createPUCheckbox.setEnabled(!puRequired);
+            }
 
-            if (showWarning) {
+
+            if (showWarning && !createPUCheckbox.isSelected()) {
                 warning = NbBundle.getMessage(EntityClassesPanel.class, "ERR_NoPersistenceUnit");
             }
 
         } catch (InvalidPersistenceXmlException ipx){
-            createPUButton.setVisible(false);
+            createPUCheckbox.setVisible(false);
             warning = NbBundle.getMessage(EntityClassesPanel.class, "ERR_InvalidPersistenceUnit", ipx.getPath());
         }
 
@@ -270,7 +276,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             createPUWarningLabel.setToolTipText(warning);
         } else {
             createPUWarningLabel.setIcon(null);
-            createPUWarningLabel.setText(null);
+            createPUWarningLabel.setText(" ");
             createPUWarningLabel.setToolTipText(null);
             
         }
@@ -304,11 +310,11 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         locationComboBox = new javax.swing.JComboBox();
         packageLabel = new javax.swing.JLabel();
         packageComboBox = new javax.swing.JComboBox();
-        createPUButton = new javax.swing.JButton();
         generateFinderMethodsCheckBox = new javax.swing.JCheckBox();
         cmpFieldsInInterfaceCheckBox = new javax.swing.JCheckBox();
         spacerPanel = new javax.swing.JPanel();
         createPUWarningLabel = new ShyLabel();
+        createPUCheckbox = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "LBL_EntityClasses")); // NOI18N
 
@@ -334,22 +340,13 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         packageComboBox.setEditable(true);
 
-        org.openide.awt.Mnemonics.setLocalizedText(createPUButton, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "LBL_CreatePersistenceUnit")); // NOI18N
-        createPUButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createPUButtonActionPerformed(evt);
-            }
-        });
-
         generateFinderMethodsCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(generateFinderMethodsCheckBox, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "TXT_GenerateFinderMethods")); // NOI18N
         generateFinderMethodsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        generateFinderMethodsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         cmpFieldsInInterfaceCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(cmpFieldsInInterfaceCheckBox, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "TXT_AddFieldsToInterface")); // NOI18N
         cmpFieldsInInterfaceCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        cmpFieldsInInterfaceCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout spacerPanelLayout = new org.jdesktop.layout.GroupLayout(spacerPanel);
         spacerPanel.setLayout(spacerPanelLayout);
@@ -362,7 +359,18 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             .add(0, 9, Short.MAX_VALUE)
         );
 
-        org.openide.awt.Mnemonics.setLocalizedText(createPUWarningLabel, " ");
+        org.openide.awt.Mnemonics.setLocalizedText(createPUWarningLabel, "  ");
+        createPUWarningLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        createPUWarningLabel.setMaximumSize(new java.awt.Dimension(1000, 29));
+
+        createPUCheckbox.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(createPUCheckbox, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "LBL_CreatePersistenceUnit")); // NOI18N
+        createPUCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        createPUCheckbox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                createPUCheckboxItemStateChanged(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -384,8 +392,12 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                     .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)))
             .add(cmpFieldsInInterfaceCheckBox)
             .add(generateFinderMethodsCheckBox)
-            .add(createPUButton)
-            .add(createPUWarningLabel)
+            .add(layout.createSequentialGroup()
+                .add(createPUCheckbox)
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 441, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -394,7 +406,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 .add(11, 11, 11)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(classNamesLabel)
-                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 56, Short.MAX_VALUE))
+                    .add(classNamesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(spacerPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -413,10 +425,11 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 .add(generateFinderMethodsCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cmpFieldsInInterfaceCheckBox)
-                .add(21, 21, 21)
-                .add(createPUWarningLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(createPUButton))
+                .add(createPUCheckbox)
+                .add(11, 11, 11)
+                .add(createPUWarningLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -424,21 +437,19 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         locationChanged();
     }//GEN-LAST:event_locationComboBoxActionPerformed
 
-    private void createPUButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createPUButtonActionPerformed
-        persistenceUnit = Util.buildPersistenceUnitUsingWizard(project, tableSourceName, TableGeneration.NONE);
-        if (persistenceUnit != null){
-            updatePersistenceUnitButton();
-            changeSupport.fireChange();
+    private void createPUCheckboxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_createPUCheckboxItemStateChanged
+        if(createPUCheckbox.isVisible() && createPUCheckbox.isSelected()){
+        } else {
         }
-    }//GEN-LAST:event_createPUButtonActionPerformed
-
+        updatePersistenceUnitButton(false);
+    }//GEN-LAST:event_createPUCheckboxItemStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel classNamesLabel;
     private javax.swing.JScrollPane classNamesScrollPane;
     private javax.swing.JTable classNamesTable;
     private javax.swing.JCheckBox cmpFieldsInInterfaceCheckBox;
-    private javax.swing.JButton createPUButton;
+    private javax.swing.JCheckBox createPUCheckbox;
     private javax.swing.JLabel createPUWarningLabel;
     private javax.swing.JCheckBox generateFinderMethodsCheckBox;
     private javax.swing.JComboBox locationComboBox;
@@ -461,25 +472,38 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         private WizardDescriptor wizardDescriptor;
         private Project project;
         private boolean cmp;
+        private boolean puRequired;
 
         private List<Provider> providers;
+
+        public WizardPanel(){
+            this(false);
+        }
+
+        public WizardPanel(boolean persistenceUnitRequired){
+            puRequired = persistenceUnitRequired;
+        }
         
+        @Override
         public EntityClassesPanel getComponent() {
             if (component == null) {
-                component = new EntityClassesPanel();
+                component = new EntityClassesPanel(puRequired);
                 component.addChangeListener(this);
             }
             return component;
         }
 
+        @Override
         public void removeChangeListener(ChangeListener listener) {
             changeSupport.removeChangeListener(listener);
         }
 
+        @Override
         public void addChangeListener(ChangeListener listener) {
             changeSupport.addChangeListener(listener);
         }
 
+        @Override
         public HelpCtx getHelp() {
             if (cmp) {
                 return new HelpCtx("org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp." + EntityClassesPanel.class.getSimpleName()); // NOI18N
@@ -488,6 +512,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public void readSettings(Object settings) {
             wizardDescriptor = (WizardDescriptor)settings;
             
@@ -520,6 +545,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             getComponent().update(helper.getTableClosure(), tableSourceName);
         }
 
+        @Override
         public boolean isValid() {
             SourceGroup sourceGroup = getComponent().getLocationValue();
             if (sourceGroup == null) {
@@ -587,6 +613,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             return true;
         }
 
+        @Override
         public void storeSettings(Object settings) {
             RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
 
@@ -595,9 +622,10 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             helper.setPackageName(getComponent().getPackageName());
             helper.setCmpFieldsInInterface(getComponent().getCmpFieldsInInterface());
             helper.setGenerateFinderMethods(getComponent().getGenerateFinderMethods());
-            helper.setPersistenceUnit(getComponent().getPersistenceUnit());
+            helper.setCreatePU(getComponent().getCreatePersistenceUnit());
         }
 
+        @Override
         public void stateChanged(ChangeEvent event) {
             changeSupport.fireChange();
         }
@@ -606,6 +634,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage); // NOI18N
         }
 
+        @Override
         public boolean isFinishPanel() {
             return true;
         }

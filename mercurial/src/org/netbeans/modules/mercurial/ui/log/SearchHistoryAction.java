@@ -60,25 +60,10 @@ import org.openide.nodes.Node;
 public abstract class SearchHistoryAction extends ContextAction {
     static final int DIRECTORY_ENABLED_STATUS = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     static final int FILE_ENABLED_STATUS = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
-    private final VCSContext context;
-    private File repositoryRoot;
-    private File[] files;
-
-    protected String getBaseName(Node [] activatedNodes) {
-        return "CTL_MenuItem_SearchHistory"; // NOI18N
-    }
-
-    public SearchHistoryAction (VCSContext context) {
-        this.context = context;
-    }
-
-    protected VCSContext getContext () {
-        return context;
-    }
 
     @Override
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
+    protected boolean enable(Node[] nodes) {
+        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
 
     protected static void outputSearchContextTab (File repositoryRoot, String title) {
@@ -114,8 +99,9 @@ public abstract class SearchHistoryAction extends ContextAction {
         logger.closeLog();
     }
 
-    protected File getRepositoryRoot () {
-        if (repositoryRoot == null && context != null) {
+    protected File getRepositoryRoot (VCSContext context) {
+        File repositoryRoot = null;
+        if (context != null) {
             final File roots[] = HgUtils.getActionRoots(context);
             if (roots != null && roots.length > 0) {
                 repositoryRoot = Mercurial.getInstance().getRepositoryRoot(roots[0]);
@@ -124,12 +110,10 @@ public abstract class SearchHistoryAction extends ContextAction {
         return repositoryRoot;
     }
 
-    protected File[] getFiles () {
-        if (files == null) {
-            File repository = getRepositoryRoot();
-            if (repository != null) {
-                files = HgUtils.filterForRepository(context, repository, false);
-            }
+    protected File[] getFiles (VCSContext context, File repository) {
+        File[] files = null;
+        if (repository != null) {
+            files = HgUtils.filterForRepository(context, repository, false);
         }
         return files;
     }

@@ -47,7 +47,6 @@ import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.form.FormDataObject;
-import org.netbeans.modules.form.FormEditor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -63,6 +62,7 @@ public class ActionRescanJavaSourceTaskFactoryImpl extends EditorAwareJavaSource
         super(Phase.RESOLVED, Priority.LOW); //getPhase(),getPriority());
     }
 
+    @Override
     public CancellableTask<CompilationInfo> createTask(FileObject file) {
         return new RescanTask(file);
     }
@@ -82,9 +82,11 @@ public class ActionRescanJavaSourceTaskFactoryImpl extends EditorAwareJavaSource
             this.file = file;
         }
 
+        @Override
         public void cancel() {
         }
 
+        @Override
         public void run(CompilationInfo info) throws Exception {
             // Rescan the file only if it is a java file from which some opened
             // form might read action methods - technically this can be the form

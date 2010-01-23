@@ -43,7 +43,9 @@ import org.netbeans.modules.cnd.gizmo.addr2line.dwarf2line.Dwarf2NameFinder;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.ByteOrder;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -147,7 +149,9 @@ public class FindNameTest extends NbTestCase {
             if (full) {
                 Dwarf dwarf = new Dwarf(executable);
                 try {
-                    loop:for (CompilationUnit unit : dwarf.getCompilationUnits()){
+                    Iterator<CompilationUnit> iterator = dwarf.iteratorCompilationUnits();
+                    loop:while(iterator.hasNext()) {
+                        CompilationUnit unit = iterator.next();
                         //System.err.println("Unit:"+unit.getSourceFileFullName());
                         for (DwarfEntry entry : unit.getDeclarations(false)){
                             if (entry.getKind() == TAG.DW_TAG_subprogram){
@@ -211,12 +215,14 @@ public class FindNameTest extends NbTestCase {
             System.err.println("Dwarf Provider:\t" + fileInfo.getFileName() + ":" + fileInfo.getLine());
         }
         if (full) {
-            Dwarf2NameFinder source = getDwarfSource(executable);
-            source.lookup(base + shift);
-            System.err.println("Dwarf Finder:\t" + source.getSourceFile() + ":" + source.getLineNumber());
+            if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN){
+                Dwarf2NameFinder source = getDwarfSource(executable);
+                source.lookup(base + shift);
+                System.err.println("Dwarf Finder:\t" + source.getSourceFile() + ":" + source.getLineNumber());
+                assertEquals(number.line, source.getLineNumber());
+            }
             assertNotNull(fileInfo);
             assertNotNull(number);
-            assertEquals(number.line, source.getLineNumber());
             assertNotNull(candidate);
             assertEquals(number.line, candidate.line);
         } else {

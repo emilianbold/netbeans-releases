@@ -47,17 +47,23 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiProjectMember.Role;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.api.KenaiUser;
+import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.kenai.ui.project.DetailsAction;
 import org.netbeans.modules.kenai.ui.spi.Dashboard;
 import org.netbeans.modules.kenai.ui.spi.LoginHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.nodes.Node;
@@ -65,6 +71,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -73,10 +81,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=ProjectAccessor.class)
 public class ProjectAccessorImpl extends ProjectAccessor {
 
-    private Kenai kenai = Kenai.getDefault();
-
     @Override
-    public List<ProjectHandle> getMemberProjects(LoginHandle login, boolean force) {
+    public List<ProjectHandle> getMemberProjects(Kenai kenai, LoginHandle login, boolean force) {
         try {
             LinkedList<ProjectHandle> l = new LinkedList<ProjectHandle>();
             for (KenaiProject prj : kenai.getMyProjects(force)) {
@@ -106,7 +112,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     }
 
     @Override
-    public ProjectHandle getNonMemberProject(String projectId, boolean force) {
+    public ProjectHandle getNonMemberProject(Kenai kenai, String projectId, boolean force) {
         try {
             return new ProjectHandleImpl(kenai.getProject(projectId,force));
         } catch (KenaiException ex) {
@@ -122,7 +128,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
     @Override
     public Action getDetailsAction(final ProjectHandle project) {
-        return DetailsAction.forProject(project.getId());    
+        return DetailsAction.forProject(project);    
 //        return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getKenaiProject().getWebLocation());
     }
 
@@ -184,13 +190,65 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     }
 
     @Override
-    public Action getBookmarkAction(ProjectHandle project) {
+    public Action getBookmarkAction(final ProjectHandle project) {
         return new AbstractAction() {
-
             public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("Not supported yet. Please vote for http://kenai.com/jira/browse/KENAI-735");
+                Kenai kenai = project.getKenaiProject().getKenai();
+                try {
+                    if (kenai.getStatus()==Kenai.Status.OFFLINE) {
+                        UIUtils.showLogin(kenai);
+                        return;
+                    }
+                    if (kenai.getMyProjects().contains(project.getKenaiProject())) {
+                        if (JOptionPane.YES_OPTION != 
+                                JOptionPane.showConfirmDialog(
+                                WindowManager.getDefault().getMainWindow(),
+                                NbBundle.getMessage(ProjectAccessorImpl.class,"LBL_ReallyLeave"),
+                                NbBundle.getMessage(ProjectAccessorImpl.class,"LBL_ReallyLeaveTitle"),
+                                JOptionPane.YES_NO_OPTION)) {
+                            return;
+                        }
+                    }
+                } catch (KenaiException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                DashboardImpl.getInstance().bookmarkingStarted();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            KenaiProject prj = project.getKenaiProject();
+                            if (prj.getKenai().getMyProjects().contains(prj)) {
+                                unbookmark(prj);
+                            } else {
+                                bookmark(prj);
+                            }
+                        } catch (KenaiException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    DashboardImpl.getInstance().bookmarkingFinished();
+                                }
+                            });
+                        }
+                    }
+                });
             }
         };
+    }
+
+    private void unbookmark(KenaiProject prj) throws KenaiException {
+        String fullName = prj.getKenai().getPasswordAuthentication().getUserName()
+         + "@" + prj.getKenai().getUrl().getHost();
+        KenaiUser user = KenaiUser.forName(fullName);
+        prj.deleteMember(user);
+    }
+
+    private void bookmark(KenaiProject prj) throws KenaiException {
+        String fullName = prj.getKenai().getPasswordAuthentication().getUserName()
+         + "@" + prj.getKenai().getUrl().getHost();
+        KenaiUser user = KenaiUser.forName(fullName);
+        prj.addMember(user, Role.OBSERVER);
     }
 
     @Override
@@ -216,8 +274,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
                 public void run() {
                     try {
-                        Kenai.getDefault().getProject(project.getId(), true);
-                        project.firePropertyChange(ProjectHandle.PROP_CONTENT, null, project);
+                        project.getKenaiProject().getKenai().getProject(project.getId(), true);
                     } catch (KenaiException ex) {
                         Exceptions.printStackTrace(ex);
                     }

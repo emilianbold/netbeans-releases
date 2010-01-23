@@ -232,6 +232,30 @@ public class CheckLinksTest extends NbTestCase {
             // ok, this should fail on exit code
         }
     }
+
+    public void testQueryComponent() throws Exception {
+        File html1 = extractHTMLFile(
+            "<head></head><body></body>"
+        );
+        File html2 = extractHTMLFile(
+            "<head></head><body>\n" +
+            "<a href=\"" + html1.toURI() + "?is-external=true\">ought to be OK</a>\n" +
+            "</body>"
+        );
+        File f = PublicPackagesInProjectizedXMLTest.extractString(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <checklinks checkexternal='false' basedir='" + html1.getParent() + "' >" +
+            "    <include name=\"" + html1.getName() + "\" />" +
+            "    <include name=\"" + html2.getName() + "\" />" +
+            "  </checklinks>" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute(f, new String[] {});
+    }
     
     
     private static File extractHTMLFile (String s) throws Exception {

@@ -136,8 +136,8 @@ public class JsIndexer extends EmbeddingIndexer {
 
 // XXX: parsingapi
 //    public boolean acceptQueryPath(String url) {
-//        return url.indexOf("/ruby2/") == -1 && url.indexOf("/gems/") == -1 && url.indexOf("lib/ruby/") == -1 && // NOI18N
-//                url.indexOf("/python1/") == -1; // NOI18N
+//        return url.indexOf("/ruby/") == -1 && url.indexOf("/gems/") == -1 && url.indexOf("lib/ruby/") == -1 && // NOI18N
+//                url.indexOf("/python/") == -1; // NOI18N
 //    }
 //
 //    public String getPersistentUrl(File file) {

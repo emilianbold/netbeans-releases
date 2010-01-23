@@ -43,7 +43,8 @@ import java.awt.Component;
 
 /**
  * Interface provided in the Lookup of Javacard Platform DataObjects which
- * allow management/creation of devices.
+ * allow management/creation of devices.  If present, a Manage Devices
+ * button will be enabled in the various select platform/card UIs.
  *
  * @author Tim Boudreau
  */

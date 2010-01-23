@@ -47,6 +47,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
@@ -80,27 +82,20 @@ import org.openide.windows.WindowManager;
 @ServiceProvider(service=SourceAccessor.class)
 public class SourceAccessorImpl extends SourceAccessor {
 
-    private Kenai kenai = Kenai.getDefault();
     private Map<SourceHandle,ProjectAndFeature> handlesMap = new HashMap<SourceHandle,ProjectAndFeature>();
 
     @Override
     public List<SourceHandle> getSources(ProjectHandle prjHandle) {
 
-        KenaiProject project = null;
+        KenaiProject project = prjHandle.getKenaiProject();
         List<SourceHandle> handlesList = new ArrayList<SourceHandle>();
 
-        try {
-            project = kenai.getProject(prjHandle.getId());
-        } catch (KenaiException ex) {
-            // XXX
-            Exceptions.printStackTrace(ex);
-        }
         if (project != null) {
             try {
                 for (KenaiFeature feature : project.getFeatures(Type.SOURCE)) {
                     SourceHandle srcHandle = new SourceHandleImpl(prjHandle, feature);
                     handlesList.add(srcHandle);
-                    handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getId(), feature, ((SourceHandleImpl) srcHandle).getExternalScmType()));
+                    handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getKenaiProject(), feature, ((SourceHandleImpl) srcHandle).getExternalScmType()));
                 }
             } catch (KenaiException ex) {
                 Exceptions.printStackTrace(ex);
@@ -221,25 +216,29 @@ public class SourceAccessorImpl extends SourceAccessor {
                     FileObject fo = FileUtil.toFileObject(src.getWorkingDirectory());
                     Favorites.getDefault().selectWithAddition(fo);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    printStackTrace(ex);
                 } catch (IllegalArgumentException ex) {
-                    Exceptions.printStackTrace(ex);
+                    printStackTrace(ex);
                 } catch (NullPointerException ex) {
-                    Exceptions.printStackTrace(ex);
+                    printStackTrace(ex);
                 }
              }
         };
     }
 
+    private static void printStackTrace(Throwable t) {
+        Logger.getLogger(SourceAccessorImpl.class.getName()).log(Level.FINE, t.getMessage(), t);
+    }
+
 
     public static class ProjectAndFeature {
 
-        public String projectName;
+        public KenaiProject kenaiProject;
         public KenaiFeature feature;
         public String externalScmType;
 
-        public ProjectAndFeature(String name, KenaiFeature ftr, String externalScmType) {
-            projectName = name;
+        public ProjectAndFeature(KenaiProject name, KenaiFeature ftr, String externalScmType) {
+            kenaiProject = name;
             feature = ftr;
             this.externalScmType=externalScmType;
         }

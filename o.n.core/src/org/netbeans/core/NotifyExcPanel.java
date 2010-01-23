@@ -270,20 +270,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         }
         
         // #50018 Don't try to show any notify dialog when reporting headless exception
-        if ("java.awt.HeadlessException".equals(t.getClassName()) && GraphicsEnvironment.isHeadless()) { // NOI18N
+        if (/*"java.awt.HeadlessException".equals(t.getClassName()) &&*/ GraphicsEnvironment.isHeadless()) { // NOI18N
             t.printStackTrace(System.err);
             return;
-        }
-        //#133092: Error in JDK 5 during printing #6704417.
-        if ("java.lang.NullPointerException".equals(t.getClassName())) { // NOI18N
-            StringWriter sw = new StringWriter();
-            PrintWriter pw = new PrintWriter(sw);
-            t.printStackTrace(pw);
-            if (sw.toString().contains("sun.awt.windows.WComponentPeer.nativeHandleEvent") && // NOI18N
-                System.getProperty("java.version").startsWith("1.5")) { // NOI18N
-                 t.printStackTrace(System.err);
-                 return;
-            }
         }
 
         SwingUtilities.invokeLater (new Runnable () {

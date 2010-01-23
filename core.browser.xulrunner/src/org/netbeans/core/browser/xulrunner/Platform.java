@@ -155,6 +155,8 @@ public enum Platform {
             }
 
             if (buildStr.startsWith("b")) buildStr = buildStr.substring(1); //NOI18N
+            if( buildStr.contains("-") ) //NOI18N
+                buildStr = buildStr.substring(0, buildStr.indexOf("-")); //NOI18N
             if (buildStr.length()>0) {
                 int n = Integer.parseInt(buildStr);
                 num += n;

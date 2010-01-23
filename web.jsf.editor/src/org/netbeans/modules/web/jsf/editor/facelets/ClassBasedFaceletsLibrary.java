@@ -62,7 +62,7 @@ public class ClassBasedFaceletsLibrary extends FaceletsLibrary {
     public LibraryDescriptor getLibraryDescriptor() {
         return support.getJsfSupport().getLibraryDescriptor(getNamespace());
     }
-    
+
     public void putConverter(String name, String id) {
         components.add(new Converter(name, id, null));
     }

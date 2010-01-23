@@ -39,6 +39,8 @@ import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.View;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.editor.lib.drawing.DrawEngineDocView;
+import org.netbeans.modules.editor.lib.drawing.DrawEngineLineView;
 
 /**
  *

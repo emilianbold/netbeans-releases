@@ -42,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -68,6 +69,15 @@ public class KenaiTest extends NbTestCase {
     private static String uname = null;
     private static String passw = null;
 
+    static {
+        try {
+            instance = KenaiManager.getDefault().createKenai("testkenai.com", "https://testkenai.com");
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+
     public KenaiTest(String S) {
         super(S);
     }
@@ -81,7 +91,6 @@ public class KenaiTest extends NbTestCase {
     }
 
     public void setInstance() {
-        instance = Kenai.getDefault();
     }
 
     @Before
@@ -90,8 +99,6 @@ public class KenaiTest extends NbTestCase {
         try {
             final Logger logger = Logger.getLogger("TIMER.kenai");
             logger.setLevel(Level.FINE);
-            System.setProperty("kenai.com.url", "https://testkenai.com");
-            instance = Kenai.getDefault();
             if (uname == null) {
                 uname = System.getProperty("kenai.user.login");
                 passw = System.getProperty("kenai.user.password");
@@ -598,7 +605,7 @@ public class KenaiTest extends NbTestCase {
             String _fileName = getDataDir().getAbsolutePath() + File.separatorChar + "licences.data";
             br = new BufferedReader(new FileReader(_fileName));
             String line = null;
-            for (KenaiLicense lic : Kenai.getDefault().getLicenses()) {
+            for (KenaiLicense lic : instance.getLicenses()) {
                 // Check the licence name
                 line = br.readLine().trim();
                 assertEquals(line, lic.getName());
@@ -630,7 +637,7 @@ public class KenaiTest extends NbTestCase {
      */
     public void testGetServices() throws KenaiException {
         System.out.println("testGetServices");
-        for (KenaiService ser : Kenai.getDefault().getServices()) {
+        for (KenaiService ser : instance.getServices()) {
             System.out.println(ser.getName());
             System.out.println(ser.getDescription());
             System.out.println(ser.getDisplayName());
@@ -653,6 +660,32 @@ public class KenaiTest extends NbTestCase {
             System.out.println("My projects: " + prj.getDisplayName());
         }
     }
+
+    @Test
+    /**
+     * Test of getMyProjects method of class Kenai
+     */
+    public void testJoinLeaveProject() throws Exception {
+        KenaiProject prj = instance.getProject("eduni-hearts");
+        KenaiUser user = KenaiUser.forName(instance.getPasswordAuthentication().getUserName() + "@" + instance.getName());
+        prj.addMember(user, KenaiProjectMember.Role.OBSERVER);
+        assert instance.getMyProjects().contains(prj);
+        boolean found = false;
+        int i=0;
+        KenaiProjectMember members[] = prj.getMembers();
+        while (!found) {
+            KenaiProjectMember m = members[i++];
+            if (m.getUserName().equals(user.getUserName())) {
+                found=true;
+                user = m.getKenaiUser();
+            }
+        }
+        assert found : "User was not added";
+
+        prj.deleteMember(user);
+        assert !instance.getMyProjects().contains(prj);
+    }
+
 
     static public junit.framework.Test suite() {
         junit.framework.TestSuite _suite = new junit.framework.TestSuite();

@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<jbi xmlns="http://java.sun.com/xml/ns/jbi" xmlns:ns1="http://localhost/SynchronousSample/SynchronousSample" xmlns:ns2="http://enterprise.netbeans.org/bpel/SynchronousSample/SynchronousSample_1" xmlns:ns3="http://whatever" version="1.0">
-    <services binding-component="true">
-        <consumes endpoint-name="casaPort1" interface-name="ns1:portType1" service-name="ns3:casaService1"/>
-    </services>
-</jbi>

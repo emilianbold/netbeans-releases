@@ -73,10 +73,6 @@ import org.openide.awt.Mnemonics;
     private final boolean isEmptyAllowed;
     private String defaultValue;
 
-    @Deprecated
-    public StringArrayCustomEditor(String[] array, String defaultValue, boolean isEmptyAllowed) {
-        this(array, defaultValue, null, '\0', null, '\0', isEmptyAllowed);
-    }
     /**
      *
      * @param array

@@ -127,7 +127,10 @@ public class Utilities {
     public static final String ATTR_VISIBLE = "AutoUpdate-Show-In-Client";
     public static final String ATTR_ESSENTIAL = "AutoUpdate-Essential-Module";
 
-    private static final String FIRST_CLASS_MODULES = "org.netbeans.modules.autoupdate.services, org.netbeans.modules.autoupdate.ui"; // NOI18N
+    private static final String[] FIRST_CLASS_MODULES = new String [] {
+        "org.netbeans.modules.autoupdate.services",   // NOI18N
+        "org.netbeans.modules.autoupdate.ui"          // NOI18N
+    };
     private static final String PLUGIN_MANAGER_FIRST_CLASS_MODULES = "plugin.manager.first.class.modules"; // NOI18N
 
     private static final String USER_KS_KEY = "userKS";
@@ -1001,15 +1004,20 @@ public class Utilities {
     }
 
     public static boolean isFirstClassModule (UpdateUnit u) {
+        String codeName = u.getCodeName();
         String names = System.getProperty (PLUGIN_MANAGER_FIRST_CLASS_MODULES);
         if (names == null || names.length () == 0) {
-            names = FIRST_CLASS_MODULES;
-        }
-
-        StringTokenizer en = new StringTokenizer (names, ","); // NOI18N
-        while (en.hasMoreTokens ()) {
-            if(en.nextToken ().trim().equals(u.getCodeName())) {
-                return true;
+            for(String m : FIRST_CLASS_MODULES) {
+                if(m.equals(codeName)) {
+                    return true;
+                }
+            }
+        } else {
+            StringTokenizer en = new StringTokenizer(names, ","); // NOI18N
+            while (en.hasMoreTokens()) {
+                if (en.nextToken().trim().equals(codeName)) {
+                    return true;
+                }
             }
         }
         return false;

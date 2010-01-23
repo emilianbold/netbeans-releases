@@ -114,7 +114,7 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
         return null;
     }
     private int index;
-    private WizardDescriptor.Panel[] panels;
+    private WizardDescriptor.Panel<Map<String,Object>>[] panels;
     private WizardDescriptor wiz;
     private IntermediatePanelKind intermediatePanelKind;
 
@@ -150,6 +150,7 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
         }
     }
 
+    @SuppressWarnings("unchecked") //NOI18N
     private WizardDescriptor.Panel<Map<String,Object>>[] createPanels() {
         return new WizardDescriptor.Panel[]{
                     new ChooseDependencyKindWizardPanel(wiz),
@@ -159,6 +160,7 @@ public final class AddDependencyWizardIterator implements WizardDescriptor.Itera
                 };
     }
 
+    @SuppressWarnings("unchecked") //NOI18N
     private WizardDescriptor.Panel<Map<String,Object>>[] panels() {
         WizardDescriptor.Panel<Map<String,Object>>[] pnls = panels == null ? panels = createPanels() : panels;
         IntermediatePanelKind pk = getIntermediatePanelKind();

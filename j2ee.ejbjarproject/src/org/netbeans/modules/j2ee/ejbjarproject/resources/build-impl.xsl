@@ -816,7 +816,7 @@ exists or setup the property manually. For example like this:
                     </copyfiles>
                 </xsl:for-each>   
                 
-                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF"/>
+                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update"/>
 <!--                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
                     <xsl:if test="//ejbjarproject3:included-library">
                         <attribute>

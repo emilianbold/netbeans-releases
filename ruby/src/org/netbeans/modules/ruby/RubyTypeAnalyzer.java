@@ -161,7 +161,8 @@ public final class RubyTypeAnalyzer {
         // contain the correct value node, we need to get the value from the "parent" multipleAsgnNode
         if (head.getNodeType() == NodeType.MULTIPLEASGNNODE) {
             MultipleAsgnNode multipleAsgnNode = (MultipleAsgnNode) head;
-            if (multipleAsgnNode.getHeadNode().childNodes().size() == value.childNodes().size()) {
+            ListNode headNode = multipleAsgnNode.getHeadNode();
+            if (headNode != null && headNode.childNodes().size() == value.childNodes().size()) {
                 for (int i = 0; i < multipleAsgnNode.getHeadNode().childNodes().size(); i++) {
                     Node var = multipleAsgnNode.getHeadNode().childNodes().get(i);
                     collectTypes(var, value.childNodes().get(i), typeInferencer, result);

@@ -52,6 +52,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+
 
 /**
  * @author ads
@@ -110,28 +112,34 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
     static Element getSpecialized( Element productionElement,
             WebBeansModelImplementation model , String annotationName )
     {
+        return getSpecialized(productionElement, model.getHelper(), annotationName);
+    }
+    
+    static Element getSpecialized( Element productionElement,
+            AnnotationModelHelper helper  , String annotationName )
+    {
         if ( !( productionElement instanceof ExecutableElement )){
             return null;
         }
         ExecutableElement current = (ExecutableElement)productionElement;
         while ( true ){
-            ExecutableElement overridenElement = model.getHelper().getCompilationController().
+            ExecutableElement overridenElement = helper.getCompilationController().
                 getElementUtilities().getOverriddenMethod( current);
             if ( overridenElement != null && AnnotationObjectProvider.hasSpecializes(
-                    current, model.getHelper()))
+                    current, helper))
             {
-                if ( FieldInjectionPointLogic.CURRENT_BINDING_ANNOTATION.
+                if ( FieldInjectionPointLogic.DEFAULT_QUALIFIER_ANNOTATION.
                         equals( annotationName))
                 {
-                    if ( AnnotationObjectProvider.checkSpecializedCurrent(
-                            overridenElement, model.getHelper()))
+                    if ( AnnotationObjectProvider.checkSpecializedDefault(
+                            overridenElement, helper))
                     {
                         return overridenElement;
                     }
                 }
                 else if ( AnnotationObjectProvider.
                         hasAnnotation( overridenElement, annotationName, 
-                                model.getHelper()))
+                                helper))
                 {
                     return overridenElement;
                 }
@@ -199,9 +207,8 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
         AnnotationValue valueForType = elementValues.get(exec);
         if (!equals(value, valueForType)) {
             iterator.remove();
-            return true;
         }
-        return false;
+        return true;
     }
     
     private boolean equals( AnnotationValue value1 , AnnotationValue value2 ){

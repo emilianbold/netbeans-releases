@@ -143,10 +143,10 @@ function run() {
 			return
 		fi
 	fi
-	ide7=`ls -d  $NBDIST/ide[789]`
-	if [ -d ${ide7} ]; then
-	    if [ ! -z ${ide7} ]; then
-		ant=${NBDIST}/ide7/ant/bin/ant
+	ide=`ls -d  $NBDIST/ide[789]`
+	if [ -d ${ide} ]; then
+	    if [ ! -z ${ide} ]; then
+		ant=${NBDIST}/ide/ant/bin/ant
 		${ant} run -Dapplication.args="${PARAMS}" ${SUITE_DEFS} -Drun.jvmargs="${XMX} ${JVMAGRS} ${DEBUG_PROFILE}"
 	    else
 		echo "Can not find \"ide*\" subdirectory in Netbeans installation"

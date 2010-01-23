@@ -112,10 +112,4 @@ public class MemoryValidationTest extends IDEValidation {
         // suite.addTest(new IDEValidation("testPlugins"));
         return NbModuleSuite.create(conf);
     }
-
-    @RandomlyFails
-    @Override
-    public void testGCDocuments() throws Exception {
-        super.testGCDocuments();
-    }
 }

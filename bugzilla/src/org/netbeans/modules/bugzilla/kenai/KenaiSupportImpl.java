@@ -39,10 +39,7 @@
 
 package org.netbeans.modules.bugzilla.kenai;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
-import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
@@ -52,10 +49,8 @@ import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
-import org.netbeans.modules.bugtracking.util.KenaiUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -66,12 +61,11 @@ import org.netbeans.modules.kenai.api.KenaiService;
  *
  * @author Tomas Stupka
  */
-public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeListener {
+public class KenaiSupportImpl extends KenaiSupport {
 
     private final Set<KenaiRepository> repositories = new HashSet<KenaiRepository>();
 
     public KenaiSupportImpl() {
-        Kenai.getDefault().addPropertyChangeListener(this);
     }
 
     @Override
@@ -107,38 +101,6 @@ public class KenaiSupportImpl extends KenaiSupport implements PropertyChangeList
             Bugzilla.LOG.log(Level.SEVERE, kenaiException.getMessage(), kenaiException);
         }
         return null;
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
-            // XXX move to spi
-
-            // get all kenai repositories
-            KenaiRepository[] repos;
-            synchronized(repositories) {
-                if(repositories.size() == 0) {
-                    return;
-                }
-                repos = repositories.toArray(new KenaiRepository[repositories.size()]);
-            }
-
-            // get kenai credentials
-            String user;
-            String psswd;
-            PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(false);
-            if(pa != null) {
-                user = pa.getUserName();
-                psswd = new String(pa.getPassword());
-            } else {
-                user = "";                                                      // NOI18N
-                psswd = "";                                                     // NOI18N
-            }
-
-            for (KenaiRepository kr : repos) {
-                // refresh their taskdata with the relevant username/password
-                kr.setCredentials(user, psswd);
-            }
-        }
     }
 
     @Override

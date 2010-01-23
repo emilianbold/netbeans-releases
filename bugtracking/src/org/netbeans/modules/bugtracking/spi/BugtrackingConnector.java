@@ -39,15 +39,39 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
+import java.awt.Image;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.openide.util.Lookup;
 
 /**
  * Represents a bugtracking connector.
- * 
+ *
  * @author Tomas Stupka
  */
 public abstract class BugtrackingConnector implements Lookup.Provider {
+
+    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+
+    /**
+     * a repository from this connector was created, removed or changed
+     */
+    public final static String EVENT_REPOSITORIES_CHANGED = "bugtracking.repositories.changed"; // NOI18N
     
+    /**
+     * Returns a unique ID for this connector
+     *
+     * @return
+     */
+    public abstract String getID();
+
+    /**
+     * Returns the icon for this connector or null if not available
+     *
+     * @return
+     */
+    public abstract Image getIcon();
+
     /**
      * Returns the display name for this connector
      *
@@ -57,19 +81,21 @@ public abstract class BugtrackingConnector implements Lookup.Provider {
 
     /**
      * Returns tooltip for this connector
-     * 
+     *
      * @return tooltip for this connector
      */
     public abstract String getTooltip();
 
     /**
-     * Creates a repository
+     * Creates a new repository instance.
+     * 
      * @return the created repository
      */
     public abstract Repository createRepository();
 
     /**
-     * Returns all known repositories for this connector
+     * Returns all available valid repositories for this connector.
+     *
      * @return known repositories
      */
     public abstract Repository[] getRepositories();
@@ -86,4 +112,27 @@ public abstract class BugtrackingConnector implements Lookup.Provider {
         return null;
     }
 
+    /**
+     * remove a listener from this conector
+     * @param listener
+     */
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Add a listener to this connector to listen on events
+     * @param listener
+     */
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Notify listeners on this connector that a repository was either removed or saved
+     * XXX make use of new/old value
+     */
+    protected void fireRepositoriesChanged() {
+        changeSupport.firePropertyChange(EVENT_REPOSITORIES_CHANGED, null, null);
+    }    
 }

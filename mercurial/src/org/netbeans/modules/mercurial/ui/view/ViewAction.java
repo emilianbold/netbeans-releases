@@ -51,13 +51,11 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
 
 import java.io.File;
-import java.util.List;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -69,15 +67,20 @@ import org.openide.util.Utilities;
  */
 public class ViewAction extends ContextAction {
     
-    private final VCSContext context;
     private static final String HG_SCRIPTS_DIR = "scripts";
 
-    public ViewAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        return HgUtils.isFromHgRepository(HgUtils.getCurrentContext(nodes));
     }
-    
-    public void performAction(ActionEvent e) {
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_View";                                     //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         final File roots[] = HgUtils.getActionRoots(context);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
@@ -157,8 +160,4 @@ public class ViewAction extends ContextAction {
             logger.closeLog();
         }
     }
-
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
-    } 
 }

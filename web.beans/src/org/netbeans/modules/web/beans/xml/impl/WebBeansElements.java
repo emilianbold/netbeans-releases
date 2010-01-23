@@ -46,6 +46,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.xml.namespace.QName;
 
+import org.netbeans.modules.web.beans.xml.Alternatives;
+import org.netbeans.modules.web.beans.xml.BeanClass;
+import org.netbeans.modules.web.beans.xml.Decorators;
+import org.netbeans.modules.web.beans.xml.Interceptors;
+import org.netbeans.modules.web.beans.xml.Stereotype;
 import org.netbeans.modules.web.beans.xml.WebBeansComponent;
 
 
@@ -56,8 +61,11 @@ import org.netbeans.modules.web.beans.xml.WebBeansComponent;
 public enum WebBeansElements {
     
     BEANS("beans"),
-    DEPLOY("deploy"),
-    TYPE("type");
+    DECORATORS(Decorators.DECORATORS),
+    INTERCEPTORS( Interceptors.INTERCEPTORS),
+    ALTERNATIVES( Alternatives.ALTERNATIVES),
+    CLASS( BeanClass.CLASS),
+    STEREOTYPE( Stereotype.STEREOTYPE);
     
     WebBeansElements( String name ){
         myName = name;

@@ -60,19 +60,18 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
-import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiFrame;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiSeparator;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
 
@@ -207,12 +206,18 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             currentUi = null;
             return;
         }
-        if (!SwingUtilities.isEventDispatchThread()) {         
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    updateWizardUi(wizardUi);
-                }
-            });
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        updateWizardUi(wizardUi);
+                    }
+                });
+            } catch (InterruptedException e) {
+                LogManager.log("Error during updating wizard UI", e);
+            } catch (InvocationTargetException e) {
+                LogManager.log("Error during updating wizard UI", e);
+            }
             return;
         }
         
@@ -248,6 +253,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
         contentPane.repaint();
                              
         // handle the default buttons - Enter
+        
         getRootPane().setDefaultButton(currentUi.getDefaultEnterButton());
         
         // handle the default buttons - Escape

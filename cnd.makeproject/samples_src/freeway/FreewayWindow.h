@@ -159,5 +159,6 @@ extern void zone_speed(GtkWidget *, gpointer ); // uses client_data
 extern void fw_quit();
 extern void help_close(GtkWidget *, gpointer );
 extern void popup_destroyed(GtkWidget *, gpointer );
+extern void show_message(const gchar *);
 
 #endif /* FREEWAY_WINDOW_H */

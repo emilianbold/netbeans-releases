@@ -78,9 +78,6 @@ public final class APTIncludePathStorage {
     }
     
     public void dispose() {
-        synchronized (allIncludes) {
-            allIncludes.clear();
-        }
+        allIncludes.clear();
     }
-    
 }

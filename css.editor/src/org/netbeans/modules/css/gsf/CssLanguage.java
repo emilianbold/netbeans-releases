@@ -48,12 +48,14 @@ import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.css.lexer.api.CssTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  * Configuration for CSS
  */
+@LanguageRegistration(mimeType="text/x-css") //NOI18N
 public class CssLanguage extends DefaultLanguageConfig {
     
     public CssLanguage() {
@@ -98,6 +100,11 @@ public class CssLanguage extends DefaultLanguageConfig {
     @Override
     public Parser getParser() {
         return new CssGSFParser();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
     }
 
     @Override

@@ -162,6 +162,7 @@ public class RemoteServerList implements ServerListImplementation {
         return record;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("UG") // since get(ExecutionEnvironment) is synchronized
     public ServerRecord get(Project project) {
         ExecutionEnvironment execEnv = RemoteProjectSupport.getExecutionEnvironment(project);
         if( execEnv != null) {

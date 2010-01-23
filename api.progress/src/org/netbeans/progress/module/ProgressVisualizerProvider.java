@@ -41,6 +41,7 @@
 
 package org.netbeans.progress.module;
 
+import org.netbeans.modules.progress.spi.Controller;
 import java.awt.Component;
 import org.openide.awt.StatusLineElementProvider;
 

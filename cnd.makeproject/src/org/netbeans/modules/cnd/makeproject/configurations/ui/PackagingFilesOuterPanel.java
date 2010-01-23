@@ -251,15 +251,15 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(topFolderPanel, gridBagConstraints);
 
-        org.jdesktop.layout.GroupLayout tmpPanelLayout = new org.jdesktop.layout.GroupLayout(tmpPanel);
+        javax.swing.GroupLayout tmpPanelLayout = new javax.swing.GroupLayout(tmpPanel);
         tmpPanel.setLayout(tmpPanelLayout);
         tmpPanelLayout.setHorizontalGroup(
-            tmpPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 957, Short.MAX_VALUE)
+            tmpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 957, Short.MAX_VALUE)
         );
         tmpPanelLayout.setVerticalGroup(
-            tmpPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 156, Short.MAX_VALUE)
+            tmpPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 180, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();

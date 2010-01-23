@@ -47,6 +47,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -73,6 +75,12 @@ public class IsOverriddenPopup extends JPanel implements FocusListener {
     public IsOverriddenPopup(String caption, List<ElementDescription> declarations) {
         this.caption = caption;
         this.declarations = declarations;
+
+        Collections.sort(declarations, new Comparator<ElementDescription>() {
+            public int compare(ElementDescription o1, ElementDescription o2) {
+                return o1.getDisplayName().compareTo(o2.getDisplayName());
+            }
+        });
         
         initComponents();
         

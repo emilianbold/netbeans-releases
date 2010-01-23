@@ -62,7 +62,7 @@ public abstract class BooleanStateAction extends SystemAction implements Present
     * @return the JMenuItem representation for the Action
     */
     public javax.swing.JMenuItem getMenuPresenter() {
-        return org.netbeans.modules.openide.util.AWTBridge.getDefault().createMenuPresenter(this);
+        return org.openide.util.actions.ActionPresenterProvider.getDefault().createMenuPresenter(this);
     }
 
     /* Returns a JMenuItem that presents the Action, that implements this
@@ -71,7 +71,7 @@ public abstract class BooleanStateAction extends SystemAction implements Present
     * @return the JMenuItem representation for the Action
     */
     public javax.swing.JMenuItem getPopupPresenter() {
-        return org.netbeans.modules.openide.util.AWTBridge.getDefault().createPopupPresenter(this);
+        return org.openide.util.actions.ActionPresenterProvider.getDefault().createPopupPresenter(this);
     }
 
     /* Returns a Component that presents the Action, that implements this
@@ -79,7 +79,7 @@ public abstract class BooleanStateAction extends SystemAction implements Present
     * @return the Component representation for the Action
     */
     public java.awt.Component getToolbarPresenter() {
-        return org.netbeans.modules.openide.util.AWTBridge.getDefault().createToolbarPresenter(this);
+        return org.openide.util.actions.ActionPresenterProvider.getDefault().createToolbarPresenter(this);
     }
 
     /** Get the current state.

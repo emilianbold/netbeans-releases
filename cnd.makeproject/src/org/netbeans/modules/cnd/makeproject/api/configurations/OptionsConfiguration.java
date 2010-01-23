@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.List;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 
 public class OptionsConfiguration {
     private String preDefined = ""; // NOI18N

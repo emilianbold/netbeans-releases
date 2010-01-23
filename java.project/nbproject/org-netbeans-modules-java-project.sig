@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 1.25.1
+#Signature file v4.1
+#Version 1.29
 
 CLSS public abstract interface !annotation java.lang.Deprecated
  anno 0 java.lang.annotation.Documented()
@@ -79,6 +79,7 @@ fld public final static java.lang.String PROP_EXECUTE_FILE = "execute.file"
 fld public final static java.lang.String PROP_PLATFORM = "platform"
 fld public final static java.lang.String PROP_PLATFORM_JAVA = "platform.java"
 fld public final static java.lang.String PROP_PROJECT_NAME = "project.name"
+fld public final static java.lang.String PROP_RUNTIME_ENCODING = "runtime.encoding"
 fld public final static java.lang.String PROP_RUN_JVMARGS = "run.jvmargs"
 fld public final static java.lang.String PROP_WORK_DIR = "work.dir"
 fld public final static java.lang.String QUICK_CLEAN = "clean"

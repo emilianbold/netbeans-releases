@@ -68,4 +68,13 @@ public interface JavaWebStartAccess extends org.netbeans.modules.j2ee.sun.dd.api
     public void setVendor(String value);
     
     public String getVendor();
+
+    public void setJnlpDoc(boolean value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
+
+    public boolean isJnlpDoc()throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
+
+    public void setJnlpDocHref(java.lang.String value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
+
+    public String getJnlpDocHref() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
+
 }

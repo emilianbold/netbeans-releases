@@ -133,13 +133,14 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     private void renameTo(String newPath) {
         Folder f = getFolder();
         String oldPath = getAbsPath();
-        Item item = new Item(newPath);
-        f.addItem(item);
-        if (item.getFolder().isProjectFiles()) {
-            copyItemConfigurations(this, item);
+        Item item = f.addItem(new Item(newPath));
+        if (item != null && item.getFolder() != null) {
+            if (item.getFolder().isProjectFiles()) {
+                copyItemConfigurations(this, item);
+            }
+            f.removeItem(this);
+            f.renameItemAction(oldPath, item);
         }
-        f.removeItem(this);
-        f.renameItemAction(oldPath, item);
     }
 
     public String getPath() {
@@ -180,7 +181,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             // store file in field. method getFile() will works after removing item
             getCanonicalFile();
         }
-        this.folder = folder;
+        // leave folder if it is remove
         if (folder == null) { // Item is removed, let's clean up.
             synchronized (this) {
                 if (lastDataObject != null) {
@@ -188,6 +189,8 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                     lastDataObject = null;
                 }
             }
+        } else {
+            this.folder = folder;
         }
     }
 
@@ -220,13 +223,15 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             }
         } else if (evt.getPropertyName().equals("primaryFile")) { // NOI18N
             // File has been moved
-            FileObject fo = (FileObject) evt.getNewValue();
-            String newPath = FileUtil.toFile(fo).getPath();
-            if (!IpeUtils.isPathAbsolute(getPath())) {
-                newPath = IpeUtils.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDir(), newPath);
+            if (getFolder() != null) {
+                FileObject fo = (FileObject) evt.getNewValue();
+                String newPath = FileUtil.toFile(fo).getPath();
+                if (!IpeUtils.isPathAbsolute(getPath())) {
+                    newPath = IpeUtils.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDir(), newPath);
+                }
+                newPath = FilePathAdaptor.normalize(newPath);
+                renameTo(newPath);
             }
-            newPath = FilePathAdaptor.normalize(newPath);
-            renameTo(newPath);
         }
     }
 

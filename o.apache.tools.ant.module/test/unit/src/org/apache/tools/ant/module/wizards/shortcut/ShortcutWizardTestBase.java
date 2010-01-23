@@ -97,12 +97,14 @@ public abstract class ShortcutWizardTestBase extends NbTestCase {
         MockServices.setServices(Repo.class);
         FileObject menuFolder = FileUtil.getConfigFile("Menu");
         assertNotNull("have Menu", menuFolder);
-        menuFolder.setAttribute("&File/&Edit", Boolean.TRUE);
-        menuFolder.setAttribute("&Edit/&Build", Boolean.TRUE);
-        menuFolder.setAttribute("&Build/Help", Boolean.TRUE);
+        menuFolder.getFileObject("&File").setAttribute("position", 100);
+        menuFolder.getFileObject("&Edit").setAttribute("position", 200);
+        menuFolder.getFileObject("&Build").setAttribute("position", 300);
+        menuFolder.getFileObject("Help").setAttribute("position", 400);
         FileObject toolbarsFolder = FileUtil.getConfigFile("Toolbars");
         assertNotNull("have Toolbars", toolbarsFolder);
-        toolbarsFolder.setAttribute("Build/Help", Boolean.TRUE);
+        toolbarsFolder.getFileObject("Build").setAttribute("position", 100);
+        toolbarsFolder.getFileObject("Help").setAttribute("position", 200);
         assertNotNull("have Shortcuts", FileUtil.getConfigFile("Shortcuts"));
         FileObject buildXml = scratch.createData("build.xml");
         FileLock lock = buildXml.lock();

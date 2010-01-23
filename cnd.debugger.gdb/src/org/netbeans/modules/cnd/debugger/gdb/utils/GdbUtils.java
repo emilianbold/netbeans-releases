@@ -229,7 +229,7 @@ public class GdbUtils {
     //  args=[{name="argc",value="1"},{name="argv",value="0x6f19a8"}],
     //  file="quote.cc",fullname="g:/tmp/nik/Quote1/quote.cc",
     //  line="131"},gdb-result-var="$1",return-value="-1"
-    private static void processString(String info, PairProcessor processor) {
+    private static void processString(String info, PairProcessor processor, final String encoding) {
         int len = info.length();
         int i = 0;
         
@@ -269,7 +269,7 @@ public class GdbUtils {
             // put the value in the map and prepare for the next property
             String value = info.substring(i, tend);
             if (key.equals("fullname") || key.equals("file")) { // NOI18N
-                value = gdbToUserEncoding(value); // possibly convert multi-byte fields
+                value = gdbToUserEncoding(value, encoding); // possibly convert multi-byte fields
             }
             processor.onPair(key, value);
             i = tend + 2;
@@ -283,18 +283,18 @@ public class GdbUtils {
      *  @param info A string of key/value pairs
      *  @return A HashMap containing each key/value
      */
-    public static Map<String, String> createMapFromString(String info) {
+    public static Map<String, String> createMapFromString(String info, final String encoding) {
         final HashMap<String, String> map = new HashMap<String, String>();
         processString(info, new PairProcessor() {
             @Override
             public void onPair(String key, String value) {
                 map.put(key, value);
             }
-        });
+        }, encoding);
         return map;
     }
     
-    public static String gdbToUserEncoding(String string) {
+    private static String gdbToUserEncoding(String string, final String encoding) {
         // The first part transforms string to byte array
         char[] chars = string.toCharArray();
         char last = 0, next;
@@ -316,7 +316,7 @@ public class GdbUtils {
 
         // The second part performs encoding to current coding system
         try {
-            string = new String(bytes, System.getProperty("sun.jnu.encoding"));
+            string = new String(bytes, encoding);
         } catch (UnsupportedEncodingException e) {
         }
         return string;
@@ -356,14 +356,14 @@ public class GdbUtils {
      *  @param info A string of key/value pairs
      *  @return An ArrayList with each entry as a value (keys are thrown away, use createMapFromString if you need them)
      */
-    public static List<String> createListFromString(String info) {
+    public static List<String> createListFromString(String info, String encoding) {
         final List<String> list = new ArrayList<String>();
         processString(info, new PairProcessor() {
             @Override
             public void onPair(String key, String value) {
                 list.add(value);
             }
-        });
+        }, encoding);
         return list;
     }
 

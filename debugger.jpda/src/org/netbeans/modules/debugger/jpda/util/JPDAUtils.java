@@ -41,35 +41,22 @@
 
 package org.netbeans.modules.debugger.jpda.util;
 
-import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.Field;
-import com.sun.jdi.Location;
-import com.sun.jdi.Method;
 import com.sun.jdi.ReferenceType;
-import com.sun.jdi.ThreadGroupReference;
-import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.connect.Connector;
-import com.sun.jdi.request.EventRequestManager;
 
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.LocationWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
-import org.openide.util.Exceptions;
 
 
 /**
@@ -78,9 +65,7 @@ import org.openide.util.Exceptions;
 * @author Jan Jancura
 */
 public class JPDAUtils {
-
-    public static final boolean IS_JDK_16 = !System.getProperty("java.version").startsWith("1.5"); // NOI18N
-    public static final boolean IS_JDK_160_02 = IS_JDK_16 && !System.getProperty("java.version").equals("1.6.0") &&
+    public static final boolean IS_JDK_160_02 = !System.getProperty("java.version").equals("1.6.0") &&
                                                              !System.getProperty("java.version").equals("1.6.0_01");
 
 

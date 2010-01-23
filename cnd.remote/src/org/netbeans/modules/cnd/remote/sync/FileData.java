@@ -66,7 +66,7 @@ public final class FileData {
     private final Properties data;
     private final File dataFile;
 
-    private static final String VERSION = "1.0"; // NOI18N
+    private static final String VERSION = "1.1"; // NOI18N
     private static final String VERSION_KEY = "VERSION"; // NOI18N
 
     //
@@ -81,6 +81,12 @@ public final class FileData {
             this.state = mode;
             this.timestamp = timestamp;
         }
+
+        @Override
+        public String toString() {
+            return state.toString() + timestamp;
+        }
+
     }
 
     public FileData(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) {
@@ -102,34 +108,34 @@ public final class FileData {
         }
     }
 
-    /**
-     * Initial filling
-     * NB: file should be absolute and NORMALIZED!
-     */
-    public void addFile(File file) {
-        CndUtils.assertNormalized(file);
-        String key = getFileKey(file);
-        FileInfo info = getFileInfo(key);
-        if (info == null) {
-            setFileInfo(file, FileState.INITIAL);
-        } else {
-            switch (info.state) {
-                case COPIED: // fall through
-                case TOUCHED:
-                    if (file.lastModified() != info.timestamp) {
-                        setFileInfo(file, FileState.INITIAL);
-                    }
-                    break;
-                case INITIAL: // fall through
-                case UNCONTROLLED:
-                    // nothing
-                    break;
-                default:
-                    CndUtils.assertTrue(false, "Unexpected state: " + info.state); //NOI18N
-                    setFileInfo(file, FileState.INITIAL);
-            }
-        }
-    }
+//    /**
+//     * Initial filling
+//     * NB: file should be absolute and NORMALIZED!
+//     */
+//    public void addFile(File file) {
+//        CndUtils.assertNormalized(file);
+//        String key = getFileKey(file);
+//        FileInfo info = getFileInfo(key);
+//        if (info == null) {
+//            setFileInfo(file, FileState.INITIAL);
+//        } else {
+//            switch (info.state) {
+//                case COPIED: // fall through
+//                case TOUCHED:
+//                    if (file.lastModified() != info.timestamp) {
+//                        setFileInfo(file, FileState.INITIAL);
+//                    }
+//                    break;
+//                case INITIAL: // fall through
+//                case UNCONTROLLED:
+//                    // nothing
+//                    break;
+//                default:
+//                    CndUtils.assertTrue(false, "Unexpected state: " + info.state); //NOI18N
+//                    setFileInfo(file, FileState.INITIAL);
+//            }
+//        }
+//    }
 
     public FileState getState(File file) {
         FileInfo info = getFileInfo(file);
@@ -143,11 +149,14 @@ public final class FileData {
     public FileInfo getFileInfo(File file) {
         return getFileInfo(getFileKey(file));
     }
-    
+
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     public void store()  {
         File dir = dataFile.getParentFile();
         if (!dir.exists()) {
-            dir.mkdirs(); // no ret value check - the code below will throw exception
+            if (!dir.mkdirs()) {
+                System.err.printf("Error creating directory %s\n", dir.getAbsolutePath());
+            }
         }
         try {
             OutputStream os = new BufferedOutputStream(new FileOutputStream(dataFile));
@@ -156,7 +165,9 @@ public final class FileData {
             os.close();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-            dataFile.delete();
+            if (!dataFile.delete()) {
+                System.err.printf("Error deleting file %s\n", dataFile.getAbsolutePath());
+            }
         }
     }
 
@@ -172,8 +183,12 @@ public final class FileData {
         if (dataFile.exists()) {
             long time = System.currentTimeMillis();
             final FileInputStream is = new FileInputStream(dataFile);
-            data.load(new BufferedInputStream(is));
-            is.close();
+            BufferedInputStream bs = new BufferedInputStream(is);
+            try {
+                data.load(bs);
+            } finally {
+                bs.close();
+            }
             if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
                 time = System.currentTimeMillis() - time;
                 System.out.printf("reading %d timestamps from %s took %d ms\n", data.size(), dataFile.getAbsolutePath(), time); // NOI18N

@@ -364,7 +364,7 @@ public class MBeanPanel extends javax.swing.JPanel
             if(!mbeanType.equals(WizardConstants.MBEAN_FROM_EXISTING_CLASS))
                 return true;
             
-            if(getPanel().classSelectionJTextField.getText().equals("")) { // NOI18N
+            if(getPanel().classSelectionJTextField.getText().equals(WizardConstants.EMPTYSTRING)) { // NOI18N
                 setErrorMsg("Specify a class to wrap.");// NOI18N
                 return false;
             }
@@ -406,7 +406,7 @@ public class MBeanPanel extends javax.swing.JPanel
                 ioe.printStackTrace();
                 setErrorMsg(ioe.toString());
             }
-            setErrorMsg(WizardConstants.EMPTYSTRING);
+            setErrorMsg(null);
             return true;
         }
         
@@ -418,8 +418,9 @@ public class MBeanPanel extends javax.swing.JPanel
          */
         private void setErrorMsg(String message) {
             if (templateWiz != null) {
-                templateWiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
-                        message);    //NOI18N
+                if (templateWiz.getProperty(WizardDescriptor.PROP_ERROR_MESSAGE) == null) {
+                    templateWiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+                }
             }
         }
         

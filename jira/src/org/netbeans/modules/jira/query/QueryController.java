@@ -109,7 +109,7 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.JiraCommand;
-import org.netbeans.modules.jira.issue.NbJiraIssue;
+import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -582,7 +582,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
             refreshTask.cancel();
         }
         if(query.isSaved()) {
-            repository.stopRefreshing(query);
+            if(!(query.getRepository() instanceof KenaiRepository)) {
+                repository.stopRefreshing(query);
+            }
         }
     }
 
@@ -1054,7 +1056,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
         if(values != null) {
             projects = new Project[values.length];
             for (int i = 0; i < values.length; i++) {
-                projects[i] = (Project) values[i];
+                if(values[i] instanceof Project) {
+                    projects[i] = (Project) values[i];
+                } else {
+                    Jira.LOG.warning("project list item [" + values[i] + " has wrong type [" + values[i].getClass() + "]. Try to reload attributes." );
+                }
             }
         }
         populateProjectDetails(projects);
@@ -1121,6 +1127,12 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
     }
 
+    void progress(String issueDesc) {
+        if(refreshTask != null) {
+            refreshTask.progress(issueDesc);
+        }
+    }
+
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {
         private ProgressHandle handle;
         private int counter;
@@ -1161,6 +1173,14 @@ public class QueryController extends BugtrackingController implements DocumentLi
                     enableFields(true);
                 }
             });
+        }
+
+        synchronized void progress(String issueDesc) {
+            if(handle != null) {
+                handle.progress(
+                    NbBundle.getMessage(
+                        QueryController.class, "LBL_RetrievingIssue", new Object[] {issueDesc}));
+            }
         }
 
         public void executeQuery() {

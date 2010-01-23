@@ -119,15 +119,20 @@ public final class ExecutionSupport {
         };
     }
 
-    public Callable<Process> createSimpleCommand(final String command, final GrailsProjectConfig config,
-            final String... arguments) {
+    public Callable<Process> createSimpleCommand(final String command,
+            final GrailsProjectConfig config, final String... arguments) {
+        return createSimpleCommand(command, false, config, arguments);
+    }
+
+    public Callable<Process> createSimpleCommand(final String command, final boolean debug,
+            final GrailsProjectConfig config, final String... arguments) {
 
         return new Callable<Process>() {
 
             public Process call() throws Exception {
                 File directory = FileUtil.toFile(config.getProject().getProjectDirectory());
                 GrailsPlatform.CommandDescriptor descriptor = GrailsPlatform.CommandDescriptor.forProject(
-                        command, directory, config, arguments, null);
+                        command, directory, config, arguments, null, debug);
                 return platform.createCommand(descriptor).call();
             }
         };

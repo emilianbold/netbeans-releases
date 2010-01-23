@@ -39,11 +39,21 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
+import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
+import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider.NativeProjectImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Test for reaction for external modifications
@@ -81,7 +91,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         final TraceModelBase traceModel = new TraceModelBase(true);
         //traceModel.setUseSysPredefined(true);
         traceModel.processArguments(sourceFile.getAbsolutePath());
-        ModelImpl model = traceModel.getModel();
+        //ModelImpl model = traceModel.getModel();
         //ModelSupport.instance().setModel(model);
         final CsmProject project = traceModel.getProject();
 
@@ -89,10 +99,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         assertNotNull(oldName + " should be found", findDeclaration(oldName, project));
 
         writeFile(sourceFile, "void " + newName + "() {};");
-
-        sleep(1000);
-        FileUtil.refreshAll();
-        sleep(2000);
+        fireFileChanged(project, sourceFile);
 
         project.waitParse();
         assertNotNull(newName + " should be found", findDeclaration(newName, project));
@@ -116,17 +123,12 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         assertEquals(1, csmFile.getIncludes().size());
         assertNull(csmFile.getIncludes().iterator().next().getIncludeFile());
 
-        // This call ensures that workDir content is fully cached,
-        // so that subsequent creation of test.h will be noticed.
-        FileUtil.toFileObject(workDir).getChildren();
-
         writeFile(headerFile, "void foo();\n");
-
-        sleep(1000);
-        FileUtil.refreshAll();
-        sleep(2000);
+        fireFileAdded(project, headerFile);
 
         project.waitParse();
+
+        assertTrue("CsmFile is invalid", csmFile.isValid());
         assertNotNull(csmFile.getIncludes().iterator().next().getIncludeFile());
     }
 
@@ -149,18 +151,28 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         assertEquals(1, csmFile.getIncludes().size());
         assertNull(csmFile.getIncludes().iterator().next().getIncludeFile());
 
-        // This call ensures that workDir content is fully cached,
-        // so that subsequent creation of test2.h will be noticed.
-        FileUtil.toFileObject(workDir).getChildren();
-
         writeFile(headerFile2, "void foo();\n");
-
-        sleep(1000);
-        FileUtil.refreshAll();
-        sleep(2000);
+        fireFileAdded(project, headerFile2);
 
         project.waitParse();
+
+        assertTrue("CsmFile is invalid", csmFile.isValid());
         assertNotNull(csmFile.getIncludes().iterator().next().getIncludeFile());
     }
 
+    private void fireFileChanged(final CsmProject project, File sourceFile) {
+        Object platform = project.getPlatformProject();
+        if (platform instanceof NativeProjectProvider.NativeProjectImpl) {
+            NativeProjectProvider.NativeProjectImpl nativeProject = (NativeProjectImpl) platform;
+            nativeProject.fireFileChanged(sourceFile);
+        }
+    }
+
+    private void fireFileAdded(final CsmProject project, File sourceFile) {
+        Object platform = project.getPlatformProject();
+        if (platform instanceof NativeProjectProvider.NativeProjectImpl) {
+            NativeProjectProvider.NativeProjectImpl nativeProject = (NativeProjectImpl) platform;
+            nativeProject.fireFileAdded(sourceFile);
+        }
+    }
 }

@@ -34,20 +34,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.javacard.ri.card;
 
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Properties;
+import java.util.WeakHashMap;
 import org.netbeans.modules.javacard.common.KeysAndValues;
 import org.netbeans.modules.javacard.ri.platform.installer.DevicePropertiesPanel;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.CardCustomizer;
 import org.netbeans.modules.javacard.spi.capabilities.CardCustomizerProvider;
-import org.netbeans.validation.api.Problem;
 import org.netbeans.validation.api.ui.ValidationGroup;
 
 /**
@@ -57,17 +59,20 @@ import org.netbeans.validation.api.ui.ValidationGroup;
  * @author Tim Boudreau
  */
 public class CustomizerProvider implements CardCustomizerProvider {
-    private CC cc;
+    private final WeakHashMap<Card, Reference<CardCustomizer>> m = new WeakHashMap<Card, Reference<CardCustomizer>>();
     public CardCustomizer getCardCustomizer(Card card) {
         CardProperties props = card.getCapability(CardProperties.class);
         if (props != null) {
-            Properties p = props.toProperties();
             synchronized (this) {
+                Reference<CardCustomizer> ref = m.get(card);
+                CardCustomizer cc = ref == null ? null : ref.get();
                 if (cc == null) {
+                    Properties p = props.toProperties();
                     cc = new CC(p);
+                    m.put(card, new WeakReference<CardCustomizer>(cc));
                 }
+                return cc;
             }
-            return cc;
         } else {
             //XXX return a dummy instance?
             return null;

@@ -123,7 +123,7 @@ public final class GuardedBlocksHighlighting extends AbstractHighlightsContainer
     }
 
     // ----------------------------------------------------------------------
-    //  PropertyChangeListener implementation
+    //  DocumentListener implementation
     // ----------------------------------------------------------------------
 
     public void changedUpdate(DocumentEvent e) {

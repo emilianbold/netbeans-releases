@@ -107,6 +107,37 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="errors-cache">
+      <api name="ParsingAPI"/>
+      <summary>Adding ErrorsCache</summary>
+      <version major="1" minor="30"/>
+      <date day="21" month="1" year="2010"/>
+      <author login="jlahoda"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Added <code>ErrorsCache</code>, that allows the indexers to simply set errors that should be show as badges in the projects tab and
+              in the tasklist.
+          </p>
+      </description>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="ErrorsCache"/>
+      <issue number="179459"/>
+  </change>
+  <change id="BinaryIndexerFactory-scanStarted-scanFinished">
+      <api name="ParsingAPI"/>
+      <summary>Methods scanStarted and scanFinished added to BinaryIndexerFactory</summary>
+      <version major="1" minor="29"/>
+      <date day="18" month="1" year="2010"/>
+      <author login="vstejskal"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              The methods <code>scanStarted</code> and <code>scanFinished</code> were added to
+              <code>BinaryIndexerFactory</code> class in order to notifying binary indexers
+              that a binary root is going to be scanned or that its scanning just finished.
+          </p>
+      </description>
+  </change>
   <change id="vcs-indexing-bridge">
       <api name="ParsingAPI"/>
       <summary>IndexingManager extended to support integration with VCS</summary>

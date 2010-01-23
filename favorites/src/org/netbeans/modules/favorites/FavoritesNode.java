@@ -409,10 +409,20 @@ public final class FavoritesNode extends FilterNode implements Index {
             }
         }
         
-        // Must be overridden since getDisplayName is.
         @Override
         public String getHtmlDisplayName() {
-            return getOriginal().getHtmlDisplayName();
+            if (FavoritesNode.getNode().equals(this.getParentNode())) {
+                DataShadow ds = getCookie(DataShadow.class);
+                if (ds != null) {
+                    String name = ds.getName();
+                    String path = FileUtil.getFileDisplayName(ds.getOriginal().getPrimaryFile());
+                    return NbBundle.getMessage(FavoritesNode.class, "CTL_DisplayNameTemplateHtml", name, path); //NOI18N
+                } else {
+                    return super.getDisplayName();
+                }
+            } else {
+                return getOriginal().getHtmlDisplayName();
+            }
         }
         
         @Override

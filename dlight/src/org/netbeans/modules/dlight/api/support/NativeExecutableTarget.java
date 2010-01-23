@@ -88,7 +88,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private String[] args;
     private String cmd;
     private boolean x11forwarding;
-    private volatile Future<Integer> targetFutureResult;
+    private Future<Integer> targetFutureResult;
     private volatile int pid = -1;
     private volatile Integer status = null;
     private final StateLock stateLock = new StateLock();
@@ -130,10 +130,12 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         this.x11forwarding = configuration.getX11Forwarding();
     }
 
+    @Override
     public int getPID() {
         return pid;
     }
 
+    @Override
     public State getState() {
         synchronized (stateLock) {
             return state;
@@ -145,6 +147,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         return "Executable target: " + cmd; // NOI18N
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (!(e instanceof NativeProcessChangeEvent)) {
             return;
@@ -212,6 +215,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         }
     }
 
+    @Override
     public int getExitCode() throws InterruptedException {
         if (targetFutureResult != null) {
             try {
@@ -225,10 +229,12 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         return -1;
     }
 
+    @Override
     public boolean canBeSubstituted() {
         return true;
     }
 
+    @Override
     public void substitute(String cmd, String[] args) {
         //  isSubstituted = true;
         this.cmd = cmd;
@@ -242,6 +248,7 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
         this.args = allArgs.toArray(new String[0]);
     }
 
+    @Override
     public ExecutionEnvironment getExecEnv() {
         return execEnv;
     }
@@ -298,8 +305,17 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
 
             descr = descr.postExecution(new Runnable() {
 
+                @Override
                 public void run() {
-                    notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, state, status));
+                    final State stateToNotify;
+                    final Integer statusToNotify;
+                    
+                    synchronized (NativeExecutableTarget.this) {
+                        stateToNotify = state == null ? State.FAILED : state;
+                        statusToNotify = status == null ? Integer.MIN_VALUE : status;
+                    }
+                    
+                    notifyListeners(new DLightTargetChangeEvent(NativeExecutableTarget.this, stateToNotify, statusToNotify));
                 }
             });
 
@@ -327,11 +343,13 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
     private static final class NativeExecutableTargetExecutionService
             implements DLightTargetExecutionService<NativeExecutableTarget> {
 
+        @Override
         public InputOutput start(
                 final NativeExecutableTarget target,
                 final ExecutionEnvVariablesProvider executionEnvProvider) {
             Runnable r = new Runnable() {
 
+                @Override
                 public void run() {
                     target.start(executionEnvProvider);
                 }
@@ -345,7 +363,8 @@ public final class NativeExecutableTarget extends DLightTarget implements Substi
             return target.io;
         }
 
-        public synchronized void terminate(NativeExecutableTarget target) {
+        @Override
+        public void terminate(NativeExecutableTarget target) {
             target.terminate();
         }
     }

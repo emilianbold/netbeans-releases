@@ -78,18 +78,10 @@ public class NbClipboardTest extends NbTestCase {
     }
 
     public void testDefaultOnJDK15AndLater() {
-        if (System.getProperty("java.version").startsWith("1.4")) {
-            return;
-        }
-        
         NbClipboard ec = new NbClipboard();
         assertTrue("By default we still do use slow hacks", ec.slowSystemClipboard);
     }
     public void testPropOnJDK15AndLater() {
-        if (System.getProperty("java.version").startsWith("1.4")) {
-            return;
-        }
-        
         System.setProperty("netbeans.slow.system.clipboard.hack", "false");
         
         NbClipboard ec = new NbClipboard();

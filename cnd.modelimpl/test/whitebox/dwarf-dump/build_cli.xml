@@ -93,7 +93,7 @@ Contributor(s):
                         </src>
                         <classpath>
                                 <pathelement location="${project.dm-utils}/dist/dm-utils.jar"/>
-                                <pathelement location="../../../../nbbuild/netbeans/cnd3/modules/org-netbeans-modules-cnd-dwarfdump.jar"/>
+                                <pathelement location="../../../../nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-dwarfdump.jar"/>
                         </classpath>
                 </javac>
     </target>

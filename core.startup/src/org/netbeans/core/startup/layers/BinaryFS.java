@@ -150,11 +150,12 @@ final class BinaryFS extends FileSystem {
         // fill the modifications array
         int stop = buff.getInt() + 8 + MAGIC.length;
         urls = new ArrayList<String>();
-        modifications = new ArrayList<Long>();
+        List<Long> _modifications = new ArrayList<Long>();
         while (buff.position() < stop) {
             urls.add(getString(buff));
-            modifications.add(null);
+            _modifications.add(null);
         }
+        modifications = Collections.synchronizedList(_modifications);
 
 
         // prepare the content buffer and root
@@ -677,7 +678,7 @@ final class BinaryFS extends FileSystem {
                 } else {
                     return Class.forName (tname, true, c);
                 }
-            } catch (NoClassDefFoundError err) {
+            } catch (LinkageError err) {
                 throw new ClassNotFoundException ("Cannot read " + name, err);
             }
         }
@@ -806,7 +807,6 @@ final class BinaryFS extends FileSystem {
         @Override
         public Date lastModified() {
             initialize();
-            synchronized (modifications) {
                 if (lastModified >= 0) {
                     return new Date(lastModified);
                 }
@@ -848,7 +848,6 @@ final class BinaryFS extends FileSystem {
                 } catch (Exception e) {
                     LOG.log(Level.WARNING, null, e);
                 }
-            }
             return super.lastModified ();
         }
     }
@@ -884,12 +883,7 @@ final class BinaryFS extends FileSystem {
         /** Get all children of this folder (files and subfolders). */
         public FileObject[] getChildren() {
             initialize();
-            // 145775 - workaround of JDK 1.5 bug 6377302 (toArray is not thread safe)
-            // When JDK 1.6 is only supported, use just "return childrenMap.values().toArray(NO_CHILDREN);" instead
-            // and remove synchronized in doInitialize.
-            synchronized (this) {
                 return childrenMap.values().toArray(NO_CHILDREN);
-            }
         }
 
         /** Retrieve file or folder contained in this folder by name. */
@@ -910,7 +904,6 @@ final class BinaryFS extends FileSystem {
         protected void doInitialize(ByteBuffer sub) throws Exception {
             int files = sub.getInt();
             if (files > 0) {
-                synchronized (this) {  // 145775
                     childrenMap = new HashMap<String,BFSBase>(files*4/3+1);
                     for (int i=0; i<files; i++) { //read file desc:
                         String nm = getString(sub);   // String name
@@ -920,7 +913,6 @@ final class BinaryFS extends FileSystem {
                             new BFSFile(nm, this, off) :
                             new BFSFolder(nm, this, off));
                     }
-                }  // 145775
                 if (LayerCacheManager.err.isLoggable(Level.FINEST)) {
                     LayerCacheManager.err.log(Level.FINEST, "  children for " + getPath() + " are: " + childrenMap.keySet());
                 }

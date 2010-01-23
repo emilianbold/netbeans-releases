@@ -39,17 +39,47 @@
 
 package org.netbeans.modules.javascript.editing;
 
-import org.netbeans.modules.csl.api.DeclarationFinder;
-import org.netbeans.modules.csl.api.IndexSearcher;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.InstantRenamer;
+import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  * Configuration for JSON
  *
  * @author Tor Norbye
  */
-public class JsonLanguage extends JsLanguage {
+@LanguageRegistration(mimeType="text/x-json") //NOI18N
+public class JsonLanguage extends DefaultLanguageConfig {
+
+    public JsonLanguage() {
+        JsLanguage.registerJsClassPathIfNeeded();
+    }
+
+    @Override
+    public String getLineCommentPrefix() {
+        return JsUtils.getLineCommentPrefix();
+    }
+
+    @Override
+    public boolean isIdentifierChar(char c) {
+        return JsUtils.isIdentifierChar(c);
+    }
+
+    @Override
+    public Language getLexerLanguage() {
+        return JsTokenId.language();
+    }
 
     @Override
     public String getDisplayName() {
@@ -62,19 +92,39 @@ public class JsonLanguage extends JsLanguage {
     }
 
     @Override
-    public boolean hasStructureScanner() {
+    public Set<String> getLibraryPathIds() {
+        return Collections.singleton(JsClassPathProvider.BOOT_CP);
+    }
+
+    // Service Registrations
+    @Override
+    public KeystrokeHandler getKeystrokeHandler() {
+        return new JsKeystrokeHandler();
+    }
+
+    @Override
+    public boolean hasFormatter() {
         return true;
     }
 
     @Override
-    public EmbeddingIndexerFactory getIndexerFactory() {
-        // No JSON indexing
-        return null;
+    public Formatter getFormatter() {
+        return new JsFormatter();
     }
 
     @Override
-    public IndexSearcher getIndexSearcher() {
-        return null;
+    public Parser getParser() {
+        return new JsParser();
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new JsCodeCompletion();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
     }
 
     @Override
@@ -83,7 +133,22 @@ public class JsonLanguage extends JsLanguage {
     }
 
     @Override
-    public DeclarationFinder getDeclarationFinder() {
-        return null;
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return new JsSemanticAnalyzer();
+    }
+
+    @Override
+    public boolean hasOccurrencesFinder() {
+        return true;
+    }
+
+    @Override
+    public OccurrencesFinder getOccurrencesFinder() {
+        return new JsOccurrenceFinder();
+    }
+
+    @Override
+    public InstantRenamer getInstantRenamer() {
+        return new JsRenameHandler();
     }
 }

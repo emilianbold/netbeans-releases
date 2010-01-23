@@ -38,7 +38,8 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
-import java.io.IOException;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -46,8 +47,12 @@ import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryDescriptorCache;
@@ -93,10 +98,14 @@ public class JsfSupport {
         if (wm == null) {
             return null;
         }
+	ClassPath classPath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+	if(classPath == null) {
+	    return null;
+	}
         synchronized (INSTANCIES) {
             JsfSupport instance = INSTANCIES.get(wm);
             if (instance == null) {
-                instance = new JsfSupport(wm);
+                instance = new JsfSupport(wm, classPath);
                 INSTANCIES.put(wm, instance);
             }
             return instance;
@@ -108,18 +117,32 @@ public class JsfSupport {
     private FaceletsLibrarySupport faceletsLibrarySupport;
     private WebModule wm;
     private ClassPath classpath;
+    private JsfIndex index;
+    private MetadataModel<WebBeansModel> webBeansModel;
 
-    private JsfSupport(WebModule wm) {
+    private JsfSupport(WebModule wm, ClassPath classPath) {
         assert wm != null;
 
         this.wm = wm;
 
-        this.classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+        this.classpath = classPath;
+        
         //create classpath support
         this.tldLibrariesCache = new TldLibrariesCache(this);
         this.faceletsDescriptorsCache = new FaceletsLibraryDescriptorCache(this);
-
         this.faceletsLibrarySupport = new FaceletsLibrarySupport(this);
+
+        //adds a classpath listener which invalidates the index instance after classpath change
+        //and also invalidates the facelets library descriptors and tld caches
+        this.classpath.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                synchronized (JsfSupport.this) {
+                    index = null;
+                }
+                tldLibrariesCache.clearCache();
+                faceletsDescriptorsCache.clearCache();
+            }
+        });
         //register html extension
         //TODO this should be done declaratively via layer
         JsfHtmlExtension.activate();
@@ -170,13 +193,24 @@ public class JsfSupport {
         return faceletsLibrarySupport.getLibraries();
     }
 
-    public JsfIndex getIndex() {
-        try {
-            return JsfIndex.get(wm);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+    public synchronized JsfIndex getIndex() {
+        if(index == null) {
+	    this.index = JsfIndex.create(wm);
         }
-        return null;
+        return this.index;
     }
 
+    public FaceletsLibrarySupport getFaceletsLibrarySupport() {
+	return faceletsLibrarySupport;
+    }
+
+    public synchronized MetadataModel<WebBeansModel> getWebBeansModel() {
+	if(webBeansModel == null) {
+	    ModelUnit modelUnit = WebBeansModelSupport.getModelUnit(getWebModule());
+	    webBeansModel = WebBeansModelFactory.getMetaModel(modelUnit);
+	}
+	return webBeansModel;
+    }
+
+    
 }

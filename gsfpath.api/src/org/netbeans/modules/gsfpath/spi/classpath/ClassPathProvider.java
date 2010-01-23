@@ -82,7 +82,7 @@ import org.openide.filesystems.FileObject;
  * {@link org.netbeans.modules.gsfpath.api.classpath.GlobalPathRegistry}
  * when they are to be exposed in the GUI as available for use (e.g. for the editor's Fast Open dialog),
  * and unregister them when they are no longer to be exposed. Typically this is done as part of
- * <a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/ProjectOpenedHook.html">ProjectOpenedHook</a>.
+ * <a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/ProjectOpenedHook.html">ProjectOpenedHook</a>.
  * <p>It is also desirable to produce classpath information for compiled class files
  * (bytecode), including their package roots (whether a disk folder or a JAR root).
  * This will enable parsing of the class files, which is sometimes needed (e.g. for

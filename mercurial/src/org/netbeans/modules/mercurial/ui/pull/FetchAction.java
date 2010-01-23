@@ -51,17 +51,16 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
 
 import java.io.File;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
-import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,26 +78,45 @@ import org.openide.util.NbBundle;
  */
 public class FetchAction extends ContextAction {
     
-    private final VCSContext context;
-
-    public FetchAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
+        return HgUtils.isFromHgRepository(context);
     }
-    
-    public void performAction(ActionEvent e) {
-        final File roots[] = HgUtils.getActionRoots(context);
-        if (roots == null || roots.length == 0) return;
-        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-        
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
-        HgProgressSupport support = new HgProgressSupport() {
-            public void perform() { performFetch(root, this.getLogger()); } };
 
-        support.start(rp, root, org.openide.util.NbBundle.getMessage(FetchAction.class, "MSG_FETCH_PROGRESS")); // NOI18N
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_FetchLocal";                               //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        final VCSContext context = HgUtils.getCurrentContext(nodes);
+        final Set<File> repositoryRoots = HgUtils.getRepositoryRoots(context);
+        // run the whole bulk operation in background
+        Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+            public void run() {
+                for (File repositoryRoot : repositoryRoots) {
+                    final File root = repositoryRoot;
+                    final boolean[] canceled = new boolean[1];
+                    RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
+                    // run every repository fetch in its own support with its own output window
+                    HgProgressSupport support = new HgProgressSupport() {
+                        public void perform() {
+                            performFetch(root, this.getLogger());
+                            canceled[0] = isCanceled();
+                        }
+                    };
+                    support.start(rp, root, org.openide.util.NbBundle.getMessage(FetchAction.class, "MSG_FETCH_PROGRESS")).waitFinished(); //NOI18N
+                    if (canceled[0]) {
+                        break;
+                    }
+                }
+            }
+        });
     }
 
     static void performFetch(final File root, OutputLogger logger) {
+        HgURL pullSource = null;
         try {
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE")); // NOI18N
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE_SEP")); // NOI18N
@@ -112,7 +130,6 @@ public class FetchAction extends ContextAction {
                 return;
             }
 
-            HgURL pullSource;
             try {
                 pullSource = new HgURL(pullSourceString);
             } catch (URISyntaxException ex) {
@@ -133,10 +150,9 @@ public class FetchAction extends ContextAction {
         } finally {
             logger.outputInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_DONE")); // NOI18N
             logger.output(""); // NOI18N
+            if (pullSource != null) {
+                pullSource.clearPassword();
+            }
         }
     }
-
-    public boolean isEnabled() {
-        return HgUtils.isFromHgRepository(context);
-    } 
 }

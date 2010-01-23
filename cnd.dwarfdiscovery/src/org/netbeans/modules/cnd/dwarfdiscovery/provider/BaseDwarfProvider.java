@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -81,10 +82,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     public BaseDwarfProvider() {
     }
     
+    @Override
     public boolean isApplicable(ProjectProxy project) {
         return true;
     }
     
+    @Override
     public void stop() {
         isStoped.set(true);
     }
@@ -181,9 +184,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         Dwarf dump = null;
         try{
             dump = new Dwarf(objFileName);
-            List <CompilationUnit> units = dump.getCompilationUnits();
-            if (units != null && units.size() > 0) {
-                for (CompilationUnit cu : units) {
+            Iterator<CompilationUnit> iterator = dump.iteratorCompilationUnits();
+            while (iterator.hasNext()) {
+                CompilationUnit cu = iterator.next();
+                if (cu != null) {
                     if (cu.getRoot() == null || cu.getSourceFileName() == null) {
                         continue;
                     }
@@ -216,77 +220,85 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return res;
     }
     
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String,SourceFileProperties> map, ProjectProxy project){
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project) {
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;
-        try{
-            if (FULL_TRACE) {System.out.println("Process file "+objFileName);}  // NOI18N
+        try {
+            if (FULL_TRACE) {
+                System.out.println("Process file " + objFileName);  // NOI18N
+            }
             dump = new Dwarf(objFileName);
-            List <CompilationUnit> units = dump.getCompilationUnits();
-            if (units != null && units.size() > 0) {
-                for (CompilationUnit cu : units) {
+            Iterator<CompilationUnit> iterator = dump.iteratorCompilationUnits();
+            while (iterator.hasNext()) {
+                CompilationUnit cu = iterator.next();
+                if (cu != null) {
                     if (isStoped.get()) {
                         break;
                     }
                     if (cu.getRoot() == null || cu.getSourceFileName() == null) {
-                        if (TRACE_READ_EXCEPTIONS) {System.out.println("Compilation unit has broken name in file "+objFileName);}  // NOI18N
+                        if (TRACE_READ_EXCEPTIONS) {
+                            System.out.println("Compilation unit has broken name in file " + objFileName);  // NOI18N
+                        }
                         continue;
                     }
                     String lang = cu.getSourceLanguage();
                     if (lang == null) {
-                        if (TRACE_READ_EXCEPTIONS) {System.out.println("Compilation unit has unresolved language in file "+objFileName+ "for "+cu.getSourceFileName());}  // NOI18N
+                        if (TRACE_READ_EXCEPTIONS) {
+                            System.out.println("Compilation unit has unresolved language in file " + objFileName + "for " + cu.getSourceFileName());  // NOI18N
+                        }
                         continue;
                     }
                     DwarfSource source = null;
-                    if (LANG.DW_LANG_C.toString().equals(lang) ||
-                            LANG.DW_LANG_C89.toString().equals(lang) ||
-                            LANG.DW_LANG_C99.toString().equals(lang)) {
-                        source = new DwarfSource(cu,false,getCommpilerSettings(), grepBase);
+                    if (LANG.DW_LANG_C.toString().equals(lang)
+                            || LANG.DW_LANG_C89.toString().equals(lang)
+                            || LANG.DW_LANG_C99.toString().equals(lang)) {
+                        source = new DwarfSource(cu, false, getCommpilerSettings(), grepBase);
                     } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
-                        source = new DwarfSource(cu,true,getCommpilerSettings(), grepBase);
+                        source = new DwarfSource(cu, true, getCommpilerSettings(), grepBase);
                     } else {
-                        if (FULL_TRACE) {System.out.println("Unknown language: "+lang);}  // NOI18N
+                        if (FULL_TRACE) {
+                            System.out.println("Unknown language: " + lang);  // NOI18N
+                        }
                         // Ignore other languages
                     }
                     if (source != null) {
                         String name = source.getItemPath();
                         SourceFileProperties old = map.get(name);
                         if (old != null && old.getUserInludePaths().size() > 0) {
-                            if (FULL_TRACE) {System.out.println("Compilation unit already exist. Skip "+name);}  // NOI18N
+                            if (FULL_TRACE) {
+                                System.out.println("Compilation unit already exist. Skip " + name);  // NOI18N
+                            }
                             // do not process processed item
                             continue;
                         }
                         source.process(cu);
-                        if (source.getCompilePath() == null){
-                            if (TRACE_READ_EXCEPTIONS) {System.out.println("Compilation unit has NULL compile path in file "+objFileName);}  // NOI18N
+                        if (source.getCompilePath() == null) {
+                            if (TRACE_READ_EXCEPTIONS) {
+                                System.out.println("Compilation unit has NULL compile path in file " + objFileName);  // NOI18N
+                            }
                             continue;
                         }
                         list.add(source);
                     }
                 }
-            } else {
-                if (TRACE_READ_EXCEPTIONS) {System.out.println("There are no compilation units in file "+objFileName);}  // NOI18N
             }
         } catch (FileNotFoundException ex) {
             // Skip Exception
-            if (TRACE_READ_EXCEPTIONS) {System.out.println("File not found "+objFileName+": "+ex.getMessage());}  // NOI18N
+            if (TRACE_READ_EXCEPTIONS) {
+                System.out.println("File not found " + objFileName + ": " + ex.getMessage());  // NOI18N
+            }
         } catch (WrongFileFormatException ex) {
-            if (TRACE_READ_EXCEPTIONS) {System.out.println("Unsuported format of file "+objFileName+": "+ex.getMessage());}  // NOI18N
-            // XXX: OpenSolaris trick not needed due to opening AnalyzeMakeLog to public
-//            ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
-//            String root = "";
-//            if (p != null) {
-//                root = (String)p.getValue();
-//            }
-//            list = AnalyzeMakeLog.runLogReader(objFileName, root);
+            if (TRACE_READ_EXCEPTIONS) {
+                System.out.println("Unsuported format of file " + objFileName + ": " + ex.getMessage());  // NOI18N
+            }
         } catch (IOException ex) {
-            if (TRACE_READ_EXCEPTIONS){
-                System.err.println("Exception in file "+objFileName);  // NOI18N
+            if (TRACE_READ_EXCEPTIONS) {
+                System.err.println("Exception in file " + objFileName);  // NOI18N
                 ex.printStackTrace();
             }
         } catch (Exception ex) {
-            if (TRACE_READ_EXCEPTIONS){
-                System.err.println("Exception in file "+objFileName);  // NOI18N
+            if (TRACE_READ_EXCEPTIONS) {
+                System.err.println("Exception in file " + objFileName);  // NOI18N
                 ex.printStackTrace();
             }
         } finally {
@@ -315,13 +327,14 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     }
 
     public static class CompilerSettings{
-        private List<String> systemIncludePathsC;
-        private List<String> systemIncludePathsCpp;
-        private Map<String,String> systemMacroDefinitionsC;
-        private Map<String,String> systemMacroDefinitionsCpp;
+        private final List<String> systemIncludePathsC;
+        private final List<String> systemIncludePathsCpp;
+        private final Map<String,String> systemMacroDefinitionsC;
+        private final Map<String,String> systemMacroDefinitionsCpp;
         private Map<String,String> normalizedPaths = new ConcurrentHashMap<String, String>();
-        private String compileFlavor;
-        private String cygwinDriveDirectory;
+        private final String compileFlavor;
+        private final String cygwinDriveDirectory;
+        private final boolean isWindows;
         
         public CompilerSettings(ProjectProxy project){
             systemIncludePathsCpp = DiscoveryUtils.getSystemIncludePaths(project, true);
@@ -330,6 +343,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             systemMacroDefinitionsC = DiscoveryUtils.getSystemMacroDefinitions(project,false);
             compileFlavor = DiscoveryUtils.getCompilerFlavor(project);
             cygwinDriveDirectory = DiscoveryUtils.getCygwinDrive(project);
+            isWindows = Utilities.isWindows();
         }
         
         public List<String> getSystemIncludePaths(boolean isCPP) {
@@ -357,7 +371,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             return res;
         }
 
-        private String normalizePath(String path){
+        protected String normalizePath(String path){
             path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
             if (Utilities.isWindows()) {
                 path = path.replace('\\', '/');
@@ -371,6 +385,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
 
         public String getCygwinDrive() {
             return cygwinDriveDirectory;
+        }
+
+        public boolean isWindows(){
+            return isWindows;
         }
 
         private void dispose(){
@@ -397,6 +415,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             this.countDownLatch = countDownLatch;
             this.project = project;
         }
+        @Override
         public void run() {
             try {
                 if (!isStoped.get()) {

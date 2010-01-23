@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 //import org.netbeans.modules.web.struts.StrutsConfigUtilities;
+import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
@@ -239,8 +240,12 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     
     boolean valid(WizardDescriptor wizardDescriptor) {
         String configFile = (String) jComboBoxConfigFile.getSelectedItem();
+
+        Project project = Templates.getProject(wizardDescriptor);
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+
         if (configFile==null) {
-            if (!Utilities.isJavaEE6((TemplateWizard) wizardDescriptor) && !isAddBeanToConfig()) {
+            if (!Utilities.isJavaEE6((TemplateWizard) wizardDescriptor) && !isAddBeanToConfig() && !(JSFUtils.isJavaEE5((TemplateWizard) wizardDescriptor) && JSFUtils.isJSF20(wm))) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(ManagedBeanPanelVisual.class, "MSG_NoConfigFile"));
                 return false;
@@ -248,8 +253,6 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
             return true;
         }
         
-        Project project = Templates.getProject(wizardDescriptor);
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         FileObject dir = wm.getDocumentBase();
         FileObject fo = dir.getFileObject(configFile);
         FacesConfig facesConfig = ConfigurationUtils.getConfigModel(fo, true).getRootComponent();

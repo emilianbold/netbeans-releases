@@ -49,6 +49,10 @@ file_load()
         char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
         traffic_do_load(filename);
         g_free(filename);
+        gtk_widget_destroy(dialog);
+        show_message("File loaded successfully");
+    } else {
+        gtk_widget_destroy(dialog);
     }
 }
 
@@ -60,6 +64,7 @@ file_save()
         file_saveas();
     } else {
         traffic_do_save(traffic_current_file);
+        show_message("File saved successfully");
     }
 }
 
@@ -74,9 +79,13 @@ file_saveas()
             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
             NULL);
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
-        char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-        traffic_do_load(filename);
+        gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+        traffic_do_save(filename);
         g_free(filename);
+        gtk_widget_destroy(dialog);
+        show_message("File saved successfully");
+    } else {
+        gtk_widget_destroy(dialog);
     }
 }
 
@@ -203,3 +212,15 @@ popup_destroyed(GtkWidget *w, gpointer user_data )
 //	}
 }
 
+void
+show_message(const gchar* message)
+{
+    GtkWidget *dialog = gtk_message_dialog_new(
+            window.getShell(),
+            GTK_DIALOG_DESTROY_WITH_PARENT,
+            GTK_MESSAGE_INFO,
+            GTK_BUTTONS_OK,
+            message);
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+}

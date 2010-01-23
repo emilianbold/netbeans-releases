@@ -122,7 +122,7 @@ public class Subversion {
     public static String[] selectRepositoryFolders(String dialogTitle,
                                                    String repositoryUrl,
                                                    String username,
-                                                   String password)
+                                                   char[] password)
                 throws MalformedURLException, IOException {
 
         if (!isClientAvailable(true)) {
@@ -140,7 +140,7 @@ public class Subversion {
                                       repositoryFile,
                                       null,     //files to select
                                       (username != null) ? username : "", //NOI18N
-                                      ((username != null) && (password != null)) ? password : "", //NOI18N
+                                      username != null ? password : null,
                                       null,     //node actions
                                       Browser.BROWSER_HELP_ID_CHECKOUT);    //PENDING - is this help ID correct?
 
@@ -406,7 +406,7 @@ public class Subversion {
                 public void perform() {
                     SvnClient client;
                     try {
-                        client = getSubversion().getClient(repositoryUrl, user, password, this);
+                        client = getSubversion().getClient(repositoryUrl, user, password.toCharArray(), this);
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
                         return;
@@ -683,7 +683,7 @@ public class Subversion {
         try {
             if(username != null) {
                 password = password != null ? password : "";                    // NOI18N
-                return getSubversion().getClient(url, username, password);
+                return getSubversion().getClient(url, username, password.toCharArray());
             } else {
                 return getSubversion().getClient(url);
             }

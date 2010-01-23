@@ -289,23 +289,18 @@ public class WebCustomizer extends AllClassesOfTypeExplorerPanel implements Docu
     private boolean locked;
     
     private class PEH implements ParseErrorHandler {
-
-
         public void handleError(IOException arg0) throws IOException {
             throw arg0;
         }
 
-
         public void handleBadAIDError(IllegalArgumentException arg0, String arg1) {
-            Logger.getLogger (PEH.class.getName()).log (Level.INFO, "Bad AID in" +
-                    " " + arg1, arg0);
+            Logger.getLogger (PEH.class.getName()).log (Level.INFO, "Bad AID in" + //NOI18N
+                    " " + arg1, arg0); //NOI18N
         }
-
 
         public void unrecognizedElementEncountered(String arg0) throws IOException {
             //do nothing
         }
-        
     }
 
     @Override
@@ -500,6 +495,8 @@ public class WebCustomizer extends AllClassesOfTypeExplorerPanel implements Docu
     WebXmlModel getModelFromUI() {
         WebXmlModel result = FileModelFactory.webXmlModel(
                 mgr.getRootContext().getChildren().getNodes());
+        result.setDefaultServlet(nameField.getText().trim());
+        result.setDefaultMapping(mappingField.getText().trim());
         result.setDisplayName(displayNameField.getText());
         return result;
     }

@@ -57,6 +57,10 @@ import static org.netbeans.modules.php.editor.indent.FmtOptions.*;
  */
 public final class CodeStyle {
 
+    static {
+        FmtOptions.codeStyleProducer = new Producer();
+    }
+
     private Preferences preferences;
 
     private CodeStyle(Preferences preferences) {
@@ -100,5 +104,69 @@ public final class CodeStyle {
     
     public int getRightMargin() {
         return preferences.getInt(rightMargin, getDefaultAsInt(rightMargin));
+    }
+
+    // Blank lines -------------------------------------------------------------
+
+    public int getBlankLinesBeforeNamespace() {
+        return preferences.getInt(blankLinesBeforeNamespace, getDefaultAsInt(blankLinesBeforeNamespace));
+    }
+
+    public int getBlankLinesAfterNamespace() {
+        return preferences.getInt(blankLinesAfterNamespace, getDefaultAsInt(blankLinesAfterNamespace));
+    }
+
+    public int getBlankLinesBeforeUse() {
+        return preferences.getInt(blankLinesBeforeUse, getDefaultAsInt(blankLinesBeforeUse));
+    }
+
+    public int getBlankLinesAfterUse() {
+        return preferences.getInt(blankLinesAfterUse, getDefaultAsInt(blankLinesAfterUse));
+    }
+
+    public int getBlankLinesBeforeClass() {
+        return preferences.getInt(blankLinesBeforeClass, getDefaultAsInt(blankLinesBeforeClass));
+    }
+
+    public int getBlankLinesAfterClass() {
+        return preferences.getInt(blankLinesAfterClass, getDefaultAsInt(blankLinesAfterClass));
+    }
+
+    public int getBlankLinesAfterClassHeader() {
+        return preferences.getInt(blankLinesAfterClassHeader, getDefaultAsInt(blankLinesAfterClassHeader));
+    }
+
+    public int getBlankLinesBeforeClassEnd() {
+        return preferences.getInt(blankLinesBeforeClassEnd, getDefaultAsInt(blankLinesBeforeClassEnd));
+    }
+
+    public int getBlankLinesBeforeField() {
+        return preferences.getInt(blankLinesBeforeField, getDefaultAsInt(blankLinesBeforeField));
+    }
+
+    public int getBlankLinesAfterField() {
+        return preferences.getInt(blankLinesAfterField, getDefaultAsInt(blankLinesAfterField));
+    }
+
+    public int getBlankLinesBeforeFunction() {
+        return preferences.getInt(blankLinesBeforeFunction, getDefaultAsInt(blankLinesBeforeFunction));
+    }
+
+    public int getBlankLinesAfterFunction() {
+        return preferences.getInt(blankLinesAfterFunction, getDefaultAsInt(blankLinesAfterFunction));
+    }
+
+    public int getBlankLinesBeforeFunctionEnd() {
+        return preferences.getInt(blankLinesBeforeFunctionEnd, getDefaultAsInt(blankLinesBeforeFunctionEnd));
+    }
+
+
+    
+    private static class Producer implements FmtOptions.CodeStyleProducer {
+
+        public CodeStyle create(Preferences preferences) {
+            return new CodeStyle(preferences);
+        }
+
     }
 }

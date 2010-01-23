@@ -40,20 +40,25 @@
 package org.netbeans.modules.kenai.collab.chat;
 
 import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smackx.muc.Occupant;
 
 /**
  *
  * @author Jan Becicka
  */
 public class FakeRosterEntry implements Comparable {
-    private String user;
+    private Occupant occupant;
 
-    public FakeRosterEntry(String m) {
-        this.user = m;
+    public FakeRosterEntry(Occupant m) {
+        this.occupant = m;
     }
 
     public String getUser() {
-        return StringUtils.parseResource(user);
+        return StringUtils.parseName(occupant.getJid());
+    }
+
+    public String getJid() {
+        return StringUtils.parseBareAddress(occupant.getJid());
     }
 
     @Override
@@ -65,7 +70,7 @@ public class FakeRosterEntry implements Comparable {
             return false;
         }
         final FakeRosterEntry other = (FakeRosterEntry) obj;
-        if (this.user != other.user && (this.user == null || !this.getUser().equals(other.getUser()))) {
+        if (this.occupant != other.occupant && (this.occupant == null || !this.occupant.equals(other.occupant))) {
             return false;
         }
         return true;
@@ -74,17 +79,17 @@ public class FakeRosterEntry implements Comparable {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 73 * hash + (this.user != null ? this.user.hashCode() : 0);
+        hash = 73 * hash + (this.occupant != null ? this.occupant.hashCode() : 0);
         return hash;
     }
 
     public int compareTo(Object o) {
-        return getUser().compareToIgnoreCase(((FakeRosterEntry)o).getUser());
+        return getJid().compareToIgnoreCase(((FakeRosterEntry)o).getJid());
     }
 
     @Override
     public String toString() {
-        return getUser();
+        return getJid();
     }
 
 

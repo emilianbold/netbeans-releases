@@ -40,6 +40,7 @@ package org.netbeans.modules.cnd.repository.disk;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -74,29 +75,30 @@ public class MemoryCacheTest extends NbTestCase {
 
     public void testCache() throws Exception {
         MemoryCache cache = new MemoryCache();
-        RequestProcessor processor = new RequestProcessor("processor", NUMBER_OF_THREADS);
-        List<MyProcess> processes = new ArrayList<MyProcess>(NUMBER_OF_THREADS);
-        for (int i = 0; i < NUMBER_OF_THREADS; i++) {
+        final AtomicBoolean stopFlag = new AtomicBoolean();
+        RequestProcessor processor = new RequestProcessor("processor", NUMBER_OF_THREADS + 1);
+        List<RequestProcessor.Task> tasks = new ArrayList<RequestProcessor.Task>(NUMBER_OF_THREADS);
+        for (int i = 0; i < NUMBER_OF_THREADS; ++i) {
             MyProcess process;
             if (i == 0) {
-                process = new MyProcess(cache, i, 5 * M, 10 * M, true);
+                process = new MyProcess(cache, i, 5 * M, 10 * M, true, stopFlag);
             } else {
-                process = new MyProcess(cache, i, 10 * M, K, false);
+                process = new MyProcess(cache, i, 10 * M, K, false, stopFlag);
 
             }
-            processes.add(process);
-            processor.post(process);
+            tasks.add(processor.post(process));
         }
-        while (true) {
-            Thread.sleep(100);
-            boolean exit = true;
-            for (MyProcess process : processes) {
-                exit &= process.isFinished;
+        processor.post(new Runnable() {
+            @Override
+            public void run() {
+                stopFlag.set(true);
             }
-            if (exit) {
-                break;
-            }
+
+        }, 60000); // limit execution time to 1 minute
+        for (RequestProcessor.Task task : tasks) {
+            task.waitFinished();
         }
+        processor.stop();
     }
 
     private static final class MyProcess implements Runnable {
@@ -107,21 +109,22 @@ public class MemoryCacheTest extends NbTestCase {
         private final MemoryCache cache;
         private final int process;
         private final boolean onlySoft;
-        private boolean isFinished = false;
+        private final AtomicBoolean stopFlag;
 
-        private MyProcess(MemoryCache cache, int process, int max_loop, int max_key, boolean onlySoft) {
+        private MyProcess(MemoryCache cache, int process, int max_loop, int max_key, boolean onlySoft, AtomicBoolean stopFlag) {
             this.cache = cache;
             this.process = process;
             this.max_loop = max_loop;
             this.max_key = max_key;
             this.onlySoft = onlySoft;
+            this.stopFlag = stopFlag;
         }
 
         public void run() {
             if (TRACE) {
                 System.out.println("Started " + process);
             }
-            for (int i = 0; i < max_loop; i++) {
+            for (int i = 0; i < max_loop && !stopFlag.get(); ++i) {
                 int c;
                 if (onlySoft) {
                     c = 0;
@@ -154,7 +157,6 @@ public class MemoryCacheTest extends NbTestCase {
             if (TRACE) {
                 System.out.println("Finished " + process);
             }
-            isFinished = true;
         }
     }
 

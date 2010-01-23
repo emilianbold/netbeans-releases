@@ -557,11 +557,11 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
                     o.addPropertyChangeListener (
                         org.openide.util.WeakListeners.propertyChange (this, o)
                     );
+                    obj = o;
                     // update the lookups
                     setLookups (new Lookup[] { l });
                     if (ERR.isLoggable(Level.FINE)) ERR.fine("change in lookup done" + " for " + getXml()); // NOI18N
                     // and exit
-                    obj = o;
                     if (ERR.isLoggable(Level.FINE)) ERR.fine("data object updated to " + obj + " for " + getXml()); // NOI18N
                     return;
                 } else {

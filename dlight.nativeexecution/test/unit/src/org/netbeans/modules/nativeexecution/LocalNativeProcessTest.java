@@ -355,7 +355,7 @@ public class LocalNativeProcessTest extends NativeExecutionBaseTestCase {
             npb = NativeProcessBuilder.newProcessBuilder(execEnv);
 
             if (info == null || info.getOSFamily() != HostInfo.OSFamily.WINDOWS) {
-                npb.setExecutable("read"); // NOI18N
+                npb.setExecutable("sleep").setArguments("10000"); // NOI18N
             } else {
                 npb.setExecutable("cmd").setArguments("/C", "pause"); // NOI18N
             }

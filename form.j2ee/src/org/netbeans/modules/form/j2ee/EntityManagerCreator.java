@@ -64,6 +64,7 @@ class EntityManagerCreator implements CreationDescriptor.Creator {
      *
      * @return number of parameters of the creator.
      */
+    @Override
     public int getParameterCount() {
         return 1;
     }
@@ -73,6 +74,7 @@ class EntityManagerCreator implements CreationDescriptor.Creator {
      *
      * @return parameter types of the creator.
      */
+    @Override
     public Class[] getParameterTypes() {
         return paramTypes;
     }
@@ -82,6 +84,7 @@ class EntityManagerCreator implements CreationDescriptor.Creator {
      *
      * @return exception types of the creator.
      */
+    @Override
     public Class[] getExceptionTypes() {
         return exTypes;
     }
@@ -91,6 +94,7 @@ class EntityManagerCreator implements CreationDescriptor.Creator {
      *
      * @return property names of the creator.
      */
+    @Override
     public String[] getPropertyNames() {
         return propNames;
     }
@@ -101,6 +105,7 @@ class EntityManagerCreator implements CreationDescriptor.Creator {
      * @param props properties describing the instance to create.
      * @return instance that reflects values of the given properties.
      */
+    @Override
     public Object createInstance(FormProperty[] props) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         return new Object(); // Hack
     }
@@ -111,6 +116,7 @@ class EntityManagerCreator implements CreationDescriptor.Creator {
      * @param paramValues parameter values describing the instance to create.
      * @return instance that reflects values of the given parameters.
      */
+    @Override
     public Object createInstance(Object[] paramValues) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         return new Object(); // Hack
     }
@@ -122,6 +128,7 @@ class EntityManagerCreator implements CreationDescriptor.Creator {
      * @param expressionType type of the expression to create.
      * @return creation code that reflects values of the given properties.
      */
+    @Override
     public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes) {
         assert (props.length == 1) && (props[0].getName().equals(propNames[0]));
         Object unitName = props[0].getJavaInitializationString();
@@ -132,6 +139,7 @@ class EntityManagerCreator implements CreationDescriptor.Creator {
         return sb.toString();
     }
     
+    @Override
     public CodeExpressionOrigin getCodeOrigin(CodeExpression[] params) {
         return null; // PENDING how is this used?
     }

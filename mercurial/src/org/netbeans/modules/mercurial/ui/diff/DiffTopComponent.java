@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -56,14 +56,26 @@ import org.openide.awt.UndoRedo;
 public class DiffTopComponent extends TopComponent implements DiffSetupSource {
 
     private final MultiDiffPanel panel;
+    private final Lookup lookup;
 
     DiffTopComponent(MultiDiffPanel c) {
         setLayout(new BorderLayout());
         c.putClientProperty(TopComponent.class, this);
         add(c, BorderLayout.CENTER);
         panel = c;
+        lookup = panel.getLookup();
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffTopComponent.class, "ACSN_Diff_Top_Component")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    @Override
+    public boolean canClose() {
+        return panel.canClose();
     }
 
     @Override
@@ -98,7 +110,7 @@ public class DiffTopComponent extends TopComponent implements DiffSetupSource {
         panel.requestActive();
     }
 
-    public Collection getSetups() {
+    public Collection<Setup> getSetups() {
         DiffSetupSource mainPanel = ((DiffSetupSource) getComponent(0));
         return mainPanel.getSetups();
     }

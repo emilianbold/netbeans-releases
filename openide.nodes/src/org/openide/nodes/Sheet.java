@@ -252,9 +252,10 @@ public final class Sheet extends Object {
         supp.firePropertyChange(null, null, null);
     }
 
-    /********* Inner classes **********/
-    /** A set of Bean properties.
-    */
+    /**
+     * A list of bean properties.
+     * While there can only be one property of a given name, insertion order is significant.
+     */
     public static final class Set extends Node.PropertySet {
         /** list of properties (Node.Property) */
         private List<Node.Property<?>> props;

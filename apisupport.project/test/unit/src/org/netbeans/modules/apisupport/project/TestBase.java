@@ -63,6 +63,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.CRC32;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
@@ -83,11 +84,11 @@ import org.openide.util.Lookup;
  */
   public abstract class TestBase extends NbTestCase {
 
-    public static final String CLUSTER_IDE = "ide12";
-    public static final String CLUSTER_PLATFORM = "platform11";
-    public static final String CLUSTER_ENTERPRISE = "enterprise6";
-    public static final String CLUSTER_APISUPPORT = "apisupport1";
-    public static final String CLUSTER_JAVA = "java3";
+    public static final String CLUSTER_IDE = "ide";
+    public static final String CLUSTER_PLATFORM = "platform";
+    public static final String CLUSTER_ENTERPRISE = "enterprise";
+    public static final String CLUSTER_APISUPPORT = "apisupport";
+    public static final String CLUSTER_JAVA = "java";
 
     protected TestBase(String name) {
         super(name);
@@ -435,7 +436,7 @@ import org.openide.util.Lookup;
                 "Testing Module", // display name
                 "org/example/" + prjDir + "/resources/Bundle.properties",
                 "org/example/" + prjDir + "/resources/layer.xml",
-                NbPlatform.PLATFORM_ID_DEFAULT); // platform id
+                NbPlatform.PLATFORM_ID_DEFAULT, false); // platform id
         return FileUtil.toFileObject(prjDirF);
     }
     
@@ -456,8 +457,9 @@ import org.openide.util.Lookup;
     public static SuiteProject generateSuite(File workDir, String prjDir, String platformID) throws IOException {
         File prjDirF = file(workDir, prjDir);
         SuiteProjectGenerator.createSuiteProject(prjDirF, platformID, false);
-        return (SuiteProject) ProjectManager.getDefault().findProject(
-                FileUtil.toFileObject(prjDirF));
+        Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
+        assert project instanceof SuiteProject : "From " + prjDirF + " got " + project + " (try MockLookup.setLayersAndInstances())";
+        return (SuiteProject) project;
     }
     
     /**
@@ -492,7 +494,7 @@ import org.openide.util.Lookup;
         String prjDirDotted = prjDir.replace('/', '.');
         File suiteDir = suiteProject.getProjectDirectoryFile();
         File prjDirF = file(parentDir, prjDir);
-        NbModuleProjectGenerator.createSuiteComponentModule(prjDirF, "org.example." + prjDirDotted, "Testing Module", "org/example/" + prjDir + "/resources/Bundle.properties", "org/example/" + prjDir + "/resources/layer.xml", suiteDir); // suite directory
+        NbModuleProjectGenerator.createSuiteComponentModule(prjDirF, "org.example." + prjDirDotted, "Testing Module", "org/example/" + prjDir + "/resources/Bundle.properties", "org/example/" + prjDir + "/resources/layer.xml", suiteDir, false); // suite directory
         return FileUtil.toFileObject(prjDirF);
     }
 

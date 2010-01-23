@@ -221,6 +221,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
 
     protected void performTest(String source, String goldenDataFileName, String goldenErrFileName, Object... params) throws Exception {
         File testFile = getDataFile(source);
+        assertTrue("no test file " + testFile.getAbsolutePath(), testFile.exists());
         performTest(new String[]{testFile.getAbsolutePath()}, goldenDataFileName, goldenErrFileName, params);
     }
 
@@ -294,32 +295,6 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             showDiff(diffErrorFile, buf);
             showDiff(diffOutputFile, buf);
             assertTrue(buf.toString(), false); // NOI18N
-        }
-    }
-
-    private void showDiff(File diffOutputFile, StringBuilder buf) {
-        if (diffOutputFile != null && diffOutputFile.exists()) {
-            int i = 0;
-            try {
-                BufferedReader in = new BufferedReader(new FileReader(diffOutputFile));
-                while (true) {
-                    String line = in.readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    if (i > 50) {
-                        break;
-                    }
-                    if (i == 0) {
-                        buf.append("\nBeginning of diff:");
-                    }
-                    buf.append("\n\t" + line);
-                    i++;
-                }
-                in.close();
-            } catch (IOException ex) {
-                //
-            }
         }
     }
 }

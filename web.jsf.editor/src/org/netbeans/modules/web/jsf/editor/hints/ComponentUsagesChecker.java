@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
@@ -55,6 +56,7 @@ import org.netbeans.modules.web.jsf.editor.JsfSupport;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary.CompositeComponent;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrary;
+import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor.Tag;
 import org.netbeans.modules.web.jsf.editor.tld.TldLibrary;
 import org.openide.util.NbBundle;
 
@@ -123,17 +125,17 @@ public class ComponentUsagesChecker extends HintsProvider {
                                     Collections.EMPTY_LIST, DEFAULT_ERROR_HINT_PRIORITY);
                             hints.add(hint);
                         } else {
-                            //#Bug 176807 fix -  Composite component w/o interface and implementation is ignored
-                            //do not do any check on a composite component w/o any interface attributes
-                            if(component instanceof CompositeComponent) {
-                                if(!component.getTag().hasNonGenenericAttributes()) {
-                                    return ;
-                                }
-                            }
-
                             //check the component attributes
                             TldLibrary.Tag tag = component.getTag();
                             if (tag != null) {
+                                //#Bug 176807 fix -  Composite component w/o interface and implementation is ignored
+                                //do not do any check on a composite component w/o any interface attributes
+                                if(component instanceof CompositeComponent) {
+                                    if(!tag.hasNonGenenericAttributes()) {
+                                        return ;
+                                    }
+                                }
+
                                 //1. check required attributes
                                 Collection<TldLibrary.Attribute> attrs = tag.getAttributes();
                                 for (TldLibrary.Attribute attr : attrs) {
@@ -153,7 +155,9 @@ public class ComponentUsagesChecker extends HintsProvider {
                                 //2. check for unknown attributes
                                 for (AstNode.Attribute nodeAttr : node.getAttributes()) {
                                     //do not check attributes with a namespace
-                                    if (nodeAttr.namespacePrefix() == null && tag.getAttribute(nodeAttr.name()) == null) {
+                                    if (nodeAttr.namespacePrefix() == null && 
+					    tag.getAttribute(nodeAttr.name()) == null &&
+					    !"xmlns".equals(nodeAttr.name().toLowerCase(Locale.ENGLISH))) {
                                         //unknown attribute
                                         Hint hint = new Hint(DEFAULT_ERROR_RULE,
                                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNKNOWN_ATTRIBUTE", nodeAttr.name()),

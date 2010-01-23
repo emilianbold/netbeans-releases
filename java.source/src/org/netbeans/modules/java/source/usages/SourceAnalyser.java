@@ -69,6 +69,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -92,6 +93,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.JavaFileObject.Kind;
 import javax.tools.StandardLocation;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ElementHandle;
@@ -639,13 +641,10 @@ public class SourceAnalyser {
                                     rsList.add(sourceName);
                                 }
                             }
-                            final FileObject fo = URLMapper.findFileObject(this.siblingUrl);
-                            if (fo != null) {
-                                final ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-                                if (cp != null) {
-                                    resourceName = cp.getResourceName(fo, '/', true);   //NOI18N
-                                }
-                            }
+                            final StringBuilder rnBuilder = new StringBuilder(FileObjects.convertPackage2Folder(sourceName));
+                            rnBuilder.append('.');  //NOI18N
+                            rnBuilder.append(FileObjects.getExtension(siblingUrl.getPath()));
+                            resourceName =  rnBuilder.toString();
                         }
                         else {
                             crossedTopLevel = true;

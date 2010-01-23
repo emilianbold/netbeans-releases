@@ -335,6 +335,10 @@ public abstract class GlassfishConfiguration implements
     protected ASDDVersion getInstalledAppServerVersion(File asInstallFolder) {
         File dtdFolder = new File(asInstallFolder, "lib/dtds/"); // NOI18N
         if (dtdFolder.exists()) {
+            if (new File(dtdFolder, "sun-web-app_3_0-0.dtd").exists()) {
+                // !PW FIXME need to add SUN_APPSERVER_9_1 for V3 (& maybe V2.1)
+                return ASDDVersion.SUN_APPSERVER_10_0;
+            }
             if (new File(dtdFolder, "sun-domain_1_3.dtd").exists()) {
                 // !PW FIXME need to add SUN_APPSERVER_9_1 for V3 (& maybe V2.1)
                 return ASDDVersion.SUN_APPSERVER_9_0;

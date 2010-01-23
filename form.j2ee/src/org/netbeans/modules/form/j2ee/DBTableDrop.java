@@ -45,7 +45,6 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ImageIcon;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -68,7 +67,6 @@ import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Result of database table DnD.

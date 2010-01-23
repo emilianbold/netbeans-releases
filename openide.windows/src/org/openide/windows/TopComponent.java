@@ -91,6 +91,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
@@ -242,6 +243,8 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      */
     public static final String PROP_MAXIMIZATION_DISABLED = "netbeans.winsys.tc.maximization_disabled"; //NOI18N
 
+    private transient String modeName;
+
     /** Create a top component.
     */
     public TopComponent() {
@@ -267,6 +270,46 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         // XXX What to do in case nothing in TopComponent is focusable?
         setFocusable(false);
         initActionMap(lookup);
+    }
+
+    private static final String MODE_ID_PREFERENCES_KEY_INFIX = "_modeId_"; //NOI18N
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if (isPersistLocation()) {
+            Mode m = WindowManager.getDefault().findMode(this);
+            if (m != null) {
+                modeName = m.getName();
+                if (modeName == null) {
+                    modeName = getClass().getAnnotation(
+                               RetainLocation.class).value();
+                }
+                NbPreferences.forModule(getClass()).put(getModeIdKey(), modeName);
+            }
+        }
+    }
+
+    private boolean isPersistLocation() {
+        boolean result = getPersistenceType() == PERSISTENCE_NEVER &&
+               getClass().getAnnotation(RetainLocation.class) != null;
+        assert annotationAndPersistenceTypeAreCompatible();
+        return result;
+    }
+
+    private boolean annotationAndPersistenceTypeAreCompatible() {
+        if (getPersistenceType() != PERSISTENCE_NEVER &&
+            getClass().getAnnotation(RetainLocation.class) != null) {
+            Logger.getLogger(TopComponent.class.getName()).log(Level.WARNING,
+                "Useless to annotate a TopComponent with @RetainLocation if " + //NOI18N
+                "its persistence type is not PERSISTENCE_NEVER: {0}", //NOI18N
+                new Object[] { getClass().getName() });
+        }
+        return true;
+    }
+
+    private String getModeIdKey() {
+        return getClass().getName() + MODE_ID_PREFERENCES_KEY_INFIX + 
+                WindowManager.getDefault().findTopComponentID(this);
     }
 
     // It is necessary so the old actions (clone and close from org.openide.actions package) remain working.
@@ -431,6 +474,17 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
      * @deprecated Use {@link #open()} instead. */
     @Deprecated
     public void open(Workspace workspace) {
+        if (isPersistLocation()) {
+            modeName = NbPreferences.forModule(getClass()).get(getModeIdKey(), null);
+            if (modeName == null) {
+                modeName = getClass().getAnnotation(
+                           RetainLocation.class).value();
+            }
+            Mode mode = WindowManager.getDefault().findMode(modeName);
+            if (mode != null) {
+                mode.dockInto(this);
+            }
+        }
         WindowManager.getDefault().topComponentOpen(this);
     }
     
@@ -1174,13 +1228,33 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         return accessibleContext;
     }
 
-    /** Gets lookup which represents context of this component. By default
-     * the lookup delegates to result of <code>getActivatedNodes</code>
-     * method and result of this component <code>ActionMap</code> delegate.
-     * 
+    /**
+     * Gets a lookup which represents the "selection" of this component.
+     * <p>
+     * By default the lookup includes all nodes from {@link #getActivatedNodes},
+     * all objects from those nodes' own lookups (excepting the nodes themselves),
+     * and also the component's {@link ActionMap}.
+     * This is useful for components with explorer views.
+     * <p>
+     * The default implementation also has a special behavior when you look up
+     * {@link Node Node.class}: if {@link #getActivatedNodes} is null (as opposed to
+     * an empty array), the result will contain an extra item whose
+     * {@link org.openide.util.Lookup.Item#getId} is {@code none}
+     * and whose {@link org.openide.util.Lookup.Item#getInstance} is null.
+     * This can be used by (say) node-sensitive actions to differentiate
+     * between a component with an explorer view that currently happens to have no
+     * selected nodes (zero-length array so no {@code Lookup.Item<Node>}),
+     * vs. a component with no explorer view that would never have a node selection
+     * (null so one dummy {@code Lookup.Item<Node>});
+     * in either case {@link org.openide.util.Lookup.Result#allInstances}
+     * would return an empty collection.
+     * In particular, {@link NodeAction} relies on this behavior to avoid disabling
+     * an action just because focus is transferred from a component with a (potential)
+     * node selection to a component that does not have node selections.
+     * <p>
      * If you override the method in your subclass, the default activatedNodes<->lookup synchronization
      * will not be performed. That can influence functionality that relies on activated Nodes being present 
-     * in the TopComponent's lookup. If you want to preserve the synchronization, use <code>associateLookup</code>
+     * in the TopComponent's lookup. If you want to preserve the synchronization, use {@link #associateLookup}
      * instead.
      *
      * @return a lookup with designates context of this component

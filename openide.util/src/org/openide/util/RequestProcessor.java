@@ -53,73 +53,111 @@ import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** Request processor that is capable to execute requests in dedicated threads.
- * You can create your own instance or use the shared one.
+/** Request processor is {@link Executor} (since version 7.16) capable to
+ * perform asynchronous requests in a dedicated thread pool.
+ * <A name="use_cases">There are several use cases for RequestProcessor</A>,
+ * most of them start with creating own <code>RequestProcessor</code>
+ * instance (which by itself is quite lightweight).
  *
- * <P><A name="use_cases">There are several use cases for RequestProcessor:</A>
+ * <h5>Do something later</h5>
  *
- * <UL><LI>Having something done asynchronously in some other thread,
- *  not insisting on any kind of serialization of the requests:
- *  Use <CODE>RequestProcessor.{@link RequestProcessor#getDefault
- *  }.{@link #post(java.lang.Runnable) post(runnable)}</CODE>
- *  for this purpose.
- * <LI>Having something done later in some other thread:
- *  Use <CODE>RequestProcessor.{@link RequestProcessor#getDefault
- *  }.{@link #post(java.lang.Runnable,int) post(runnable,&nbsp;delay)}</CODE>
- * <LI>Having something done periodically in any thread: Use the
- *  {@link RequestProcessor.Task}'s ability to
- *  {@link RequestProcessor.Task#schedule schedule()}, like
- *  <PRE>
- *      static RequestProcessor.Task CLEANER = RequestProcessor.getDefault().post(runnable,DELAY);
- *      public void run() {
- *          doTheWork();
- *          CLEANER.schedule(DELAY);
- *      }
- *  </PRE>
- *  <STRONG>Note:</STRONG> Please think twice before implementing some periodic
- *  background activity. It is generally considered evil if it will run
-    regardless of user actions and the application state, even while the application
-    is minimized / not currently used.
- * <LI>Having something done in some other thread but properly ordered:
- *  Create a private instance of the
- *  {@link RequestProcessor#RequestProcessor(java.lang.String) RequestProcessor(name)}</CODE>
- *  and use it from all places you'd like to have serialized. It works
- *  like a simple Mutex.
- * <LI>Having some entity that will do processing in a limited
- *  number of threads paralelly: Create a private instance of the
- *  {@link RequestProcessor#RequestProcessor(java.lang.String,int) RequestProcessor(name,throughput)}</CODE>
- *  set proper throughput and use it to schedule the work.
- *  It works like a queue of requests passing through a semafore with predefined
- *  number of <CODE>DOWN()</CODE>s.
- * </UL>
+ * In case you want something to be done later in some background thread,
+ * create an instance of <code>RequestProcessor</code> and post tasks to it.
+ * <pre>
+ * private static final RequestProcessor RP = new RequestProcessor("My tasks");
+ * // later
+ * RP.{@link #post(java.lang.Runnable,int) post(runnable,&nbsp;delay)}
+ * </pre>
  *
- * <STRONG>Note:</STRONG> If you don't need to serialize your requests but
- * you're generating them in bursts, you should use your private
- * <CODE>RequestProcessor</CODE> instance with limited throughput (probably
- * set to 1), NetBeans would try to run all your requests in parallel otherwise.
+ * The above example guarantees that there is at most one runnable being
+ * processed in parallel. All your requests are serialized and processed
+ * one by one. <code>RP</code> works here like a simple mutex.
+ * <p>
+ * In case you want more tasks to run in parallel (not very often use case)
+ * you can specify higher
+ * throughput via {@link #RequestProcessor(java.lang.String, int)}. Then
+ * the <code>RP</code> works like a queue of requests passing through a
+ * semafore with predefined number of <CODE>DOWN()</CODE>s.
+ * <p>
+ * You can wait for your tasks to be processed by keeping a reference to the
+ * last one and using {@link RequestProcessor.Task#waitFinished waitFinished()}:
+ * <pre>
+ * private static final RequestProcessor RP = new RequestProcessor("My tasks");
+ * private volatile {@link RequestProcessor.Task} last;
  *
- * <P>
+ * // when posting update the task
+ * last = RP.{@link #post(java.lang.Runnable,int) post(runnable,&nbsp;delay)}
+ *
+ * // later wait
+ * last.{@link RequestProcessor.Task#waitFinished waitFinished()}
+ * </pre>
+ *
+ * <h5>Periodic task</h5>
+ *
+ * It is also possible to do something periodically. Use the {@link RequestProcessor.Task#schedule schedule} method:
+ * <pre>
+ * class Periodic implements Runnable {
+ *   private static final RequestProcessor RP = new RequestProcessor("My tasks");
+ *   private final RequestProcessor.Task CLEANER = RP.{@link #create(java.lang.Runnable) create(this)};
+ *   public void run() {
+ *     doTheWork();
+ *     CLEANER.schedule(DELAY);
+ *   }
+ * }
+ * </pre>
+ *  Please think twice before using such periodic
+ *  background activity. It is generally considered evil if some code runs
+ *  without any user action. Your code shall respect  the application's state,
+ *  and for example when the application is minimized, do nothing.
+ *
+ * <h5>Sliding task</h5>
+ *
+ * Often you want to perform an update of your object internals
+ * based on changes in some model. However your update may be costly
+ * and you want to do it just once, regardless of how many changes are
+ * reported by the model. This can be achieved with a sliding task:
+ * <pre>
+ * class Updater implements PropertyChangeListener, Runnable {
+ *   private static final RequestProcessor RP = new RequestProcessor("My tasks");
+ *   private final RequestProcessor.Task UPDATE = RP.{@link #create(java.lang.Runnable) create(this)};
+ *
+ *   public void propertyChange(PropertyChangeEvent ev) {
+ *     UPDATE.{@link RequestProcessor.Task#schedule schedule(1000)};
+ *   }
+ *
+ *   public void run() {
+ *     doTheWork();
+ *   }
+ * }
+ * </pre>
+ * The above code coaleases all events that arrive in 1s and for all of them
+ * does <code>doTheWork</code> just once.
+ *
+ *
+ * <h5>Interruption of tasks</h5>
+ *
  * Since version 6.3 there is a conditional support for interruption of long running tasks.
- * There always was a way how to cancel not yet running task using {@link RequestProcessor.Task#cancel }
- * but if the task was already running, one was out of luck. Since version 6.3
+ * There always was a way to cancel not yet running task using {@link RequestProcessor.Task#cancel }
+ * but if the task's run() method was already running, one was out of luck.
+ * Since version 6.3
  * the thread running the task is interrupted and the Runnable can check for that
  * and terminate its execution sooner. In the runnable one shall check for 
  * thread interruption (done from {@link RequestProcessor.Task#cancel }) and 
  * if true, return immediatelly as in this example:
- * <PRE>
+ * <pre>
+ * private static final RequestProcessor RP = new {@link #RequestProcessor(String,int,boolean) RequestProcessor("Interruptible", 1, true)};
  * public void run () {
- *     while (veryLongTimeLook) {
+ *     while (veryLongTimeLoop) {
  *       doAPieceOfIt ();
  *
  *       if (Thread.interrupted ()) return;
  *     }
  * }
- * </PRE>
- * Since version 7.16 it implements {@link Executor}
+ * </pre>
  * 
  * @author Petr Nejedly, Jaroslav Tulach
  */
-public final class RequestProcessor implements Executor{
+public final class RequestProcessor implements Executor {
     /** the static instance for users that do not want to have own processor */
     private static RequestProcessor DEFAULT = new RequestProcessor();
 
@@ -475,28 +513,29 @@ public final class RequestProcessor implements Executor{
     void enqueue(Item item) {
         Logger em = logger();
         boolean loggable = em.isLoggable(Level.FINE);
+        boolean wasNull;
         
         synchronized (processorLock) {
-            if (item.getTask() == null) {
-                if (loggable) {
-                    em.fine("Null task for item " + item); // NOI18N
+            wasNull = item.getTask() == null;
+            if (!wasNull) {
+                prioritizedEnqueue(item);
+
+                if (running < throughput) {
+                    running++;
+
+                    Processor proc = Processor.get();
+                    processors.add(proc);
+                    proc.setName(name);
+                    proc.attachTo(this);
                 }
-                return;
-            }
-
-            prioritizedEnqueue(item);
-
-            if (running < throughput) {
-                running++;
-
-                Processor proc = Processor.get();
-                processors.add(proc);
-                proc.setName(name);
-                proc.attachTo(this);
             }
         }
         if (loggable) {
-            em.fine("Item enqueued: " + item.action + " status: " + item.enqueued); // NOI18N
+            if (wasNull) {
+                em.fine("Null task for item " + item); // NOI18N
+            } else {
+                em.fine("Item enqueued: " + item.action + " status: " + item.enqueued); // NOI18N
+            }
         }
     }
 

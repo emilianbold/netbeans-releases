@@ -88,6 +88,11 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
         return new ProjectWebServiceNodeFactory();
     }
 
+    @NodeFactory.Registration(projectType="org-netbeans-modules-j2ee-clientproject",position=180)
+    public static ProjectWebServiceNodeFactory j2eeClientProject() {
+        return new ProjectWebServiceNodeFactory();
+    }
+
     /** Creates a new instance of ProjectWebServiceNodeFactory */
     public ProjectWebServiceNodeFactory() {
     }

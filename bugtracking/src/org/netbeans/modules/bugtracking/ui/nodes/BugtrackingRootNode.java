@@ -53,13 +53,14 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.RepositoriesSupport;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Root node representing Bugtracking in the Servises window
@@ -123,7 +124,10 @@ public class BugtrackingRootNode extends AbstractNode {
          * Creates a new instance of RootNodeChildren
          */
         public RootNodeChildren() {
-            RepositoriesSupport.getInstance().addPropertyChangeListener(this);
+            BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+            for (BugtrackingConnector c : connectors) {
+                c.addPropertyChangeListener(this);
+            }
         }
 
         @Override
@@ -150,7 +154,7 @@ public class BugtrackingRootNode extends AbstractNode {
         private void refreshKeys() {
             AbstractNode waitNode = new WaitNode(org.openide.util.NbBundle.getMessage(BugtrackingRootNode.class, "LBL_Wait")); // NOI18N
             setKeys(Collections.singleton(waitNode));
-            BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
+            RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     List<Repository> l = new ArrayList<Repository>();
                     l.addAll(Arrays.asList(BugtrackingManager.getInstance().getRepositories()));
@@ -161,7 +165,7 @@ public class BugtrackingRootNode extends AbstractNode {
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(RepositoriesSupport.EVENT_REPOSITORIES_CHANGED)) {
+            if(evt.getPropertyName().equals(BugtrackingConnector.EVENT_REPOSITORIES_CHANGED)) {
                 refreshKeys();
             }
         }

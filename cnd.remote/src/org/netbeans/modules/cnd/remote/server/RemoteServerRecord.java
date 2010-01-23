@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -85,6 +84,7 @@ public class RemoteServerRecord implements ServerRecord {
      * in the AWT Event thread if called while adding a node from ToolsPanel, or in a different
      * thread if called during startup from cached information.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings("Dm")
     /*package-local*/ RemoteServerRecord(final ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean connect) {
         CndUtils.assertTrue(env != null);
         CndUtils.assertTrue(syncFactory != null);
@@ -100,14 +100,7 @@ public class RemoteServerRecord implements ServerRecord {
             state = State.ONLINE;
         } else {
             editable = true;
-            if (connect) {
-                state = State.UNINITIALIZED;
-            } else if (ConnectionManager.getInstance().isConnectedTo(env)) {
-                state = State.ONLINE;
-            } else {
-                state = State.OFFLINE;
-            }
-            
+            state = connect ? State.UNINITIALIZED : State.OFFLINE;
         }
         x11forwarding = Boolean.getBoolean("cnd.remote.X11"); //NOI18N;
 //        x11forwardingPossible = true;
@@ -159,6 +152,8 @@ public class RemoteServerRecord implements ServerRecord {
 //        if (ostate == State.UNINITIALIZED) {
 //            checkX11Forwarding();
 //        }
+        boolean initPathMap = false;
+
         synchronized (stateLock) {
             if (rss.isCancelled()) {
                 state = State.CANCELLED;
@@ -166,9 +161,12 @@ public class RemoteServerRecord implements ServerRecord {
                 state = State.OFFLINE;
                 reason = rss.getReason();
             } else {
-                RemotePathMap.getPathMap(getExecutionEnvironment()).init();
+                initPathMap = true;
                 state = State.ONLINE;
             }
+        }
+        if (initPathMap) {
+            RemotePathMap.getPathMap(getExecutionEnvironment()).init();
         }
         if (pcs != null) {
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);

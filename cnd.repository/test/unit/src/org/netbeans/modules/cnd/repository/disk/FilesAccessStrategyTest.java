@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.test.TestObject;
 import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
+import org.openide.util.RequestProcessor;
 
 /**
  * Test for FilesAccessStrategyImpl
@@ -116,6 +117,7 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
     public void testMultyThread() throws Exception {
 
         String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
+        dataPath = dataPath+"/org"; //NOI18N
 
         String[] units = new String[]{
             "FilesAccessStrategyTestUnit1", "FilesAccessStrategyTestUnit2",
@@ -185,11 +187,21 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
         }
         sleep(1000); // wait threads to start
 
-        for (int lap = 0; lap < lapsCount; lap++) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                proceed = false;
+            }
+        }, 60*1000);
+
+        loop:for (int lap = 0; lap < lapsCount; lap++) {
             if (TRACE) {
                 System.out.printf("Writing objects: lap %d\n", lap);
             }
             for (int i = 0; i < objects.length; i++) {
+                if (!proceed) {
+                    break loop;
+                }
                 strategy.write(objects[i].getKey(), objects[i]);
                 if (lap == 0) {
                     filled = i;

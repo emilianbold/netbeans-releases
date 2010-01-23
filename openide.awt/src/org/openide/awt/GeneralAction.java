@@ -50,14 +50,13 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import org.netbeans.modules.openide.util.ActionsBridge;
-import org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable;
 import org.openide.awt.ContextAction.Performer;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.ActionInvoker;
 
 /**
  *
@@ -214,8 +213,7 @@ final class GeneralAction {
             assert EventQueue.isDispatchThread();
             final javax.swing.Action a = findAction();
             if (a != null) {
-                ActionRunnable ar = ActionRunnable.create(e, a, async);
-                ActionsBridge.doPerformAction(a, ar);
+                ActionInvoker.invokeAction(a, e, async, null);
             }
         }
 
@@ -270,14 +268,16 @@ final class GeneralAction {
         public void setEnabled(boolean b) {
         }
 
-        void updateState(ActionMap prev, ActionMap now) {
+        void updateState(ActionMap prev, ActionMap now, boolean fire) {
             if (key == null) {
                 return;
             }
 
+            boolean prevEnabled = false;
             if (prev != null) {
                 Action prevAction = prev.get(key);
                 if (prevAction != null) {
+                    prevEnabled = fire && prevAction.isEnabled();
                     prevAction.removePropertyChangeListener(weakL);
                 }
             }
@@ -285,6 +285,10 @@ final class GeneralAction {
                 Action nowAction = now.get(key);
                 if (nowAction != null) {
                     nowAction.addPropertyChangeListener(weakL);
+                    PropertyChangeSupport sup = fire ? support : null;
+                    if (sup != null && nowAction.isEnabled() != prevEnabled) {
+                        sup.firePropertyChange("enabled", prevEnabled, !prevEnabled); // NOI18N
+                    }
                 }
             }
         }

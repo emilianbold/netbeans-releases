@@ -81,6 +81,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
     public RefactoringPluginFactoryImpl() {
     }
 
+    @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         if (refactoring instanceof RenameRefactoring
                 || refactoring instanceof MoveRefactoring
@@ -104,21 +105,26 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             this.refactoring = refactoring;
         }
 
+        @Override
         public Problem preCheck() {
             return null;
         }
 
+        @Override
         public Problem checkParameters() {
             return null;
         }
 
+        @Override
         public Problem fastCheckParameters() {
             return null;
         }
 
+        @Override
         public void cancelRequest() {
         }
 
+        @Override
         public Problem prepare(RefactoringElementsBag refactoringElements) {
             Lookup sourceLookup = refactoring.getRefactoringSource();
             NonRecursiveFolder pkg = sourceLookup.lookup(NonRecursiveFolder.class);
@@ -204,25 +210,31 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             this.displayText = displayText;
         }
 
+        @Override
         public String getText() {
             return "Resources update"; // NOI18N
         }
 
+        @Override
         public String getDisplayText() {
             return displayText;
         }
 
+        @Override
         public void performChange() {
         }
 
+        @Override
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
 
+        @Override
         public FileObject getParentFile() {
             return file;
         }
 
+        @Override
         public PositionBounds getPosition() {
             return null;
         }
@@ -255,6 +267,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             this.srcFileBefore = srcFileBefore;
         }
 
+        @Override
         public void commit() {
             if (!refElement.isEnabled()) {
                 return;
@@ -329,6 +342,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             }
         }
 
+        @Override
         public void rollback() {
             if (!refElement.isEnabled()) {
                 return;
@@ -375,6 +389,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             }
         }
 
+        @Override
         public void performChange() {
         }
 
@@ -393,23 +408,28 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             }
         }
 
+        @Override
         public String getText() {
             return "Resources update"; // NOI18N
         }
 
+        @Override
         public String getDisplayText() {
             return NbBundle.getMessage(RefactoringPluginFactoryImpl.class,
                     "CTL_ResourceMapRef", propertiesDO.getPrimaryFile().getNameExt()); // NOI18N
         }
 
+        @Override
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
 
+        @Override
         public FileObject getParentFile() {
             return propertiesDO.getPrimaryFile();
         }
 
+        @Override
         public PositionBounds getPosition() {
             return null;
         }
@@ -436,6 +456,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                     .getResourceName(resFolder.getParent(), '.', false);
         }
 
+        @Override
         public void commit() {
             if (!refElement.isEnabled()) {
                 return;
@@ -458,6 +479,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             }
         }
 
+        @Override
         public void rollback() {
             if (!refElement.isEnabled()) {
                 return;

@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -153,7 +154,7 @@ public class ProjectActionSupport {
     private HandleEvents mainTabHandler = null;
     private ArrayList<String> tabNames = new ArrayList<String>();
 
-    private class HandleEvents implements ExecutionListener {
+    private final class HandleEvents implements ExecutionListener {
 
         private InputOutput ioTab = null;
         private ProjectActionEvent[] paes;
@@ -236,11 +237,13 @@ public class ProjectActionSupport {
 
         private ProgressHandle createProgressHandle() {
             ProgressHandle handle = ProgressHandleFactory.createHandle(tabNameSeq, new Cancellable() {
+                @Override
                 public boolean cancel() {
                     sa.actionPerformed(null);
                     return true;
                 }
             }, new AbstractAction() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     getTab().select();
                 }
@@ -252,6 +255,7 @@ public class ProjectActionSupport {
         private ProgressHandle createProgressHandleNoCancel() {
             ProgressHandle handle = ProgressHandleFactory.createHandle(tabNameSeq,
                     new AbstractAction() {
+                @Override
                         public void actionPerformed(ActionEvent e) {
                             getTab().select();
                         }
@@ -267,6 +271,8 @@ public class ProjectActionSupport {
             list.add(sa);
             list.add(ra);
             additional = BuildActionsProvider.getDefault().getActions(name, paes);
+            // TODO: actions should have acces to output writer. Action should listen output writer.
+            // Provide parameter outputListener for DefaultProjectActionHandler.ProcessChangeListener
             list.addAll(additional);
             InputOutput tab;
             if (reuse) {
@@ -299,6 +305,7 @@ public class ProjectActionSupport {
             progressHandle.start();
             if (SwingUtilities.isEventDispatchThread()) {
                 RequestProcessor.getDefault().post(new Runnable(){
+                    @Override
                     public void run() {
                         go();
                     }
@@ -309,6 +316,7 @@ public class ProjectActionSupport {
         }
 
         private void go() {
+            LifecycleManager.getDefault().saveAll();
             currentHandler = null;
             sa.setEnabled(false);
             ra.setEnabled(false);
@@ -377,6 +385,7 @@ public class ProjectActionSupport {
             return currentHandler;
         }
 
+        @Override
         public void executionStarted(int pid) {
             if (additional != null) {
                 for (BuildAction action : additional) {
@@ -386,6 +395,7 @@ public class ProjectActionSupport {
             }
         }
 
+        @Override
         public void executionFinished(int rc) {
             if (additional != null) {
                 for (Action action : additional) {
@@ -422,6 +432,7 @@ public class ProjectActionSupport {
             if (rc == 0) {
                 currentAction++;
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         go();
                     }
@@ -573,6 +584,7 @@ public class ProjectActionSupport {
         //setEnabled(false); // initially, until ready
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled()) {
                 return;
@@ -594,6 +606,7 @@ public class ProjectActionSupport {
             putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.RerunAction.rerun")); // NOI18N
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             setEnabled(false);
             handleEvents.reRun();

@@ -48,7 +48,7 @@ import java.util.Stack;
 import java.util.Vector;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -73,7 +73,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
@@ -130,11 +129,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     // interface XMLDecoder
+    @Override
     public String tag() {
         return tag;
     }
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) throws VersionException {
         String what = "project configuration"; // NOI18N
         checkVersion(atts, what, CURRENT_VERSION);
@@ -146,6 +147,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
         Configuration[] confsA = new Configuration[confs.size()];
         confsA = confs.toArray(confsA);
@@ -153,6 +155,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
         if (element.equals(CONF_ELEMENT)) {
             int confType = 0;
@@ -200,7 +203,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP:  < version 5
             currentFolder = new Folder(projectDescriptor, projectDescriptor.getLogicalFolders(), "ExternalFiles", "Important Files", false); // NOI18N
             projectDescriptor.setExternalFileItems(currentFolder);
-            projectDescriptor.getLogicalFolders().addFolder(currentFolder);
+            projectDescriptor.getLogicalFolders().addFolder(currentFolder, true);
         } else if (element.equals(LOGICAL_FOLDER_ELEMENT)) {
             if (currentFolderStack.size() == 0) {
                 currentFolder = projectDescriptor.getLogicalFolders();
@@ -387,6 +390,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
         if (element.equals(CONF_ELEMENT)) {
             confs.add(currentConf);
@@ -425,7 +429,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(PLATFORM_ELEMENT)) {
             int set = new Integer(currentText).intValue();
             if (descriptorVersion <= 37 && set == 4) {
-                set = Platform.PLATFORM_GENERIC;
+                set = PlatformTypes.PLATFORM_GENERIC;
             }
             ((MakeConfiguration) currentConf).getDevelopmentHost().setBuildPlatform(set);
         } else if (element.equals(DEPENDENCY_CHECKING)) {

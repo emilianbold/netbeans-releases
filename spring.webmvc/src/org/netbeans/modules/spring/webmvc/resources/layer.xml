@@ -56,6 +56,9 @@ made subject to such option by the copyright holder.
             <file name="spring-webmvc-2.5.xml" url="spring-webmvc-2.5.xml">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.spring.webmvc.resources.Bundle#spring-webmvc"/>
             </file>
+            <file name="spring-webmvc-3.0.xml" url="spring-webmvc-3.0.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.spring.webmvc.resources.Bundle#spring-webmvc3"/>
+            </file>
         </folder>
     </folder>
     <folder name="Templates">

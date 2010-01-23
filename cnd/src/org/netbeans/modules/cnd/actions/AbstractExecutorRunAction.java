@@ -40,6 +40,7 @@ package org.netbeans.modules.cnd.actions;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -107,6 +108,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
 
@@ -212,7 +214,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return set.isSunCompiler();
     }
 
-    private static CompilerSet getCompilerSet(Node node ){
+    protected static CompilerSet getCompilerSet(Node node ){
         Project project;
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
@@ -332,8 +334,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     }
 
     public static String findTools(String toolName){
-        List<String> list = new ArrayList<String>(Path.getPath());
-        for (String path : list) {
+        for (String path : Path.getPath()) {
             String task = path+File.separatorChar+toolName;
             File tool = new File(task);
             if (tool.exists() && tool.isFile()) {
@@ -401,6 +402,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return envMap;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP; // FIXUP ???
     }
@@ -566,6 +568,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             this.syncWorker = syncWorker;
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             if (!(e instanceof NativeProcessChangeEvent)) {
                 return;
@@ -591,12 +594,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     }
                     shutdownSyncWorker();
                     postRunnable = new Runnable() {
+                        @Override
                         public void run() {
                             String message = getString("Output."+resourceKey+"Terminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                             String statusMessage = getString("Status."+resourceKey+"Terminated"); // NOI18N
-                            tab.getOut().println();
-                            tab.getOut().println(message);
-                            tab.getOut().flush();
+                            tab.getErr().println();
+                            tab.getErr().println(message);
+                            tab.getErr().flush();
+                            closeIO();
                             StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
@@ -610,12 +615,14 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     }
                     shutdownSyncWorker();
                     postRunnable = new Runnable() {
+                        @Override
                         public void run() {
                             String message = getString("Output."+resourceKey+"FailedToStart"); // NOI18N
                             String statusMessage = getString("Status."+resourceKey+"FailedToStart"); // NOI18N
-                            tab.getOut().println();
-                            tab.getOut().println(message);
-                            tab.getOut().flush();
+                            tab.getErr().println();
+                            tab.getErr().println(message);
+                            tab.getErr().flush();
+                            closeIO();
                             StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
@@ -629,6 +636,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     }
                     shutdownSyncWorker();
                     postRunnable = new Runnable() {
+                        @Override
                         public void run() {
                             String message;
                             String statusMessage;
@@ -639,9 +647,11 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                                 message = getString("Output."+resourceKey+"Successful", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                                 statusMessage = getString("Status."+resourceKey+"Successful"); // NOI18N
                             }
-                            tab.getOut().println();
-                            tab.getOut().println(message);
-                            tab.getOut().flush();
+                            PrintWriter wr = process.exitValue() == 0 ? tab.getOut(): tab.getErr();
+                            wr.println();
+                            wr.println(message);
+                            wr.flush();
+                            closeIO();
                             StatusDisplayer.getDefault().setStatusText(statusMessage);
                         }
                     };
@@ -650,12 +660,24 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
 
+        @Override
         public void run() {
             if (postRunnable != null) {
                 postRunnable.run();
             }
         }
 
+        private void closeIO(){
+            tab.getErr().close();
+            tab.getOut().close();
+            try {
+                tab.getIn().close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        @Override
         public LineConvertor newLineConvertor() {
             return new LineConvertor() {
                 @Override

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.html.lexer;
+package org.netbeans.modules.el.lexer;
 
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -48,7 +48,7 @@ import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 
 /**
- * Test HTML lexer analyzis
+ * Test EL lexer test
  *
  * @author Marek Fukala
  */
@@ -70,6 +70,12 @@ public class ELLexerBatchTest extends TestCase {
         String text = "session";
         TokenSequence ts = TokenHierarchy.create(text, ELTokenId.language()).tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.IDENTIFIER, "session");
+
+        text = "myBean.property";
+        ts = TokenHierarchy.create(text, ELTokenId.language()).tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.IDENTIFIER, "myBean");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.DOT, ".");
+        LexerTestUtilities.assertNextTokenEquals(ts, ELTokenId.IDENTIFIER, "property");
         
         text = "(6 * 0x5) + 05";
         ts = TokenHierarchy.create(text, ELTokenId.language()).tokenSequence();

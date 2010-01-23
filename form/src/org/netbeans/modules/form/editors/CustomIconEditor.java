@@ -272,9 +272,11 @@ public class CustomIconEditor extends javax.swing.JPanel {
     private FileObject findSourceRootOf(FileObject[] roots, String resName) {
         for (FileObject root : roots) {
             ClassPath resCP = ClassPath.getClassPath(root, ClassPath.SOURCE);
-            FileObject res = resCP.findResource(resName);
-            if (res != null) {
-                return res;
+            if (resCP != null) {
+                FileObject res = resCP.findResource(resName);
+                if (res != null) {
+                    return res;
+                }
             }
         }
         return null;
@@ -376,11 +378,17 @@ public class CustomIconEditor extends javax.swing.JPanel {
             if (selectedCPFile != null) {
                 name = FileUtil.getRelativePath(packageRoot, selectedCPFile);
                 try {
-                    Image image = ImageIO.read(selectedCPFile.getURL());
-                    if (image != null) {
-                        icon = new ImageIcon(image);
+                    try {
+                        Image image = ImageIO.read(selectedCPFile.getURL());
+                        if (image != null) {
+                            icon = new ImageIcon(image);
+                            type = IconEditor.TYPE_CLASSPATH;
+                        } // no NbImageIcon will be created for invalid file
+                    } catch (IllegalArgumentException iaex) { // Issue 178906
+                        Logger.getLogger(CustomIconEditor.class.getName()).log(Level.INFO, null, iaex);
+                        icon = new ImageIcon(selectedCPFile.getURL());
                         type = IconEditor.TYPE_CLASSPATH;
-                    } // no NbImageIcon will be created for invalid file
+                    }
                 } catch (IOException ex) { // should not happen
                     Logger.getLogger(CustomIconEditor.class.getName()).log(Level.WARNING, null, ex);
                 }
@@ -390,11 +398,17 @@ public class CustomIconEditor extends javax.swing.JPanel {
             if (selectedExternalFile != null) {
                 name = selectedExternalFile.getAbsolutePath();
                 try {
-                    Image image = ImageIO.read(new File(name));
-                    if (image != null) {
-                        icon = new ImageIcon(image);
+                    try {
+                        Image image = ImageIO.read(new File(name));
+                        if (image != null) {
+                            icon = new ImageIcon(image);
+                            type = IconEditor.TYPE_FILE;
+                        } // no NbImageIcon will be created for invalid file
+                    } catch (IllegalArgumentException iaex) { // Issue 178906
+                        Logger.getLogger(CustomIconEditor.class.getName()).log(Level.INFO, null, iaex);
+                        icon = new ImageIcon(name);
                         type = IconEditor.TYPE_FILE;
-                    } // no NbImageIcon will be created for invalid file
+                    }
                 } catch (IOException ex) {
                     Logger.getLogger(CustomIconEditor.class.getName()).log(Level.WARNING, null, ex);
                 }
@@ -403,9 +417,14 @@ public class CustomIconEditor extends javax.swing.JPanel {
                 type = IconEditor.TYPE_URL;
                 name = selectedURL;
                 try {
-                    Image image = ImageIO.read(new URL(selectedURL));
-                    if (image != null) {
-                        icon = new ImageIcon(image);
+                    try {
+                        Image image = ImageIO.read(new URL(selectedURL));
+                        if (image != null) {
+                            icon = new ImageIcon(image);
+                        }
+                    } catch (IllegalArgumentException iaex) { // Issue 178906
+                        Logger.getLogger(CustomIconEditor.class.getName()).log(Level.INFO, null, iaex);
+                        icon = new ImageIcon(new URL(selectedURL));
                     }
                     // for URL-based icon create NbImageIcon even if no icon can be loaded from the URL
                 } catch (IOException ex) {
@@ -512,8 +531,13 @@ public class CustomIconEditor extends javax.swing.JPanel {
         IconFileItem(FileObject file) {
             this.file = file;
             try {
-                Image image = (file.getSize() < SIZE_LIMIT) ? ImageIO.read(file.getURL()) : null;
-                icon = (image != null) ? new ImageIcon(image) : null;
+                try {
+                    Image image = (file.getSize() < SIZE_LIMIT) ? ImageIO.read(file.getURL()) : null;
+                    icon = (image != null) ? new ImageIcon(image) : null;
+                } catch (IllegalArgumentException iaex) { // Issue 178906
+                    Logger.getLogger(CustomIconEditor.class.getName()).log(Level.INFO, null, iaex);
+                    icon = new ImageIcon(file.getURL());
+                }
             } catch (IOException ex) {
                 Logger.getLogger(CustomIconEditor.class.getName()).log(Level.WARNING, null, ex);
             }

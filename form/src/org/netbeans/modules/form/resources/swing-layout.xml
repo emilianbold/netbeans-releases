@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
     </volume>
     <volume>
         <type>src</type>
-        <resource>jar:nbinst://org.jdesktop.layout/docs/swing-layout-1.0.4-src.zip!/</resource>
+        <resource>jar:nbinst://org.jdesktop.layout/docs/swing-layout-1.0.4-src.zip!/swing-layout-1.0.4/src/java/</resource>
     </volume>
     <volume>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->

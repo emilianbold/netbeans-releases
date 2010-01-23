@@ -1470,7 +1470,7 @@ public final class FileUtil extends Object {
     public static List<String> getMIMETypeExtensions(String mimeType) {
         Parameters.notEmpty("mimeType", mimeType);  //NOI18N
         HashMap<String, String> extensionToMime = new HashMap<String, String>();
-        for (FileObject mimeResolverFO : MIMEResolverImpl.getOrderedResolvers().values()) {
+        for (FileObject mimeResolverFO : MIMEResolverImpl.getOrderedResolvers()) {
             Map<String, Set<String>> mimeToExtensions = MIMEResolverImpl.getMIMEToExtensions(mimeResolverFO);
             for (Map.Entry<String, Set<String>> entry : mimeToExtensions.entrySet()) {
                 String mimeKey = entry.getKey();
@@ -2020,15 +2020,11 @@ public final class FileUtil extends Object {
      * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=46459">Issue #46459</a>
      * @see <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4906607">JRE bug #4906607</a>
      * @since org.openide/1 4.42
+     * @deprecated Just use {@link JFileChooser#setCurrentDirectory}. JDK 6 does not have this bug.
      */
+    @Deprecated
     public static void preventFileChooserSymlinkTraversal(JFileChooser chooser, File currentDirectory) {
-        if (!(Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))
-                && System.getProperty("java.specification.version").startsWith("1.5")) { // NOI18N
-            chooser.setCurrentDirectory(wrapFileNoCanonicalize(currentDirectory));
-            chooser.setFileSystemView(new NonCanonicalizingFileSystemView());
-        } else {
-            chooser.setCurrentDirectory(currentDirectory);
-        }
+        chooser.setCurrentDirectory(currentDirectory);
     }
 
     /**

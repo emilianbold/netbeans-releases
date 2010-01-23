@@ -40,10 +40,13 @@
 package org.netbeans.modules.jira.issue;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -91,10 +94,25 @@ public class CommentsPanel extends JPanel {
     private NbJiraIssue issue;
     private JiraIssueFinder issueFinder;
     private MouseAdapter listener;
+    private MouseMotionListener motionListener;
     private NewCommentHandler newCommentHandler;
 
     public CommentsPanel() {
         setBackground(UIManager.getColor("EditorPane.background")); // NOI18N
+        motionListener = new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                JTextPane pane = (JTextPane)e.getSource();
+                StyledDocument doc = pane.getStyledDocument();
+                Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
+                AttributeSet as = elem.getAttributes();
+                if (StyleConstants.isUnderline(as)) {
+                    pane.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                } else {
+                    pane.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+            }
+        };
         listener = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -143,7 +161,8 @@ public class CommentsPanel extends JPanel {
         String reporter = issue.getRepository().getConfiguration().getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
         addSection(layout, description, reporter, creationTxt, horizontalGroup, verticalGroup, true);
         for (NbJiraIssue.Comment comment : issue.getComments()) {
-            String when = format.format(comment.getWhen());
+            Date date = comment.getWhen();
+            String when = (date == null) ? "" : format.format(date); // NOI18N
             addSection(layout, comment.getText(), comment.getWho(), when, horizontalGroup, verticalGroup, false);
         }
         verticalGroup.addContainerGap();
@@ -175,7 +194,8 @@ public class CommentsPanel extends JPanel {
         rightLabel.setLabelFor(textPane);
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
-            KenaiUserUI ku = new KenaiUserUI(author);
+            String host = ((KenaiRepository) issue.getRepository()).getHost();
+            KenaiUserUI ku = new KenaiUserUI(author + "@" + host);
             ku.setMessage(KenaiUtil.getChatLink(issue));
             stateLabel = ku.createUserWidget();
             stateLabel.setText(null);
@@ -210,7 +230,6 @@ public class CommentsPanel extends JPanel {
             vGroup.add(stateLabel);
         }
         verticalGroup.add(vGroup)
-            .addPreferredGap(LayoutStyle.RELATED)
             .add(textPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
     }
 
@@ -251,6 +270,7 @@ public class CommentsPanel extends JPanel {
                 BorderFactory.createEmptyBorder(3,3,3,3)));
         textPane.setEditable(false);
         textPane.addMouseListener(listener);
+        textPane.addMouseMotionListener(motionListener);
         textPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleName")); // NOI18N
         textPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommentsPanel.class, "CommentsPanel.textPane.AccessibleContext.accessibleDescription")); // NOI18N
     }
@@ -259,6 +279,7 @@ public class CommentsPanel extends JPanel {
     private ActionListener getReplyListener() {
         if (replyListener == null) {
             replyListener = new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     Object source = e.getSource();
                     if (source instanceof JComponent) {
@@ -286,6 +307,7 @@ public class CommentsPanel extends JPanel {
         void openIssue(final String hyperlinkText) {
             final String issueKey = issueFinder.getIssueId(hyperlinkText);
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     Issue is = issue.getRepository().getIssue(issueKey);
                     if (is != null) {

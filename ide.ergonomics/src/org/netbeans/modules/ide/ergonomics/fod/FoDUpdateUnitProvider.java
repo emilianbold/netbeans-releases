@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
+import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -152,6 +153,15 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
                         description.insert(0, sb);
                     } else {
                         description.append(sb);
+                    }
+                    for (Dependency d : mi.getDependencies()) {
+                        if (d.getType() != d.TYPE_MODULE) {
+                            continue;
+                        }
+                        FeatureInfo fi = FeatureManager.findInfo(d.getName());
+                        if (fi != null) {
+                            justKits.addAll(fi.getCodeNames());
+                        }
                     }
                     continue;
                 }

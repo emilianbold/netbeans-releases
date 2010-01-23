@@ -291,21 +291,21 @@ public class ProjectPropPanel extends javax.swing.JPanel {
         encodingLabel.setLabelFor(encoding);
         org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.encodingLabel.text")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout encodingPanelLayout = new org.jdesktop.layout.GroupLayout(encodingPanel);
+        javax.swing.GroupLayout encodingPanelLayout = new javax.swing.GroupLayout(encodingPanel);
         encodingPanel.setLayout(encodingPanelLayout);
         encodingPanelLayout.setHorizontalGroup(
-            encodingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(encodingPanelLayout.createSequentialGroup()
-                .add(encodingLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(encoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 137, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            encodingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(encodingPanelLayout.createSequentialGroup()
+                .addComponent(encodingLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(encoding, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         encodingPanelLayout.setVerticalGroup(
-            encodingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(encodingPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                .add(encodingLabel)
-                .add(encoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            encodingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(encodingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(encodingLabel)
+                .addComponent(encoding, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
