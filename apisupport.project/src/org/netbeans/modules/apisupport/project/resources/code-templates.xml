@@ -88,7 +88,6 @@ ${cursor}]]></code></codetemplate>
     ${exctype type="org.openide.util.Exceptions" editable="false" default=""}.printStackTrace(${exName});
 }]]></code></codetemplate>
 
-    <!-- PENDING:  Replace getClass() with class variable/file name once available -->
     <codetemplate abbreviation="log"><code><![CDATA[${loggerType type="java.util.logging.Logger" default="Logger" editable="false"}.getLogger(${classVar editable="false" currClassName default="getClass()"}.class.getName()).log(${levelType type="java.util.logging.Level" editable="false" default="Level"}.${logLevel default="INFO" completionInvoke}, "${message}");]]></code></codetemplate>
     <codetemplate abbreviation="loge"><code><![CDATA[${loggerType type="java.util.logging.Logger" default="Logger" editable="false"}.getLogger(${classVar editable="false" currClassName default="getClass()"}.class.getName()).log(${levelType type="java.util.logging.Level" editable="false" default="Level"}.${logLevel default="INFO" completionInvoke}, "${message}", ${exc instanceof="java.lang.Throwable" default="ex"});]]></code></codetemplate>
     <codetemplate abbreviation="logp"><code><![CDATA[${loggerType type="java.util.logging.Logger" default="Logger" editable="false"}.getLogger(${classVar editable="false" currClassName default="getClass()"}.class.getName()).log(${levelType type="java.util.logging.Level" editable="false" default="Level"}.${logLevel default="INFO" completionInvoke}, "${message} {0}", ${param instanceof="java.lang.Object" default="arg"});]]></code></codetemplate>

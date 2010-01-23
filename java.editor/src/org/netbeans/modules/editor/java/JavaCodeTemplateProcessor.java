@@ -744,13 +744,11 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 if (path != null) {
                     ClassTree tree = (ClassTree) path.getLeaf();
                     String result = tree.getSimpleName().toString();
-                    System.err.println("Owning class name gets " + result);
                     return result;
                 }
                 return null;
             }
         } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
     }
