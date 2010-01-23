@@ -376,6 +376,10 @@ public class EditorContextBridge {
         return original.replace (File.separatorChar, '/');
     }
 
+    public static String getCurrentClassDeclaration() {
+        return getReflectionMethodValue("getCurrentClassDeclaration");
+    }
+
     
     // innerclasses ............................................................
     
