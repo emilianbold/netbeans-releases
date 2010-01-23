@@ -36,11 +36,8 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.refactoring;
 
-package org.netbeans.modules.css.editor.refactoring;
-
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import javax.swing.text.Position.Bias;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
@@ -54,7 +51,6 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.text.PositionRef;
 import org.openide.util.Lookup;
 
 /**
@@ -87,47 +83,53 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
     public Problem prepare(final RefactoringElementsBag refactoringElements) {
 	Lookup lookup = refactoring.getRefactoringSource();
-	final CssElementContext context = lookup.lookup(CssElementContext.class);
+	CssElementContext context = lookup.lookup(CssElementContext.class);
 
-	//just testing how it could possibly work
+	if (context instanceof CssElementContext.Editor) {
+	    //find all occurances of selected element in (and only in) THIS file.
+	    final CssElementContext.Editor econtext = (CssElementContext.Editor) context;
 
-	//find all occurances of selected element in (and only in) THIS file.
+	    final SimpleNode element = econtext.getElement();
+	    SimpleNode root = econtext.getParserResult().root();
 
-	//xxx do not do that in normal code!
-	CssElementContext.Editor econtext = (CssElementContext.Editor)context;
+	    final CloneableEditorSupport ces = Css.findCloneableEditorSupport(context.getFileObject());
+	    final ModificationResult mr = new ModificationResult(); //per file???
 
-	final SimpleNode element = econtext.getElement();
-	SimpleNode root = context.getResult().root();
+	    //add the differences to the modificationResults
+	    SimpleNodeUtil.visitChildren(root, new NodeVisitor() {
 
-	final CloneableEditorSupport ces = Css.findCloneableEditorSupport(context.getFileObject());
-	final ModificationResult mr = new ModificationResult(); //per file???
+		public void visit(SimpleNode node) {
+		    if (node.kind() == element.kind() && node.image().equals(element.image())) {
+			int astFrom = econtext.getParserResult().getSnapshot().getOriginalOffset(node.startOffset());
+			int astTo = econtext.getParserResult().getSnapshot().getOriginalOffset(node.endOffset());
+			Difference diff = new Difference(Difference.Kind.CHANGE,
+				ces.createPositionRef(astFrom, Bias.Forward),
+				ces.createPositionRef(astTo, Bias.Backward),
+				node.image(),
+				refactoring.getNewName(),
+				"Rename selector name");
+			mr.addDifferences(econtext.getFileObject(), Collections.singletonList(diff));
 
-	//add the differences to the modificationResults
-	SimpleNodeUtil.visitChildren(root, new NodeVisitor() {
-
-	    public void visit(SimpleNode node) {
-		if(node.kind() == element.kind() && node.image().equals(element.image())) {
-		    int astFrom = context.getResult().getSnapshot().getOriginalOffset(node.startOffset());
-		    int astTo = context.getResult().getSnapshot().getOriginalOffset(node.endOffset());
-		    Difference diff = new Difference(Difference.Kind.CHANGE,
-			    ces.createPositionRef(astFrom, Bias.Forward),
-			    ces.createPositionRef(astTo, Bias.Backward),
-			    node.image(),
-			    refactoring.getNewName(),
-			    "Rename selector name");
-		    mr.addDifferences(context.getFileObject(), Collections.singletonList(diff));
-		    
+		    }
 		}
+	    });
+
+	    refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(mr)));
+
+	    for (Difference diff : mr.getDifferences(context.getFileObject())) {
+		refactoringElements.add(refactoring, DiffElement.create(diff, context.getFileObject(), mr));
+
 	    }
-	});
-
-	refactoringElements.registerTransaction(new RetoucheCommit(Collections.singletonList(mr)));
-
-	for(Difference diff : mr.getDifferences(context.getFileObject())) {
-	    refactoringElements.add(refactoring, DiffElement.create(diff, context.getFileObject(), mr));
-
+	} else if (context instanceof CssElementContext.File) {
+	    //refactor a file in explorer
+	    CssElementContext.File fileContext = (CssElementContext.File)context;
+	    System.out.println("refactor file " + fileContext.getFileObject().getPath() );
+	} else if (context instanceof CssElementContext.Folder) {
+	    //refactor a folder in explorer
+	    CssElementContext.Folder fileContext = (CssElementContext.Folder)context;
+	    System.out.println("refactor folder " + fileContext.getFileObject().getPath() );
 	}
+
 	return null;
     }
-
 }

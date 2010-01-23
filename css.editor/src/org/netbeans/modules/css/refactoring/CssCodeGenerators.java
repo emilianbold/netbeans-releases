@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.refactoring;
+package org.netbeans.modules.css.refactoring;
 
 import java.util.Collections;
 import java.util.List;

@@ -36,8 +36,9 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.refactoring;
+package org.netbeans.modules.css.refactoring;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,8 +51,10 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.css.editor.LexerUtils;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -60,14 +63,30 @@ import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
 /**
+ * @todo AFAIR there should be a generic folder refactoring support which anyone could
+ * just plug into. I just copied the way how java does that. It "eats" up
+ * the "java folders" (those whose have the NonRecursiveFolder instance in the Node's lookup)
+ * for its own refactoring. Anyone who wants to refactor folders (including
+ * the java ones) need to create a plugin for the java refactoring and create
+ * a new refactoring actions for the "non-java" folders + another plugin.
+ * The same situation now happens with the css refactoring actions - it "eats up"
+ * all folders (except the java ones since java ref. actions are registered before
+ * the Css's ones) and anyone needs to write a plugin agains css refactoring :-(
+ * to be able to handle folder renames. I recon this is not the way it is supposet to work.
+ *
+ * /2 hmm, this seems to be a temporary solution anyway since once I wanna enable
+ * the html refactoring which includes the ability to handle folder renames I need a
+ * better way than to code agains css... However for the time beeing lets keep it this way.
  *
  * @author marekfukala
  */
@@ -79,10 +98,39 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
     @Override
     public boolean canRename(Lookup lookup) {
 	Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+	//we are able to rename only one node selection [at least for now ;-) ]
 	if (nodes.size() != 1) {
 	    return false;
 	}
-	return isCssContext(nodes.iterator().next());
+
+	//check if the file is a file with .css extension or represents
+	//an opened file which code embeds a css content on the caret position
+	Node node = nodes.iterator().next();
+	if (isCssContext(node)) {
+	    return true;
+	}
+
+	//check if the node represents a folder which may potentially contain
+	//files containg css files or embedded css in some other files (html, jsp ...)
+	FileObject fo = getFileObjectFromNode(node);
+	if (fo != null) {
+	    //TODO is the file a part of a "web" project like web project, php etc...
+	    //to achieve this I need to introduce some kind of "web container" SPI
+	    //which would be registered into either global lookup or into project's
+	    //lookup.
+	    //for the time being just say we can refactor all folders on
+	    //non-read only filesystems
+	    try {
+		//XXX We will disable all refactoring actions possibly registered
+		//behind us for folders!!!! Read my comment in the class javadoc
+		return fo.isValid() && fo.isFolder() && !fo.getFileSystem().isReadOnly();
+	    } catch (FileStateInvalidException ex) {
+		Exceptions.printStackTrace(ex);
+	    }
+	}
+
+	return false; //we are not interested in refactoring this object/s
+
     }
 
     @Override
@@ -91,14 +139,24 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	if (representsOpenedFile(ec)) {
 	    //editor refactoring
 	    new TextComponentTask(ec) {
+
 		@Override
 		protected RefactoringUI createRefactoringUI(CssElementContext context) {
 		    return new CssRenameRefactoringUI(context);
 		}
 	    }.run();
 	} else {
-	    //file refactoring
-	    
+	    //file or folder refactoring
+	    Collection<? extends Node> nodes = selectedNodes.lookupAll(Node.class);
+	    assert nodes.size() == 1;
+	    Node currentNode = nodes.iterator().next();
+	    new NodeToFileTask(currentNode) {
+
+		@Override
+		protected RefactoringUI createRefactoringUI(CssElementContext context) {
+		    return new CssRenameRefactoringUI(context);
+		}
+	    }.run();
 	}
     }
 
@@ -145,6 +203,58 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	return node.getLookup().lookup(EditorCookie.class);
     }
 
+    public static abstract class NodeToFileTask extends UserTask implements Runnable {
+
+	private final Node node;
+	private CssElementContext context;
+	private FileObject fileObject;
+
+	public NodeToFileTask(Node node) {
+	    this.node = node;
+	}
+
+	@Override
+	public void run(ResultIterator resultIterator) throws Exception {
+	    Collection<CssParserResult> results = new ArrayList<CssParserResult>();
+	    Snapshot snapshot = resultIterator.getSnapshot();
+	    try {
+		if (Css.CSS_MIME_TYPE.equals(snapshot.getMimeType())) {
+		    results.add((CssParserResult) resultIterator.getParserResult());
+		    return;
+		}
+		for (Embedding e : resultIterator.getEmbeddings()) {
+		    run(resultIterator.getResultIterator(e));
+		}
+	    } finally {
+		context = new CssElementContext.File(fileObject, results);
+	    }
+	}
+
+	public void run() {
+	    DataObject dobj = node.getLookup().lookup(DataObject.class);
+	    if (dobj != null) {
+		fileObject = dobj.getPrimaryFile();
+
+		if (fileObject.isFolder()) {
+		    //folder
+		    UI.openRefactoringUI(createRefactoringUI(new CssElementContext.Folder(fileObject)));
+		} else {
+		    //css file
+		    Source source = Source.create(fileObject);
+		    try {
+			ParserManager.parse(Collections.singletonList(source), this);
+			UI.openRefactoringUI(createRefactoringUI(context));
+		    } catch (ParseException ex) {
+			Exceptions.printStackTrace(ex);
+		    }
+		}
+	    }
+
+	}
+
+	protected abstract RefactoringUI createRefactoringUI(CssElementContext context);
+    }
+
     public static abstract class TextComponentTask extends UserTask implements Runnable {
 
 	private final Document document;
@@ -189,6 +299,5 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	}
 
 	protected abstract RefactoringUI createRefactoringUI(CssElementContext context);
-	
     }
 }
