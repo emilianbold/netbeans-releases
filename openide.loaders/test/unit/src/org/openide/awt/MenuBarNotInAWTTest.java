@@ -45,6 +45,7 @@ import java.awt.EventQueue;
 import java.util.logging.Level;
 import javax.swing.LookAndFeel;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -75,6 +76,7 @@ public class MenuBarNotInAWTTest extends NbTestCase {
         df = DataFolder.findFolder(fo);
     }
 
+    @RandomlyFails // NB-Core-Build #3897: Laf created expected:<1> but was:<0>
     public void testCreateAndWait() throws Exception {
         mb = new MenuBar(df);
         mb.waitFinished();

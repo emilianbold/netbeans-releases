@@ -460,6 +460,8 @@ public class MakeJNLP extends Task {
 
         fileToOwningModule.remove("ant/nblib/" + dashcnb + ".jar");
 
+        fileToOwningModule.remove("VERSION.txt"); // cluster release information
+
         fileToOwningModule.keySet().removeAll(indirectFilePaths);
         
         if (verifyExcludes != null) {
