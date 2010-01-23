@@ -84,7 +84,7 @@ public class NetigsoTest extends NetigsoHid {
         Module m1;
         HashSet<Module> both = null;
         try {
-            String mf = "Bundle-SymbolicName: org.foo\n" +
+            String mf = "Bundle-SymbolicName: org.foo;singleton:=true\n" +
                 "Bundle-Version: 1.1.0\n" +
                 "Bundle-ManifestVersion: 2\n" +
                 "Export-Package: org.foo";
