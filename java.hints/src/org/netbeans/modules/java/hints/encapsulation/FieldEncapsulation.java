@@ -163,14 +163,21 @@ public class FieldEncapsulation {
         public ChangeInfo implement() throws Exception {
             final FileObject file = handle.getFileObject();
             final JTextComponent comp = EditorRegistry.lastFocusedComponent();
-            if (comp != null && file != null && file == getFileObject(comp.getDocument())) {
+            if (file != null && file == getFileObject(comp)) {
                 invokeRefactoring (comp);
             }
             return null;
         }
 
-        public static FileObject getFileObject(Document doc) {
-            Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
+        public static FileObject getFileObject(JTextComponent comp) {
+            if (comp == null) {
+                return null;
+            }
+            final Document doc = comp.getDocument();
+            if (doc == null) {
+                return null;
+            }
+            final Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
             if (sdp instanceof FileObject) {
                 return (FileObject)sdp;
             }
