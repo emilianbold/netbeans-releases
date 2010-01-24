@@ -40,18 +40,17 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.io.File;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.classpath.BasePathSupport;
@@ -144,39 +143,7 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
         addButton = new JButton();
         removeButton = new JButton();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return removeButton;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return removeButton;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return removeButton;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  addButton){
-                    return removeButton;
-                }
-                if(aComponent ==  ignorePathList){
-                    return addButton;
-                }
-                return removeButton;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  removeButton){
-                    return addButton;
-                }
-                if(aComponent ==  addButton){
-                    return ignorePathList;
-                }
-                return removeButton;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         ignorePathLabel.setLabelFor(ignorePathList);
         Mnemonics.setLocalizedText(ignorePathLabel, NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.ignorePathLabel.text")); // NOI18N
@@ -189,36 +156,36 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
         ignorePathList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.ignorePathList.AccessibleContext.accessibleDescription")); // NOI18N
         Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.addButton.text"));
         Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.removeButton.text"));
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(ignorePathLabel)
-            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addComponent(ignorePathLabel)
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(ignorePathScrollPane, GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(removeButton)
-                    .add(addButton))
-                .add(0, 0, 0))
+                .addComponent(ignorePathScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(removeButton)
+                    .addComponent(addButton))
+                .addGap(0, 0, 0))
         );
 
-        layout.linkSize(new Component[] {addButton, removeButton}, GroupLayout.HORIZONTAL);
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addButton, removeButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(ignorePathLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(addButton)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(removeButton))
-                    .add(ignorePathScrollPane, GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE))
-                .add(0, 0, 0))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(ignorePathLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(addButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(removeButton))
+                    .addComponent(ignorePathScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE))
+                .addGap(0, 0, 0))
         );
 
         ignorePathLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.ignorePathLabel.AccessibleContext.accessibleName")); // NOI18N

@@ -47,16 +47,16 @@ import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -182,60 +182,60 @@ public class PhpUnitOptionsPanel extends JPanel {
             }
         });
         Mnemonics.setLocalizedText(errorLabel, "ERROR");
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(0, 0, 0)
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(errorLabel)
-                            .add(layout.createSequentialGroup()
-                                .add(phpUnitLabel)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(phpUnitTextField, GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(phpUnitBrowseButton)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(phpUnitSearchButton))
-                            .add(noteLabel)))
-                    .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(0, 0, 0)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(errorLabel)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(phpUnitLabel)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(phpUnitTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(phpUnitBrowseButton)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(phpUnitSearchButton))
+                            .addComponent(noteLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(phpUnitInfoLabel))
-                    .add(layout.createSequentialGroup()
+                        .addComponent(phpUnitInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(phpUnitPhp53InfoLabel))
-                    .add(layout.createSequentialGroup()
+                        .addComponent(phpUnitPhp53InfoLabel))
+                    .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(installationInfoLabel))
-                    .add(layout.createSequentialGroup()
+                        .addComponent(installationInfoLabel))
+                    .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(learnMoreLabel)))
-                .add(0, 0, 0))
+                        .addComponent(learnMoreLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(phpUnitLabel)
-                    .add(phpUnitTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(phpUnitSearchButton)
-                    .add(phpUnitBrowseButton))
-                .add(18, 18, 18)
-                .add(noteLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(phpUnitInfoLabel)
-                .add(18, 18, 18)
-                .add(phpUnitPhp53InfoLabel)
-                .add(18, 18, 18)
-                .add(installationInfoLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(learnMoreLabel)
-                .addPreferredGap(LayoutStyle.RELATED, 47, Short.MAX_VALUE)
-                .add(errorLabel)
-                .add(0, 0, 0))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(phpUnitLabel)
+                    .addComponent(phpUnitTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(phpUnitSearchButton)
+                    .addComponent(phpUnitBrowseButton))
+                .addGap(18, 18, 18)
+                .addComponent(noteLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(phpUnitInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(phpUnitPhp53InfoLabel)
+                .addGap(18, 18, 18)
+                .addComponent(installationInfoLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(learnMoreLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED, 47, Short.MAX_VALUE)
+                .addComponent(errorLabel)
+                .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 

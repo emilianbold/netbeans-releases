@@ -43,12 +43,12 @@ import java.awt.Font;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.BoxLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.ui.TransferFileTableChangeListener;
 import org.netbeans.modules.php.project.connections.ui.TransferFilter;
@@ -180,34 +180,34 @@ public class RemoteConfirmationPanelVisual extends JPanel {
         statusLabel.setFont(statusLabel.getFont().deriveFont(statusLabel.getFont().getStyle() | Font.BOLD));
         statusLabel.setText("DUMMY"); // NOI18N
 
-
         downloadInfoLabel.setText(NbBundle.getMessage(RemoteConfirmationPanelVisual.class, "RemoteConfirmationPanelVisual.downloadInfoLabel.text")); // NOI18N
+
         uploadInfoLabel.setText("DUMMY"); // NOI18N
 
         filesPanel.setLayout(new BoxLayout(filesPanel, BoxLayout.LINE_AXIS));
 
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(statusLabel)
-                    .add(downloadInfoLabel)
-                    .add(uploadInfoLabel))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(statusLabel)
+                    .addComponent(downloadInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(uploadInfoLabel))
                 .addContainerGap(27, Short.MAX_VALUE))
-            .add(filesPanel, GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
+            .addComponent(filesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(statusLabel)
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(downloadInfoLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(filesPanel, GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
-                .add(18, 18, 18)
-                .add(uploadInfoLabel))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(statusLabel)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(downloadInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(filesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addComponent(uploadInfoLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 

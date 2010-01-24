@@ -38,21 +38,17 @@
  */
 package org.netbeans.modules.php.project.ui.customizer;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -208,11 +204,11 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         setFocusTraversalPolicy(null);
 
         runAsLabel.setLabelFor(runAsCombo);
-
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
-        urlLabel.setLabelFor(urlTextField);
 
+        urlLabel.setLabelFor(urlTextField);
         Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ProjectUrl")); // NOI18N
+
         indexFileLabel.setLabelFor(indexFileTextField);
 
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile"));
@@ -224,8 +220,8 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         });
 
         argsLabel.setLabelFor(argsTextField);
-
         Mnemonics.setLocalizedText(argsLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Arguments")); // NOI18N
+
         hintLabel.setEditable(false);
         hintLabel.setLineWrap(true);
         hintLabel.setRows(2);
@@ -239,58 +235,58 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
             }
         });
 
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(advancedButton))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(argsLabel)
-                            .add(urlLabel)
-                            .add(indexFileLabel)
-                            .add(runAsLabel))
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(GroupLayout.TRAILING, hintLabel, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(GroupLayout.TRAILING, argsTextField, GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
-                            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(indexFileTextField, GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(indexFileBrowseButton))
-                            .add(GroupLayout.TRAILING, runAsCombo, 0, 220, Short.MAX_VALUE)
-                            .add(GroupLayout.TRAILING, urlTextField, GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))))
-                .add(0, 0, 0))
+                        .addComponent(advancedButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(argsLabel)
+                            .addComponent(urlLabel)
+                            .addComponent(indexFileLabel)
+                            .addComponent(runAsLabel))
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(hintLabel, Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(argsTextField, Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(indexFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 125, Short.MAX_VALUE)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(indexFileBrowseButton))
+                            .addComponent(runAsCombo, Alignment.TRAILING, 0, 220, Short.MAX_VALUE)
+                            .addComponent(urlTextField, Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))))
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(runAsCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(runAsLabel))
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(urlLabel)
-                    .add(urlTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.CENTER)
-                    .add(indexFileBrowseButton)
-                    .add(indexFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(indexFileLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.CENTER)
-                    .add(argsLabel)
-                    .add(argsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(hintLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(advancedButton)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(runAsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(runAsLabel))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(urlLabel)
+                    .addComponent(urlTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.CENTER)
+                    .addComponent(indexFileBrowseButton)
+                    .addComponent(indexFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(indexFileLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.CENTER)
+                    .addComponent(argsLabel)
+                    .addComponent(argsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(hintLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(advancedButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         runAsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.runAsLabel.AccessibleContext.accessibleName")); // NOI18N

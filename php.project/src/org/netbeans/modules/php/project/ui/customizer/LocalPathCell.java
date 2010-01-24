@@ -40,15 +40,12 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import org.jdesktop.layout.GroupLayout;
 import org.openide.util.NbBundle;
 
 public class LocalPathCell extends JPanel {
@@ -96,54 +93,28 @@ public class LocalPathCell extends JPanel {
         localPathTextField = new JTextField();
         localPathBrowseButton = new JButton();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return localPathTextField;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return localPathTextField;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return localPathBrowseButton;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  localPathTextField){
-                    return localPathBrowseButton;
-                }
-                return localPathTextField;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  localPathBrowseButton){
-                    return localPathTextField;
-                }
-                return localPathBrowseButton;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         localPathTextField.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
         localPathBrowseButton.setText(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathBrowseButton.text")); // NOI18N
         localPathBrowseButton.setBorder(BorderFactory.createLineBorder(UIManager.getDefaults().getColor("activeCaptionBorder")));
 
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(localPathTextField, GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
-                .add(0, 0, 0)
-                .add(localPathBrowseButton))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(localPathTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
+                .addComponent(localPathBrowseButton))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                .add(localPathTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .add(localPathBrowseButton))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                .addComponent(localPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(localPathBrowseButton))
         );
 
         localPathTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(LocalPathCell.class, "LocalPathCell.localPathTextField.AccessibleContext.accessibleName")); // NOI18N

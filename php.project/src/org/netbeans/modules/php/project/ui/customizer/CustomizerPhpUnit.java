@@ -40,22 +40,21 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
@@ -255,87 +254,7 @@ public class CustomizerPhpUnit extends JPanel {
         suiteBrowseButton = new JButton();
         suiteInfoLabel = new JLabel();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return suiteTextField;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return suiteTextField;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return suiteBrowseButton;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  suiteTextField){
-                    return suiteBrowseButton;
-                }
-                if(aComponent ==  suiteCheckBox){
-                    return suiteTextField;
-                }
-                if(aComponent ==  bootstrapCheckBox){
-                    return bootstrapTextField;
-                }
-                if(aComponent ==  configurationGenerateButton){
-                    return suiteCheckBox;
-                }
-                if(aComponent ==  configurationBrowseButton){
-                    return configurationGenerateButton;
-                }
-                if(aComponent ==  configurationCheckBox){
-                    return configurationTextField;
-                }
-                if(aComponent ==  bootstrapGenerateButton){
-                    return configurationCheckBox;
-                }
-                if(aComponent ==  bootstrapBrowseButton){
-                    return bootstrapGenerateButton;
-                }
-                if(aComponent ==  bootstrapTextField){
-                    return bootstrapBrowseButton;
-                }
-                if(aComponent ==  configurationTextField){
-                    return configurationBrowseButton;
-                }
-                return suiteTextField;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  suiteBrowseButton){
-                    return suiteTextField;
-                }
-                if(aComponent ==  suiteTextField){
-                    return suiteCheckBox;
-                }
-                if(aComponent ==  bootstrapTextField){
-                    return bootstrapCheckBox;
-                }
-                if(aComponent ==  suiteCheckBox){
-                    return configurationGenerateButton;
-                }
-                if(aComponent ==  configurationGenerateButton){
-                    return configurationBrowseButton;
-                }
-                if(aComponent ==  configurationTextField){
-                    return configurationCheckBox;
-                }
-                if(aComponent ==  configurationCheckBox){
-                    return bootstrapGenerateButton;
-                }
-                if(aComponent ==  bootstrapGenerateButton){
-                    return bootstrapBrowseButton;
-                }
-                if(aComponent ==  bootstrapBrowseButton){
-                    return bootstrapTextField;
-                }
-                if(aComponent ==  configurationBrowseButton){
-                    return configurationTextField;
-                }
-                return suiteBrowseButton;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         phpUnitLabel.setLabelFor(this);
         Mnemonics.setLocalizedText(phpUnitLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.text")); // NOI18N
@@ -391,83 +310,83 @@ public class CustomizerPhpUnit extends JPanel {
         suiteInfoLabel.setLabelFor(this);
 
         Mnemonics.setLocalizedText(suiteInfoLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.text"));
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(21, 21, 21)
-                .add(bootstrapLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(bootstrapTextField, GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(bootstrapBrowseButton)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(bootstrapGenerateButton))
-            .add(configurationCheckBox)
-            .add(layout.createSequentialGroup()
-                .add(21, 21, 21)
-                .add(configurationLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(configurationTextField, GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(configurationBrowseButton)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(configurationGenerateButton))
-            .add(suiteCheckBox)
-            .add(layout.createSequentialGroup()
-                .add(21, 21, 21)
-                .add(suiteLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(suiteInfoLabel)
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addComponent(bootstrapLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(bootstrapTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(bootstrapBrowseButton)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(bootstrapGenerateButton))
+            .addComponent(configurationCheckBox)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addComponent(configurationLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(configurationTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(configurationBrowseButton)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(configurationGenerateButton))
+            .addComponent(suiteCheckBox)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addComponent(suiteLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(suiteInfoLabel)
                         .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(suiteTextField, GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(suiteBrowseButton))))
-            .add(layout.createSequentialGroup()
-                .add(phpUnitLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(suiteTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 275, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(suiteBrowseButton))))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(phpUnitLabel)
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(bootstrapCheckBox)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(bootstrapCheckBox)
                 .addContainerGap())
         );
 
-        layout.linkSize(new Component[] {bootstrapBrowseButton, bootstrapGenerateButton, configurationBrowseButton, configurationGenerateButton, suiteBrowseButton}, GroupLayout.HORIZONTAL);
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {bootstrapBrowseButton, bootstrapGenerateButton, configurationBrowseButton, configurationGenerateButton, suiteBrowseButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(phpUnitLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(bootstrapCheckBox)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(bootstrapLabel)
-                    .add(bootstrapTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(bootstrapGenerateButton)
-                    .add(bootstrapBrowseButton))
-                .add(18, 18, 18)
-                .add(configurationCheckBox)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(configurationLabel)
-                    .add(configurationTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(configurationGenerateButton)
-                    .add(configurationBrowseButton))
-                .add(18, 18, 18)
-                .add(suiteCheckBox)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(suiteLabel)
-                    .add(suiteTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(suiteBrowseButton))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(suiteInfoLabel)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(phpUnitLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(bootstrapCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(bootstrapLabel)
+                    .addComponent(bootstrapTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(bootstrapGenerateButton)
+                    .addComponent(bootstrapBrowseButton))
+                .addGap(18, 18, 18)
+                .addComponent(configurationCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(configurationLabel)
+                    .addComponent(configurationTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(configurationGenerateButton)
+                    .addComponent(configurationBrowseButton))
+                .addGap(18, 18, 18)
+                .addComponent(suiteCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(suiteLabel)
+                    .addComponent(suiteTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(suiteBrowseButton))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(suiteInfoLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         phpUnitLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.AccessibleContext.accessibleName")); // NOI18N
