@@ -42,6 +42,7 @@
 package org.netbeans.modules.debugger.jpda.projects;
 
 import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -118,6 +119,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.editor.JumpList;
 
@@ -1002,6 +1004,242 @@ public class EditorContextImpl extends EditorContext {
         i = s2.lastIndexOf(")");
         if (i > 0) s2 = s2.substring(0, i);
         return s1.equals(s2);
+    }
+
+    /**
+     * @param fo
+     * @param className
+     * @param classExcludeNames
+     * @return <code>null</code> or Future with line number
+     */
+    static Future<Integer> getClassLineNumber(
+        FileObject fo,
+        final String className,
+        final String[] classExcludeNames
+    ) {
+        JavaSource js = JavaSource.forFileObject(fo);
+        if (js == null) return null;
+        final Integer[] result = new Integer[] { null };
+        final StyledDocument doc = findDocument(fo);
+        if (doc == null) return null;
+        try {
+            final Future f = ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(doc)), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    CompilationController ci = retrieveController(resultIterator, doc);
+                    if (ci == null) return;
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "\nDiagnostics = "+ci.getDiagnostics()+
+                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                        return;
+                    }
+                    TypeElement classElement = getTypeElement(ci, className, classExcludeNames);
+                    if (classElement == null) return ;
+                    SourcePositions positions =  ci.getTrees().getSourcePositions();
+                    Tree tree = ci.getTrees().getTree(classElement);
+                    if (tree == null) {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Null tree for element "+classElement+" in "+className);
+                        return;
+                    }
+                    int pos = (int)positions.getStartPosition(ci.getCompilationUnit(), tree);
+                    if (pos == Diagnostic.NOPOS) {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "No position for tree "+tree+" of element "+classElement+" ("+className+")");
+                        return;
+                    }
+                    if (tree.getKind() == Kind.CLASS) {
+                        boolean shifted = false;
+                        ModifiersTree mtree = ((ClassTree) tree).getModifiers();
+                        for (AnnotationTree atree : mtree.getAnnotations()) {
+                            int aend = (int) positions.getEndPosition(ci.getCompilationUnit(), atree);
+                            if (aend != Diagnostic.NOPOS && pos < aend) {
+                                shifted = true;
+                                pos = aend + 1;
+                            }
+                        }
+                        if (shifted) {
+                            String text = ci.getText();
+                            int l = text.length();
+                            while (pos < l && Character.isWhitespace(text.charAt(pos))) {
+                                pos++;
+                            }
+                        }
+                    }
+                    result[0] = new Integer(NbDocument.findLineNumber(doc, pos) + 1);
+                }
+            });
+            if (!f.isDone()) {
+                return new Future<Integer>() {
+
+                    public boolean cancel(boolean mayInterruptIfRunning) {
+                        return f.cancel(mayInterruptIfRunning);
+                    }
+
+                    public boolean isCancelled() {
+                        return f.isCancelled();
+                    }
+
+                    public boolean isDone() {
+                        return f.isDone();
+                    }
+
+                    public Integer get() throws InterruptedException, ExecutionException {
+                        f.get();
+                        return result[0];
+                    }
+
+                    public Integer get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                        f.get(timeout, unit);
+                        return result[0];
+                    }
+
+                };
+            }
+        } catch (ParseException pex) {
+            ErrorManager.getDefault().notify(pex);
+            return null;
+        }
+        return new DoneFuture<Integer>(result[0]);
+    }
+
+    /** @return declared class name
+     */
+    public String getCurrentClassDeclaration() {
+        FileObject fo = contextDispatcher.getCurrentFile();
+        if (fo == null) return null;
+        JEditorPane ep = contextDispatcher.getCurrentEditor();
+        JavaSource js = JavaSource.forFileObject(fo);
+        if (js == null) return null;
+        final int currentOffset = (ep == null) ? 0 : ep.getCaretPosition();
+        //final int currentOffset = org.netbeans.editor.Registry.getMostActiveComponent().getCaretPosition();
+        final String[] currentClassPtr = new String[] { null };
+        final Future<Void> scanFinished;
+        try {
+            scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
+                public void cancel() {
+                }
+                public void run(CompilationController ci) throws Exception {
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {//TODO: ELEMENTS_RESOLVED may be sufficient
+                        ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                                "\nDiagnostics = "+ci.getDiagnostics()+
+                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
+                        return;
+                    }
+                    int offset = currentOffset;
+                    //Scope scope = ci.getTreeUtilities().scopeFor(offset);
+                    String text = ci.getText();
+                    int l = text.length();
+                    char c = 0;
+                    while (offset < l && (c = text.charAt(offset)) != '{' && c != '}' && c != '\n' && c != '\r') offset++;
+                    if (offset >= l) {
+                        return ;
+                    }
+                    offset--;
+                    TreePath path = ci.getTreeUtilities().pathFor(offset);
+                    Tree tree;
+                    do {
+                        tree = path.getLeaf();
+                        if (tree.getKind() != Tree.Kind.CLASS) {
+                            path = path.getParentPath();
+                            if (path == null) {
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    } while (true);
+                    if (tree.getKind() == Tree.Kind.CLASS) {
+                        SourcePositions positions =  ci.getTrees().getSourcePositions();
+                        int pos = (int) positions.getStartPosition(ci.getCompilationUnit(), tree);
+                        if (pos == Diagnostic.NOPOS) {
+                            return ; // We do not know where we are!
+                        }
+                        if (offset < pos) {
+                            return ; // We are before the class declaration!
+                        }
+                        int hend = getHeaderEnd((ClassTree) tree, positions, ci.getCompilationUnit());
+                        if (hend > 0) {
+                            pos = hend;
+                        }
+                        while (pos < l && text.charAt(pos) != '{') pos++;
+                        if (pos < offset) { // We are after the class declaration!
+                            return ;
+                        }
+                        Element el = ci.getTrees().getElement(ci.getTrees().getPath(ci.getCompilationUnit(), tree));
+                        if (el != null && (el.getKind() == ElementKind.CLASS || el.getKind() == ElementKind.INTERFACE)) {
+                            currentClassPtr[0] = ElementUtilities.getBinaryName((TypeElement) el);
+                        }
+                    }
+                }
+
+                private int getHeaderEnd(ClassTree classTree, SourcePositions positions, CompilationUnitTree compilationUnit) {
+                    int max = -1;
+                    int pos = (int) positions.getEndPosition(compilationUnit, classTree.getExtendsClause());
+                    if (pos != Diagnostic.NOPOS) {
+                        max = Math.max(max, pos);
+                    }
+                    pos = (int) positions.getEndPosition(compilationUnit, classTree.getModifiers());
+                    if (pos != Diagnostic.NOPOS) {
+                        max = Math.max(max, pos);
+                    }
+                    for (Tree t : classTree.getImplementsClause()) {
+                        pos = (int) positions.getEndPosition(compilationUnit, t);
+                        if (pos != Diagnostic.NOPOS) {
+                            max = Math.max(max, pos);
+                        }
+                    }
+                    for (Tree t : classTree.getTypeParameters()) {
+                        pos = (int) positions.getEndPosition(compilationUnit, t);
+                        if (pos != Diagnostic.NOPOS) {
+                            max = Math.max(max, pos);
+                        }
+                    }
+                    return max;
+                }
+            }, true);
+            if (!scanFinished.isDone()) {
+                if (java.awt.EventQueue.isDispatchThread()) {
+                    // Hack: We should not wait for the scan in AWT!
+                    //       Thus we throw IllegalComponentStateException,
+                    //       which returns the data upon call to getMessage()
+                    throw new java.awt.IllegalComponentStateException() {
+
+                        private void waitScanFinished() {
+                            try {
+                                scanFinished.get();
+                            } catch (InterruptedException iex) {
+                            } catch (java.util.concurrent.ExecutionException eex) {
+                                ErrorManager.getDefault().notify(eex);
+                            }
+                        }
+
+                        @Override
+                        public String getMessage() {
+                            waitScanFinished();
+                            return currentClassPtr[0];
+                        }
+
+                    };
+                } else {
+                    try {
+                        scanFinished.get();
+                    } catch (InterruptedException iex) {
+                        return null;
+                    } catch (java.util.concurrent.ExecutionException eex) {
+                        ErrorManager.getDefault().notify(eex);
+                        return null;
+                    }
+                }
+            }
+        } catch (IOException ioex) {
+            ErrorManager.getDefault().notify(ioex);
+            return null;
+        }
+        return currentClassPtr[0];
     }
 
     /** @return { "method name", "method signature", "enclosing class name" }

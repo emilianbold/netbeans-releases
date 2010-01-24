@@ -61,6 +61,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
+import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -246,7 +247,8 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
     private static boolean isAnnotatable(Breakpoint b) {
         return (b instanceof LineBreakpoint ||
                 b instanceof FieldBreakpoint ||
-                b instanceof MethodBreakpoint) &&
+                b instanceof MethodBreakpoint ||
+                b instanceof ClassLoadUnloadBreakpoint) &&
                !((JPDABreakpoint) b).isHidden();
     }
     
@@ -267,6 +269,10 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             annotationType = b.isEnabled () ?
                 EditorContext.METHOD_BREAKPOINT_ANNOTATION_TYPE :
                 EditorContext.DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE;
+        } else if (b instanceof ClassLoadUnloadBreakpoint) {
+            annotationType = b.isEnabled() ?
+                "ClassBreakpoint" :
+                "DisabledClassBreakpoint";
         } else {
             throw new IllegalStateException(b.toString());
         }
@@ -338,6 +344,38 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
                 }
             }
             return lns;
+        } else if (b instanceof ClassLoadUnloadBreakpoint) {
+            ClassLoadUnloadBreakpoint cb = (ClassLoadUnloadBreakpoint) b;
+            String[] filters = cb.getClassFilters();
+            int[] lns = new int[] {};
+            for (int i = 0; i < filters.length; i++) {
+                // TODO: annotate also other matched classes
+                if (!filters[i].startsWith("*") && !filters[i].endsWith("*")) {
+                    Future<Integer> futurelns = EditorContextImpl.getClassLineNumber(
+                            fo, filters[i], cb.getClassExclusionFilters());
+                    Integer newline;
+                    if (futurelns != null) {
+                        try {
+                            newline = futurelns.get();
+                            if (newline == null) {
+                                continue;
+                            }
+                            if (lns.length == 0) {
+                                lns = new int[] { newline };
+                            } else {
+                                int[] ln = new int[lns.length + 1];
+                                System.arraycopy(lns, 0, ln, 0, lns.length);
+                                ln[lns.length] = newline;
+                                lns = ln;
+                            }
+                        } catch (InterruptedException ex) {
+                        } catch (ExecutionException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
+            return lns;
         } else {
             throw new IllegalStateException(b.toString());
         }
@@ -356,6 +394,8 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
             condition = ((FieldBreakpoint) b).getCondition();
         } else if (b instanceof MethodBreakpoint) {
             condition = ((MethodBreakpoint) b).getCondition();
+        } else if (b instanceof ClassLoadUnloadBreakpoint) {
+            condition = null;
         } else {
             throw new IllegalStateException(b.toString());
         }
