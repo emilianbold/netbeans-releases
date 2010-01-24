@@ -33,7 +33,7 @@ public class SuiteInstallerProjectProperties {
     public static final String GENERATE_FOR_LINUX = "installer.os.linux";
     public static final String GENERATE_FOR_SOLARIS = "installer.os.solaris";
     public static final String GENERATE_FOR_MAC = "installer.os.macosx";
-    public static final String USE_PACK200 = "installer.pack200";
+    public static final String USE_PACK200_COMPRESSION = "installer.pack200.enabled";
     public static final String DEFAULT_PATH_WINDOWS = "installer.path.windows";
     public static final String DEFAULT_PATH_LINUX = "installer.path.linux";
     public static final String DEFAULT_PATH_SOLARIS = "installer.path.solaris";
@@ -47,6 +47,7 @@ public class SuiteInstallerProjectProperties {
     JToggleButton.ToggleButtonModel linuxModel;
     JToggleButton.ToggleButtonModel solarisModel;
     JToggleButton.ToggleButtonModel macModel;
+    JToggleButton.ToggleButtonModel pack200Model;
     LicenseComboBoxModel licenseModel;
 
     public SuiteInstallerProjectProperties(Lookup context) {
@@ -72,11 +73,13 @@ public class SuiteInstallerProjectProperties {
                 System.out.println("###" + i.getClass());
             }
             propEval = helper.getStandardPropertyEvaluator();
-            //      pack200Model = installerPropGroup.createToggleButtonModel(propEval, USE_PACK200);
+            //      pack200Model = installerPropGroup.createToggleButtonModel(propEval, USE_PACK200_COMPRESSION);
             windowsModel = installerPropGroup.createToggleButtonModel(propEval, GENERATE_FOR_WINDOWS);
             linuxModel = installerPropGroup.createToggleButtonModel(propEval, GENERATE_FOR_LINUX);
             solarisModel = installerPropGroup.createToggleButtonModel(propEval, GENERATE_FOR_SOLARIS);
             macModel = installerPropGroup.createToggleButtonModel(propEval, GENERATE_FOR_MAC);
+
+            pack200Model = installerPropGroup.createToggleButtonModel(propEval, USE_PACK200_COMPRESSION);
 
             createLicenseModel();
 

@@ -133,11 +133,13 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         Properties ps = new Properties();
                         String appName = "";
                         String licenseType = null;
+                        boolean usePack200 = false;
                         try {
                             InputStream is = propertiesFile.getInputStream();
                             ps.load(is);
                             appName = ps.getProperty("app.name");
                             licenseType = ps.getProperty("installer.license.type");
+                            usePack200 = Boolean.parseBoolean(ps.getProperty(SuiteInstallerProjectProperties.USE_PACK200_COMPRESSION));
                             if (appName == null) {
                                 //suite, not standalone app
                                 RequestProcessor.getDefault().post(new Runnable() {
@@ -324,7 +326,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         new File(suiteLocation, "dist").getAbsolutePath().replace("\\", "/"));
                          */
                         props.put(
-                                "pack200.enabled", "false");
+                                "pack200.enabled", "" + usePack200);
 
                         /*
                         for (Object s : props.keySet()) {
