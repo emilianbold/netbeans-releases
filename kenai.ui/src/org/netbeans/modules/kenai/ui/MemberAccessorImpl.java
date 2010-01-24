@@ -70,7 +70,7 @@ public class MemberAccessorImpl extends MemberAccessor {
         try {
             KenaiUser owner = prj.getKenaiProject().getOwner();
             for (KenaiProjectMember member : prj.getKenaiProject().getMembers()) {
-                handles.add(new MemberHandleImpl(member, owner.equals(member.getKenaiUser())));
+                handles.add(new MemberHandleImpl(member, member.getKenaiUser().equals(owner)));
             }
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
@@ -84,7 +84,7 @@ public class MemberAccessorImpl extends MemberAccessor {
         return new AbstractAction(NbBundle.getMessage(MemberAccessorImpl.class, "CTL_StartChat")) {
 
             public void actionPerformed(ActionEvent e) {
-                new KenaiUserUI(member.getName()).startChat();
+                new KenaiUserUI(member.getFQN()).startChat();
             }
         };
     }

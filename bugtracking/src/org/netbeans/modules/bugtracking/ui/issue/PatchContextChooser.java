@@ -86,6 +86,7 @@ public class PatchContextChooser extends javax.swing.JPanel implements ExplorerM
         AbstractNode root = new AbstractNode(children);
         manager.setRootContext(root);
         manager.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                     Node[] nodes = manager.getSelectedNodes();
@@ -187,6 +188,7 @@ public class PatchContextChooser extends javax.swing.JPanel implements ExplorerM
     private javax.swing.JLabel titleLabel;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }

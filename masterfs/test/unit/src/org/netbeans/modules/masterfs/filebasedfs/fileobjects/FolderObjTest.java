@@ -365,18 +365,6 @@ public class FolderObjTest extends NbTestCase {
         FileObj bfo = (FileObj)testRoot.createData(getName());
 
         int expectedSize = 264;
-        if(System.getProperty("java.version").startsWith("1.5")) {
-            /* java.lang.ref.ReferenceQueue has one more field (queueEmpty) on JDK1.5
-             * and that's why size is bigger of 2x8 bytes.
-             * JDK1.5:
-             * java.lang.ref.ReferenceQueue$Null: 1, 32B
-             * org.openide.util.Utilities$ActiveQueue: 1, 40B 
-             * JDK1.6:
-             * java.lang.ref.ReferenceQueue$Null: 1, 24B
-             * org.openide.util.Utilities$ActiveQueue: 1, 32B
-             */
-            expectedSize = 280;
-        }
         /* assertSize(FileObj) JDK1.6.0:
          * 
          * java.lang.ref.ReferenceQueue$Null: 1, 32B

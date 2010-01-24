@@ -102,43 +102,12 @@ public class ParseTest extends NbTestCase {
     }
 
     public void testAnalysisXMLTextRotate_1_6() throws Exception {
-        String javaVersion = System.getProperty("java.version");
-
-        if (javaVersion.startsWith("1.6")) {
             parserTestInProject("project3", "/web/jsp2/jspx/textRotate.jspx");
-        }
-    }
-
-    public void testAnalysisXMLTextRotate_1_5() throws Exception {
-        String javaVersion = System.getProperty("java.version");
-
-        if (javaVersion.startsWith("1.5")) {
-            parserTestInProject("project3", "/web/jsp2/jspx/textRotate.jspx");
-        }
-
-    }
-
-    public void testAnalysisXMLTextRotate_1_4() throws Exception {
-        String javaVersion = System.getProperty("java.version");
-
-        if (javaVersion.startsWith("1.4")) {
-            parserTestInProject("project3", "/web/jsp2/jspx/textRotate.jspx");
-        }
-    }
-
-    public void testAnalysisTagLibFromTagFiles() throws Exception {
-        String javaVersion = System.getProperty("java.version");
-        if (!javaVersion.startsWith("1.6")) {
-            parserTestInProject("project2", "/web/testTagLibs.jsp");
-        }
     }
 
     // TODO: temporarily disabled because of JDK 5 and 6 differences
     public void disableTestAnalysisTagLibFromTagFiles_1_6() throws Exception {
-        String javaVersion = System.getProperty("java.version");
-        if (javaVersion.startsWith("1.6")) {
             parserTestInProject("project2", "/web/testTagLibs.jsp");
-        }
     }
 
     public void testJSPInclude() throws Exception {

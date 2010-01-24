@@ -75,7 +75,6 @@ import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
-import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 
 /**
  *
@@ -237,7 +236,6 @@ public class JPDAClassTypeImpl implements JPDAClassType {
     }
     
     public long getInstanceCount() {//boolean refresh) {
-        if (JPDAUtils.IS_JDK_16) {
             /*synchronized (this) {
                 if (!refresh && cachedInstanceCount > -1L) {
                     return cachedInstanceCount;
@@ -254,13 +252,9 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             /*synchronized (this) {
                 cachedInstanceCount = counts[0];
             }*/
-        } else {
-            return 0L;
-        }
     }
     
     public List<ObjectVariable> getInstances(long maxInstances) {
-        if (JPDAUtils.IS_JDK_16) {
             final List<ObjectReference> instances;
             try {
                 instances = ReferenceTypeWrapper.instances(classType, maxInstances);
@@ -281,9 +275,6 @@ public class JPDAClassTypeImpl implements JPDAClassType {
                     return instances.size();
                 }
             };
-        } else {
-            return Collections.emptyList();
-        }
     }
     
     public boolean equals(Object o) {

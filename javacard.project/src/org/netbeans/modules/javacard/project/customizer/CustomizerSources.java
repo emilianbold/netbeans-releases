@@ -64,20 +64,24 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.IllegalCharsetNameException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
+import javax.swing.table.DefaultTableModel;
 import org.netbeans.modules.javacard.common.GuiUtils;
 
 /**
  * Customizer panel "Sources": source roots, level, includes/excludes.
  * @author  Tomas Zezula
  */
-public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Provider {
+public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Provider, ActionListener {
     
     
     private String originalEncoding;
     private boolean notified;
 
     private final JCProjectProperties uiProperties;
+    private final SourceRootsUi.EditMediator emSR;
 
     public CustomizerSources( JCProjectProperties uiProperties ) {
         this.uiProperties = uiProperties;
@@ -92,8 +96,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         File pf = FileUtil.toFile( projectFolder );
         this.projectLocation.setText( pf == null ? "" : pf.getPath() ); // NOI18N
         
-        
-        SourceRootsUi.EditMediator emSR = SourceRootsUi.registerEditMediator(
+        emSR = SourceRootsUi.registerEditMediator(
             uiProperties.getProject(),
             uiProperties.getProject().getRoots(),
             sourceRoots,
@@ -102,8 +105,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             upSourceRoot, 
             downSourceRoot,
             new LabelCellEditor(sourceRoots),
-            true);
-
+            false);
 
         this.sourceLevel.setEditable(false);
 
@@ -132,6 +134,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         });
         initTableVisualProperties(sourceRoots);
         HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.SourcesPanel"); //NOI18N
+        addSourceRoot.removeActionListener (emSR);
     }
     
     private class TableColumnSizeComponentAdapter extends ComponentAdapter {
@@ -438,6 +441,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         sourceRootsPanel.add(jScrollPane1, gridBagConstraints);
 
         addSourceRoot.setText(NbBundle.getMessage (CustomizerSources.class, "CTL_AddSourceRoot")); // NOI18N
+        addSourceRoot.addActionListener(this);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -536,8 +540,66 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jPanel1, gridBagConstraints);
+    }
+
+    // Code for dispatching events from components to event handlers.
+
+    public void actionPerformed(java.awt.event.ActionEvent evt) {
+        if (evt.getSource() == addSourceRoot) {
+            CustomizerSources.this.addSourceRootActionPerformed(evt);
+        }
     }// </editor-fold>//GEN-END:initComponents
-    
+
+    private void addSourceRootActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSourceRootActionPerformed
+        //SourceRootsUI supports source roots not under the project - but we don't
+        //so handle this manually
+        ActionEvent ae = new ActionEvent(addSourceRoot, evt.getID(), evt.getActionCommand());
+        Set<File> currRoots = currSourceRoots();
+        emSR.actionPerformed(ae);
+        Set<File> newRoots = currSourceRoots();
+        newRoots.removeAll(currRoots);
+        FileObject projectRoot = uiProperties.getProject().getProjectDirectory();
+        Set<File> badRoots = new HashSet<File>();
+        for (File f : newRoots) {
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
+            if (!FileUtil.isParentOf(projectRoot, fo)) {
+                badRoots.add(f);
+            }
+        }
+        if (!badRoots.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (File bad : badRoots) {
+                if (sb.length() > 0) {
+                    sb.append(", ");
+                }
+                sb.append(bad.getName());
+                removeSourceRoot(bad);
+            }
+            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(CustomizerSources.class, "ERR_BAD_ROOT", sb));
+            DialogDisplayer.getDefault().notify(nd);
+        }
+}//GEN-LAST:event_addSourceRootActionPerformed
+
+    private void removeSourceRoot(File f) {
+        DefaultTableModel mdl = (DefaultTableModel) sourceRoots.getModel();
+        int max = mdl.getRowCount();
+        for (int i=max-1; i >= 0; i--) {
+            if (f.equals(mdl.getValueAt(i, 0))) {
+                mdl.removeRow(i);
+            }
+        }
+    }
+
+    private Set<File> currSourceRoots() {
+        Set<File> result = new HashSet<File>();
+        int max = sourceRoots.getModel().getRowCount();
+        for (int i=0; i < max; i++) {
+            File f = (File) sourceRoots.getModel().getValueAt(i, 0);
+            result.add (f);
+        }
+        return result;
+    }
+
    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addSourceRoot;

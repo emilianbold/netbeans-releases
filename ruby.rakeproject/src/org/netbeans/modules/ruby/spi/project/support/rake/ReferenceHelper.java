@@ -1632,7 +1632,7 @@ public final class ReferenceHelper {
         
         /**
          * Get the type of the foreign project's build artifact.
-         * For example, <a href="@JAVA/PROJECT@/org/netbeans/modules/gsfpath/api/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>.
+         * For example, <a href="@org-netbeans-modules-java-project@/org/netbeans/modules/gsfpath/api/project/JavaProjectConstants.html#ARTIFACT_TYPE_JAR"><code>JavaProjectConstants.ARTIFACT_TYPE_JAR</code></a>.
          * @return the artifact type
          */
         public String getArtifactType() {

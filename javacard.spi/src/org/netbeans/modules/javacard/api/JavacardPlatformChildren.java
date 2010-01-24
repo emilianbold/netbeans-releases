@@ -76,12 +76,16 @@ public class JavacardPlatformChildren extends ChildFactory.Detachable<FileObject
         return folder;
     }
 
-    public JavacardPlatformChildren(FileObject folder) {
+    private JavacardPlatformChildren(FileObject folder) {
         this.folder = folder;
     }
     
     public JavacardPlatformChildren() {
-        this (Utils.sfsFolderForRegisteredJavaPlatforms());
+        this ((String) null);
+    }
+
+    public JavacardPlatformChildren(String expectedName) {
+        this (Utils.sfsFolderForRegisteredJavaPlatforms(expectedName));
     }
 
     @Override
@@ -158,23 +162,32 @@ public class JavacardPlatformChildren extends ChildFactory.Detachable<FileObject
     }
 
     public void fileFolderCreated(FileEvent arg0) {
-        refresh(false);
+        queueRefresh();
     }
 
     public void fileDataCreated(FileEvent arg0) {
-        refresh(false);
+        queueRefresh();
     }
 
     public void fileChanged(FileEvent arg0) {
-        refresh(false);
+        queueRefresh();
     }
 
     public void fileDeleted(FileEvent arg0) {
-        refresh(false);
+        queueRefresh();
     }
 
     public void fileRenamed(FileRenameEvent arg0) {
-        refresh(false);
+        queueRefresh();
+    }
+
+    private void queueRefresh () {
+        //Keep ProjectManager.mutex() out of the way of Children.MUTEX
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                refresh(false);
+            }
+        });
     }
 
     public void fileAttributeChanged(FileAttributeEvent arg0) {

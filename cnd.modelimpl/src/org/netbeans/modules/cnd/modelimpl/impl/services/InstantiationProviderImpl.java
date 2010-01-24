@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmExpressionEvaluator;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImplSpecialization;
@@ -202,7 +203,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                     }
                 }
             }
-            sb.append('>');
+            TemplateUtils.addGREATERTHAN(sb);
         }
     }
 
@@ -391,6 +392,20 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                     CsmKindUtilities.isExpressionBasedSpecalizationParameter(param)) {
                                 if (paramsText.get(i).equals(((CsmExpressionBasedSpecializationParameter) specParam).getText())) {
                                     match += 2;
+                                } else {
+                                    // Expression evaluation
+//                                    if (CsmKindUtilities.isInstantiation(cls)) {
+//                                        if (CsmExpressionEvaluator.eval(((CsmTemplate) ((CsmInstantiation) cls).getTemplateDeclaration()).getTemplateParameters().get(i).getName().toString(),
+//                                                (CsmInstantiation) cls).equals(
+//                                                CsmExpressionEvaluator.eval(((CsmExpressionBasedSpecializationParameter) specParam).getText().toString()))) {
+//                                            match += 2;
+//                                        }
+//                                    } else {
+//                                        if (CsmExpressionEvaluator.eval(paramsText.get(i).toString()).equals(
+//                                                CsmExpressionEvaluator.eval(((CsmExpressionBasedSpecializationParameter) specParam).getText().toString()))) {
+//                                            match += 2;
+//                                        }
+//                                    }
                                 }
                             } else {
                                 match = 0;

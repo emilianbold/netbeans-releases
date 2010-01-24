@@ -45,8 +45,17 @@ import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -54,7 +63,18 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFriend;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -75,16 +95,18 @@ import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassEnumBase;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
-import org.netbeans.modules.cnd.modelimpl.platform.*;
-import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.FileEntry;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
+import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
@@ -213,10 +235,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return null;
     }
 
+    @Override
     public final CsmNamespace getGlobalNamespace() {
         return _getGlobalNamespace();
     }
 
+    @Override
     public final CharSequence getName() {
         return name;
     }
@@ -252,6 +276,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /** Gets an object, which represents correspondent IDE project */
+    @Override
     public final Object getPlatformProject() {
         return platformProject;
     }
@@ -280,6 +305,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /** Finds namespace by its qualified name */
+    @Override
     public final CsmNamespace findNamespace(CharSequence qualifiedName) {
         CsmNamespace nsp = _getNamespace(qualifiedName);
         return nsp;
@@ -332,11 +358,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return result;
     }
 
+    @Override
     public final CsmClassifier findClassifier(CharSequence qualifiedName) {
         CsmClassifier result = getClassifierSorage().getClassifier(qualifiedName);
         return result;
     }
 
+    @Override
     public final Collection<CsmClassifier> findClassifiers(CharSequence qualifiedName) {
         CsmClassifier result = getClassifierSorage().getClassifier(qualifiedName);
         Collection<CsmClassifier> out = new ArrayList<CsmClassifier>();
@@ -365,10 +393,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return out;
     }
 
+    @Override
     public final CsmDeclaration findDeclaration(CharSequence uniqueName) {
         return getDeclarationsSorage().getDeclaration(uniqueName);
     }
 
+    @Override
     public final Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName) {
         return getDeclarationsSorage().findDeclarations(uniqueName);
     }
@@ -471,6 +501,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         System.err.printf("registration: %s\n", text);
     }
 
+    @Override
     public final void waitParse() {
         boolean insideParser = ParserThreadManager.instance().isParserThread();
         if (insideParser) {
@@ -486,7 +517,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private void waitParseImpl() {
         synchronized (waitParseLock) {
-            while (ParserQueue.instance().hasFiles(this, null)) {
+            while (ParserQueue.instance().hasPendingProjectRelatedWork(this, null)) {
                 try {
                     //FIXUP - timeout is a workaround for #146436 hang on running unit tests
                     waitParseLock.wait(10000);
@@ -526,6 +557,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 projectListener = new NativeProjectListenerImpl(getModel(), (NativeProject) platformProject);
             }
             ((NativeProject) platformProject).addProjectItemsListener(projectListener);
+        }
+    }
+
+    public final synchronized void enableProjectListeners(boolean enable) {
+        if (projectListener != null) {
+            projectListener.enableListening(enable);
         }
     }
 
@@ -613,32 +650,41 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         final Set<NativeFileItem> removedFiles = Collections.synchronizedSet(new HashSet<NativeFileItem>());
         NativeProjectItemsListener projectItemListener = new NativeProjectItemsListener() {
 
+            @Override
             public void fileAdded(NativeFileItem fileItem) {
             }
 
+            @Override
             public void filesAdded(List<NativeFileItem> fileItems) {
             }
 
+            @Override
             public void fileRemoved(NativeFileItem fileItem) {
                 removedFiles.add(fileItem);
             }
 
+            @Override
             public void filesRemoved(List<NativeFileItem> fileItems) {
                 removedFiles.addAll(fileItems);
             }
 
+            @Override
             public void fileRenamed(String oldPath, NativeFileItem newFileIetm) {
             }
 
+            @Override
             public void filePropertiesChanged(NativeFileItem fileItem) {
             }
 
+            @Override
             public void filesPropertiesChanged(List<NativeFileItem> fileItems) {
             }
 
+            @Override
             public void filesPropertiesChanged() {
             }
 
+            @Override
             public void projectDeleted(NativeProject nativeProject) {
             }
         };
@@ -701,7 +747,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 time = System.currentTimeMillis();
             }
 
-            if (disposing) {
+            if (isDisposing()) {
                 if (TraceFlags.TRACE_MODEL_STATE) {
                     System.err.printf("filling parser queue interrupted for %s\n", getName());
                 }
@@ -810,7 +856,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (enougth.get()) {
             return false;
         }
-        if (disposing) {
+        if (isDisposing()) {
             if (TraceFlags.TRACE_MODEL_STATE) {
                 System.err.printf("filling parser queue interrupted for %s\n", getName());
             }
@@ -891,6 +937,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (status == Status.Initial || status == Status.Restored) {
             Runnable r = new Runnable() {
 
+                @Override
                 public void run() {
                     onAddedToModelImpl(isRestored);
                     synchronized (initializationTaskLock) {
@@ -911,23 +958,23 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private void onAddedToModelImpl(boolean isRestored) {
 
-        if (disposing) {
+        if (isDisposing()) {
             return;
         }
 
         try {
             disposeLock.readLock().lock();
-            if (disposing) {
+            if (isDisposing()) {
                 return;
             }
 
             ensureFilesCreated();
-            if (disposing) {
+            if (isDisposing()) {
                 return;
             }
 
             ensureChangedFilesEnqueued();
-            if (disposing) {
+            if (isDisposing()) {
                 return;
             }
             Notificator.instance().flush();
@@ -941,7 +988,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         try {
             disposeLock.readLock().lock();
-            if (isRestored && !disposing) {
+            if (isRestored && !isDisposing()) {
                 // FIXUP for #109105 fix the reason instead!
                 try {
                     // TODO: refactor this - remove waiting here!
@@ -953,7 +1000,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     DiagnosticExceptoins.register(e);
                 }
             }
-            if (disposing) {
+            if (isDisposing()) {
                 return;
             }
             Notificator.instance().flush();
@@ -1227,7 +1274,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     public final FileImpl onFileIncluded(ProjectBase base, CharSequence file, APTPreprocHandler preprocHandler, APTMacroMap.State postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
         FileImpl csmFile = null;
-        if (disposing) {
+        if (isDisposing()) {
             return null;
         }
         csmFile = findFile(new File(file.toString()), true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
@@ -1237,7 +1284,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             preprocHandler.getMacroMap().setState(postIncludeState);
             return csmFile;
         }
-        if (disposing) {
+        if (isDisposing()) {
             return csmFile;
         }
         APTPreprocHandler.State newState = preprocHandler.getState();
@@ -1251,7 +1298,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             APTFile aptLight = getAPTLight(csmFile);
             if (aptLight == null) {
                 // in the case file was just removed
-                Utils.LOG.info("Can not find or build APT for file " + file); //NOI18N
+                Utils.LOG.log(Level.INFO, "Can not find or build APT for file {0}", file); //NOI18N
                 return csmFile;
             }
 
@@ -1271,7 +1318,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         boolean updateFileContainer = false;
         try {
-            if (disposing) {
+            if (isDisposing()) {
                 return csmFile;
             }
             if (triggerParsingActivity) {
@@ -1368,7 +1415,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             return csmFile;
         } finally {
-            if (!disposing && updateFileContainer) {
+            if (!isDisposing() && updateFileContainer) {
                 getFileContainer().put();
             }
         }
@@ -1378,7 +1425,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (Utils.LOG.isLoggable(Level.INFO)) {
             // since file container can return empty container the entry can be null.
             StringBuilder buf = new StringBuilder("File container does not have file "); //NOI18N
-            buf.append("[" + file + "]"); //NOI18N
+            buf.append("[").append(file).append("]"); //NOI18N
             if (getFileContainer() == FileContainer.empty()) {
                 buf.append(" because file container is EMPTY."); //NOI18N
             } else {
@@ -1392,7 +1439,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             Status st = getStatus();
             if (st != null) {
-                buf.append("\n\tProject " + toString() + " has status " + st + "."); //NOI18N
+                buf.append("\n\tProject ").append(toString()).append(" has status ").append(st).append("."); //NOI18N
             }
             Utils.LOG.info(buf.toString());
         }
@@ -1449,6 +1496,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         synchronized (entry.getLock()) {
             return entry.setParsedPCState(ppState, pcState);
+        }
+    }
+
+    void notifyOnWaitParseLock() {
+        // notify client waiting for end of fake registration
+        synchronized (waitParseLock) {
+            waitParseLock.notifyAll();
         }
     }
 
@@ -1654,6 +1708,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         DeepReparsingUtils.reparseOnEdit(file, this);
     }
 
+    @Override
     public final CsmFile findFile(Object absolutePathOrNativeFileItem) {
         if (absolutePathOrNativeFileItem instanceof CharSequence) {
             return findFileByPath((CharSequence) absolutePathOrNativeFileItem);
@@ -1841,6 +1896,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return res;
     }
 
+    @Override
     public List<CsmProject> getLibraries() {
         List<CsmProject> res = new ArrayList<CsmProject>();
         if (platformProject instanceof NativeProject) {
@@ -1922,12 +1978,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return unresolved;
     }
 
+    @Override
     public final boolean isValid() {
-        return platformProject != null && !disposing;
+        return platformProject != null && !isDisposing();
     }
 
     public void setDisposed() {
-        disposing = true;
+        disposing.set(true);
         synchronized (initializationTaskLock) {
             if (initializationTask != null) {
                 initializationTask.cancel();
@@ -1939,7 +1996,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public final boolean isDisposing() {
-        return disposing;
+        return disposing.get();
     }
 
     public final void dispose(final boolean cleanPersistent) {
@@ -2044,6 +2101,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     private CsmUID<CsmProject> uid = null;
 
+    @Override
     public final CsmUID<CsmProject> getUID() { // final because called from constructor
         CsmUID<CsmProject> out = uid;
         if (out == null) {
@@ -2057,14 +2115,19 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return uid;
     }
 
+    @Override
     public boolean isStable(CsmFile skipFile) {
-        if (status == Status.Ready && !disposing) {
-            return !ParserQueue.instance().hasFiles(this, (FileImpl) skipFile);
+        if (status == Status.Ready && !isDisposing()) {
+            return !ParserQueue.instance().hasPendingProjectRelatedWork(this, (FileImpl) skipFile);
         }
         return false;
     }
 
-    public final void onParseFinish(boolean libsAlreadyParsed) {
+    public final void onParseFinish() {
+        onParseFinishImpl(false);
+    }
+
+    private final void onParseFinishImpl(boolean libsAlreadyParsed) {
         synchronized (waitParseLock) {
             waitParseLock.notifyAll();
         }
@@ -2075,7 +2138,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         try {
             disposeLock.readLock().lock();
 
-            if (!disposing) {
+            if (!isDisposing()) {
                 fixFakeRegistration(libsAlreadyParsed);
             }
         } catch (Exception e) {
@@ -2134,7 +2197,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     break;
                 }
             }
-            FixRegistrationRunnable r = new FixRegistrationRunnable(countDownLatch, list, libsAlreadyParsed);
+            FixRegistrationRunnable r = new FixRegistrationRunnable(countDownLatch, list, libsAlreadyParsed, disposing);
             PROJECT_FILES_WORKER.post(r);
         }
         try {
@@ -2144,13 +2207,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
 
-    public final void onLibParseFinish() {
-        onParseFinish(true);
+    /*package*/final void onLibParseFinish() {
+        onParseFinishImpl(true);
     }
 
     /**
      * CsmProject implementation
      */
+    @Override
     public final Collection<CsmFile> getAllFiles() {
         return getFileContainer().getFiles();
     }
@@ -2171,6 +2235,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getFileContainer().getFileImpls();
     }
 
+    @Override
     public final Collection<CsmFile> getSourceFiles() {
         List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>();
         for (FileImpl file : getAllFileImpls()) {
@@ -2181,6 +2246,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return new LazyCsmCollection<CsmFile, CsmFile>(uids, TraceFlags.SAFE_UID_ACCESS);
     }
 
+    @Override
     public final Collection<CsmFile> getHeaderFiles() {
         List<CsmUID<CsmFile>> uids = new ArrayList<CsmUID<CsmFile>>();
         for (FileImpl file : getAllFileImpls()) {
@@ -2545,6 +2611,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return nativeFile;
         }
 
+        @Override
         public List<String> getUserMacroDefinitions() {
             if (project != null) {
                 return project.getUserMacroDefinitions();
@@ -2552,6 +2619,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return Collections.<String>emptyList();
         }
 
+        @Override
         public List<String> getUserIncludePaths() {
             if (project != null) {
                 return project.getUserIncludePaths();
@@ -2559,6 +2627,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return Collections.<String>emptyList();
         }
 
+        @Override
         public List<String> getSystemMacroDefinitions() {
             if (project != null) {
                 return project.getSystemMacroDefinitions();
@@ -2566,6 +2635,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return Collections.<String>emptyList();
         }
 
+        @Override
         public List<String> getSystemIncludePaths() {
             if (project != null) {
                 return project.getSystemIncludePaths();
@@ -2573,22 +2643,27 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             return Collections.<String>emptyList();
         }
 
+        @Override
         public NativeProject getNativeProject() {
             return project;
         }
 
+        @Override
         public File getFile() {
             return new File(absolutePath);
         }
 
+        @Override
         public Language getLanguage() {
             return NativeFileItem.Language.C_HEADER;
         }
 
+        @Override
         public LanguageFlavor getLanguageFlavor() {
             return NativeFileItem.LanguageFlavor.GENERIC;
         }
 
+        @Override
         public boolean isExcluded() {
             return false;
         }
@@ -2662,7 +2737,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * when the project is being disposed)
      *
      */
-    private volatile boolean disposing;
+    private final AtomicBoolean disposing = new AtomicBoolean(false);
     private final ReadWriteLock disposeLock = new ReentrantReadWriteLock();
     private CharSequence uniqueName = null; // lazy initialized
     private final Map<CharSequence, CsmUID<CsmNamespace>> namespaces;
@@ -2697,11 +2772,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public static List<String> testGetRestoredFiles() {
         return testRestoredFiles;
     }
-    private static List<String> testRestoredFiles = null;
+    private static volatile List<String> testRestoredFiles = null;
     ////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
+    @Override
     public void write(DataOutput aStream) throws IOException {
         assert aStream != null;
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
@@ -2869,15 +2945,20 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         private final CountDownLatch countDownLatch;
         private final List<CsmUID<CsmFile>> files;
         private final boolean libsAlreadyParsed;
-
-        private FixRegistrationRunnable(CountDownLatch countDownLatch, List<CsmUID<CsmFile>> files, boolean libsAlreadyParsed){
+        private final AtomicBoolean cancelled;
+        private FixRegistrationRunnable(CountDownLatch countDownLatch, List<CsmUID<CsmFile>> files, boolean libsAlreadyParsed, AtomicBoolean cancelled){
             this.countDownLatch = countDownLatch;
             this.files = files;
             this.libsAlreadyParsed = libsAlreadyParsed;
+            this.cancelled = cancelled;
         }
+        @Override
         public void run() {
             try {
                 for(CsmUID<CsmFile> file : files) {
+                    if (cancelled.get()) {
+                        return;
+                    }
                     if (file == null){
                         return;
                     }
@@ -2920,6 +3001,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             this.enougth = enougth;
         }
 
+        @Override
         public void run() {
             try {
                 for(NativeFileItem nativeFileItem : nativeFileItems) {

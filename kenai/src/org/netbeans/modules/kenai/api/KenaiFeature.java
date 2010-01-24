@@ -121,11 +121,16 @@ public final class KenaiFeature {
 
     /**
      * extended type.
-     * @return type of scm repository. Possible values are
-     * "mercurial", "git", "cvs", "subversion" and "other".
+     * @return if getType() == Type.SOURCE -> returns
+     * type of scm repository ("mercurial", "git", "cvs", "subversion" and "other")
+     * if getType() == TYPE.ISSUES -> returns type of bugtracking
      */
     public String getExtendedType() {
-        return featureData.repository_type;
+        if (getType() == Type.SOURCE)
+            return featureData.repository_type;
+        if (getType() == Type.ISSUES)
+            return featureData.issue_tracker_type;
+        return null;
     }
 
     /**

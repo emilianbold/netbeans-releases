@@ -161,10 +161,17 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     }
 
     void setRailsEnvironment(final String railsEnvironment, final String config) {
-        if (railsEnvironment != null) {
+        if (isEmpty(railsEnvironment)) {
+            // reset to default
+            getRunConfigs().get(config).remove(RailsProjectProperties.RAILS_ENV);
+        } else {
             getRunConfigs().get(config).put(RailsProjectProperties.RAILS_ENV, railsEnvironment);
         }
         this.railsEnvironment = railsEnvironment;
+    }
+
+    private static boolean isEmpty(String str) {
+        return str == null || "".equals(str.trim());
     }
 
 }

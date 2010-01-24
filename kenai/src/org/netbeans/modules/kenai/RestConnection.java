@@ -77,17 +77,17 @@ public class RestConnection {
     private String date;
 
     /** Creates a new instance of RestConnection */
-    public RestConnection(String baseUrl) {
-        this(baseUrl, null, null);
+    public RestConnection(String baseUrl, PasswordAuthentication pa) {
+        this(baseUrl, null, pa);
     }
 
     /** Creates a new instance of RestConnection */
-    public RestConnection(String baseUrl, String[][] params) {
-        this(baseUrl, null, params);
+    public RestConnection(String baseUrl, String[][] params, PasswordAuthentication pa) {
+        this(baseUrl, null, params, pa);
     }
 
     /** Creates a new instance of RestConnection */
-    public RestConnection(String baseUrl, String[][] pathParams, String[][] params) {
+    public RestConnection(String baseUrl, String[][] pathParams, String[][] params, PasswordAuthentication pa) {
         //T9Y
         String testUrl = System.getProperty("netbeans.t9y.kenai.testUrl");
         if (testUrl != null && testUrl.length() > 0) {
@@ -130,10 +130,9 @@ public class RestConnection {
                 conn.setConnectTimeout(TIMEOUT);
                 //TODO: KenaiAuthenticator not working. Why?
                 //this is just workaround this should be implemented properly
-                PasswordAuthentication a = Kenai.getDefault().getPasswordAuthentication();
-                if (a!= null && a.getUserName()!=null && (params==null || !params[0][0].equals("username"))) {
-                    assert a.getPassword()!=null;
-                    String userPassword = a.getUserName() + ":" + String.valueOf(a.getPassword());
+                if (pa!= null && pa.getUserName()!=null && (params==null || !params[0][0].equals("username"))) {
+                    assert pa.getPassword()!=null;
+                    String userPassword = pa.getUserName() + ":" + String.valueOf(pa.getPassword());
                     String encoding = new sun.misc.BASE64Encoder().encode(userPassword.getBytes());
                     conn.setRequestProperty("Authorization", "Basic " + encoding);
                 }

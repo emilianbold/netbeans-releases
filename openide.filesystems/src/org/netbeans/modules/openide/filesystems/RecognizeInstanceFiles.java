@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.openide.util.NamedServicesProvider;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -58,8 +57,9 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.implspi.NamedServicesProvider;
 
-/** Interface for core/startup to provide lookup overt system filesystem.
+/** Interface for core/startup to provide lookup over system filesystem.
  *
  * @author Jaroslav Tulach
  */
@@ -69,17 +69,6 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
     
     
     public Lookup create(String path) {
-        if (path.equals("URLStreamHandler/nbres/")) { // NOI18N
-            // Need to avoid a stack overflow during initialization.
-            ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
-            if (l == null) {
-                l = Thread.currentThread().getContextClassLoader();
-                if (l == null) {
-                    l = RecognizeInstanceFiles.class.getClassLoader();
-                }
-            }
-            return Lookups.metaInfServices(l, "META-INF/namedservices/URLStreamHandler/nbres/"); // NOI18N
-        }
         return new OverFiles(path);
     }        
     

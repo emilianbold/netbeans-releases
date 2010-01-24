@@ -56,21 +56,21 @@ public final class Main extends Object {
      * @throws Exception for lots of reasons
      */
     public static void main (String args[]) throws Exception {
-        // following code has to execute without java5 - e.g. do not use
-        // NbBundle or any other library compiled against java5 only
-        // also prevent usage of java5 methods and classes
+        // following code has to execute without java6 - e.g. do not use
+        // NbBundle or any other library compiled against java6 only
+        // also prevent usage of java6 methods and classes
         try {
-            Class.forName("java.lang.StringBuilder"); // NOI18N
+            Class.forName("java.util.ServiceLoader"); // NOI18N
         } catch (ClassNotFoundException ex) {
             JOptionPane.showMessageDialog(
                 null,
-                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_InstallJava5"),
-                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_NeedsJava5"),
+                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_InstallJava6"),
+                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_NeedsJava6"),
                 JOptionPane.WARNING_MESSAGE
             );
             System.exit(10);
         }
-        // end of java5 only code
+        // end of java6 only code
 
         MainImpl.main(args);
     }

@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.php.editor.indent;
 
+import java.io.IOException;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
+import org.netbeans.modules.php.editor.indent.ui.Utils;
 
 
 /**
@@ -58,8 +60,14 @@ public class FmtBraces extends javax.swing.JPanel {
     }
     
     public static PreferencesCustomizer.Factory getController() {
+        String preview = "";
+        try {
+            preview = Utils.loadPreviewText(FmtTabsIndents.class.getClassLoader().getResourceAsStream("org/netbeans/modules/php/editor/indent/ui/Braces.php"));
+        } catch (IOException ex) {
+            // TODO log it
+        }
         return new CategorySupport.Factory("braces", FmtBraces.class, //NOI18N
-                org.openide.util.NbBundle.getMessage(FmtBraces.class, "SAMPLE_AlignBraces"), // NOI18N
+                preview,
                 new String[] { FmtOptions.openingBraceStyle, FmtOptions.OBRACE_PRESERVE }
 //                new String[] { FmtOptions.wrapArrayInit, WrapStyle.WRAP_ALWAYS.name() },
 //                new String[] { FmtOptions.wrapAssert, WrapStyle.WRAP_ALWAYS.name() },

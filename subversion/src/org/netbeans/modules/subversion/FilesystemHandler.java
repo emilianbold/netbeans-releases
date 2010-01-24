@@ -82,7 +82,6 @@ class FilesystemHandler extends VCSInterceptor {
      * Stores .svn folders that should be deleted ASAP.
      */
     private final Set<File> invalidMetadata = new HashSet<File>(5);
-    private final RequestProcessor parallelRP = new RequestProcessor("Subversion FS handler", 50);
 
     public FilesystemHandler(Subversion svn) {
         cache = svn.getStatusCache();
@@ -252,37 +251,9 @@ class FilesystemHandler extends VCSInterceptor {
     public void doMove(final File from, final File to) throws IOException {
         Subversion.LOG.fine("doMove " + from +  " -> " + to);
         if (SwingUtilities.isEventDispatchThread()) {
-
             Subversion.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
-            final Throwable innerT[] = new Throwable[1];
-            Runnable outOfAwt = new Runnable() {
-                public void run() {
-                    try {
-                        svnMoveImplementation(from, to);
-                    } catch (Throwable t) {
-                        innerT[0] = t;
-                    }
-                }
-            };
-
-            parallelRP.post(outOfAwt).waitFinished();
-            if (innerT[0] != null) {
-                if (innerT[0] instanceof IOException) {
-                    throw (IOException) innerT[0];
-                } else if (innerT[0] instanceof RuntimeException) {
-                    throw (RuntimeException) innerT[0];
-                } else if (innerT[0] instanceof Error) {
-                    throw (Error) innerT[0];
-                } else {
-                    throw new IllegalStateException("Unexpected exception class: " + innerT[0]);  // NOI18N
-                }
-            }
-
-            // end of hack
-
-        } else {
-            svnMoveImplementation(from, to);
         }
+        svnMoveImplementation(from, to);
     }
 
     @Override

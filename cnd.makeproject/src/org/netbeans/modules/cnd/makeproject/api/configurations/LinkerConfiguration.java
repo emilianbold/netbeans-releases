@@ -42,15 +42,15 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.LinkerDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.LibrariesNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
@@ -260,7 +260,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
             // FIXUP: should be move to Platform...
             if (cs != null) {
                 options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibraryBasicFlag();
-                if (cs.isGnuCompiler() && getMakeConfiguration().getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_MACOSX) {
+                if (cs.isGnuCompiler() && getMakeConfiguration().getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                     options += libName + " "; // NOI18N
                 }
             }
@@ -313,6 +313,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
     }
 
     // Interface OptionsProvider
+    @Override
     public String getAllOptions(BasicCompiler compiler) {
         String options = getBasicOptions() + " "; // NOI18N
         options += getLibraryItems() + " "; // NOI18N
@@ -403,6 +404,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
 
     class AdditionalDependenciesOptions implements AllOptionsProvider {
 
+        @Override
         public String getAllOptions(BasicCompiler compiler) {
             String options = ""; // NOI18N
             options += additionalDependencies.getPreDefined();
@@ -476,7 +478,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
         public String getOption() {
             if (getValue()) {
                 String option;
-                if (getMakeConfiguration().getDevelopmentHost().getBuildPlatform() == Platform.PLATFORM_MACOSX) {
+                if (getMakeConfiguration().getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                     option = "-Wl,-S "; // NOI18N
                 } else {
                     option = "-s ";  // NOI18N
@@ -517,6 +519,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
             this.conf = conf;
         }
 
+        @Override
         public String toString(LibraryItem item) {
             return item.getOption(conf);
         }

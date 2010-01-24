@@ -112,8 +112,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
     
     @Override
     protected boolean asynchronousOpen() {
-        // hopefully temporary:
-        return false;
+        return true;
     }
     
     /** Helper method. Adds save cookie to the data object. */

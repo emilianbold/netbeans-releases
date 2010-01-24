@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.cnd.test;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +52,9 @@ import java.util.Collections;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.EditorKit;
 import junit.framework.Assert;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.Manager;
@@ -63,6 +67,7 @@ import org.netbeans.modules.cnd.editor.fortran.FKit;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
+import org.openide.util.Lookup;
 
 /**
  * IMPORTANT NOTE:
@@ -106,6 +111,11 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         }
         System.setProperty("netbeans.dirs", sb.toString());
     }
+
+    private MimePath mimePath1;
+    private MimePath mimePath2;
+    private MimePath mimePath3;
+    private MimePath mimePath4;
 
     // it's like what org.netbeans.junit.NbModuleSuite does,
     // but reusing NbModuleSuite will cause too massive changes in existing CND tests
@@ -164,13 +174,19 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     }
 
     private void setupUserDir() {
-        File dataDir = getDataDir();
-        File dataDirParent = dataDir.getParentFile();
-        File userDir = new File(dataDirParent, "userdir");
+        Logger.getLogger("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage").setLevel(Level.SEVERE);
+        File userDir = getUserDir();
         userDir.mkdirs();
         System.setProperty("netbeans.user", userDir.getAbsolutePath());
     }
 
+    protected File getUserDir() {
+        Logger.getLogger("org.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage").setLevel(Level.SEVERE);
+        File dataDir = getDataDir();
+        File dataDirParent = dataDir.getParentFile();
+        File userDir = new File(dataDirParent, "userdir");
+        return userDir;
+    }
 
     @Override
     protected void tearDown() throws Exception {
@@ -184,28 +200,48 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);
         System.setProperty("cnd.mode.unittest", "true");
         System.setProperty("SUNW_NO_UPDATE_NOTIFY", "true");
-        List<Class> list = new ArrayList<Class>();
+        List<Class<?>> list = new ArrayList<Class<?>>();
         list.add(MockMimeLookup.class);
-        for(Class cls : getServises()){
+        for(Class<?> cls : getServices()){
             list.add(cls);
         }
-        MockServices.setServices(list.toArray(new Class[list.size()]));
         setUpMime();
+        MockServices.setServices(list.toArray(new Class<?>[list.size()]));
+
+        Lookup lookup = MimeLookup.getLookup(MimePath.parse(MIMENames.CPLUSPLUS_MIME_TYPE));
+        assertNotNull(lookup);
+        EditorKit kit = lookup.lookup(EditorKit.class);
+        assertTrue(kit instanceof  CCKit);
+
+        lookup = MimeLookup.getLookup(MimePath.parse(MIMENames.HEADER_MIME_TYPE));
+        assertNotNull(lookup);
+        kit = lookup.lookup(EditorKit.class);
+        assertTrue(kit instanceof  HKit);
+
+        lookup = MimeLookup.getLookup(MimePath.parse(MIMENames.C_MIME_TYPE));
+        assertNotNull(lookup);
+        kit = lookup.lookup(EditorKit.class);
+        assertTrue(kit instanceof  CKit);
+
+        lookup = MimeLookup.getLookup(MimePath.parse(MIMENames.FORTRAN_MIME_TYPE));
+        assertNotNull(lookup);
+        kit = lookup.lookup(EditorKit.class);
+        assertTrue(kit instanceof  FKit);
     }
 
     protected void setUpMime() {
-        MimePath mimePath = MimePath.parse(MIMENames.CPLUSPLUS_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath, new CCKit());
-        mimePath = MimePath.parse(MIMENames.HEADER_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath, new HKit());
-        mimePath = MimePath.parse(MIMENames.C_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath, new CKit());
-        mimePath = MimePath.parse(MIMENames.FORTRAN_MIME_TYPE);
-        MockMimeLookup.setInstances(mimePath, new FKit());
+        mimePath1 = MimePath.parse(MIMENames.CPLUSPLUS_MIME_TYPE);
+        MockMimeLookup.setInstances(mimePath1, new CCKit());
+        mimePath2 = MimePath.parse(MIMENames.HEADER_MIME_TYPE);
+        MockMimeLookup.setInstances(mimePath2, new HKit());
+        mimePath3 = MimePath.parse(MIMENames.C_MIME_TYPE);
+        MockMimeLookup.setInstances(mimePath3, new CKit());
+        mimePath4 = MimePath.parse(MIMENames.FORTRAN_MIME_TYPE);
+        MockMimeLookup.setInstances(mimePath4, new FKit());
     }
 
-    protected List<Class> getServises(){
-        return Collections.<Class>emptyList();
+    protected List<Class<?>> getServices(){
+        return Collections.<Class<?>>emptyList();
     }
 
     /**
@@ -237,7 +273,7 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
      * in path ${xtest.data}/goldenfiles/${classname}/filename
      * @see getGoldenFile
      */
-    protected Class getTestCaseGoldenDataClass() {
+    protected Class<?> getTestCaseGoldenDataClass() {
         return getTestCaseDataClass();
     }
 
@@ -279,12 +315,43 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
                 // copy golden
                 File goldenDataFileCopy = new File(getWorkDir(), goldenFilename + ".golden"); // NOI18N
                 CndCoreTestUtils.copyToWorkDir(goldenFile, goldenDataFileCopy); 
-                fail("Files differ; diff " +testFile.getAbsolutePath()+ " "+ goldenDataFileCopy); // NOI18N
+
+                StringBuilder buf = new StringBuilder("Files differ; diff " +testFile.getAbsolutePath()+ " "+ goldenDataFileCopy);
+                File diffErrorFile = new File(testFile.getAbsolutePath() + ".diff");
+                CndCoreTestUtils.diff(testFile, goldenFile, diffErrorFile);
+                showDiff(diffErrorFile, buf);
+                fail(buf.toString());
             }             
         } catch (IOException ioe) {
             fail("Error comparing files: " + ioe); // NOI18N
         }
     }    
+
+    protected void showDiff(File diffOutputFile, StringBuilder buf) {
+        if (diffOutputFile != null && diffOutputFile.exists()) {
+            int i = 0;
+            try {
+                BufferedReader in = new BufferedReader(new FileReader(diffOutputFile));
+                while (true) {
+                    String line = in.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    if (i > 50) {
+                        break;
+                    }
+                    if (i == 0) {
+                        buf.append("\nBeginning of diff:");
+                    }
+                    buf.append("\n\t" + line);
+                    i++;
+                }
+                in.close();
+            } catch (IOException ex) {
+                //
+            }
+        }
+    }
     
     /** Compares default golden file and default reference log. If both files are the
      * same, test passes. If files differ, test fails and default diff (${methodname}.diff)

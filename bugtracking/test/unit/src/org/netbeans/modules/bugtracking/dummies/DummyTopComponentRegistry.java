@@ -80,11 +80,11 @@ public class DummyTopComponentRegistry implements TopComponent.Registry {
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //no-op - properties never change
     }
 
     public void removePropertyChangeListener(PropertyChangeListener l) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //no-op - properties never change
     }
 
 }

@@ -225,8 +225,9 @@ public class SvnConfigFiles implements PreferenceChangeListener {
         if(certFile == null || certFile.equals("")) {
             return true;
         }
-        String certPassword = rc.getCertPassword();
-        if(certPassword == null || certPassword.equals("")) {
+        char[] certPasswordChars = rc.getCertPassword();
+        String certPassword = certPasswordChars == null ? "" : new String(certPasswordChars); //NOI18N
+        if(certPassword.equals("")) { // NOI18N
             return true;
         }
         nbGlobalSection.put("ssl-client-cert-file", certFile);
@@ -298,6 +299,10 @@ public class SvnConfigFiles implements PreferenceChangeListener {
     public void setExternalCommand(String tunnelName, String command) {
         if (command == null) {
             return;
+        }
+        if (Utilities.isWindows()) {
+            // tunnel command should contain forward slashes even on windows
+            command = command.replace("\\", "/");                       //NOI18N
         }
         Ini.Section tunnels = getSection(config, "tunnels", true);
         tunnels.put(tunnelName, command);

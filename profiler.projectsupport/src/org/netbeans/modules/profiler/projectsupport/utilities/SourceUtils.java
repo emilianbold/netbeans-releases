@@ -76,7 +76,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -110,10 +109,8 @@ import static javax.lang.model.util.ElementFilter.*;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.ui.ElementOpen;
-import org.netbeans.lib.profiler.common.Profiler;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.profiler.utilities.OutputParameter;
 
 /**
@@ -328,7 +325,7 @@ public final class SourceUtils {
      * @return The caret offset or -1
      */
     public static int getCurrentOffsetInEditor() {
-        JTextComponent mostActiveEditor = org.netbeans.editor.Registry.getMostActiveComponent();
+        JTextComponent mostActiveEditor = EditorRegistry.focusedComponent();
 
         if ((mostActiveEditor != null) && (mostActiveEditor.getCaret() != null)) {
             return mostActiveEditor.getCaretPosition();

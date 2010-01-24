@@ -42,6 +42,7 @@
 package org.netbeans.license;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -100,7 +101,7 @@ public final class AcceptLicense {
         yesButton.setPreferredSize(new Dimension(maxWidth, maxHeight));
         noButton.setPreferredSize(new Dimension(maxWidth, maxHeight));
         
-        final JDialog d = Util.createModalDialog(bundle.getString("MSG_LicenseDlgTitle"));
+        final JDialog d = new JDialog(null, bundle.getString("MSG_LicenseDlgTitle"), Dialog.ModalityType.APPLICATION_MODAL);
         Util.initIcons(d);
         d.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_LicenseDlg"));
         d.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_LicenseDlg"));

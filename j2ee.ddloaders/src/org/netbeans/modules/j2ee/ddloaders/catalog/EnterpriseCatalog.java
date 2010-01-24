@@ -84,6 +84,7 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
         // web services client
         schemas.add(new SchemaInfo("j2ee_web_services_client_1_1.xsd", J2EE_NS));
         schemas.add(new SchemaInfo("javaee_web_services_client_1_2.xsd", JAVAEE_NS));
+        schemas.add(new SchemaInfo("javaee_web_services_client_1_3.xsd", JAVAEE_NS));
         // JCA connector 1.5
         schemas.add(new SchemaInfo("connector_1_5.xsd", J2EE_NS));
         // ejb-jar
@@ -107,6 +108,8 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
         // web 2.2 and 2.3 dtds
         schemas.add(new SchemaInfo("web-app_2_2.dtd", "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN", true)); //NO18N
         schemas.add(new SchemaInfo("web-app_2_3.dtd", "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN", true)); //NO18N
+        // cdi
+        schemas.add(new SchemaInfo("beans_1_0.xsd", JAVAEE_NS));
        
     }
     

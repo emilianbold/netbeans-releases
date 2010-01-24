@@ -72,8 +72,8 @@ public class InstalledModuleProvider implements InstalledUpdateProvider {
     
     private synchronized  Map<String, ModuleInfo> getModuleInfos (boolean force) {
         if (moduleInfos == null || force) {
-            moduleInfos = new HashMap<String, ModuleInfo> ();
             Collection<? extends ModuleInfo> infos = Collections.unmodifiableCollection (result.allInstances ());
+            moduleInfos = new HashMap<String, ModuleInfo> ();
             for (ModuleInfo info: infos) {
                 moduleInfos.put (info.getCodeNameBase (), info);
             }            

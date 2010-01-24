@@ -92,19 +92,21 @@ int queryValue(int mode, HKEY section, const unsigned short* key, const unsigned
     
     if (RegOpenKeyExW(section, key, 0, KEY_QUERY_VALUE | mode, &hkey) == ERROR_SUCCESS) {
         if (RegQueryValueExW(hkey, name, NULL, (LPDWORD) &tempType, NULL, (LPDWORD) &tempSize) == ERROR_SUCCESS) {
-            tempValue = (byte*) malloc(tempSize + 8);
+            tempValue = (byte*) MALLOC(tempSize + 8);
             
             if (tempValue != NULL) {
-                memset(tempValue, 0, tempSize + 8);
+                ZERO(tempValue, tempSize + 8);
                 
                 if (RegQueryValueExW(hkey, name, NULL, (LPDWORD) &tempType, tempValue, (LPDWORD) &tempSize) == ERROR_SUCCESS) {
                     if (expand && (tempType == REG_EXPAND_SZ)) {
-                        int expandedSize = (int) wcslen((unsigned short*) tempValue) + 2;
-                        byte* expandedValue = (byte*) malloc(expandedSize);
-                        int expandedCharsNumber = ExpandEnvironmentStringsW((unsigned short*) tempValue, (unsigned short*) expandedValue, tempSize);
-                        
+                        int expandedSize = (int) WCSLEN((unsigned short*) tempValue) + 2;
+                        byte* expandedValue = (byte*) MALLOC(expandedSize * sizeof(wchar_t));
+                        int expandedCharsNumber = 0;
+                        ZERO(expandedValue, expandedSize);
+                        expandedCharsNumber = ExpandEnvironmentStringsW((unsigned short*) tempValue, (unsigned short*) expandedValue, tempSize);
                         if (expandedCharsNumber > tempSize) {
-                            expandedValue       = (byte*) realloc(expandedValue, expandedCharsNumber * sizeof(byte));
+                            FREE(expandedValue);
+                            expandedValue       = (byte*) MALLOC(expandedCharsNumber * sizeof(wchar_t));
                             expandedCharsNumber = ExpandEnvironmentStringsW((unsigned short*) tempValue, (unsigned short*) expandedValue, expandedCharsNumber);
                         }
                         

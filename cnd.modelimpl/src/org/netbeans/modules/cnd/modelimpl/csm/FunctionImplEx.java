@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
@@ -70,9 +69,8 @@ import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
     private CharSequence qualifiedName;
-    private static final byte QUALIFIED_NAME = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
+    private static final byte FAKE_QUALIFIED_NAME = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
     private final CharSequence[] classOrNspNames;   
-    private AST fixFakeRegistrationAst = null; // AST for fixing fake registrations
     
     public FunctionImplEx(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
         super(ast, file, scope, false, global);
@@ -80,11 +78,6 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         if (register) {
             registerInProject();
         }
-    }
-
-    public FunctionImplEx(AST ast, CsmFile file, CsmScope scope, AST fakeRegistrationAst, boolean register, boolean global) throws AstRendererException {
-        this(ast, file, scope, register, global);
-        fixFakeRegistrationAst = fakeRegistrationAst;
     }
 
     /** @return either class or namespace */
@@ -169,11 +162,12 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
     protected String findQualifiedName() {
         CsmObject owner = findOwner(null);
+        // check if owner is real or fake
         if(CsmKindUtilities.isQualified(owner)) {
-            setFlags(QUALIFIED_NAME, false);
+            setFlags(FAKE_QUALIFIED_NAME, false);
             return ((CsmQualifiedNamedElement) owner).getQualifiedName().toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix(); // NOI18N
         }
-        setFlags(QUALIFIED_NAME, true);
+        setFlags(FAKE_QUALIFIED_NAME, true);
         CharSequence[] cnn = classOrNspNames;
         CsmNamespaceDefinition nsd = findNamespaceDefinition();
         StringBuilder sb = new StringBuilder();
@@ -196,16 +190,18 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         sb.append(getQualifiedNamePostfix());
         return sb.toString();
     }
-    
+
     @Override
     protected void registerInProject() {
         super.registerInProject();
-        if( hasFlags(QUALIFIED_NAME) ) {
-            ((FileImpl) getContainingFile()).onFakeRegisration(this);
+        // if this funtion couldn't find it's FQN => register it as fake and
+        // come back later on for registration (see fixFakeRegistration with null ast)
+        if( hasFlags(FAKE_QUALIFIED_NAME) ) {
+            ((FileImpl) getContainingFile()).onFakeRegisration(this, null);
         }
     }
     
-    public final boolean fixFakeRegistration(boolean projectParsedMode) {
+    public final boolean fixFakeRegistration(boolean projectParsedMode, AST fixFakeRegistrationAst) {
         boolean fixed = false;
         if (fixFakeRegistrationAst != null) {
             CsmObject owner = findOwner(null);
@@ -216,8 +212,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         FileImpl aFile = (FileImpl) getContainingFile();
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
-                        RepositoryUtils.remove(getUID(), this);
-                        aFile.getProjectImpl(true).registerDeclaration(var);
+                        aFile.removeDeclaration(this);
+                        var.registerInProject();
                         aFile.addDeclaration(var);
                         fixFakeRegistrationAst = null;
                         return true;
@@ -234,8 +230,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         FileImpl aFile = (FileImpl) getContainingFile();
                         VariableDefinitionImpl var = new VariableDefinitionImpl(fixFakeRegistrationAst, getContainingFile(), getReturnType(), getName().toString());
                         aFile.getProjectImpl(true).unregisterDeclaration(this);
-                        RepositoryUtils.remove(getUID(), this);
-                        aFile.getProjectImpl(true).registerDeclaration(var);
+                        aFile.removeDeclaration(this);
+                        var.registerInProject();
                         aFile.addDeclaration(var);
                         fixFakeRegistrationAst = null;
                         return true;
@@ -248,7 +244,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                     FunctionImpl fi = new FunctionImpl(fixFakeRegistrationAst, getContainingFile(), this.getScope(), true, true);
                     fixFakeRegistrationAst = null;
                     aFile.getProjectImpl(true).unregisterDeclaration(this);
-                    RepositoryUtils.remove(getUID(), this);
+                    aFile.removeDeclaration(this);
+                    fi.registerInProject();
                     aFile.addDeclaration(fi);
                     fixed = true;
                     if (NamespaceImpl.isNamespaceScope(fi)) {
@@ -267,7 +264,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 aProject.unregisterDeclaration(this);
                 this.cleanUID();
                 qualifiedName = newQname;
-                aProject.registerDeclaration(this);
+                registerInProject();
                 fixed = true;
             }
         }
@@ -296,7 +293,14 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         return null;
     }    
     
-    
+    public static boolean isFakeFunction(CsmObject declaration) {
+        if (declaration instanceof FunctionImplEx) {
+            return FunctionImplEx.class.equals(declaration.getClass());
+        } else {
+            return false;
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     

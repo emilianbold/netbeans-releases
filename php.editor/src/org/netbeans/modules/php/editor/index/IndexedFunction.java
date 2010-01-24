@@ -78,7 +78,7 @@ public class IndexedFunction extends IndexedFullyQualified implements FunctionEl
         String[] args = arguments.split(",");//NOI18N
         this.parameters = new ArrayList<Parameter>();
         for (String oneArgument : args) {
-            this.parameters.add(new ParameterImpl(oneArgument, null, null, OffsetRange.NONE));
+            this.parameters.add(new ParameterImpl(oneArgument, null, null, true, OffsetRange.NONE));
         }
 
     }

@@ -59,6 +59,11 @@ public class CreateModuleXMLTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
+    }
+
     public void testIncludesAllModulesByDefault() throws Exception {
         Manifest m = ModuleDependenciesTest.createManifest ();
         m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
@@ -121,6 +126,64 @@ public class CreateModuleXMLTest extends NbTestCase {
         assertEquals("It one file", 1, files.length);
         assertEquals("Its name reflects the code name of the module", "org-my-module.xml", files[0]);
 
+    }
+
+    public void testGenerateUpdateTrackingMode() throws Exception {
+        Manifest m = ModuleDependenciesTest.createManifest ();
+        m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
+        m.getMainAttributes().putValue("OpenIDE-Module-Specification-Version", "10.15");
+        File aModule = generateJar(new String[0], m);
+
+        File output = new File(getWorkDir(), "output");
+        File tracking = new File(getWorkDir(), "update_tracking");
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"createmodulexml\" classname=\"org.netbeans.nbbuild.CreateModuleXML\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='" + output + "' />" +
+            "  <createmodulexml xmldir='" + output + "' updatetrackingroot='" + getWorkDir() +"' >" +
+            "    <disabled dir='" + aModule.getParent() + "' >" +
+            "      <include name='" + aModule.getName() + "' />" +
+            "    </disabled>" +
+            "  </createmodulexml>" +
+            "</target>" +
+            "</project>"
+        );
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+
+        assertTrue ("Output exists", output.exists ());
+        assertTrue ("Output directory created", output.isDirectory());
+
+        String[] files = output.list();
+        assertEquals("It one file", 1, files.length);
+        assertEquals("Its name reflects the code name of the module", "org-my-module.xml", files[0]);
+
+        assertTrue ("Update tracking exists", tracking.exists ());
+        assertTrue ("Update tracking directory created", tracking.isDirectory());
+
+        File[] arr = tracking.listFiles();
+        assertEquals("It one file", 1, arr.length);
+        assertEquals("Its name reflects the code name of the module", "org-my-module.xml", arr[0].getName());
+
+        String conf = PublicPackagesInProjectizedXMLTest.readFile(arr[0]);
+
+        {
+            int first = conf.indexOf("<file");
+            int snd = conf.indexOf("<file", first + 10);
+            if (snd == -1) {
+                fail("There shall be two <file/> sections:\n" + conf);
+            }
+        }
+
+        {
+            int first = conf.indexOf("name=\"modules/0.jar");
+            int snd = conf.indexOf("name=\"output/org-my-moodule.xml");
+            if (snd == -1 && first == -1) {
+                fail("Paths shall be relative:\n" + conf);
+            }
+        }
     }
     
     

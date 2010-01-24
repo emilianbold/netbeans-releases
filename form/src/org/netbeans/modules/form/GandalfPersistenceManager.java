@@ -190,6 +190,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     private FormModel formModel;
 
+    private String prefetchedSuperclassName;
+
     private List<Throwable> nonfatalErrors;
     
     // ErrorManager.findAnnotation() doesnt work properly, I will also store msg
@@ -282,7 +284,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @exception PersistenceException if some fatal problem occurred which
      *            prevents loading the form
      */
-    public void loadForm(FormDataObject formObject,
+    @Override
+    public synchronized void loadForm(FormDataObject formObject,
                          FormModel formModel,
                          List<Throwable> nonfatalErrors)
         throws PersistenceException
@@ -386,7 +389,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         if (!underTest) { // try declared superclass from java source first
             // (don't scan java source in tests, we only use the basic form types)
-            try { 
+            try {
                 declaredSuperclassName = getSuperClassName(javaFile);
                 if (declaredSuperclassName != null) {
                     Class designClass = getFormDesignClass(declaredSuperclassName);
@@ -422,6 +425,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
             catch (LinkageError ex) {
                 formBaseClassEx = ex;
+            }
+            finally {
+                prefetchedSuperclassName = null;
             }
         }
 
@@ -588,11 +594,24 @@ public class GandalfPersistenceManager extends PersistenceManager {
         this.formModel = null;
         return formModel;
     }
-    
+
+    /**
+     * For special use when form superclass is being determined before the form
+     * is started to be loaded. Assuming loadForm is called for the form in
+     * the same EDT round then. See FormDesigner.PreLoadTask.
+     */
+    void setPrefetchedSuperclassName(String clsName) {
+        prefetchedSuperclassName = clsName;
+    }
+
+    private String getSuperClassName(FileObject javaFile) throws IllegalArgumentException, IOException {
+        return prefetchedSuperclassName != null ? prefetchedSuperclassName : determineSuperClassName(javaFile);
+    }
+
     /**
      * gets superclass if the 'extends' keyword is present
      */
-    private static String getSuperClassName(final FileObject javaFile) throws IllegalArgumentException, IOException {
+    static String determineSuperClassName(final FileObject javaFile) throws IllegalArgumentException, IOException {
         final String javaFileName = javaFile.getName();
         final String[] result = new String[1];
         JavaSource js = JavaSource.forFileObject(javaFile);
@@ -3043,7 +3062,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @exception PersistenceException if some fatal problem occurred which
      *            prevents saving the form
      */
-    public void saveForm(FormDataObject formObject,
+    @Override
+    public synchronized void saveForm(FormDataObject formObject,
                          FormModel formModel,
                          List<Throwable> nonfatalErrors)
         throws PersistenceException
@@ -4410,14 +4430,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
         throws InstantiationException,
                IllegalAccessException
     {
-        PropertyEditor ed;
+        PropertyEditor ed = null;
         if (editorClass.equals(RADConnectionPropertyEditor.class)) {
             ed = new RADConnectionPropertyEditor(propertyType);
         } else if (editorClass.equals(ComponentChooserEditor.class)) {
             ed = new ComponentChooserEditor(new Class[] {propertyType});
-        } else if (editorClass.equals(EnumEditor.class) && (property instanceof RADProperty)) {
-            RADProperty prop = (RADProperty)property;
-            ed = prop.createEnumEditor(prop.getPropertyDescriptor());
+        } else if (editorClass.equals(EnumEditor.class)) {
+            if (property instanceof RADProperty) {
+                RADProperty prop = (RADProperty)property;
+                ed = prop.createEnumEditor(prop.getPropertyDescriptor());
+            }
             if (ed == null) {
                 ed = RADProperty.createDefaultEnumEditor(propertyType);
             }

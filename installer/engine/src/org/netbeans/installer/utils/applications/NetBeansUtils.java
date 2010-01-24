@@ -846,10 +846,10 @@ public class NetBeansUtils {
     public static final String DIGITS_PATTERN =
             "[0-9]+"; // NOI18N
     public static final String CLUSTER_NUMBER_PATTERN =
-            DIGITS_PATTERN + "(\\." + DIGITS_PATTERN + ")?"; // NOI18N
+            "(" + DIGITS_PATTERN + "(\\." + DIGITS_PATTERN + ")?)?"; // NOI18N
     
     public static final String NB_CLUSTER_PATTERN =
-            "nb" + CLUSTER_NUMBER_PATTERN; // NOI18N
+            "nb" + CLUSTER_NUMBER_PATTERN + "$"; // NOI18N
     public static final String NEW_LINE_PATTERN =
             "[\r\n|\n|\r]"; // NOI18N
     public static final String SPACES_PATTERN =

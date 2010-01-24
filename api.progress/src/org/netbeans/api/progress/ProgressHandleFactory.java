@@ -44,7 +44,7 @@ package org.netbeans.api.progress;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import org.netbeans.progress.spi.InternalHandle;
+import org.netbeans.modules.progress.spi.InternalHandle;
 import org.openide.util.Cancellable;
 
 /**

@@ -81,6 +81,11 @@ public class InitJobTest extends NbTestCase {
     protected boolean runInEQ() {
         return true;
     }
+
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
     
     /** Basic testing of Utilities.attachInitJob, if calls to AsyncGUIJob
      * impl conforms to the API behaviour described in javadoc *

@@ -112,7 +112,7 @@ public class ShowUpdateCenterAction extends CookieAction {
     
     @Override
     protected boolean enable(Node[] nodes) {
-        return nodes != null && nodes.length == 1 && nodes[0] != null;
+        return ViewLogAction.isOneLocalNodeChosen(nodes); // nodes != null && nodes.length == 1 && nodes[0] != null;
     }
     
     @Override

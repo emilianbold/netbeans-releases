@@ -173,7 +173,9 @@ public final class IndexingManager {
             //in between completion-active = true and completion-active = false.
             EventSupport.releaseCompletionCondition();
         }
-        RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, true, fullRescan, false);
+        if (!RepositoryUpdater.getDefault().isIndexer()) {
+            RepositoryUpdater.getDefault().addIndexingJob(root, files, false, false, true, fullRescan, false);
+        }
     }
 
     /**

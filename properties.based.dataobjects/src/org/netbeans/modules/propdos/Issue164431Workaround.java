@@ -62,8 +62,8 @@ final class Issue164431Workaround extends ProxyLookup {
     private Lookup ownLookup = new AbstractLookup(ownContent);
     private Lookup[] lookups;
 
-    @SuppressWarnings("Unchecked")
-    public Issue164431Workaround(InstanceContent.Convertor converter, Lookup... others) {
+    @SuppressWarnings("unchecked") //NOI18N
+    public <R,T extends InstanceContent.Convertor<T,R>> Issue164431Workaround(T converter, Lookup... others) {
         super();
         assert converter != null;
         assert others != null;
@@ -81,8 +81,8 @@ final class Issue164431Workaround extends ProxyLookup {
         super.setLookups(all);
     }
 
-    @SuppressWarnings("Unchecked")
-    public void replaceConverter(InstanceContent.Convertor converter) {
+    //Uy, the bizarre hoops one can jump through to avoid generics warnings...
+    public <R,T extends InstanceContent.Convertor<T,R>> void replaceConverter(T converter) {
         assert converter != null;
         assert lookups != null;
         synchronized (this) {

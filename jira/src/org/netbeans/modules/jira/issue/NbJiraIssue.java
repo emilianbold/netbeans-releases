@@ -91,6 +91,7 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -107,7 +108,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class NbJiraIssue extends Issue {
+public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     private TaskData taskData;
     private JiraRepository repository;
     private Controller controller;
@@ -248,11 +249,12 @@ public class NbJiraIssue extends Issue {
     }
 
     public void setTaskData(TaskData taskData) {
-        assert !taskData.isPartial();
+//        assert !taskData.isPartial();
         this.taskData = taskData;
         attributes = null; // reset
         availableOperations = null;
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 ((JiraIssueNode)getNode()).fireDataChanged();
                 fireDataChanged();
@@ -260,10 +262,12 @@ public class NbJiraIssue extends Issue {
         });
     }
 
+    @Override
     public JiraRepository getRepository() {
         return repository;
     }
 
+    @Override
     public String getID() {
 //        return taskData.getTaskId(); // XXX id or key ???
         return getID(taskData);
@@ -273,8 +277,13 @@ public class NbJiraIssue extends Issue {
         return getID(taskData);
     }
 
+    @Override
     public String getSummary() {
-        return getFieldValue(IssueField.SUMMARY);
+        return getSummary(taskData);
+    }
+
+    private static String getSummary(TaskData taskData) {
+        return getFieldValue(taskData, IssueField.SUMMARY);
     }
     
     String getDescription() {
@@ -470,6 +479,7 @@ public class NbJiraIssue extends Issue {
      * Reloads the task data
      * @return true if successfully refreshed
      */
+    @Override
     public boolean refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         return refresh(getID(), false);
@@ -709,9 +719,13 @@ public class NbJiraIssue extends Issue {
 
     @Override
     public String getDisplayName() {
+        return getDisplayName(taskData);
+    }
+
+    public static String getDisplayName(TaskData taskData) {
         return taskData.isNew() ?
             NbBundle.getMessage(NbJiraIssue.class, "CTL_NewIssue") : // NOI18N
-            NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue", new Object[] {getID(), getSummary()}); // NOI18N
+            NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue", new Object[] {getID(taskData), getSummary(taskData)}); // NOI18N
     }
 
     @Override
@@ -744,6 +758,7 @@ public class NbJiraIssue extends Issue {
     }
 
     // XXX carefull - implicit double refresh
+    @Override
     public void addComment(String comment, boolean close) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         if (Jira.LOG.isLoggable(Level.FINE)) {
@@ -768,6 +783,7 @@ public class NbJiraIssue extends Issue {
         }
 
         JiraCommand submitCmd = new JiraCommand() {
+            @Override
             public void execute() throws CoreException, IOException {
                 submitAndRefresh();
             }
@@ -809,6 +825,7 @@ public class NbJiraIssue extends Issue {
         final TaskAttribute attAttribute = new TaskAttribute(taskData.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
         mapper.applyTo(attAttribute);
         JiraCommand cmd = new JiraCommand() {
+            @Override
             public void execute() throws CoreException, IOException {
 //                refresh(); // XXX no refreshing may cause a midair collision - we should refresh in such a case and attach then
                 if (Jira.LOG.isLoggable(Level.FINER)) {
@@ -946,7 +963,6 @@ public class NbJiraIssue extends Issue {
         return "";
     }
 
-    @Override
     public Map<String, String> getAttributes() {
         if(attributes == null) {
             attributes = new HashMap<String, String>();
@@ -1122,7 +1138,7 @@ public class NbJiraIssue extends Issue {
         if(a == null) {
             return "";                                                          // NOI18N
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         List<String> l = a.getValues();
         for (int i = 0; i < l.size(); i++) {
             String s = l.get(i);
@@ -1199,6 +1215,7 @@ public class NbJiraIssue extends Issue {
             Jira.LOG.finest("submitAndRefresh: id: " + getID() + ", new: " + wasNew);
         }
         JiraCommand submitCmd = new JiraCommand() {
+            @Override
             public void execute() throws CoreException {
                 // submit
                 if (Jira.LOG.isLoggable(Level.FINEST)) {
@@ -1216,6 +1233,7 @@ public class NbJiraIssue extends Issue {
         }
         
         JiraCommand refreshCmd = new JiraCommand() {
+            @Override
             public void execute() throws CoreException {
                 if (Jira.LOG.isLoggable(Level.FINEST)) {
                     Jira.LOG.finest("submitAndRefresh, refreshCmd: id: " + getID() + ", new: " + wasNew);
@@ -1308,7 +1326,8 @@ public class NbJiraIssue extends Issue {
     }
 
     private class Controller extends BugtrackingController {
-        private JComponent issuePanel;
+        private JComponent component;
+        private IssuePanel issuePanel;
 
         public Controller() {
             IssuePanel panel = new IssuePanel();
@@ -1323,14 +1342,33 @@ public class NbJiraIssue extends Issue {
                 scrollPane.getVerticalScrollBar().setUnitIncrement(size);
             }
             BugtrackingUtil.keepFocusedComponentVisible(scrollPane);
-            issuePanel = scrollPane;
+            issuePanel = panel;
+            component = scrollPane;
 
             refreshViewData();
         }
 
         @Override
         public JComponent getComponent() {
-            return issuePanel;
+            return component;
+        }
+
+        @Override
+        public void opened() {
+            NbJiraIssue issue = issuePanel.getIssue();
+            if (issue != null) {
+                // Hack - reset any previous modifications when the issue window is reopened
+                issuePanel.reloadForm(true);
+                issue.opened();
+            }
+        }
+
+        @Override
+        public void closed() {
+            NbJiraIssue issue = issuePanel.getIssue();
+            if (issue != null) {
+                issue.closed();
+            }
         }
 
         @Override
@@ -1443,6 +1481,7 @@ public class NbJiraIssue extends Issue {
         public void getAttachementData(final OutputStream os) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
             JiraCommand cmd = new JiraCommand() {
+                @Override
                 public void execute() throws CoreException, IOException {
                     if (Jira.LOG.isLoggable(Level.FINER)) {
                         Jira.LOG.finer("getAttachmentData: id: " + Attachment.this.getId() + ", issue: " + getKey());

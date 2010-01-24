@@ -121,6 +121,7 @@ public final class RubyProject extends RubyBaseProject {
             evaluator(),
             new RubyFileLocator(null, this),
             new RubyCoverageProvider(this),
+            RequiredGems.create(this),
             new RubyPlatformProvider(evaluator())
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-ruby-rubyproject/Lookup"); //NOI18N

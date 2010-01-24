@@ -325,10 +325,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
         if (sgs.length > 0) {
             try {
                 FileObject srcRoot = sgs[0].getRootFolder();
-                String java_version = System.getProperty("java.version"); //NOI18N
-                if (java_version.compareTo("1.6") >= 0) {
-                    WSUtils.addJaxWsApiEndorsed(project, srcRoot);
-                }
+                WSUtils.addJaxWsApiEndorsed(project, srcRoot);
             } catch (java.io.IOException ex) {
                 Logger.getLogger(JaxWsServiceCreator.class.getName()).log(Level.FINE, "Cannot add JAX-WS-ENDORSED classpath", ex);
             }

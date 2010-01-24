@@ -201,7 +201,7 @@ public class VCSHooksConfig {
             format = defaultFormat;
         } else {
             String[] values = value.split(DELIMITER);
-            format = new Format(values[0].equals("1"), values[1]);              // NOI18N
+            format = new Format(values[0].equals("1"), values.length > 1 ? values[1] : ""); //NOI18N
         }
         return format;
     }

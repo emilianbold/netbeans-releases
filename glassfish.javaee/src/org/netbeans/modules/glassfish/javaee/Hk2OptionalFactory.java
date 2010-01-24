@@ -282,17 +282,20 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
                 for (String url : urls) {
                     if (df.handlesURI(url)) {
                         InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
-                        String installDirName = ip.getProperty(GlassfishModule.GLASSFISH_FOLDER_ATTR);
-                        String domainDirName = ip.getProperty(GlassfishModule.DOMAINS_FOLDER_ATTR)+
-                                File.separator+ip.getProperty(GlassfishModule.DOMAIN_NAME_ATTR);
-                        File instDir = new File(installDirName);
-                        File domainDir = new File(domainDirName);
-                        // TODO -- more complete test here...
-                        // TODO -- need to account for remote domain here?
-                        if (!instDir.exists() || !instDir.isDirectory() || 
-                                !domainDir.exists() || !domainDir.isDirectory() ||
-                                !domainDir.canWrite()) {
-                            needToRemove.add(url);
+                        String domainsDirName = ip.getProperty(GlassfishModule.DOMAINS_FOLDER_ATTR);
+                        if (null != domainsDirName) {
+                            String installDirName = ip.getProperty(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+                            String domainDirName = domainsDirName +File.separator +
+                                    ip.getProperty(GlassfishModule.DOMAIN_NAME_ATTR);
+                            File instDir = new File(installDirName);
+                            File domainDir = new File(domainDirName);
+                            // TODO -- more complete test here...
+                            // TODO -- need to account for remote domain here?
+                            if (!instDir.exists() || !instDir.isDirectory() ||
+                                    !domainDir.exists() || !domainDir.isDirectory() ||
+                                    !domainDir.canWrite()) {
+                                needToRemove.add(url);
+                            }
                         }
                     }
                 }

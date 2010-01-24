@@ -60,6 +60,7 @@ public class DocumentUtil {
 
     static final String FIELD_SOURCE_NAME = "_sn";  //NOI18N
 
+    @SuppressWarnings("deprecation") //NOI18N
     static Fieldable sourceNameField(String relativePath) {
         return new Field(DocumentUtil.FIELD_SOURCE_NAME, relativePath, Field.Store.YES, Field.Index.NO_NORMS);
     }

@@ -161,7 +161,7 @@ public class EditorBase extends BaseDocumentUnitTestCase {
             indentLine();
             indentNewLine = false;
         }
-        BracketCompletion.charInserted(getDocument(), pos, getCaret(), ch);
+        BracketCompletion.charInserted(getDocument(), pos, getCaret(), ch, false);
         if (indentNewLine) {
             indentNewLine();
         }

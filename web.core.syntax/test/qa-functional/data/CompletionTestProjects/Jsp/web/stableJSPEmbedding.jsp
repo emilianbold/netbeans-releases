@@ -14,7 +14,7 @@
 <%--CC
 <style> h1{| } </style>
 border
-<style> h1{border: } </style>
+<style> h1{border:  } </style>
 --%>
 
 <!-- completion for CSS style values -->
@@ -38,7 +38,7 @@ color red
 <%--CC
 <table style="|"></table>
 background
-<table style="background:"></table>
+<table style="background: "></table>
 --%>
 
 <!-- completion for CSS inline style -->

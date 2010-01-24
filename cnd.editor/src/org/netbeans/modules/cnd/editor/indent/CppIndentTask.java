@@ -43,10 +43,10 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider;
-import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider.Function;
-import org.netbeans.modules.cnd.editor.CsmDocGeneratorProvider.Parameter;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider;
+import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.Function;
+import org.netbeans.modules.cnd.spi.editor.CsmDocGeneratorProvider.Parameter;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
@@ -66,6 +66,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         doc = context.document();
     }
 
+    @Override
     public void reindent() throws BadLocationException {
         if (codeStyle == null) {
             codeStyle = CodeStyle.getDefault(doc);
@@ -82,6 +83,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
         }
     }
 
+    @Override
     public ExtraLock indentLock() {
         return null;
     }
@@ -132,77 +134,52 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
             }
         }
 
-        if (token.getTokenID() == CppTokenId.BLOCK_COMMENT || token.getTokenID() == CppTokenId.DOXYGEN_COMMENT){
-            if (isMultiLineComment(token)) {
-                if (caretOffset == token.getTokenSequence().offset()){
-                    return findIndent(token);
-                }
-                // Indent the inner lines of the multi-line comment by one
-                if (!getFormatLeadingStarInComment()) {
-                    return getTokenColumn(token) + 1;
-                } else {
-                    int indent = getTokenColumn(token) + 1;
-                    try {
-                        if (caretOffset - token.getTokenSequence().offset() == 4 &&
-                            doc.getLength() > token.getTokenSequence().offset() + 6 &&
-                            "/**\n*/".equals(doc.getText(token.getTokenSequence().offset(), 6))){ // NOI18N
-                            Function function = CsmDocGeneratorProvider.getDefault().getFunction(doc, caretOffset);
-                            if (function != null) {
-                                StringBuilder buf = new StringBuilder();
-                                buf.append("*\n"); // NOI18N
-                                for(Parameter p : function.getParametes()) {
-                                    for(int i = 0; i < indent; i++) {
-                                        buf.append(' ');
-                                    }
-                                    buf.append("* @param ").append(p.getName()).append('\n'); // NOI18N
-                                }
-                                if (!"void".equals(function.getReturnType())) { // NOI18N
-                                    for(int i = 0; i < indent; i++) {
-                                        buf.append(' ');
-                                    }
-                                    buf.append("* @return").append('\n'); // NOI18N
-                                }
-                                for(int i = 0; i < indent; i++) {
+        if (isMultiLineComment(token)) {
+            if (caretOffset == token.getTokenSequence().offset()) {
+                return findIndent(token);
+            }
+            // Indent the inner lines of the multi-line comment by one
+            if (!getFormatLeadingStarInComment()) {
+                return getTokenColumn(token) + 1;
+            } else {
+                int indent = getTokenColumn(token) + 1;
+                try {
+                    if (caretOffset - token.getTokenSequence().offset() == 4
+                            && doc.getLength() > token.getTokenSequence().offset() + 6
+                            && "/**\n*/".equals(doc.getText(token.getTokenSequence().offset(), 6))) { // NOI18N
+                        Function function = CsmDocGeneratorProvider.getDefault().getFunction(doc, caretOffset);
+                        if (function != null) {
+                            StringBuilder buf = new StringBuilder();
+                            buf.append("*\n"); // NOI18N
+                            for (Parameter p : function.getParametes()) {
+                                for (int i = 0; i < indent; i++) {
                                     buf.append(' ');
                                 }
-                                doc.insertString(caretOffset, buf.toString(), null);
+                                buf.append("* @param ").append(p.getName()).append('\n'); // NOI18N
                             }
-                        } else {
-                            if (!"*".equals(doc.getText(caretOffset, 1))) { // NOI18N
-                                if (caretOffset > 0 && "\n".equals(doc.getText(caretOffset-1, 1))) { // NOI18N
-                                    doc.insertString(caretOffset, "* ", null); // NOI18N
+                            if (!"void".equals(function.getReturnType())) { // NOI18N
+                                for (int i = 0; i < indent; i++) {
+                                    buf.append(' ');
                                 }
+                                buf.append("* @return").append('\n'); // NOI18N
+                            }
+                            for (int i = 0; i < indent; i++) {
+                                buf.append(' ');
+                            }
+                            doc.insertString(caretOffset, buf.toString(), null);
+                        }
+                    } else {
+                        if (!"*".equals(doc.getText(caretOffset, 1))) { // NOI18N
+                            if (caretOffset > 0 && "\n".equals(doc.getText(caretOffset - 1, 1))) { // NOI18N
+                                doc.insertString(caretOffset, "* ", null); // NOI18N
                             }
                         }
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
                     }
-                    return indent;
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-//                // If the line is inside multi-line comment and doesn't contain '*'
-//                if (getChar(firstNWS) != '*') { // e.g. not for '*/'
-//                    if (isCCDocComment(firstNWS.getToken())) {
-//                        if (getFormatLeadingStarInComment()) {
-//                            insertString(firstNWS, "* "); // NOI18N
-//                            setIndentShift(2);
-//                        }
-//                    }
-//                }
-            } else if (!isMultiLineComment(token)) { // line-comment
-                return findIndent(token);
-            } else { // multi-line comment
-                if (isCCDocComment(token)) {
-                    return findIndent(token);
-                } else {
-//                    // check whether the multiline comment isn't finished on the same line (see issue 12821)
-//                    if (firstNWS.getToken().getImage().indexOf('\n') == -1) {
-//                        indent = findIndent(firstNWS.getToken());
-//                    } else {
-//                        indent = getLineIndent(firstNWS, true);
-//                    }
-                }
+                return indent;
             }
-            return -1;
         }
         return findIndent(moveToFirstLineImportantToken(token));
     }
@@ -360,6 +337,9 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                     TokenItem cls = findClassifier(token);
                     if (cls != null) {
                         indent = getTokenIndent(cls);
+                        if (isHalfIndentVisibility()) {
+                            indent += getShiftWidth()/2;
+                        }
                     }
                     break;
                 case CLASS:
@@ -386,15 +366,23 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                                 case PRIVATE:
                                 case PROTECTED:
                                     indent = getTokenIndent(tt) + getShiftWidth();
+                                    if (isHalfIndentVisibility()) {
+                                        indent -= getShiftWidth()/2;
+                                    }
                                     break;
                                 case FOR:
-                                    if (alignMultilineFor()) {
-                                        TokenItem lparen = getLeftParen(t, tt);
-                                        if (lparen != null){
-                                            return getTokenColumn(lparen)+1;
+                                    if (isForLoopSemicolon(t)) {
+                                        if (alignMultilineFor()) {
+                                            TokenItem lparen = getLeftParen(t, tt);
+                                            if (lparen != null){
+                                                indent = getTokenColumn(lparen)+1;
+                                                break;
+                                            }
                                         }
+                                        indent = getTokenIndent(tt) + getFormatStatementContinuationIndent();
+                                    } else {
+                                        indent = getTokenIndent(tt);
                                     }
-                                    indent = getTokenIndent(tt) + getFormatStatementContinuationIndent();
                                     break;
                                 default:
                                     indent = getTokenIndent(tt);
@@ -420,6 +408,13 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                             case SWITCH:
                                 indent = getTokenIndent(lbss) + getShiftWidth();
                                 break;
+                            case NAMESPACE:
+                                if (indentNamespace()) {
+                                    indent = getTokenIndent(lbss) + getRightIndentDeclaration();
+                                } else {
+                                    indent = getTokenIndent(lbss);
+                                }
+                                break;
                             default:
                                 indent = getTokenIndent(lbss) + getRightIndentDeclaration();
                                 break;
@@ -427,7 +422,7 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                         break;
 
                     case RBRACE:
-                        TokenItem t3 = findStatementStart(token);
+                        TokenItem t3 = findStatementStart(token, true);
                         if (t3 != null) {
                             indent = getTokenIndent(t3);
                         }
@@ -437,6 +432,9 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
                         TokenItem ttt = getVisibility(t);
                         if (ttt != null){
                             indent = getTokenIndent(ttt) + getRightIndentDeclaration();
+                            if (isHalfIndentVisibility()) {
+                                indent -= getShiftWidth()/2;
+                            }
                         } else {
                             ttt = findAnyToken(t, null,
                                     new CppTokenId[] {CppTokenId.CASE,

@@ -279,8 +279,8 @@ final class NewTCIterator extends BasicWizardIterator {
         replaceTokens.put("SPECVERSION", moduleInfo.getSpecVersion()); // NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.windows")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.util")); //NOI18N
+        fileChanges.add(fileChanges.addModuleDependency("org.openide.util.lookup")); //NOI18N
         fileChanges.add(fileChanges.addModuleDependency("org.openide.awt")); //NOI18N
-        fileChanges.add(fileChanges.addModuleDependency("org.jdesktop.layout")); //NOI18N
         if (propertiesPersistence) {
             fileChanges.add(fileChanges.addModuleDependency("org.netbeans.modules.settings")); //NOI18N
         }

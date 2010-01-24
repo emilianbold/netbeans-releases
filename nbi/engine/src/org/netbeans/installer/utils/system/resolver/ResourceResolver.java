@@ -40,6 +40,7 @@ import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -65,7 +66,13 @@ public class ResourceResolver implements StringResolver {
             InputStream inputStream = null;
             try {
                 inputStream = ResourceUtils.getResource(path, loader);
-                parsed = parsed.replace(matcher.group(), StringUtils.readStream(inputStream, charset));
+                if(inputStream !=null) {
+                    parsed = parsed.replace(matcher.group(), StringUtils.readStream(inputStream, charset));
+                } else {
+                    LogManager.log("Cannot find resource " + path + " using classloader " + loader);
+                    parsed = null;
+                    break;
+                }
             } catch (IOException e) {
                 ErrorManager.notifyDebug(StringUtils.format(
                         ERROR_CANNOT_PARSE_PATTERN, matcher.group()), e);

@@ -84,23 +84,6 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
         super(name);
     }
     
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateAttributeWrapperMBean("createWrappedMBean1"));
-        suite.addTest(new CreateAttributeWrapperMBean("createWrappedMBean2"));
-        suite.addTest(new CreateAttributeWrapperMBean("createWrappedMBean3"));
-        suite.addTest(new CreateAttributeWrapperMBean("createWrappedMBean4"));
-        suite.addTest(new CreateAttributeWrapperMBean("createWrappedMBean5"));
-        suite.addTest(new CreateAttributeWrapperMBean("createWrappedMBean6"));
-        return suite;
-    }
-    
     public void setUp() {
         // Select project node
         selectNode(PROJECT_NAME_MBEAN_FUNCTIONAL);
@@ -120,7 +103,7 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
     /**
      * MBean from existing java class exposing all attributes
      */
-    public void createWrappedMBean1() {
+    public void testCreateWrappedMBean1() {
         
         System.out.println("============  createWrappedMBean1  ============");
         
@@ -138,7 +121,7 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
     /**
      * MBean from existing java class exposing minimal attributes
      */
-    public void createWrappedMBean2() {
+    public void testCreateWrappedMBean2() {
         
         System.out.println("============  createWrappedMBean2  ============");
         
@@ -156,7 +139,7 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
     /**
      * MBean from existing java class exposing generic attributes
      */
-    public void createWrappedMBean3() {
+    public void testCreateWrappedMBean3() {
         
         System.out.println("============  createWrappedMBean3  ============");
         
@@ -174,7 +157,7 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
     /**
      * MBean from existing java class wrapped as MXBean exposing all attributes
      */
-    public void createWrappedMBean4() {
+    public void testCreateWrappedMBean4() {
         
         System.out.println("============  createWrappedMBean4  ============");
         
@@ -193,7 +176,7 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
     /**
      * MBean from existing java class wrapped as MXBean exposing minimal attributes
      */
-    public void createWrappedMBean5() {
+    public void testCreateWrappedMBean5() {
         
         System.out.println("============  createWrappedMBean5  ============");
         
@@ -212,7 +195,7 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
     /**
      * MBean from existing java class wrapped as MXBean exposing generic attributes
      */
-    public void createWrappedMBean6() {
+    public void testCreateWrappedMBean6() {
         
         System.out.println("============  createWrappedMBean6  ============");
         

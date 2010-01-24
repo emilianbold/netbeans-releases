@@ -44,11 +44,10 @@ package org.netbeans.modules.cnd.api.utils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.openide.util.Utilities;
 
 /**
- * Get/Set path. Remembers additions to the path.
+ * Get path. Remembers additions to the path.
  *
  * @author gordonp
  */
@@ -86,22 +85,16 @@ public final class Path {
         
     }
     
-    /**
-     * Replace the current path with this new one. We should validate but currently aren't.
-     * 
-     * @param newPath A list of directories to use as a replacement path
-     */
-    public static void setPath(ArrayList<String> newPath) {
-        list = newPath;
+    private Path() {
     }
-    
+
     /**
      * Read the PATH from the environment and make an array from it.
      * 
      * @return A list of all path directories
      */
     public static ArrayList<String> getPath() {
-        return list;
+        return new ArrayList<String>(list);
     }
     
     /**
@@ -118,27 +111,6 @@ public final class Path {
             buf.append(File.pathSeparator);
         }
         return buf.substring(0, buf.length() - 1); // remove the trailing pathSeparator...
-    }
-    
-    /**
-     * Add a directory to the path.
-     * 
-     * @param pos Position where dir should be added
-     * @param dir New directory to add to path
-     * @throws IndexOutOfBoundsException
-     */
-    public static void add(int pos, String dir) throws IndexOutOfBoundsException {
-        list.add(pos, dir);
-    }
-    
-    /**
-     * Remove a directory (by index) from the path.
-     * 
-     * @param pos Position where dir should be added
-     * @throws IndexOutOfBoundsException
-     */
-    public static void remove(int pos) throws IndexOutOfBoundsException {
-        list.remove(pos);
     }
     
     /**
@@ -161,34 +133,16 @@ public final class Path {
         return pathName;
     }
     
-    public static String getPathName(int platform) {
-        // TODO: we can't cache this
-        // and this class should become non-static with an instance per devhost 
-        if (pathName == null) {
-            if (PlatformTypes.PLATFORM_WINDOWS == platform) {
-                for (String key : System.getenv().keySet()) {
-                    if (key.toLowerCase().equals("path")) { // NOI18N
-                        pathName = key.substring(0, 4);
-                        return pathName;
-                    }
-                }
-            }
-            pathName = "PATH"; // NOI18N
-        }
-        return pathName;
-    }
-    
     public static String findCommand(String cmd) {
         File file;
         String cmd2 = null;
-        ArrayList<String> dirlist = getPath();
         
         if (cmd.length() > 0) {
             if (Utilities.isWindows() && !cmd.endsWith(".exe")) { // NOI18N
                 cmd2 = cmd + ".exe"; // NOI18N
             }
 
-            for (String dir : dirlist) {
+            for (String dir : list) {
                 file = new File(dir, cmd);
                 if (file.exists() && !file.isDirectory()) {
                     return file.getAbsolutePath();

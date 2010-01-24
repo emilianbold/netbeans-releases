@@ -66,13 +66,6 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
                           "jaxb(|-osgi).jar", //NOI18N
                           "jaxb-api(|-osgi).jar", //NOI18N
                           "javax.activation.jar"}; //NOI18N
-    private static final String[] METRO_LIBRARIES15 =
-            new String[] {"webservices(|-osgi).jar", //NOI18N
-                          "webservices-api(|-osgi).jar", //NOI18N
-                          "jaxb(|-osgi).jar", //NOI18N
-                          "jaxb-api(|-osgi).jar", //NOI18N
-                          "woodstox(|-osgi).jar", //NOI18N
-                          "javax.activation.jar"}; //NOI18N
     private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
     
     private String gfRootStr;
@@ -150,11 +143,7 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
         public URL[] getLibraries() {
             List<URL> cPath = new ArrayList<URL>();
             if (isMetroInstalled()) {
-                String java_version = System.getProperty("java.version"); //NOI18N
-                String[] metroJars =
-                        (java_version.compareTo("1.6")<0 ? METRO_LIBRARIES15 : METRO_LIBRARIES); //NOI18N
-                
-                for (String entry : metroJars) {
+                for (String entry : METRO_LIBRARIES) {
                     File f = getWsJarName(gfRootStr, entry);
                     if ((f != null) && (f.exists())) {
                         try {

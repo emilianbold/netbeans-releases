@@ -46,15 +46,11 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.FavoritesOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.FavoritesAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  * Basic favorites test.
@@ -90,31 +86,32 @@ public class BasicsTest extends JellyTestCase {
         nodeHome.collapse();
     }
 
-    public void testAddJavaPackageToFavorites(){
-        //Creating sample project General/Java application
-        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        String standard = Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard");
-        String javaApp = Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard/emptyJ2SE.xml");
-        npwo.selectCategory(standard);
-        npwo.selectProject(javaApp);
-        npwo.next();
-        NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
-        npnlso.txtProjectName().setText(SAMPLE_PROJECT_NAME_F1);
-        npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
-        npnlso.finish();
-        ProjectSupport.waitScanFinished();
-        //invoking Projects tab
-        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
-        //Selecting Source package (the one named as project)
-        String srcPack = Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
-        Node node = new Node(pto.tree(), SAMPLE_PROJECT_NAME_F1+"|"+srcPack+"|"+SAMPLE_PROJECT_NAME_F1);
-        //invoking popup, Tools|Add to Favorites
-        String tools = Bundle.getString("org.openide.actions.Bundle", "CTL_Tools");
-        String add = Bundle.getStringTrimmed("org.netbeans.modules.favorites.Bundle", "ACT_Add");
-        node.performPopupAction(tools+"|"+add);
-        FavoritesOperator fo = FavoritesOperator.invoke();
-        assertEquals("items in favorites", 2, fo.tree().getChildCount(fo.tree().getRoot()));
-    }
+// #178009
+//    public void testAddJavaPackageToFavorites(){
+//        //Creating sample project General/Java application
+//        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+//        String standard = Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard");
+//        String javaApp = Bundle.getString("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard/emptyJ2SE.xml");
+//        npwo.selectCategory(standard);
+//        npwo.selectProject(javaApp);
+//        npwo.next();
+//        NewJavaProjectNameLocationStepOperator npnlso = new NewJavaProjectNameLocationStepOperator();
+//        npnlso.txtProjectName().setText(SAMPLE_PROJECT_NAME_F1);
+//        npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
+//        npnlso.finish();
+//        ProjectSupport.waitScanFinished();
+//        //invoking Projects tab
+//        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
+//        //Selecting Source package (the one named as project)
+//        String srcPack = Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
+//        Node node = new Node(pto.tree(), SAMPLE_PROJECT_NAME_F1+"|"+srcPack+"|"+SAMPLE_PROJECT_NAME_F1);
+//        //invoking popup, Tools|Add to Favorites
+//        String tools = Bundle.getString("org.openide.actions.Bundle", "CTL_Tools");
+//        String add = Bundle.getStringTrimmed("org.netbeans.modules.favorites.Bundle", "ACT_Add");
+//        node.performPopupAction(tools+"|"+add);
+//        FavoritesOperator fo = FavoritesOperator.invoke();
+//        assertEquals("items in favorites", 2, fo.tree().getChildCount(fo.tree().getRoot()));
+//    }
 
     public void testAddFolderToFavorites(){
         //Opening a favorites tab (or focusing into it)

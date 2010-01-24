@@ -66,7 +66,7 @@ help() {
     echo "      [-n|--netbeans]     <path to NetBeans (with CND) installation>"
     echo "                          (default is ${DWARF_TEST_NB_INSTALL})"
     echo "      [-c|--cnd]          <path to CND module installation>"
-    echo "                          (default is ${DWARF_TEST_NB_INSTALL}/cnd1)"
+    echo "                          (default is ${DWARF_TEST_NB_INSTALL}/cnd)"
     echo "      [-p|--path]         <path to g++ substitution script>"
     echo "                          (default is ${DWARF_TEST_PATH})"
     echo "      [-t|--temp]         <path to temporary files>"
@@ -90,7 +90,7 @@ set_defaults() {
     #DWARF_TEST_PATH="/export/home/nk220367/main/cnd.modelimpl/test/whitebox"}
     DWARF_TEST_INSTALL="/export/home/nk220367/main/cnd.modelimpl/test/whitebox"
     DWARF_TEST_NB_INSTALL="/opt/netbeans"
-    DWARF_TEST_CND_INSTALL="/opt/netbeans/cnd3"
+    DWARF_TEST_CND_INSTALL="/opt/netbeans/cnd"
 
     DWARF_TEST_PATH=${DWARF_TEST_PATH:-${BIN_DIR}}
     #DWARF_TEST_INSTALL="${DWARF_TEST_INSTALL:-${DWARF_TEST_PATH}/install}"
@@ -209,7 +209,7 @@ parse_params() {
  
      #### setting DWARF_TEST_CND_INSTALL (its default depends on parameters)
      if [ -z ${DWARF_TEST_CND_INSTALL} ]; then
-         DWARF_TEST_CND_INSTALL=${DWARF_TEST_NB_INSTALL}/cnd1
+         DWARF_TEST_CND_INSTALL=${DWARF_TEST_NB_INSTALL}/cnd
      fi
  
      platform=`cd ${DWARF_TEST_NB_INSTALL}; find . -name org-openide-util.jar | sed 's/\.\/\(.*\)\/lib.*/\1/'`

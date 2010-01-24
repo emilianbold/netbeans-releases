@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
@@ -66,17 +67,13 @@ import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
  *
  * @author Tor Norbye
  */
+@LanguageRegistration(mimeType="text/javascript") //NOI18N
 public class JsLanguage extends DefaultLanguageConfig {
 
     private static boolean jsClassPathRegistered = false;
 
     public JsLanguage() {
-        if (!Boolean.getBoolean("CslJar")) { //NOI18N
-            // We only want this called when running from the IDE and not
-            // when CslJar task instantiates this class to learn what
-            // it needs to learn in order to enhance the module layer.
-            registerJsClassPathIfNeeded();
-        }
+        registerJsClassPathIfNeeded();
     }
 
     /*
@@ -89,7 +86,7 @@ public class JsLanguage extends DefaultLanguageConfig {
      *
      * The js classpath unregistration is done in module's install class.
      */
-    private static synchronized void registerJsClassPathIfNeeded() {
+    /* package */ static synchronized void registerJsClassPathIfNeeded() {
         if(!jsClassPathRegistered) {
             jsClassPathRegistered = true;
             SwingUtilities.invokeLater(new Runnable() {

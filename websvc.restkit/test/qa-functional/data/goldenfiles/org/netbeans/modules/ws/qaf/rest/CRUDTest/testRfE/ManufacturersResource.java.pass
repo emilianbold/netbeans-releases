@@ -17,12 +17,12 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import com.sun.jersey.api.core.ResourceContext;
 import javax.persistence.EntityManager;
 import o.n.m.ws.qaf.rest.crud.Manufacturer;
 import o.n.m.ws.qaf.rest.crud.Product;
 import o.n.m.ws.qaf.rest.crud.converter.ManufacturersConverter;
 import o.n.m.ws.qaf.rest.crud.converter.ManufacturerConverter;
+import com.sun.jersey.api.core.ResourceContext;
 
 /**
  *
@@ -32,9 +32,9 @@ import o.n.m.ws.qaf.rest.crud.converter.ManufacturerConverter;
 @Path("/manufacturers/")
 public class ManufacturersResource {
     @Context
-    protected UriInfo uriInfo;
-    @Context
     protected ResourceContext resourceContext;
+    @Context
+    protected UriInfo uriInfo;
   
     /** Creates a new instance of ManufacturersResource */
     public ManufacturersResource() {
@@ -48,13 +48,13 @@ public class ManufacturersResource {
     @GET
     @Produces({"application/xml", "application/json"})
     public ManufacturersConverter get(@QueryParam("start")
-    @DefaultValue("0")
+                                      @DefaultValue("0")
     int start, @QueryParam("max")
-    @DefaultValue("10")
+               @DefaultValue("10")
     int max, @QueryParam("expandLevel")
-    @DefaultValue("1")
+             @DefaultValue("1")
     int expandLevel, @QueryParam("query")
-    @DefaultValue("SELECT e FROM Manufacturer e")
+                     @DefaultValue("SELECT e FROM Manufacturer e")
     String query) {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
@@ -96,9 +96,9 @@ public class ManufacturersResource {
     @Path("{manufacturerId}/")
     public ManufacturerResource getManufacturerResource(@PathParam("manufacturerId")
     Integer id) {
-        ManufacturerResource resource = resourceContext.getResource(ManufacturerResource.class);
-        resource.setId(id);
-        return resource;
+        ManufacturerResource manufacturerResource = resourceContext.getResource(ManufacturerResource.class);
+        manufacturerResource.setId(id);
+        return manufacturerResource;
     }
 
     /**
@@ -123,7 +123,7 @@ public class ManufacturersResource {
             Manufacturer oldEntity = value.getManufacturerId();
             value.setManufacturerId(entity);
             if (oldEntity != null) {
-                oldEntity.getProductCollection().remove(entity);
+                oldEntity.getProductCollection().remove(value);
             }
         }
     }

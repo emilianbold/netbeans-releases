@@ -38,6 +38,11 @@
  */
 package org.netbeans.core;
 
+import java.util.prefs.Preferences;
+import org.netbeans.api.keyring.Keyring;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+
 /**
  *
  * @author  lukas
@@ -45,11 +50,23 @@ package org.netbeans.core;
 final class NbAuthenticatorPanel extends javax.swing.JPanel {
 
     private String realmName;
+    private final Preferences prefs;
+    private final String keyringKey;
 
     /** Creates new form AuthenticatorPanel */
     public NbAuthenticatorPanel(String realmName) {
         this.realmName = realmName;
         initComponents();
+        prefs = NbPreferences.forModule(NbAuthenticatorPanel.class).node("authentication"); // NOI18N
+        keyringKey = "authentication." + realmName; // NOI18N
+        String username = prefs.get(realmName, null);
+        if (username != null) {
+            userName.setText(username);
+            char[] pwd = Keyring.read(keyringKey);
+            if (pwd != null) {
+                password.setText(new String(pwd));
+            }
+        }
     }
 
     /** This method is called from within the constructor to
@@ -117,10 +134,14 @@ final class NbAuthenticatorPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     public char[] getPassword() {
-        return password.getPassword();
+        Keyring.save(keyringKey, password.getPassword(),
+                NbBundle.getMessage(NbAuthenticatorPanel.class, "NbAuthenticatorPanel.password.description", realmName));
+        return password.getPassword(); // call getPassword again, since previous return value nulled out
     }
 
     public String getUserName() {
-        return userName.getText();
+        String username = userName.getText();
+        prefs.put(realmName, username);
+        return username;
     }
 }

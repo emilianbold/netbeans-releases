@@ -266,7 +266,6 @@ public final class JumpList {
             if (Utilities.getLastActiveComponent() != c) {
 
                 Utilities.requestFocus(c); // possibly request for the component
-                Registry.activate(c);
             }
 
             int offset = wpt.getOffset();

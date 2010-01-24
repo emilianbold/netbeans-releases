@@ -59,17 +59,22 @@ public final class RubyPlatformProvider {
     }
 
     public RubyPlatform getPlatform() {
-        ensurePlatformsReady();
         String id = evaluator.getProperty("platform.active"); // NOI18N
+        return getPlatform(id);
+    }
+
+    public static RubyPlatform getPlatform(String id) {
+        ensurePlatformsReady();
         RubyPlatform platform = id == null ? RubyPlatformManager.getDefaultPlatform() : RubyPlatformManager.getPlatformByID(id);
         if (platform == null) {
             LOGGER.info("Platform with id '" + id + "' does not exist. Using default platform.");
             platform = RubyPlatformManager.getDefaultPlatform();
         }
         return platform;
+
     }
 
-    private void ensurePlatformsReady() {
+    private static void ensurePlatformsReady() {
         if (!RubyPreferences.isFirstPlatformTouch()) {
             return;
         }

@@ -360,6 +360,9 @@ public final class LanguageRegistry implements Iterable<Language> {
                 Integer attr = (Integer) subtypes[j].getAttribute("genver"); //NOI18N
                 if (attr == null) {
                     LOG.log(Level.SEVERE, "Language " + mimeType + " has not been preprocessed during jar module creation"); //NOI18N
+                } else if (attr.intValue() == 1) {
+                    LOG.log(Level.WARNING, "Language " + mimeType + " has been preprocessed using the deprecated CslJar task. " + //NOI18N
+                        "Please use @LanguageRegistration annotation, see https://netbeans.org/bugzilla/show_bug.cgi?id=169991 for details."); //NOI18N
                 }
 
                 Language language = new Language(mimeType);

@@ -72,17 +72,20 @@ public class JAXBWizProjectOpenedHookImpl extends ProjectOpenedHook{
     @Override
     protected void projectOpened() {
         Schemas scs = ProjectHelper.getXMLBindingSchemas(prj);
-        if ((scs != null) || (scs.sizeSchema() > 0)){
+        if (scs != null && scs.sizeSchema() > 0){
             BigDecimal v = scs.getVersion();
             if ((v == null) || (JAXBWizModuleConstants.LATEST_CFG_VERSION.compareTo(v) > 0)){
                 ProjectHelper.migrateProjectFromPreDot5Version(prj);
             }
-            // Update privat.properties for headless run.
-
+            // Set endorsed classpath
             ProjectManager.mutex().writeAccess(
                     new Mutex.Action() {
                         public Object run() {
-                            ProjectHelper.setPrivateProjPros(prj);
+                            try {
+                                ProjectHelper.addJaxbApiEndorsed(prj);
+                            } catch (java.io.IOException ex) {
+                                ex.printStackTrace();
+                            }
                             return null;
                         }
                     });

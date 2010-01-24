@@ -101,5 +101,8 @@ public abstract class Job {
     public boolean belongsTo(Object family) {
         return false;
     }    
-    
+
+    public void setRule(ISchedulingRule rule) {
+
+    }
 }

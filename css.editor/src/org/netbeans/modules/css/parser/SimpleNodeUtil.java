@@ -40,6 +40,7 @@ package org.netbeans.modules.css.parser;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  *
@@ -109,6 +110,18 @@ public class SimpleNodeUtil {
     public static SimpleNode getChildByType(SimpleNode node, int kind) {
         SimpleNode[] children = getChildrenByType(node, kind);
         return children.length == 0 ? null : children[0];
+    }
+
+    public static SimpleNode getAncestorByType(SimpleNode node, final int kind) {
+	final AtomicReference<SimpleNode> found = new AtomicReference<SimpleNode>();
+	visitAncestors(node, new NodeVisitor() {
+	    public void visit(SimpleNode node) {
+		if(found.get() == null && node.kind() == kind) {
+		    found.set(node);
+		}
+	    }
+	});
+	return found.get();
     }
     
     /** @return list of children of the node with the specified kind. */

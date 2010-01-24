@@ -51,14 +51,11 @@ import java.util.StringTokenizer;
 import javax.swing.JButton;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
-import org.netbeans.modules.cnd.loaders.CDataObject;
 import org.netbeans.modules.cnd.loaders.CoreElfObject;
 import org.netbeans.modules.cnd.loaders.ExeObject;
-import org.netbeans.modules.cnd.loaders.MakefileDataObject;
 import org.netbeans.modules.cnd.loaders.OrphanedElfObject;
-import org.netbeans.modules.cnd.loaders.ShellDataObject;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -466,62 +463,6 @@ public class IpeUtils {
         return dp.toString();
     }
 
-//    /** Get the value of an environment variable */
-//    public static String getenv(String name) {
-//        return getUnixEnv().getenv(name);
-//    }
-//    
-//    
-//    /** Same as getenv() */
-//    public static String valueOf(String name) {
-//        return IpeUtils.getenv(name);
-//    }
-//    
-//    
-//    /** Returns the whole name=value string */
-//    public static String entryFor(String name) {
-//        return getUnixEnv().entryFor(name);
-//    }
-//    
-//    
-//    /** Put the environment variable into the environment */
-//    public static void putenv(String entry) {
-//        getUnixEnv().putenv(entry);
-//    }
-//    
-//    
-//    /** Similar to putenv but takes separate arguments for name and value */
-//    public static void setValueOf(String name, String value) {
-//        getUnixEnv().setValueOf(name, value);
-//    }
-//    
-//    
-//    /** Return the whole environment in an array of Strings */
-//    public static String[] environ() {
-//        return getUnixEnv().environ();
-//    }
-//    
-//    
-//    /** The UnixEnv.dump() method */
-//    public static void envDump() {
-//        getUnixEnv().dump();
-//    }
-//    
-//    private static UnixEnv getUnixEnv() {
-//        UnixEnv env;
-//        
-//        if (wrEnv == null) {
-//            env = null;
-//        } else {
-//            env = (UnixEnv) wrEnv.get();
-//        }
-//        
-//        if (env == null) {
-//            env = new UnixEnv();
-//            wrEnv = new WeakReference(env);
-//        }
-//        return env;
-//    }
     /** Trim trailing slashes */
     public static String trimSlashes(String dir) {
         int trim = 0;
@@ -548,6 +489,7 @@ public class IpeUtils {
     public static void requestFocus(final Component c) {
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 if (c != null) {
                     if (c.getParent() != null) {
@@ -571,6 +513,7 @@ public class IpeUtils {
     public static void setDefaultButton(final JRootPane rootPane, final JButton button) {
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 if (button != null) {
                     if (button.getParent() != null && button.isVisible()) {
@@ -672,23 +615,23 @@ public class IpeUtils {
         return (DataNode) node;
     }
 
-    // From PicklistUtils. FIXUP: probably not really needed anymore
-    public static ExecutionSupport findExecutionSupport(DataNode executionNode) {
-        if (executionNode == null) {
-            return null;
-        }
-        if (executionNode.getDataObject() instanceof CDataObject) {
-            return null;
-        }
-        if (executionNode.getDataObject() instanceof CoreElfObject) {
-            return null;
-        }
-        if (executionNode.getDataObject() instanceof MakefileDataObject) {
-            return null;
-        }
-        ExecutionSupport bes = executionNode.getCookie(ExecutionSupport.class);
-        return bes;
-    }
+//    // From PicklistUtils. FIXUP: probably not really needed anymore
+//    public static ExecutionSupport findExecutionSupport(DataNode executionNode) {
+//        if (executionNode == null) {
+//            return null;
+//        }
+//        if (executionNode.getDataObject() instanceof CDataObject) {
+//            return null;
+//        }
+//        if (executionNode.getDataObject() instanceof CoreElfObject) {
+//            return null;
+//        }
+//        if (executionNode.getDataObject() instanceof MakefileDataObject) {
+//            return null;
+//        }
+//        ExecutionSupport bes = executionNode.getCookie(ExecutionSupport.class);
+//        return bes;
+//    }
 
     public static DataNode findDebuggableNode(String filePath) {
         if (filePath == null) {
@@ -804,6 +747,7 @@ public class IpeUtils {
                     string.charAt(i) == '$' ||
                     string.charAt(i) == '{' ||
                     string.charAt(i) == '}' ||
+                    string.charAt(i) == ':' ||
                     string.charAt(i) == '\\') {
             } else {
                 return true;
@@ -900,9 +844,9 @@ public class IpeUtils {
      */
     public static boolean isDbxguiEnabled() {
         if (!CndUtils.isStandalone()) {
-            Iterator iter = Lookup.getDefault().lookupAll(ModuleInfo.class).iterator();
+            Iterator<? extends ModuleInfo> iter = Lookup.getDefault().lookupAll(ModuleInfo.class).iterator();
             while (iter.hasNext()) {
-                ModuleInfo info = (ModuleInfo) iter.next();
+                ModuleInfo info = iter.next();
                 if (info.getCodeNameBase().indexOf("dbxgui") >= 0 && info.isEnabled()) { // NOI18N
                     return true;
                 }
@@ -935,7 +879,7 @@ public class IpeUtils {
         } catch (DataObjectNotFoundException e) {
             return false;
         }
-        if (dataObject instanceof ExeObject || dataObject instanceof ShellDataObject) {
+        if (dataObject instanceof ExeObject || dataObject.getPrimaryFile().getMIMEType().equals(MIMENames.SHELL_MIME_TYPE)) {
             if (dataObject instanceof OrphanedElfObject || dataObject instanceof CoreElfObject) {
                 return false;
             }

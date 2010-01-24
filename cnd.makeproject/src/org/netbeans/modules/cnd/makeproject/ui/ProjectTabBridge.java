@@ -54,10 +54,10 @@ public class ProjectTabBridge {
     private static ProjectTabBridge instance = null;
     private static final String className = "org.netbeans.modules.project.ui.ProjectTab"; // NOI18N
 
-    private Class refClass = null;
+    private Class<?> refClass = null;
 
     public ProjectTabBridge() throws ClassNotFoundException {
-	ClassLoader c = Lookup.getDefault ().lookup (ClassLoader.class);
+	ClassLoader c = Lookup.getDefault().lookup(ClassLoader.class);
 	// Find the class
 	if (c == null) {
 	    refClass = Class.forName(className);
@@ -85,11 +85,12 @@ public class ProjectTabBridge {
 	Method method = null;
 	Object ret = null;
 
-	if (refClass == null)
+	if (refClass == null) {
 	    return null;
+        }
 
 	try {
-	    method = refClass.getMethod(methodName, new Class[] {String.class});
+	    method = refClass.getMethod(methodName, String.class);
 	    ret = method.invoke(null, new Object[] {tcID});
 	} catch(Exception e) {
 	    System.err.println("ProjectTabBridge " + methodName + e); // NOI18N
@@ -105,11 +106,12 @@ public class ProjectTabBridge {
 	Method method = null;
 	Object ret = null;
 
-	if (refClass == null)
+	if (refClass == null) {
 	    return null;
+        }
 
 	try {
-	    method = refClass.getMethod(methodName, new Class[0]);
+	    method = refClass.getMethod(methodName);
 	    ret = method.invoke(projectTab, new Object[0]);
 	} catch(Exception e) {
 	    System.err.println("ProjectTabBridge " + methodName + e); // NOI18N

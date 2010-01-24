@@ -158,20 +158,24 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
     }
 
     // DocumentListener
+    @Override
     public void changedUpdate(DocumentEvent e)  {
     }
 
     // DocumentListener
+    @Override
     public void insertUpdate(DocumentEvent e) {
         updateTexts(e);
     }
 
     // DocumentListener
+    @Override
     public void removeUpdate(DocumentEvent e) {
         updateTexts(e);
     }
 
     // PropertyChangeListener - called from ExplorerManager when node selection changes
+    @Override
     public void propertyChange(PropertyChangeEvent ev) {
         if (ev.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
             if (!configuring) {
@@ -186,6 +190,7 @@ public class ConfigureProjectVisualPanel extends javax.swing.JPanel
     }
 
     // ExplorerManager.Provider - for the ListView to work
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -525,6 +530,7 @@ private void libFolderButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
             list.unregisterKeyboardAction(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, false));
             setDefaultProcessor(this);
         }
+        @Override
         public void actionPerformed(ActionEvent e) {
             // Do nothing
         }

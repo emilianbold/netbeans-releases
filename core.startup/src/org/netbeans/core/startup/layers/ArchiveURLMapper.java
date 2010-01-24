@@ -56,6 +56,7 @@ import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -74,7 +75,7 @@ public class ArchiveURLMapper extends URLMapper {
     private static boolean warningAlreadyReported = false;
     private static final String JAR_PROTOCOL = "jar";   //NOI18N
 
-    private static Map<File,SoftReference<JarFileSystem>> mountRoots = new HashMap<File,SoftReference<JarFileSystem>>();
+    private static Map<File,SoftReference<JarFileSystem>> mountRoots = new ConcurrentHashMap<File,SoftReference<JarFileSystem>>();
 
     public URL getURL(FileObject fo, int type) {
         assert fo != null;
@@ -147,7 +148,8 @@ public class ArchiveURLMapper extends URLMapper {
         return null;
     }
 
-    private static synchronized boolean isRoot (File file) {
+    /** #177052 - not necessary to be synchronized. */
+    private static boolean isRoot (File file) {
         return mountRoots.containsKey(file);
     }
 

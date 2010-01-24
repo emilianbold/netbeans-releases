@@ -57,6 +57,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
@@ -93,7 +94,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
     public static synchronized KenaiPopupMenu getDefault() {
         if (inst == null) {
             inst = new KenaiPopupMenu();
-            Kenai.getDefault().addPropertyChangeListener(Kenai.PROP_URL_CHANGED, inst);
+            KenaiManager.getDefault().getKenai("https://kenai.com").addPropertyChangeListener(Kenai.PROP_URL_CHANGED, inst);
         }
         return inst;
     }
@@ -112,6 +113,43 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
             repoForProjCache.clear();
         }
     }
+
+    private KenaiProject getActualKenaiProject (Project p, String kenaiProjectName) throws KenaiException {
+        KenaiProject defaultKenaiProject = KenaiProject.forRepository(repoForProjCache.get(p));
+        Kenai kenai = KenaiManager.getDefault().getKenai(defaultKenaiProject != null ? defaultKenaiProject.getKenai().getUrl().toString() : "https://kenai.com"); //NOI18N
+        KenaiProject kp = kenai == null ? null : kenai.getProject(kenaiProjectName);
+        return kp;
+    }
+
+    private String getKenaiProjectName(Project proj) {
+        /* Add action to navigate to Kenai project - based on repository URL (not on Kenai dashboard at the moment) */
+        // if isKenaiProject==true, there must be cached result + it is different from ""
+        String kpName = null;
+        OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(proj);
+        if (ownerInfo != null) {
+            try {
+                // ensure project. If none with the given owner name available,
+                // fallback on repoForProjCache
+                KenaiProject kp = getActualKenaiProject(proj, ownerInfo.getOwner());
+                if (kp != null) {
+                    kpName = kp.getName();
+                }
+            } catch (KenaiException ex) {
+                String err = ex.getLocalizedMessage();
+                if (err == null) {
+                    err = ex.getCause().getLocalizedMessage();
+                }
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_CONNECTION", err))); //NOI18N
+            }
+        }
+        if (kpName == null) {
+            String projRepo = repoForProjCache.get(proj);
+            kpName = KenaiProject.getNameForRepository(projRepo);
+        }
+        return kpName;
+    }
+
+
 
     private final class KenaiPopupMenuPresenter extends AbstractAction implements Presenter.Popup {
 
@@ -169,38 +207,14 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
             // show for Kenai projects
             final JMenu kenaiPopup = new JMenu(NbBundle.getMessage(KenaiPopupMenu.class, "KENAI_POPUP")); //NOI18N
             kenaiPopup.setVisible(true);
-            /* Add action to navigate to Kenai project - based on repository URL (not on Kenai dashboard at the moment) */
-            // if isKenaiProject==true, there must be cached result + it is different from ""
-            String kpName = null;
-
-            OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(proj);
-            if(ownerInfo != null) {
-                try {
-                    // ensure project. If none with the given owner name available,
-                    // fallback on repoForProjCache
-                    KenaiProject kp = Kenai.getDefault().getProject(ownerInfo.getOwner());
-                    if(kp != null) {
-                        kpName = kp.getName();
-                    }
-                } catch (KenaiException ex) {
-                    String err = ex.getLocalizedMessage();
-                    if (err == null) {
-                        err = ex.getCause().getLocalizedMessage();
-                    }
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_CONNECTION", err))); //NOI18N
-                }
-            }
-
-            if(kpName == null) {
-                String projRepo = repoForProjCache.get(proj);
-                kpName = KenaiProject.getNameForRepository(projRepo);
-            }
             
-            kenaiPopup.add(new LazyOpenKenaiProjectAction(kpName));
+            kenaiPopup.add(new LazyOpenKenaiProjectAction(proj));
             kenaiPopup.addSeparator();
+            String projRepo = repoForProjCache.get(proj);
+            String kpName = KenaiProject.getNameForRepository(projRepo);
             if (kpName != null) {
-                kenaiPopup.add(new LazyFindIssuesAction(proj, kpName));
-                kenaiPopup.add(new LazyNewIssuesAction(proj, kpName));
+                kenaiPopup.add(new LazyFindIssuesAction(proj));
+                kenaiPopup.add(new LazyNewIssuesAction(proj));
                 kenaiPopup.addSeparator();
                 /* Show actions related to versioning - commit/update */
                 VersioningSystem owner = VersioningSupport.getOwner(FileUtil.toFile(proj.getProjectDirectory()));
@@ -278,7 +292,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
 
     class LazyFindIssuesAction extends JMenuItem {
 
-        public LazyFindIssuesAction(final Project proj, final String kenaiProjectUniqueName) {
+        public LazyFindIssuesAction(final Project proj) {
             super(NbBundle.getMessage(KenaiPopupMenu.class, "FIND_ISSUE")); //NOI18N
             this.addActionListener(new ActionListener() {
 
@@ -289,11 +303,16 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));  //NOI18N
                             handle.start();
                             try {
-                                final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
+                                final KenaiProject kp = getActualKenaiProject(proj, getKenaiProjectName(proj));
                                 if (kp != null) {
                                     if (kp.getFeatures(Type.ISSUES).length > 0) {
                                         final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                        DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                        SwingUtilities.invokeLater( new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                            }
+                                        });
                                         QueryAccessor.getDefault().getFindIssueAction(pHandle).actionPerformed(e);
                                         return;
                                     } else {
@@ -319,7 +338,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
 
     class LazyNewIssuesAction extends JMenuItem {
 
-        public LazyNewIssuesAction(final Project proj, final String kenaiProjectUniqueName) {
+        public LazyNewIssuesAction(final Project proj) {
             super(NbBundle.getMessage(KenaiPopupMenu.class, "NEW_ISSUE")); //NOI18N
             this.addActionListener(new ActionListener() {
 
@@ -330,11 +349,16 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER")); //NOI18N
                             handle.start();
                             try {
-                                final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
+                                final KenaiProject kp = getActualKenaiProject(proj, getKenaiProjectName(proj));
                                 if (kp != null) {
                                     if (kp.getFeatures(Type.ISSUES).length > 0) {
                                         final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                        DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                        SwingUtilities.invokeLater( new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                            }
+                                        });
                                         QueryAccessor.getDefault().getCreateIssueAction(pHandle).actionPerformed(e);
                                         return;
                                     } else {
@@ -360,7 +384,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
 
     class LazyOpenKenaiProjectAction extends JMenuItem {
 
-        public LazyOpenKenaiProjectAction(final String kenaiProjectUniqueName) {
+        public LazyOpenKenaiProjectAction(final Project proj) {
             super(NbBundle.getMessage(KenaiPopupMenu.class, "OPEN_CORRESPONDING_KENAI_PROJ")); //NOI18N
             this.addActionListener(new ActionListener() {
 
@@ -379,10 +403,15 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                             try {
                                 handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CTL_OpenKenaiProjectAction")); //NOI18N
                                 handle.start();
-                                final KenaiProject kp = Kenai.getDefault().getProject(kenaiProjectUniqueName);
+                                final KenaiProject kp = getActualKenaiProject(proj, getKenaiProjectName(proj));
                                 if (kp != null) {
                                     final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                    DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                        SwingUtilities.invokeLater( new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                            }
+                                        });
                                 }
                             } catch (KenaiException e) {
                                 String err = e.getLocalizedMessage();

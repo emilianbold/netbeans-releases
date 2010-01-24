@@ -432,6 +432,7 @@ class DataViewUI extends JXPanel {
 
         //add refresh text field
         refreshField = new JTextField(2);
+        refreshField.setMinimumSize(new Dimension(30, 25));
         refreshField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -439,9 +440,11 @@ class DataViewUI extends JXPanel {
             }
             @Override
             public void focusLost(FocusEvent e) {
-                if (refreshField.getText().length() >= 4) {
+                if (refreshField.getText().length() > 2) {
+                    refreshField.setMinimumSize(new Dimension(10 * refreshField.getText().length(), 25));
                     refreshField.setColumns(refreshField.getText().length());
                 } else {
+                    refreshField.setMinimumSize(new Dimension(30, 25));
                     refreshField.setColumns(2);
                 }
             }

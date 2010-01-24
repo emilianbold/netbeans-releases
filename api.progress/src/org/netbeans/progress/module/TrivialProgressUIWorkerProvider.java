@@ -44,11 +44,11 @@ package org.netbeans.progress.module;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.progress.spi.ExtractedProgressUIWorker;
-import org.netbeans.progress.spi.ProgressEvent;
-import org.netbeans.progress.spi.ProgressUIWorkerProvider;
-import org.netbeans.progress.spi.ProgressUIWorkerWithModel;
-import org.netbeans.progress.spi.TaskModel;
+import org.netbeans.modules.progress.spi.ExtractedProgressUIWorker;
+import org.netbeans.modules.progress.spi.ProgressEvent;
+import org.netbeans.modules.progress.spi.ProgressUIWorkerProvider;
+import org.netbeans.modules.progress.spi.ProgressUIWorkerWithModel;
+import org.netbeans.modules.progress.spi.TaskModel;
 
 /**
  * Fallback provider in case no GUI is registered.

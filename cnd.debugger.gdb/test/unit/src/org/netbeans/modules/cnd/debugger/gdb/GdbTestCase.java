@@ -95,17 +95,6 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
 
     public GdbTestCase(String name) {
         super(name);
-        System.setProperty("gdb.testsuite", "true");
-        tlog.setLevel(Level.FINE);
-        // TODO: need to get test apps dir from the environment
-        String workdir = System.getProperty("nbjunit.workdir"); // NOI18N
-        if (workdir != null && workdir.endsWith("/build/test/unit/work")) { // NOI18N
-            testapp_dir = workdir.substring(0, workdir.length() - 21) + "/build/testapps"; // NOI18N
-            File dir = new File(testapp_dir);
-            if (!dir.exists()) {
-                assert false : "Missing testapps directory";
-            }
-        }
     }
 
     protected void tlog(String msg) {
@@ -159,6 +148,17 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("gdb.testsuite", "true");
+        tlog.setLevel(Level.FINE);
+        // TODO: need to get test apps dir from the environment
+        String workdir = System.getProperty("nbjunit.workdir"); // NOI18N
+        if (workdir != null && workdir.endsWith("/build/test/unit/work")) { // NOI18N
+            testapp_dir = workdir.substring(0, workdir.length() - 21) + "/build/testapps"; // NOI18N
+            File dir = new File(testapp_dir);
+            if (!dir.exists()) {
+                fail("Missing testapps directory");
+            }
+        }
         this.testapp = getName();
         System.out.println("\n" + testapp); // NOI18N
     }

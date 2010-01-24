@@ -72,6 +72,8 @@ class PlatformLauncher {
     static const char *OPT_HEAP_DUMP_PATH;
     static const char *OPT_KEEP_WORKING_SET_ON_MINIMIZE;
     static const char *OPT_CLASS_PATH;
+    static const char *OPT_SPLASH;
+    static const char *OPT_SPLASH_PATH;
 
     static const char *UPDATER_MAIN_CLASS;
     static const char *IDE_MAIN_CLASS;
@@ -112,6 +114,7 @@ private:
     bool separateProcess;
     bool suppressConsole;
     bool heapDumpPathOptFound;
+    bool nosplash;
     std::string platformDir;
     std::string userDir;
     std::string clusters;

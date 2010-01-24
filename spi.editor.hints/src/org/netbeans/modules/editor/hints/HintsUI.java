@@ -143,7 +143,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
     private Popup tooltipPopup;
     private JLabel hintIcon;
     private ScrollCompletionPane hintListComponent;
-    private JLabel errorTooltip;
+    private JTextArea errorTooltip;
     private AtomicBoolean cancel;
     
     /** Creates a new instance of HintsUI */
@@ -310,13 +310,28 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         Rectangle screen = getScreenBounds();
         Dimension screenDim = new Dimension(screen.width, screen.height);
 
-        errorTooltip = new JLabel("<html>" + translate(description)); // NOI18N
+        errorTooltip = new JTextArea(description); // NOI18N
         errorTooltip.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Color.BLACK),
             BorderFactory.createEmptyBorder(0, 3, 0, 3)
         ));
+        errorTooltip.setEditable(false);
         Dimension pref = errorTooltip.getPreferredSize();
-        errorTooltip.setPreferredSize(new Dimension(Math.min(pref.width, screenDim.width), Math.min(pref.height, screenDim.height)));
+        // Since PopupFactory can display the resulting component so that
+        // it goes off-screen on the right instead count with component's usable width.
+        int usableWidth = getUsableWidth(component);
+        if (pref.width > usableWidth) { // Too wide -> wrap
+            errorTooltip.setLineWrap(true);
+            errorTooltip.setWrapStyleWord(true);
+            // Force wrapping
+            errorTooltip.setSize(new Dimension(usableWidth, screenDim.height));
+            // Re-read preferred size to determine proper height
+            pref = errorTooltip.getPreferredSize();
+        }
+        if (pref.height > screenDim.height) {
+            pref.height = screenDim.height;
+        }
+        errorTooltip.setSize(pref);
         errorTooltip.addMouseListener(this);
         
         if (!fixes.isComputed() || fixes.getFixes().isEmpty()) {
@@ -399,6 +414,13 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
             screenBounds = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
         }
         return screenBounds;
+    }
+
+    private int getUsableWidth(JTextComponent component) {
+        Container parent = component.getParent();
+        return (parent instanceof JViewport)
+            ? ((JViewport)parent).getExtentSize().width
+            : component.getSize().width;
     }
 
 //    private Dimension getMaxSizeAt( Point p ) {

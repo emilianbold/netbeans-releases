@@ -698,8 +698,8 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testIZ144679() throws Exception {
         // IZ#144679 : IDE highlights static constants in class as wrong code
-        performTest("IZ144679.cc", 11, 21, "IZ144679.cc", 10, 1);
-        performTest("IZ144679.cc", 12, 22, "IZ144679.cc", 11, 1);
+        performTest("IZ144679.cc", 11, 40, "IZ144679.cc", 10, 1);
+        performTest("IZ144679.cc", 12, 40, "IZ144679.cc", 11, 1);
     }
 
     public void testIZ145077() throws Exception {
@@ -902,6 +902,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testIZ175231() throws Exception {
         // IZ#175231 : template method is unresolved from template-based operator
         performTest("iz175231.cc", 11, 19, "iz175231.cc", 14, 5);
+    }
+
+    public void testIZ179373() throws Exception {
+        // Bug#179373: unable to resolve a member of the result of an operator
+        performTest("iz179373.cc", 17, 13, "iz179373.cc", 3, 5);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

@@ -129,6 +129,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     private static final String CODE_MARK_VARIABLE_SUBST = "*/\n\\2"; // NOI18N
 
     // FormAwareEditor impl
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         this.formModel = formModel;
         ActionManager.registerFormModel(formModel,getSourceFile());
@@ -144,6 +145,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     }
 
     // FormAwareEditor impl
+    @Override
     public void updateFormVersionLevel() {
         formModel.raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
     }
@@ -165,6 +167,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         if (panel == null) {
             panel = new ActionPropertyEditorPanel(formProperty,getSourceFile());
             panel.addPropertyChangeListener("action", new PropertyChangeListener() { // NOI18N
+                @Override
                 public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
                     setValue(panel.getSelectedAction());
                 }
@@ -361,6 +364,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         return ResourceUtils.getDesignResourceMap(actFile != null ? actFile : getSourceFile(), true);
     }
 
+    @Override
     public void readFromXML(Node element) throws IOException {
         if(element != null) {
             Element elem = (Element)element;
@@ -384,6 +388,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         }
     }
 
+    @Override
     public Node storeToXML(Document doc) {
         Element elem = doc.createElement("action"); // NOI18N
         if (action != null) {
@@ -395,6 +400,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     }
 
     private PropertyEnv env;
+    @Override
     public void attachEnv(PropertyEnv env) {
         this.env = env;
         env.removeVetoableChangeListener(this);
@@ -405,6 +411,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     
     // called after the action property editor panel dialog has been closed with the 'okay' button
     // this will *not* be called if the user pressed 'cancel'
+    @Override
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         if(!isAppFramework()) {
             return;

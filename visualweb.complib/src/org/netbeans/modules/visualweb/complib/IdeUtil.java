@@ -373,8 +373,7 @@ public class IdeUtil {
         String doTempCopy = System.getProperty("toolbox.makeTempCopy", Boolean // NOI18N
                 .toString(isWindows));
 
-        // In JDK 1.5 we can use Boolean.parseBoolean() instead
-        if (!Boolean.valueOf(doTempCopy).booleanValue()) {
+        if (!Boolean.parseBoolean(doTempCopy)) {
             return origFile;
         }
 

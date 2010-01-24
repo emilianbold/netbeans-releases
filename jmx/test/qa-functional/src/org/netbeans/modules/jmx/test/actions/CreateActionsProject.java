@@ -42,7 +42,7 @@
 package org.netbeans.modules.jmx.test.actions;
 
 
-import org.netbeans.junit.NbTestSuite;
+import java.io.IOException;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
@@ -60,24 +60,10 @@ public class CreateActionsProject extends ActionsTestCase {
         super(name);
     }
 
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateActionsProject("createProject"));     
-        return suite;
-    }
-    
-
     /**
      * Functional test which creates a project
      */
-    public void createProject() {
+    public void testCreateProject() throws IOException {
         System.out.println("Create new project " + PROJECT_NAME_ACTION_FUNCTIONAL);
         newProject(
                 PROJECT_CATEGORY_JAVA,

@@ -73,6 +73,16 @@ public class FileModelTest extends TraceModelTestBase {
         getTraceModel().setDumpModel(true);
         getTraceModel().setDumpPPState(true);
     }
+
+    // it behaved differently on 1-st and subsequent runs
+    public void testResolverClassString_01() throws Exception {
+        performTest("resolver_class_string.cc"); // NOI18N
+    }
+
+    // it behaved differently on 1-st and subsequent runs
+    public void testResolverClassString_02() throws Exception {
+        performTest("resolver_class_string.cc"); // NOI18N
+    }
     
     public void testDeclSpec() throws Exception {
         // IZ#132136: code completion for C++ and Qt does not work under Windows
@@ -395,8 +405,8 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("function_pointer_as_template_parameter.cc"); // NOI18N
     }
 
-    public void test100000parameters() throws Exception {
-        performTest("100000parameters.c"); // NOI18N
+    public void test10000parameters() throws Exception {
+        performTest("10000parameters.c"); // NOI18N
     }
     
     public void testTypedefPointerToStaticMember() throws Exception {

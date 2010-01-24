@@ -59,8 +59,6 @@ import javax.swing.plaf.ComponentUI;
 import javax.swing.text.Document;
 import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.api.editor.DialogBinding;
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.ext.ExtCaret;
 
 import org.openide.ErrorManager;
 import org.openide.util.*;
@@ -942,10 +940,10 @@ public class FormUtils
         DialogBinding.bindComponentToDocument(document, ccPosition, 0, editor);
 
         // do not highlight current row
-        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editor);
-        if (eui != null) { // Issue 142686
-            eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
-        }
+        editor.putClientProperty(
+            "HighlightsLayerExcludes", //NOI18N
+            "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" //NOI18N
+        );
 
         setupTextUndoRedo(editor);
     }

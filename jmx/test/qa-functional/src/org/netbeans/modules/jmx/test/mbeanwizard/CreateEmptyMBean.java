@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.jmx.test.mbeanwizard;
 
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.MBean;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
@@ -67,21 +66,6 @@ public class CreateEmptyMBean extends MBeanWizardTestCase {
         super(name);
     }
     
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        junit.textui.TestRunner.run(suite());
-    }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new CreateEmptyMBean("createEmptyMBean1"));
-        suite.addTest(new CreateEmptyMBean("createEmptyMBean2"));
-        suite.addTest(new CreateEmptyMBean("createEmptyMBean3"));
-        suite.addTest(new CreateEmptyMBean("createEmptyMBean4"));
-        suite.addTest(new CreateEmptyMBean("createEmptyMBean5"));
-        return suite;
-    }
     
     public void setUp() {
         // Select project node
@@ -99,7 +83,7 @@ public class CreateEmptyMBean extends MBeanWizardTestCase {
     /**
      * StandardMBean without attributes and operations
      */
-    public void createEmptyMBean1() {
+    public void testCreateEmptyMBean1() {
         
         System.out.println("============  createEmptyMBean1  ============");
         
@@ -116,7 +100,7 @@ public class CreateEmptyMBean extends MBeanWizardTestCase {
     /**
      * MXBean without attributes and operations
      */
-    public void createEmptyMBean2() {
+    public void testCreateEmptyMBean2() {
         
         System.out.println("============  createEmptyMBean2  ============");
         
@@ -133,7 +117,7 @@ public class CreateEmptyMBean extends MBeanWizardTestCase {
     /**
      * MBean from existing java class without attributes and operations
      */
-    public void createEmptyMBean3() {
+    public void testCreateEmptyMBean3() {
         
         System.out.println("============  createEmptyMBean3  ============");
         
@@ -153,7 +137,7 @@ public class CreateEmptyMBean extends MBeanWizardTestCase {
      * MBean from existing java class wrapped as MXBean
      * without attributes and operations
      */
-    public void createEmptyMBean4() {
+    public void testCreateEmptyMBean4() {
         
         System.out.println("============  createEmptyMBean4  ============");
         
@@ -172,7 +156,7 @@ public class CreateEmptyMBean extends MBeanWizardTestCase {
     /**
      * StandardMBean with metadata without attributes and operations
      */
-    public void createEmptyMBean5() {
+    public void testCreateEmptyMBean5() {
         
         System.out.println("============  createEmptyMBean5  ============");
         

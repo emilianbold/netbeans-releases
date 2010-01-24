@@ -97,6 +97,10 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.FormatterOverride;
 import org.netbeans.modules.editor.lib.TrailingWhitespaceRemove;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib.drawing.DrawEngine;
+import org.netbeans.modules.editor.lib.drawing.DrawGraphics;
+import org.netbeans.modules.editor.lib.impl.MarkVector;
+import org.netbeans.modules.editor.lib.impl.MultiMark;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -134,6 +138,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     /** This document's version. It's accessed by DocumentUtilities.getDocumentVersion(). */
     private static final String VERSION_PROP = "version"; //NOI18N
+
+    /** Timestamp when this document was last modified. It's accessed by DocumentUtilities.getDocumentVersion(). */
+    private static final String LAST_MODIFICATION_TIMESTAMP_PROP = "last-modification-timestamp"; //NOI18N
 
     /** Line separator property for reading files in */
     public static final String READ_LINE_SEPARATOR_PROP = DefaultEditorKit.EndOfLineStringProperty;
@@ -256,9 +263,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     protected Element defaultRootElem;
 
     private SyntaxSupport syntaxSupport;
-
-    /** Layer list for document level layers */
-    private DrawLayerList drawLayerList = new DrawLayerList();
 
     /** Reset merging next created undoable edit to the last one. */
     boolean undoMergeReset;
@@ -510,6 +514,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         putProperty("supportsModificationListener", Boolean.TRUE); // NOI18N
         putProperty(MIME_TYPE_PROP, new MimeTypePropertyEvaluator(this));
         putProperty(VERSION_PROP, new AtomicLong());
+        putProperty(LAST_MODIFICATION_TIMESTAMP_PROP, new AtomicLong());
 
         lineRootElement = new LineRootElement(this);
 
@@ -525,11 +530,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         EditorKit kit = getEditorKit();
         if (kit instanceof BaseKit) {
             ((BaseKit) kit).initDocument(this);
-        }
-
-        // Possibly add the document to registry
-        if (addToRegistry) {
-            Registry.addDocument(this); // add if created thru the kit
         }
 
         // Start listen on find-support
@@ -2014,38 +2014,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return modified;
     }
 
-    /**
-     * Get the layer with the specified name. Using of <code>DrawLayer</code>s
-     * has been deprecated.
-     *
-     * @deprecated Please use Highlighting SPI instead, for details see
-     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
-     */
-    public DrawLayer findLayer(String layerName) {
-        return drawLayerList.findLayer(layerName);
-    }
-
-    /**
-     * Using of <code>DrawLayer</code>s has been deprecated.
-     *
-     * @deprecated Please use Highlighting SPI instead, for details see
-     *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
-     */
-    public boolean addLayer(DrawLayer layer, int visibility) {
-        if (drawLayerList.add(layer, visibility)) {
-            BaseDocumentEvent evt = getDocumentEvent(0, 0, DocumentEvent.EventType.CHANGE, null);
-            evt.addEdit(new BaseDocumentEvent.DrawLayerChange(layer.getName(), visibility));
-            fireChangedUpdate(evt);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    final DrawLayerList getDrawLayerList() {
-        return drawLayerList;
-    }
-
     private LineRootElement getLineRootElement() {
         return lineRootElement;
     }
@@ -2164,6 +2132,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     /* package */ void incrementDocVersion() {
         ((AtomicLong) getProperty(VERSION_PROP)).incrementAndGet();
+        ((AtomicLong) getProperty(LAST_MODIFICATION_TIMESTAMP_PROP)).set(System.currentTimeMillis());
     }
 
     /** Compound edit that write-locks the document for the whole processing
@@ -2445,10 +2414,24 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     private static final class Accessor extends EditorPackageAccessor {
 
         @Override
-        public CompoundEdit markAtomicEditsNonSignificant(BaseDocument doc) {
+        public CompoundEdit BaseDocument_markAtomicEditsNonSignificant(BaseDocument doc) {
             return doc.markAtomicEditsNonSignificant();
         }
 
+        @Override
+        public MarkVector BaseDocument_getMarksStorage(BaseDocument doc) {
+            return doc.marksStorage;
+        }
+
+        @Override
+        public Mark BaseDocument_getMark(BaseDocument doc, MultiMark multiMark) {
+            return doc.marks.get(multiMark);
+        }
+
+        @Override
+        public void Mark_insert(Mark mark, BaseDocument doc, int pos) throws InvalidMarkException, BadLocationException {
+            mark.insert(doc, pos);
+        }
     }
 
     // XXX: the same as the one in CloneableEditorSupport

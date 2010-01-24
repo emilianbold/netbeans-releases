@@ -48,7 +48,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptor;
 import org.netbeans.modules.web.jsf.editor.tld.LibraryDescriptorException;
-import org.netbeans.modules.web.jsf.editor.tld.TldUtils;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -60,7 +59,6 @@ import org.xml.sax.SAXException;
  *
  * @author marekfukala
  */
-
 public class FaceletsLibraryDescriptor extends LibraryDescriptor {
 
     static FaceletsLibraryDescriptor create(FileObject definitionFile) throws LibraryDescriptorException {
@@ -76,16 +74,28 @@ public class FaceletsLibraryDescriptor extends LibraryDescriptor {
         parseLibrary();
     }
 
-    private FaceletsLibraryDescriptor(InputStream content) throws  LibraryDescriptorException {
+    private FaceletsLibraryDescriptor(InputStream content) throws LibraryDescriptorException {
         super(content);
         parseLibrary(content);
+    }
+
+    //since the web-facelettaglibrary_2_0.xsd schema doesn't define any library default prefixes as the TLDs do,
+    //we need to define them manually
+    @Override
+    public String getDefaultPrefix() {
+        return DefaultFaceletLibraries.getLibraryDefaultPrefix(getURI());
+    }
+
+    @Override
+    public String getDisplayName() {
+        return DefaultFaceletLibraries.getLibraryDisplayName(getURI());
     }
 
     public static String parseNamespace(InputStream content) {
         return parseNamespace(content, "facelet-taglib", "namespace"); //NOI18N
     }
-    
-    protected  void parseLibrary(InputStream content) throws LibraryDescriptorException {
+
+    protected void parseLibrary(InputStream content) throws LibraryDescriptorException {
         try {
             DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
@@ -98,20 +108,8 @@ public class FaceletsLibraryDescriptor extends LibraryDescriptor {
             Node tagLib = getNodeByName(doc, "facelet-taglib"); //NOI18N
 
             uri = getTextContent(tagLib, "namespace"); //NOI18N
-            if(uri == null) {
+            if (uri == null) {
                 throw new IllegalStateException("Missing namespace entry in " + getDefinitionFile().getPath() + " library.", null);
-            }
-
-            //TODO fix the code according to the schema!
-            //I cannot count on the existing documents
-            displayName = getTextContent(tagLib, "display-name"); //NOI18N
-            if(displayName == null) {
-                //no display-name specified in the TLD, lets try to get the displayname from names registry
-                displayName = TldUtils.getLibraryDisplayName(uri);
-                if(displayName == null) {
-                    //no entry even here, use TLD file name
-                    displayName = getDefinitionFile().getNameExt();
-                }
             }
 
             //scan the <tag> nodes content - the tag descriptions
@@ -124,7 +122,7 @@ public class FaceletsLibraryDescriptor extends LibraryDescriptor {
 
                     Map<String, Attribute> attrs = new HashMap<String, Attribute>();
                     //find attributes
-                    for(Node attrNode : getNodesByName(tag, "attribute")) { //NOI18N
+                    for (Node attrNode : getNodesByName(tag, "attribute")) { //NOI18N
                         String aName = getTextContent(attrNode, "name"); //NOI18N
                         String aDescription = getTextContent(attrNode, "description"); //NOI18N
                         boolean aRequired = Boolean.parseBoolean(getTextContent(attrNode, "required")); //NOI18N
@@ -132,7 +130,7 @@ public class FaceletsLibraryDescriptor extends LibraryDescriptor {
                         attrs.put(aName, new Attribute(aName, aDescription, aRequired));
                     }
 
-                    tags.put(tagName, new Tag(tagName, tagDescription, attrs));
+                    tags.put(tagName, new TagImpl(tagName, tagDescription, attrs));
 
                 }
             }
@@ -147,6 +145,4 @@ public class FaceletsLibraryDescriptor extends LibraryDescriptor {
 
 
     }
-
-   
 }

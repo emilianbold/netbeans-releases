@@ -47,12 +47,21 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.settings</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.core</code-name-base>
+                    <code-name-base>org.netbeans.bootstrap</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>3.0</specification-version>
+                        <release-version>1</release-version>
+                        <specification-version>2.24</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.core.startup</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.22</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -98,7 +107,15 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <implementation-version/>
+                        <specification-version>8.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.lookup</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -161,6 +178,11 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.openide.util</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.util.lookup</code-name-base>
                         <compile-dependency/>
                         <test/>
                     </test-dependency>

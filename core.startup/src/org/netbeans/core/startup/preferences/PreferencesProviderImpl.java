@@ -43,13 +43,13 @@ package org.netbeans.core.startup.preferences;
 
 import java.util.prefs.Preferences;
 import org.netbeans.Util;
-import org.netbeans.modules.openide.util.PreferencesProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * @author Radek Matous
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.openide.util.PreferencesProvider.class)
-public class PreferencesProviderImpl implements PreferencesProvider {
+@ServiceProvider(service=org.openide.util.NbPreferences.Provider.class)
+public class PreferencesProviderImpl implements org.openide.util.NbPreferences.Provider {
     /** Creates a new instance of PreferencesProviderImpl */
     public PreferencesProviderImpl() {
     }

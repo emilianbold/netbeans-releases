@@ -149,6 +149,7 @@ import org.openide.util.NbBundle;
         return sb;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("REC")
     private void synchronizeImpl(String remoteRoot) throws InterruptedException, ExecutionException, IOException {
 
         totalCount = uploadCount = 0;
@@ -165,7 +166,7 @@ import org.openide.util.NbBundle;
         for (int i = 0; i < files.length; i++) {
             String remoteFile = RemotePathMap.getPathMap(executionEnvironment).getRemotePath(files[i].getAbsolutePath(), true);
             if (files[i].isDirectory()) {
-                script.append(String.format("test -d %s  || echo D %s; ", remoteFile, remoteFile)); // echo all inexistent directories // NOI18N
+                script.append(String.format("test -d %s  || echo %s; ", remoteFile, remoteFile)); // echo all inexistent directories // NOI18N
             }
         }
         script.append("\""); // NOI18N
@@ -261,15 +262,17 @@ import org.openide.util.NbBundle;
                 pb.redirectError();
                 Process proc = pb.call();
 
-                BufferedReader in;
                 String line;
-
-                in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-                while ((line = in.readLine()) != null) {
-                    if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) { System.err.printf("\t%s\n", line); } //NOI18N
-                }
+                BufferedReader in = new BufferedReader(new InputStreamReader(proc.getInputStream()));
                 // we now redirect instead of reading stderr // in = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-
+                try {
+                    while ((line = in.readLine()) != null) {
+                        if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) { System.err.printf("\t%s\n", line); } //NOI18N
+                    }
+                } finally {
+                    in.close();
+                }
+                    
                 int rc = proc.waitFor();
                 //String cmd = "sh -c \"unzip -o -q " + remoteFile + " > /dev/null";
                 //RemoteCommandSupport rcs = new RemoteCommandSupport(executionEnvironment, cmd);

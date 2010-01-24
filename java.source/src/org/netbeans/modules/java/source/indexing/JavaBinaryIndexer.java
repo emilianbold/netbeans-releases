@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
@@ -87,22 +86,24 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                     if (context.isAllFilesIndexing()) {
                         final BinaryAnalyser ba = uq.getBinaryAnalyser();
                         if (ba != null) { //ba == null => IDE is exiting, indexing will be done on IDE restart
-                            //todo: may also need interruption.
+                            BinaryAnalyser.Result finished = null;
                             try {
-                                BinaryAnalyser.Result finished = ba.start(context.getRootURI(), new AtomicBoolean(false), new AtomicBoolean(false));
+                                finished = ba.start(context);
                                 while (finished == BinaryAnalyser.Result.CANCELED) {
                                     finished = ba.resume();
                                 }
                             } finally {
-                                final BinaryAnalyser.Changes changes = ba.finish();
-                                final Map<URL, List<URL>> binDeps = IndexingController.getDefault().getBinaryRootDependencies();
-                                final Map<URL, List<URL>> srcDeps = IndexingController.getDefault().getRootDependencies();
-                                final List<ElementHandle<TypeElement>> changed = new ArrayList<ElementHandle<TypeElement>>(changes.changed.size()+changes.removed.size());
-                                changed.addAll(changes.changed);
-                                changed.addAll(changes.removed);
-                                final Map<URL,Set<URL>> toRebuild = JavaCustomIndexer.findDependent(context.getRootURI(), srcDeps, binDeps, changed, !changes.added.isEmpty());
-                                for (Map.Entry<URL, Set<URL>> entry : toRebuild.entrySet()) {
-                                    context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                                if (finished == BinaryAnalyser.Result.FINISHED) {
+                                    final BinaryAnalyser.Changes changes = ba.finish();
+                                    final Map<URL, List<URL>> binDeps = IndexingController.getDefault().getBinaryRootDependencies();
+                                    final Map<URL, List<URL>> srcDeps = IndexingController.getDefault().getRootDependencies();
+                                    final List<ElementHandle<TypeElement>> changed = new ArrayList<ElementHandle<TypeElement>>(changes.changed.size()+changes.removed.size());
+                                    changed.addAll(changes.changed);
+                                    changed.addAll(changes.removed);
+                                    final Map<URL,Set<URL>> toRebuild = JavaCustomIndexer.findDependent(context.getRootURI(), srcDeps, binDeps, changed, !changes.added.isEmpty(), false);
+                                    for (Map.Entry<URL, Set<URL>> entry : toRebuild.entrySet()) {
+                                        context.addSupplementaryFiles(entry.getKey(), entry.getValue());
+                                    }
                                 }
                             }
                         }
@@ -154,6 +155,40 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                 Exceptions.printStackTrace(e);
             } catch (InterruptedException e) {
                 Exceptions.printStackTrace(e);
+            }
+        }
+
+        @Override
+        public boolean scanStarted(final Context context) {
+            try {
+                return ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+                    public Boolean run() throws IOException, InterruptedException {
+                        return ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+                            public Boolean run() throws IOException, InterruptedException {
+                                final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
+                                if (uq == null) {
+                                    //Closing...
+                                    return true;
+                                }
+                                if (uq.getState() != ClassIndexImpl.State.NEW) {
+                                    //Already checked
+                                    return true;
+                                }
+                                try {
+                                    return uq.getBinaryAnalyser().isValid();
+                                } finally {
+                                    uq.setState(ClassIndexImpl.State.INITIALIZED);
+                                }
+                            }
+                        });
+                    }
+                });
+            } catch (IOException ioe) {
+                JavaIndex.LOG.log(Level.WARNING, "Exception while checking cache validity for root: "+context.getRootURI(), ioe); //NOI18N
+                return false;
+            } catch (InterruptedException ie) {
+                JavaIndex.LOG.log(Level.WARNING, "Exception while checking cache validity for root: "+context.getRootURI(), ie); //NOI18N
+                return false;
             }
         }
     }

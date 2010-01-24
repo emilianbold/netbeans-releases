@@ -593,16 +593,22 @@ public class JavaSourceHelper {
         return maker.addClassMember(tree, methodTree);
     }
 
+     public static ClassTree createInnerClass(WorkingCopy copy,
+             Modifier[] modifiers, String className, String classToExtend,
+             String[] annotations, Object[] annotationAttributes) {
+        TreeMaker maker = copy.getTreeMaker();
+
+        ModifiersTree modifiersTree = createModifiersTree(copy, modifiers, annotations, annotationAttributes);
+
+        return maker.Class(modifiersTree, className,
+                Collections.<TypeParameterTree>emptyList(),
+                createIdentifierTree(copy, classToExtend),
+                Collections.<Tree>emptyList(), Collections.<Tree>emptyList());
+    }
+
      public static ClassTree createInnerClass(WorkingCopy copy, 
              Modifier[] modifiers, String className, String classToExtend) {
-        TreeMaker maker = copy.getTreeMaker();
-        
-        ModifiersTree modifiersTree = createModifiersTree(copy, modifiers, null, null);
-        
-        return maker.Class(modifiersTree, className, 
-                Collections.<TypeParameterTree>emptyList(), 
-                createIdentifierTree(copy, classToExtend), 
-                Collections.<Tree>emptyList(), Collections.<Tree>emptyList());
+        return JavaSourceHelper.createInnerClass(copy, modifiers, className, classToExtend, null, null);
     }
      
     
@@ -612,7 +618,7 @@ public class JavaSourceHelper {
         return maker.Assignment(maker.Identifier(variable), maker.Literal(value));
     }
 
-    private static Tree createTypeTree(WorkingCopy copy, Object type) {
+    public static ExpressionTree createTypeTree(WorkingCopy copy, Object type) {
         if (type instanceof String) {
             TypeElement element = copy.getElements().getTypeElement((String) type);
             if (element != null) {
@@ -621,7 +627,7 @@ public class JavaSourceHelper {
                 return copy.getTreeMaker().Identifier((String) type);
             }
         } else {
-            return (Tree) type;
+            return (ExpressionTree) type;
         }
     }
 
@@ -800,7 +806,7 @@ public class JavaSourceHelper {
     }
 
     public static boolean annotationHasAttributeValue(AnnotationMirror am, String attr, String value) {
-        return value.equals(am.getElementValues().get(attr));
+        return value.equals(am.getElementValues().get(attr).getValue());
     }
 
     public static boolean annotationHasAttributeValue(AnnotationMirror am, String value) {

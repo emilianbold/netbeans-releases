@@ -40,13 +40,21 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.j2ee.support;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import java.util.HashSet;
@@ -88,11 +96,11 @@ import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.HttpBasicAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SaasAuthentication.UseTemplates.Template;
-import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
 import org.netbeans.modules.websvc.saas.codegen.ui.CodeSetupPanel;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  * Copy of j2ee/utilities Util class
@@ -309,6 +317,11 @@ public class J2eeUtil {
                         if (templateUrl.endsWith("." + Constants.JAVA_EXT)) {
                             JavaSource source = JavaSourceHelper.createJavaSource(templateUrl, targetFolder,
                                     bean.getSaasServicePackageName(), fileName);
+
+                            if (source != null && getDeploymentDescriptor(project) == null) {
+                                addServletAnnotation(source, fileName, "/"+fileName); //NOI18N
+                            }
+
                             Set<FileObject> files = new HashSet<FileObject>(source.getFileObjects());
                             if (files != null && files.size() > 0) {
                                 fObj = files.iterator().next();
@@ -512,5 +525,74 @@ public class J2eeUtil {
         infos.add(new SoapClientJ2eeOperationInfo(m, project));
         
         return infos.toArray(new SoapClientJ2eeOperationInfo[infos.size()]);
+    }
+
+    public static void addServletAnnotation(JavaSource javaSource, final String servletName, final String urlPattern)
+        throws IOException {
+        final String[] seiClass = new String[1];
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+
+            public void cancel() {
+            }
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.RESOLVED);
+                ClassTree classTree = getPublicTopLevelTree(workingCopy);
+                if (classTree != null) {
+                    TreeMaker make = workingCopy.getTreeMaker();
+                    TypeElement servletAn = workingCopy.getElements().getTypeElement("javax.servlet.annotation.WebServlet"); //NOI18N
+                    if (servletAn != null) {
+                        List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
+                        attrs.add(
+                                make.Assignment(make.Identifier("name"), make.Literal(servletName))); //NOI18N
+                        attrs.add(
+                                make.Assignment(make.Identifier("urlPatterns"), make.Literal(urlPattern))); //NOI18N
+
+                        AnnotationTree servletAnnotation = make.Annotation(
+                                make.QualIdent(servletAn),
+                                attrs);
+                        ClassTree modifiedClass = make.Class(
+                                    make.addModifiersAnnotation(classTree.getModifiers(), servletAnnotation),
+                                    classTree.getSimpleName(),
+                                    classTree.getTypeParameters(),
+                                    classTree.getExtendsClause(),
+                                    classTree.getImplementsClause(),
+                                    classTree.getMembers());
+                        workingCopy.rewrite(classTree, modifiedClass);
+                    }
+                }
+            }
+
+        };
+        javaSource.runModificationTask(modificationTask).commit();
+    }
+
+    public static ClassTree getPublicTopLevelTree(CompilationController controller) {
+        Parameters.notNull("controller", controller); // NOI18N
+
+        TypeElement typeElement = getPublicTopLevelElement(controller);
+        if (typeElement != null) {
+            return controller.getTrees().getTree(typeElement);
+        }
+        return null;
+    }
+
+    public static TypeElement getPublicTopLevelElement(CompilationController controller) {
+        Parameters.notNull("controller", controller); // NOI18N
+
+        FileObject mainFileObject = controller.getFileObject();
+        if (mainFileObject == null) {
+            throw new IllegalStateException();
+        }
+        String mainElementName = mainFileObject.getName();
+        List<? extends TypeElement> elements = controller.getTopLevelElements();
+        if (elements != null) {
+            for (TypeElement element : elements) {
+                if (element.getModifiers().contains(Modifier.PUBLIC) && element.getSimpleName().contentEquals(mainElementName)) {
+                    return element;
+                }
+            }
+        }
+        return null;
     }
 }

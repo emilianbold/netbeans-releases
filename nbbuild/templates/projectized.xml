@@ -69,18 +69,18 @@ made subject to such option by the copyright holder.
         <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"/>
     </target>
 
-    <target name="jdk-5-check" depends="-jdk-init" if="have-jdk-1.6" unless="permit.jdk6.builds">
+    <target name="jdk-6-check" depends="-jdk-init" if="have-jdk-1.7" unless="permit.jdk7.builds">
         <property name="user.build.properties" location="${nb_all}/nbbuild/user.build.properties"/>
         <property name=".nbbuild.properties" location="${user.home}/.nbbuild.properties"/>
-        <fail>You are attempting to build NetBeans using JDK 6 (or higher).
-This is forbidden as it may lead to accidental usage of JDK 6+ APIs.
-Either run Ant with JDK 5, or set nbjdk.home=&lt;JDK 5 home&gt; in ${user.build.properties}
+        <fail>You are attempting to build NetBeans using JDK 7 (or higher).
+This is forbidden as it may lead to accidental usage of JDK 7+ APIs.
+Either run Ant with JDK 6, or set nbjdk.home=&lt;JDK 6 home&gt; in ${user.build.properties}
 (can be set from IDE by opening a module project's Properties dialog and picking the right Java Platform in Libraries).
 You can alternatively set this property in ${.nbbuild.properties} to affect all checkouts on this machine.
-If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=true</fail>
+If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=true</fail>
     </target>
 
-    <target name="build-init" depends="basic-init,jdk-5-check,set-buildnumber">
+    <target name="build-init" depends="basic-init,jdk-6-check,set-buildnumber">
         <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
             <manifest dir=".">
@@ -169,26 +169,29 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="locjhindexer.locales" value="${locales}"/>
         <property name="locmakenbm.locales" value="${locales}"/>
         <property name="locmakenbm.brands" value="${brandings}"/>
-        <path id="javacimpl">
-            <fileset dir="${nb_all}/apisupport.harness/external">
-                <include name="*javac*.jar"/>
-            </fileset>
-        </path>
-        <!-- Define bootcp for Mac, in order to compile retouche based tests in project which need modified javac -->
-        <pathconvert property="retouche.javac">
+        <pathconvert property="retouche.javac.api">
             <fileset dir="${nb_all}">
                 <include name="libs.javacapi/external/*javac*.jar"/>
+            </fileset>
+        </pathconvert>
+        <pathconvert property="retouche.javac.impl">
+            <fileset dir="${nb_all}">
                 <include name="libs.javacimpl/external/*javac*.jar"/>
             </fileset>
             <fileset dir="${nbjdk.home}/../Classes" erroronmissingdir="false">
                 <include name="*.jar"/>
             </fileset>
         </pathconvert>
-        <condition property="bootclasspath.mac" value="${retouche.javac}">
+        <!-- When requires.nb.javac property is true, prepend javac-api on bootclasspath to allow override the default annotation
+             processing API located in rt.jar. On Mac, prepend also javac-impl, so that tests are built against correct version of javac. -->
+        <condition property="bootclasspath.prepend" value="${retouche.javac.api}:${retouche.javac.impl}">
             <and>
                 <os family="mac"/>
                 <istrue value="${requires.nb.javac}"/>
             </and>
+        </condition>
+        <condition property="bootclasspath.prepend" value="${retouche.javac.api}">
+            <istrue value="${requires.nb.javac}"/>
         </condition>
         <taskdef name="custom-javac" classname="org.netbeans.nbbuild.CustomJavac" classpath="${nb_all}/nbbuild/nbantext.jar"/>
         <fail message="Delete standalone/suite-related metadata from netbeans.org modules">

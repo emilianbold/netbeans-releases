@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 /**
  * Class AttributeWrappedMBean3
- * 
+ *
  * @author <author>
  */
 public class AttributeWrappedMBean3 extends StandardMBean implements AttributeWrappedMBean3MBean {
@@ -60,7 +60,6 @@ public class AttributeWrappedMBean3 extends StandardMBean implements AttributeWr
         } else if (info.getName().equals("GenericAttribute2")) {
             description = "Attribute exposed for management";
         }
-
         return description;
     }
 
@@ -89,7 +88,6 @@ public class AttributeWrappedMBean3 extends StandardMBean implements AttributeWr
     @Override
     protected String getDescription(MBeanOperationInfo info) {
         String description = null;
-
         return description;
     }
 

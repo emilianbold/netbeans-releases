@@ -41,17 +41,15 @@
 
 package org.netbeans.modules.java.platform;
 
-import java.io.IOException;
 import java.lang.ref.*;
 import java.util.*;
 import org.netbeans.spi.java.platform.CustomPlatformInstall;
 import org.netbeans.spi.java.platform.GeneralPlatformInstall;
 
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.*;
-import org.openide.loaders.*;
 import org.netbeans.spi.java.platform.PlatformInstall;
-import org.openide.util.NbCollections;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Simple helper class, which keeps track of registered PlatformInstallers.
@@ -64,12 +62,12 @@ public class InstallerRegistry {
     
     static Reference<InstallerRegistry> defaultInstance = new WeakReference<InstallerRegistry>(null);
     
-    private Provider provider;
+    private final Lookup lookup;
     private List<GeneralPlatformInstall> platformInstalls;      //Used by unit test
     
     InstallerRegistry(FileObject registryResource) {
         assert registryResource != null;
-        this.provider = new Provider (registryResource);
+        this.lookup = Lookups.forPath(INSTALLER_REGISTRY_FOLDER);
     }
     
     /**
@@ -78,6 +76,7 @@ public class InstallerRegistry {
     InstallerRegistry (GeneralPlatformInstall[] platformInstalls) {
         assert platformInstalls != null;
         this.platformInstalls = Arrays.asList(platformInstalls);
+        this.lookup = null;
     }
     
     /**
@@ -98,14 +97,9 @@ public class InstallerRegistry {
             return platformInstalls;
         }
         else {
-            List<GeneralPlatformInstall> list = Collections.emptyList();
-            try {
-                assert this.provider != null;
-                list = NbCollections.checkedListByCopy((List) provider.instanceCreate(), GeneralPlatformInstall.class, true);
-            } catch (IOException ex) {
-            } catch (ClassNotFoundException ex) {
-            }
-            return list;
+            this.lookup.lookupAll(CustomPlatformInstall.class);
+            this.lookup.lookupAll(PlatformInstall.class);
+            return Collections.unmodifiableList(new ArrayList<GeneralPlatformInstall>(this.lookup.lookupAll(GeneralPlatformInstall.class)));
         }
     }
     
@@ -145,33 +139,5 @@ public class InstallerRegistry {
             }
         }
         return result;
-    }
-    
-    private static class Provider extends FolderInstance {
-        
-        Provider (FileObject registryResource) {            
-            super(DataFolder.findFolder(registryResource));
-        }
-        
-        
-        protected Object createInstance(InstanceCookie[] cookies) throws java.io.IOException, ClassNotFoundException {
-            List<Object> installers = new ArrayList<Object>(cookies.length);
-            for (int i = 0; i < cookies.length; i++) {
-                InstanceCookie cake = cookies[i];
-                Object o = null;
-                try {
-                    if (cake instanceof InstanceCookie.Of &&
-                        !((((InstanceCookie.Of)cake).instanceOf(PlatformInstall.class))  ||
-                        (((InstanceCookie.Of)cake).instanceOf(CustomPlatformInstall.class))))
-                        continue;
-                    o = cake.instanceCreate();
-                } catch (IOException ex) {
-                } catch (ClassNotFoundException ex) {
-                }
-                if (o != null)
-                    installers.add(o);
-            }
-            return installers;
-        }        
-    }
+    }        
 }

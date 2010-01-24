@@ -92,6 +92,10 @@ public final class RcFile {
             return new ArrayList<String>(map.keySet());
         }
 
+        public synchronized boolean containsKey(String key) {
+            return map.containsKey(key);
+        }
+
         private synchronized void put(String key, String value) {
             map.put(key, value);
         }
@@ -107,6 +111,11 @@ public final class RcFile {
 
     public String get(String section, String key) {
         return get(section, key, null);
+    }
+
+    public boolean containsKey(String section, String key) {
+        Section sect = sections.get(section);
+        return (sect == null) ? false : sect.containsKey(key);
     }
 
     public synchronized Collection<String> getSections() {
@@ -140,18 +149,19 @@ public final class RcFile {
                 continue;
             }
             if (sectionPattern.matcher(str).matches()) {
-                String name = str.trim().substring(1, str.length()-1);
+                str = str.trim();
+                String name = str.substring(1, str.length()-1);
                 currSection = new Section(name);
                 sections.put(name, currSection);
             } else {
                 Matcher m = valuePattern.matcher(str);
                 if (m.matches()) {
-                    String key = m.group(1);
-                    String value = m.group(2);
+                    String key = m.group(1).trim();
+                    String value = m.group(2).trim();
                     currSection.put(key, value);
                 } else {
                     if (justKeyPattern.matcher(str).matches()) {
-                        String key = str;
+                        String key = str.trim();
                         String value = null;
                         currSection.put(key, value);
                     } else {

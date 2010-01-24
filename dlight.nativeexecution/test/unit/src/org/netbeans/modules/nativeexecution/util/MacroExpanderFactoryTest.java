@@ -43,12 +43,14 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import junit.framework.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
@@ -102,6 +104,16 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
     @ForAllEnvironments(section = "remote.platforms")
     public void testGetExpander_ExecutionEnvironment_String() {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+
+        try {
+            // Make sure that host is connected!
+            ConnectionManager.getInstance().connectTo(execEnv);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
         System.out.println("--- getExpander --- " + execEnv.toString()); // NOI18N
         MacroExpander expander = MacroExpanderFactory.getExpander(execEnv);//, "SunStudio"); // NOI18N
 
@@ -116,11 +128,11 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
         System.out.println(myenv.toString());
 
         String mspec = NativeExecutionTestSupport.getMspec(execEnv);
-        
+
         String os;
 
         int mpos = mspec.indexOf('-');
-        
+
         if (mpos > 0) {
             os = mspec.substring(mpos + 1);
             if (os.equals("S2")) {
@@ -141,10 +153,19 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
     }
 
     @org.junit.Test
+    @ForAllEnvironments(section = "remote.platforms")
     public void testPath() {
-        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.createNew(System.getProperty("user.name"), "localhost", 0); // NOI18N
+        doTestPath(getTestExecutionEnvironment());
+    }
+
+    @org.junit.Test
+    public void testPathLocal() {
+        doTestPath(ExecutionEnvironmentFactory.getLocal());
+    }
+
+    private void doTestPath(final ExecutionEnvironment execEnv) {
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-        npb.setExecutable("/bin/env"); // NOI18N
+        npb.setExecutable("env"); // NOI18N
         MacroMap env = npb.getEnvironment();
         env.prependPathVariable("PATH", "/firstPath"); // NOI18N
         env.appendPathVariable("PATH", "${ZZZ}_${platform}"); // NOI18N

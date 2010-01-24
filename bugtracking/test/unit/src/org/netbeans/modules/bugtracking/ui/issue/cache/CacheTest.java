@@ -469,6 +469,10 @@ public class CacheTest extends NbTestCase {
                         String[] a = issueData.split("#");
                         return a[0];
                     }
+
+                    public Map<String, String> getAttributes(Issue issue) {
+                        return ((TestIssue)issue).getAttributes();
+                    }
                 });
             }
             protected void cleanup() {

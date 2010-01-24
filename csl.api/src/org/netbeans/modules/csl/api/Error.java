@@ -127,4 +127,15 @@ public interface Error  {
      */
     @CheckForNull
     Object[] getParameters();
+
+    /**Error that may be used to show error badge in the projects tab.
+     * @since 1.18
+     */
+    public interface Badging extends Error {
+        /**Whether or not the error should be used to show error badge in the projects tab.
+         *
+         * @return true if this error should be used to show error badge in the projects tab.
+         */
+        public boolean showExplorerBadge();
+    }
 }

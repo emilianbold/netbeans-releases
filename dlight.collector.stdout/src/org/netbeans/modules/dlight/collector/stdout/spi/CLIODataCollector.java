@@ -127,7 +127,7 @@ public final class CLIODataCollector
         if (displayedName == null) {
             //lets create own name on the base of command
             int separatorIndex = this.command.lastIndexOf(File.separator);
-            displayedName = separatorIndex == -1 || separatorIndex == command.length() - 1 ? command : this.command.substring(separatorIndex, command.length());
+            displayedName = separatorIndex == -1 || separatorIndex == command.length() - 1 ? command : this.command.substring(separatorIndex + 1);
         }
     }
 

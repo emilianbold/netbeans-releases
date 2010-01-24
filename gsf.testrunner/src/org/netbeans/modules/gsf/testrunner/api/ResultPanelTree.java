@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.accessibility.AccessibleContext;
+import javax.swing.ActionMap;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
@@ -58,6 +59,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.gsf.testrunner.ResultBar;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -109,6 +111,7 @@ final class ResultPanelTree extends JPanel
         initAccessibility();
 
         this.displayHandler = displayHandler;
+        displayHandler.setLookup(ExplorerUtils.createLookup(explorerManager, new ActionMap()));
     }
 
     /**

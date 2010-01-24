@@ -1,5 +1,5 @@
-#Signature file v4.0
-#Version 2.16.1
+#Signature file v4.1
+#Version 2.19
 
 CLSS public java.lang.Object
 cons public Object()
@@ -129,8 +129,8 @@ meth public void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
 meth public void removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.lang.Object
-hfds NO_COOKIE,NO_EDITOR,NO_FILE,context,currentEditorCookie,currentFile,currentOpenedPane,currentURL,editorLookupListener,lastFiredMIMEType,lastMIMETypeEvents,logger,mostRecentEditorCookieRef,mostRecentFileRef,mostRecentOpenedPaneRef,pcs,pcsByMIMEType,refreshProcessor,resEditorCookie,resFileObject,tcListener
-hcls EditorLookupListener,EventFirer
+hfds NO_COOKIE,NO_EDITOR,NO_FILE,NO_FILE_CHANGE,context,currentEditorCookie,currentFile,currentFileChangeListener,currentFileChangeListenerWeak,currentOpenedPane,currentURL,editorLookupListener,lastFiredMIMEType,lastMIMETypeEvents,logger,mostRecentEditorCookieRef,mostRecentFileChangeListener,mostRecentFileChangeListenerWeak,mostRecentFileRef,mostRecentOpenedPaneRef,pcs,pcsByMIMEType,refreshProcessor,resEditorCookie,resFileObject,tcListener
+hcls EditorLookupListener,EventFirer,FileRenameListener
 
 CLSS public abstract org.openide.text.Annotation
 cons public Annotation()

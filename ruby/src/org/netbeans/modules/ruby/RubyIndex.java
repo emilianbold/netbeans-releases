@@ -160,6 +160,10 @@ public final class RubyIndex {
         return result;
     }
 
+    public static void resetCache() {
+        CACHE.clear();
+    }
+
     public Collection<? extends IndexResult> query(
             final String fieldName, final String fieldValue,
             final QuerySupport.Kind kind, final String... fieldsToLoad) {
@@ -173,6 +177,38 @@ public final class RubyIndex {
 
         return Collections.<IndexResult>emptySet();
     }
+
+    public Collection<String> getRequires() {
+        Collection<? extends IndexResult> result = query(FIELD_CLASS_NAME, "Foos", QuerySupport.Kind.PREFIX);
+        Set<String> requires = new HashSet<String>();
+        Set<FileObject> files = new HashSet<FileObject>();
+        for (IndexResult each : result) {
+            files.add(each.getFile());
+            if (RubyUtils.isPlatformFile(each.getFile())) {
+                continue;
+            } else {
+                System.out.println("Not Platform file: " + each.getFile());
+            }
+
+            String[] require = each.getValues(FIELD_REQUIRES);
+            for (String req : require) {
+                requires.add(req);
+            }
+        }
+        List<String> f = new ArrayList<String>();
+        for (FileObject fo : files) {
+            f.add(fo.getPath());
+        }
+        Collections.sort(f);
+        for (String fi : f) {
+            System.out.println(fi);
+        }
+
+        List<String> list = new ArrayList(requires);
+        Collections.sort(list);
+        return list;
+    }
+
 
 //    public static RubyIndex get(Index index) {
 //        return new RubyIndex(index, null);

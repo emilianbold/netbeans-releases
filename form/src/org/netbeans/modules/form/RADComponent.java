@@ -1210,12 +1210,15 @@ public class RADComponent {
 
         Object[] propsCats = FormUtils.getPropertiesCategoryClsf(beanClass, getBeanInfo().getBeanDescriptor());
         PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
-        if (propsCats != null && Utilities.isMac() && System.getProperty("java.version").startsWith("1.6")) { // NOI18N
+        if (propsCats != null && Utilities.isMac() && beanClass.getClassLoader() == null) {
             try {
                 Object[] newPropsCats = new Object[propsCats.length+2*props.length];
+                Map<String,PropertyDescriptor> oldProps = new HashMap<String,PropertyDescriptor>();
                 for (int i=0; i<props.length; i++) {
                     PropertyDescriptor pd = props[i];
-                    newPropsCats[2*i] = pd.getName();
+                    String name = pd.getName();
+                    oldProps.put(name, pd);
+                    newPropsCats[2*i] = name;
                     Object cat = FormUtils.PROP_NORMAL;
                     if (pd.isPreferred()) {
                         cat = FormUtils.PROP_PREFERRED;
@@ -1231,6 +1234,16 @@ public class RADComponent {
                 System.arraycopy(propsCats, 0, newPropsCats, 2*props.length, propsCats.length);
                 propsCats = newPropsCats;
                 props = FormUtils.getBeanInfo(beanClass, Introspector.IGNORE_ALL_BEANINFO).getPropertyDescriptors();
+                for (PropertyDescriptor pd : props) {
+                    PropertyDescriptor oldPD = oldProps.get(pd.getName());
+                    if (oldPD != null) {
+                        Enumeration<String> enumeration = oldPD.attributeNames();
+                        while (enumeration.hasMoreElements()) {
+                            String attr = enumeration.nextElement();
+                            pd.setValue(attr, oldPD.getValue(attr));
+                        }
+                    }
+                }
             } catch (IntrospectionException iex) {
                 iex.printStackTrace();
             }

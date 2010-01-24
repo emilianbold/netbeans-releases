@@ -155,6 +155,7 @@ public abstract class AbstractCard implements Card {
     }
 
     //XXX get rid of this since we have CapabilitiesProvider?
+    @SuppressWarnings("unchecked") //NOI18N
     public final Set<Class<? extends ICardCapability>> getSupportedCapabilities() {
         CapabilitiesProvider prov = getLookup().lookup(CapabilitiesProvider.class);
         if (prov == null) {
@@ -288,9 +289,9 @@ public abstract class AbstractCard implements Card {
      * @param <T>
      * @param type
      */
+    @SuppressWarnings("unchecked") //NOI18N
     protected <T extends Class<? extends ICardCapability>> void removeCapability(T type) {
-        //XXX probably some way to avoid this cast
-        Object t = getLookup().lookup((Class) type);
+        Object t = getLookup().lookup((Class<? extends ICardCapability>)type);
         if (t != null) {
             content.remove(t);
         }

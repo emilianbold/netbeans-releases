@@ -41,17 +41,13 @@
 package org.netbeans.modules.uihandler;
 
 import java.awt.Dialog;
-import java.util.Collection;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JDialog;
 import junit.framework.TestCase;
 import org.netbeans.junit.MockServices;
-import org.netbeans.modules.openide.util.PreferencesProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -70,7 +66,7 @@ public class WritablePreferences131128Test extends TestCase {
     @Override
     protected void setUp() throws Exception {
         MockServices.setServices(Displayer.class, MockPreferencesProviderImpl.class);
-        Collection pp = Lookup.getDefault().lookupAll(PreferencesProvider.class);
+        Lookup.getDefault().lookupAll(NbPreferences.Provider.class);
     }
 
     public void testPreferencies() throws Exception {
@@ -105,7 +101,7 @@ public class WritablePreferences131128Test extends TestCase {
         }
     }
 
-    public static class MockPreferencesProviderImpl implements PreferencesProvider {
+    public static class MockPreferencesProviderImpl implements NbPreferences.Provider {
 
         public static int flushSpiCount = 0;
 
@@ -165,7 +161,7 @@ public class WritablePreferences131128Test extends TestCase {
                 try {
                     flushSpi();
                 } catch (BackingStoreException ex) {
-                    Logger.getLogger(MockPreferencesProviderImpl.class.getName()).log(Level.SEVERE, "putSpi", ex);
+                    // no need to print stack trace during test
                 }
             }
 

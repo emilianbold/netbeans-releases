@@ -40,6 +40,10 @@
  */
 package org.openide.filesystems;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
 import org.openide.util.Parameters;
 
 /**
@@ -104,4 +108,71 @@ public abstract class MIMEResolver {
     String[] getMIMETypes() {
         return resolvableMIMETypes;
     }
+
+    /** Internal support for implementors of MIME resolver UIs. 
+     * 
+     * @since 7.34
+     */
+    public abstract class UIHelpers {
+
+        /** Throws an exception. Allows instantiation only by known subclasses.
+         * @throws IllegalStateException
+         */
+        protected UIHelpers() {
+            if (getClass().getName().equals("org.netbeans.core.ui.options.filetypes.FileAssociationsModel")) { // NOI18N
+                // only core.ui is allowed to use methods of this class.
+                return;
+            }
+            throw new IllegalStateException();
+        }
+
+        /**
+         * Stores declarative resolver corresponding to specified mapping of MIME type
+         * and set of extensions. This resolver has the highest priority. Usually
+         * it resides in userdir/config/Servicer/MIMEResolver.
+         * <p><strong>Not intended for use by modules outside the NetBeans Platform.</strong>
+         * @param mimeToExtensions mapping of MIME type to set of extensions like
+         * {@code {image/jpeg=[jpg, jpeg], image/gif=[]}}
+         * @since org.openide.filesystems 7.34
+         */
+        protected final void storeUserDefinedResolver(final Map<String, Set<String>> mimeToExtensions) {
+            MIMEResolverImpl.storeUserDefinedResolver(mimeToExtensions);
+        }
+
+        /**
+         * Lists registered MIMEResolver instances in reverse order,
+         * i.e. first are ones with lower priority (position attribute higher)
+         * and last are ones with highest prority (position attribute lower).
+         * <p><strong>Not intended for use by modules outside the NetBeans Platform.</strong>
+         * @return list of all registered MIME resolver definitions in reverse order
+         * @since org.openide.filesystems 7.34
+         */
+        protected final Collection<? extends FileObject> getOrderedResolvers() {
+            return MIMEResolverImpl.getOrderedResolvers();
+        }
+
+        /**
+         * Checks whether a given resolver is user-defined.
+         * <p><strong>Not intended for use by modules outside the NetBeans Platform.</strong>
+         * @param mimeResolverFO resolver definition
+         * @return true if the specified file is a user-defined MIME resolver, false otherwise
+         * @since org.openide.filesystems 7.34
+         */
+        protected final boolean isUserDefined(FileObject mimeResolverFO) {
+            return MIMEResolverImpl.isUserDefined(mimeResolverFO);
+        }
+
+        /**
+         * Returns mapping of MIME type to set of extensions.
+         * <p><strong>Not intended for use by modules outside the NetBeans Platform.</strong>
+         * @param fo MIMEResolver definition
+         * @return mapping of MIME type to set of extensions like
+         * {@code {image/jpeg=[jpg, jpeg], image/gif=[]}} (never null but may be empty)
+         * @since org.openide.filesystems 7.34
+         */
+        protected final Map<String, Set<String>> getMIMEToExtensions(FileObject fo) {
+            return MIMEResolverImpl.getMIMEToExtensions(fo);
+        }
+    }
+
 }

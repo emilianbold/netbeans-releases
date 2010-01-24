@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -86,6 +87,7 @@ public class ProjectsRootNodeGetsNullTest extends NbTestCase {
         return 500000;
     }
 
+    @RandomlyFails // got 29, not 30, in NB-Core-Build #3600; but "Just 29 nodes" got 30 in #3616
     public void testNPEIfObjectNotFound() throws Exception {
         MockLookup.setInstances(new TestSupport.TestProjectFactory());
         List<URL> list = new ArrayList<URL>();

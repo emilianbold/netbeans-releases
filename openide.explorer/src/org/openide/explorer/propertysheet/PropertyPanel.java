@@ -48,6 +48,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -276,10 +277,12 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
         initializing = false;
         setOpaque(true);
 
-        //for debugging, allow CTRL-. to dump the state to stderr 
-        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "dump"
-        );
+        if (!GraphicsEnvironment.isHeadless()) {
+            //for debugging, allow CTRL-. to dump the state to stderr
+            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "dump"
+            );
+        }
         getActionMap().put(
             "dump",
             new AbstractAction() { //NOI18N

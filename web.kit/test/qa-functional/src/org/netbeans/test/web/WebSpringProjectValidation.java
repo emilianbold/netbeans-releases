@@ -42,13 +42,9 @@ package org.netbeans.test.web;
 import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewWebProjectServerSettingsStepOperator;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
@@ -60,7 +56,6 @@ public class WebSpringProjectValidation extends WebProjectValidationEE5 {
 
     static {
         PROJECT_NAME = "WebSpringProject";
-//        PROJECT_FOLDER = PROJECT_LOCATION + File.separator + PROJECT_NAME;
     }
 
     /** Need to be defined because of JUnit */
@@ -75,34 +70,11 @@ public class WebSpringProjectValidation extends WebProjectValidationEE5 {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebSpringProjectValidation.class);
-        conf = addServerTests(Server.GLASSFISH, conf,
+        conf = addServerTests(Server.GLASSFISH_V3, conf,
         "testPreconditions", "testNewSpringWebProject", "testRedeployProject", 
                 "testCleanAndBuildProject", "testCompileAllJSP", "testStopServer");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);        
-//        NbTestSuite suite = new NbTestSuite();
-//        suite.addTest(new WebSpringProjectValidation("testNewJSP"));
-//        suite.addTest(new WebSpringProjectValidation("testNewJSP2"));
-//        suite.addTest(new WebSpringProjectValidation("testJSPNavigator"));
-//        suite.addTest(new WebSpringProjectValidation("testNewServlet"));
-//        suite.addTest(new WebSpringProjectValidation("testNewServlet2"));
-//        suite.addTest(new WebSpringProjectValidation("testCompileJSP"));
-//        suite.addTest(new WebSpringProjectValidation("testRunProject"));
-//        suite.addTest(new WebSpringProjectValidation("testRunJSP"));
-//        suite.addTest(new WebSpringProjectValidation("testViewServlet"));
-//        suite.addTest(new WebSpringProjectValidation("testRunServlet"));
-//        suite.addTest(new WebSpringProjectValidation("testCreateTLD"));
-//        suite.addTest(new WebSpringProjectValidation("testCreateTagHandler"));
-//        suite.addTest(new WebSpringProjectValidation("testRunTag"));
-//        suite.addTest(new WebSpringProjectValidation("testNewHTML"));
-//        suite.addTest(new WebSpringProjectValidation("testHTMLNavigator"));
-//        suite.addTest(new WebSpringProjectValidation("testRunHTML"));
-//        suite.addTest(new WebSpringProjectValidation("testNewSegment"));
-//        suite.addTest(new WebSpringProjectValidation("testNewDocument"));
-//        suite.addTest(new WebSpringProjectValidation("testStartServer"));
-//        suite.addTest(new WebSpringProjectValidation("testBrowserSettings"));
-//        suite.addTest(new WebSpringProjectValidation("testFinish"));
-//        return suite;
     }
 
     /** Test creation of web project.
@@ -155,18 +127,9 @@ public class WebSpringProjectValidation extends WebProjectValidationEE5 {
         frameworkStep.finish();
         frameworkStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
         frameworkStep.waitClosed();
-        // Opening Projects
-        String openingProjectsTitle = Bundle.getString(
-                "org.netbeans.modules.project.ui.Bundle",
-                "LBL_Opening_Projects_Progress");
-        try {
-            // wait at most 60 second until progress dialog dismiss
-            NbDialogOperator openingOper = new NbDialogOperator(openingProjectsTitle);
-            frameworkStep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 60000);
-            openingOper.waitClosed();
-        } catch (TimeoutExpiredException e) {
-            // ignore when progress dialog was closed before we started to wait for it
-        }
+
+        // wait for project creation
+        sleep(5000);
         ProjectSupport.waitScanFinished();
         verifyWebPagesNode("redirect.jsp");
         verifyWebPagesNode("WEB-INF|jsp|index.jsp");//NOI18N

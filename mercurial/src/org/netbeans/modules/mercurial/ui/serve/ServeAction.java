@@ -42,9 +42,8 @@ package org.netbeans.modules.mercurial.ui.serve;
 
 import org.netbeans.modules.versioning.spi.VCSContext;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.openide.nodes.Node;
 
 /**
  * Serve action for mercurial: 
@@ -54,18 +53,17 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
  */
 public class ServeAction extends ContextAction {
     
-    private final VCSContext context;
-
-    public ServeAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    @Override
+    protected boolean enable(Node[] nodes) {
+        return false;
     }
-    
-    public void performAction(ActionEvent e) {
+
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Serve"; // NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
         // TODO: Serve action - will need a wizard to specify export target
     }
-
-    public boolean isEnabled() {
-	return false;
-    } 
 }

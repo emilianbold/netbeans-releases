@@ -47,7 +47,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
-import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -56,13 +55,14 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Exceptions;
 
 /** Model holds mapping between extension and MIME type.
  *
  * @author Jiri Skrivanek
  */
-final class FileAssociationsModel {
+final class FileAssociationsModel extends MIMEResolver.UIHelpers {
 
     private static final String MIME_RESOLVERS_PATH = "Services/MIMEResolver";  //NOI18N
     private static final Logger LOGGER = Logger.getLogger(FileAssociationsModel.class.getName());
@@ -94,6 +94,20 @@ final class FileAssociationsModel {
 
     /** Creates new model. */
     FileAssociationsModel() {
+        // the following code is a dirty trick to allow the UIHelpers class
+        // to be a nested class (and thus not be visible in the general javadoc)
+        // in the openide.filesystems API
+        // It does not matter that you suffer reading this code. The important
+        // thing is that millions of users of openide.filesystems are not
+        // disturbed by presence of UIHelpers class or its methods
+        // in javadoc overview.
+        new MIMEResolver() {
+            @Override
+            public String findMIMEType(FileObject fo) {
+                return null;
+            }
+        }.super();
+
         FileObject resolvers = FileUtil.getConfigFile(MIME_RESOLVERS_PATH);
         if (resolvers != null) {
             resolvers.addFileChangeListener(FileUtil.weakFileChangeListener(mimeResolversListener, resolvers));
@@ -252,7 +266,7 @@ final class FileAssociationsModel {
             }
             extensions.add(extension);
         }
-        MIMEResolverImpl.storeUserDefinedResolver(mimeToExtensions);
+        storeUserDefinedResolver(mimeToExtensions);
     }
 
     private void init() {
@@ -261,9 +275,9 @@ final class FileAssociationsModel {
         }
         LOGGER.fine("FileAssociationsModel.init");  //NOI18N
         initialized = true;
-        for (FileObject mimeResolverFO : MIMEResolverImpl.getOrderedResolvers().values()) {
-            boolean userDefined = MIMEResolverImpl.isUserDefined(mimeResolverFO);
-            Map<String, Set<String>> mimeToExtensions = MIMEResolverImpl.getMIMEToExtensions(mimeResolverFO);
+        for (FileObject mimeResolverFO : getOrderedResolvers()) {
+            boolean userDefined = isUserDefined(mimeResolverFO);
+            Map<String, Set<String>> mimeToExtensions = getMIMEToExtensions(mimeResolverFO);
             for (Map.Entry<String, Set<String>> entry : mimeToExtensions.entrySet()) {
                 String mimeType = entry.getKey();
                 Set<String> extensions = entry.getValue();

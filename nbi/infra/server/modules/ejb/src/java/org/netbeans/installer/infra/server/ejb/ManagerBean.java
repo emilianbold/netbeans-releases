@@ -215,7 +215,7 @@ public class ManagerBean implements Manager {
             FileUtils.unjar(archive, packageRegistryDir);
             FileUtils.modifyFile(packageRegistryXml,
                     "(\\>)resource:(.*?\\<\\/)",
-                    "$1" + uriPrefix.replace("&", "&amp;") + "$2", true);
+                    "$1" + uriPrefix.replace("&", "&amp;") + "$2", true, StringUtils.ENCODING_UTF8);
             
             final Registry localRegistry = new Registry();
             localRegistry.setLocalDirectory(NBI);
@@ -515,15 +515,15 @@ public class ManagerBean implements Manager {
                     registryFile,
                     ">.*?registry=(.+?)&amp;file=",
                     ">" + codebase + "/$1/",
-                    true);
+                    true, StringUtils.ENCODING_UTF8);
             FileUtils.modifyFile(
                     registryFile,
                     "%2F",
-                    "/");
+                    "/", StringUtils.ENCODING_UTF8);
             FileUtils.modifyFile(
                     registryFile,
                     "+",
-                    "%20");
+                    "%20", StringUtils.ENCODING_UTF8);
             
             out.putNextEntry(new ZipEntry("registry.xml"));
             StreamUtils.transferFile(registryFile, out);

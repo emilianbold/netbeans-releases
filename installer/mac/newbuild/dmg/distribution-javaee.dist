@@ -60,25 +60,13 @@ function checkSystemversion() {
 		my.result.message = system.localizedStringWithFormat('ERR_INVALID_VERSION_MSG');
 	} else {
 		try {
-			result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.5') == true;
+                    result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.6') == true;
 		} catch (e) {}
-
-		if(!result) {
-		    try {
-                        result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.5.0') == true;
-		    } catch (e) {}
-		}
-		if(!result) {
-		    try {
-                        result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.6') == true;
-		    } catch (e) {}
-		}
 		if(!result) {
 		    try {
                         result = system.files.fileExistsAtPath('/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0') == true;
 		    } catch (e) {}
 		}
-		
 
 		if(!result) {
 			my.result.type = 'Fatal';
@@ -145,7 +133,7 @@ function checkChoiceUpgradeAction() {
         <pkg-ref id="ident.pkg.javaee"></pkg-ref>
     </choice>
     
-    <pkg-ref id="ident.pkg.glassfish" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISH@" auth="Root" onConclusion="None">file:./Contents/Packages/sjsas.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.glassfish" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISH@" auth="Root" onConclusion="None">file:./Contents/Packages/sjsas-@SJSAS_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.glassfish.v3" version="0.0.0.0.0" installKBytes="@SIZE_GLASSFISHV3@" auth="Root" onConclusion="None">file:./Contents/Packages/glassfish-v3-@GLASSFISHV3_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.tomcat" version="0.0.0.6.0" installKBytes="@SIZE_TOMCAT@" auth="Root" onConclusion="None">file:./Contents/Packages/tomcat-@TOMCAT_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide-@NB_ID@.pkg</pkg-ref>

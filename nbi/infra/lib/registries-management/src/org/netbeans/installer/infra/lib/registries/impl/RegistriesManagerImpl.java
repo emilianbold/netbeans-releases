@@ -152,7 +152,8 @@ public class RegistriesManagerImpl implements RegistriesManager {
             FileUtils.unjar(archive, archiveDir);
             FileUtils.modifyFile(archiveRegistryXml,
                     "(\\>)resource:(.*?\\<\\/)",
-                    "$1" + componentsDir.toURI() + "$2", true);
+                    "$1" + componentsDir.toURI() + "$2", true,
+                    StringUtils.ENCODING_UTF8);
             
             final Registry registry = new Registry();
             registry.setLocalDirectory(tempDir);
@@ -614,7 +615,8 @@ public class RegistriesManagerImpl implements RegistriesManager {
             FileUtils.modifyFile(
                     tempRegistryXml,
                     "uri>" + root.toURI().toString(),
-                    "uri>" + replacement);
+                    "uri>" + replacement,
+                    StringUtils.ENCODING_UTF8);
             
             FileUtils.copyFile(
                     tempRegistryXml,

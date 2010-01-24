@@ -1796,7 +1796,7 @@ public class WizardDescriptor extends DialogDescriptor {
     /**
      * Iterator for a wizard that needs to somehow instantiate new objects.
      * (This interface can replace
-     * <a href="@OPENIDE/LOADERS@/org/openide/loaders/TemplateWizard.Iterator.html"><code>TemplateWizard.Iterator</code></a>
+     * <a href="@org-openide-loaders@/org/openide/loaders/TemplateWizard.Iterator.html"><code>TemplateWizard.Iterator</code></a>
      * in a template's declaration.)
      * @param <Data> in practice this should be {@link WizardDescriptor}
      * @since org.openide/1 4.33
@@ -1826,7 +1826,7 @@ public class WizardDescriptor extends DialogDescriptor {
     /**
      * Iterator for a wizard that needs to somehow instantiate new objects outside ATW queue.
      * (This interface can replace
-     * <a href="@OPENIDE/LOADERS@/org/openide/loaders/TemplateWizard.Iterator.html"><code>TemplateWizard.Iterator</code></a>
+     * <a href="@org-openide-loaders@/org/openide/loaders/TemplateWizard.Iterator.html"><code>TemplateWizard.Iterator</code></a>
      * in a template's declaration.)
      * @param <Data> in practice this should be {@link WizardDescriptor}
      * @since org.openide/1 6.5
@@ -1849,7 +1849,7 @@ public class WizardDescriptor extends DialogDescriptor {
      * Iterator for a wizard that wants to notify users while instantiate is running by a progress bar.
      * The method <code>instantiate</code> is called outside ATW queue.
      * (This interface can replace
-     * <a href="@OPENIDE/LOADERS@/org/openide/loaders/TemplateWizard.Iterator.html"><code>TemplateWizard.Iterator</code></a>
+     * <a href="@org-openide-loaders@/org/openide/loaders/TemplateWizard.Iterator.html"><code>TemplateWizard.Iterator</code></a>
      * in a template's declaration.)
      * @param <Data> in practice this should be {@link WizardDescriptor}
      * @since org.openide.dialogs 7.1

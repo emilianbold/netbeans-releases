@@ -47,7 +47,6 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.util.Set;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -57,6 +56,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 
 /**
@@ -67,22 +67,22 @@ import org.openide.util.Utilities;
  */
 public class MergeAction extends ContextAction {
 
-    private final VCSContext context;
-    
-    public MergeAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
-    }
-
     @Override
-    public boolean isEnabled() {
+    protected boolean enable(Node[] nodes) {
+        VCSContext context = HgUtils.getCurrentContext(nodes);
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
         if(!HgUtils.isFromHgRepository(context) || ctxFiles == null || ctxFiles.size() == 0)
             return false;
         return true; // #121293: Speed up menu display, warn user if nothing to merge when Merge selected
     }
 
-    public void performAction(ActionEvent ev) {
+    protected String getBaseName(Node[] nodes) {
+        return "CTL_MenuItem_Merge";                                    //NOI18N
+    }
+
+    @Override
+    protected void performContextAction(Node[] nodes) {
+        final VCSContext context = HgUtils.getCurrentContext(nodes);
         File roots[] = HgUtils.getActionRoots(context);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);

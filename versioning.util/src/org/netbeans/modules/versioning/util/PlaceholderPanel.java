@@ -67,6 +67,17 @@ public class PlaceholderPanel extends JPanel {
         super(null, isDoubleBuffered);
     }
 
+    public void setComponent(Component comp) {
+        if (isEmpty()) {
+            add(comp);
+        } else {
+            removeAll();
+            add(comp);
+            revalidate();
+            repaint();
+        }
+    }
+
     @Override
     public void setLayout(LayoutManager mgr) {
         if (mgr != null) {
@@ -120,30 +131,35 @@ public class PlaceholderPanel extends JPanel {
 
         super.addImpl(comp, constraints, index);
         updateOpacity();
+        invalidate();
     }
 
     @Override
     public void remove(Component comp) {
         super.remove(comp);
         updateOpacity();
+        invalidate();
     }
 
     @Override
     public void remove(int index) {
         super.remove(index);
         updateOpacity();
+        invalidate();
     }
 
     @Override
     public synchronized void remove(MenuComponent popup) {
         super.remove(popup);
         updateOpacity();
+        invalidate();
     }
 
     @Override
     public void removeAll() {
         super.removeAll();
         updateOpacity();
+        invalidate();
     }
 
     private void updateOpacity() {

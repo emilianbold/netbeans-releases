@@ -85,7 +85,7 @@ public abstract class CallableSystemAction extends SystemAction implements Prese
     * @return the JMenuItem representation for the Action
     */
     public javax.swing.JMenuItem getMenuPresenter() {
-        return org.netbeans.modules.openide.util.AWTBridge.getDefault().createMenuPresenter(this);
+        return org.openide.util.actions.ActionPresenterProvider.getDefault().createMenuPresenter(this);
     }
 
     /* Returns a JMenuItem that presents the Action, that implements this
@@ -93,7 +93,7 @@ public abstract class CallableSystemAction extends SystemAction implements Prese
     * @return the JMenuItem representation for the Action
     */
     public javax.swing.JMenuItem getPopupPresenter() {
-        return org.netbeans.modules.openide.util.AWTBridge.getDefault().createPopupPresenter(this);
+        return org.openide.util.actions.ActionPresenterProvider.getDefault().createPopupPresenter(this);
     }
 
     /* Returns a Component that presents the Action, that implements this
@@ -101,7 +101,7 @@ public abstract class CallableSystemAction extends SystemAction implements Prese
     * @return the Component representation for the Action
     */
     public java.awt.Component getToolbarPresenter() {
-        return org.netbeans.modules.openide.util.AWTBridge.getDefault().createToolbarPresenter(this);
+        return org.openide.util.actions.ActionPresenterProvider.getDefault().createToolbarPresenter(this);
     }
 
     /** Actually perform the action.
@@ -120,9 +120,8 @@ public abstract class CallableSystemAction extends SystemAction implements Prese
     */
     public void actionPerformed(ActionEvent ev) {
         if (isEnabled()) {
-            org.netbeans.modules.openide.util.ActionsBridge.doPerformAction(
-                this,
-                new org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable(ev, this, asynchronous()) {
+            org.openide.util.actions.ActionInvoker.invokeAction(
+                this, ev, asynchronous(), new Runnable() {
                     public void run() {
                         performAction();
                     }

@@ -41,14 +41,18 @@
 
 package org.netbeans.modules.openide.actions;
 
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.actions.ActionInvoker;
+
 
 /** Implements the delegation to ActionManager that is called from
  * openide/util.
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.openide.util.ActionsBridge.class)
-public class ActionsBridgeImpl extends org.netbeans.modules.openide.util.ActionsBridge {
+@ServiceProvider(service=ActionInvoker.class)
+public class ActionsBridgeImpl extends ActionInvoker {
     /** Invokes an action.
      */
+    @SuppressWarnings("deprecation")
     protected void invokeAction (javax.swing.Action action, java.awt.event.ActionEvent ev) {
         org.openide.actions.ActionManager.getDefault().invokeAction(action, ev);
     }

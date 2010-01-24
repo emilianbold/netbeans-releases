@@ -74,9 +74,9 @@ public class StampsIdeLessThanPlatformTest extends NbTestCase {
         clearWorkDir();
         
         install = new File(getWorkDir(), "install");
-        platform = new File(install, "platform7");
+        platform = new File(install, "platform");
         nonexist = new File(install, "nonexist7");
-        ide = new File(install, "ide8");
+        ide = new File(install, "ide");
         userdir = new File(getWorkDir(), "tmp");
         
         System.setProperty("netbeans.home", platform.getPath());

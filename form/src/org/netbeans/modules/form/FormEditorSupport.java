@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.form;
 
+import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -67,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -91,6 +93,7 @@ import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
@@ -190,15 +193,45 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         if (switchToForm) {
             elementToOpen = FORM_ELEMENT_INDEX;
         }
-        multiviewTC = openCloneableTopComponent();
-        multiviewTC.requestActive();
-        
-        if (switchToForm) {
-            MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
-            handler.requestActive(handler.getPerspectives()[FORM_ELEMENT_INDEX]);
+        try {
+            showOpeningStatus("FMT_PreparingForm"); // NOI18N
+
+            multiviewTC = openCloneableTopComponent();
+            multiviewTC.requestActive();
+
+            if (switchToForm) {
+                MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
+                handler.requestActive(handler.getPerspectives()[FORM_ELEMENT_INDEX]);
+            }
+        } finally {
+            hideOpeningStatus();
         }
     }
-    
+
+    void showOpeningStatus(String fmtMessage) {
+        JFrame mainWin = (JFrame) WindowManager.getDefault().getMainWindow();
+
+        // set status text like "Opening form: ..."
+        StatusDisplayer.getDefault().setStatusText(
+            FormUtils.getFormattedBundleString(
+                fmtMessage, // NOI18N
+                new Object[] { formDataObject.getFormFile().getName() }));
+        javax.swing.RepaintManager.currentManager(mainWin).paintDirtyRegions();
+
+        // set wait cursor [is not very reliable, but...]
+        mainWin.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        mainWin.getGlassPane().setVisible(true);
+    }
+
+    void hideOpeningStatus() {
+        // clear wait cursor
+        JFrame mainWin = (JFrame) WindowManager.getDefault().getMainWindow();
+        mainWin.getGlassPane().setVisible(false);
+        mainWin.getGlassPane().setCursor(null);
+
+        StatusDisplayer.getDefault().setStatusText(""); // NOI18N
+    }
+
     private void addStatusListener(FileSystem fs) {
         FileStatusListener fsl = fsToStatusListener.get(fs);
         if (fsl == null) {

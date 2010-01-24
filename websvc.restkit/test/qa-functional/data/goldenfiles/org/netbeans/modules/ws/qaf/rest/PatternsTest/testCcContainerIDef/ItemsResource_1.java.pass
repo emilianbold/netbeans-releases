@@ -7,6 +7,7 @@ package o.n.m.ws.qaf.rest.patterns;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
@@ -38,10 +39,11 @@ public class ItemsResource_1 {
     }
 
     /**
-     * Sub-resource locator method for  {name}
+     * Sub-resource locator method for {name}
      */
     @Path("{name}")
-    public ItemResource_1 getItemResource_1() {
-        return new ItemResource_1();
+    public ItemResource_1 getItemResource_1(@PathParam("name")
+    String name) {
+        return ItemResource_1.getInstance(name);
     }
 }

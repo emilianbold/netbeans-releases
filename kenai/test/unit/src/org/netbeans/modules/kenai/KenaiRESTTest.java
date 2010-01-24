@@ -113,7 +113,7 @@ public class KenaiRESTTest {
         String username = "";
         char[] password = null;
         KenaiREST kenaiInstance = new KenaiREST(new URL("http://peterp.czech.sun.com"));
-        ProjectData result = kenaiInstance.getProject(name);
+        ProjectData result = kenaiInstance.getProject(name, null);
         LicenceData[] licenseData = result.licenses;
         FeatureData[] featureData = result.features;
 
@@ -153,7 +153,7 @@ public class KenaiRESTTest {
         KenaiREST kenaiInstance = new KenaiREST(new URL("http://peterp.czech.sun.com"));
         IllegalArgumentException iae = null;
         try {
-            ProjectData result = kenaiInstance.getProject(name);
+            ProjectData result = kenaiInstance.getProject(name, null);
         } catch (Exception e) {
             iae = (IllegalArgumentException) e;
         }
@@ -174,7 +174,7 @@ public class KenaiRESTTest {
             KenaiREST kenaiInstance = new KenaiREST(new URL("http://peterp.czech.sun.com"));
             iae = null;
             try {
-                ProjectData result = kenaiInstance.getProject(name);
+                ProjectData result = kenaiInstance.getProject(name, null);
             } catch (Exception e) {
                 iae = (IllegalArgumentException) e;
             }

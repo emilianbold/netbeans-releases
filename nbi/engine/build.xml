@@ -52,30 +52,19 @@
         NetBeans Installer engine specific targets
     ======================================================================== -->
     
-    <target name="init-custom-tasks" depends="build-custom-tasks">
-        <taskdef 
-            name="write-jar-content-list" 
-            classname="org.netbeans.installer.infra.build.ant.WriteFileList" 
-            classpath="${custom.tasks.cls}"/>
-    </target>
-    
-    <target name="build-custom-tasks" unless="dont.build.custom.tasks">
-        <delete dir="${custom.tasks.cls}"/>
-        <mkdir dir="${custom.tasks.cls}"/>
-        
-        <javac 
-            srcdir="${custom.tasks.src}" 
-            destdir="${custom.tasks.cls}" 
-            debug="true" 
-            classpath="${custom.tasks.classpath}"/>
-    </target>
-    
-    
-    <target name="create-jar-contents-list" depends="init-custom-tasks">
-        <write-jar-content-list 
-            dir="${build.classes.dir}" 
-            output="${build.classes.dir}/${jar.contents.list}"
-            mask="${jar.contents.mask}"/>
+    <target name="create-jar-contents-list">
+        <pathconvert property="build.classes.dir.normalized" dirsep="/">
+           <path location="${build.classes.dir}"/>
+        </pathconvert>
+        <pathconvert pathsep="${line.separator}" property="engine.files" dirsep="/">
+        <fileset dir="${build.classes.dir}" includes="${jar.contents.includes}"/>
+        <mapper>
+          <chainedmapper>
+            <globmapper handledirsep="true" from="${build.classes.dir.normalized}/" to=""/>
+          </chainedmapper>
+        </mapper>
+        </pathconvert>
+        <echo file="${build.classes.dir}/${jar.contents.list}">${engine.files}</echo>
     </target>
     
     <target name="copy-unix-launcher">

@@ -85,8 +85,8 @@ public class ArchiveTest extends NbTestCase {
         clearWorkDir();
         
         install = new File(getWorkDir(), "install");
-        platform = new File(install, "platform7");
-        ide = new File(install, "ide8");
+        platform = new File(install, "platform");
+        ide = new File(install, "ide");
         userdir = new File(getWorkDir(), "tmp");
         
         System.setProperty("netbeans.home", platform.getPath());

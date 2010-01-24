@@ -40,12 +40,10 @@
  */
 package org.netbeans.modules.cnd.api.compilers;
 
-import java.io.File;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -204,14 +202,6 @@ public class Tool {
         return displayName;
     }
 
-//    public String getGenericName() {
-//        String name = getName();
-//        if (name.length() > 0) {
-//            return TOOL_NAMES[getKind()] + " - " + getName(); // NOI18N
-//        } else {
-//           return TOOL_NAMES[getKind()]; 
-//        }
-//    }
     public static String getToolDisplayName(int kind) {
         return TOOL_NAMES[kind];
     }
@@ -233,18 +223,6 @@ public class Tool {
         throw new UnsupportedOperationException();
     }
 
-    @Deprecated
-    public void setIncludeFilePathPrefix(String includeFilePrefix) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Deprecated
-    public boolean exists() {
-        if (getPath() == null || getPath().length() == 0) {
-            return false;
-        }
-        return new File(getPath()).exists() || Path.findCommand(getPath()) != null;
-    }
     private static ResourceBundle bundle = null;
 
     protected static String getString(String s) {

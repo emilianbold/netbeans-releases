@@ -42,7 +42,6 @@
 package org.netbeans.core.execution;
 
 import junit.framework.Test;
-import junit.framework.TestResult;
 import org.openide.execution.ExecutionCompatibilityTest;
 
 /** Reuses ExecutionCompatibilityTest to check compatibility of the behaviour
@@ -53,16 +52,7 @@ import org.openide.execution.ExecutionCompatibilityTest;
 public class CoreExecutionCompatibilityTest {
 
     public static Test suite() {
-        if (System.getProperty("java.specification.version").equals("1.5")) {
-            System.err.println("Skipping; JDK bug #6704979 makes this test sometimes pass but abort the VM when run on JDK 5.");
-            return new Test() {
-                public int countTestCases() {
-                    return 0;
-                }
-                public void run(TestResult r) {}
-            };
-        }
-        return ExecutionCompatibilityTest.suite(new org.netbeans.core.execution.ExecutionEngine());
+        return ExecutionCompatibilityTest.suite(new ExecutionEngine());
     }
 
 }

@@ -618,8 +618,8 @@ public final class RubyCoverageProvider implements CoverageProvider {
     private static class HideCoverageFramesConvertor implements LineConvertor {
 
         public List<ConvertedLine> convert(String line) {
-            if (line.contains("/ruby2/coverage/") || line.contains("/rcov") || // NOI18N
-                    (File.separatorChar == '\\' && (line.contains("\\ruby2\\coverage\\") || line.contains("\\rcov")))) { // NOI18N
+            if (line.contains("/ruby/coverage/") || line.contains("/rcov") || // NOI18N
+                    (File.separatorChar == '\\' && (line.contains("\\ruby\\coverage\\") || line.contains("\\rcov")))) { // NOI18N
                 return Collections.emptyList();
             }
 
@@ -686,7 +686,7 @@ public final class RubyCoverageProvider implements CoverageProvider {
 
         StringBuilder exclude = new StringBuilder(100); // NOI18N
         // Skip mediator scripts etc.
-        exclude.append("\\/ruby2\\/,/\\\\ruby2\\\\/"); // NOI18N
+        exclude.append("\\/ruby\\/,/\\\\ruby\\\\/"); // NOI18N
         // This shows up when running specs
         exclude.append(",\\bfcntl\\b"); // NOI18N
         // No need: removed by gem stuff below

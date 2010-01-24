@@ -345,7 +345,7 @@ public class ProjectCreator {
             top = fld.findFolderByName(name);
             if (top == null) {
                 top = new Folder(fld.getConfigurationDescriptor(), fld, name, name, true);
-                fld.addFolder(top);
+                fld.addFolder(top, true);
             }
             fld = top;
         }
@@ -362,7 +362,7 @@ public class ProjectCreator {
             top = fld.findFolderByName(part);
             if (top == null) {
                 top = new Folder(fld.getConfigurationDescriptor(), fld, part, part, true);
-                fld.addFolder(top);
+                fld.addFolder(top, true);
             }
             fld = top;
         }

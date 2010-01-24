@@ -104,10 +104,12 @@ public class PluginPropertyUtils {
             Plugin plug = (Plugin)obj;
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
-                if (plug.getExecutions() != null) {
+                if (plug.getExecutions() != null && goal != null) {
                     for (Object obj2 : plug.getExecutions()) {
                         PluginExecution exe = (PluginExecution)obj2;
-                        if (exe.getGoals().contains(goal)) {
+                        if (exe.getGoals().contains(goal) || 
+                                ("default-" + goal).equals(exe.getId())) { //this is a maven 2.2.0+ thing.. #179328 //NOI18N
+
                             toRet = checkConfiguration(eval, exe.getConfiguration(), property);
                             if (toRet != null) {
                                 break;
@@ -272,10 +274,12 @@ public class PluginPropertyUtils {
             Plugin plug = (Plugin)obj;
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
-                if (plug.getExecutions() != null) {
+                if (plug.getExecutions() != null && goal != null) {
                     for (Object obj2 : plug.getExecutions()) {
                         PluginExecution exe = (PluginExecution)obj2;
-                        if (exe.getGoals().contains(goal)) {
+                        if (exe.getGoals().contains(goal) ||
+                                ("default-" + goal).equals(exe.getId())) { //this is a maven 2.2.0+ thing.. #179328 //NOI18N
+
                             toRet = checkListConfiguration(eval, exe.getConfiguration(), multiproperty, singleproperty);
                             if (toRet != null) {
                                 break;
@@ -415,10 +419,11 @@ public class PluginPropertyUtils {
             Plugin plug = (Plugin)obj;
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
-                if (plug.getExecutions() != null) {
+                if (plug.getExecutions() != null && goal != null) {
                     for (Object obj2 : plug.getExecutions()) {
                         PluginExecution exe = (PluginExecution)obj2;
-                        if (exe.getGoals().contains(goal)) {
+                        if (exe.getGoals().contains(goal) ||
+                                ("default-" + goal).equals(exe.getId())) { //this is a maven 2.2.0+ thing.. #179328 //NOI18N
                             toRet = checkPropertiesConfiguration(eval, exe.getConfiguration(), propertyParameter);
                             if (toRet != null) {
                                 break;

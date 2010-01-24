@@ -41,6 +41,8 @@
 package org.netbeans.modules.websvc.rest.nodes;
 
 import java.awt.Image;
+import java.awt.datatransfer.Transferable;
+import java.io.IOException;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.openide.nodes.AbstractNode;
@@ -48,8 +50,10 @@ import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
+import org.openide.text.ActiveEditorDrop;
 import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -58,7 +62,7 @@ public class RestServiceNode extends AbstractNode{
     private String serviceName;
     private String uriTemplate;
     private String className;
-   
+    private ActiveEditorDrop editorDrop;
     private RestServicesModel model;
     
     public  RestServiceNode(Project project, RestServicesModel model,
@@ -75,6 +79,7 @@ public class RestServiceNode extends AbstractNode{
         this.className = desc.getClassName();
         
         content.add(this);
+        content.add(desc);
         content.add(new ResourceUriProvider() {
             public String getResourceUri() {
                 return desc.getUriTemplate();
@@ -82,6 +87,7 @@ public class RestServiceNode extends AbstractNode{
         });
         content.add(project);
         content.add(OpenCookieFactory.create(project, className));
+        editorDrop = new ResourceToEditorDrop(this);
     }
 
     @Override
@@ -135,5 +141,31 @@ public class RestServiceNode extends AbstractNode{
             //null,
             SystemAction.get(PropertiesAction.class),
         };
+    }
+    
+    @Override
+    public Transferable clipboardCopy() throws IOException {
+
+        ExTransferable t = ExTransferable.create( super.clipboardCopy() );
+        ActiveEditorDropTransferable s = new ActiveEditorDropTransferable(editorDrop);
+        t.put(s);
+
+        return t;
+    }
+
+    private static class ActiveEditorDropTransferable extends ExTransferable.Single {
+
+        private ActiveEditorDrop drop;
+
+        ActiveEditorDropTransferable(ActiveEditorDrop drop) {
+            super(ActiveEditorDrop.FLAVOR);
+
+            this.drop = drop;
+        }
+
+        public Object getData () {
+            return drop;
+        }
+
     }
 }

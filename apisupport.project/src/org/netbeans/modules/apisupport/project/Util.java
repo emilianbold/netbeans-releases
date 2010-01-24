@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.apisupport.project;
 
-import org.netbeans.modules.apisupport.project.ProjectXMLManager.CyclicDependencyException;
-import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -73,6 +71,8 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.xml.namespace.NamespaceContext;
+import javax.xml.xpath.XPath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -82,6 +82,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.apisupport.project.ProjectXMLManager.CyclicDependencyException;
+import org.netbeans.modules.apisupport.project.api.EditableManifest;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -96,7 +99,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -219,6 +221,19 @@ public final class Util {
             to.setAttribute(attr.getNodeName(), attr.getNodeValue());
         }
         return to;
+    }
+
+    /**
+     * Pass to {@link XPath#setNamespaceContext} to bind {@code nbm:} to the /3 namespace.
+     */
+    public static final NamespaceContext nbmNamespaceContext() {
+        return new NamespaceContext() {
+            public String getNamespaceURI(String prefix) {
+                return prefix.equals("nbm") ? NbModuleProjectType.NAMESPACE_SHARED : null; // NOI18N
+            }
+            public String getPrefix(String namespaceURI) {return null;}
+            public Iterator getPrefixes(String namespaceURI) {return null;}
+        };
     }
 
     /**

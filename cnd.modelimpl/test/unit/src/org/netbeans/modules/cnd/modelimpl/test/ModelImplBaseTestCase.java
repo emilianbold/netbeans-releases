@@ -48,6 +48,8 @@ import java.io.PrintWriter;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * IMPORTANT NOTE:
@@ -116,6 +118,7 @@ public abstract class ModelImplBaseTestCase extends ModelBasedTestCase {
     protected void writeFile(File file, String text) throws IOException {
         PrintWriter writer = new PrintWriter(new FileOutputStream(file));
         writer.append(text);
+        writer.flush();
         writer.close();
     }
 

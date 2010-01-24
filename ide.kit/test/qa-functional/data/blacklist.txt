@@ -362,7 +362,7 @@ org.netbeans.editor.ActionFactory$ScrollUpAction
 org.netbeans.editor.ActionFactory$ScrollDownAction
 org.netbeans.editor.ActionFactory$InsertDateTimeAction
 org.netbeans.editor.ActionFactory$GenerateGutterPopupAction
-org.netbeans.editor.ActionFactory$ToggleLineNumbersAction
+#org.netbeans.editor.ActionFactory$ToggleLineNumbersAction
 org.netbeans.editor.ActionFactory$AnnotationsCyclingAction
 org.netbeans.editor.ActionFactory$CollapseFold
 org.netbeans.editor.ActionFactory$ExpandFold
@@ -385,7 +385,7 @@ org.netbeans.editor.ext.ExtKit$CompletionTooltipShowAction
 org.netbeans.modules.editor.NbEditorKit$NbBuildPopupMenuAction
 org.netbeans.modules.editor.NbEditorKit$NbBuildToolTipAction
 #org.netbeans.modules.editor.NbEditorKit$NbToggleLineNumbersAction
-org.netbeans.modules.editor.NbEditorKit$ToggleToolbarAction
+#org.netbeans.modules.editor.NbEditorKit$ToggleToolbarAction
 #org.netbeans.modules.editor.NbEditorKit$NbGenerateGoToPopupAction
 org.netbeans.modules.editor.NbEditorKit$NbGenerateCodeAction
 org.netbeans.modules.editor.NbEditorKit$NavigationHistoryLastEditAction
@@ -504,3 +504,13 @@ org.jivesoftware.smackx.provider.RosterExchangeProvider
 org.jivesoftware.smackx.provider.StreamInitiationProvider
 org.jivesoftware.smackx.provider.VCardProvider
 org.jivesoftware.smackx.provider.XHTMLExtensionProvider
+
+
+org.netbeans.modules.cnd.api.model.CsmClass
+org.netbeans.modules.cnd.api.model.CsmClassifier
+org.netbeans.modules.cnd.api.model.CsmCompoundClassifier
+org.netbeans.modules.cnd.api.model.CsmDeclaration
+org.netbeans.modules.cnd.api.model.CsmOffsetable
+org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration
+org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement
+org.netbeans.modules.cnd.api.model.CsmScopeElement

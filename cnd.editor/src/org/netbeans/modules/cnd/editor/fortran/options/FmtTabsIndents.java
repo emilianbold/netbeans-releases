@@ -56,14 +56,14 @@ public class FmtTabsIndents extends JPanel {
         initComponents();
         freeFormatCheckBox.putClientProperty(FmtOptions.CategorySupport.OPTION_ID, FmtOptions.freeFormat);
     }
-    
+
     public static PreferencesCustomizer.Factory getController() {
         return new FmtOptions.CategorySupport.Factory(PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtTabsIndents.class,
                 org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "SAMPLE_Default"), // NOI18N
                 new String[] { FmtOptions.rightMargin, "30" }  // NOI18N
                 );
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -78,22 +78,16 @@ public class FmtTabsIndents extends JPanel {
         setOpaque(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(freeFormatCheckBox, org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "LBL_Free_Format")); // NOI18N
-        freeFormatCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(freeFormatCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 149, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(114, Short.MAX_VALUE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(freeFormatCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 263, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(freeFormatCheckBox)
-                .addContainerGap(12, Short.MAX_VALUE))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(freeFormatCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
     }// </editor-fold>//GEN-END:initComponents
     

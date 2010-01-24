@@ -155,6 +155,9 @@ public class GapDocumentView extends GapBoxView {
     private int damageRangeStartOffset;
     private int damageRangeEndOffset;
     
+    /** Set to true to avoid adding bottom padding */
+    private final boolean hideBottomPadding;
+
     /**
      * Construct a view intended to cover the whole document.
      *
@@ -165,13 +168,29 @@ public class GapDocumentView extends GapBoxView {
      *  instead of default layout.
      */
     public GapDocumentView(Element elem) {
-        super(elem, View.Y_AXIS);
-        clearDamageRangeBounds();
+        this(elem, false);
     }
 
+    /**
+     * Construct a view intended to cover the whole document.
+     *
+     * @param elem the element of the model to represent.
+     * @param hideBottomPadding to avoid adding bottom padding to view
+     * @param majorAxis the axis to tile along.  This can be
+     *  either X_AXIS or Y_AXIS.
+     * @param baselineLayout whether baseline layout should be used
+     *  instead of default layout.
+     */
+    public GapDocumentView(Element elem, boolean hideBottomPadding) {
+        super(elem, View.Y_AXIS);
+        this.hideBottomPadding = hideBottomPadding;
+        clearDamageRangeBounds();
+    }
+    
+    @Override
     public float getPreferredSpan(int axis) {
         float span = super.getPreferredSpan(axis);
-        if (axis == View.Y_AXIS) {
+        if (!hideBottomPadding && (axis == View.Y_AXIS)) {
             // Add an extra span to avoid typing at the bottom of the screen
             // by adding virtual height
             Container c = getContainer();

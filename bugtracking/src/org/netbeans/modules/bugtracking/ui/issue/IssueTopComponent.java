@@ -51,15 +51,17 @@ import java.util.HashSet;
 import java.util.MissingResourceException;
 import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.RepositoriesSupport;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.ui.search.FindSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.RepositoryComboRenderer;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
@@ -90,13 +92,20 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      */
     public IssueTopComponent() {
         initComponents();
-        RepositoriesSupport.getInstance().addPropertyChangeListener(this);
+        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        for (BugtrackingConnector c : connectors) {
+            c.addPropertyChangeListener(this);
+        }
         preparingLabel.setVisible(false);
         newButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 onNewClick();
             }
         });
+        JComponent findBar = FindSupport.create(this).getFindBar();
+        findBar.setVisible(false);
+        issuePanel.add(findBar, BorderLayout.PAGE_END);
     }
 
     /**
@@ -138,6 +147,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             }
         }
         repositoryComboBox.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 if(e.getStateChange() == ItemEvent.SELECTED) {
                     onRepoSelected();
@@ -149,11 +159,12 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     public void initNoIssue(final String issueId) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 preparingLabel.setVisible(true);
                 repoPanel.setVisible(false);
                 if(issueId != null) {
-                    String desc = NbBundle.getMessage(Issue.class, "LBL_OPENING_ISSUE", new Object[]{issueId});
+                    String desc = NbBundle.getMessage(IssueTopComponent.class, "LBL_OPENING_ISSUE", new Object[]{issueId});
                     preparingLabel.setText(desc);
                     setName(NbBundle.getMessage(IssueTopComponent.class, "LBL_LOADING_ISSUE", new Object[]{issueId}));
                     setToolTipText(desc);
@@ -235,7 +246,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     .add(findIssuesLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(152, Short.MAX_VALUE))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         repoPanelLayout.setVerticalGroup(
             repoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -264,14 +275,14 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(repoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 598, Short.MAX_VALUE)
+            .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(repoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE))
+                .add(issuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -289,6 +300,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             prepareTask.cancel();
         }
         Cancellable c = new Cancellable() {
+            @Override
             public boolean cancel() {
                 if(prepareTask != null) {
                     prepareTask.cancel();
@@ -298,6 +310,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         };
         final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueTopComponent.class, "CTL_PreparingIssue"), c); // NOI18N
         prepareTask = rp.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     handle.start();
@@ -319,6 +332,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     controller = issue.getController();
 
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             issuePanel.add(controller.getComponent(), BorderLayout.CENTER);
                             issue.addPropertyChangeListener(IssueTopComponent.this);
@@ -446,6 +460,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     private void setNameAndTooltip() throws MissingResourceException {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 if(issue != null) {
                     setName(issue.getShortenedDisplayName());
@@ -458,16 +473,18 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         });
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(Issue.EVENT_ISSUE_DATA_CHANGED)) {
             repoPanel.setVisible(false);
             setNameAndTooltip();
-        } else if(evt.getPropertyName().equals(RepositoriesSupport.EVENT_REPOSITORIES_CHANGED)) {
+        } else if(evt.getPropertyName().equals(BugtrackingConnector.EVENT_REPOSITORIES_CHANGED)) {
             if(!repositoryComboBox.isEnabled()) {
                 // well, looks like there shuold be only one repository available
                 return;
             }
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if(rs != null) {
                         rs.refreshRepositoryModel();

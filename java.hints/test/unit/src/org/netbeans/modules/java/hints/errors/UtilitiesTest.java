@@ -40,7 +40,9 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import java.util.Collection;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -124,6 +126,18 @@ public class UtilitiesTest extends NbTestCase {
                                 "test.Foo<? super java.lang.Number>");
     }
 
+    public void testFieldGroup1() throws Exception {
+        performResolveFieldGroupTest("package test; public class Test { |private int a, b, c;| }", 3);
+    }
+
+    public void testFieldGroup2() throws Exception {
+        performResolveFieldGroupTest("package test; public class Test { |int a, b, c;| }", 3);
+    }
+
+    public void testFieldGroup3() throws Exception {
+        performResolveFieldGroupTest("package test; public class Test { private int a; |private int b;| private int c; }", 1);
+    }
+
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
@@ -186,5 +200,43 @@ public class UtilitiesTest extends NbTestCase {
         TypeMirror resolved = Utilities.resolveCapturedType(info, type);
 
         assertEquals(golden, org.netbeans.modules.editor.java.Utilities.getTypeName(resolved, true).toString());
+    }
+
+    private void performResolveFieldGroupTest(String code, int numOfElements) throws Exception {
+        String[] split = code.split("\\|");
+        int start = split[0].length();
+        int end   = split[0].length() + split[1].length();
+
+        code = split[0] + split[1] + split[2];
+
+        prepareTest(code);
+
+        TreePath tp = info.getTreeUtilities().pathFor(start + 1);
+
+        while (tp.getLeaf().getKind() != Kind.VARIABLE) {
+            tp = tp.getParentPath();
+        }
+
+        Collection<? extends TreePath> tps = Utilities.resolveFieldGroup(info, tp);
+
+        assertFieldGroup(info, tps, start, end, numOfElements);
+
+        for (TreePath inGroup : tps) {
+            assertFieldGroup(info, Utilities.resolveFieldGroup(info, inGroup), start, end, numOfElements);
+        }
+    }
+
+    private static void assertFieldGroup(CompilationInfo info, Collection<? extends TreePath> group, int goldenStart, int goldenEnd, int numOfElements) {
+        assertEquals(numOfElements, group.size());
+        
+        int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), group.iterator().next().getLeaf());
+        int end = -1;
+
+        for (TreePath tp : group) {
+            end = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), tp.getLeaf());
+        }
+
+        assertEquals(goldenStart, start);
+        assertEquals(goldenEnd, end);
     }
 }

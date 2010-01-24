@@ -148,6 +148,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
                 SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES)));
         createData.setServerLibraryName((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY));
         createData.setWebXmlRequired(checkFrameworksForWebXml());
+        createData.setCDIEnabled((Boolean)wiz.getProperty(ProjectServerWizardPanel.CDI));
         
         AntProjectHelper h = WebProjectUtilities.createProject(createData);
         handle.progress(2);

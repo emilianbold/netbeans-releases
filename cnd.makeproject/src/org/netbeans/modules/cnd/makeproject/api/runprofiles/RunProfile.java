@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.ListenableIntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -128,12 +127,6 @@ public class RunProfile implements ConfigurationAuxObject {
     };
     private IntConfiguration removeInstrumentation;
 
-    // constructor for SS compatibility, only for localhost usage
-    @Deprecated
-    public RunProfile(String baseDir) {
-        this(baseDir, Platform.getDefaultPlatform());
-    }
-
     public RunProfile(String baseDir, int platform) {
         this.platform = platform;
         this.baseDir = baseDir;
@@ -142,7 +135,7 @@ public class RunProfile implements ConfigurationAuxObject {
     }
 
     public RunProfile(String baseDir, PropertyChangeSupport pcs) {
-        platform = Platform.getDefaultPlatform(); //TODO: it's not always right
+        platform = PlatformTypes.getDefaultPlatform(); //TODO: it's not always right
         this.baseDir = baseDir;
         this.pcs = pcs;
         initialize();

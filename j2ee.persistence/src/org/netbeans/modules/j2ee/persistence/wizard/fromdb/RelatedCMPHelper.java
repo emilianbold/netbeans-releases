@@ -89,6 +89,16 @@ public class RelatedCMPHelper {
     private TableSource tableSource;
     
     private PersistenceUnit persistenceUnit;
+
+    private boolean createPU = false;
+
+    public boolean isCreatePU() {
+        return createPU;
+    }
+
+    public void setCreatePU(boolean createPU) {
+        this.createPU = createPU;
+    }
     
     // Global mapping options added in NB 6.5
     private boolean fullyQualifiedTableNames = false;
@@ -135,14 +145,14 @@ public class RelatedCMPHelper {
         this.selectedTables = selectedTables;
     }
 
-    public PersistenceUnit getPersistenceUnit() {
-        return persistenceUnit;
-    }
-
-    public void setPersistenceUnit(PersistenceUnit persistenceUnit) {
-        this.persistenceUnit = persistenceUnit;
-    }
-    
+//    public PersistenceUnit getPersistenceUnit() {
+//        return persistenceUnit;
+//    }
+//
+//    public void setPersistenceUnit(PersistenceUnit persistenceUnit) {
+//        this.persistenceUnit = persistenceUnit;
+//    }
+//
     /**
      * Sets the source of the tables when the source is a database connection
      * (possibly retrieved from a data source).
