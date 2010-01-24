@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 import javax.swing.JToggleButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -70,11 +71,26 @@ public class SuiteInstallerProjectProperties {
                 System.out.println("###" + i.getClass());
             }
             propEval = helper.getStandardPropertyEvaluator();
-            //      pack200Model = installerPropGroup.createToggleButtonModel(propEval, USE_PACK200_COMPRESSION);
+            
             windowsModel = installerPropGroup.createToggleButtonModel(propEval, GENERATE_FOR_WINDOWS);
             linuxModel = installerPropGroup.createToggleButtonModel(propEval, GENERATE_FOR_LINUX);
             solarisModel = installerPropGroup.createToggleButtonModel(propEval, GENERATE_FOR_SOLARIS);
             macModel = installerPropGroup.createToggleButtonModel(propEval, GENERATE_FOR_MAC);
+
+            String osName = System.getProperty("os.name");
+            if(osName.startsWith("Windows") && propEval.getProperty(GENERATE_FOR_WINDOWS) == null) {
+                windowsModel.setSelected(true);
+            }
+            if(osName.equals("Linux") && propEval.getProperty(GENERATE_FOR_LINUX) == null) {
+                linuxModel.setSelected(true);                
+            }
+            if((osName.equals("Solaris") || osName.equals("SunOS")) && propEval.getProperty(GENERATE_FOR_SOLARIS) == null) {
+                solarisModel.setSelected(true);                
+            }
+            if((osName.equals("Mac OS X") || osName.equals("Darwin")) && propEval.getProperty(GENERATE_FOR_MAC) == null) {
+                macModel.setSelected(true);
+                Logger.getLogger(this.getClass().getName()).info("... initializing mac model to true");
+            }
 
             pack200Model = installerPropGroup.createToggleButtonModel(propEval, USE_PACK200_COMPRESSION);
 
