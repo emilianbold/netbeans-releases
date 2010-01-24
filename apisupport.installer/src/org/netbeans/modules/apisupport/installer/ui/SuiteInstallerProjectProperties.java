@@ -34,10 +34,7 @@ public class SuiteInstallerProjectProperties {
     public static final String GENERATE_FOR_SOLARIS = "installer.os.solaris";
     public static final String GENERATE_FOR_MAC = "installer.os.macosx";
     public static final String USE_PACK200_COMPRESSION = "installer.pack200.enabled";
-    public static final String DEFAULT_PATH_WINDOWS = "installer.path.windows";
-    public static final String DEFAULT_PATH_LINUX = "installer.path.linux";
-    public static final String DEFAULT_PATH_SOLARIS = "installer.path.solaris";
-    public static final String DEFAULT_PATH_MAC = "installer.path.macos";
+
     public static final String LICENSE_TYPE = "installer.license.type";
     private StoreGroup installerPropGroup = new StoreGroup();
     private Project suiteProject;
