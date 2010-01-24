@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -297,6 +297,23 @@ public class IntroduceHintTest extends NbTestCase {
                        3, 0);
     }
     
+    public void testFixNewClassTree179766() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void test() {\n" +
+                       "        t(|new Runnable() {\n" +
+                       "            public void run() {\n" +
+                       "                throw new UnsupportedOperationException();\n" +
+                       "            }\n" +
+                       "        }|);\n"+
+                       "    }\n" +
+                       "    private static void t(Runnable r) {}\n" +
+                       "}\n",
+                       "package test; public class Test { public static void test() { Runnable name = new Runnable() { public void run() { throw new UnsupportedOperationException(); } }; t(name); } private static void t(Runnable r) {} } ",
+                       new DialogDisplayerImpl("name", true, false, true),
+                       3, 0);
+    }
+
 //    public void testFix121420() throws Exception {
 //        performFixTest("package test; public class Test {public void test1() {|System.getProperty(\"\")|;} }",
 //                       "package test; public class Test {public void test1() { String name = System.getProperty(\"\");} }",
@@ -583,7 +600,7 @@ public class IntroduceHintTest extends NbTestCase {
                        new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
                        0, 0);
     }
-    
+
     /**
      * Tests adding 'static' kw if some of replaced occurences has been in static context
      * @throws java.lang.Exception
@@ -594,6 +611,23 @@ public class IntroduceHintTest extends NbTestCase {
                        "package test; public class Test { private static int name = 3 + 4; public Test() {int y = name; int z = name;} public Test(int i) {} public static void a() {int y = name;}}",
                        new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_FIELD, true, EnumSet.<Modifier>of(Modifier.PRIVATE, Modifier.STATIC), false, true),
                        4, 2);
+    }
+
+    public void testIntroduceFieldFixNewClassTree179766() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void test() {\n" +
+                       "        t(|new Runnable() {\n" +
+                       "            public void run() {\n" +
+                       "                throw new UnsupportedOperationException();\n" +
+                       "            }\n" +
+                       "        }|);\n"+
+                       "    }\n" +
+                       "    private static void t(Runnable r) {}\n" +
+                       "}",
+                       "package test; public class Test { private static Runnable runnable; public static void test() { t(runnable); } private static void t(Runnable r) {} public Test() { runnable = new Runnable() { public void run() { throw new UnsupportedOperationException(); } }; } }",
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_CONSTRUCTORS, false, EnumSet.<Modifier>of(Modifier.PRIVATE), false, true),
+                       3, 1);
     }
 
     public void testCorrectMethodSelection1() throws Exception {
@@ -974,6 +1008,23 @@ public class IntroduceHintTest extends NbTestCase {
                        3, 2);
     }
     
+    public void testIntroduceMethodFromExpressionNewClassTree179766() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void test() {\n" +
+                       "        t(|new Runnable() {\n" +
+                       "            public void run() {\n" +
+                       "                throw new UnsupportedOperationException();\n" +
+                       "            }\n" +
+                       "        }|);\n"+
+                       "    }\n" +
+                       "    private static void t(Runnable r) {}\n" +
+                       "}\n",
+                       "package test; public class Test { public static void test() { t(name()); } private static Runnable name() { return new Runnable() { public void run() { throw new UnsupportedOperationException(); } }; } private static void t(Runnable r) {} } ",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
+                       3, 2);
+    }
+
 //    public void testIntroduceMethodTooManyExceptions() throws Exception {
 //        performFixTest("package test;\n" +
 //                       "public class Test {\n" +

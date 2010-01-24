@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -186,9 +186,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         for ( ; tp != null; tp = tp.getParentPath()) {
             Tree leaf = tp.getLeaf();
-
-            if (StatementTree.class.isAssignableFrom(leaf.getKind().asInterface()))
-                return null;
 
             if (!ExpressionTree.class.isAssignableFrom(leaf.getKind().asInterface()))
                continue;
@@ -1348,7 +1345,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         return ; //TODO...
                     }
 
-                    tm = Utilities.resolveCapturedType(parameter, tm);
+                    tm = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(parameter, tm));
 
                     //hack: creating a copy of the expression:
                     ExpressionTree expressionCopy = expressionCopy(resolved, parameter);
@@ -1502,7 +1499,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         return ; //TODO...
                     }
 
-                    tm = Utilities.resolveCapturedType(parameter, tm);
+                    tm = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(parameter, tm));
 
                     TreePath pathToClass = resolved;
 
@@ -2002,7 +1999,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         return ; //TODO...
                     }
 
-                    returnType = Utilities.resolveCapturedType(copy, returnType);
+                    returnType = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(copy, returnType));
                     ExpressionTree expressionCopy = expressionCopy(expression,copy);
 
 
