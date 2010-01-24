@@ -257,6 +257,19 @@ if [ $ERROR_CODE != 0 ]; then
 #    exit $ERROR_CODE;
 fi
 
+# Build JavaFX NBMs
+cd javafx
+ant nbms -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dnbm_alias=nb_ide
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build NBMs"
+#    exit $ERROR_CODE;
+fi
+mkdir -p ${DIST}/uc/javafx2
+cp build/updates/*nbm ${DIST}/uc/javafx2/
+cd ..
+
 #Build 110n kit for HG files
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml hg-l10n-kit -Dl10n.kit=${DIST}/zip/hg-l10n-$BUILDNUMBER.zip
 ERROR_CODE=$?
