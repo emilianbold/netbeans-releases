@@ -132,6 +132,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         FileObject propertiesFile = prj.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         Properties ps = new Properties();
                         String appName = "";
+                        String appIcon = null;
                         String licenseType = null;
                         boolean usePack200 = false;
                         try {
@@ -140,6 +141,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                             appName = ps.getProperty("app.name");
                             licenseType = ps.getProperty("installer.license.type");
                             usePack200 = Boolean.parseBoolean(ps.getProperty(SuiteInstallerProjectProperties.USE_PACK200_COMPRESSION));
+                            appIcon = ps.getProperty("app.icon");
                             if (appName == null) {
                                 //suite, not standalone app
                                 RequestProcessor.getDefault().post(new Runnable() {
@@ -327,6 +329,17 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                          */
                         props.put(
                                 "pack200.enabled", "" + usePack200);
+
+                        if(appIcon!=null) {
+                            File appIconFile = new File(appIcon);
+                            if(!appIconFile.equals(appIconFile.getAbsoluteFile())) {
+                                //path is relative to suite directory
+                                appIconFile = new File(suiteLocation, appIcon);
+                            }
+                            props.put(
+                                "nbi.icon.file", appIconFile.getAbsolutePath());
+
+                        }
 
                         /*
                         for (Object s : props.keySet()) {

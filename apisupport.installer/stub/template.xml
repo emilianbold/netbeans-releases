@@ -94,11 +94,23 @@
              </and>
         </condition> 
         <antcall target="-prepare-license"/>
+
+        <condition property="icon.defined">
+             <and>
+                 <isset property="nbi.icon.file"/>
+                 <available file="${nbi.icon.file}"/>
+             </and>
+        </condition> 
+        <antcall target="-prepare-icon"/>
+
         <delete dir="${dir.dir}" includeEmptyDirs="true"/>
     </target>
     
     <target name="-prepare-license" if="license.defined">
-        <copy file="${nbi.license.file}" tofile="${installer.build.dir}/ext/components/products/helloworld/src/org/mycompany/license.txt"/>
+        <copy file="${nbi.license.file}" tofile="${installer.build.dir}/ext/components/products/helloworld/src/org/mycompany/license.txt" overwrite="true"/>
+    </target>
+    <target name="-prepare-icon" if="icon.defined">
+        <copy file="${nbi.icon.file}" tofile="${installer.build.dir}/ext/engine/src/org/mycompany/installer/wizard/wizard-icon.png" overwrite="true"/>
     </target>
     <target name="replace">
         <property file="${token.file}"/>
