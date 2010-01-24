@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 import javax.swing.JToggleButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -89,7 +88,6 @@ public class SuiteInstallerProjectProperties {
             }
             if((osName.equals("Mac OS X") || osName.equals("Darwin")) && propEval.getProperty(GENERATE_FOR_MAC) == null) {
                 macModel.setSelected(true);
-                Logger.getLogger(this.getClass().getName()).info("... initializing mac model to true");
             }
 
             pack200Model = installerPropGroup.createToggleButtonModel(propEval, USE_PACK200_COMPRESSION);
