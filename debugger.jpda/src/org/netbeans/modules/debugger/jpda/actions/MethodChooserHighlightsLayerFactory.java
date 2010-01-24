@@ -36,12 +36,13 @@ import org.netbeans.spi.editor.highlighting.ZOrder;
  *
  * @author Daniel Prusa
  */
-public class HighlightsLayerFactoryImpl implements HighlightsLayerFactory {
+public class MethodChooserHighlightsLayerFactory implements HighlightsLayerFactory {
     
+    @Override
     public HighlightsLayer[] createLayers(Context context) {
         return new HighlightsLayer[] {
-            HighlightsLayer.create(MethodChooser.class.getName(),
-                    ZOrder.TOP_RACK, false, MethodChooser.getHighlightsBag(context.getDocument()))
+            HighlightsLayer.create(MethodSelector.class.getName(),
+                    ZOrder.TOP_RACK, false, MethodSelector.getHighlightsBag(context.getDocument()))
         };
     }
 
