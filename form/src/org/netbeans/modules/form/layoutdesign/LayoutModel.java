@@ -920,7 +920,7 @@ public class LayoutModel implements LayoutConstants {
         int m2 = ((Integer)toMark).intValue();
 
         while (m1 < m2) {
-            Object m = new Integer(m1);
+            Integer m = new Integer(m1);
             undoMap.remove(m);
             redoMap.remove(m);
             m1++;
