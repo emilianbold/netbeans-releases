@@ -188,6 +188,7 @@ public class ModifierEditor extends JPanel implements ExPropertyEditor {
     }
 
     /** Set new value */
+    @Override
     public void setValue(Object object) throws IllegalArgumentException {
         if (object == null) {
             setModifier(0);
@@ -204,30 +205,36 @@ public class ModifierEditor extends JPanel implements ExPropertyEditor {
     /** @return the java source code representation
     * of the current value.
     */
+    @Override
     public String getJavaInitializationString() {
         return new Integer(getModifier()).toString();
     }
 
     /** Get the value */
+    @Override
     public Object getValue() {
         return new Integer(getModifier());
     }
 
     /** @return <CODE>false</CODE> */
+    @Override
     public boolean isPaintable() {
         return false;
     }
 
     /** Does nothing. */
+    @Override
     public void paintValue(Graphics g, Rectangle rectangle) {
     }
 
     /** @return textual representition of current value of the modifiers. */
+    @Override
     public String getAsText() {
         return Modifier.toString(getModifier());
     }
 
     /** Parse the text and sets the modifier editor value */
+    @Override
     public void setAsText(String string) throws IllegalArgumentException {
         int newValue = 0;
         int oldValue = modifier;
@@ -278,16 +285,19 @@ public class ModifierEditor extends JPanel implements ExPropertyEditor {
     }
 
     /** @return <CODE>null</CODE> */
+    @Override
     public String[] getTags() {
         return null;
     }
 
     /** @return <CODE>this</CODE> */
+    @Override
     public Component getCustomEditor() {
         return this;
     }
     
     /** @return <CODE>true</CODE> */
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
@@ -305,6 +315,7 @@ public class ModifierEditor extends JPanel implements ExPropertyEditor {
      * This method is called by the IDE to pass
      * the environment to the property editor.
      */
+    @Override
     public void attachEnv(PropertyEnv env) {
         this.env = env;
         type = env.getFeatureDescriptor().getValue(CUSTOM_EDITOR_TYPE);
