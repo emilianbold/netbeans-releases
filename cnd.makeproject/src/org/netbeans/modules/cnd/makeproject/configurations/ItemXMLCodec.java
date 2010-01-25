@@ -46,7 +46,7 @@ import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
-import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.xml.sax.Attributes;
 
 public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {

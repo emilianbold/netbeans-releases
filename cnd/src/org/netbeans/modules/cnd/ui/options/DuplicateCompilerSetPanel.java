@@ -44,9 +44,9 @@ import java.awt.Dimension;
 import java.util.List;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
@@ -125,14 +125,17 @@ import org.openide.util.NbBundle;
         updateDataName();
     }
     
+    @Override
     public void insertUpdate(DocumentEvent e) {
         handleUpdate(e);
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         handleUpdate(e);
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         //validateData();
     }

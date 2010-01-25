@@ -49,7 +49,6 @@ import java.awt.Color;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -59,11 +58,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Utilities;
@@ -570,9 +569,11 @@ import org.openide.util.Utilities;
     }
 
     // implement DocumentListener
+    @Override
     public void changedUpdate(DocumentEvent ev) {
     }
 
+    @Override
     public void insertUpdate(DocumentEvent ev) {
         boolean userChange = !manager.isUpdatindOrChangingCompilerSet();
         if (userChange) {
@@ -622,10 +623,12 @@ import org.openide.util.Utilities;
         }
     }
 
+    @Override
     public void removeUpdate(DocumentEvent ev) {
         insertUpdate(ev);
     }
 
+    @Override
     public void itemStateChanged(ItemEvent ev) {
         Object o = ev.getSource();
         if (o instanceof JCheckBox) {
@@ -637,7 +640,7 @@ import org.openide.util.Utilities;
 
     private String getToolVersion(Tool tool, JTextField tf) {
         StringBuilder version = new StringBuilder();
-        version.append(tool.getDisplayName() + ": "); // NOI18N
+        version.append(tool.getDisplayName()).append(": "); // NOI18N
         if (isPathFieldValid(tf)) {
             String path = tf.getText();
             if (!IpeUtils.isPathAbsolute(path)) {

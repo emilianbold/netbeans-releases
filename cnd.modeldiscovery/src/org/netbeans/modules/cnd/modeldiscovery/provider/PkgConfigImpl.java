@@ -52,12 +52,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.RemoteFile;
-import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
@@ -193,10 +193,12 @@ public class PkgConfigImpl implements PkgConfig {
         }
     }
 
+    @Override
     public PackageConfiguration getPkgConfig(String pkg) {
         return getConfig(pkg);
     }
 
+    @Override
     public ResolvedPath getResolvedPath(String include) {
         Map<String, List<Pair>> map = getLibraryItems();
         List<Pair> pairs = map.get(include);
@@ -481,8 +483,8 @@ public class PkgConfigImpl implements PkgConfig {
                             pc.macros.add(v.substring(2));
                         }
                     }
-                } else if (line.indexOf("=")>0){ // NOI18N
-                    int i = line.indexOf("="); // NOI18N
+                } else if (line.indexOf('=')>0){ // NOI18N
+                    int i = line.indexOf('='); // NOI18N
                     String name = line.substring(0, i).trim();
                     String value = line.substring(i+1).trim();
                     if (isWindows && name.equals("prefix")) { // NOI18N
@@ -557,7 +559,7 @@ public class PkgConfigImpl implements PkgConfig {
         if (value.indexOf("${")>=0) { // NOI18N
             while(value.indexOf("${")>=0) { // NOI18N
                 int i = value.indexOf("${"); // NOI18N
-                int j = value.indexOf("}"); // NOI18N
+                int j = value.indexOf('}'); // NOI18N
                 if (j < i) {
                     break;
                 }
@@ -582,14 +584,17 @@ public class PkgConfigImpl implements PkgConfig {
             this.name = name;
         }
 
+        @Override
         public Collection<String> getIncludePaths() {
             return new ArrayList<String>(paths);
         }
 
+        @Override
         public Collection<String> getMacros() {
             return new ArrayList<String>(macros);
         }
 
+        @Override
         public String getName() {
             return name;
         }
@@ -603,10 +608,12 @@ public class PkgConfigImpl implements PkgConfig {
             this.packages = packages;
         }
 
+        @Override
         public String getIncludePath() {
             return path;
         }
 
+        @Override
         public Collection<PackageConfiguration> getPackages() {
             List<PackageConfiguration> res = new ArrayList<PackageConfiguration>(packages.size());
             for(PackageConfiguration pc : packages){

@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.cnd.discovery.projectimport;
 
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;

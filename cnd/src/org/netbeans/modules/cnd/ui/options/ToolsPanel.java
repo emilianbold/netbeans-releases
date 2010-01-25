@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -67,8 +68,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -226,10 +227,12 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         updating = true;
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         RequestProcessor.getDefault().post(new Runnable(){
+            @Override
             public void run() {
                 csm.add(cs);
                 changed = true;
                 SwingUtilities.invokeLater(new Runnable(){
+                    @Override
                     public void run() {
                         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                         update(false, cs, null);
@@ -347,9 +350,11 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         if (!initialized || doInitialize) {
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             RequestProcessor.getDefault().post(new Runnable(){
+                @Override
                 public void run() {
                      initializeLong();
                      SwingUtilities.invokeLater(new Runnable(){
+                        @Override
                         public void run() {
                             initializeUI();
                             updateUI(doInitialize, selectedCS, errs);
@@ -502,7 +507,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     }
 
     private boolean dataValid(List<String> errs) {
-        if (csm.getCompilerSets().size() == 0) {
+        if (csm.getCompilerSets().isEmpty()) {
             if (valid != ValidState.INVALID) {
                 valid = ValidState.INVALID;
                 firePropertyChange(PROP_VALID, true, false);
@@ -582,7 +587,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         this.changed = changed;
     }
 
-    static Set<ChangeListener> listenerChanged = new HashSet<ChangeListener>();
+    private static Set<ChangeListener> listenerChanged = new HashSet<ChangeListener>();
 
     public static void addCompilerSetChangeListener(ChangeListener l) {
         listenerChanged.add(l);
@@ -648,6 +653,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     }
 
     // implement ActionListener
+    @Override
     public void actionPerformed(ActionEvent e) {
         Object o = e.getSource();
 
@@ -667,6 +673,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     }
 
     // implemet ItemListener
+    @Override
     public void itemStateChanged(ItemEvent ev) {
         Object o = ev.getSource();
         if (!updating) {
@@ -677,6 +684,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     }
 
     // Implement List SelectionListener
+    @Override
     public void valueChanged(ListSelectionEvent ev) {
 
         if (!ev.getValueIsAdjusting() && !updating) { // we don't want the event until its finished
@@ -697,13 +705,13 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             cbDevHost.removeItemListener(this);
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");
             cbDevHost.removeAllItems();
-            log.fine("TP.editDevHosts: Adding " + cacheManager.getHosts().size() + " items to cbDevHost");
+            log.log(Level.FINE, "TP.editDevHosts: Adding {0} items to cbDevHost", cacheManager.getHosts().size());
             for (ServerRecord rec : cacheManager.getHosts()) {
-                log.fine("    Adding " + rec);
+                log.log(Level.FINE, "    Adding {0}", rec);
                 cbDevHost.addItem(rec);
             }
-            log.fine("TP.editDevHosts: cbDevHost has " + cbDevHost.getItemCount() + " items");
-            log.fine("TP.editDevHosts: getDefaultHostRecord returns " + cacheManager.getDefaultHostRecord());
+            log.log(Level.FINE, "TP.editDevHosts: cbDevHost has {0} items", cbDevHost.getItemCount());
+            log.log(Level.FINE, "TP.editDevHosts: getDefaultHostRecord returns {0}", cacheManager.getDefaultHostRecord());
             cbDevHost.setSelectedItem(cacheManager.getDefaultHostRecord());
             cacheManager.ensureHostSetup(getSelectedRecord().getExecutionEnvironment());
             cbDevHost.addItemListener(this);
@@ -962,9 +970,11 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     RequestProcessor.getDefault().post(new Runnable() {
 
+            @Override
         public void run() {
             String versions = getToolCollectionPanel().getVersion(set);
             SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                 public void run() {
                     btVersions.setEnabled(true);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -1030,6 +1040,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     final AtomicBoolean cancelled = new AtomicBoolean(false);
     Runnable longTask = new Runnable() {
 
+            @Override
         public void run() {
             log.finest("Restoring defaults\n");
             ServerRecord record = ServerList.get(execEnv);
@@ -1100,6 +1111,7 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     };
     Runnable postWork = new Runnable() {
 
+            @Override
         public void run() {
             if (!cancelled.get()) {
                 changed = true;

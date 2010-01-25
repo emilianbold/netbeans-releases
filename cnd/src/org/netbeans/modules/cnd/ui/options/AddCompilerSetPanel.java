@@ -53,12 +53,11 @@ import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.DialogDescriptor;
 import org.openide.util.Exceptions;
@@ -73,8 +72,8 @@ import org.openide.util.NbBundle;
     private DialogDescriptor dialogDescriptor = null;
     private final CompilerSetManager csm;
     private final boolean local;
-    private final String lock = new String("lockForCompilersFound");//NOI18N
-    private final String remoteCompilerCheckExecutorLock = new String("remoteCompilerCheckExecutorLock");//NOI18N
+    private final Object lock = new Object();
+    private final Object remoteCompilerCheckExecutorLock = new Object();
     private ExecutorService remoteCompilerCheckExecutor;
 
     /** Creates new form AddCompilerSetPanel */
@@ -111,6 +110,7 @@ import org.openide.util.NbBundle;
             if (remoteCompilerCheckExecutor != null) {
                 AccessController.doPrivileged(new PrivilegedAction<Object>() {
 
+                    @Override
                     public Object run() {
                         return remoteCompilerCheckExecutor.shutdownNow();
                     }
@@ -152,6 +152,7 @@ import org.openide.util.NbBundle;
                 tfBaseDirectory.setEnabled(false);
                 btBaseDirectory.setEnabled(false);
                 final Runnable enabler = new Runnable() {
+                    @Override
                     public void run() {
                         tfBaseDirectory.setEnabled(true);
                         btBaseDirectory.setEnabled(true);
@@ -162,6 +163,7 @@ import org.openide.util.NbBundle;
                     if (remoteCompilerCheckExecutor != null) {
                         AccessController.doPrivileged(new PrivilegedAction<Object>() {
 
+                            @Override
                             public Object run() {
                                 return remoteCompilerCheckExecutor.shutdownNow();
                             }
@@ -172,6 +174,7 @@ import org.openide.util.NbBundle;
                 }
                 remoteCompilerCheckExecutor.submit(new Runnable() {
 
+                    @Override
                     public void run() {
                         if (!checkConnection()) {
                             SwingUtilities.invokeLater(enabler);
@@ -187,6 +190,7 @@ import org.openide.util.NbBundle;
                             return;
                         }
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 enabler.run();
                                 if (css.size() > 0) {
@@ -290,14 +294,17 @@ import org.openide.util.NbBundle;
         }
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         handleUpdate(e);
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         handleUpdate(e);
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         //validateData();
     }

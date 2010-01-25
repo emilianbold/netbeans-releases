@@ -40,7 +40,7 @@ package org.netbeans.modules.cnd.gizmo;
 
 import java.util.Map;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
@@ -59,6 +59,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CppSymbolDemanglerFactory.class)
 public final class CppSymbolDemanglerFactoryImpl implements CppSymbolDemanglerFactory {
 
+    @Override
     public CppSymbolDemangler getForCurrentSession(Map<String, String> serviceInfo) {
         if (serviceInfo == null ||
                 serviceInfo.get(GizmoServiceInfo.CPP_COMPILER) == null ||
@@ -101,6 +102,7 @@ public final class CppSymbolDemanglerFactoryImpl implements CppSymbolDemanglerFa
         }
     }
 
+    @Override
     public CppSymbolDemangler getDemanglerFor(CPPCompiler cppCompiler) {
         return new CppSymbolDemanglerImpl(ExecutionEnvironmentFactory.getLocal(), cppCompiler, null);
     }

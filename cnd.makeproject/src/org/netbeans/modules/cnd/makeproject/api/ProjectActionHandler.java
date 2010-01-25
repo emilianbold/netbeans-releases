@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api;
 
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.openide.windows.InputOutput;
 
 /**

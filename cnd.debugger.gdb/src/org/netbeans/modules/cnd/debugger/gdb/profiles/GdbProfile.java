@@ -47,11 +47,11 @@ import java.io.File;
 import java.util.ArrayList;
 import org.netbeans.modules.cnd.actions.BuildToolsAction;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.PropertySupport;
 

@@ -49,8 +49,8 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.ui.options.DownloadUtils;
 import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
@@ -80,6 +80,7 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
         title = NbBundle.getMessage(BuildToolsAction.class, "LBL_BuildToolsTitle"); // NOI18N
     }
     
+    @Override
     public String getName() {
         return name;
     }
@@ -96,10 +97,12 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
         this.title = title;
     }
     
+    @Override
     public void performAction() {
         initBuildTools(new LocalToolsPanelModel(), new ArrayList<String>(), null);
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent ev) {
         if (ev.getPropertyName().equals(ToolsPanel.PROP_VALID) &&
                 ev.getSource() instanceof ToolsPanel) {

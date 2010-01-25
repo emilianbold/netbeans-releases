@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.ui.options;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultListModel;
-import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 
 /**
  * Manage a JList with both add and remove lists.

@@ -47,7 +47,7 @@ import java.io.InputStreamReader;
 
 import java.util.StringTokenizer;
 import java.io.File;
-import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.nativeexecution.api.util.Path;
 
 public class CtagsParser {
     // Whether or not using Exuberant ctags
