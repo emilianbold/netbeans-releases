@@ -74,18 +74,22 @@ final class DefaultCodeExpression implements CodeExpression {
 
     // -------
 
+    @Override
     public CodeStructure getCodeStructure() {
         return codeStructure;
     }
 
+    @Override
     public CodeVariable getVariable() {
         return codeStructure.getVariable(this);
     }
 
+    @Override
     public CodeExpressionOrigin getOrigin() {
         return expressionOrigin;
     }
 
+    @Override
     public void setOrigin(CodeExpressionOrigin newOrigin) {
         CodeExpressionOrigin oldOrigin = expressionOrigin;
         if (oldOrigin == newOrigin)
@@ -168,6 +172,7 @@ final class DefaultCodeExpression implements CodeExpression {
     // UsedCodeObject implementation - registering objects that use
     // this expression
 
+    @Override
     public void addUsingObject(UsingCodeObject usingObject,
                                int useType,
                                Object useCategory)
@@ -182,6 +187,7 @@ final class DefaultCodeExpression implements CodeExpression {
             codeStructure.logUndoableChange(undoableChange);
     }
 
+    @Override
     public boolean removeUsingObject(UsingCodeObject usingObject) {
         CodeStructureChange undoableChange =
                 getExpressionUsage().removeUsingObject(
@@ -196,6 +202,7 @@ final class DefaultCodeExpression implements CodeExpression {
         return stillUsed;
     }
 
+    @Override
     public Iterator getUsingObjectsIterator(int useType, Object useCategory) {
         return getExpressionUsage().getUsingObjectsIterator(useType, useCategory);
     }
@@ -210,10 +217,12 @@ final class DefaultCodeExpression implements CodeExpression {
     // UsingCodeObject implementation - handling objects used by this expression
 
     // notifying about registering this object in used object
+    @Override
     public void usageRegistered(UsedCodeObject usedObject) {
     }
 
     // notifying about removing the used object from structure
+    @Override
     public boolean usedObjectRemoved(UsedCodeObject usedObject) {
 //        if (!(usedObject instanceof CodeExpression))
 //            return true;
@@ -222,10 +231,12 @@ final class DefaultCodeExpression implements CodeExpression {
         return false;
     }
 
+    @Override
     public UsedCodeObject getDefiningObject() {
         return getOrigin().getParentExpression();
     }
 
+    @Override
     public Iterator getUsedObjectsIterator() {
         return new UsedObjectsIterator();
     }
@@ -243,10 +254,12 @@ final class DefaultCodeExpression implements CodeExpression {
             this.newOrigin = newOrigin;
         }
 
+        @Override
         public void undo() {
             expressionOrigin = oldOrigin;
         }
 
+        @Override
         public void redo() {
             expressionOrigin = newOrigin;
         }
@@ -265,10 +278,12 @@ final class DefaultCodeExpression implements CodeExpression {
                 parameters = CodeStructure.EMPTY_PARAMS;
         }
 
+        @Override
         public boolean hasNext() {
             return index < parameters.length;
         }
 
+        @Override
         public Object next() {
             if (!hasNext())
                 throw new java.util.NoSuchElementException();
@@ -279,6 +294,7 @@ final class DefaultCodeExpression implements CodeExpression {
             return obj;
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
