@@ -284,7 +284,7 @@ public class FormCodeSupport {
             if (component == component.getFormModel().getTopRADComponent())
                 return "this"; // NOI18N
 
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
 
             buf.append("new "); // NOI18N
             buf.append(component.getBeanClass().getName().replace('&','.')); // NOI18N
