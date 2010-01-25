@@ -193,6 +193,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         insertSColBtn.setToolTipText(bundle.getString("CTL_HINT_InsertColumn")); // NOI18N
         buttonsPanel.add(insertSColBtn);
         insertSColBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 insertColumn();
             }
@@ -203,6 +204,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         deleteSColBtn.setToolTipText(bundle.getString("CTL_HINT_DeleteColumn")); // NOI18N
         buttonsPanel.add(deleteSColBtn);
         deleteSColBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 removeColumn();
             }
@@ -213,6 +215,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         moveSColUpBtn.setToolTipText(bundle.getString("CTL_HINT_MoveColumnUp")); // NOI18N
         buttonsPanel.add(moveSColUpBtn);
         moveSColUpBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 moveColumnLeft();
             }
@@ -223,6 +226,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         moveSColDownBtn.setToolTipText(bundle.getString("CTL_HINT_MoveColumnDown")); // NOI18N
         buttonsPanel.add(moveSColDownBtn);
         moveSColDownBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 moveColumnRight();
             }
@@ -288,6 +292,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         insertColBtn.setToolTipText(bundle.getString("CTL_HINT_InsertColumn")); // NOI18N
         colButtonsPanel.add(insertColBtn);
         insertColBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 insertColumn();
             }
@@ -298,6 +303,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         deleteColBtn.setToolTipText(bundle.getString("CTL_HINT_DeleteColumn")); // NOI18N
         colButtonsPanel.add(deleteColBtn);
         deleteColBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 removeColumn();
             }
@@ -308,6 +314,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         moveColLeftBtn.setToolTipText(bundle.getString("CTL_HINT_MoveColumnLeft")); // NOI18N
         colButtonsPanel.add(moveColLeftBtn);
         moveColLeftBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 moveColumnLeft();
             }
@@ -318,6 +325,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         moveColRightBtn.setToolTipText(bundle.getString("CTL_HINT_MoveColumnRight")); // NOI18N
         colButtonsPanel.add(moveColRightBtn);
         moveColRightBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 moveColumnRight();
             }
@@ -344,6 +352,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         insertRowBtn.setToolTipText(bundle.getString("CTL_HINT_InsertRow")); // NOI18N
         rowButtonsPanel.add(insertRowBtn);
         insertRowBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 insertRow();
             }
@@ -354,6 +363,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         deleteRowBtn.setToolTipText(bundle.getString("CTL_HINT_DeleteRow")); // NOI18N
         rowButtonsPanel.add(deleteRowBtn);
         deleteRowBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 removeRow();
             }
@@ -364,6 +374,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         moveRowUpBtn.setToolTipText(bundle.getString("CTL_HINT_MoveRowUp")); // NOI18N
         rowButtonsPanel.add(moveRowUpBtn);
         moveRowUpBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 moveRowUp();
             }
@@ -374,6 +385,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         moveRowDownBtn.setToolTipText(bundle.getString("CTL_HINT_MoveRowDown")); // NOI18N
         rowButtonsPanel.add(moveRowDownBtn);
         moveRowDownBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 moveRowDown();
             }
@@ -421,6 +433,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         gridBagConstraints1.insets = new java.awt.Insets(0, 4, 0, 0);
         sizePanel.add(addRowBtn, gridBagConstraints1);
         addRowBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 addRow();
             }
@@ -437,6 +450,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         sizePanel.add(removeRowBtn, gridBagConstraints1);
         removeRowBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 removeLastRow();
             }
@@ -469,6 +483,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         gridBagConstraints1.insets = new java.awt.Insets(0, 4, 0, 0);
         sizePanel.add(addColBtn, gridBagConstraints1);
         addColBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 addColumn();
             }
@@ -485,6 +500,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         sizePanel.add(removeColBtn, gridBagConstraints1);
         removeColBtn.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 removeLastColumn();
             }
@@ -510,6 +526,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
             }
         });
         rowsField.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 updateRows(rowsField.getText());
             }
@@ -521,6 +538,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
             }
         });
         columnsField.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 updateColumns(columnsField.getText());
             }
@@ -532,6 +550,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
 
         // listen to changes in the settings table - update the default-values table
         titleModel.addTableModelListener(new TableModelListener() {
+            @Override
             public void tableChanged(TableModelEvent evt) {
                 if (evt.getType() == TableModelEvent.UPDATE) {
                     int selRow = defaultValuesTable.getSelectedRow(),
@@ -545,6 +564,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         });
 
         model.addTableModelListener(new TableModelListener() {
+            @Override
             public void tableChanged(TableModelEvent evt) {
                 if (evt.getType() != TableModelEvent.UPDATE)
                     enableButtons();
@@ -553,10 +573,13 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
 
         // listen to default table's ColumnModel and change column order when user does it visually
         defaultValuesTable.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+            @Override
             public void columnAdded(TableColumnModelEvent e) {
             }
+            @Override
             public void columnRemoved(TableColumnModelEvent e) {
             }
+            @Override
             public void columnMoved(TableColumnModelEvent e) {
                 int fromI = e.getFromIndex(),
                     toI = e.getToIndex();
@@ -567,8 +590,10 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
                     defSelectedColumn = defaultValuesTable.getSelectedColumn();
                 }
             }
+            @Override
             public void columnMarginChanged(ChangeEvent e) {
             }
+            @Override
             public void columnSelectionChanged(ListSelectionEvent e) {
             }
         });
@@ -957,6 +982,7 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
         isChangingTableModel = false;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())
                 && evt.getNewValue() == PropertyEnv.STATE_VALID) {
@@ -969,12 +995,14 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
     // -------------------------------------------------------------------------
     
     private class SelectionListener implements ListSelectionListener {
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             enableButtons();
         }
     }
 
     private class TabChangeListener implements ChangeListener {
+        @Override
         public void stateChanged(ChangeEvent e) {
             enableButtons();
         }
@@ -1042,9 +1070,11 @@ public class CustomTableModelEditor extends JPanel implements PropertyChangeList
                 Component editorComponent = defaultEditor.getComponent();                
                 if(editorComponent instanceof JTextField) {
                     editorComponent.addFocusListener(new FocusListener() {                        
+                        @Override
                         public void focusLost(FocusEvent e) {                    
                             defaultEditor.stopCellEditing();                
                         }
+                        @Override
                         public void focusGained(FocusEvent e) {}
                     });                  
                 }
