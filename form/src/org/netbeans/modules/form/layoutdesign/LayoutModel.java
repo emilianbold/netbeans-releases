@@ -1041,7 +1041,7 @@ public class LayoutModel implements LayoutConstants {
                 rootId = idToNameMap.get(rootId);
             }
             if (rootId != null)
-                sb.append("  <Root id=\""+rootId+"\">\n"); // NOI18N
+                sb.append("  <Root id=\"").append(rootId).append("\">\n"); // NOI18N
             else
                 sb.append("  <Root>\n"); // NOI18N
             sb.append(saveContainerLayout(root, idToNameMap, 2, true));
