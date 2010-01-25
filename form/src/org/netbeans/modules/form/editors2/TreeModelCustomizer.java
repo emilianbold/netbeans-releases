@@ -70,12 +70,15 @@ public class TreeModelCustomizer extends javax.swing.JPanel {
             expandTree();
         }
         textArea.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 updateTree();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 updateTree();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 updateTree();
             }

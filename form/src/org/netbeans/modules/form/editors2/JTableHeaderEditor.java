@@ -75,6 +75,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
      * 
      * @return diaplay name of this property editor.
      */
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(getClass(), "TableHeaderEditor"); // NOI18N
     }
@@ -85,6 +86,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
      * @param formModel form model.
      * @param property property being edited.
      */
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         this.property = property;
     }
@@ -92,6 +94,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
     /**
      * Raise form version to 6.0 - this editor is available since NB 6.0.
      */
+    @Override
     public void updateFormVersionLevel() {
         property.getPropertyContext().getFormModel()
                 .raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
@@ -236,6 +239,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
         reorderingCheckBox.setSelected(reordering);
     }
     
+    @Override
     public String getSourceCode() {
         RADProperty property = (RADProperty)this.property;
         RADComponent comp = property.getRADComponent();
@@ -269,6 +273,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
     private static final String ATTR_RESIZING = "resizingAllowed"; // NOI18N
     private static final String ATTR_REORDERING = "reorderingAllowed"; // NOI18N
 
+    @Override
     public void readFromXML(Node element) throws IOException {
         org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
         Node node = attributes.getNamedItem(ATTR_RESIZING);
@@ -284,6 +289,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
         setValue(new FormTableHeader(property, resizing, reordering));
     }
 
+    @Override
     public Node storeToXML(Document doc) {
         Object value = getValue();
         org.w3c.dom.Element el = null;
@@ -321,6 +327,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
             return reorderingAllowed;
         }
         
+        @Override
         public Object getDesignValue() {
             Object value = null;
             try {

@@ -479,7 +479,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
         while (st.hasMoreTokens()) {
             items.add(st.nextToken());
         }
-        if (items.size() == 0) {
+        if (items.isEmpty()) {
             items.add(""); // NOI18N
         }
         return items;
@@ -1658,6 +1658,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
     /** Value denoting now (date value). */
     private static final String VALUE_NOW = "now"; // NOI18N
 
+    @Override
     public void readFromXML(Node element) throws IOException {
         org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
         String type = attributes.getNamedItem(ATTR_TYPE).getNodeValue();
@@ -1674,6 +1675,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
         setValue(value);
     }
 
+    @Override
     public Node storeToXML(Document doc) {
         org.w3c.dom.Element el = doc.createElement(XML_SPINNER_MODEL);
         Object value = getValue();
@@ -1868,6 +1870,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
      * 
      * @return diaplay name of this property editor.
      */
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(getClass(), "SpinnerModelEditor"); // NOI18N
     }
@@ -1878,6 +1881,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
      * @param formModel form model.
      * @param property property being edited.
      */
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         this.property = property;
     }
@@ -1885,6 +1889,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
     /**
      * Raise form version to 6.0 - this editor is available since NB 6.0.
      */
+    @Override
     public void updateFormVersionLevel() {
         property.getPropertyContext().getFormModel()
                 .raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
@@ -1999,6 +2004,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
          * 
          * @return design value.
          */
+        @Override
         public SpinnerModel getDesignValue() {
             return model;
         }

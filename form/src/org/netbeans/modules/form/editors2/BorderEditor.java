@@ -104,11 +104,13 @@ public final class BorderEditor extends PropertyEditorSupport
     }
 
     // FormAwareEditor implementation
+    @Override
     public void setContext(FormModel model, FormProperty property) {
         propertyContext = new FormPropertyContext.SubProperty(property);
     }
 
     // FormAwareEditor implementation
+    @Override
     public void updateFormVersionLevel() {
     }
 
@@ -208,6 +210,7 @@ public final class BorderEditor extends PropertyEditorSupport
     // NamedPropertyEditor implementation
 
     /** @return display name of the property editor */
+    @Override
     public String getDisplayName() {
         return getBundle().getString("CTL_BorderEditor_DisplayName"); // NOI18N
     }
@@ -290,6 +293,7 @@ public final class BorderEditor extends PropertyEditorSupport
         public void addNotify() {
             super.addNotify();       
             EventQueue.invokeLater(new Runnable(){
+                @Override
                 public void run() {
                     try {					
                         getExplorerManager().setSelectedNodes(new Node[] { selectNode });
@@ -356,6 +360,7 @@ public final class BorderEditor extends PropertyEditorSupport
             Node[] bordersArray = new Node[bordersList.size()];
             bordersList.toArray(bordersArray);
             Arrays.sort(bordersArray, new Comparator<Node>() {
+                @Override
                 public int compare(Node n1, Node n2) {
                     return n1.getDisplayName().compareTo(
                              n2.getDisplayName());
@@ -373,6 +378,7 @@ public final class BorderEditor extends PropertyEditorSupport
         }
         
         // track changes in nodes selection
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 Node[] nodes = (Node[]) evt.getNewValue();
@@ -389,6 +395,7 @@ public final class BorderEditor extends PropertyEditorSupport
         }
 
         // only one border can be selected
+        @Override
         public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 Node[] nodes =(Node[]) evt.getNewValue();
@@ -402,6 +409,7 @@ public final class BorderEditor extends PropertyEditorSupport
             return new Dimension(360, 440);
         }
         
+        @Override
         public ExplorerManager getExplorerManager() {
             return manager;
         }
@@ -437,6 +445,7 @@ public final class BorderEditor extends PropertyEditorSupport
             return nodeBorder;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             // update the border
             updateBorder(this);
@@ -492,6 +501,7 @@ public final class BorderEditor extends PropertyEditorSupport
      * @return the XML DOM element representing a subtree of XML from which
                the value should be loaded
      */
+    @Override
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         Object value = getValue();
         if ((value instanceof BorderDesignSupport || value instanceof Border)
@@ -541,6 +551,7 @@ public final class BorderEditor extends PropertyEditorSupport
      * @exception IOException thrown when the value cannot be restored from
                   the specified XML element
      */
+    @Override
     public void readFromXML(org.w3c.dom.Node element) throws IOException {
         if ( !XML_BORDER.equals(element.getNodeName()) )
 	{
@@ -1342,6 +1353,7 @@ public final class BorderEditor extends PropertyEditorSupport
         }
     }
 
+    @Override
     public boolean valueIsBeanProperty() {
 	return !isSupportedBorder();
     }
@@ -1363,6 +1375,7 @@ public final class BorderEditor extends PropertyEditorSupport
             || borderClass.isAssignableFrom(MatteBorder.class);                
     }
 
+    @Override
     public Node.Property[] getProperties() {
         Object value = getValue();
 	if ((value == null) || (value instanceof javax.swing.plaf.UIResource)) {
@@ -1372,6 +1385,7 @@ public final class BorderEditor extends PropertyEditorSupport
 	return borderSupport.getProperties();
     }
 
+    @Override
     public void intializeFromType(Class type) throws Exception {
 	borderSupport = new BorderDesignSupport(type);
 	borderSupport.setPropertyContext(propertyContext);
