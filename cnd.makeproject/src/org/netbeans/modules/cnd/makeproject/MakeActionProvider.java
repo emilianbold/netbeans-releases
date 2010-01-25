@@ -59,7 +59,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.actions.BuildToolsAction;
+import org.netbeans.modules.cnd.toolchain.actions.BuildToolsAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
@@ -101,10 +101,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ValidateInstrumentationProvider;
-import org.netbeans.modules.cnd.settings.CppSettings;
-import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
-import org.netbeans.modules.cnd.ui.options.ToolsPanel;
-import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
+import org.netbeans.modules.cnd.toolchain.ui.options.LocalToolsPanelModel;
+import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
+import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanelModel;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -159,13 +158,13 @@ public class MakeActionProvider implements ActionProvider {
         COMMAND_CUSTOM_ACTION,     };
 
     // Project
-    MakeProject project;
+    private MakeProject project;
 
     // Project Descriptor
-    MakeConfigurationDescriptor projectDescriptor = null;
+    private MakeConfigurationDescriptor projectDescriptor = null;
     /** Map from commands to ant targets */
-    Map<String, String[]> commands;
-    Map<String, String[]> commandsNoBuild;
+    private Map<String, String[]> commands;
+    private Map<String, String[]> commandsNoBuild;
     private boolean lastValidation = false;
 
     private static final String SAVE_STEP = "save"; // NOI18N
@@ -564,7 +563,7 @@ public class MakeActionProvider implements ActionProvider {
                             extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DYLD_LIBRARY_PATH"); // NOI18N
                             }
                         if (extPath != null) {
-                            path.append(":" + extPath); // NOI18N
+                            path.append(":").append(extPath); // NOI18N
                             }
                         runProfile.getEnvironment().putenv("DYLD_LIBRARY_PATH", path.toString()); // NOI18N
                         }
@@ -592,7 +591,7 @@ public class MakeActionProvider implements ActionProvider {
                             extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
                         }
                         if (extPath != null) {
-                            path.append(":" + extPath); // NOI18N
+                            path.append(":").append(extPath); // NOI18N
                         }
                         runProfile.getEnvironment().putenv("LD_LIBRARY_PATH", path.toString()); // NOI18N
                     }
@@ -1201,7 +1200,7 @@ public class MakeActionProvider implements ActionProvider {
                 model.setEnableRequiredCompilerCB(conf.isMakefileConfiguration());
                 if (bt.initBuildTools(model, errs, cs) && pd.okToChange()) {
                     String name = model.getSelectedCompilerSetName();
-                    CppSettings.getDefault().setCompilerSetName(name);
+                    ToolsPanelModel.resetCompilerSetName(name);
                     conf.getCRequired().setValue(model.isCRequired());
                     conf.getCppRequired().setValue(model.isCppRequired());
                     conf.getFortranRequired().setValue(model.isFortranRequired());
@@ -1259,7 +1258,7 @@ public class MakeActionProvider implements ActionProvider {
     private boolean validatePackaging(MakeConfiguration conf) {
         String errormsg = null;
 
-        if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
+        if (conf.getPackagingConfiguration().getFiles().getValue().isEmpty()) {
             errormsg = getString("ERR_EMPTY_PACKAGE");
         }
 
@@ -1289,7 +1288,7 @@ public class MakeActionProvider implements ActionProvider {
 
         if (errormsg != null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-            if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
+            if (conf.getPackagingConfiguration().getFiles().getValue().isEmpty()) {
                 MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
                 if (makeCustomizerProvider != null) {
                     makeCustomizerProvider.showCustomizer("Packaging"); // NOI18N

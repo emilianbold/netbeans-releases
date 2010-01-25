@@ -40,9 +40,7 @@
  */
 
 
-package org.netbeans.modules.cnd.ui.options;
-
-import org.netbeans.modules.cnd.settings.CppSettings;
+package org.netbeans.modules.cnd.toolchain.ui.options;
 
 /** Manage the data for the ToolsPanel */
 public class LocalToolsPanelModel extends ToolsPanelModel {
@@ -93,13 +91,15 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
 //        // gdbEnabled = enabled;
 //    }
     
+    @Override
     public void setCompilerSetName(String name) {
         compilerSetName = name;
     }
     
+    @Override
     public String getCompilerSetName() {
         if (compilerSetName == null) {
-            compilerSetName = CppSettings.getDefault().getCompilerSetName();
+            compilerSetName = super.getCompilerSetName();
         }
         return compilerSetName;
     }
@@ -161,70 +161,87 @@ public class LocalToolsPanelModel extends ToolsPanelModel {
 //        this.gdbPath = gdbPath;
 //    }
     
+    @Override
     public boolean isMakeRequired() {
         return makeRequired;
     }
     
+    @Override
     public void setMakeRequired(boolean enabled) {
         makeRequired = enabled;
     }
     
+    @Override
     public boolean isDebuggerRequired() {
         return gdbRequired;
     }
     
+    @Override
     public void setDebuggerRequired(boolean enabled) {
         gdbRequired = enabled;
     }
     
+    @Override
     public boolean isCRequired() {
         return cRequired;
     }
     
+    @Override
     public void setCRequired(boolean enabled) {
         cRequired = enabled;
     }
     
+    @Override
     public boolean isCppRequired() {
         return cppRequired;
     }
     
+    @Override
     public void setCppRequired(boolean enabled) {
         cppRequired = enabled;
     }
     
+    @Override
     public boolean isFortranRequired() {
         return fortranRequired;
     }
     
+    @Override
     public void setFortranRequired(boolean enabled) {
         fortranRequired = enabled;
     }
 
+    @Override
     public boolean isAsRequired() {
         return asRequired;
     }
 
+    @Override
     public void setAsRequired(boolean enabled) {
         asRequired = enabled;
     }
     
+    @Override
     public boolean showRequiredTools() {
         return true;
     }
     
+    @Override
     public void setShowRequiredBuildTools(boolean enabled) {
         showBuildTools = enabled;
     }
     
+    @Override
     public boolean showRequiredBuildTools() {
         return showBuildTools;
     }
     
+    @Override
     public void setShowRequiredDebugTools(boolean enabled) {
         showDebugTools = enabled;
     }
     
+    @Override
     public boolean showRequiredDebugTools() {
         return showDebugTools;
     }

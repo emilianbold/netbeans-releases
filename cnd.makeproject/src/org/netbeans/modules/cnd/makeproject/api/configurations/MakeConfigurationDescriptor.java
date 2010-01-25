@@ -78,11 +78,10 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.ui.options.ToolsPanel;
+import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -133,6 +132,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     /*
      * Called when project is being closed
      */
+    @Override
     public void closed() {
         ToolsPanel.removeCompilerSetModifiedListener(this);
         for (Item item : getProjectItems()) {
@@ -199,6 +199,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
      * One of the compiler sets have changed.
      * Mark project modified. This will trigger all makefiles to be regenerated.
      */
+    @Override
     public void stateChanged(ChangeEvent e) {
         setModified();
     }
@@ -332,6 +333,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
     }
 
+    @Override
     public String getBaseDir() {
         return baseDir;
     }
@@ -352,10 +354,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         super.init(confs, 0);
     }
 
+    @Override
     public Icon getIcon() {
         return MAKEFILE_ICON;
     }
 
+    @Override
     public Configuration defaultConf(String name, int type) {
         MakeConfiguration c = new MakeConfiguration(this, name, type);
         Item[] items = getProjectItems();
@@ -504,6 +508,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         MakeLogicalViewProvider.checkForChangedViewItemNodes(project, folder, item);
     }
 
+    @Override
     public void copyFromProjectDescriptor(ConfigurationDescriptor copyProjectDescriptor) {
         MakeConfigurationDescriptor copyExtProjectDescriptor = (MakeConfigurationDescriptor) copyProjectDescriptor;
         setConfs(copyExtProjectDescriptor.getConfs());
@@ -516,6 +521,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setSourceRoots(((MakeConfigurationDescriptor) copyProjectDescriptor).getSourceRootsRaw());
     }
 
+    @Override
     public void assign(ConfigurationDescriptor clonedConfigurationDescriptor) {
         Configuration[] clonedConfs = clonedConfigurationDescriptor.getConfs().getConfs();
         Configuration[] newConfs = new Configuration[clonedConfs.length];
@@ -539,6 +545,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         setFolderVisibilityQuery(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getFolderVisibilityQuery().getRegEx());
     }
 
+    @Override
     public ConfigurationDescriptor cloneProjectDescriptor() {
         MakeConfigurationDescriptor clone = new MakeConfigurationDescriptor(getBaseDir());
         super.cloneProjectDescriptor(clone);
@@ -552,10 +559,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         return clone;
     }
 
+    @Override
     public boolean getModified() {
         return modified;
     }
 
+    @Override
     public void setModified() {
         setModified(true);
     }
@@ -585,10 +594,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         closed();
     }
 
+    @Override
     public boolean save() {
         return save(NbBundle.getMessage(MakeProject.class, "ProjectNotSaved")); // FIXUP: move message into Bundle for this class after UI freeze
     }
 
+    @Override
     public boolean save(final String extraMessage) {
         SaveRunnable saveRunnable = new SaveRunnable(extraMessage);
         RequestProcessor.Task task = RequestProcessor.getDefault().post(saveRunnable);
@@ -629,6 +640,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             this.extraMessage = extraMessage;
         }
 
+        @Override
         public void run() {
             ret = saveWorker(extraMessage);
         }

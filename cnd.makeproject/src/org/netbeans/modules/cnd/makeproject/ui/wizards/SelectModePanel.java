@@ -49,7 +49,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -74,25 +74,30 @@ public class SelectModePanel extends javax.swing.JPanel {
     private void addListeners(){
         projectFolder.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 controller.getWizardStorage().setPath(projectFolder.getText());
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 controller.getWizardStorage().setPath(projectFolder.getText());
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 controller.getWizardStorage().setPath(projectFolder.getText());
             }
         });
         simpleMode.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
                 controller.getWizardStorage().setMode(simpleMode.isSelected());
                 updateInstruction();
             }
         });
         advancedMode.addActionListener(new ActionListener(){
+            @Override
             public void actionPerformed(ActionEvent e) {
                 controller.getWizardStorage().setMode(simpleMode.isSelected());
                 updateInstruction();

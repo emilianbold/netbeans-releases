@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.ui.options;
+package org.netbeans.modules.cnd.toolchain.ui.options;
 
 import java.awt.Dimension;
 import java.util.List;
@@ -47,7 +47,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 
@@ -105,7 +105,7 @@ import org.openide.util.NbBundle;
         boolean valid = true;
         lbError.setText(""); // NOI18N
         
-        String compilerSetName = IpeUtils.replaceOddCharacters(tfName.getText().trim(), '_');
+        String compilerSetName = CompilerSetUtils.replaceOddCharacters(tfName.getText().trim(), '_');
         if (valid && compilerSetName.length() == 0 || compilerSetName.contains("|")) { // NOI18N
             valid = false;
             lbError.setText(getString("NAME_INVALID"));
@@ -149,7 +149,7 @@ import org.openide.util.NbBundle;
     }
     
     public String getCompilerSetName() {
-        return IpeUtils.replaceOddCharacters(tfName.getText().trim(), '_');
+        return CompilerSetUtils.replaceOddCharacters(tfName.getText().trim(), '_');
     }
     
     /** This method is called from within the constructor to
@@ -174,7 +174,7 @@ import org.openide.util.NbBundle;
 
         setLayout(new java.awt.GridBagLayout());
 
-        lbBaseDirectory.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("lbBaseDirectory_MN").charAt(0));
+        lbBaseDirectory.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("lbBaseDirectory_MN").charAt(0));
         lbBaseDirectory.setLabelFor(tfBaseDirectory);
         lbBaseDirectory.setText(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.lbBaseDirectory.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -196,9 +196,9 @@ import org.openide.util.NbBundle;
         add(tfName, gridBagConstraints);
         tfName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.tfName.AccessibleContext.accessibleDescription")); // NOI18N
 
-        lbFamily.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("lbFamily_MN").charAt(0));
+        lbFamily.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("lbFamily_MN").charAt(0));
         lbFamily.setLabelFor(cbFamily);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle"); // NOI18N
         lbFamily.setText(bundle.getString("AddCompilerSetPanel.lbFamily.text")); // NOI18N
         lbFamily.setToolTipText(bundle.getString("AddCompilerSetPanel.lbFamily.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -221,7 +221,7 @@ import org.openide.util.NbBundle;
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 16);
         add(cbFamily, gridBagConstraints);
 
-        lbName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("lbToolSetName_MN").charAt(0));
+        lbName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("lbToolSetName_MN").charAt(0));
         lbName.setLabelFor(tfName);
         lbName.setText(org.openide.util.NbBundle.getMessage(DuplicateCompilerSetPanel.class, "AddCompilerSetPanel.lbName.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();

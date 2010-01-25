@@ -43,7 +43,7 @@
  * Created on Oct 13, 2009, 10:55:01 AM
  */
 
-package org.netbeans.modules.cnd.ui.options;
+package org.netbeans.modules.cnd.toolchain.ui.options;
 
 import java.awt.Color;
 import java.awt.event.ItemEvent;
@@ -60,8 +60,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -643,7 +643,7 @@ import org.openide.util.Utilities;
         version.append(tool.getDisplayName()).append(": "); // NOI18N
         if (isPathFieldValid(tf)) {
             String path = tf.getText();
-            if (!IpeUtils.isPathAbsolute(path)) {
+            if (!CompilerSetUtils.isPathAbsolute(path)) {
                 path = Path.findCommand(path);
             }
             String v = postVersionInfo(tool, path);
@@ -780,7 +780,7 @@ import org.openide.util.Utilities;
 
         setLayout(new java.awt.GridBagLayout());
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle"); // NOI18N
         lbMakeCommand.setText(bundle.getString("ToolCollectionPanel.lbMakeCommand.text")); // NOI18N
         lbMakeCommand.setToolTipText(bundle.getString("ToolCollectionPanel.lbMakeCommand.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();

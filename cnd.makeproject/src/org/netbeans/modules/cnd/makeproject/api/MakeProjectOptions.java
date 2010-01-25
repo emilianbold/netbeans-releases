@@ -41,11 +41,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
-import org.netbeans.modules.cnd.settings.CppSettings;
 
 public final class MakeProjectOptions {
 
@@ -68,21 +64,6 @@ public final class MakeProjectOptions {
         return null; //CppSettings.getDefault().getMakeName();
     }
     
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    public static void setDefaultCompilerSet(String name) {
-        // Set the default name in global setting
-        CppSettings.getDefault().setCompilerSetName(name);
-        // Also set the default compiler set in the localhost set. Remote sets will look at the setting in CppSettings.
-        CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(ExecutionEnvironmentFactory.getLocal());
-        CompilerSet compilerSet = compilerSetManager.getCompilerSet(name);
-        if (compilerSet != null) {
-            compilerSetManager.setDefault(compilerSet);
-        }
-    }
-
     /**
      * @deprecated
      */

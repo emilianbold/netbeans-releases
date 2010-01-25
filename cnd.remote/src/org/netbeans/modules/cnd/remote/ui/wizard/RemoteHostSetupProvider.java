@@ -41,7 +41,7 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 
@@ -52,30 +52,37 @@ import org.openide.util.NbBundle;
 @org.openide.util.lookup.ServiceProvider(service=HostSetupProvider.class, position=100)
 public class RemoteHostSetupProvider implements HostSetupProvider {
 
+    @Override
     public HostSetupWorker createHostSetupWorker(ToolsCacheManager toolsCacheManager) {
         return new RemoteHostSetupWorker(toolsCacheManager);
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(getClass(), "PROVIDER_Name");
     }
 
+    @Override
     public String getID() {
         return "cnd-remote"; //NOI18N
     }
 
+    @Override
     public boolean isApplicable() {
         return true;
     }
 
+    @Override
     public boolean canCheckSetup(ExecutionEnvironment execEnv) {
         return false; //TODO: implement for "ssh://"
     }
 
+    @Override
     public boolean isSetUp(ExecutionEnvironment execEnv) {
         return true; //TODO: implement for "ssh://"
     }
 
+    @Override
     public boolean setUp(ExecutionEnvironment execEnv) {
         return true; //TODO: implement for "ssh://"
     }

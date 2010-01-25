@@ -39,14 +39,19 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.ui.options;
+package org.netbeans.modules.cnd.utils.ui;
 
 import java.awt.Font;
 import java.util.Vector;
 import java.util.ResourceBundle;
-
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListSelectionModel;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
+import javax.swing.ListCellRenderer;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 
 import org.openide.util.NbBundle;
 import org.openide.awt.Mnemonics;
@@ -58,7 +63,7 @@ import org.openide.awt.Mnemonics;
  * 
  * Improved to have isEmptyAllowed and default value 
  */
-/*package-local*/ final class StringArrayCustomEditor extends javax.swing.JPanel {
+public final class StringArrayCustomEditor extends javax.swing.JPanel {
 
     // the bundle to use
     private ResourceBundle bundle = NbBundle.getBundle (
@@ -299,7 +304,7 @@ private void itemFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         itemList.setListData (itemsVector);
 
         // set new selection
-        if (itemsVector.size () != 0) {
+        if (!itemsVector.isEmpty()) {
             if (currentIndex >= itemsVector.size ()) {
                 currentIndex = itemsVector.size() - 1;
             }
@@ -380,7 +385,7 @@ private void itemFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     private javax.swing.JButton setDefaultButton;
     // End of variables declaration//GEN-END:variables
 
-    class EmptyStringListCellRenderer extends JLabel implements ListCellRenderer {
+    private final class EmptyStringListCellRenderer extends JLabel implements ListCellRenderer {
 
         protected Border hasFocusBorder = new LineBorder(UIManager.getColor("List.focusCellHighlight")); // NOI18N
         protected Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
@@ -398,6 +403,7 @@ private void itemFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         /** This is the only method defined by ListCellRenderer.  We just
         * reconfigure the Jlabel each time we're called.
         */
+        @Override
         public java.awt.Component getListCellRendererComponent(
             JList list,
             Object value,            // value to display

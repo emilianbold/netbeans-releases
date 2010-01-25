@@ -54,8 +54,8 @@ import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.ui.options.ServerListUIEx;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.cnd.toolchain.ui.options.ServerListUIEx;
+import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManager;
 import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -122,6 +122,7 @@ public class RemoteServerListUI extends ServerListUIEx {
         final AtomicBoolean res = new AtomicBoolean(false);
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
                 public void run() {
                     int option = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), 
                             message, title, JOptionPane.YES_NO_OPTION);

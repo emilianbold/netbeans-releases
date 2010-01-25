@@ -53,7 +53,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.AllFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -90,14 +90,17 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
 
         documentListener = new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 validateExe();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 validateExe();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 validateExe();
             }
@@ -114,8 +117,9 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         validateExe();
     }
 
-    class MyListSelectionListener implements ListSelectionListener {
+    private final class MyListSelectionListener implements ListSelectionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting() == false) {
                 int i = exeList.getSelectedIndex();

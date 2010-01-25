@@ -39,11 +39,58 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.ui.options;
+package org.netbeans.modules.cnd.toolchain.ui.options;
 
-public interface IsChangedListener {
-    /**
-     * Returns true if something has changed
-     */
-    public boolean isChanged();
+import java.beans.PropertyChangeListener;
+import javax.swing.JComponent;
+import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+
+@OptionsPanelController.SubRegistration(
+    id=CndUIConstants.TOOLS_OPTIONS_CND_TOOLS_ID,
+    location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID,
+    displayName="#TAB_ToolsTab", // NOI18N
+    position=100
+)
+public final class ToolsPanelController extends OptionsPanelController {
+
+    private ToolsPanel panel = new ToolsPanel();
+
+    public void update() {
+        panel.update();
+}
+
+    public void applyChanges() {
+        panel.applyChanges();
+    }
+    
+    public void cancel() {
+        panel.cancel();
+    }
+    
+    public boolean isValid() {
+        return !panel.isChanged() || panel.dataValid();
+    }
+    
+    public boolean isChanged() {
+        return panel.isChanged();
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("cnd.optionsDialog"); // NOI18N
+    }
+    
+    public JComponent getComponent(Lookup masterLookup) {
+        return panel;
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        panel.addPropertyChangeListener(l);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        panel.removePropertyChangeListener(l);
+    }
 }

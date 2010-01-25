@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.FortranSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.HeaderSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -75,6 +75,7 @@ import org.openide.util.actions.NodeAction;
 
 public class AddExistingItemAction extends NodeAction {
 
+    @Override
     protected boolean enable(Node[] activatedNodes)  {
         if (activatedNodes.length != 1) {
             return false;
@@ -90,10 +91,12 @@ public class AddExistingItemAction extends NodeAction {
         return true;
     }
 
+    @Override
     public String getName() {
 	return getString("CTL_AddExistingItemAction"); // NOI18N
     }
 
+    @Override
     public void performAction(Node[] activatedNodes) {
 	boolean notifySources = false;
 	Node n = activatedNodes[0];
@@ -129,8 +132,9 @@ public class AddExistingItemAction extends NodeAction {
         fileChooser.addChoosableFileFilter(AllFileFilter.getInstance());
         fileChooser.setFileFilter(fileChooser.getAcceptAllFileFilter());
 	int ret = fileChooser.showOpenDialog(null); // FIXUP
-	if (ret == FileChooser.CANCEL_OPTION)
-	    return;
+	if (ret == FileChooser.CANCEL_OPTION) {
+            return;
+        }
 
 	File[] files = fileChooser.getSelectedFiles();
         addFilesWorker(project, projectDescriptor, folder, files);
@@ -166,6 +170,7 @@ public class AddExistingItemAction extends NodeAction {
     private void addFilesWorker(final Project project, final ConfigurationDescriptor projectDescriptor, final Folder folder, final File[] files) {
         RequestProcessor.getDefault().post(new Runnable() {
 
+            @Override
             public void run() {
                 boolean notifySources = false;
                 ArrayList<Item> items = new ArrayList<Item>();
@@ -202,6 +207,7 @@ public class AddExistingItemAction extends NodeAction {
 
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
 	return null;
     }

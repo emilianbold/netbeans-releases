@@ -40,61 +40,16 @@
  */
 
 
-package org.netbeans.modules.cnd.ui.options;
+package org.netbeans.modules.cnd.toolchain.ui.options;
 
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.NbPreferences;
 
 /** Manage the data for the ToolsPanel */
 public abstract class ToolsPanelModel {
     
-//    protected ArrayList getPath() {
-//        ArrayList<String> path = new ArrayList();
-//        StringTokenizer tok = new StringTokenizer(CppSettings.getDefault().getPath(), File.pathSeparator);
-//        while (tok.hasMoreTokens()) {
-//            path.add(tok.nextToken());
-//        }
-//        return path;
-//    }
-//    
-//    protected void setPath(ArrayList<String> list) {
-//        StringBuffer path = new StringBuffer();
-//        for (String dir : list) {
-//            path.append(dir);
-//            path.append(File.pathSeparator);
-//        }
-//        CppSettings.getDefault().setPath(path.toString());
-//    }
-//    
-//    protected String getMakeName() {
-//        return CppSettings.getDefault().getMakeName();
-//    }
-//    
-//    protected void setMakeName(String name) {
-//        CppSettings.getDefault().setMakeName(name);
-//    }
-//    
-//    protected void setMakePath(String dir) {
-//        CppSettings.getDefault().setMakePath(dir);
-//    }
-//    
-//    public String getGdbName() {
-//        return CppSettings.getDefault().getGdbName();
-//    }
-//    
-//    public void setGdbName(String name) {
-//        CppSettings.getDefault().setGdbName(name);
-//    }
-//    
-//    public String getGdbPath() {
-//        return null;
-//    }
-//    
-//    public void setGdbPath(String dir) {
-//        CppSettings.getDefault().setGdbPath(dir);
-//    }
-//    
-//    public abstract void setGdbEnabled(boolean value);
-    
+    private static final String PROP_COMPILER_SET_NAME = "compilerSetName"; // NOI18N
+
     public abstract void setMakeRequired(boolean value);
     
     public abstract boolean isMakeRequired();
@@ -119,19 +74,34 @@ public abstract class ToolsPanelModel {
 
     public abstract void setAsRequired(boolean value);
     
-    public abstract void setCompilerSetName(String name);
-    
-    public abstract String getCompilerSetName();
-    
+    public String getCompilerSetName() {
+        return getCompilerSetNameImpl();
+    }
+
+    private static String getCompilerSetNameImpl() {
+        String name = NbPreferences.forModule(ToolsPanelModel.class).get(PROP_COMPILER_SET_NAME, null);
+        if (name == null) {
+            return "";
+        } else {
+            return name;
+        }
+    }
+
+    public void setCompilerSetName(String name) {
+        resetCompilerSetName(name);
+    }
+
+    public static final void resetCompilerSetName(String name) {
+        String n = getCompilerSetNameImpl();
+        if (n == null || !n.equals(name)) {
+            NbPreferences.forModule(ToolsPanelModel.class).put(PROP_COMPILER_SET_NAME, name);
+            //firePropertyChange(PROP_COMPILER_SET_NAME, n, name);
+        }
+    }
+
     public void setSelectedCompilerSetName(String name) {};
     
     public String getSelectedCompilerSetName() {return null;}
-    
-//    protected abstract void setCCompilerName(String name);
-//    
-//    protected abstract void setCppCompilerName(String name);
-//    
-//    protected abstract void setFortranCompilerName(String name);
     
     public abstract boolean showRequiredTools();
     

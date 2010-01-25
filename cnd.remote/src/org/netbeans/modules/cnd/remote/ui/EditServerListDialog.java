@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.setup.CreateHostWizardIterator;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
@@ -162,6 +162,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             // need to check remote tool chains in a separate thread
             btSetAsDefault.setEnabled(false);
             final Runnable enabler = new Runnable() {
+                @Override
                 public void run() {
                     // check if it has already changed
                     ServerRecord curr = (ServerRecord) lstDevHosts.getSelectedValue();
@@ -171,6 +172,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 }
             };
             Runnable checker = new Runnable() {
+                @Override
                 public void run() {
                     CompilerSetManager compilerSetManagerCopy = cacheManager.getCompilerSetManagerCopy(env, false);
                     if (!compilerSetManagerCopy.isEmpty()) {
@@ -198,6 +200,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             // move expensive operation out of EDT
             RequestProcessor.getDefault().post(new Runnable() {
 
+                @Override
                 public void run() {
                     record.init(pcs);
                     if (record.isOnline()) {
@@ -208,6 +211,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                     // back to EDT to work with Swing
                     SwingUtilities.invokeLater(new Runnable() {
 
+                        @Override
                         public void run() {
                             pbarStatusPanel.setVisible(false);
                             setButtons(true);
@@ -270,6 +274,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
 
     /** Helps the AddServerDialog know when to enable/disable the OK button */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         Object source = evt.getSource();
         String prop = evt.getPropertyName();
@@ -279,6 +284,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
 
     /** Enable/disable the Remove and Set As Default buttons */
+    @Override
     public void valueChanged(ListSelectionEvent evt) {
         RemoteServerRecord record = (RemoteServerRecord) lstDevHosts.getSelectedValue();
         if (record != null) {
@@ -316,6 +322,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         tfReason.setEnabled(false); // setVisible(false);
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt) {
         Object o = evt.getSource();
 

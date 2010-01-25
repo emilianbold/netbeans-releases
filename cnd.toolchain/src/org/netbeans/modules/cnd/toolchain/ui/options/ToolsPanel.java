@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.ui.options;
+package org.netbeans.modules.cnd.toolchain.ui.options;
 
 import java.awt.Component;
 import java.awt.Cursor;
@@ -73,7 +73,7 @@ import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
@@ -83,6 +83,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
 import org.openide.windows.WindowManager;
@@ -99,6 +100,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
     // The following are constants so I can do == rather than "equals"
     public static final String PROP_VALID = "valid"; // NOI18N
+    private static final String PROP_COMPILER_SET_NAME = "compilerSetName";
     private boolean initialized = false;
     private boolean changed;
     private boolean changingCompilerSet;
@@ -326,7 +328,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     }
 
     public static boolean supportedMake(String name) {
-        name = IpeUtils.getBaseName(name);
+        name = CompilerSetUtils.getBaseName(name);
         return !name.toLowerCase().equals("mingw32-make.exe"); // NOI18N
     }
 
@@ -375,7 +377,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             // Set Default
             if (!csm.getCompilerSets().isEmpty()) {
                 if (csm.getDefaultCompilerSet() == null) {
-                    String name = model.getCompilerSetName(); // the default set
+                    String name = getCompilerSetName(); // the default set
                     if (name.length() == 0 || csm.getCompilerSet(name) == null) {
                         csm.setDefault(csm.getCompilerSet(0));
                     } else {
@@ -409,6 +411,23 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         updating = false;
         dataValid(errs);
         initialized = true;
+    }
+
+    private String getCompilerSetName() {
+        String name = NbPreferences.forModule(ToolsPanel.class).get(PROP_COMPILER_SET_NAME, null);
+        if (name == null) {
+            return "";
+        } else {
+            return name;
+        }
+    }
+
+    private void setCompilerSetName(String name) {
+        String n = getCompilerSetName();
+        if (n == null || !n.equals(name)) {
+            NbPreferences.forModule(ToolsPanel.class).put(PROP_COMPILER_SET_NAME, name);
+            firePropertyChange(PROP_COMPILER_SET_NAME, n, name);
+        }
     }
 
     boolean isRemoteHostSelected() {
@@ -755,9 +774,9 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         setMinimumSize(new java.awt.Dimension(600, 400));
         setLayout(new java.awt.GridBagLayout());
 
-        lbToolCollections.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_DirlistLabel").charAt(0));
+        lbToolCollections.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("MNEM_DirlistLabel").charAt(0));
         lbToolCollections.setLabelFor(spDirlist);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle"); // NOI18N
         lbToolCollections.setText(bundle.getString("LBL_DirlistLabel")); // NOI18N
         lbToolCollections.setToolTipText(bundle.getString("HINT_DirListLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -766,8 +785,9 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 4);
         add(lbToolCollections, gridBagConstraints);
-        lbToolCollections.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_DirlistLabel")); // NOI18N
-        lbToolCollections.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_DirlistLabel")); // NOI18N
+        java.util.ResourceBundle bundle1 = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle"); // NOI18N
+        lbToolCollections.getAccessibleContext().setAccessibleName(bundle1.getString("ACSN_DirlistLabel")); // NOI18N
+        lbToolCollections.getAccessibleContext().setAccessibleDescription(bundle1.getString("ACSD_DirlistLabel")); // NOI18N
 
         buttomPanel.setOpaque(false);
         buttomPanel.setLayout(new java.awt.GridBagLayout());
@@ -784,7 +804,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         buttomPanel.add(lblErrors, gridBagConstraints);
         lblErrors.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lblErrors.AccessibleContext.accessibleName")); // NOI18N
 
-        btVersions.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_Versions").charAt(0));
+        btVersions.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("MNEM_Versions").charAt(0));
         btVersions.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btVersions.text")); // NOI18N
         btVersions.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -799,7 +819,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         buttomPanel.add(btVersions, gridBagConstraints);
         btVersions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btVersions.AccessibleContext.accessibleDescription")); // NOI18N
 
-        btRestore.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_RestoreDefault_BT").charAt(0));
+        btRestore.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("MNEM_RestoreDefault_BT").charAt(0));
         btRestore.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btRestore.text")); // NOI18N
         btRestore.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         btRestore.addActionListener(new java.awt.event.ActionListener() {
@@ -847,7 +867,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         buttonPanel.setOpaque(false);
         buttonPanel.setLayout(new java.awt.GridBagLayout());
 
-        btAdd.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_AddButton").charAt(0));
+        btAdd.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("MNEM_AddButton").charAt(0));
         btAdd.setText(bundle.getString("LBL_AddButton")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -857,10 +877,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         buttonPanel.add(btAdd, gridBagConstraints);
-        btAdd.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_AddButton")); // NOI18N
-        btAdd.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AddButton")); // NOI18N
+        btAdd.getAccessibleContext().setAccessibleName(bundle1.getString("ACSN_AddButton")); // NOI18N
+        btAdd.getAccessibleContext().setAccessibleDescription(bundle1.getString("ACSD_AddButton")); // NOI18N
 
-        btRemove.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_RemoveButton").charAt(0));
+        btRemove.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("MNEM_RemoveButton").charAt(0));
         btRemove.setText(bundle.getString("LBL_RemoveButton")); // NOI18N
         btRemove.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -871,10 +891,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         buttonPanel.add(btRemove, gridBagConstraints);
-        btRemove.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_RemoveButton")); // NOI18N
-        btRemove.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_RemoveButton")); // NOI18N
+        btRemove.getAccessibleContext().setAccessibleName(bundle1.getString("ACSN_RemoveButton")); // NOI18N
+        btRemove.getAccessibleContext().setAccessibleDescription(bundle1.getString("ACSD_RemoveButton")); // NOI18N
 
-        btDuplicate.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_UpButton").charAt(0));
+        btDuplicate.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("MNEM_UpButton").charAt(0));
         btDuplicate.setText(bundle.getString("LBL_UpButton")); // NOI18N
         btDuplicate.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -885,10 +905,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         buttonPanel.add(btDuplicate, gridBagConstraints);
-        btDuplicate.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_UpButton")); // NOI18N
-        btDuplicate.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_UpButton")); // NOI18N
+        btDuplicate.getAccessibleContext().setAccessibleName(bundle1.getString("ACSN_UpButton")); // NOI18N
+        btDuplicate.getAccessibleContext().setAccessibleDescription(bundle1.getString("ACSD_UpButton")); // NOI18N
 
-        btDefault.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_DownButton").charAt(0));
+        btDefault.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("MNEM_DownButton").charAt(0));
         btDefault.setText(bundle.getString("LBL_DownButton")); // NOI18N
         btDefault.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -899,8 +919,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         buttonPanel.add(btDefault, gridBagConstraints);
-        btDefault.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_DownButton")); // NOI18N
-        btDefault.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_DownButton")); // NOI18N
+        btDefault.getAccessibleContext().setAccessibleName(bundle1.getString("ACSN_DownButton")); // NOI18N
+        btDefault.getAccessibleContext().setAccessibleDescription(bundle1.getString("ACSD_DownButton")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -920,7 +940,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(ToolSetPanel, gridBagConstraints);
 
-        lbDevHost.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_DevelopmentHosts").charAt(0));
+        lbDevHost.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("MNEM_DevelopmentHosts").charAt(0));
         lbDevHost.setLabelFor(cbDevHost);
         lbDevHost.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "LBL_DevelopmentHosts")); // NOI18N
         lbDevHost.setToolTipText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "HINT_DevelopmentHosts")); // NOI18N
@@ -941,7 +961,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(cbDevHost, gridBagConstraints);
 
-        btEditDevHost.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("MNEM_AddDevHost").charAt(0));
+        btEditDevHost.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("MNEM_AddDevHost").charAt(0));
         btEditDevHost.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "Lbl_AddDevHost")); // NOI18N
         btEditDevHost.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();

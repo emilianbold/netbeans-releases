@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,60 +31,20 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.ui.options;
+@OptionsPanelController.ContainerRegistration(
+    id=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID,
+    categoryName="#CndOptionsCategory_Name", // NOI18N
+//    title="#CndOptions_Title"
+    iconBase="org/netbeans/modules/cnd/toolchain/ui/options/cnd_32.png", // NOI18N
+    position=700
+)
+package org.netbeans.modules.cnd.toolchain.ui.options;
 
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
 import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
 import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-
-@OptionsPanelController.SubRegistration(
-    id=CndUIConstants.TOOLS_OPTIONS_CND_TOOLS_ID,
-    location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID,
-    displayName="#TAB_ToolsTab", // NOI18N
-    position=100
-)
-public final class ToolsPanelController extends OptionsPanelController {
-
-    private ToolsPanel panel = new ToolsPanel();
-
-    public void update() {
-        panel.update();
-}
-
-    public void applyChanges() {
-        panel.applyChanges();
-    }
-    
-    public void cancel() {
-        panel.cancel();
-    }
-    
-    public boolean isValid() {
-        return !panel.isChanged() || panel.dataValid();
-    }
-    
-    public boolean isChanged() {
-        return panel.isChanged();
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("cnd.optionsDialog"); // NOI18N
-    }
-    
-    public JComponent getComponent(Lookup masterLookup) {
-        return panel;
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        panel.addPropertyChangeListener(l);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        panel.removePropertyChangeListener(l);
-    }
-}

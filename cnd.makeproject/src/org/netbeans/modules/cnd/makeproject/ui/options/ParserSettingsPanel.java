@@ -67,9 +67,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
-import org.netbeans.modules.cnd.ui.options.IsChangedListener;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.netbeans.modules.cnd.ui.options.ToolsPanel;
+import org.netbeans.modules.cnd.toolchain.ui.options.IsChangedListener;
+import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManager;
+import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
@@ -116,6 +116,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt) {
         if (!updating && isShowing()) {
             updateTabs();
@@ -124,7 +125,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
 
     private static class CompilerSetPresenter {
 
-        public CompilerSet cs;
+        private CompilerSet cs;
         private String displayName;
 
         public CompilerSetPresenter(CompilerSet cs, String displayName) {
@@ -158,6 +159,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         final Collection<? extends ServerRecord> servers = ServerList.getRecords();
 
         final Runnable uiUpdater = new Runnable() { //NOI18N
+            @Override
             public void run() {
                 compilerCollectionComboBox.removeActionListener(ParserSettingsPanel.this);
                 compilerCollectionComboBox.removeAllItems();
@@ -196,7 +198,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                     assert ! servers.iterator().next().isRemote();
                 }
 
-                if (allCS.size() == 0) {
+                if (allCS.isEmpty()) {
                     // localhost only mode (either cnd.remote is not installed or no devhosts were specified
                     for (CompilerSet cs : getCompilerSetManager(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()) {
                         for (Tool tool : cs.getTools()) {
@@ -270,6 +272,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent ev) {
         Object o = ev.getSource();
         if (o instanceof CompilerSet) {
@@ -411,6 +414,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         return isDataValid;
     }
 
+    @Override
     public boolean isChanged() {
         boolean isChanged = false;
         PredefinedPanel[] viewedPanels = getPredefinedPanels();

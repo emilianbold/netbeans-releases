@@ -49,7 +49,7 @@ import java.util.List;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -114,12 +114,14 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
         return new ArrayList<String>(getListData());
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
             editor.setValue(getPropertyValue());
         }
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return helpCtx;
 //        return new HelpCtx("RuntimeSearchDirectories"); // NOI18N
@@ -251,9 +253,9 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
             itemPath = FilePathAdaptor.naturalize(itemPath);
             String bd = baseDir;
             bd = FilePathAdaptor.naturalize(bd);
-            if (pathPanel != null && pathPanel.getMode() == PathPanel.REL_OR_ABS) {
+            if (pathPanel != null && PathPanel.getMode() == PathPanel.REL_OR_ABS) {
                 itemPath = IpeUtils.toAbsoluteOrRelativePath(bd, itemPath);
-            } else if (pathPanel != null && pathPanel.getMode() == PathPanel.REL) {
+            } else if (pathPanel != null && PathPanel.getMode() == PathPanel.REL) {
                 itemPath = IpeUtils.toRelativePath(bd, itemPath);
             }
             itemPath = FilePathAdaptor.normalize(itemPath);

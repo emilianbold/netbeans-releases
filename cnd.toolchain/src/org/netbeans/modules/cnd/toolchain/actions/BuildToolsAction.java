@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.actions;
+package org.netbeans.modules.cnd.toolchain.actions;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -51,10 +51,10 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.ui.options.DownloadUtils;
-import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
-import org.netbeans.modules.cnd.ui.options.ToolsPanel;
-import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
+import org.netbeans.modules.cnd.toolchain.ui.options.DownloadUtils;
+import org.netbeans.modules.cnd.toolchain.ui.options.LocalToolsPanelModel;
+import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
+import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanelModel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

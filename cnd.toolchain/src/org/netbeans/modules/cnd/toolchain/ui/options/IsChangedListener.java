@@ -39,61 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.ui.options;
+package org.netbeans.modules.cnd.toolchain.ui.options;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.DefaultListModel;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
-
-/**
- * Manage a JList with both add and remove lists.
- *
- * @author gordon
- */
-/*package-local*/ final class AddRemoveListModel extends DefaultListModel {
-    
-    private ArrayList<String> addList;
-    private ArrayList<Object> removeList;
-    
-    /** Creates a new instance of AddRemoveListModel */
-    public AddRemoveListModel() {
-        addList = new ArrayList<String>();
-        removeList = new ArrayList<Object>();
-    }
-    
-    public void addAddElement(String s) {
-        if (!contains(s)) {
-            for (int i = 0; i < getSize(); i++) {
-                Object o = elementAt(i);
-                if (o instanceof Tool) {
-                    Tool tool = (Tool) o;
-                    if (tool.getName().equals(s)) {
-                        return;
-                    }
-                }
-            }
-            addList.add(s);
-            addElement(s);
-        }
-    }
-    
-    @Override
-    public Object remove(int idx) {
-        Object o = super.remove(idx);
-        if (addList.contains(o)) {
-            addList.remove(o);
-        } else {
-            removeList.add(o);
-        }
-        return o;
-    }
-    
-    public List<String> getAddList() {
-        return addList;
-    }
-    
-    public List getRemoveList() {
-        return removeList;
-    }
+public interface IsChangedListener {
+    /**
+     * Returns true if something has changed
+     */
+    public boolean isChanged();
 }

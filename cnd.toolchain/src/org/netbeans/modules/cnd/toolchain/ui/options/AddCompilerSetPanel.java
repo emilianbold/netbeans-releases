@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.ui.options;
+package org.netbeans.modules.cnd.toolchain.ui.options;
 
 import java.awt.Dimension;
 import java.io.File;
@@ -56,8 +56,8 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.DialogDescriptor;
 import org.openide.util.Exceptions;
@@ -252,7 +252,7 @@ import org.openide.util.NbBundle;
 
         if (local) {
             File dirFile = new File(tfBaseDirectory.getText());
-            if (valid && !dirFile.exists() || !dirFile.isDirectory() || !IpeUtils.isPathAbsolute(dirFile.getPath())) {
+            if (valid && !dirFile.exists() || !dirFile.isDirectory() || !CompilerSetUtils.isPathAbsolute(dirFile.getPath())) {
                 valid = false;
                 lbError.setText(getString("BASE_INVALID"));
             }
@@ -268,7 +268,7 @@ import org.openide.util.NbBundle;
         cbFamily.setEnabled(valid);
         tfName.setEnabled(valid);
 
-        String compilerSetName = IpeUtils.replaceOddCharacters(tfName.getText().trim(), '_');
+        String compilerSetName = CompilerSetUtils.replaceOddCharacters(tfName.getText().trim(), '_');
         if (valid && compilerSetName.length() == 0 || compilerSetName.contains("|")) { // NOI18N
             valid = false;
             lbError.setText(getString("NAME_INVALID"));
@@ -318,7 +318,7 @@ import org.openide.util.NbBundle;
     }
 
     private String getCompilerSetName() {
-        return IpeUtils.replaceOddCharacters(tfName.getText().trim(), '_');
+        return CompilerSetUtils.replaceOddCharacters(tfName.getText().trim(), '_');
     }
 
     public CompilerSet getCompilerSet() {
@@ -373,7 +373,7 @@ import org.openide.util.NbBundle;
         gridBagConstraints.insets = new java.awt.Insets(16, 16, 0, 16);
         add(infoLabel, gridBagConstraints);
 
-        lbBaseDirectory.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("lbBaseDirectory_MN").charAt(0));
+        lbBaseDirectory.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("lbBaseDirectory_MN").charAt(0));
         lbBaseDirectory.setLabelFor(tfBaseDirectory);
         lbBaseDirectory.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.lbBaseDirectory.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -395,7 +395,7 @@ import org.openide.util.NbBundle;
         add(tfName, gridBagConstraints);
         tfName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.tfName.AccessibleContext.accessibleDescription")); // NOI18N
 
-        btBaseDirectory.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("btBrowse").charAt(0));
+        btBaseDirectory.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("btBrowse").charAt(0));
         btBaseDirectory.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.btBaseDirectory.text")); // NOI18N
         btBaseDirectory.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -411,9 +411,9 @@ import org.openide.util.NbBundle;
         add(btBaseDirectory, gridBagConstraints);
         btBaseDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.btBaseDirectory.AccessibleContext.accessibleDescription")); // NOI18N
 
-        lbFamily.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("lbFamily_MN").charAt(0));
+        lbFamily.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("lbFamily_MN").charAt(0));
         lbFamily.setLabelFor(cbFamily);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle"); // NOI18N
         lbFamily.setText(bundle.getString("AddCompilerSetPanel.lbFamily.text")); // NOI18N
         lbFamily.setToolTipText(bundle.getString("AddCompilerSetPanel.lbFamily.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -435,7 +435,7 @@ import org.openide.util.NbBundle;
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
         add(cbFamily, gridBagConstraints);
 
-        lbName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/ui/options/Bundle").getString("lbToolSetName_MN").charAt(0));
+        lbName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle").getString("lbToolSetName_MN").charAt(0));
         lbName.setLabelFor(tfName);
         lbName.setText(org.openide.util.NbBundle.getMessage(AddCompilerSetPanel.class, "AddCompilerSetPanel.lbName.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();

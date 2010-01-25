@@ -245,4 +245,22 @@ public final class CompilerSetUtils {
             return false;
         }
     }
+
+    public static String replaceOddCharacters(String s, char replaceChar) {
+        int n = s.length();
+        StringBuilder ret = new StringBuilder(n);
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            if ((c == ' ') || (c == '\t') ||
+                    (c == ':') || (c == '\'') ||
+                    (c == '*') || (c == '\"') ||
+                    (c == '[') || (c == ']') ||
+                    (c == '(') || (c == ')')) {
+                ret.append(replaceChar);
+            } else {
+                ret.append(c);
+            }
+        }
+        return ret.toString();
+    }
 }

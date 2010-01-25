@@ -40,85 +40,73 @@
  */
 
 
-package org.netbeans.modules.cnd.ui.options;
-
-import org.netbeans.modules.cnd.settings.CppSettings;
+package org.netbeans.modules.cnd.toolchain.ui.options;
 
 /** Manage the data for the ToolsPanel */
 /*package-local*/ final class GlobalToolsPanelModel extends ToolsPanelModel {
     
-    public void setCompilerSetName(String name) {
-        CppSettings.getDefault().setCompilerSetName(name);
-    }
-    
-    public String getCompilerSetName() {
-        return CppSettings.getDefault().getCompilerSetName();
-    }
-//    
-//    protected void setCCompilerName(String name) {
-//        CppSettings.getDefault().setCCompilerName(name);
-//    }
-//    
-//    protected void setCppCompilerName(String name) {
-//        CppSettings.getDefault().setCppCompilerName(name);
-//    }
-//    
-//    protected void setFortranCompilerName(String name) {
-//        CppSettings.getDefault().setFortranCompilerName(name);
-//    }
+    @Override
     public void setMakeRequired(boolean value) {
         
     }
     
+    @Override
     public boolean isMakeRequired() {
         return false;
     }
     
+    @Override
     public boolean isDebuggerRequired() {
         return false;
     }
     
+    @Override
     public void setDebuggerRequired(boolean value) {
 //        CppSettings.getDefault().setGdbRequired(value);
     }
-//    
-//    public void setGdbEnabled(boolean enabled) {
-//        // Do nothing
-//    }
     
+    @Override
     public boolean isCRequired() {
         return false; //return CppSettings.getDefault().isCRequired();
     }
     
+    @Override
     public void setCRequired(boolean value) {
 //        CppSettings.getDefault().setCRequired(value);
     }
     
+    @Override
     public boolean isCppRequired() {
         return false; //return CppSettings.getDefault().isCppRequired();
     }
     
+    @Override
     public void setCppRequired(boolean value) {
 //        CppSettings.getDefault().setCppRequired(value);
     }
     
+    @Override
     public boolean isFortranRequired() {
         return false;
         //return CppSettings.getDefault().isFortranEnabled();
         //return CppSettings.getDefault().isFortranRequired();
     }
     
+    @Override
     public void setFortranRequired(boolean value) {
 //        CppSettings.getDefault().setFortranRequired(value);
     }
 
+    @Override
     public boolean isAsRequired() {
         return false;
     }
 
+    @Override
     public void setAsRequired(boolean value) {
     }
     
+    @Override
     public boolean showRequiredTools() {
         return false;
     }
@@ -127,18 +115,22 @@ import org.netbeans.modules.cnd.settings.CppSettings;
  
     }
     
+    @Override
     public void setShowRequiredBuildTools(boolean enabled) {
         
     }
     
+    @Override
     public boolean showRequiredBuildTools() {
         return false;
     }
     
+    @Override
     public void setShowRequiredDebugTools(boolean enabled) {
         
     }
     
+    @Override
     public boolean showRequiredDebugTools() {
         return false;
     }
