@@ -122,7 +122,7 @@ public class PrimitiveTypeArrayEditor extends PropertyEditorSupport
         char[] source = (char[]) array;
         result = new String[source.length];
         for (int i = 0; i < source.length; i++) {
-            result[i] = new String(convertChar2String(source[i]));
+            result[i] = convertChar2String(source[i]);
         } 
         return result;
     }    
@@ -309,11 +309,13 @@ public class PrimitiveTypeArrayEditor extends PropertyEditorSupport
     /**
      * Sets edited form property and value type
      */
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         this.valueType = property.getValueType();
         this.formProperty = property;
     }
 
+    @Override
     public void updateFormVersionLevel() {
         formProperty.getPropertyContext().getFormModel()
         .raiseVersionLevel(FormModel.FormVersion.NB65,FormModel.FormVersion.NB65);
@@ -334,6 +336,7 @@ public class PrimitiveTypeArrayEditor extends PropertyEditorSupport
     
     // XMLPropertyEditor implementation    
     
+    @Override
     public void readFromXML(Node element) throws IOException {
         if (!XML_PROP_NAME.equals(element.getNodeName())) {
             throw new java.io.IOException();
@@ -347,6 +350,7 @@ public class PrimitiveTypeArrayEditor extends PropertyEditorSupport
         }
     }
 
+    @Override
     public Node storeToXML(Document doc) {
         org.w3c.dom.Element el = doc.createElement(XML_PROP_NAME);
         el.setAttribute(XML_ATT_NAME, getAsText());

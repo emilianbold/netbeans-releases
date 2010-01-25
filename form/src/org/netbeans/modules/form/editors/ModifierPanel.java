@@ -163,6 +163,7 @@ final class ModifierPanel {
         currentAccessNames = ACCESS_NAMES;
         
         editorListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PROP_MODIFIER.equals(evt.getPropertyName()) || 
                     PROP_MASK.equals(evt.getPropertyName())) {
@@ -178,6 +179,7 @@ final class ModifierPanel {
 
         listener = new ActionListener() {
             
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 // remove abstract, if private access is being selected.
                 

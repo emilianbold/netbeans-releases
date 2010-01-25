@@ -148,6 +148,7 @@ public class EnumEditor extends PropertyEditorSupport
     // -------
     // NamedPropertyEditor
 
+    @Override
     public String getDisplayName() {
         return org.openide.util.NbBundle.getBundle(EnumEditor.class)
                                             .getString("CTL_EnumEditorName"); // NOI18N
@@ -225,6 +226,7 @@ public class EnumEditor extends PropertyEditorSupport
     private static final String XML_VALUE = "Value"; // NOI18N
     private static final String ATTR_ID = "id"; // NOI18N
 
+    @Override
     public void readFromXML(Node element) throws IOException {
         org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
         Node node = attributes.getNamedItem(ATTR_ID);
@@ -239,6 +241,7 @@ public class EnumEditor extends PropertyEditorSupport
         }
     }
 
+    @Override
     public Node storeToXML(Document doc) {
         Object value = getValue();
         if (value instanceof Integer || value instanceof Short

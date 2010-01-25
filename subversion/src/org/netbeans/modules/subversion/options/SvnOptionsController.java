@@ -97,6 +97,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         panel.cbOpenOutputWindow.setSelected(SvnModuleConfig.getDefault().getAutoOpenOutput());
         annotationSettings.update();
         repository.refreshUrlHistory();
+        panel.excludeNewFiles.setSelected(SvnModuleConfig.getDefault().getExludeNewFiles());
         
     }
     
@@ -108,7 +109,8 @@ public final class SvnOptionsController extends OptionsPanelController implement
         SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());                
         SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());
         SvnModuleConfig.getDefault().setAutoOpenOutputo(panel.cbOpenOutputWindow.isSelected());
-        
+        SvnModuleConfig.getDefault().setExcludeNewFiles(panel.excludeNewFiles.isSelected());
+
         // {folder} variable setting
         annotationSettings.applyChanges();
         Subversion.getInstance().getAnnotator().refresh();

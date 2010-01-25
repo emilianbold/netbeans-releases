@@ -239,6 +239,7 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
      * 
      * @param evt property change event.
      */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         setValue(new FormFormatter(selector.getFormat()));
     }
@@ -294,6 +295,7 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
     /** Attribute describing format's pattern. */
     private static final String ATTR_FORMAT = "format"; // NOI18N
     
+    @Override
     public void readFromXML(Node element) throws IOException {
         NamedNodeMap attributes = element.getAttributes();
         String typeTxt = attributes.getNamedItem(ATTR_TYPE).getNodeValue();
@@ -308,6 +310,7 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
         setValue(new FormFormatter(new FormatSelector.FormatInfo(type, subtype, format)));
     }
 
+    @Override
     public Node storeToXML(Document doc) {
         org.w3c.dom.Element el = doc.createElement(XML_FORMAT);
         Object value = getValue();
@@ -326,10 +329,12 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
      * 
      * @return display name of the property editor.
      */
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(getClass(), "CTL_AbstractFormatterFactoryEditor_DisplayName"); // NOI18N
     }
 
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         this.property = property;
         try {
@@ -342,6 +347,7 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
     /**
      * Raise form version to 6.0 - this editor is available since NB 6.0.
      */
+    @Override
     public void updateFormVersionLevel() {
         property.getPropertyContext().getFormModel()
                 .raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
@@ -377,6 +383,7 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
          * 
          * @return design value corresponding to this formatter. 
          */
+        @Override
         public Object getDesignValue() {
             JFormattedTextField.AbstractFormatter value = null;
             int type = format.getType();

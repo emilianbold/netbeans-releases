@@ -146,15 +146,18 @@ public class StringEditor extends PropertyEditorSupport
     }
 
     // FormAwareEditor
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         htmlText = FormUtils.isHTMLTextProperty(property);
     }
 
     // FormAwareEditor
+    @Override
     public void updateFormVersionLevel() {
     }
 
     // ExPropertyEditor
+    @Override
     public void attachEnv(PropertyEnv env) {        
         FeatureDescriptor desc = env.getFeatureDescriptor();
         if (desc instanceof Node.Property){
@@ -172,6 +175,7 @@ public class StringEditor extends PropertyEditorSupport
     }
 
     // DocumentListener
+    @Override
     public void insertUpdate(DocumentEvent e) {
         if (!valueUpdateInvoked) {
             valueUpdateInvoked = true;
@@ -180,6 +184,7 @@ public class StringEditor extends PropertyEditorSupport
     }
 
     // DocumentListener
+    @Override
     public void removeUpdate(DocumentEvent e) {
         if (!valueUpdateInvoked) {
             valueUpdateInvoked = true;
@@ -188,10 +193,12 @@ public class StringEditor extends PropertyEditorSupport
     }
 
     // DocumentListener
+    @Override
     public void changedUpdate(DocumentEvent e) {
     }
 
     // updates value from the custom editor
+    @Override
     public void run() {
         if (textComp != null)
             setValue(textComp.getText());

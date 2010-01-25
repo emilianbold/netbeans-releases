@@ -97,16 +97,19 @@ public class IconEditor extends ResourceWrapperEditor implements NamedPropertyEd
     }
 
     // NamedPropertyEditor implementation
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(IconEditor.class, "IconEditor_DisplayName"); // NOI18N
     }
 
     // XMLPropertyEditor implementation
+    @Override
     public void readFromXML(Node element) throws IOException {
         ((org.netbeans.modules.form.editors.IconEditor)delegateEditor).readFromXML(element);
     }
 
     // XMLPropertyEditor implementation
+    @Override
     public Node storeToXML(Document doc) {
         return ((org.netbeans.modules.form.editors.IconEditor)delegateEditor).storeToXML(doc);
     }

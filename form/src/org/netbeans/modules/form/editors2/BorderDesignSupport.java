@@ -107,6 +107,7 @@ public class BorderDesignSupport implements FormDesignValue
 
     // --------------------------
 
+    @Override
     public FormDesignValue copy(FormProperty formProperty) {
         try {
             return new BorderDesignSupport(this, new FormPropertyContext.SubProperty(formProperty));
@@ -181,6 +182,7 @@ public class BorderDesignSupport implements FormDesignValue
 
     private void createProperties() {
         FormLAF.executeWithLookAndFeel(propertyContext.getFormModel(), new Runnable() {
+            @Override
             public void run() {
                 createPropertiesInLAFBlock();
             }
@@ -262,10 +264,12 @@ public class BorderDesignSupport implements FormDesignValue
         }
     }
     
+    @Override
     public Object getDesignValue() {
         return getBorder();
     }
 
+    @Override
     public Object getDesignValue(Object target) {
         if (FormLAF.getUsePreviewDefaults()) {
             return copy((FormProperty)propertyContext.getOwner()).getDesignValue();
@@ -274,6 +278,7 @@ public class BorderDesignSupport implements FormDesignValue
         }
     }
 
+    @Override
     public String getDescription() {
         return getDisplayName();
     }
@@ -336,6 +341,7 @@ public class BorderDesignSupport implements FormDesignValue
             }
         }
 
+        @Override
         public Object getTargetValue()
             throws IllegalAccessException, InvocationTargetException
         {
@@ -343,6 +349,7 @@ public class BorderDesignSupport implements FormDesignValue
             return readMethod.invoke(theBorder, new Object[0]);
         }
 
+        @Override
         public void setTargetValue(Object value)
             throws IllegalAccessException, IllegalArgumentException,
                    InvocationTargetException

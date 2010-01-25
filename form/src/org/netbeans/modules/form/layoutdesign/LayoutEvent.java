@@ -155,6 +155,7 @@ abstract class LayoutEvent extends EventObject {
             return index;
         }
 
+        @Override
         void undo() {
             switch (getType()) {
                 case INTERVAL_ADDED:
@@ -184,6 +185,7 @@ abstract class LayoutEvent extends EventObject {
             }
         }
 
+        @Override
         void redo() {
             switch (getType()) {
                 case INTERVAL_ADDED:
@@ -275,6 +277,7 @@ abstract class LayoutEvent extends EventObject {
             this.dimension = dimension;
         }
 
+        @Override
         void undo() {
             switch (getType()) {
                 case COMPONENT_ADDED:
@@ -307,6 +310,7 @@ abstract class LayoutEvent extends EventObject {
             }
         }
 
+        @Override
         void redo() {
             switch (getType()) {
                 case COMPONENT_ADDED:

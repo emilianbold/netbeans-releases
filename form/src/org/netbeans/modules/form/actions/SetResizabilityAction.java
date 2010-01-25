@@ -66,19 +66,23 @@ public class SetResizabilityAction extends NodeAction {
 
     private JCheckBoxMenuItem[] items;
     
+    @Override
     protected boolean enable(Node[] nodes) {
         List comps = FormUtils.getSelectedLayoutComponents(nodes);
         return ((comps != null) && (comps.size() > 0));
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(SetResizabilityAction.class, "ACT_SetResizability"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) { }
 
     @Override
@@ -99,13 +103,16 @@ public class SetResizabilityAction extends NodeAction {
         HelpCtx.setHelpIDString(popupMenu, SetResizabilityAction.class.getName());
         
         popupMenu.addMenuListener(new MenuListener() {
+            @Override
             public void menuSelected(MenuEvent e) {
                 JMenu menu = (JMenu) e.getSource();
                 createResizabilitySubmenu(menu);
             }
             
+            @Override
             public void menuDeselected(MenuEvent e) {}
             
+            @Override
             public void menuCanceled(MenuEvent e) {}
         });
         return popupMenu;
@@ -180,6 +187,7 @@ public class SetResizabilityAction extends NodeAction {
     }
 
     private static class ResizabilityMenuItemListener implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent evt) {
             Object source = evt.getSource();
             if (!(source instanceof ResizabilityMenuItem)) {

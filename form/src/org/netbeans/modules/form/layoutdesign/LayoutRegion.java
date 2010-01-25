@@ -147,9 +147,7 @@ class LayoutRegion implements LayoutConstants {
     void set(int dimension, LayoutRegion reg) {
         int[] pos = positions[dimension];
         int[] setPos = reg.positions[dimension];
-        for (int j=0; j < pos.length; j++) {
-            pos[j] = setPos[j];
-        }
+        System.arraycopy(setPos, 0, pos, 0, pos.length);
     }
 
     void set(int dimension, int leading, int trailing) {

@@ -54,6 +54,7 @@ class FakeScrollPanePeer extends FakeContainerPeer
         super(target);
     }
 
+    @Override
     Component createDelegate() {
         return new Delegate();
     }

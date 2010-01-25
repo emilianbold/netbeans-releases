@@ -93,7 +93,7 @@ public class ListModelEditor extends StringArrayEditor implements NamedPropertyE
     public String getJavaInitializationString() {
         if (getStrings(true).equals(""))
             return null;
-        StringBuffer buf = new StringBuffer("new javax.swing.AbstractListModel() {\n"); // NOI18N
+        StringBuilder buf = new StringBuilder("new javax.swing.AbstractListModel() {\n"); // NOI18N
         buf.append("String[] strings = { "); // NOI18N
         buf.append(getStrings(true));
         buf.append(" };\n"); // NOI18N

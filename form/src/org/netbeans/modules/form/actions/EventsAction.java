@@ -65,22 +65,27 @@ import org.netbeans.modules.form.*;
 
 public class EventsAction extends CookieAction {
 
+    @Override
     protected int mode() {
         return MODE_EXACTLY_ONE; // can be invoked on just one node
     }
 
+    @Override
     protected Class[] cookieClasses() {
         return new Class[] { RADComponentCookie.class };
     }
 
+    @Override
     public String getName() {
         return NbBundle.getBundle(EventsAction.class).getString("ACT_Events"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
     }
 
@@ -102,13 +107,16 @@ public class EventsAction extends CookieAction {
         HelpCtx.setHelpIDString(popupMenu, EventsAction.class.getName());
         
         popupMenu.addMenuListener(new MenuListener() {
+            @Override
             public void menuSelected(MenuEvent e) {
                 JMenu menu = (JMenu) e.getSource();
                 createEventSubmenu(menu);
             }
             
+            @Override
             public void menuDeselected(MenuEvent e) {}
             
+            @Override
             public void menuCanceled(MenuEvent e) {}
         });
         return popupMenu;
@@ -263,6 +271,7 @@ public class EventsAction extends CookieAction {
     }
 
     private static class EventMenuItemListener implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent evt) {
             Object source = evt.getSource();
             if (!(source instanceof EventMenuItem))

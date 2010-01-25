@@ -64,10 +64,12 @@ public class CustomizeEmptySpaceAction extends CookieAction {
     private static String name;
     private Dialog dialog;
 
+    @Override
     protected int mode() {
         return MODE_EXACTLY_ONE;
     }
 
+    @Override
     protected Class[] cookieClasses() {
         return new Class[] { RADComponentCookie.class };
     }
@@ -82,6 +84,7 @@ public class CustomizeEmptySpaceAction extends CookieAction {
      *
      * @return the name of the action
      */
+    @Override
     public String getName() {
         if (name == null)
             name = org.openide.util.NbBundle.getBundle(CustomizeEmptySpaceAction.class)
@@ -89,6 +92,7 @@ public class CustomizeEmptySpaceAction extends CookieAction {
         return name;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -103,6 +107,7 @@ public class CustomizeEmptySpaceAction extends CookieAction {
      *
      * @param activatedNodes gives array of actually activated nodes.
      */
+    @Override
     protected void performAction(Node[] activatedNodes) {
         java.util.List comps = FormUtils.getSelectedLayoutComponents(activatedNodes);
         if ((comps == null) || (comps.size() != 1)) return;
@@ -119,6 +124,7 @@ public class CustomizeEmptySpaceAction extends CookieAction {
             DialogDescriptor.DEFAULT_ALIGN,
             HelpCtx.DEFAULT_HELP,
             new java.awt.event.ActionListener() {
+            @Override
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
                     if (evt.getSource() == NotifyDescriptor.OK_OPTION) {
                         if (customizer.checkValues()) {

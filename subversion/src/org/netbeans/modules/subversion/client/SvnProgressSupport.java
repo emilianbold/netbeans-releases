@@ -162,7 +162,7 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
 
     protected ProgressHandle getProgressHandle() {
         if(progressHandle == null) {
-            progressHandle = ProgressHandleFactory.createHandle(displayName, this, getLogger().getOpenOuptutAction());
+            progressHandle = ProgressHandleFactory.createHandle(displayName, this, getLogger().getOpenOutputAction());
         }
         return progressHandle;
     }

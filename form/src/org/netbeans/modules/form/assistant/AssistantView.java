@@ -112,10 +112,12 @@ public class AssistantView extends JPanel {
 
     private class Listener implements ActionListener, PropertyChangeListener {
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             FormLoaderSettings.getInstance().setAssistantShown(false);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String[] messages = model.getMessages();
             String message = null;
