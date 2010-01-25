@@ -48,6 +48,7 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
 import java.io.File;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -200,7 +201,7 @@ public class CommitTableModel extends AbstractTableModel {
     }
 
     private void defaultCommitOptions() {
-        boolean excludeNew = System.getProperty("netbeans.subversion.excludeNewFiles") != null; // NOI18N
+        boolean excludeNew = SvnModuleConfig.getDefault().getExludeNewFiles();
         commitOptions = SvnUtils.createDefaultCommitOptions(nodes, excludeNew);
     }
 

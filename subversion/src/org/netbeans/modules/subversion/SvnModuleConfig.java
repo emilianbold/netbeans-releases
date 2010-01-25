@@ -81,6 +81,7 @@ public class SvnModuleConfig {
     private static final String LAST_USED_MODIFICATION_CONTEXT = "lastUsedModificationContext"; //NOI18N
     public static final String KEY_PASSWORD = "versioning.subversion."; //NOI18N
     public static final String KEY_CERT_PASSWORD = "versioning.subversion.cert."; //NOI18N
+    private static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles"; //NOI18N
 
     private static final SvnModuleConfig INSTANCE = new SvnModuleConfig();    
         
@@ -320,6 +321,14 @@ public class SvnModuleConfig {
 
     public void setLastUsedModificationContext (int lastUsedContext) {
         getPreferences().putInt(LAST_USED_MODIFICATION_CONTEXT, lastUsedContext);
+    }
+
+    public boolean getExludeNewFiles () {
+        return getPreferences().getBoolean(PROP_EXCLUDE_NEW_FILES, false);
+    }
+
+    public void setExcludeNewFiles (boolean excludeNewFiles) {
+        getPreferences().putBoolean(PROP_EXCLUDE_NEW_FILES, excludeNewFiles);
     }
     
     // private methods ~~~~~~~~~~~~~~~~~~

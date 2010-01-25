@@ -143,7 +143,6 @@ public class MercurialAnnotator extends VCSAnnotator {
     private MessageFormat format;
     private String emptyFormat;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private static final RequestProcessor rp = new RequestProcessor("MercurialAnnotateScan", 1, true); // NOI18N
 
     private static String badgeModified = "org/netbeans/modules/mercurial/resources/icons/modified-badge.png";
     private static String badgeConflicts = "org/netbeans/modules/mercurial/resources/icons/conflicts-badge.png";
@@ -151,8 +150,6 @@ public class MercurialAnnotator extends VCSAnnotator {
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Modified_Locally");
     private static String toolTipConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Conflicts");
-
-    private final WeakSet<Map<File, FileInformation>> allModifiedFiles = new WeakSet<Map<File, FileInformation>>(1);
 
     public MercurialAnnotator() {
         cache = Mercurial.getInstance().getFileStatusCache();

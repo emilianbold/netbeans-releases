@@ -88,6 +88,7 @@ public class HgModuleConfig {
     private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";        // NOI18N
     private static final String CONFIRM_BEFORE_COMMIT_AFTER_MERGE = "confirmBeforeCommitAfterMerge"; //NOI18N
     private static final String KEY_INTERNAL_MERGE_TOOL_ENABLED = "hgmerge.internalTool.enabled"; //NOI18N
+    private static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles"; //NOI18N
 
     private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
     private static final String SHOW_CLONE_COMPLETED = "cloneCompleted.showCloneCompleted";        // NOI18N  
@@ -405,6 +406,14 @@ public class HgModuleConfig {
      */
     public Properties getProperties(File file, String section) {
         return getHgConfigFiles(file).getProperties(section);
+    }
+
+    public boolean getExludeNewFiles () {
+        return getPreferences().getBoolean(PROP_EXCLUDE_NEW_FILES, false);
+    }
+
+    public void setExcludeNewFiles (boolean excludeNewFiles) {
+        getPreferences().putBoolean(PROP_EXCLUDE_NEW_FILES, excludeNewFiles);
     }
 
     private HgConfigFiles getHgConfigFiles(File file) {
