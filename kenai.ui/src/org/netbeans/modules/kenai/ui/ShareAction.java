@@ -43,6 +43,7 @@ import java.io.File;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -177,7 +178,10 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
             Node[] n = WindowManager.getDefault().getRegistry().getActivatedNodes();
             if (n.length > 0) {
                 if (n.length == 1) {
-                    if (inDashboard(n[0].getLookup().lookup(Project.class))) {
+                    Project prj  = n[0].getLookup().lookup(Project.class);
+                    if (prj==null) {
+                        Logger.getLogger(ShareAction.class.getName()).fine("ShareAction: cannot find project for node " + n[0].getDisplayName());
+                    } else if (inDashboard(prj)) {
                         JMenuItem dummy = new JMenuItem();
                         dummy.setVisible(false);
                         return dummy;
