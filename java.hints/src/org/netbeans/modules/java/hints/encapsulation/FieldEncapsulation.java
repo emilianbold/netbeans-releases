@@ -57,6 +57,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
@@ -164,7 +167,20 @@ public class FieldEncapsulation {
             final FileObject file = handle.getFileObject();
             final JTextComponent comp = EditorRegistry.lastFocusedComponent();
             if (file != null && file == getFileObject(comp)) {
-                invokeRefactoring (comp);
+                final int[] pos = new int[]{-1};
+                JavaSource.forFileObject(file).runUserActionTask(new Task<CompilationController>(){
+                    @Override
+                    public void run(CompilationController info) throws Exception {
+                        info.toPhase(JavaSource.Phase.PARSED);
+                        final TreePath tp = handle.resolve(info);
+                        if (tp != null && tp.getLeaf().getKind() == Tree.Kind.VARIABLE) {
+                            pos[0] = (int) info.getTrees().getSourcePositions().getEndPosition(
+                                    tp.getCompilationUnit(),
+                                    ((VariableTree)tp.getLeaf()).getType()) + 1;
+                        }
+                    }
+                }, true);
+                invokeRefactoring (comp, pos[0]);
             }
             return null;
         }
@@ -191,7 +207,7 @@ public class FieldEncapsulation {
          * todo:
          * Currently there is no API to invoke encapsulate field action.
          */
-        private void invokeRefactoring(final JTextComponent component) {
+        private void invokeRefactoring(final JTextComponent component, final int position) {
             final FileObject cfgRoot = FileUtil.getConfigRoot();
             final FileObject actionFile = cfgRoot.getFileObject(ACTION_PATH);
             if (actionFile == null) {
@@ -208,6 +224,9 @@ public class FieldEncapsulation {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
+                        if (position != -1) {
+                            component.setCaretPosition(position);
+                        }
                         ((Action)instance).actionPerformed(new ActionEvent(component, 0, null));
                     }
                 });

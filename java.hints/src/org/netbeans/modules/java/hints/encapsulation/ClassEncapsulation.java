@@ -54,6 +54,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
@@ -146,7 +149,20 @@ public class ClassEncapsulation {
             final FileObject file = handle.getFileObject();
             final JTextComponent component = EditorRegistry.lastFocusedComponent();
             if (file != null && file == getFileObject(component)) {
-                invokeRefactoring(component);
+                final int[] position = new int[] {-1};
+                JavaSource.forFileObject(file).runUserActionTask(new Task<CompilationController>() {
+                    @Override
+                    public void run(CompilationController controller) throws Exception {
+                        controller.toPhase(JavaSource.Phase.PARSED);
+                        final TreePath tp = handle.resolve(controller);
+                        if (tp != null && tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                            position[0] = (int) controller.getTrees().getSourcePositions().getStartPosition(
+                                    tp.getCompilationUnit(),
+                                    (ClassTree)tp.getLeaf())+1;
+                        }
+                    }
+                }, true);
+                invokeRefactoring(component, position[0]);
             }
             return null;
         }
@@ -169,7 +185,7 @@ public class ClassEncapsulation {
             return null;
         }
 
-        private void invokeRefactoring(final JTextComponent component) {
+        private void invokeRefactoring(final JTextComponent component, final int position) {
             assert component != null;
             final FileObject cfgRoot = FileUtil.getConfigRoot();
             final FileObject actionFo = cfgRoot.getFileObject(ACTION_PATH);
@@ -190,6 +206,9 @@ public class ClassEncapsulation {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
+                        if (position != -1) {
+                            component.setCaretPosition(position);
+                        }
                         ((Action)instance).actionPerformed(new ActionEvent(component, 0, null));
                     }
                 });
