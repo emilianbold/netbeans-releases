@@ -44,7 +44,6 @@ package org.netbeans.modules.form.beaninfo.awt;
 import java.awt.Image;
 import java.beans.*;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /** Base class for awt components - toolbars, checkboxes...
 *
