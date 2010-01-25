@@ -58,10 +58,12 @@ final public class EntityResourcesSetupPanel extends AbstractPanel {
         super(name, wizardDescriptor);
     }
     
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
 
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new EntityResourcesSetupPanelVisual(panelName);
@@ -70,10 +72,12 @@ final public class EntityResourcesSetupPanel extends AbstractPanel {
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
