@@ -219,27 +219,16 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         if (remoteTmpDir == null) {
             final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
             MacroExpander expander = MacroExpanderFactory.getExpander(local);
-            String id = local.getHost();
+            String id;
             try {
                 id = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
             } catch (ParseException ex) {
+                id = local.getHost();
                 Exceptions.printStackTrace(ex);
             }
-            remoteTmpDir = "/tmp/" + getLocalHostIdString();
+            remoteTmpDir = "/tmp/" + id + "-" + System.getProperty("user.name") + "-" + getTestExecutionEnvironment().getUser();
         }
         return remoteTmpDir;
-    }
-
-    private synchronized String getLocalHostIdString() {
-        final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
-        MacroExpander expander = MacroExpanderFactory.getExpander(local);
-        String id = local.getHost();
-        try {
-            id = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return id;
     }
 
     protected static void setupHost(ExecutionEnvironment execEnv) {
