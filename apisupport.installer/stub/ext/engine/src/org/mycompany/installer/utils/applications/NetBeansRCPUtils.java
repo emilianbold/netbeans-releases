@@ -37,6 +37,7 @@
 package org.mycompany.installer.utils.applications;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,7 +81,7 @@ public class NetBeansRCPUtils {
             }
         }
         dir = dir.replace(USER_HOME_TOKEN, userHome);
-        dir = dir.replace(APPNAME_TOKEN, appLocation.getName());
+        dir = dir.replace(APPNAME_TOKEN, getApplicationName(appLocation));
         return new File(dir);
     }
     
@@ -90,8 +91,29 @@ public class NetBeansRCPUtils {
      * @throws IOException if can`t get  default userdir
      */
     public static String getApplicationUserDir(File appLocation) throws IOException {
-        File conf = new File(appLocation, "etc/" +
-                appLocation.getName() + ".conf");
+        File []confFiles = new File(appLocation, "etc").listFiles(new FilenameFilter() {
+
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".conf");
+            }
+        });
+        File conf = null;
+        if(confFiles.length == 1) {
+            conf = confFiles[0];
+        } else if(confFiles.length >2) {
+            for(File f : confFiles) {
+                String prefix = f.getName().substring(0, f.getName().indexOf(".conf"));                
+                if((SystemUtils.isUnix() && new File(appLocation, "bin/" + prefix).exists()) ||
+                   (SystemUtils.isWindows() && new File(appLocation, "bin/" + prefix + ".exe").exists())) {
+                    conf = f;
+                    break;
+                }                
+            }
+        }
+        if(conf == null) {
+            return null;
+        }
+
         String contents = FileUtils.readFile(conf);
         Matcher matcher = Pattern.compile(
                 NEW_LINE_PATTERN + SPACES_PATTERN +
@@ -103,6 +125,34 @@ public class NetBeansRCPUtils {
             throw new IOException(StringUtils.format(
                     ERROR_CANNOT_GET_USERDIR_STRING,conf));
         }
+    }
+
+    /**
+     * Get application name - i.e. <name> in bin/<name>.exe and etc/<name>.conf
+     * @param appLocation Application home directory
+     */
+    public static String getApplicationName(File appLocation)  {
+        File []confFiles = new File(appLocation, "etc").listFiles(new FilenameFilter() {
+
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".conf");
+            }
+        });
+
+        if(confFiles.length == 1) {
+            String name = confFiles[0].getName();
+            return name.substring(0, name.indexOf(".conf"));
+        } else if(confFiles.length >2) {
+            for(File f : confFiles) {
+                String name = f.getName();
+                String prefix = name.substring(0, name.indexOf(".conf"));
+                if((SystemUtils.isUnix() && new File(appLocation, "bin/" + prefix).exists()) ||
+                   (SystemUtils.isWindows() && new File(appLocation, "bin/" + prefix + ".exe").exists())) {
+                    return prefix;
+                }
+            }
+        }
+        return null;
     }
     
 
