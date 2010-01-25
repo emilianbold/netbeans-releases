@@ -1495,7 +1495,7 @@ public class LayoutDesigner implements LayoutConstants {
      * @param targetContainerId the Id of the target container
      */
     public void copyLayout(LayoutModel sourceModel, Map<String, String> sourceToTargetId, String targetContainerId) {
-        if (sourceToTargetId.size() == 0) {
+        if (sourceToTargetId.isEmpty()) {
             return;
         }
         if (sourceModel == null) {
