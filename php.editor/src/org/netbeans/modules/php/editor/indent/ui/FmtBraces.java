@@ -39,12 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.php.editor.indent;
+package org.netbeans.modules.php.editor.indent.ui;
 
 import java.io.IOException;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.netbeans.modules.php.editor.indent.FmtOptions;
 import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
-import org.netbeans.modules.php.editor.indent.ui.Utils;
 
 
 /**

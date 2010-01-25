@@ -179,12 +179,12 @@
                     <folder name="x-php5">
                         <file name="TabsAndIndents.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.FmtTabsIndents.getController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtTabsIndents.getController"/>
                             <attr name="position" intvalue="100"/>
                         </file>
                         <file name="Braces.instance">
                             <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
-                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.FmtBraces.getController"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtBraces.getController"/>
                             <attr name="position" intvalue="300"/>
                         </file>
                         <file name="BlankLines.instance">

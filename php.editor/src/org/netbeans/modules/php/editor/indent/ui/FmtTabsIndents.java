@@ -39,12 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.php.editor.indent;
+package org.netbeans.modules.php.editor.indent.ui;
 
 import java.io.IOException;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.netbeans.modules.php.editor.indent.FmtOptions;
 import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
-import org.netbeans.modules.php.editor.indent.ui.Utils;
 import static  org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
 
 /**
@@ -72,8 +72,8 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         } catch (IOException ex) {
             // TODO log it
         }
-        return new CategorySupport.Factory(PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtTabsIndents.class, //NOI18N
-                preview, // NOI18N
+        return new CategorySupport.Factory(PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtTabsIndents.class,
+                preview, 
                 new String[] { FmtOptions.rightMargin, "30" }, //NOI18N
                 new String[] { FmtOptions.initialIndent, "0" } //NOI18N
                 );
@@ -111,7 +111,7 @@ public class FmtTabsIndents extends javax.swing.JPanel {
                 .add(continuationIndentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
             .add(layout.createSequentialGroup()
                 .add(initialIndentLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 116, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 125, Short.MAX_VALUE)
                 .add(initialIndentSizeField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 36, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
