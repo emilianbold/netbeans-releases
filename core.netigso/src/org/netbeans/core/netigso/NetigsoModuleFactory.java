@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -64,6 +65,7 @@ import org.netbeans.Module;
 import org.netbeans.ModuleFactory;
 import org.netbeans.ModuleManager;
 import org.netbeans.Stamps;
+import org.netbeans.core.startup.ModuleSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -246,7 +248,19 @@ implements Stamps.Updater {
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
             activator = new NetigsoActivator();
             configMap.put("felix.bootdelegation.classloaders", activator);
-            FrameworkFactory frameworkFactory = Lookup.getDefault().lookup(FrameworkFactory.class);
+            FrameworkFactory frameworkFactory = null;
+            for (FrameworkFactory f : ServiceLoader.load(FrameworkFactory.class)) {
+                if (frameworkFactory != null && f.getClass().getName().contains("org.apache.felix")) { // NOI18N
+                    // skip the bundled value
+                    continue;
+                }
+                frameworkFactory = f;
+                NetigsoModule.LOG.log(Level.FINER, "Found framework {0}", f);
+                if (!frameworkFactory.getClass().getName().contains("org.apache.felix")) { // NOI18N
+                    break;
+                }
+            }
+            NetigsoModule.LOG.log(Level.FINE, "Using framework {0}", frameworkFactory);
             framework = frameworkFactory.newFramework(configMap);
             framework.init();
             new NetigsoServices(framework);

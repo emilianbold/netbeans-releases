@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Collections;
-import java.util.Collections;
 import java.util.Map;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
