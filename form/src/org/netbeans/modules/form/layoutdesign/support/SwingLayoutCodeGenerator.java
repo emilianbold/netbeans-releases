@@ -404,7 +404,7 @@ public class SwingLayoutCodeGenerator {
                 }
             });
             if (l.size() > 1) {
-                layout.append("\n\n" + layoutVarName + ".linkSize("); // NOI18N
+                layout.append("\n\n").append(layoutVarName).append(".linkSize("); // NOI18N
                 if (!useLayoutLibrary()) {
                     layout.append("javax.swing.SwingConstants"); // NOI18N
                     layout.append(dimension == LayoutConstants.HORIZONTAL ?
@@ -420,7 +420,7 @@ public class SwingLayoutCodeGenerator {
                         first = false;
                         layout.append(info.variableName);
                     } else {
-                        layout.append(", " + info.variableName); // NOI18N
+                        layout.append(", ").append(info.variableName); // NOI18N
                     }
                 }
                 layout.append( "}"); // NOI18N
