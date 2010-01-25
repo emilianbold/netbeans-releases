@@ -115,7 +115,7 @@ public class OverridableMethodCallInConstructorTest extends TestBase {
                             "}"
                             );
     }
-    @RandomlyFails // not randomly ;-)
+    
     public void testDoNotReportForeignObjectMethodInvocations() throws Exception {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +
