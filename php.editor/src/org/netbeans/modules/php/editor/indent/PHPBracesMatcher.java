@@ -65,6 +65,7 @@ public final class PHPBracesMatcher implements BracesMatcher {
         this.context = context;
     }
 
+    @Override
     public int [] findOrigin() throws InterruptedException, BadLocationException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {
@@ -108,6 +109,7 @@ public final class PHPBracesMatcher implements BracesMatcher {
         }
     }
 
+    @Override
     public int [] findMatches() throws InterruptedException, BadLocationException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {

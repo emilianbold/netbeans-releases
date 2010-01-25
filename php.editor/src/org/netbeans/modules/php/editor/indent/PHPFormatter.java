@@ -86,10 +86,12 @@ public class PHPFormatter implements Formatter {
         LOG.fine("PHP Formatter: " + this); //NOI18N
     }
 
+    @Override
     public boolean needsParserResult() {
         return true;
     }
 
+    @Override
     public void reindent(Context context) {
         // Make sure we're not reindenting HTML content
 
@@ -105,6 +107,7 @@ public class PHPFormatter implements Formatter {
         indenter.process();
     }
 
+    @Override
     public void reformat(Context context, ParserResult info) {
         LOG.log(Level.FINE, "PHPFormatter snapshot: \n''{0}''\n", info.getSnapshot().getText().toString()); //NOI18N
 
@@ -117,10 +120,12 @@ public class PHPFormatter implements Formatter {
         astReformat(context, indentLevels);
     }
 
+    @Override
     public int indentSize() {
         return CodeStyle.get((Document) null).getIndentSize();
     }
 
+    @Override
     public int hangingIndentSize() {
         return CodeStyle.get((Document) null).getContinuationIndentSize();
     }
@@ -240,6 +245,7 @@ public class PHPFormatter implements Formatter {
 
         doc.runAtomic(new Runnable() {
 
+            @Override
             public void run() {
                 final WSTransformer wsTransformer = new WSTransformer(context);
                 PHPParseResult result = (PHPParseResult) info;
@@ -298,6 +304,7 @@ public class PHPFormatter implements Formatter {
             
             doc.runAtomic(new Runnable() {
 
+                @Override
                 public void run() {
                     int indentBias = 0;
                     boolean indentBiasCalculated = (startOffset == 0);

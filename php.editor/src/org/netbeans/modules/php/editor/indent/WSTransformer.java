@@ -39,25 +39,20 @@
 
 package org.netbeans.modules.php.editor.indent;
 
-import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
@@ -67,7 +62,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
-import org.openide.util.Exceptions;
 
 /**
  * This class calculates all white-space tranformations other than
@@ -741,6 +735,7 @@ class WSTransformer extends DefaultTreePathVisitor {
             return offset >= start && offset <= end;
         }
 
+        @Override
         public int compareTo(CodeRange o) {
             int r = start.compareTo(o.start);
 
