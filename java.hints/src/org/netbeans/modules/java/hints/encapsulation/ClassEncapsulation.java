@@ -43,15 +43,30 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
+import javax.swing.Action;
+import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.support.FixFactory;
+import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,6 +74,9 @@ import org.openide.util.NbBundle;
  * @author Tomas Zezula
  */
 public class ClassEncapsulation {
+
+    private static final String ACTION_PATH = "Actions/Refactoring/org-netbeans-modules-refactoring-java-api-ui-InnerToOuterAction.instance";   //NOI18N
+    private static final Logger LOG = Logger.getLogger(ClassEncapsulation.class.getName());
 
     @Hint(category="encapsulation",suppressWarnings={"PublicInnerClass"}, enabled=false)   //NOI18N
     @TriggerTreeKind(Kind.CLASS)
@@ -98,6 +116,7 @@ public class ClassEncapsulation {
             return null;
         }
         return ErrorDescriptionFactory.forName(ctx, tp, description,
+            new FixImpl(TreePathHandle.create(tp, ctx.getInfo())),
             FixFactory.createSuppressWarningsFix(ctx.getInfo(), tp, suppressWarnings));
     }
 
@@ -106,5 +125,82 @@ public class ClassEncapsulation {
             modifiers.contains(reqModifier):
             modifiers.isEmpty() ? true:
                 !EnumSet.copyOf(modifiers).removeAll(EnumSet.of(Modifier.PRIVATE, Modifier.PROTECTED, Modifier.PUBLIC));
+    }
+
+    private static class FixImpl implements Fix {
+
+        private final TreePathHandle handle;
+
+        private FixImpl(final TreePathHandle handle) {
+            assert handle != null;
+            this.handle = handle;
+        }
+
+        @Override
+        public String getText() {
+            return NbBundle.getMessage(ClassEncapsulation.class,"FIX_MoveInnerToOuter");
+        }
+
+        @Override
+        public ChangeInfo implement() throws Exception {
+            final FileObject file = handle.getFileObject();
+            final JTextComponent component = EditorRegistry.lastFocusedComponent();
+            if (file != null && file == getFileObject(component)) {
+                invokeRefactoring(component);
+            }
+            return null;
+        }
+
+        private static FileObject getFileObject (final JTextComponent comp) {
+            if (comp == null) {
+                return null;
+            }
+            final Document doc = comp.getDocument();
+            if (doc == null) {
+                return null;
+            }
+            final Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
+            if (sdp instanceof FileObject) {
+                return (FileObject)sdp;
+            }
+            if (sdp instanceof DataObject) {
+                return ((DataObject)sdp).getPrimaryFile();
+            }
+            return null;
+        }
+
+        private void invokeRefactoring(final JTextComponent component) {
+            assert component != null;
+            final FileObject cfgRoot = FileUtil.getConfigRoot();
+            final FileObject actionFo = cfgRoot.getFileObject(ACTION_PATH);
+            if (actionFo == null) {
+                LOG.warning("Move Inner to Outer action not found at: " + ACTION_PATH); //NOI18N
+                return;
+            }
+            try {
+                final DataObject actionDobj = DataObject.find(actionFo);
+                final InstanceCookie ic = actionDobj.getLookup().lookup(InstanceCookie.class);
+                if (ic == null) {
+                    throw new IOException();
+                }
+                final Object instance = ic.instanceCreate();
+                if (!(instance instanceof Action)) {
+                    throw new IOException();
+                }
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((Action)instance).actionPerformed(new ActionEvent(component, 0, null));
+                    }
+                });
+            } catch (IOException ioe) {
+                LOG.warning("Move Inner to Outer action is broken: " + ACTION_PATH); //NOI18N
+                return;
+            } catch (ClassNotFoundException cnf) {
+                LOG.warning("Move Inner to Outer action is broken: " + ACTION_PATH); //NOI18N
+                return;
+            }
+        }
+
     }
 }

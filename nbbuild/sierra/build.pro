@@ -46,8 +46,13 @@
     <property name="netbeans.type" value="java"/>
 
     <!-- NetBeans latest nightly -->
-    <property name="netbeans.host" value="http://bits.netbeans.org"/>
-    <property name="netbeans.path" value="download/trunk/nightly/latest/zip"/>
+    <!-- property name="netbeans.host" value="http://bits.netbeans.org"/ -->
+    <!-- property name="netbeans.path" value="download/trunk/nightly/latest/zip"/ -->
+    <!-- property name="netbeans.user" value=".netbeans/dev"/ -->
+
+    <!-- NetBeans latest daily -->
+    <property name="netbeans.host" value="http://smetiste.czech.sun.com"/>
+    <property name="netbeans.path" value="builds/netbeans/trunk/daily/latest/zip"/>
     <property name="netbeans.user" value=".netbeans/dev"/>
 
     <!-- Sierra latest continuous -->

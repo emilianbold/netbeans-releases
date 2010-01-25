@@ -49,7 +49,12 @@ if [ -z ${UPLOAD_ML} ]; then
 fi
 
 export ANT_OPTS="-Xmx512m -XX:MaxPermSize=256m"
-export JAVA_HOME=$JDK_HOME
+
+if [ -n ${JDK_HOME} ] && [ -z ${JAVA_HOME} ] ; then
+    export JAVA_HOME=$JDK_HOME
+elif [ -n ${JAVA_HOME} ] && [ -z ${JDK_HOME} ]; then
+    export JDK_HOME=$JAVA_HOME
+fi
 
 if [ -z ${DATESTAMP} ]; then
     if [ -z ${BUILD_ID} ]; then
