@@ -2181,7 +2181,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    public final void fixFakeRegistration(boolean libsAlreadyParsed){
+    private void fixFakeRegistration(boolean libsAlreadyParsed){
         Collection<CsmUID<CsmFile>> files = getAllFilesUID();
         int size = files.size();
         int threads = CndUtils.getNumberCndWorkerThreads()*3;
