@@ -187,6 +187,11 @@ public final class FixFactory {
             return Collections.emptyList();
         }        
     }
+
+    //XXX: probably should not be in the "SPI"
+    public static boolean isSuppressWarningsFix(Fix f) {
+        return f instanceof FixImpl;
+    }
     
     private static boolean isSuppressWarningsSupported(CompilationInfo info) {
         //cannot suppress if there is no SuppressWarnings annotation in the platform:

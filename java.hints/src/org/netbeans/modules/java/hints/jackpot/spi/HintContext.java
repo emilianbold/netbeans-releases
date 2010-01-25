@@ -41,6 +41,7 @@ package org.netbeans.modules.java.hints.jackpot.spi;
 
 import com.sun.source.util.TreePath;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -60,6 +61,7 @@ public class HintContext {
     private final CompilationInfo info;
     private final Preferences preferences;
     private final HintSeverity severity;
+    private final Collection<? extends String> suppressWarningsKeys;
     private final TreePath path;
     private final Map<String, TreePath> variables;
     private final Map<String, Collection<? extends TreePath>> multiVariables;
@@ -74,6 +76,7 @@ public class HintContext {
         this.info = info;
         this.preferences = metadata != null ? RulesManager.getPreferences(metadata.id, HintsSettings.getCurrentProfileId()) : null;
         this.severity = preferences != null ? HintsSettings.getSeverity(metadata, preferences) : HintSeverity.ERROR;
+        this.suppressWarningsKeys = metadata != null ? metadata.suppressWarnings : Collections.<String>emptyList();
         this.path = path;
 
         variables = new HashMap<String, TreePath>(variables);
@@ -111,6 +114,10 @@ public class HintContext {
 
     public Map<String, String> getVariableNames() {
         return variableNames;
+    }
+
+    public Collection<? extends String> getSuppressWarningsKeys() {
+        return suppressWarningsKeys;
     }
 
     /**
