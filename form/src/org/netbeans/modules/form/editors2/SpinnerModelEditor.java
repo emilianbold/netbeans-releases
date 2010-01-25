@@ -479,7 +479,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
         while (st.hasMoreTokens()) {
             items.add(st.nextToken());
         }
-        if (items.size() == 0) {
+        if (items.isEmpty()) {
             items.add(""); // NOI18N
         }
         return items;
