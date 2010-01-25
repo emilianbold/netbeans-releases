@@ -105,7 +105,7 @@ final class CodeObjectUsage {
     }
 
     public boolean isEmpty() {
-        return usageList == null || usageList.size() == 0;
+        return usageList == null || usageList.isEmpty();
     }
 
     // -------
