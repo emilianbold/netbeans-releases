@@ -220,6 +220,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
     public static final String XML_KEYSTROKE = "KeyStroke"; // NOI18N
     public static final String ATTR_KEY = "key"; // NOI18N
 
+    @Override
     public void readFromXML(org.w3c.dom.Node element) throws java.io.IOException {
         if (!XML_KEYSTROKE.equals(element.getNodeName())) {
             throw new java.io.IOException();
@@ -238,6 +239,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
         }
     }
 
+    @Override
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         KeyStroke key = (KeyStroke) getValue();
         String str = key != null ? keyStrokeAsString(key, false) : "null"; // NOI18N
@@ -262,6 +264,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
     }
     
     // NamedPropertyEditor implementation
+    @Override
     public String getDisplayName() {
         return NbBundle.getBundle(getClass()).getString("CTL_KeyStrokeEditor_DisplayName"); // NOI18N
     }
@@ -367,6 +370,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             keyStrokeLabel.setLabelFor(_keyGrabber);
 
             _keyGrabber.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent ev) {
                     setAsText(_keyGrabber.getText());
                 }
@@ -408,6 +412,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             // listeners
 
             ItemListener il = new ItemListener() {
+                @Override
                 public void itemStateChanged(ItemEvent e) {
                     virtualKeyChanged();
                 }

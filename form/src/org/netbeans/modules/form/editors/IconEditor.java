@@ -231,6 +231,7 @@ public class IconEditor extends PropertyEditorSupport
     }
 
     // FormAwareEditor implementation
+    @Override
     public void setContext(FormModel model, FormProperty prop) {
         if (model != null) { // might be null when loaded as constraints property of JTabbedPane's tab
             this.sourceFile = FormEditor.getFormDataObject(model).getPrimaryFile();
@@ -243,6 +244,7 @@ public class IconEditor extends PropertyEditorSupport
     }
 
     // FormAwareEditor implementation
+    @Override
     public void updateFormVersionLevel() {
     }
 
@@ -517,6 +519,7 @@ public class IconEditor extends PropertyEditorSupport
         }
 
         // FormDesignValue implementation
+        @Override
         public Object getDesignValue() {
             return icon;
         }
@@ -553,6 +556,7 @@ public class IconEditor extends PropertyEditorSupport
     /** Attribute holding icon name. */
     public static final String ATTR_NAME = "name"; // NOI18N
 
+    @Override
     public void readFromXML(org.w3c.dom.Node element) throws java.io.IOException {
         if (!XML_IMAGE.equals(element.getNodeName())) {
             throw new java.io.IOException();
@@ -590,6 +594,7 @@ public class IconEditor extends PropertyEditorSupport
         }
     }
 
+    @Override
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         org.w3c.dom.Element el = doc.createElement(XML_IMAGE);
         Object value = getValue();

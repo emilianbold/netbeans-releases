@@ -548,10 +548,12 @@ public class CustomIconEditor extends javax.swing.JPanel {
             return file.getNameExt();
         }
 
+        @Override
         public int compareTo(Object obj) {
             return toString().compareTo(obj.toString());
         }
 
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             if (icon == null) {
                 return;
@@ -570,10 +572,12 @@ public class CustomIconEditor extends javax.swing.JPanel {
             icon.paintIcon(c, g, x + ((maxW - w) / 2), y + ((maxH - h) / 2));
         }
 
+        @Override
         public int getIconWidth() {
             return maxW;
         }
 
+        @Override
         public int getIconHeight() {
             return maxH;
         }
@@ -686,6 +690,7 @@ public class CustomIconEditor extends javax.swing.JPanel {
         ClassPathFileChooser chooser = new ClassPathFileChooser(
                     propertyEditor.getSourceFile(),
                     new ClassPathFileChooser.Filter() {
+                        @Override
                         public boolean accept(FileObject fo) {
                             return fo.isFolder() || IconEditor.isImageFileName(fo.getNameExt());
                         }
@@ -724,9 +729,11 @@ public class CustomIconEditor extends javax.swing.JPanel {
         fileChooser.setControlButtonsAreShown(true);
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override
             public boolean accept(File f) {
                 return f.isDirectory() || IconEditor.isImageFileName(f.getName());
             }
+            @Override
             public String getDescription() {
                 return NbBundle.getMessage(CustomIconEditor.class, "CTL_ImagesExtensionName"); // NOI18N
             }
