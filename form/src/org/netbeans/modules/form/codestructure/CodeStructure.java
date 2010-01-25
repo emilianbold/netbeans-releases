@@ -742,7 +742,7 @@ public class CodeStructure {
         redoMap.clear();
         lastUndone = -1;
 
-        if (undoMap.size() == 0)
+        if (undoMap.isEmpty())
             oldestMark = undoRedoMark;
 
         t("adding undoable change "+undoRedoMark); // NOI18N
