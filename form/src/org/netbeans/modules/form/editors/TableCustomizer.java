@@ -929,7 +929,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         }
         if (fromComponent) {
             checkModelFromComponent();
-            if (columns.size() == 0) userCode = true; // Hide content of columns section
+            if (columns.isEmpty()) userCode = true; // Hide content of columns section
         }
         columnsScrollPane.setVisible(!userCode);
         columnCountLabel.setVisible(!userCode && !fromComponent);
