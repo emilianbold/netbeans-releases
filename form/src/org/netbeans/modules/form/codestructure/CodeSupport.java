@@ -73,14 +73,17 @@ class CodeSupport {
             parameters = params != null ? params : CodeStructure.EMPTY_PARAMS;
         }
 
+        @Override
         public Object getMetaObject() {
             return performMethod;
         }
 
+        @Override
         public CodeExpression[] getStatementParameters() {
             return parameters;
         }
         
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             StringBuffer buf = new StringBuffer();
 
@@ -118,14 +121,17 @@ class CodeSupport {
             parameters = new CodeExpression[] { assignedExp };
         }
 
+        @Override
         public Object getMetaObject() {
             return assignField;
         }
 
+        @Override
         public CodeExpression[] getStatementParameters() {
             return parameters;
         }
 
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             StringBuffer buf = new StringBuffer();
 
@@ -152,14 +158,17 @@ class CodeSupport {
             variable = var;
         }
 
+        @Override
         public Object getMetaObject() {
             return parentExpression;
         }
 
+        @Override
         public CodeExpression[] getStatementParameters() {
             return parentExpression.getOrigin().getCreationParameters();
         }
 
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             StringBuffer buf = new StringBuffer();
             int varType = variable.getType();
@@ -194,14 +203,17 @@ class CodeSupport {
             variable = var;
         }
 
+        @Override
         public Object getMetaObject() {
             return variable;
         }
 
+        @Override
         public CodeExpression[] getStatementParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
 
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             StringBuffer buf = new StringBuffer();
             int type = variable.getType();
@@ -263,18 +275,22 @@ class CodeSupport {
             parameters = params != null ? params : CodeStructure.EMPTY_PARAMS;
         }
 
+        @Override
         public Class getType() {
             return constructor.getDeclaringClass();
         }
 
+        @Override
         public CodeExpression getParentExpression() {
             return null;
         }
 
+        @Override
         public Object getMetaObject() {
             return constructor;
         }
 
+        @Override
         public Object getValue() {
             Object[] params = new Object[parameters.length];
             for (int i=0; i < params.length; i++) {
@@ -295,10 +311,12 @@ class CodeSupport {
             }
         }
 
+        @Override
         public CodeExpression[] getCreationParameters() {
             return parameters;
         }
 
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             StringBuffer buf = new StringBuffer();
 
@@ -332,26 +350,32 @@ class CodeSupport {
             parameters = params != null ? params : CodeStructure.EMPTY_PARAMS;
         }
 
+        @Override
         public Class getType() {
             return creationMethod.getReturnType();
         }
 
+        @Override
         public CodeExpression getParentExpression() {
             return parentExpression;
         }
 
+        @Override
         public Object getMetaObject() {
             return creationMethod;
         }
 
+        @Override
         public Object getValue() {
             return null;
         }
 
+        @Override
         public CodeExpression[] getCreationParameters() {
             return parameters;
         }
 
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             StringBuffer buf = new StringBuffer();
 
@@ -390,26 +414,32 @@ class CodeSupport {
             originField = f;
         }
 
+        @Override
         public Class getType() {
             return originField.getType();
         }
 
+        @Override
         public CodeExpression getParentExpression() {
             return parentExpression;
         }
 
+        @Override
         public Object getMetaObject() {
             return originField;
         }
 
+        @Override
         public Object getValue() {
             return null;
         }
 
+        @Override
         public CodeExpression[] getCreationParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
 
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             StringBuffer buf = new StringBuffer();
 
@@ -441,26 +471,32 @@ class CodeSupport {
             javaString = javaStr;
         }
 
+        @Override
         public Class getType() {
             return expressionType;
         }
 
+        @Override
         public CodeExpression getParentExpression() {
             return null;
         }
 
+        @Override
         public Object getMetaObject() {
             return null;
         }
 
+        @Override
         public Object getValue() {
             return expressionValue;
         }
 
+        @Override
         public CodeExpression[] getCreationParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
 
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             return javaString;
         }
@@ -474,22 +510,27 @@ class CodeSupport {
 
         private List<Object/*CodeStatement or CodeGroup*/> statements = new ArrayList<Object>();
 
+        @Override
         public void addStatement(CodeStatement statement) {
             statements.add(statement);
         }
 
+        @Override
         public void addStatement(int index, CodeStatement statement) {
             statements.add(index, statement);
         }
 
+        @Override
         public void addGroup(CodeGroup group) {
             statements.add(group);
         }
 
+        @Override
         public void addGroup(int index, CodeGroup group) {
             statements.add(index, group);
         }
 
+        @Override
         public CodeStatement getStatement(int index) {
             Object obj = statements.get(index);
             if (obj instanceof CodeStatement)
@@ -499,22 +540,27 @@ class CodeSupport {
             return null;
         }
 
+        @Override
         public int indexOf(Object object) {
             return statements.indexOf(object);
         }
 
+        @Override
         public void remove(Object object) {
             statements.remove(object);
         }
 
+        @Override
         public void remove(int index) {
             statements.remove(index);
         }
 
+        @Override
         public void removeAll() {
             statements.clear();
         }
 
+        @Override
         public Iterator getStatementsIterator() {
             return new StatementsIterator();
         }
@@ -524,6 +570,7 @@ class CodeSupport {
             int count = statements.size();
             Iterator subIter;
 
+            @Override
             public boolean hasNext() {
                 if (subIter != null) {
                     if (subIter.hasNext())
@@ -548,6 +595,7 @@ class CodeSupport {
                 return false;
             }
 
+            @Override
             public Object next() {
                 if (!hasNext())
                     throw new NoSuchElementException();
@@ -556,6 +604,7 @@ class CodeSupport {
                                          statements.get(index++);
             }
 
+            @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }
