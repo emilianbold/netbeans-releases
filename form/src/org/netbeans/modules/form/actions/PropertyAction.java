@@ -77,7 +77,7 @@ public class PropertyAction extends AbstractAction {
         this.property = property;
         String name = (String)property.getValue("actionName"); // NOI18N
         if (name == null) {
-            StringBuffer sb = new StringBuffer(property.getName());
+            StringBuilder sb = new StringBuilder(property.getName());
             sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
             name = sb.toString();
         }
