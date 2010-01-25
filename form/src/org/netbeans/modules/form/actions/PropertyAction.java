@@ -84,6 +84,7 @@ public class PropertyAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
 
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent e) {
         try {
             PropertyEditor propEd = property.getPropertyEditor();
@@ -99,6 +100,7 @@ public class PropertyAction extends AbstractAction {
                 DialogDescriptor.DEFAULT_ALIGN,
                 HelpCtx.DEFAULT_HELP,
                 new ActionListener() {
+                @Override
                     public void actionPerformed(ActionEvent e) {
                         try {
                             String action = e.getActionCommand();

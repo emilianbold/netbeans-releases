@@ -66,19 +66,23 @@ public class AlignAction extends NodeAction {
 
     private JMenuItem[] items;
     
+    @Override
     protected boolean enable(Node[] nodes) {
         List comps = FormUtils.getSelectedLayoutComponents(nodes);
         return ((comps != null) && (comps.size() > 1));
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(AlignAction.class, "ACT_Align"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) { }
 
     @Override
@@ -99,13 +103,16 @@ public class AlignAction extends NodeAction {
         HelpCtx.setHelpIDString(popupMenu, AlignAction.class.getName());
         
         popupMenu.addMenuListener(new MenuListener() {
+            @Override
             public void menuSelected(MenuEvent e) {
                 JMenu menu = (JMenu) e.getSource();
                 createAlignSubmenu(menu);
             }
             
+            @Override
             public void menuDeselected(MenuEvent e) {}
             
+            @Override
             public void menuCanceled(MenuEvent e) {}
         });
         return popupMenu;
@@ -221,6 +228,7 @@ public class AlignAction extends NodeAction {
     }
 
     private static class AlignMenuItemListener implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent evt) {
             Object source = evt.getSource();
             if (!(source instanceof AlignMenuItem)) {

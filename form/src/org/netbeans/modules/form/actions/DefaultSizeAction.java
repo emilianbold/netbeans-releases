@@ -55,6 +55,7 @@ public class DefaultSizeAction extends NodeAction {
         return false;
     }
 
+    @Override
     protected boolean enable(Node[] nodes) {
         for (int i=0; i < nodes.length; i++) {
             if (getValidComponent(nodes[i]) == null)
@@ -63,6 +64,7 @@ public class DefaultSizeAction extends NodeAction {
         return true;
     }
 
+    @Override
     protected void performAction(Node[] nodes) {
         FormModel formModel = null;
         FormDesigner formDesigner = null;
@@ -114,11 +116,13 @@ public class DefaultSizeAction extends NodeAction {
         }
     }
 
+    @Override
     public String getName() {
         return org.openide.util.NbBundle.getBundle(DefaultSizeAction.class)
                 .getString("ACT_DefaultSize"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

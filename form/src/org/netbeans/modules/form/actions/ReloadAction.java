@@ -62,6 +62,7 @@ public class ReloadAction extends CallableSystemAction {
         setEnabled(true);
     }
 
+    @Override
     public String getName() {
         if (name == null)
             name = org.openide.util.NbBundle.getBundle(ReloadAction.class)
@@ -69,6 +70,7 @@ public class ReloadAction extends CallableSystemAction {
         return name;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.quickref"); // NOI18N
     }
@@ -78,6 +80,7 @@ public class ReloadAction extends CallableSystemAction {
         return false;
     }
 
+    @Override
     public void performAction() {
         WindowManager wm = WindowManager.getDefault();        
         TopComponent activeTC = wm.getRegistry().getActivated();

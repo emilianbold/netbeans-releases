@@ -55,22 +55,27 @@ import org.openide.util.actions.CookieAction;
 
 public class BindAction extends CookieAction {
 
+    @Override
     protected int mode() {
         return MODE_EXACTLY_ONE; // can be invoked on just one node
     }
 
+    @Override
     protected Class[] cookieClasses() {
         return new Class[] { RADComponentCookie.class };
     }
 
+    @Override
     public String getName() {
         return "Bind"; // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
     }
 
@@ -86,13 +91,16 @@ public class BindAction extends CookieAction {
         popupMenu.setEnabled(isEnabled());
         
         popupMenu.addMenuListener(new MenuListener() {
+            @Override
             public void menuSelected(MenuEvent e) {
                 JMenu menu = (JMenu) e.getSource();
                 createBindingsSubmenu(menu);
             }
             
+            @Override
             public void menuDeselected(MenuEvent e) {}
             
+            @Override
             public void menuCanceled(MenuEvent e) {}
         });
         return popupMenu;
@@ -144,11 +152,13 @@ public class BindAction extends CookieAction {
             }
         }
 
+        @Override
         public void actionPerformed(ActionEvent ev) {
             MetaBinding binding = bindingProperty.getValue();
             final BindingCustomizer customizer = new BindingCustomizer(bindingProperty);
             customizer.setBinding(binding);
             customizer.getDialog(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent ev) {
                     bindingProperty.setValue(customizer.getBinding());
                     updateFont();
