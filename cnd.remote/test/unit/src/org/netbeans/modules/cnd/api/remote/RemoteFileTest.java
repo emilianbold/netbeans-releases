@@ -68,6 +68,18 @@ public class RemoteFileTest extends RemoteTestBase {
         }
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        createRemoteTmpDir();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        clearRemoteTmpDir(); // before disconnection!
+        super.tearDown();
+    }
+
     @ForAllEnvironments(section="remote.platforms")
     @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     public void testPlainFile() throws Exception {
@@ -85,9 +97,8 @@ public class RemoteFileTest extends RemoteTestBase {
         assert ! remoteFile.exists();
     }
 
-    private static final String getTempName() {
-        //TODO: check existence?
-        return "/tmp/nb65tempdir" + Math.random() + ".bak";
+    private final String getTempName() {
+        return getRemoteTmpDir() + "/RemoteFileTest" + Math.random() + ".bak";
     }
 
     @ForAllEnvironments(section="remote.platforms")

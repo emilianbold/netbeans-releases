@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.remote.support;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,12 +69,16 @@ import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 
 /**
@@ -83,6 +88,7 @@ import org.openide.windows.IOProvider;
 public abstract class RemoteTestBase extends CndBaseTestCase {
 
     protected static final Logger log = RemoteUtil.LOGGER;
+    private String remoteTmpDir;
 
     public static enum Sync {
         FTP("ftp"),
@@ -141,13 +147,13 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     public RemoteTestBase(String testName) {
         super(testName);
         cleanUserDir();
-        setSysProps();
+        setSysProps();        
     }
 
     protected RemoteTestBase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
         cleanUserDir();
-        setSysProps();
+        setSysProps();        
     }
 
     protected void cleanUserDir()  {
@@ -193,6 +199,47 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         super.tearDown();
         ConnectionManager.getInstance().disconnect(getTestExecutionEnvironment());
         System.err.printf("\n###< tearDown %s\n", getClass().getName() + '.' + getName());
+    }
+
+    protected void createRemoteTmpDir() throws Exception {
+        String dir = getRemoteTmpDir();
+        int rc = CommonTasksSupport.mkDir(getTestExecutionEnvironment(), dir, new PrintWriter(System.err)).get().intValue();
+        assertEquals("Can not create directory " + dir, 0, rc);
+    }
+
+    protected void clearRemoteTmpDir() throws Exception {
+        String dir = getRemoteTmpDir();
+        int rc = CommonTasksSupport.rmDir(getTestExecutionEnvironment(), dir, true, new PrintWriter(System.err)).get().intValue();
+        if (rc != 0) {
+            System.err.printf("Can not delete directory %s\n", dir);
+        }
+    }
+
+    protected synchronized  String getRemoteTmpDir() {
+        if (remoteTmpDir == null) {
+            final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
+            MacroExpander expander = MacroExpanderFactory.getExpander(local);
+            String id = local.getHost();
+            try {
+                id = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            remoteTmpDir = "/tmp/" + getLocalHostIdString();
+        }
+        return remoteTmpDir;
+    }
+
+    private synchronized String getLocalHostIdString() {
+        final ExecutionEnvironment local = ExecutionEnvironmentFactory.getLocal();
+        MacroExpander expander = MacroExpanderFactory.getExpander(local);
+        String id = local.getHost();
+        try {
+            id = expander.expandPredefinedMacros("${hostname}-${osname}-${platform}${_isa}"); // NOI18N
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return id;
     }
 
     protected static void setupHost(ExecutionEnvironment execEnv) {
