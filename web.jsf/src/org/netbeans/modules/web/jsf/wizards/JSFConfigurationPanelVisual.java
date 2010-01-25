@@ -70,6 +70,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -116,40 +117,73 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             return;
         }
 
-        Vector <String> items = new Vector <String>();
+        final Vector <String> items = new Vector <String>();
         jsfLibraries.clear();
-        List<URL> content;
-        for (Library library : LibraryManager.getDefault().getLibraries()) {
-            if (!"j2se".equals(library.getType())) { // NOI18N
-                continue;
-            }
-            if (library.getName().startsWith("facelets-") && !library.getName().endsWith("el-api")    //NOI18N
-            && !library.getName().endsWith("jsf-ri") && !library.getName().endsWith("myfaces")){                                            //NOI18N
-                String displayName = library.getDisplayName();
-                items.add(displayName);
-                //TODO XX Add correct version
-                jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_2));
-            }
+        final boolean[] hasFinished = new boolean[]{false};
+        final Runnable libraryFinder = new Runnable() {
 
-            content = library.getContent("classpath"); //NOI18N
-            try {
-                if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION) && !excludeLibs.contains(library.getName())) {
-                    items.add(library.getDisplayName());
-                    boolean isJSF12 = Util.containsClass(content, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
-                    boolean isJSF20 = Util.containsClass(content, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
-                    if (isJSF12 && !isJSF20) {
-                        jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_2));
-                    } else if (isJSF20){
-                        jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_2_0));
-                    } else {
-                        jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_1));
+            @Override
+            public void run() {
+                synchronized (this) {
+                    List<URL> content;
+                    for (Library library : LibraryManager.getDefault().getLibraries()) {
+                        if (!"j2se".equals(library.getType())) { // NOI18N
+                            continue;
+                        }
+                        if (library.getName().startsWith("facelets-") && !library.getName().endsWith("el-api")    //NOI18N
+                        && !library.getName().endsWith("jsf-ri") && !library.getName().endsWith("myfaces")){                                            //NOI18N
+                            String displayName = library.getDisplayName();
+                            items.add(displayName);
+                            //TODO XX Add correct version
+                            jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_2));
+                        }
+
+                        content = library.getContent("classpath"); //NOI18N
+                        try {
+                            if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION) && !excludeLibs.contains(library.getName())) {
+                                items.add(library.getDisplayName());
+                                boolean isJSF12 = Util.containsClass(content, JSFUtils.JSF_1_2__API_SPECIFIC_CLASS);
+                                boolean isJSF20 = Util.containsClass(content, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
+                                if (isJSF12 && !isJSF20) {
+                                    jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_2));
+                                } else if (isJSF20){
+                                    jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_2_0));
+                                } else {
+                                    jsfLibraries.add(new LibraryItem(library, JSFVersion.JSF_1_1));
+                                }
+                            }
+                        } catch (IOException exception) {
+                            Exceptions.printStackTrace(exception);
+                        }
+                    }
+                    hasFinished[0] = true;
+                    notifyAll();
+                }
+            }
+        };
+        RequestProcessor.getDefault().post(libraryFinder);
+
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
+            public void run() {
+                synchronized (libraryFinder) {
+                    try {
+                        while (!hasFinished[0]) {
+                            libraryFinder.wait();
+                        }
+                        setLibraryModel(items);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
-            } catch (IOException exception) {
-                Exceptions.printStackTrace(exception);
             }
-        }
+        });
+        libsInitialized = true;
+//        repaint();
+    }
 
+    private void setLibraryModel(Vector<String> items) {
         cbLibraries.setModel(new DefaultComboBoxModel(items));
         if (items.size() == 0) {
             rbRegisteredLibrary.setEnabled(false);
@@ -165,10 +199,10 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             }
         }
 
-        libsInitialized = true;
+//        libsInitialized = true;
         repaint();
     }
-
+    
     /**
      * Init Preferred Languages check box with "JSP" and/or "Facelets"
      * according to choosen library
@@ -277,7 +311,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             }
         });
 
-        cbLibraries.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbLibraries.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Search Libraries..." }));
         cbLibraries.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbLibrariesActionPerformed(evt);
@@ -338,11 +372,11 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                         .add(rbRegisteredLibrary)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(cbLibraries, 0, 289, Short.MAX_VALUE)
+                            .add(cbLibraries, 0, 293, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, libPanelLayout.createSequentialGroup()
                                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(jtNewLibraryName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
-                                    .add(jtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE))
+                                    .add(jtNewLibraryName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
+                                    .add(jtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(jbBrowse))))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, rbNewLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
@@ -418,8 +452,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                                 .add(lServletName)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(tServletName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
-                            .add(tURLPattern, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)))
+                            .add(tServletName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)
+                            .add(tURLPattern, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE)))
                     .add(confPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(cbPackageJars))
