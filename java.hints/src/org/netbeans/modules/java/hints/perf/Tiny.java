@@ -47,10 +47,13 @@ import com.sun.source.util.TreePath;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
@@ -218,5 +221,52 @@ public class Tiny {
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_ConstantIntern");
 
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, f);
+    }
+
+    @Hint(category="performance", suppressWarnings="SetReplaceableByEnumSet")
+    @TriggerPatterns({
+        @TriggerPattern("new $coll<$param>($params$)")
+    })
+    public static ErrorDescription enumSet(HintContext ctx) {
+        return enumHint(ctx, "java.util.Set", "ERR_Tiny_enumSet");
+    }
+
+    @Hint(category="performance", suppressWarnings="MapReplaceableByEnumMap")
+    @TriggerPatterns({
+        @TriggerPattern("new $coll<$param, $to>($params$)")
+    })
+    public static ErrorDescription enumMap(HintContext ctx) {
+        return enumHint(ctx, "java.util.Map", "ERR_Tiny_enumMap");
+    }
+
+    private static ErrorDescription enumHint(HintContext ctx, String baseName, String key) {
+        Element type = ctx.getInfo().getTrees().getElement(ctx.getVariables().get("$param"));
+
+        if (type == null || type.getKind() != ElementKind.ENUM) {
+            return null;
+        }
+
+        Element coll = ctx.getInfo().getTrees().getElement(ctx.getVariables().get("$coll"));
+
+        if (coll == null || coll.getKind() != ElementKind.CLASS) {
+            return null;
+        }
+        
+        TypeElement base = ctx.getInfo().getElements().getTypeElement(baseName);
+        
+        if (base == null) {
+            return null;
+        }
+
+        Types t = ctx.getInfo().getTypes();
+
+        if (!t.isSubtype(t.erasure(coll.asType()), t.erasure(base.asType()))) {
+            return null;
+        }
+
+        String displayName = NbBundle.getMessage(Tiny.class, key);
+
+        //TODO: fix(es) possible?
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
     }
 }

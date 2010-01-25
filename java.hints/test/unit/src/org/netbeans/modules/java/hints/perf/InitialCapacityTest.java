@@ -37,52 +37,55 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.hints.classstructure;
+package org.netbeans.modules.java.hints.perf;
 
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
 
 /**
  *
- * @author Dusan Balek
+ * @author lahvac
  */
-public class FinalMethodTest extends TestBase {
+public class InitialCapacityTest extends TestBase {
 
-    public FinalMethodTest(String name) {
-        super(name, FinalMethod.class);
+    public InitialCapacityTest(String name) {
+        super(name, InitialCapacity.class);
     }
 
-    public void testSimple() throws Exception {
+    public void testCollections1() throws Exception {
         performAnalysisTest("test/Test.java",
-                            "package test;\n" +
+                            "package test;" +
+                            "import java.util.HashMap;" +
+                            "import java.util.ArrayList;\n" +
                             "public class Test {\n" +
-                            "    public final void test() {\n" +
-                            "    }\n" +
-                            "}",
-                            "2:22-2:26:verifier:Method test is final"
-                            );
+                            "     private void test(Map m, List l) {\n" +
+                            "         new HashMap();\n" +
+                            "         new HashMap(m);\n" +
+                            "         new HashMap(1);\n" +
+                            "         new ArrayList();\n" +
+                            "         new ArrayList(l);\n" +
+                            "         new ArrayList(1);\n" +
+                            "     }\n" +
+                            "}\n",
+                            "3:9-3:22:verifier:ERR_InitialCapacity_collections",
+                            "6:9-6:24:verifier:ERR_InitialCapacity_collections");
     }
 
-    public void testSimpleFix() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
-                       "public class Test {\n" +
-                       "    public final void test() {\n" +
-                       "    }\n" +
-                       "}",
-                       "2:22-2:26:verifier:Method test is final",
-                       "Remove final modifier from the test method declaration",
-                       ("package test;\n" +
-                       "public class Test {\n" +
-                       "    public void test() {\n" +
-                       "    }\n" +
-                       "}").replaceAll("[ \t\n]+", " ")
-                       );
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
+    public void testCollections2() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "import java.util.HashMap;" +
+                            "import java.util.ArrayList;\n" +
+                            "public class Test {\n" +
+                            "     private void test(Map m, List l) {\n" +
+                            "         new HashMap<Object, Object>();\n" +
+                            "         new HashMap<Object, Object>(m);\n" +
+                            "         new HashMap<Object, Object>(1);\n" +
+                            "         new ArrayList<Object>();\n" +
+                            "         new ArrayList<Object>(l);\n" +
+                            "         new ArrayList<Object>(1);\n" +
+                            "     }\n" +
+                            "}\n",
+                            "3:9-3:38:verifier:ERR_InitialCapacity_collections",
+                            "6:9-6:32:verifier:ERR_InitialCapacity_collections");
     }
 }

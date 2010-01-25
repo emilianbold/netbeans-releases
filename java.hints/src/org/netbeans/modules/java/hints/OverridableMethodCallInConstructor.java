@@ -40,10 +40,13 @@
 package org.netbeans.modules.java.hints;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -108,6 +111,10 @@ public class OverridableMethodCallInConstructor {
             modifiers.contains(Modifier.STATIC)) {
             return null;
         }
+
+        if (!invocationOnThis(mit)) {
+            return null;
+        }
         return ErrorDescriptionFactory.forName(ctx, mit,
                 NbBundle.getMessage(
                     OverridableMethodCallInConstructor.class,
@@ -159,5 +166,22 @@ public class OverridableMethodCallInConstructor {
             NbBundle.getMessage(OverridableMethodCallInConstructor.class,
                 "FIX_MakeMethod", "private", mt.getName())));
         return result.toArray(new Fix[result.size()]);
+    }
+
+    private static boolean invocationOnThis(MethodInvocationTree mit) {
+        Tree select = mit.getMethodSelect();
+        
+        switch (select.getKind()) {
+            case IDENTIFIER:
+                return true;
+            case MEMBER_SELECT:
+                if (((MemberSelectTree) select).getExpression().getKind() == Kind.IDENTIFIER) {
+                    IdentifierTree ident = (IdentifierTree) ((MemberSelectTree) select).getExpression();
+
+                    return ident.getName().contentEquals("this");
+                }
+        }
+
+        return false;
     }
 }

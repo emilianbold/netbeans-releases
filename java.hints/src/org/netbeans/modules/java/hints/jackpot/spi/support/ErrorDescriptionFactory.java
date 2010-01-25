@@ -47,9 +47,12 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 
@@ -75,7 +78,8 @@ public class ErrorDescriptionFactory {
         int end = (int) context.getInfo().getTrees().getSourcePositions().getEndPosition(context.getInfo().getCompilationUnit(), tree);
 
         if (start != (-1) && end != (-1)) {
-            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription(context.getSeverity().toEditorSeverity(), text, Arrays.asList(fixes), context.getInfo().getFileObject(), start, end);
+            List<Fix> fixesForED = resolveDefaultFixes(context, fixes);
+            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription(context.getSeverity().toEditorSeverity(), text, fixesForED, context.getInfo().getFileObject(), start, end);
         }
 
         return null;
@@ -89,11 +93,7 @@ public class ErrorDescriptionFactory {
         int[] span = computeNameSpan(tree, context);
         
         if (span != null && span[0] != (-1) && span[1] != (-1)) {
-            List<Fix> fixesForED = new LinkedList<Fix>();
-            for (Fix f : fixes) {
-                if (f == null) continue;
-                fixesForED.add(f);
-            }
+            List<Fix> fixesForED = resolveDefaultFixes(context, fixes);
             return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription(context.getSeverity().toEditorSeverity(), text, fixesForED, context.getInfo().getFileObject(), span[0], span[1]);
         }
 
@@ -126,6 +126,39 @@ public class ErrorDescriptionFactory {
                     (int) context.getInfo().getTrees().getSourcePositions().getEndPosition(context.getInfo().getCompilationUnit(), tree),
                 };
         }
+    }
+
+    private static List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
+        List<Fix> result = new LinkedList<Fix>();
+        boolean wasSuppressWarnings = false;
+        
+        for (Fix f : provided) {
+            if (f == null) continue;
+            if (FixFactory.isSuppressWarningsFix(f)) {
+                wasSuppressWarnings = true;
+            }
+            result.add(f);
+        }
+
+        if (wasSuppressWarnings) {
+            return result;
+        }
+
+        Set<String> suppressWarningsKeys = new LinkedHashSet<String>();
+
+        for (String key : ctx.getSuppressWarningsKeys()) {
+            if (key == null || key.length() == 0) {
+                break;
+            }
+            
+            suppressWarningsKeys.add(key);
+        }
+
+        if (!suppressWarningsKeys.isEmpty()) {
+            result.addAll(FixFactory.createSuppressWarnings(ctx.getInfo(), ctx.getPath(), suppressWarningsKeys.toArray(new String[0])));
+        }
+
+        return result;
     }
 
 }

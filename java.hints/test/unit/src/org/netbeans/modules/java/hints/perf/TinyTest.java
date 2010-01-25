@@ -320,6 +320,28 @@ public class TinyTest extends TestBase {
                         "}\n").replaceAll("[\t\n ]+", " "));
     }
 
+    public void testEnumSet1() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private java.util.Set<java.lang.annotation.RetentionPolicy> test() {\n" +
+                            "         return new java.util.HashSet<java.lang.annotation.RetentionPolicy>();\n" +
+                            "     }\n" +
+                            "}\n",
+                            "3:16-3:77:verifier:ERR_Tiny_enumSet");
+    }
+
+    public void testEnumMap1() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private java.util.Map<java.lang.annotation.RetentionPolicy, Boolean> test() {\n" +
+                            "         return new java.util.HashMap<java.lang.annotation.RetentionPolicy, Boolean>();\n" +
+                            "     }\n" +
+                            "}\n",
+                            "3:16-3:86:verifier:ERR_Tiny_enumMap");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();
