@@ -66,14 +66,17 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
     private WizardDescriptor wizardDescriptor;
     private Project project;
     
+    @Override
     public void addChangeListener(javax.swing.event.ChangeListener l) {
         changeListeners.add(l);
     }
     
+    @Override
     public java.awt.Component getComponent() {
         if (p == null) {
             p = new EntityWizardPanel(this);
             p.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (evt.getPropertyName().equals(EntityWizardPanel.IS_VALID)) {
                         Object newvalue = evt.getNewValue();
@@ -87,10 +90,12 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         return p;
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelp() {
         return new HelpCtx(EntityWizardDescriptor.class);
     }
     
+    @Override
     public boolean isValid() {
         // XXX add the following checks
         // p.getName = valid NmToken
@@ -112,6 +117,7 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         return true;
     }
     
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         if (project == null) {
@@ -136,10 +142,12 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         return ProviderUtil.persistenceExists(project) || getPersistenceUnit() != null;
     }
     
+    @Override
     public void removeChangeListener(javax.swing.event.ChangeListener l) {
         changeListeners.remove(l);
     }
     
+    @Override
     public void storeSettings(Object settings) {
         
     }
@@ -151,6 +159,7 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
     public PersistenceUnit getPersistenceUnit(){
         return p.getPersistenceUnit();
     }
+    @Override
     public boolean isFinishPanel() {
         return isValid();
     }
@@ -166,6 +175,7 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         }
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireChangeEvent();
     }

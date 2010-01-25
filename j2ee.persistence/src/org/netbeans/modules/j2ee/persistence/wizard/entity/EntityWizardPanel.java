@@ -81,12 +81,15 @@ public class EntityWizardPanel extends javax.swing.JPanel {
         setPersistenceUnitButtonVisibility(false, null);
         
         primaryKeyTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 listener.stateChanged(null);
             }
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 listener.stateChanged(null);
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 listener.stateChanged(null);
             }
@@ -191,13 +194,16 @@ public class EntityWizardPanel extends javax.swing.JPanel {
     
     private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 final ElementHandle<TypeElement> handle = TypeElementFinder.find(null, new TypeElementFinder.Customizer() {
 
+                    @Override
                             public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {
                                 return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
                             }
 
+                    @Override
                             public boolean accept(ElementHandle<TypeElement> typeHandle) {
                                 //XXX not all types are supported as identifiers by the jpa spec, but 
                                 // leaving unrestricted for now since different persistence providers 

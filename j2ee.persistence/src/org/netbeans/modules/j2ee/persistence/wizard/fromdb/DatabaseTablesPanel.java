@@ -107,6 +107,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         initComponents();
 
         ListSelectionListener selectionListener = new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 updateButtons();
             }

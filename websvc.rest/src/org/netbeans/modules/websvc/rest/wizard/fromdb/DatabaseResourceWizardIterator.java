@@ -65,8 +65,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
-import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
-import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGenerator;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.PersistenceGeneratorProvider;
@@ -116,6 +114,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
     private ProgressPanel progressPanel;
     private PersistenceGenerator generator;
 
+    @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
         Project project = Templates.getProject(wizard);
