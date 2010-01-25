@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.dlight.collector.stdout.spi;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -188,7 +189,7 @@ public final class CLIODataCollector
         ExecutionDescriptor descriptor =
                 new ExecutionDescriptor().inputOutput(
                 InputOutput.NULL).outProcessorFactory(
-                new CLIOInputProcessorFactory());
+                new CLIOInputProcessorFactory()).errProcessorFactory(new CLIOInputProcessorFactory());
 
         ExecutionService execService = ExecutionService.newService(
                 npb, descriptor, "CLIODataCollector " + cmd); // NOI18N
@@ -363,6 +364,7 @@ public final class CLIODataCollector
 
                 @Override
                 public void processLine(String line) {
+                    System.err.println("redirect line processing...");
                     CLIODataCollector.this.processLine(line);
                 }
 
