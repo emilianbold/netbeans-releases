@@ -77,6 +77,7 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     private List<String> parameters;
     private boolean smart;
     private boolean inherited; 
+    private boolean statik;
     private MethodType methodType = MethodType.METHOD;
 
     private IndexedMethod(String signature, RubyIndex index, FileObject file, String fqn,
@@ -180,6 +181,20 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
 
     public void setType(RubyType type) {
         this.type = type;
+    }
+
+    /**
+     * Forces this method to be static.
+     *
+     * @param statik
+     */
+    public void setStatic(boolean statik) {
+        this.statik = statik;
+    }
+
+    @Override
+    public boolean isStatic() {
+        return statik || super.isStatic();
     }
 
     @Override
