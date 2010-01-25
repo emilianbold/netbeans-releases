@@ -405,7 +405,9 @@ public final class FixFactory {
                         return;
                     }
                     ModifiersTree mt = (ModifiersTree) path.getLeaf();
-                    Set<Modifier> modifiers = EnumSet.copyOf(mt.getFlags());
+                    Set<Modifier> modifiers = (mt.getFlags().isEmpty()) ?
+                        EnumSet.noneOf(Modifier.class) :
+                        EnumSet.copyOf(mt.getFlags());
                     modifiers.addAll(toAdd);
                     modifiers.removeAll(toRemove);
                     ModifiersTree newMod = wc.getTreeMaker().Modifiers(modifiers, mt.getAnnotations());
