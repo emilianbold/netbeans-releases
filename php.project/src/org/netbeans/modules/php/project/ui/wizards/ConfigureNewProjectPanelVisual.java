@@ -42,17 +42,17 @@ package org.netbeans.modules.php.project.ui.wizards;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.nio.charset.Charset;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.api.PhpLanguageOptions.PhpVersion;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.LocalServer;
@@ -132,75 +132,75 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
 
 
 
-
         Mnemonics.setLocalizedText(localServerButton, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_LocalServerBrowse")); // NOI18N
         Mnemonics.setLocalizedText(localServerInfoLabel, "dummy");
         Mnemonics.setLocalizedText(phpVersionLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.phpVersionLabel.text"));
         Mnemonics.setLocalizedText(phpVersionInfoLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.phpVersionInfoLabel.text"));
+
         encodingLabel.setLabelFor(encodingComboBox);
 
         Mnemonics.setLocalizedText(encodingLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_Encoding"));
         projectFolderPanel.setLayout(new BorderLayout());
 
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(separator, GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(projectNameLabel)
-                    .add(sourcesLabel)
-                    .add(encodingLabel)
-                    .add(phpVersionLabel))
-                .add(24, 24, 24)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(phpVersionInfoLabel)
+            layout.createParallelGroup(Alignment.LEADING)
+            .addComponent(separator, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(projectNameLabel)
+                    .addComponent(sourcesLabel)
+                    .addComponent(encodingLabel)
+                    .addComponent(phpVersionLabel))
+                .addGap(24, 24, 24)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(phpVersionInfoLabel)
                         .addContainerGap())
-                    .add(layout.createParallelGroup(GroupLayout.LEADING)
-                        .add(phpVersionComboBox, 0, 297, Short.MAX_VALUE)
-                        .add(projectNameTextField, GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
-                        .add(layout.createSequentialGroup()
-                            .add(localServerComboBox, 0, 202, Short.MAX_VALUE)
-                            .addPreferredGap(LayoutStyle.RELATED)
-                            .add(localServerButton))
-                        .add(layout.createSequentialGroup()
-                            .add(localServerInfoLabel)
+                    .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                        .addComponent(phpVersionComboBox, 0, 297, Short.MAX_VALUE)
+                        .addComponent(projectNameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(localServerComboBox, 0, 202, Short.MAX_VALUE)
+                            .addPreferredGap(ComponentPlacement.RELATED)
+                            .addComponent(localServerButton))
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(localServerInfoLabel)
                             .addContainerGap())
-                        .add(encodingComboBox, 0, 297, Short.MAX_VALUE))))
-            .add(projectFolderPanel, GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+                        .addComponent(encodingComboBox, 0, 297, Short.MAX_VALUE))))
+            .addComponent(projectFolderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(0, 0, 0)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(projectNameTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(projectNameLabel))
-                .add(7, 7, 7)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(localServerComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(localServerButton)
-                    .add(sourcesLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(localServerInfoLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(phpVersionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(phpVersionLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(phpVersionInfoLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(encodingComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(encodingLabel))
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(separator, GroupLayout.PREFERRED_SIZE, 2, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(projectFolderPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(projectNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(projectNameLabel))
+                .addGap(7, 7, 7)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(localServerComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(localServerButton)
+                    .addComponent(sourcesLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(localServerInfoLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(phpVersionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(phpVersionLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(phpVersionInfoLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(encodingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(encodingLabel))
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(projectFolderPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         projectNameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "ConfigureNewProjectPanelVisual.projectNameLabel.AccessibleContext.accessibleName")); // NOI18N

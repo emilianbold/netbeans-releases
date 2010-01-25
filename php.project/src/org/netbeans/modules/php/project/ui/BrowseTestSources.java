@@ -41,14 +41,14 @@ package org.netbeans.modules.php.project.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.openide.DialogDescriptor;
@@ -145,13 +145,13 @@ public class BrowseTestSources extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
         infoLabel = new JLabel();
         testSourcesLabel = new JLabel();
         testSourcesTextField = new JTextField();
         testSourcesBrowseButton = new JButton();
 
         Mnemonics.setLocalizedText(infoLabel, "dummy"); // NOI18N
+
         testSourcesLabel.setLabelFor(testSourcesTextField);
 
         Mnemonics.setLocalizedText(testSourcesLabel, NbBundle.getMessage(BrowseTestSources.class, "BrowseTestSources.testSourcesLabel.text"));
@@ -162,33 +162,33 @@ public class BrowseTestSources extends JPanel {
             }
         });
 
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(infoLabel)
-                    .add(layout.createSequentialGroup()
-                        .add(testSourcesLabel)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(testSourcesTextField, GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(testSourcesBrowseButton)))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(infoLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(testSourcesLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(testSourcesTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(testSourcesBrowseButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(infoLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(testSourcesLabel)
-                    .add(testSourcesTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(testSourcesBrowseButton))
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(infoLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(testSourcesLabel)
+                    .addComponent(testSourcesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(testSourcesBrowseButton))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
