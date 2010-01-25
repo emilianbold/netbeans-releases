@@ -54,18 +54,22 @@
     <import file="${common.dir}/product.xml" optional="false"/>
     
     <target name="-pre-package">
-        <move todir="${data.directory}">
+        <mkdir dir="${data.directory}/__tmpdir__"/>
+
+        <move todir="${data.directory}/__tmpdir__">
             <fileset dir="${data.directory}/${product.data.sub.dir}">
-                <include name="**/*"/>
+                <include name="**"/>
             </fileset>
         </move>
         
-        <delete includeemptydirs="true">
-            <fileset dir="${data.directory}">
-                <include name="${product.data.sub.dir}"/>
-                <include name="${product.data.sub.dir}/**"/>
+        <delete dir="${data.directory}/${product.data.sub.dir}" includeemptydirs="true"/>
+
+        <move todir="${data.directory}">
+            <fileset dir="${data.directory}/__tmpdir__">
+                <include name="**"/>
             </fileset>
-        </delete>
+        </move>
+        <delete dir="${data.directory}/__tmpdir__" includeemptydirs="true"/>
         <!--
         <exec executable="sh" failonerror="false" dir="${data.directory}">
             <arg value="-c"/>
