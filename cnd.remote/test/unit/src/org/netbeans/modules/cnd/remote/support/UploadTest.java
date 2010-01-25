@@ -59,8 +59,21 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  */
 public class UploadTest extends RemoteTestBase {
 
+
     public UploadTest(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);
+        super(testName, execEnv);        
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        createRemoteTmpDir();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        clearRemoteTmpDir(); // before disconnection!
+        super.tearDown();
     }
 
     @ForAllEnvironments
@@ -79,7 +92,7 @@ public class UploadTest extends RemoteTestBase {
         out.close();
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();        
         RemoteCopySupport rcs = new RemoteCopySupport(execEnv);
-        String remoteFile = "/tmp/" + localFile.getName(); //NOI18N
+        String remoteFile = getRemoteTmpDir() + "/" + localFile.getName(); //NOI18N
         rcs.copyTo(localFile.getAbsolutePath(), remoteFile); //NOI18N
         assert HostInfoProvider.fileExists(execEnv, remoteFile) : "Error copying file " + remoteFile + " to " + execEnv + " : file does not exist";
         String catCommand = "cat " + remoteFile;
@@ -111,7 +124,7 @@ public class UploadTest extends RemoteTestBase {
         ConnectionManager.getInstance().connectTo(execEnv);
 
         File tmpFile = File.createTempFile("copy_small_files", ".dat");
-        String remoteDir = "/tmp/" + tmpFile.getName();
+        String remoteDir = getRemoteTmpDir() + "/" + tmpFile.getName();
         tmpFile.delete();
 
         Future<Integer> mkDirTask = CommonTasksSupport.mkDir(execEnv, remoteDir, new PrintWriter(System.err));
