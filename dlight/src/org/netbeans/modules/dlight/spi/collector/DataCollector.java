@@ -78,7 +78,7 @@ public interface DataCollector<G extends DataCollectorConfiguration>
     /**
      * Method init() is called BEFORE target start
      * It can be used to initialize collector database tables, etc...
-     * @param storage storage this collector willput data into
+     * @param storages storage this collector will put data into
      * @param target target this collector serve for
      */
     void init(Map<DataStorageType, DataStorage> storages, DLightTarget target);

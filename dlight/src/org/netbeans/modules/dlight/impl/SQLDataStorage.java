@@ -62,8 +62,8 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
 import org.netbeans.modules.dlight.api.storage.types.Time;
-import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.PersistentDataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
@@ -74,7 +74,7 @@ import org.openide.util.Exceptions;
 /**
  *
  */
-public abstract class SQLDataStorage implements DataStorage {
+public abstract class SQLDataStorage implements PersistentDataStorage {
 
     public static final String SQL_DATA_STORAGE_TYPE = "db:sql"; // NOI18N
     private final static DataStorageType storageType = DataStorageTypeFactory.getInstance().getDataStorageType(SQL_DATA_STORAGE_TYPE);

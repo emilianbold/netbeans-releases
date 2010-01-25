@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,43 +34,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.perfan.storage.impl;
+package org.netbeans.modules.dlight.api.impl;
 
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.dlight.spi.storage.DataStorageType;
-import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory;
-import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory.Mode;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.dlight.api.execution.DLightSessionConfiguration;
+import org.netbeans.modules.dlight.api.execution.DLightTarget;
+import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 
 /**
  *
- * @author masha
+ * @author mt154047
  */
-@ServiceProvider(service = org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class)
-public final class PerfanDataStorageFactory implements PersistentDataStorageFactory<PerfanDataStorage> {
+public abstract class DLightSessionConfigurationAccessor {
 
-    static final Collection<DataStorageType> supportedTypes = Collections.singletonList(PerfanDataStorage.storageType);
+    private static volatile DLightSessionConfigurationAccessor DEFAULT;
 
-    public Collection<DataStorageType> getStorageTypes() {
-        return supportedTypes;
+    public static DLightSessionConfigurationAccessor getDefault() {
+        DLightSessionConfigurationAccessor a = DEFAULT;
+        if (a != null) {
+            return a;
+        }
+
+        try {
+            Class.forName(DLightSessionConfiguration.class.getName(), true,
+                    DLightSessionConfiguration.class.getClassLoader());//
+        } catch (Exception e) {
+        }
+        return DEFAULT;
     }
 
-    public PerfanDataStorage createStorage() {
-        return new PerfanDataStorage();
+    public static void setDefault(DLightSessionConfigurationAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException();
+        }
+        DEFAULT = accessor;
     }
 
-    public PerfanDataStorage openStorage(String uniqueKey) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public DLightSessionConfigurationAccessor() {
     }
 
-    public PerfanDataStorage openStorage(String uniqueKey, Mode mode) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    public abstract String getSessionName(DLightSessionConfiguration configuration);
+    public abstract String getDLightConfigurationName(DLightSessionConfiguration configuration);
+    public abstract DLightConfiguration getDLightConfiguration(DLightSessionConfiguration configuration);
+    public abstract DLightTarget getDLightTarget(DLightSessionConfiguration configuration);
+    public abstract DLightSessionConfiguration.Mode getSessionMode(DLightSessionConfiguration configuration);
+    public abstract boolean isUsingSharedStorage(DLightSessionConfiguration configuration);
+    public abstract String getSharedStorageUniqueKey(DLightSessionConfiguration configuration);
 
-    public String getUniqueKey(PerfanDataStorage storage) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+
 }
