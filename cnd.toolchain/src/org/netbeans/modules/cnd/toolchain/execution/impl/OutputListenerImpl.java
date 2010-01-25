@@ -37,27 +37,70 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.execution.impl;
+package org.netbeans.modules.cnd.toolchain.execution.impl;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.spi.ErrorParserProvider;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Line;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
-/**
- *
- * @author Alexander Simon
- */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.toolchain.spi.ErrorParserProvider.class)
-public class GCCErrorParserProvider extends ErrorParserProvider {
+public final class OutputListenerImpl implements OutputListener {
 
-    @Override
-    public ErrorParser getErorParser(CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
-	return new GCCErrorParser(flavor, execEnv, relativeTo);
+    private final FileObject file;
+    private final int line;
+    private final boolean isError;
+
+    public OutputListenerImpl(FileObject file, int line, boolean isError) {
+        super();
+        this.file = file;
+        this.line = line;
+	this.isError = isError;
     }
 
     @Override
-    public String getID() {
-	return "GNU";  // NOI18N
+    public void outputLineSelected(OutputEvent ev) {
+        showLine(false);
+    }
+
+    @Override
+    public void outputLineAction(OutputEvent ev) {
+        showLine(true);
+    }
+
+    @Override
+    public void outputLineCleared(OutputEvent ev) {
+        ErrorAnnotation.getInstance().detach(null);
+    }
+
+    public boolean isError(){
+	return isError;
+    }
+
+    private void showLine(boolean openTab) {
+        try {
+            DataObject od = DataObject.find(file);
+            LineCookie lc = od.getCookie(LineCookie.class);
+            if (lc != null) {
+                try {
+                    // TODO: IZ#119211
+                    // Preprocessor supports #line directive =>
+                    // line number can be out of scope
+                    Line l = lc.getLineSet().getOriginal(line);
+                    if (!l.isDeleted()) {
+                        if (openTab) {
+                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                        } else {
+                            l.show(Line.ShowOpenType.NONE, Line.ShowVisibilityType.NONE);
+                        }
+                        ErrorAnnotation.getInstance().attach(l);
+                    }
+                } catch (IndexOutOfBoundsException ex) {
+                }
+            }
+        } catch (DataObjectNotFoundException ex) {
+        }
     }
 }
