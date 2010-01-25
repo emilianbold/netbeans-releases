@@ -219,6 +219,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 LogManager.log("... application userdir location : " + userDir);
                 if (FileUtils.exists(userDir) && FileUtils.canWrite(userDir)) {
                     FileUtils.deleteFile(userDir, true);
+                    FileUtils.deleteEmptyParents(userDir);
                 }
                 LogManager.log("... application userdir totally removed");
             } catch (IOException e) {
