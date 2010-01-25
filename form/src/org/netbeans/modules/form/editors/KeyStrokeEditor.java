@@ -78,7 +78,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
     public String getJavaInitializationString() {
         KeyStroke key =(KeyStroke) getValue();
         int mods = key.getModifiers();
-        StringBuffer modsText = new StringBuffer();
+        StringBuilder modsText = new StringBuilder();
 
         if (0 !=(mods
                  &(InputEvent.ALT_MASK | InputEvent.SHIFT_MASK | InputEvent.CTRL_MASK | InputEvent.META_MASK))) {
@@ -194,7 +194,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
         String ctrl = i18ned ? TXT_CTRL : "Ctrl"; // NOI18N
         String meta = i18ned ? TXT_META : "Meta"; //NOI18N
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         int mods = key.getModifiers();
         int modMasks[] = { InputEvent.SHIFT_MASK, InputEvent.CTRL_MASK,
                            InputEvent.ALT_MASK, InputEvent.META_MASK };
