@@ -88,7 +88,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
     @Override
     public String getJavaInitializationString () {
         TableModel m = (TableModel) getValue ();
-        StringBuffer titlesSB = new StringBuffer ();
+        StringBuilder titlesSB = new StringBuilder ();
         int i = m.getColumnCount ();
         int j = m.getRowCount ();
         titlesSB.append ("{\n\t\t"); // NOI18N
@@ -105,7 +105,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         titlesSB.append ("\n\t}"); // NOI18N
 
         boolean generateTypes = false;
-        StringBuffer typesSB = new StringBuffer ();
+        StringBuilder typesSB = new StringBuilder ();
         typesSB.append ("{\n\t\t"); // NOI18N
         if (i > 0) {
             typesSB.append (m.getColumnClass (0).getName ()).append (".class"); // NOI18N
@@ -120,7 +120,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         typesSB.append ("\n\t}"); // NOI18N
 
         boolean generateEditable = false;
-        StringBuffer editableSB = new StringBuffer ();
+        StringBuilder editableSB = new StringBuilder ();
         editableSB.append ("{\n\t\t"); // NOI18N
         if (i > 0) {
             editableSB.append (m.isCellEditable (0, 0));
@@ -132,7 +132,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
         }
         editableSB.append ("\n\t}"); // NOI18N
 
-        StringBuffer dataSB = new StringBuffer ();
+        StringBuilder dataSB = new StringBuilder ();
         dataSB.append ("{\n\t\t"); // NOI18N
         if (j > 0) {
             for (int l = 0; l < j; l++) {
