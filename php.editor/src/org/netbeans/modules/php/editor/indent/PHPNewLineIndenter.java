@@ -97,6 +97,7 @@ public class PHPNewLineIndenter {
 
         doc.runAtomic(new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     int newIndent = 0;

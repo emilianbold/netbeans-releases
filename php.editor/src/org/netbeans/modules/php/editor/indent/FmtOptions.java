@@ -45,10 +45,6 @@ import java.awt.Container;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -265,26 +261,31 @@ public class FmtOptions {
 
         // ActionListener implementation ---------------------------------------
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             notifyChanged();
         }
 
         // DocumentListener implementation -------------------------------------
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             notifyChanged();
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             notifyChanged();
         }
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             notifyChanged();
         }
 
         // PreviewProvider methods -----------------------------------------------------
 
+        @Override
         public JComponent getPreviewComponent() {
             if (previewPane == null) {
                 previewPane = new JEditorPane();
@@ -297,6 +298,7 @@ public class FmtOptions {
             return previewPane;
         }
 
+        @Override
         public void refreshPreview() {
             JEditorPane pane = (JEditorPane) getPreviewComponent();
             try {
@@ -317,6 +319,7 @@ public class FmtOptions {
                 reformat.lock();
                 try {
                     ((BaseDocument) doc).runAtomic(new Runnable() {
+                        @Override
                         public void run() {
 
                             try {
@@ -340,18 +343,22 @@ public class FmtOptions {
 
         // PreferencesCustomizer implementation --------------------------------
 
+        @Override
         public JComponent getComponent() {
             return panel;
         }
 
+        @Override
         public String getDisplayName() {
             return panel.getName();
         }
 
+        @Override
         public String getId() {
             return id;
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return null;
         }
@@ -372,10 +379,12 @@ public class FmtOptions {
                 this.forcedOptions = forcedOptions;
             }
 
+            @Override
             public PreferencesCustomizer create(Preferences preferences) {
                 try {
                     return new CategorySupport(preferences, id, panelClass.newInstance(), previewText, forcedOptions);
                 } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Exception during creating formatter customiezer", e);
                     return null;
                 }
             }
@@ -563,39 +572,48 @@ public class FmtOptions {
             super(null, ""); // NOI18N
         }
 
+        @Override
         protected void putSpi(String key, String value) {
             map.put(key, value);
         }
 
+        @Override
         protected String getSpi(String key) {
             return (String)map.get(key);
         }
 
+        @Override
         protected void removeSpi(String key) {
             map.remove(key);
         }
 
+        @Override
         protected void removeNodeSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected String[] keysSpi() throws BackingStoreException {
             String array[] = new String[map.keySet().size()];
             return map.keySet().toArray( array );
         }
 
+        @Override
         protected String[] childrenNamesSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected AbstractPreferences childSpi(String name) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected void syncSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected void flushSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -611,10 +629,12 @@ public class FmtOptions {
             this.delegates = delegates;
         }
 
+        @Override
         protected void putSpi(String key, String value) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected String getSpi(String key) {
             for(Preferences p : delegates) {
                 String value = p.get(key, null);
@@ -625,14 +645,17 @@ public class FmtOptions {
             return null;
         }
 
+        @Override
         protected void removeSpi(String key) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected void removeNodeSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected String[] keysSpi() throws BackingStoreException {
             Set<String> keys = new HashSet<String>();
             for(Preferences p : delegates) {
@@ -641,18 +664,22 @@ public class FmtOptions {
             return keys.toArray(new String[ keys.size() ]);
         }
 
+        @Override
         protected String[] childrenNamesSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected AbstractPreferences childSpi(String name) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected void syncSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         protected void flushSpi() throws BackingStoreException {
             throw new UnsupportedOperationException("Not supported yet.");
         }
