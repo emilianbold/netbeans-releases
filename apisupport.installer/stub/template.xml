@@ -69,7 +69,7 @@
              </or>
         </condition>
 
-        <property name="icon.name" value="${product-uid}${icon.extension}"/>
+        <property name="icon.name" value="${suite.props.app.name}${icon.extension}"/>
 
         <copy file="${icon.path}" tofile="${installer.build.dir}/ext/components/products/helloworld/src/org/mycompany/${icon.name}"/>
 
