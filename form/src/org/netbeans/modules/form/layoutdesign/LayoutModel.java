@@ -710,7 +710,7 @@ public class LayoutModel implements LayoutConstants {
         }
         
         private void mergeSubRegions(List regions, int dimension) {
-            if (regions.size() == 0) {
+            if (regions.isEmpty()) {
                 horizontal = new LayoutInterval(PARALLEL);
                 vertical = new LayoutInterval(PARALLEL);
                 return;
@@ -1185,7 +1185,7 @@ public class LayoutModel implements LayoutConstants {
                 fireEvent(ev);
             }
             
-            if (l.size() == 0) {
+            if (l.isEmpty()) {
                 map.remove(linkIdInt);
             }
 
