@@ -142,7 +142,7 @@ public final class DLightSession implements DLightTargetListener, DataFilterMana
      * <code>DLightManager.getDefault().openSession(sessionID)</code>
      */
     public final String getID() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
 
