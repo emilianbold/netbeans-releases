@@ -161,8 +161,10 @@ public class LayoutTestUtils implements LayoutConstants {
             final boolean[] resolved = new boolean[1];
             JavaSource js = JavaSource.forFileObject(primaryFile);
             js.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     TypeElement clazz = controller.getElements().getTypeElement(primaryFileClassFQN);
@@ -191,8 +193,10 @@ public class LayoutTestUtils implements LayoutConstants {
             final String testClassFQN = "org.netbeans.modules.form.layoutdesign." + testFO.getName(); //NOI18N
             js = JavaSource.forFileObject(testFO);
             js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(WorkingCopy wcopy) throws Exception {
                     wcopy.toPhase(JavaSource.Phase.RESOLVED);
                     
