@@ -63,11 +63,11 @@ public class ProxyClassLoaderTest extends SetupHid {
         class CL extends ProxyClassLoader {
             final Class[] owned;
             final String name;
-            CL(ClassLoader[] parents, String name, Class... owned) {
+            CL(ClassLoader[] parents, String _name, Class... _owned) {
                 super(parents, false);
                 addCoveredPackages(Collections.singleton("org.netbeans"));
-                this.name = name;
-                this.owned = owned;
+                name = _name;
+                owned = _owned;
             }
             protected @Override Class doLoadClass(String pkg, String name) {
                 for (Class c : owned) {
@@ -124,22 +124,24 @@ public class ProxyClassLoaderTest extends SetupHid {
         public static A a() {
             return new A();
         }
+        private B() {}
     }
     public static class C {
         public static A a() {
             return new A();
         }
+        private C() {}
     }
 
     public void testResourceDelegation() throws Exception { // #32576
         class CL extends ProxyClassLoader {
             final URL base1, base2;
             final String[] owned;
-            CL(ClassLoader[] parents, URL base1, URL base2, String... owned) {
+            CL(ClassLoader[] parents, URL _base1, URL _base2, String... _owned) {
                 super(parents, false);
-                this.base1 = base1;
-                this.base2 = base2;
-                this.owned = owned;
+                base1 = _base1;
+                base2 = _base2;
+                owned = _owned;
                 addCoveredPackages(Collections.singleton("p"));
             }
             @Override public URL findResource(String name) {
