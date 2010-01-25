@@ -47,7 +47,6 @@ import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.api.project.Project;
-import org.openide.util.RequestProcessor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.Utils;
@@ -60,7 +59,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
-import java.lang.reflect.Field;
+import org.netbeans.modules.mercurial.options.AnnotationColorProvider;
 import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.commit.ExcludeFromCommitAction;
@@ -81,7 +80,6 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -92,24 +90,7 @@ import org.openide.util.actions.SystemAction;
 public class MercurialAnnotator extends VCSAnnotator {
     
     private static final int INITIAL_ACTION_ARRAY_LENGTH = 25;
-    private static MessageFormat uptodateFormat = getFormat("uptodateFormat");  // NOI18N
-    private static MessageFormat newLocallyFormat = getFormat("newLocallyFormat");  // NOI18N
-    private static MessageFormat addedLocallyFormat = getFormat("addedLocallyFormat"); // NOI18N
-    private static MessageFormat copiedLocallyFormat = getFormat("copiedLocallyFormat"); // NOI18N
-    private static MessageFormat modifiedLocallyFormat = getFormat("modifiedLocallyFormat"); // NOI18N
-    private static MessageFormat removedLocallyFormat = getFormat("removedLocallyFormat"); // NOI18N
-    private static MessageFormat deletedLocallyFormat = getFormat("deletedLocallyFormat"); // NOI18N
-    private static MessageFormat excludedFormat = getFormat("excludedFormat"); // NOI18N
-    private static MessageFormat conflictFormat = getFormat("conflictFormat"); // NOI18N
-
-    private static MessageFormat newLocallyTooltipFormat = getFormat("newLocallyTooltipFormat");  // NOI18N
-    private static MessageFormat addedLocallyTooltipFormat = getFormat("addedLocallyTooltipFormat"); // NOI18N
-    private static MessageFormat copiedLocallyTooltipFormat = getFormat("copiedLocallyTooltipFormat"); // NOI18N
-    private static MessageFormat modifiedLocallyTooltipFormat = getFormat("modifiedLocallyTooltipFormat"); // NOI18N
-    private static MessageFormat removedLocallyTooltipFormat = getFormat("removedLocallyTooltipFormat"); // NOI18N
-    private static MessageFormat deletedLocallyTooltipFormat = getFormat("deletedLocallyTooltipFormat"); // NOI18N
-    private static MessageFormat excludedTooltipFormat = getFormat("excludedTooltipFormat"); // NOI18N
-    private static MessageFormat conflictTooltipFormat = getFormat("conflictTooltipFormat"); // NOI18N
+    private final AnnotationColorProvider annotationFormatsProvider = AnnotationColorProvider.getInstance();
     
     private static final int STATUS_TEXT_ANNOTABLE = 
             FileInformation.STATUS_NOTVERSIONED_EXCLUDED |
@@ -157,13 +138,6 @@ public class MercurialAnnotator extends VCSAnnotator {
     }
     
     private void initDefaults() {
-        Field [] fields = MercurialAnnotator.class.getDeclaredFields();
-        for (int i = 0; i < fields.length; i++) {
-            String name = fields[i].getName();
-            if (name.endsWith("Format")) {  // NOI18N
-                initDefaultColor(name.substring(0, name.length() - 6));
-            }
-        }
         refresh();
     }
 
@@ -178,38 +152,6 @@ public class MercurialAnnotator extends VCSAnnotator {
             }
             format = new MessageFormat(string);
             emptyFormat = format.format(new String[] {"", "", ""} , new StringBuffer(), null).toString().trim(); // NOI18N
-        }
-    }
-    
-
-    private void initDefaultColor(String name) {
-        String color = System.getProperty("hg.color." + name);  // NOI18N
-        if (color == null) return;
-        setAnnotationColor(name, color);
-    }
-
-
-    /**
-     * Changes annotation color of files.
-     *
-     * @param name name of the color to change. Can be one of:
-     * newLocally, addedLocally, modifiedLocally, removedLocally, deletedLocally, newInRepository, modifiedInRepository,
-     * removedInRepository, conflict, mergeable, excluded, copiedLocally.
-     * @param colorString new color in the format: 4455AA (RGB hexadecimal)
-     */
-    private void setAnnotationColor(String name, String colorString) {
-        try {
-            if (!colorString.startsWith("#")) {                         //NOI18N
-                colorString = "#" + colorString;                        //NOI18N
-            }
-            Field field = MercurialAnnotator.class.getDeclaredField(name + "Format");  // NOI18N
-            MessageFormat format = new MessageFormat("<font color=\"" + colorString + "\">{0}</font><font color=\"#999999\">{1}</font>");  // NOI18N
-            field.set(null, format);
-            field = MercurialAnnotator.class.getDeclaredField(name + "TooltipFormat");  // NOI18N
-            format = new MessageFormat("<font color=\"" + colorString + "\">{0}</font>");  // NOI18N
-            field.set(null, format);
-        } catch (Exception e) {
-            Mercurial.LOG.log(Level.WARNING, "Invalid color name {0}", name); //NOI18N
         }
     }
 
@@ -284,26 +226,26 @@ public class MercurialAnnotator extends VCSAnnotator {
         String statusText = null;
         int status = mostImportantInfo.getStatus();
         if (0 != (status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
-            statusText = excludedTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+            statusText = annotationFormatsProvider.EXCLUDED_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
-            statusText = deletedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+            statusText = annotationFormatsProvider.DELETED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
-            statusText = removedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+            statusText = annotationFormatsProvider.REMOVED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
-            statusText = newLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+            statusText = annotationFormatsProvider.NEW_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             FileStatus fileStatus = mostImportantInfo.getStatus(mostImportantFile);
             if (fileStatus != null && fileStatus.isCopied()) {
-                statusText = copiedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+                statusText = annotationFormatsProvider.COPIED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
             } else {
-                statusText = addedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+                statusText = annotationFormatsProvider.ADDED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
             }
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
-            statusText = modifiedLocallyTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+            statusText = annotationFormatsProvider.MODIFIED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_UPTODATE)) {
             statusText = null;
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
-            statusText = conflictTooltipFormat.format(new Object[]{mostImportantInfo.getStatusText()});
+            statusText = annotationFormatsProvider.CONFLICT_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NOTMANAGED)) {
             statusText = null;
         } else if (status == FileInformation.STATUS_UNKNOWN) {
@@ -513,26 +455,26 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
 
         if (0 != (status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) {
-            return excludedFormat.format(new Object [] { name, textAnnotation });
+            return annotationFormatsProvider.EXCLUDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_DELETEDLOCALLY)) {
-            return deletedLocallyFormat.format(new Object [] { name, textAnnotation });
+            return annotationFormatsProvider.DELETED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
-            return removedLocallyFormat.format(new Object [] { name, textAnnotation });
+            return annotationFormatsProvider.REMOVED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY)) {
-            return newLocallyFormat.format(new Object [] { name, textAnnotation });
+            return annotationFormatsProvider.NEW_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
             FileStatus fileStatus = mostImportantInfo.getStatus(mostImportantFile);
             if (fileStatus != null && fileStatus.isCopied()) {
-                return copiedLocallyFormat.format(new Object [] { name, textAnnotation });
+                return annotationFormatsProvider.COPIED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
             } else {
-                return addedLocallyFormat.format(new Object [] { name, textAnnotation });
+                return annotationFormatsProvider.ADDED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
             }
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY)) {
-            return modifiedLocallyFormat.format(new Object [] { name, textAnnotation });
+            return annotationFormatsProvider.MODIFIED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_UPTODATE)) {
-            return uptodateFormat.format(new Object [] { name, textAnnotation });
+            return annotationFormatsProvider.UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_VERSIONED_CONFLICT)) {
-            return conflictFormat.format(new Object [] { name, textAnnotation });
+            return annotationFormatsProvider.CONFLICT_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (0 != (status & FileInformation.STATUS_NOTVERSIONED_NOTMANAGED)) {
             return name;
         } else if (status == FileInformation.STATUS_UNKNOWN) {
@@ -550,8 +492,9 @@ public class MercurialAnnotator extends VCSAnnotator {
     private String annotateFolderNameHtml(String name, VCSContext context, FileInformation mostImportantInfo, File mostImportantFile) {
         String nameHtml = htmlEncode(name);
         if (mostImportantInfo.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED){
-            return excludedFormat.format(new Object [] { nameHtml, ""}); // NOI18N
+            return annotationFormatsProvider.EXCLUDED_FILE.getFormat().format(new Object [] { nameHtml, ""}); // NOI18N
         }
+        MessageFormat uptodateFormat = annotationFormatsProvider.UP_TO_DATE_FILE.getFormat();
         String fileName = mostImportantFile.getName();
         if (fileName.equals(name)){
             return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
