@@ -40,10 +40,8 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.FocusTraversalPolicy;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -54,6 +52,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -61,6 +60,8 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -69,8 +70,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -398,21 +397,21 @@ public class RunAsWebAdvanced extends JPanel {
         setFocusTraversalPolicy(null);
 
         debugUrlLabel.setLabelFor(defaultUrlRadioButton);
-
         Mnemonics.setLocalizedText(debugUrlLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.debugUrlLabel.text")); // NOI18N
+
         debugUrlButtonGroup.add(defaultUrlRadioButton);
         defaultUrlRadioButton.setSelected(true);
-
         Mnemonics.setLocalizedText(defaultUrlRadioButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.defaultUrlRadioButton.text")); // NOI18N
+
         defaultUrlPreviewLabel.setLabelFor(defaultUrlRadioButton);
-
         Mnemonics.setLocalizedText(defaultUrlPreviewLabel, "dummy"); // NOI18N
+
         debugUrlButtonGroup.add(askUrlRadioButton);
-
         Mnemonics.setLocalizedText(askUrlRadioButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.askUrlRadioButton.text")); // NOI18N
-        debugUrlButtonGroup.add(doNotOpenBrowserRadioButton);
 
+        debugUrlButtonGroup.add(doNotOpenBrowserRadioButton);
         Mnemonics.setLocalizedText(doNotOpenBrowserRadioButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.doNotOpenBrowserRadioButton.text")); // NOI18N
+
         pathMappingLabel.setLabelFor(pathMappingTable);
 
         Mnemonics.setLocalizedText(pathMappingLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingLabel.text"));
@@ -438,7 +437,6 @@ public class RunAsWebAdvanced extends JPanel {
         Mnemonics.setLocalizedText(removePathMappingButton, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.removePathMappingButton.text")); // NOI18N
         removePathMappingButton.setEnabled(false);
 
-
         removePathMappingButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 removePathMappingButtonActionPerformed(evt);
@@ -446,83 +444,84 @@ public class RunAsWebAdvanced extends JPanel {
         });
         Mnemonics.setLocalizedText(pathMappingInfoLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.pathMappingInfoLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(proxyLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyLabel.text"));
-        proxyHostLabel.setLabelFor(proxyHostTextField);
 
+        proxyHostLabel.setLabelFor(proxyHostTextField);
         Mnemonics.setLocalizedText(proxyHostLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyHostLabel.text")); // NOI18N
+
         proxyPortLabel.setLabelFor(proxyPortTextField);
 
         Mnemonics.setLocalizedText(proxyPortLabel, NbBundle.getMessage(RunAsWebAdvanced.class, "RunAsWebAdvanced.proxyPortLabel.text"));
         proxyPortTextField.setPreferredSize(new Dimension(46, 19));
 
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(removePathMappingButton)
-                            .add(newPathMappingButton)))
-                    .add(debugUrlLabel)
-                    .add(layout.createSequentialGroup()
-                        .add(defaultUrlRadioButton)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(defaultUrlPreviewLabel))
-                    .add(askUrlRadioButton)
-                    .add(doNotOpenBrowserRadioButton)
-                    .add(pathMappingLabel)
-                    .add(pathMappingInfoLabel)
-                    .add(proxyLabel)
-                    .add(layout.createSequentialGroup()
-                        .add(proxyHostLabel)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(proxyHostTextField, GroupLayout.PREFERRED_SIZE, 207, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(proxyPortLabel)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(proxyPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(pathMappingScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 402, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(removePathMappingButton)
+                            .addComponent(newPathMappingButton)))
+                    .addComponent(debugUrlLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(defaultUrlRadioButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(defaultUrlPreviewLabel))
+                    .addComponent(askUrlRadioButton)
+                    .addComponent(doNotOpenBrowserRadioButton)
+                    .addComponent(pathMappingLabel)
+                    .addComponent(pathMappingInfoLabel)
+                    .addComponent(proxyLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(proxyHostLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(proxyHostTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(proxyPortLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(proxyPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
-        layout.linkSize(new Component[] {newPathMappingButton, removePathMappingButton}, GroupLayout.HORIZONTAL);
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {newPathMappingButton, removePathMappingButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(debugUrlLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(defaultUrlRadioButton)
-                    .add(defaultUrlPreviewLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(askUrlRadioButton)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(doNotOpenBrowserRadioButton)
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(pathMappingLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(newPathMappingButton)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(removePathMappingButton))
-                    .add(pathMappingScrollPane, GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(pathMappingInfoLabel)
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(proxyLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(proxyHostTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(proxyHostLabel)
-                    .add(proxyPortLabel)
-                    .add(proxyPortTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addComponent(debugUrlLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(defaultUrlRadioButton)
+                    .addComponent(defaultUrlPreviewLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(askUrlRadioButton)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(doNotOpenBrowserRadioButton)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(pathMappingLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(newPathMappingButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(removePathMappingButton))
+                    .addComponent(pathMappingScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(pathMappingInfoLabel)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(proxyLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(proxyHostTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(proxyHostLabel)
+                    .addComponent(proxyPortLabel)
+                    .addComponent(proxyPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 

@@ -44,23 +44,17 @@ require_once 'Zend/Tool/Framework/Registry/EnabledInterface.php';
 /**
  * Zend Tool Framework Provider which lists all available commands.
  *
- * <b>WARNING: User changes to this file will be overwritten!</b>
+ * <b>WARNING: User changes to this file should be avoided.</b>
  *
  * @package NetBeans
  */
 class NetBeans_NbCommandsProvider implements Zend_Tool_Framework_Provider_Interface, Zend_Tool_Framework_Registry_EnabledInterface {
-    const VERSION = "1";
-
     private $registry = null;
     private $response = null;
 
     public function setRegistry(Zend_Tool_Framework_Registry_Interface $registry) {
         $this->registry = $registry;
         $this->response = $registry->getResponse();
-    }
-
-    public function version() {
-        echo self::VERSION;
     }
 
     /**

@@ -39,14 +39,15 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Color;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ItemEvent;
 import java.util.List;
 import javax.swing.ComboBoxModel;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JTextArea;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import java.awt.Component;
@@ -64,8 +65,6 @@ import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -381,99 +380,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadDirectlyLabel = new JLabel();
         advancedButton = new JButton();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return urlTextField;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return urlTextField;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return advancedButton;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  urlTextField){
-                    return indexFileTextField;
-                }
-                if(aComponent ==  uploadDirectoryTextField){
-                    return uploadFilesComboBox;
-                }
-                if(aComponent ==  indexFileTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  preservePermissionsCheckBox){
-                    return uploadDirectlyCheckBox;
-                }
-                if(aComponent ==  indexFileBrowseButton){
-                    return argsTextField;
-                }
-                if(aComponent ==  uploadFilesComboBox){
-                    return preservePermissionsCheckBox;
-                }
-                if(aComponent ==  argsTextField){
-                    return urlHintLabel;
-                }
-                if(aComponent ==  urlHintLabel){
-                    return remoteConnectionComboBox;
-                }
-                if(aComponent ==  runAsComboBox){
-                    return urlTextField;
-                }
-                if(aComponent ==  uploadDirectlyCheckBox){
-                    return advancedButton;
-                }
-                if(aComponent ==  manageRemoteConnectionButton){
-                    return uploadDirectoryTextField;
-                }
-                if(aComponent ==  remoteConnectionComboBox){
-                    return manageRemoteConnectionButton;
-                }
-                return urlTextField;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  indexFileTextField){
-                    return urlTextField;
-                }
-                if(aComponent ==  uploadFilesComboBox){
-                    return uploadDirectoryTextField;
-                }
-                if(aComponent ==  indexFileBrowseButton){
-                    return indexFileTextField;
-                }
-                if(aComponent ==  uploadDirectlyCheckBox){
-                    return preservePermissionsCheckBox;
-                }
-                if(aComponent ==  argsTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  preservePermissionsCheckBox){
-                    return uploadFilesComboBox;
-                }
-                if(aComponent ==  urlHintLabel){
-                    return argsTextField;
-                }
-                if(aComponent ==  remoteConnectionComboBox){
-                    return urlHintLabel;
-                }
-                if(aComponent ==  urlTextField){
-                    return runAsComboBox;
-                }
-                if(aComponent ==  advancedButton){
-                    return uploadDirectlyCheckBox;
-                }
-                if(aComponent ==  uploadDirectoryTextField){
-                    return manageRemoteConnectionButton;
-                }
-                if(aComponent ==  manageRemoteConnectionButton){
-                    return remoteConnectionComboBox;
-                }
-                return advancedButton;//end getComponentBefore
-
-            }}
-        );
+        setFocusTraversalPolicy(null);
 
         runAsLabel.setLabelFor(runAsComboBox);
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RunAs")); // NOI18N
@@ -540,111 +447,111 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             }
         });
 
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(remoteConnectionLabel)
-                    .add(uploadDirectoryLabel)
-                    .add(uploadFilesLabel)
-                    .add(urlLabel)
-                    .add(runAsLabel)
-                    .add(indexFileLabel)
-                    .add(argsLabel))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(remoteConnectionHintLabel)
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(remoteConnectionLabel)
+                    .addComponent(uploadDirectoryLabel)
+                    .addComponent(uploadFilesLabel)
+                    .addComponent(urlLabel)
+                    .addComponent(runAsLabel)
+                    .addComponent(indexFileLabel)
+                    .addComponent(argsLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(remoteConnectionHintLabel)
                         .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                            .add(urlTextField, GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
-                            .add(layout.createSequentialGroup()
-                                .add(indexFileTextField, GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(indexFileBrowseButton))
-                            .add(argsTextField, GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, uploadFilesHintLabel)
-                            .add(layout.createSequentialGroup()
-                                .add(remoteConnectionComboBox, 0, 225, Short.MAX_VALUE)
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(manageRemoteConnectionButton))
-                            .add(GroupLayout.LEADING, uploadDirectoryTextField, GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, uploadFilesComboBox, 0, 322, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, runAsComboBox, 0, 322, Short.MAX_VALUE)
-                            .add(GroupLayout.LEADING, urlHintLabel, GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
-                            .add(advancedButton))
-                        .add(0, 0, 0))))
-            .add(layout.createSequentialGroup()
-                .add(preservePermissionsCheckBox)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                            .addComponent(urlTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(indexFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(indexFileBrowseButton))
+                            .addComponent(argsTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                            .addComponent(uploadFilesHintLabel, Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(remoteConnectionComboBox, 0, 225, Short.MAX_VALUE)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(manageRemoteConnectionButton))
+                            .addComponent(uploadDirectoryTextField, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                            .addComponent(uploadFilesComboBox, Alignment.LEADING, 0, 322, Short.MAX_VALUE)
+                            .addComponent(runAsComboBox, Alignment.LEADING, 0, 322, Short.MAX_VALUE)
+                            .addComponent(urlHintLabel, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                            .addComponent(advancedButton))
+                        .addGap(0, 0, 0))))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(preservePermissionsCheckBox)
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(21, 21, 21)
-                .add(preservePermissionsLabel)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addComponent(preservePermissionsLabel)
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(uploadDirectlyCheckBox)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(uploadDirectlyCheckBox)
                 .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(21, 21, 21)
-                .add(uploadDirectlyLabel)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addComponent(uploadDirectlyLabel)
                 .addContainerGap())
         );
 
-        layout.linkSize(new Component[] {indexFileBrowseButton, manageRemoteConnectionButton}, GroupLayout.HORIZONTAL);
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {indexFileBrowseButton, manageRemoteConnectionButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(runAsLabel)
-                    .add(runAsComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(urlLabel)
-                    .add(urlTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(indexFileLabel)
-                    .add(indexFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(indexFileBrowseButton))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(argsLabel)
-                    .add(argsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(urlHintLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(remoteConnectionLabel)
-                    .add(manageRemoteConnectionButton)
-                    .add(remoteConnectionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(uploadDirectoryLabel)
-                    .add(uploadDirectoryTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(remoteConnectionHintLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(uploadFilesLabel)
-                    .add(uploadFilesComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(uploadFilesHintLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(preservePermissionsCheckBox)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(preservePermissionsLabel)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(uploadDirectlyCheckBox)
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(uploadDirectlyLabel)
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(advancedButton)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(runAsLabel)
+                    .addComponent(runAsComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(urlLabel)
+                    .addComponent(urlTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(indexFileLabel)
+                    .addComponent(indexFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(indexFileBrowseButton))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(argsLabel)
+                    .addComponent(argsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(urlHintLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(remoteConnectionLabel)
+                    .addComponent(manageRemoteConnectionButton)
+                    .addComponent(remoteConnectionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(uploadDirectoryLabel)
+                    .addComponent(uploadDirectoryTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(remoteConnectionHintLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(uploadFilesLabel)
+                    .addComponent(uploadFilesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(uploadFilesHintLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(preservePermissionsCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(preservePermissionsLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(uploadDirectlyCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(uploadDirectlyLabel)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(advancedButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         runAsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.runAsLabel.AccessibleContext.accessibleName")); // NOI18N

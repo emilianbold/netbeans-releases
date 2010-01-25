@@ -457,7 +457,6 @@ public final class PathUiSupport {
                 // XXX maybe select fs root
                 chooser = new JFileChooser();
             }
-            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             chooser.setMultiSelectionEnabled(true);
             chooser.setDialogTitle(NbBundle.getMessage(PathUiSupport.class, "LBL_AddFolders_DialogTitle"));
