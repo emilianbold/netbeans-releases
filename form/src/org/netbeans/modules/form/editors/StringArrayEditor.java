@@ -107,7 +107,7 @@ public class StringArrayEditor implements XMLPropertyEditor,
     protected final String getStrings(boolean quoted) {
         if (strings == null) return "null"; // NOI18N
 
-        StringBuffer buf = new StringBuffer ();
+        StringBuilder buf = new StringBuilder ();
         for (int i = 0; i < strings.length; i++) {
             // Handles in-string escapes if quoted
             if (quoted) {
@@ -171,7 +171,7 @@ public class StringArrayEditor implements XMLPropertyEditor,
     public String getJavaInitializationString () {
         if (strings == null) return "null"; // NOI18N
         // [PENDING - wrap strings ???]
-        StringBuffer buf = new StringBuffer ("new String[] {"); // NOI18N
+        StringBuilder buf = new StringBuilder ("new String[] {"); // NOI18N
         buf.append (getStrings(true));
         buf.append ("}"); // NOI18N
         return buf.toString ();

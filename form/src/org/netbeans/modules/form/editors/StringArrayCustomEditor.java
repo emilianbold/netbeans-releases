@@ -74,7 +74,7 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
 
         editor = sac;
         String[] sourceArr = editor.getStringArray();
-        StringBuffer textBuffer = new StringBuffer();
+        StringBuilder textBuffer = new StringBuilder();
         if (sourceArr != null) {
             for (int i = 0; i < sourceArr.length; i++) {
                 String actValue = sourceArr[i];
