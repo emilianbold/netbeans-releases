@@ -249,106 +249,50 @@ public final class EventRequestManagerWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method createMonitorContendedEnterRequest from JDK 1.6. */
-    public static Object/*com.sun.jdi.request.MonitorContendedEnterRequest*/ createMonitorContendedEnterRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static com.sun.jdi.request.MonitorContendedEnterRequest createMonitorContendedEnterRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (Object/*com.sun.jdi.request.MonitorContendedEnterRequest*/) com.sun.jdi.request.EventRequestManager.class.getMethod("createMonitorContendedEnterRequest").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.createMonitorContendedEnterRequest();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method createMonitorContendedEnteredRequest from JDK 1.6. */
-    public static Object/*com.sun.jdi.request.MonitorContendedEnteredRequest*/ createMonitorContendedEnteredRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static com.sun.jdi.request.MonitorContendedEnteredRequest createMonitorContendedEnteredRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (Object/*com.sun.jdi.request.MonitorContendedEnteredRequest*/) com.sun.jdi.request.EventRequestManager.class.getMethod("createMonitorContendedEnteredRequest").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.createMonitorContendedEnteredRequest();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method createMonitorWaitRequest from JDK 1.6. */
-    public static Object/*com.sun.jdi.request.MonitorWaitRequest*/ createMonitorWaitRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static com.sun.jdi.request.MonitorWaitRequest createMonitorWaitRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (Object/*com.sun.jdi.request.MonitorWaitRequest*/) com.sun.jdi.request.EventRequestManager.class.getMethod("createMonitorWaitRequest").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.createMonitorWaitRequest();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method createMonitorWaitedRequest from JDK 1.6. */
-    public static Object/*com.sun.jdi.request.MonitorWaitedRequest*/ createMonitorWaitedRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static com.sun.jdi.request.MonitorWaitedRequest createMonitorWaitedRequest(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (Object/*com.sun.jdi.request.MonitorWaitedRequest*/) com.sun.jdi.request.EventRequestManager.class.getMethod("createMonitorWaitedRequest").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.createMonitorWaitedRequest();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
@@ -533,210 +477,98 @@ public final class EventRequestManagerWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorContendedEnterRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnterRequest*/> monitorContendedEnterRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.request.MonitorContendedEnterRequest> monitorContendedEnterRequests0(com.sun.jdi.request.EventRequestManager a) {
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnterRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorContendedEnterRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.monitorContendedEnterRequests();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return java.util.Collections.emptyList();
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorContendedEnterRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnterRequest*/> monitorContendedEnterRequests0(com.sun.jdi.request.EventRequestManager a) {
+    public static java.util.List<com.sun.jdi.request.MonitorContendedEnterRequest> monitorContendedEnterRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnterRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorContendedEnterRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return java.util.Collections.emptyList();
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return java.util.Collections.emptyList();
-            }
-            throw new IllegalStateException(t);
+            return a.monitorContendedEnterRequests();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorContendedEnteredRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnteredRequest*/> monitorContendedEnteredRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.request.MonitorContendedEnteredRequest> monitorContendedEnteredRequests0(com.sun.jdi.request.EventRequestManager a) {
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnteredRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorContendedEnteredRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.monitorContendedEnteredRequests();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return java.util.Collections.emptyList();
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorContendedEnteredRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnteredRequest*/> monitorContendedEnteredRequests0(com.sun.jdi.request.EventRequestManager a) {
+    public static java.util.List<com.sun.jdi.request.MonitorContendedEnteredRequest> monitorContendedEnteredRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorContendedEnteredRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorContendedEnteredRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return java.util.Collections.emptyList();
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return java.util.Collections.emptyList();
-            }
-            throw new IllegalStateException(t);
+            return a.monitorContendedEnteredRequests();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorWaitRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorWaitRequest*/> monitorWaitRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.request.MonitorWaitRequest> monitorWaitRequests0(com.sun.jdi.request.EventRequestManager a) {
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorWaitRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorWaitRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.monitorWaitRequests();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return java.util.Collections.emptyList();
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorWaitRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorWaitRequest*/> monitorWaitRequests0(com.sun.jdi.request.EventRequestManager a) {
+    public static java.util.List<com.sun.jdi.request.MonitorWaitRequest> monitorWaitRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorWaitRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorWaitRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return java.util.Collections.emptyList();
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return java.util.Collections.emptyList();
-            }
-            throw new IllegalStateException(t);
+            return a.monitorWaitRequests();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorWaitedRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorWaitedRequest*/> monitorWaitedRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.request.MonitorWaitedRequest> monitorWaitedRequests0(com.sun.jdi.request.EventRequestManager a) {
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorWaitedRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorWaitedRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.monitorWaitedRequests();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return java.util.Collections.emptyList();
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitorWaitedRequests from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.request.MonitorWaitedRequest*/> monitorWaitedRequests0(com.sun.jdi.request.EventRequestManager a) {
+    public static java.util.List<com.sun.jdi.request.MonitorWaitedRequest> monitorWaitedRequests(com.sun.jdi.request.EventRequestManager a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (java.util.List<Object/*com.sun.jdi.request.MonitorWaitedRequest*/>) com.sun.jdi.request.EventRequestManager.class.getMethod("monitorWaitedRequests").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return java.util.Collections.emptyList();
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return java.util.Collections.emptyList();
-            }
-            throw new IllegalStateException(t);
+            return a.monitorWaitedRequests();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 

@@ -243,99 +243,49 @@ public final class ReferenceTypeWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method constantPool from JDK 1.6. */
     public static byte[] constantPool(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
         try {
             try {
-                return (byte[]) com.sun.jdi.ReferenceType.class.getMethod("constantPool").invoke(a);
-            } catch (java.lang.reflect.InvocationTargetException ex) {
-                Throwable t = ex.getTargetException();
-                if (t instanceof NullPointerException) {
-                    // JDI defect http://bugs.sun.com/view_bug.do?bug_id=6822627
-                    return null;
-                } else {
-                    throw ex;
-                }
+                return a.constantPool();
+            } catch (NullPointerException ex) {
+                // JDI defect http://bugs.sun.com/view_bug.do?bug_id=6822627
+                return null;
             }
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            if (t instanceof com.sun.jdi.ObjectCollectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper((com.sun.jdi.ObjectCollectedException) t);
-            }
-            throw new IllegalStateException(t);
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method constantPoolCount from JDK 1.6. */
-    public static int constantPoolCount(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
-        try {
-            return (Integer) com.sun.jdi.ReferenceType.class.getMethod("constantPoolCount").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            if (t instanceof com.sun.jdi.ObjectCollectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper((com.sun.jdi.ObjectCollectedException) t);
-            }
-            throw new IllegalStateException(t);
-        }
-    }
-
-    // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method constantPoolCount from JDK 1.6. */
     public static int constantPoolCount0(com.sun.jdi.ReferenceType a) {
         try {
-            return (Integer) com.sun.jdi.ReferenceType.class.getMethod("constantPoolCount").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return 0;
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return 0;
-            }
-            if (t instanceof com.sun.jdi.ObjectCollectedException) {
-                return 0;
-            }
-            throw new IllegalStateException(t);
+            return a.constantPoolCount();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return 0;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return 0;
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            return 0;
+        }
+    }
+
+    // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
+    public static int constantPoolCount(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
+        try {
+            return a.constantPoolCount();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
         }
     }
 
@@ -542,60 +492,30 @@ public final class ReferenceTypeWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method instances from JDK 1.6. */
-    public static java.util.List<com.sun.jdi.ObjectReference> instances(com.sun.jdi.ReferenceType a, long b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.ObjectReference> instances0(com.sun.jdi.ReferenceType a, long b) {
         try {
-            return (java.util.List<com.sun.jdi.ObjectReference>) com.sun.jdi.ReferenceType.class.getMethod("instances", long.class).invoke(a, b);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            if (t instanceof com.sun.jdi.ObjectCollectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper((com.sun.jdi.ObjectCollectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.instances(b);
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            return java.util.Collections.emptyList();
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method instances from JDK 1.6. */
-    public static java.util.List<com.sun.jdi.ObjectReference> instances0(com.sun.jdi.ReferenceType a, long b) {
+    public static java.util.List<com.sun.jdi.ObjectReference> instances(com.sun.jdi.ReferenceType a, long b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
         try {
-            return (java.util.List<com.sun.jdi.ObjectReference>) com.sun.jdi.ReferenceType.class.getMethod("instances", long.class).invoke(a, b);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return java.util.Collections.emptyList();
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return java.util.Collections.emptyList();
-            }
-            if (t instanceof com.sun.jdi.ObjectCollectedException) {
-                return java.util.Collections.emptyList();
-            }
-            throw new IllegalStateException(t);
+            return a.instances(b);
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
         }
     }
 
@@ -832,60 +752,30 @@ public final class ReferenceTypeWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method majorVersion from JDK 1.6. */
-    public static int majorVersion(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
+    public static int majorVersion0(com.sun.jdi.ReferenceType a) {
         try {
-            return (Integer) com.sun.jdi.ReferenceType.class.getMethod("majorVersion").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            if (t instanceof com.sun.jdi.ObjectCollectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper((com.sun.jdi.ObjectCollectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.majorVersion();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return 0;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return 0;
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            return 0;
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method majorVersion from JDK 1.6. */
-    public static int majorVersion0(com.sun.jdi.ReferenceType a) {
+    public static int majorVersion(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
         try {
-            return (Integer) com.sun.jdi.ReferenceType.class.getMethod("majorVersion").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return 0;
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return 0;
-            }
-            if (t instanceof com.sun.jdi.ObjectCollectedException) {
-                return 0;
-            }
-            throw new IllegalStateException(t);
+            return a.majorVersion();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
         }
     }
 
@@ -986,60 +876,30 @@ public final class ReferenceTypeWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method minorVersion from JDK 1.6. */
-    public static int minorVersion(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
+    public static int minorVersion0(com.sun.jdi.ReferenceType a) {
         try {
-            return (Integer) com.sun.jdi.ReferenceType.class.getMethod("minorVersion").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            if (t instanceof com.sun.jdi.ObjectCollectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper((com.sun.jdi.ObjectCollectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.minorVersion();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return 0;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return 0;
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            return 0;
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method minorVersion from JDK 1.6. */
-    public static int minorVersion0(com.sun.jdi.ReferenceType a) {
+    public static int minorVersion(com.sun.jdi.ReferenceType a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
         try {
-            return (Integer) com.sun.jdi.ReferenceType.class.getMethod("minorVersion").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return 0;
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return 0;
-            }
-            if (t instanceof com.sun.jdi.ObjectCollectedException) {
-                return 0;
-            }
-            throw new IllegalStateException(t);
+            return a.minorVersion();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
         }
     }
 

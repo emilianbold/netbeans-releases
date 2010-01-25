@@ -46,7 +46,7 @@ package org.netbeans.modules.debugger.jpda.jdi.request;
 // perform the desired modifications there and re-generate by "ant generate".
 
 /**
- * Wrapper for MonitorWaitedRequest JDI class from JDK 1.6.
+ * Wrapper for MonitorWaitedRequest JDI class.
  * Use methods of this class instead of direct calls on JDI objects.
  * These methods assure that exceptions thrown from JDI calls are handled appropriately.
  *
@@ -57,162 +57,62 @@ public final class MonitorWaitedRequestWrapper {
     private MonitorWaitedRequestWrapper() {}
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method addClassExclusionFilter from JDK 1.6. */
-    public static void addClassExclusionFilter(Object/*com.sun.jdi.request.MonitorWaitedRequest*/ a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
-        Class monitorWaitedRequestClass;
+    public static void addClassExclusionFilter(com.sun.jdi.request.MonitorWaitedRequest a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            monitorWaitedRequestClass = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass("com.sun.jdi.request.MonitorWaitedRequest");
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalStateException(ex);
-        }
-        try {
-            monitorWaitedRequestClass.getMethod("addClassExclusionFilter", java.lang.String.class).invoke(a, b);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            a.addClassExclusionFilter(b);
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method addClassFilter from JDK 1.6. */
-    public static void addClassFilter(Object/*com.sun.jdi.request.MonitorWaitedRequest*/ a, com.sun.jdi.ReferenceType b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
-        Class monitorWaitedRequestClass;
+    public static void addClassFilter(com.sun.jdi.request.MonitorWaitedRequest a, com.sun.jdi.ReferenceType b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            monitorWaitedRequestClass = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass("com.sun.jdi.request.MonitorWaitedRequest");
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalStateException(ex);
-        }
-        try {
-            monitorWaitedRequestClass.getMethod("addClassFilter", com.sun.jdi.ReferenceType.class).invoke(a, b);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            a.addClassFilter(b);
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method addClassFilter from JDK 1.6. */
-    public static void addClassFilter(Object/*com.sun.jdi.request.MonitorWaitedRequest*/ a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
-        Class monitorWaitedRequestClass;
+    public static void addClassFilter(com.sun.jdi.request.MonitorWaitedRequest a, java.lang.String b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            monitorWaitedRequestClass = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass("com.sun.jdi.request.MonitorWaitedRequest");
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalStateException(ex);
-        }
-        try {
-            monitorWaitedRequestClass.getMethod("addClassFilter", java.lang.String.class).invoke(a, b);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            a.addClassFilter(b);
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method addInstanceFilter from JDK 1.6. */
-    public static void addInstanceFilter(Object/*com.sun.jdi.request.MonitorWaitedRequest*/ a, com.sun.jdi.ObjectReference b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
-        Class monitorWaitedRequestClass;
+    public static void addInstanceFilter(com.sun.jdi.request.MonitorWaitedRequest a, com.sun.jdi.ObjectReference b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            monitorWaitedRequestClass = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass("com.sun.jdi.request.MonitorWaitedRequest");
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalStateException(ex);
-        }
-        try {
-            monitorWaitedRequestClass.getMethod("addInstanceFilter", com.sun.jdi.ObjectReference.class).invoke(a, b);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            a.addInstanceFilter(b);
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method addThreadFilter from JDK 1.6. */
-    public static void addThreadFilter(Object/*com.sun.jdi.request.MonitorWaitedRequest*/ a, com.sun.jdi.ThreadReference b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
-        Class monitorWaitedRequestClass;
+    public static void addThreadFilter(com.sun.jdi.request.MonitorWaitedRequest a, com.sun.jdi.ThreadReference b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            monitorWaitedRequestClass = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass("com.sun.jdi.request.MonitorWaitedRequest");
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalStateException(ex);
-        }
-        try {
-            monitorWaitedRequestClass.getMethod("addThreadFilter", com.sun.jdi.ThreadReference.class).invoke(a, b);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            a.addThreadFilter(b);
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
