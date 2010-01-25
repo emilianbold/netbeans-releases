@@ -1088,15 +1088,20 @@ public final class RubyIndex {
                 // Try both with and without a package qualifier
                 boolean isQualified = false;
 
+                Set<IndexedMethod> extendWithMethods = new HashSet<IndexedMethod>();
                 if (classIn != null) {
                     isQualified = addMethodsFromClass(prefix, kind, classIn + "::" + extendWith,
-                            methods, seenSignatures, scannedClasses, haveRedirected, true);
+                            extendWithMethods, seenSignatures, scannedClasses, haveRedirected, true);
                 }
-
                 if (!isQualified) {
-                    addMethodsFromClass(prefix, kind, extendWith, methods, seenSignatures,
+                    addMethodsFromClass(prefix, kind, extendWith, extendWithMethods, seenSignatures,
                         scannedClasses, haveRedirected, true);
                 }
+                // we need to explicitly set methods added via "extends with" as static
+                for (IndexedMethod each : extendWithMethods) {
+                    each.setStatic(true);
+                }
+                methods.addAll(extendWithMethods);
             }
             
             String[] signatures = map.getValues(FIELD_METHOD_NAME);

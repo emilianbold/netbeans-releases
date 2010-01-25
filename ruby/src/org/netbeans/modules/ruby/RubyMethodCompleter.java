@@ -274,6 +274,11 @@ final class RubyMethodCompleter extends RubyBaseCompleter {
                 continue;
             }
 
+            // do not offer static methods for instances
+            if (!skipInstanceMethods && method.isStatic()) {
+                continue;
+            }
+
             if (method.isNoDoc()) {
                 continue;
             }
