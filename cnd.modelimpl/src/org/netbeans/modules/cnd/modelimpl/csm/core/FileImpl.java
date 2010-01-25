@@ -100,7 +100,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * CsmFile implementations
  * @author Vladimir Kvashin
  */
-public class FileImpl implements CsmFile, MutableDeclarationsContainer,
+public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         Disposable, Persistent, SelfPersistent, CsmIdentifiable {
 
     public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
