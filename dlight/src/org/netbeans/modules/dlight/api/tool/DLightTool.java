@@ -229,7 +229,10 @@ public final class DLightTool implements Validateable<DLightTarget> {
             List<IndicatorDataProviderConfiguration> idpConfigurations = toolConfAccessor.getIndicatorDataProviders(configuration);
             for (IndicatorDataProviderConfiguration idp : idpConfigurations) {
                 //we could create already object
-                if ((idp instanceof DataCollectorConfiguration && !dcsInitialized) || (!(idp instanceof DataCollectorConfiguration))) {
+                //if (!configurations.contains(idp)) {
+                if ((idp instanceof DataCollectorConfiguration && (!dcsInitialized ||
+                        !configurations.contains((DataCollectorConfiguration)idp))) ||
+                        (!(idp instanceof DataCollectorConfiguration)) ) {
                     IndicatorDataProvider<?> indDataProvider = IDPProvider.getInstance().create(idp);
                     if (indDataProvider == null) {
                         log.info("Could not find IndicatorDataProvider for configuration with id:" + idp.getID() + " check if " + //NOI18N
