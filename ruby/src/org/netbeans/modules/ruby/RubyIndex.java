@@ -53,8 +53,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -118,7 +116,6 @@ public final class RubyIndex {
      */
     private static final Map<FileObject, RubyIndex> CACHE = new WeakHashMap<FileObject, RubyIndex>(1);
 
-    private static final SortedSet<InvocationCounter> mostTimeConsumingInvocations = new TreeSet<InvocationCounter>();
     /**
      * The base class for AR model classes, needs special handling in various
      * places.
@@ -178,46 +175,6 @@ public final class RubyIndex {
         return Collections.<IndexResult>emptySet();
     }
 
-    public Collection<String> getRequires() {
-        Collection<? extends IndexResult> result = query(FIELD_CLASS_NAME, "Foos", QuerySupport.Kind.PREFIX);
-        Set<String> requires = new HashSet<String>();
-        Set<FileObject> files = new HashSet<FileObject>();
-        for (IndexResult each : result) {
-            files.add(each.getFile());
-            if (RubyUtils.isPlatformFile(each.getFile())) {
-                continue;
-            } else {
-                System.out.println("Not Platform file: " + each.getFile());
-            }
-
-            String[] require = each.getValues(FIELD_REQUIRES);
-            for (String req : require) {
-                requires.add(req);
-            }
-        }
-        List<String> f = new ArrayList<String>();
-        for (FileObject fo : files) {
-            f.add(fo.getPath());
-        }
-        Collections.sort(f);
-        for (String fi : f) {
-            System.out.println(fi);
-        }
-
-        List<String> list = new ArrayList(requires);
-        Collections.sort(list);
-        return list;
-    }
-
-
-//    public static RubyIndex get(Index index) {
-//        return new RubyIndex(index, null);
-//    }
-//
-//    public static RubyIndex get(Index index, FileObject context) {
-//        return new RubyIndex(index, context);
-//    }
-//
     private boolean search(String key, String name, QuerySupport.Kind kind, Set<IndexResult> result) {
         try {
             result.addAll(querySupport.query(key, name, kind,  (String[]) null));
@@ -1053,40 +1010,11 @@ public final class RubyIndex {
             prefix = "";
         }
 
-        InvocationCounter counter = new InvocationCounter(classFqn, prefix);
         addMethodsFromClass(prefix, kind, classFqn, methods, seenSignatures, scannedClasses,
-            haveRedirected, false, counter);
-        counter.stop();
-
-        addToMostTimeConsuming(counter);
-        
-        if (LOGGGER.isLoggable(Level.FINEST)) {
-            LOGGGER.log(Level.FINEST, counter.display());
-        }
-
+            haveRedirected, false);
         return methods;
     }
 
-    void logMostTimeConsuming() {
-        if (!LOGGGER.isLoggable(Level.FINE)) {
-            return;
-        }
-        LOGGGER.fine("The most time consuming invocations ( " + mostTimeConsumingInvocations.size() + "):");
-        LOGGGER.fine("===================================");
-        for (InvocationCounter each : mostTimeConsumingInvocations) {
-            LOGGGER.log(Level.FINE, each.display());
-        }
-        LOGGGER.fine("===================================");
-    }
-
-    private void addToMostTimeConsuming(InvocationCounter counter) {
-        if (mostTimeConsumingInvocations.size() < 20) {
-            mostTimeConsumingInvocations.add(counter);
-        } else if (mostTimeConsumingInvocations.last().compareTo(counter) < 0) {
-            mostTimeConsumingInvocations.remove(mostTimeConsumingInvocations.last());
-            mostTimeConsumingInvocations.add(counter);
-        }
-    }
 
     /** Return whether the specific class referenced (classFqn) was found or not. This is
      * not the same as returning whether any classes were added since it may add
@@ -1094,10 +1022,8 @@ public final class RubyIndex {
      */
     private boolean addMethodsFromClass(String prefix, QuerySupport.Kind kind, String classFqn,
         Set<IndexedMethod> methods, Set<String> seenSignatures, Set<String> scannedClasses,
-        boolean haveRedirected, boolean inheriting, InvocationCounter counter) {
+        boolean haveRedirected, boolean inheriting) {
         
-        counter.increment();
-
         // Prevent problems with circular includes or redundant includes
         if (scannedClasses.contains(classFqn)) {
             return false;
@@ -1146,12 +1072,12 @@ public final class RubyIndex {
 
                     if (classIn != null) {
                         isQualified = addMethodsFromClass(prefix, kind, classIn + "::" + include,
-                                methods, seenSignatures, scannedClasses, haveRedirected, true, counter);
+                                methods, seenSignatures, scannedClasses, haveRedirected, true);
                     }
 
                     if (!isQualified) {
                         addMethodsFromClass(prefix, kind, include, methods, seenSignatures,
-                            scannedClasses, haveRedirected, true, counter);
+                            scannedClasses, haveRedirected, true);
                     }
                 }
             }
@@ -1164,12 +1090,12 @@ public final class RubyIndex {
 
                 if (classIn != null) {
                     isQualified = addMethodsFromClass(prefix, kind, classIn + "::" + extendWith,
-                            methods, seenSignatures, scannedClasses, haveRedirected, true, counter);
+                            methods, seenSignatures, scannedClasses, haveRedirected, true);
                 }
 
                 if (!isQualified) {
                     addMethodsFromClass(prefix, kind, extendWith, methods, seenSignatures,
-                        scannedClasses, haveRedirected, true, counter);
+                        scannedClasses, haveRedirected, true);
                 }
             }
             
@@ -1258,12 +1184,12 @@ public final class RubyIndex {
         if (extendsClass == null) {
             if (haveRedirected) {
                 addMethodsFromClass(prefix, kind, OBJECT, methods, seenSignatures, scannedClasses,
-                    true, true, counter);
+                    true, true);
             } else {
                 // Rather than inheriting directly from object,
                 // let's go via Class (and Module) up to Object
                 addMethodsFromClass(prefix, kind, CLASS, methods, seenSignatures, scannedClasses,
-                    true, true, counter);
+                    true, true);
             }
         } else {
             if (ACTIVE_RECORD_BASE.equals(extendsClass)) { // NOI18N
@@ -1273,13 +1199,13 @@ public final class RubyIndex {
 
             // We're not sure we have a fully qualified path, so try some different candidates
             if (!addMethodsFromClass(prefix, kind, extendsClass, methods, seenSignatures,
-                        scannedClasses, haveRedirected, true, counter)) {
+                        scannedClasses, haveRedirected, true)) {
                 // Search by classIn 
                 String fqn = classIn;
 
                 while (fqn != null) {
                     if (addMethodsFromClass(prefix, kind, fqn + "::" + extendsClass, methods,
-                                seenSignatures, scannedClasses, haveRedirected, true, counter)) {
+                                seenSignatures, scannedClasses, haveRedirected, true)) {
                         break;
                     }
 
@@ -1943,75 +1869,4 @@ public final class RubyIndex {
         return platform.hasRubyGemsInstalled() ? platform.getGemManager().getGemHomeUrl() : null;
     }
 
-    /**
-     * Helper for measuring how long searching the index takes.
-     */
-    private static final class InvocationCounter implements Comparable<InvocationCounter> {
-
-        private int count = 0;
-        private final long start;
-        private long stop;
-        private final String classFqn;
-        private final String prefix;
-
-        public InvocationCounter(String classFqn, String prefix) {
-            this.classFqn = classFqn;
-            this.prefix = prefix;
-            this.start =  System.currentTimeMillis();
-        }
-
-        void increment() {
-            count++;
-        }
-
-        int result() {
-            return count;
-        }
-
-        void stop() {
-            stop = System.currentTimeMillis();
-        }
-
-        long time() {
-            return stop - start;
-        }
-
-        String display() {
-            return "Class: " + classFqn + ", prefix: " + prefix + ", time: " + time() +"ms, count: " + count; //NOI18N
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final InvocationCounter other = (InvocationCounter) obj;
-            if ((this.classFqn == null) ? (other.classFqn != null) : !this.classFqn.equals(other.classFqn)) {
-                return false;
-            }
-            if (this.time() != other.time() || this.count != other.count) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 29 * hash + (this.prefix != null ? this.prefix.hashCode() : 0);
-            return hash;
-        }
-
-        public int compareTo(InvocationCounter o) {
-            if (this.time() > o.time()) {
-                return -1;
-            } else if (this.time() < o.time()) {
-                return 1;
-            }
-            return 0;
-        }
-    }
 }
