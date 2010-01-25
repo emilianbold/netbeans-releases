@@ -45,10 +45,34 @@
         <copy todir="${installer.build.dir}/.common">
            <fileset dir="${nbi.stub.common.location}"/>
         </copy>
-        
-
 
         <property name="product-uid"  value="${suite.nbi.product.uid}"/>
+
+        <condition property="icon.path" value="${nbi.icon.file}" else="${installer.build.dir}/ext/components/products/helloworld/data/icon48.png">
+             <and>
+                 <isset property="nbi.icon.file"/>
+                 <available file="${nbi.icon.file}"/>
+             </and>
+        </condition>
+
+        <basename property="icon.file.name" file="${icon.path}"/>
+        <condition property="icon.extension" value=".gif">
+             <or>
+                 <matches string="${icon.file.name}" pattern="^.*\.gif$"/>
+                 <matches string="${icon.file.name}" pattern="^.*\.gif$"/>
+             </or>
+        </condition>
+        <condition property="icon.extension" value=".png">
+             <or>
+                 <matches string="${icon.file.name}" pattern="^.*\.png$"/>
+                 <matches string="${icon.file.name}" pattern="^.*\.PNG$"/>
+             </or>
+        </condition>
+
+        <property name="icon.name" value="${product-uid}${icon.extension}"/>
+
+        <copy file="${icon.path}" tofile="${installer.build.dir}/ext/components/products/helloworld/src/org/mycompany/${icon.name}"/>
+
 
 
         <replace file="${installer.build.dir}/build.properties" encoding="utf-8">
@@ -68,6 +92,7 @@
             <replacefilter token="{product-simple-name}" value="${suite.props.app.name}"/>
             <replacefilter token="{product-description}" value=""/>
             <replacefilter token="{product-uid}"         value="${product-uid}"/>
+            <replacefilter token="{product-icon-name}"   value="${icon.name}"/>
         </replace>
 
         <replace dir="${installer.build.dir}/ext/infra/build/products" encoding="utf-8">

@@ -2,7 +2,9 @@ package org.mycompany;
 
 import java.util.List;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Locale;
 import java.util.Map;
 import org.mycompany.wizard.panels.HelloWorldPanel;
@@ -21,6 +23,7 @@ import org.netbeans.installer.utils.system.shortcut.Shortcut;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StreamUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.wizard.Wizard;
@@ -317,7 +320,32 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         } else if (SystemUtils.isMacOS()) {
             icon = null;//new File(location, ICON_MACOSX);
         } else {
-            icon = null;//new File(location, ICON_UNIX);
+            icon = new File(location, ICON_UNIX);
+            LogManager.log("... icon file: " + icon);
+            if(!FileUtils.exists(icon)) {
+                LogManager.log("... icon file does not exist: " + icon);
+                InputStream is = null;
+                is = ResourceUtils.getResource(ICON_UNIX_RESOURCE, this.getClass().getClassLoader());
+                if(is!=null) {
+                    FileOutputStream fos =null;
+                    try {
+                        fos = new FileOutputStream(icon);
+                        StreamUtils.transferData(is, fos);
+                        is.close();
+                        fos.close();
+                        getProduct().getInstalledFiles().add(icon);
+                    } catch (IOException e) {
+                        LogManager.log(e);
+                    } finally {
+                        if(fos!=null) {
+                            try {
+                                fos.close();
+                            } catch (IOException e) {
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         if (SystemUtils.isWindows()) {
@@ -354,7 +382,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String ICON_WINDOWS =
             EXECUTABLE_WINDOWS;
     public static final String ICON_UNIX =
-            null; // NOI18N
+            ResourceUtils.getString(ConfigurationLogic.class,
+            "CL.unix.icon.name"); // NOI18N
+    public static final String ICON_UNIX_RESOURCE =
+            ResourceUtils.getString(ConfigurationLogic.class,
+            "CL.unix.icon.resource"); // NOI18N
     public static final String ICON_MACOSX =
             null; // NOI18N
     public static final String WIZARD_COMPONENTS_URI =
