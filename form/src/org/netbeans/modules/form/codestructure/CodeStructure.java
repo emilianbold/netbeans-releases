@@ -387,14 +387,18 @@ public class CodeStructure {
     }
 
     private static class GlobalUsingObject implements UsingCodeObject {
+        @Override
         public void usageRegistered(UsedCodeObject usedObject) {
         }
+        @Override
         public boolean usedObjectRemoved(UsedCodeObject usedObject) {
             return true;
         }
+        @Override
         public UsedCodeObject getDefiningObject() {
             return null;
         }
+        @Override
         public Iterator getUsedObjectsIterator() {
             return null;
         }
@@ -862,29 +866,35 @@ public class CodeStructure {
             this.name = name;
         }
 
+        @Override
         public int getType() {
             return (type & DEFAULT_TYPE) != DEFAULT_TYPE ?
                    type : getDefaultVariableType();
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public Class getDeclaredType() {
             return declaredType;
         }
 
+        @Override
         public String getDeclaredTypeParameters() {
             return declaredTypeParameters;
         }
 
+        @Override
         public Collection getAttachedExpressions() {
             return expressionsMap != null ?
                      Collections.unmodifiableCollection(expressionsMap.keySet()) :
                      Collections.EMPTY_LIST;
         }
 
+        @Override
         public CodeStatement getDeclaration() {
             if (declarationStatement == null)
                 declarationStatement =
@@ -892,6 +902,7 @@ public class CodeStructure {
             return declarationStatement;
         }
 
+        @Override
         public CodeStatement getAssignment(CodeExpression expression) {
             return expressionsMap != null ? expressionsMap.get(expression) : null;
         }
@@ -929,6 +940,7 @@ public class CodeStructure {
             this.subIterator = subIterator;
         }
 
+        @Override
         public boolean hasNext() {
             if (currentVar != null)
                 return true;
@@ -949,6 +961,7 @@ public class CodeStructure {
             return false;
         }
 
+        @Override
         public Object next() {
             if (!hasNext())
                 throw new NoSuchElementException();
@@ -958,6 +971,7 @@ public class CodeStructure {
             return var;
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
@@ -978,6 +992,7 @@ public class CodeStructure {
             variable = var;
         }
 
+        @Override
         public void undo() {
             switch (changeType) {
                 case VARIABLE_CREATE:
@@ -1005,6 +1020,7 @@ public class CodeStructure {
             }
         }
 
+        @Override
         public void redo() {
             switch (changeType) {
                 case VARIABLE_CREATE:

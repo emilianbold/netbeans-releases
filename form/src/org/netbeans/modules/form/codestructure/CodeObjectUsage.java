@@ -143,6 +143,7 @@ final class CodeObjectUsage {
             this.added = added;
         }
 
+        @Override
         public void undo() {
             if (added)
                 usedObject.removeUsingObject(use.usingObject);
@@ -150,6 +151,7 @@ final class CodeObjectUsage {
                 usedObject.addUsingObject(use.usingObject, use.type, use.category);
         }
 
+        @Override
         public void redo() {
             if (added)
                 usedObject.addUsingObject(use.usingObject, use.type, use.category);
@@ -175,6 +177,7 @@ final class CodeObjectUsage {
             this.useCategory = useCategory;
         }
 
+        @Override
         public boolean hasNext() {
             if (iterator == null)
                 return false;
@@ -191,6 +194,7 @@ final class CodeObjectUsage {
             return false;
         }
 
+        @Override
         public Object next() {
             if (!hasNext())
                 throw new NoSuchElementException();
@@ -200,6 +204,7 @@ final class CodeObjectUsage {
             return nextObject;
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }

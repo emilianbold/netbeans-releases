@@ -59,6 +59,7 @@ abstract class AbstractCodeStatement implements CodeStatement {
         this.parentExpression = parentExpression;
     }
 
+    @Override
     public CodeExpression getParentExpression() {
         return parentExpression;
     }
@@ -67,18 +68,22 @@ abstract class AbstractCodeStatement implements CodeStatement {
     // UsingCodeObject implementation
 
     // notifying about registering this object in used object
+    @Override
     public void usageRegistered(UsedCodeObject usedObject) {
     }
 
     // notifying about removing the used object from structure
+    @Override
     public boolean usedObjectRemoved(UsedCodeObject usedObject) {
         return false;
     }
 
+    @Override
     public UsedCodeObject getDefiningObject() {
         return getParentExpression();
     }
 
+    @Override
     public Iterator getUsedObjectsIterator() {
         return new UsedObjectsIterator();
     }
@@ -96,10 +101,12 @@ abstract class AbstractCodeStatement implements CodeStatement {
                 parameters = CodeStructure.EMPTY_PARAMS;
         }
 
+        @Override
         public boolean hasNext() {
             return index < parameters.length;
         }
 
+        @Override
         public Object next() {
             if (!hasNext())
                 throw new java.util.NoSuchElementException();
@@ -109,6 +116,7 @@ abstract class AbstractCodeStatement implements CodeStatement {
             return obj;
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
