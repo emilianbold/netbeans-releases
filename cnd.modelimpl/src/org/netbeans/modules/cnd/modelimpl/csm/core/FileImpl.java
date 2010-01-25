@@ -61,6 +61,7 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
@@ -215,34 +216,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private FileType fileType = FileType.UNDEFINED_FILE;
     private static final class StateLock {}
     private final Object stateLock = new StateLock();
-    private final List<FakePair> fakeRegistrationPairs = new ArrayList<FakePair>();
+    private final List<CsmUID<FunctionImplEx>> fakeRegistrationPairs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
 
-    private static final class FakePair {
-
-        private static void appedToFakeCollection(Collection<CsmUID<FunctionImplEx>> fakeUIDs, Collection<FakePair> fakeRegistrationPairs) {
-            for (CsmUID<FunctionImplEx> csmUID : fakeUIDs) {
-                fakeRegistrationPairs.add(new FakePair(csmUID, null));
-            }
-        }
-
-        private static Collection<CsmUID<FunctionImplEx>> toUIDCollection(Collection<FakePair> fakePairs) {
-            Collection<CsmUID<FunctionImplEx>> out = new ArrayList<CsmUID<FunctionImplEx>>(fakePairs.size());
-            for (FakePair pair: fakePairs) {
-                if (pair != null) {
-                    out.add(pair.uid);
-                }
-            }
-            return out;
-        }
-
-        private final CsmUID<FunctionImplEx> uid;
-        private final AST tree;
-
-        public FakePair(CsmUID<FunctionImplEx> uid, AST tree) {
-            this.uid = uid;
-            this.tree = tree;
-        }
-    }
     private long lastParsed = Long.MIN_VALUE;
     /** Cache the hash code */
     private int hash = 0; // Default to 0
@@ -578,7 +553,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     private void postParse() {
-        fixFakeRegistrations(false);
+        // do not call fix fakes after file parsed
+        // if something is not resolved, postpone till project parse finished
+//        fixFakeRegistrations(false);
         if (isValid()) {   // FIXUP: use a special lock here
             RepositoryUtils.put(this);
         }
@@ -607,9 +584,6 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 // FIXUP: there should be a notificator per project instead!
                 Notificator.instance().reset();
             }
-        }
-        if (prjLibsAlreadyParsed) {
-            clearFakeRegistrations();
         }
     }
 
@@ -1742,12 +1716,14 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public final void onFakeRegisration(FunctionImplEx decl, AST fakeRegistrationAst) {
         synchronized (fakeRegistrationPairs) {
             CsmUID<FunctionImplEx> uidDecl = UIDCsmConverter.declarationToUID(decl);
-            fakeRegistrationPairs.add(new FakePair(uidDecl, fakeRegistrationAst));
+            fakeRegistrationPairs.add(uidDecl);
+            getProjectImpl(true).trackFakeFunctionAST(getUID(), uidDecl, fakeRegistrationAst);
         }
     }
 
     private void clearFakeRegistrations() {
         synchronized (fakeRegistrationPairs) {
+            getProjectImpl(true).cleanAllFakeFunctionAST(getUID());
             fakeRegistrationPairs.clear();
         }
     }
@@ -1770,18 +1746,15 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 }
                 if (fakeRegistrationPairs.size() > 0) {
                     for (int i = 0; i < fakeRegistrationPairs.size(); i++) {
-                        FakePair fakePair = fakeRegistrationPairs.get(i);
-                        if (fakePair == null) {
-                            continue;
-                        }
-                        CsmUID<? extends CsmDeclaration> fakeUid = fakePair.uid;
+                        CsmUID<FunctionImplEx> fakeUid = fakeRegistrationPairs.get(i);
+                        AST fakeAST = getProjectImpl(true).getFakeFunctionAST(getUID(), fakeUid);
                         CsmDeclaration curElem = fakeUid.getObject();
                         if (curElem != null) {
                             if (curElem instanceof FunctionImplEx) {
                                 wereFakes = true;
                                 incParseCount();
-                                if (((FunctionImplEx) curElem).fixFakeRegistration(projectParsedMode, fakePair.tree)) {
-                                    fakeRegistrationPairs.set(i, null);
+                                if (((FunctionImplEx) curElem).fixFakeRegistration(projectParsedMode, fakeAST)) {
+                                    getProjectImpl(true).trackFakeFunctionAST(getUID(), fakeUid, null);
                                 }
                                 incParseCount();
                             } else {
@@ -1844,7 +1817,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         } finally {
             macrosLock.readLock().unlock();
         }
-        factory.writeUIDCollection(FakePair.toUIDCollection(this.fakeRegistrationPairs), output, false);
+        factory.writeUIDCollection(this.fakeRegistrationPairs, output, false);
         //output.writeUTF(state.toString());
         output.writeByte(fileType.ordinal());
 
@@ -1889,10 +1862,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         factory.readUIDCollection(this.includes, input);
         factory.readUIDCollection(this.brokenIncludes, input);
         this.macros = factory.readNameSortedToUIDMap(input, DefaultCache.getManager());
-        Collection<CsmUID<FunctionImplEx>> fakeUIDs = new ArrayList<CsmUID<FunctionImplEx>>(0);
-        factory.readUIDCollection(fakeUIDs, input);
-        FakePair.appedToFakeCollection(fakeUIDs, this.fakeRegistrationPairs);
-        //state = State.valueOf(input.readUTF());
+        factory.readUIDCollection(this.fakeRegistrationPairs, input);
         fileType = FileType.values()[input.readByte()];
 
         this.projectUID = UIDObjectFactory.getDefaultFactory().readUID(input);
