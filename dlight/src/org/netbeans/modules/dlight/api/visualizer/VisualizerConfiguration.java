@@ -56,8 +56,8 @@ public interface VisualizerConfiguration {
     DataModelScheme getSupportedDataScheme();
 
     /**
-     * Unqiue id
-     * @return unque id
+     * Unique id
+     * @return unique id
      */
     String getID();
 }

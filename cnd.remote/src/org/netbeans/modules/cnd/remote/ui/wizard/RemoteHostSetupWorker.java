@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker;
 import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsCacheManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 
@@ -53,16 +53,18 @@ import org.openide.WizardDescriptor.Panel;
  */
 public class RemoteHostSetupWorker implements HostSetupWorker {
 
-    CreateHostData data;
+    private CreateHostData data;
 
     /*package*/ RemoteHostSetupWorker(ToolsCacheManager toolsCacheManager) {
         data = new CreateHostData(toolsCacheManager);
     }
 
+    @Override
     public Result getResult() {
         return data;
     }
 
+    @Override
     public List<Panel<WizardDescriptor>> getWizardPanels(HostValidator validator) {
         return callUncheckedNewForPanels();
     }

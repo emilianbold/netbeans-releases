@@ -41,7 +41,7 @@
 package org.netbeans.modules.cnd.makeproject.api.platforms;
 
 import java.util.ArrayList;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 
 public class Platforms {
     private static final ArrayList<Platform> platforms = new ArrayList<Platform>();

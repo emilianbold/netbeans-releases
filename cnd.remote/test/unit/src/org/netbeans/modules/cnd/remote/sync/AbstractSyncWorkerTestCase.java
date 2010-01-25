@@ -64,6 +64,19 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
         super(testName, execEnv);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        createRemoteTmpDir();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        clearRemoteTmpDir(); // before disconnection!
+        super.tearDown();
+    }
+
+
     @ForAllEnvironments
     public void testSyncWorker_simple() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
@@ -89,7 +102,7 @@ public abstract class AbstractSyncWorkerTestCase extends RemoteTestBase {
     }
 
     private String getDestDir(ExecutionEnvironment execEnv) {
-        return  "/tmp/" + execEnv.getUser() + "/sync-worker-test/" + Math.random() + "/";
+        return  getRemoteTmpDir() + "/sync-worker-test/" + Math.random() + "/";
     }
 
     private void doTest(File src, ExecutionEnvironment execEnv, String dst) throws Exception {

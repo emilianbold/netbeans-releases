@@ -45,13 +45,13 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
-import org.netbeans.modules.cnd.actions.BuildToolsAction;
+import org.netbeans.modules.cnd.toolchain.actions.BuildToolsAction;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.PropertySupport;
 
@@ -63,8 +63,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.settings.CppSettings;
-import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
-import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
+import org.netbeans.modules.cnd.toolchain.ui.api.LocalToolsPanelModel;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelModel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;

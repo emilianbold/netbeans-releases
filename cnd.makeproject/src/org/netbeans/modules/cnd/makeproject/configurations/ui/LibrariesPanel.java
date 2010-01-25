@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
@@ -148,12 +148,14 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         return new ArrayList<LibraryItem>(getListData());
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
             editor.setValue(getPropertyValue());
         }
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("Libraries"); // NOI18N
     }
@@ -228,8 +230,9 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
     }
 
-    class AddProjectButtonAction implements java.awt.event.ActionListener {
+    private final class AddProjectButtonAction implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             MakeArtifact[] artifacts = MakeArtifactChooser.showDialog(MakeArtifactChooser.ArtifactType.LIBRARY, project, myListEditorPanel);
             if (artifacts != null) {
@@ -256,8 +259,9 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
     }
 
-    class AddStandardLibraryButtonAction implements java.awt.event.ActionListener {
+    private final class AddStandardLibraryButtonAction implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             StdLibPanel stdLibPanel = new StdLibPanel(Platforms.getPlatform(conf.getDevelopmentHost().getBuildPlatform()).getStandardLibraries());
             DialogDescriptor dialogDescriptor = new DialogDescriptor(stdLibPanel, getString("SELECT_STATNDARD_LIBRARY_DIALOG_TITLE"));
@@ -272,8 +276,9 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
     }
 
-    class AddLibraryButtonAction implements java.awt.event.ActionListener {
+    private final class AddLibraryButtonAction implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
             if (FileChooser.getCurrectChooserFile() != null) {
@@ -318,8 +323,9 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
     }
 
-    class AddLibraryFileButtonAction implements java.awt.event.ActionListener {
+    private final class AddLibraryFileButtonAction implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
             if (FileChooser.getCurrectChooserFile() != null) {
@@ -363,8 +369,9 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
     }
 
-    class AddLinkerOptionButtonAction implements java.awt.event.ActionListener {
+    private final class AddLinkerOptionButtonAction implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             LibraryOptionPanel libraryOptionPanel = new LibraryOptionPanel();
             DialogDescriptor dialogDescriptor = new DialogDescriptor(libraryOptionPanel, getString("SELECT_OPTION_DIALOG_TITLE"));

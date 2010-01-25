@@ -86,6 +86,7 @@ import org.netbeans.modules.dlight.spi.CppSymbolDemangler;
 import org.netbeans.modules.dlight.spi.CppSymbolDemanglerFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.PersistentDataStorage;
 import org.netbeans.modules.dlight.spi.storage.ProxyDataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
@@ -97,7 +98,7 @@ import org.openide.util.Lookup;
  *
  * @author Alexey Vladykin
  */
-public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, ThreadDumpProvider {
+public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, ThreadDumpProvider, PersistentDataStorage {
 
     private SQLDataStorage sqlStorage;
     private final List<DataTableMetadata> tableMetadatas;

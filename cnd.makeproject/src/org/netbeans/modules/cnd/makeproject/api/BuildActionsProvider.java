@@ -41,7 +41,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.openide.util.Lookup;
 
 /**

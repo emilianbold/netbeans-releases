@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -56,6 +57,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -63,6 +65,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
@@ -97,6 +100,7 @@ import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassEnumBase;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
@@ -2181,7 +2185,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    public final void fixFakeRegistration(boolean libsAlreadyParsed){
+    private void fixFakeRegistration(boolean libsAlreadyParsed){
         Collection<CsmUID<CsmFile>> files = getAllFilesUID();
         int size = files.size();
         int threads = CndUtils.getNumberCndWorkerThreads()*3;
@@ -2202,10 +2206,52 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         try {
             countDownLatch.await();
+            if (libsAlreadyParsed) {
+                cleanAllFakeFunctionAST();
+            }
         } catch (InterruptedException ex) {
         }
     }
 
+    /* collection to keep fake ASTs during parse phase */
+    private final Map<CsmUID<CsmFile>, Map<CsmUID<FunctionImplEx>, AST>> fakeASTs = new WeakHashMap<CsmUID<CsmFile>, Map<CsmUID<FunctionImplEx>, AST>>();
+    /*package*/final void trackFakeFunctionAST(CsmUID<CsmFile> fileUID, CsmUID<FunctionImplEx> funUID, AST funAST) {
+        synchronized (fakeASTs) {
+            Map<CsmUID<FunctionImplEx>, AST> fileASTs = fakeASTs.get(fileUID);
+            if (fileASTs == null) {
+                // create always
+                fileASTs = new HashMap<CsmUID<FunctionImplEx>, AST>();
+                if (funAST != null) {
+                    // remember new only if not null AST
+                    fakeASTs.put(fileUID, fileASTs);
+                }
+            }
+            if (funAST == null) {
+                fileASTs.remove(funUID);
+            } else {
+                fileASTs.put(funUID, funAST);
+            }
+        }
+    }
+
+    /*package*/final void cleanAllFakeFunctionAST(CsmUID<CsmFile> fileUID) {
+        synchronized (fakeASTs) {
+            fakeASTs.remove(fileUID);
+        }
+    }
+
+    private final void cleanAllFakeFunctionAST() {
+        synchronized (fakeASTs) {
+            fakeASTs.clear();
+        }
+    }
+
+    /*package*/AST getFakeFunctionAST(CsmUID<CsmFile> fileUID, CsmUID<FunctionImplEx> fakeUid) {
+        synchronized (fakeASTs) {
+            Map<CsmUID<FunctionImplEx>, AST> fileASTs = fakeASTs.get(fileUID);
+            return fileASTs == null ? null : fileASTs.get(fakeUid);
+        }
+    }
 
     /*package*/final void onLibParseFinish() {
         onParseFinishImpl(true);

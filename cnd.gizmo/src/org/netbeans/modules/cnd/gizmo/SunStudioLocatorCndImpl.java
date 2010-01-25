@@ -41,8 +41,8 @@ package org.netbeans.modules.cnd.gizmo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.dlight.spi.SunStudioLocator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -59,6 +59,7 @@ public final class SunStudioLocatorCndImpl implements SunStudioLocator {
         this.env = env;
     }
 
+    @Override
     public Collection<SunStudioDescription> getSunStudioLocations() {
         Collection<SunStudioDescription> result = new ArrayList<SunStudioDescription>();
         List<CompilerSet> compilerCollections = env.isLocal() ? CompilerSetManager.getDefault().getCompilerSets() : CompilerSetManager.getDefault(env).getCompilerSets(); // NOI18N

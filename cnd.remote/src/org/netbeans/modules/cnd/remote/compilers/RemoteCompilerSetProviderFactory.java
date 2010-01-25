@@ -39,15 +39,15 @@
 
 package org.netbeans.modules.cnd.remote.compilers;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSetProvider;
-import org.netbeans.modules.cnd.spi.compilers.CompilerSetProviderFactoryImpl;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetProvider;
+import org.netbeans.modules.cnd.toolchain.spi.CompilerSetProviderFactoryImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  * CompilerSetProviderFactory implementation
  * @author Vladimir Kvashin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.compilers.CompilerSetProviderFactoryImpl.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.toolchain.spi.CompilerSetProviderFactoryImpl.class)
 public class RemoteCompilerSetProviderFactory implements CompilerSetProviderFactoryImpl {
 
     @Override

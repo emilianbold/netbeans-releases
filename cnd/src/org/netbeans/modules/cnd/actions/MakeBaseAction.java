@@ -52,13 +52,16 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
-import org.netbeans.modules.cnd.execution.CompilerLineConvertor;
+import org.netbeans.modules.cnd.toolchain.spi.CompilerLineConvertor;
 import org.netbeans.modules.cnd.settings.MakeSettings;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.ToolchainProject;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -81,6 +84,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         return object.getCookie(MakeExecSupport.class) != null;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         for (int i = 0; i < activatedNodes.length; i++){
             performAction(activatedNodes[i], "");// NOI18N
@@ -96,9 +100,11 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         if (SwingUtilities.isEventDispatchThread()) {
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
                 private ExecutionService es;
+                @Override
                 public void doWork() {
                     es = MakeBaseAction.this.prepare(node, target, listener, outputListener, project, additionalEnvironment, inputOutput);
                 }
+                @Override
                 public void doPostRunInEDT() {
                     if (es != null) {
                         es.run();
@@ -170,7 +176,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             }
         }
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
-                new CompilerLineConvertor(project, execEnv, fileObject.getParent()), inputOutput, "Make", syncWorker); // NOI18N
+                new CompilerLineConvertor(getCompilerSet(project), execEnv, fileObject.getParent()), inputOutput, "Make", syncWorker); // NOI18N
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv)
         .setExecutable(executable)
         .setWorkingDirectory(buildDir)
@@ -191,5 +197,19 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         .errConvertorFactory(processChangeListener)
         .outConvertorFactory(processChangeListener);
         return ExecutionService.newService(npb, descr, "make"); // NOI18N
+    }
+
+    private CompilerSet getCompilerSet(Project project) {
+        CompilerSet set = null;
+        if (project != null) {
+            ToolchainProject toolchain = project.getLookup().lookup(ToolchainProject.class);
+            if (toolchain != null) {
+                set = toolchain.getCompilerSet();
+            }
+        }
+        if (set == null) {
+            set = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        }
+        return set;
     }
 }

@@ -129,18 +129,24 @@ public class DerbyDataStorage extends SQLDataStorage {
         this("jdbc:derby:DerbyDlight" + dbIndex.incrementAndGet() + ";create=true;user=dbuser;password=dbuserpswd"); // NOI18N
     }
 
+
+
     private void initStorageTypes() {
         supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(DerbyDataStorageFactory.DERBY_DATA_STORAGE_TYPE));
         //supportedStorageTypes.add(DataStorageTypeFactory.getInstance().getDataStorageType(StackDataStorage.STACK_DATA_STORAGE_TYPE_ID));
         supportedStorageTypes.addAll(super.getStorageTypes());
     }
 
-    private DerbyDataStorage(String url) throws SQLException {
+    DerbyDataStorage(String url) throws SQLException {
         super(url);
         dbURL = url;
         this.tableMetadatas = new ArrayList<DataTableMetadata>();
         initStorageTypes();
         connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
+    }
+
+    String getURL(){
+        return dbURL;
     }
 
     @Override

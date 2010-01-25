@@ -54,7 +54,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.SourceFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -80,12 +80,15 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         initFocus();
         this.listener = listener;
         ignoreFoldersTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 update();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 update();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 update();
             }
@@ -121,7 +124,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
     private static class CustomFileFilter extends SourceFileFilter {
 
-        String[] suffixes;
+        private String[] suffixes;
 
         CustomFileFilter(String suffixesString) {
             StringTokenizer st = new StringTokenizer(suffixesString);
@@ -136,10 +139,12 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             suffixes = vec.toArray(new String[vec.size()]);
         }
 
+        @Override
         public String getDescription() {
             return ""; // NOI18N
         }
 
+        @Override
         public String[] getSuffixes() {
             return suffixes;
         }
@@ -147,6 +152,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
     private class TargetSelectionListener implements ListSelectionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting()) {
                 return;
@@ -157,7 +163,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
     private void validateSelection() {
         addButton.setEnabled(true);
-        if (data.size() == 0 || sourceFileTable.getSelectedRow() < 0) {
+        if (data.isEmpty() || sourceFileTable.getSelectedRow() < 0) {
             deleteButton.setEnabled(false);
         } else {
             deleteButton.setEnabled(true);
@@ -170,7 +176,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         validateSelection();
     }
 
-    class SourceFileTable extends JTable {
+    private final class SourceFileTable extends JTable {
 
         public SourceFileTable() {
             //setTableHeader(null); // Hides table headers
@@ -213,7 +219,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 //        }
     }
 
-    class MyTableModel extends DefaultTableModel {
+    private final class MyTableModel extends DefaultTableModel {
 
         @Override
         public String getColumnName(int col) {

@@ -68,7 +68,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -133,14 +133,17 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         this.packagingFilesOuterPanel = packagingFilesOuterPanel;
         DocumentListener documentListener = new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 refresh();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 refresh();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 refresh();
             }
@@ -148,16 +151,18 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         packagingFilesOuterPanel.getTopDirectoryTextField().getDocument().addDocumentListener(documentListener);
     }
 
-    class AddButtonAction implements java.awt.event.ActionListener {
+    private final class AddButtonAction implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
             addObjectAction(new PackagerFileElement(FileType.UNKNOWN, "", topFolder)); // NOI18N
         }
     }
 
-    class AddLinkButtonAction implements java.awt.event.ActionListener {
+    private final class AddLinkButtonAction implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             PackagingNewLinkPanel packagingNewEntryPanel = new PackagingNewLinkPanel(packagingFilesOuterPanel.getTopDirectoryTextField().getText());
             DialogDescriptor dialogDescriptor = new DialogDescriptor(packagingNewEntryPanel, getString("AddNewLinkDialogTitle"));
@@ -176,8 +181,9 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         }
     }
 
-    class AddFileOrDirectoryButtonAction implements java.awt.event.ActionListener {
+    private final class AddFileOrDirectoryButtonAction implements java.awt.event.ActionListener {
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
             if (FileChooser.getCurrectChooserFile() != null) {
@@ -234,11 +240,12 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         }
     }
 
-    class AddFilesButtonAction implements java.awt.event.ActionListener {
+    private final class AddFilesButtonAction implements java.awt.event.ActionListener {
 //        private PackagingAddingFilesProgressPanel progressPanel;
 
         private boolean cancelled;
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
             if (FileChooser.getCurrectChooserFile() != null) {
@@ -275,7 +282,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         //addFilesFromDirectory(dir, dir);
         }
 
-        class AddFilesFromDir extends Thread {
+        private final class AddFilesFromDir extends Thread {
 
             private PackagingAddingFilesProgressPanel progressPanel;
             private Dialog progressDialog;
@@ -294,6 +301,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
 
                 SwingUtilities.invokeLater(new Runnable() {
 
+                    @Override
                     public void run() {
                         addObjectsAction(listToAdd);
                         progressDialog.setVisible(false);
@@ -302,8 +310,9 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
             }
         }
 
-        class StopButtonAction implements java.awt.event.ActionListener {
+        private final class StopButtonAction implements java.awt.event.ActionListener {
 
+            @Override
             public void actionPerformed(ActionEvent arg0) {
                 cancelled = true;
             }
@@ -428,6 +437,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
 
     private class TargetSelectionListener implements ListSelectionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting()) {
                 return;
@@ -458,7 +468,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         return targetList;
     }
 
-    class MyTable extends JTable {
+    private final class MyTable extends JTable {
 
         public MyTable() {
 //	    //setTableHeader(null); // Hides table headers
@@ -512,7 +522,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         }
     }
 
-    class MyTableCellRenderer extends DefaultTableCellRenderer {
+    private final class MyTableCellRenderer extends DefaultTableCellRenderer {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
@@ -554,7 +564,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         return 6;
     }
 
-    class MyTableModel extends DefaultTableModel {
+    private final class MyTableModel extends DefaultTableModel {
 
         private String[] columnNames = {
             getString("PackagingFilesOuterPanel.column.0.text"),

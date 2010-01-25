@@ -47,7 +47,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.utils.ConfigureFileFilter;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.MakefileFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -66,14 +66,17 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         instructionsTextArea.setBackground(instructionPanel.getBackground());
         this.descriptorPanel = buildActionsDescriptorPanel;
         documentListener = new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 update(e);
             }
             
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 update(e);
             }
             
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 update(e);
             }
@@ -110,6 +113,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         // Set default values
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("NewMakeWizardP11"); // NOI18N
     }

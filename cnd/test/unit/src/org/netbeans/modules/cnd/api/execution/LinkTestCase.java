@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.api.execution;
 
+import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import java.io.File;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
