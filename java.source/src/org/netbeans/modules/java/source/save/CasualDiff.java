@@ -364,17 +364,24 @@ public class CasualDiff {
         insertHint = tokenSequence.offset();
         localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
         if (kindChanged(oldT.mods.flags, newT.mods.flags)) {
+            int pos = oldT.pos;
+            if ((oldT.mods.flags & Flags.ANNOTATION) != 0) {
+                tokenSequence.move(pos);
+                tokenSequence.moveNext();
+                moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                pos = tokenSequence.offset();
+            }
             if ((newT.mods.flags & Flags.ANNOTATION) != 0) {
-                copyTo(localPointer, oldT.pos);
+                copyTo(localPointer, pos);
                 printer.print("@interface"); //NOI18N
             } else if ((newT.mods.flags & Flags.ENUM) != 0) {
-                copyTo(localPointer, oldT.pos);
+                copyTo(localPointer, pos);
                 printer.print("enum"); //NOI18N
             } else if ((newT.mods.flags & Flags.INTERFACE) != 0) {
-                copyTo(localPointer, oldT.pos);
+                copyTo(localPointer, pos);
                 printer.print("interface"); //NOI18N
             } else {
-                copyTo(localPointer, oldT.pos);
+                copyTo(localPointer, pos);
                 printer.print("class"); //NOI18N
             }
             localPointer = afterKindHint;
