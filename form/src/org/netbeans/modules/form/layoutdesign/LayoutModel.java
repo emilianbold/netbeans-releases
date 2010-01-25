@@ -858,7 +858,7 @@ public class LayoutModel implements LayoutConstants {
     private void addChange(LayoutEvent change) {
         if (recordingChanges && !undoRedoInProgress) {
             redoMap.clear();
-            if (undoMap.size() == 0)
+            if (undoMap.isEmpty())
                 oldestMark = changeMark;
 
             undoMap.put(new Integer(changeMark++), change);
