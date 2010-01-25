@@ -112,7 +112,7 @@ final class NetigsoModule extends Module {
             loader.init(b);
             b.start();
         } catch (BundleException ex) {
-            throw (IOException)new IOException(ex.getMessage()).initCause(ex);
+            throw (IOException)new IOException("Cannot start " + jar).initCause(ex);
         }
         bundle = b;
     }

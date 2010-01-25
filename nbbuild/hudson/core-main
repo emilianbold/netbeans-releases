@@ -77,7 +77,6 @@ if [ "$action" = "build" ]; then
     testmodule spi.quicksearch
     testmodule tasklist.todo
     testmodule tasklist.ui
-    testmodule templates
 fi
 
 if [ "$action" = "sync" ]; then

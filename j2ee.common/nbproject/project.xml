@@ -400,10 +400,6 @@ made subject to such option by the copyright holder.
                         <recursive/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.templates</code-name-base>
-                        <recursive/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.libs.freemarker</code-name-base>
                         <recursive/>
                     </test-dependency>

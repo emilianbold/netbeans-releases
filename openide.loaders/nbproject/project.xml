@@ -182,6 +182,9 @@ made subject to such option by the copyright holder.
                         <recursive/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.libs.freemarker</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
@@ -196,6 +199,12 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <recursive/>
                         <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.progress.ui</code-name-base>

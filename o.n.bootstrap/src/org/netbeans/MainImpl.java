@@ -282,7 +282,7 @@ final class MainImpl extends Object {
                     InputStream is = u.openStream();
                     mf = new java.util.jar.Manifest(is);
                     is.close();
-                    value = mf.getMainAttributes().getValue("OpenIDE-Module-Build-Version"); // NOI18N
+                    value = mf.getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
                     if (value != null) {
                         break;
                     }
