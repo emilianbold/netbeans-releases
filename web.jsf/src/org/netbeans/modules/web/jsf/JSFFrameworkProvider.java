@@ -230,15 +230,16 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     
     public java.io.File[] getConfigurationFiles(org.netbeans.modules.web.api.webmodule.WebModule wm) {
         // The JavaEE 5 introduce web modules without deployment descriptor. In such wm can not be jsf used.
-        assert wm != null;
-        FileObject dd = wm.getDeploymentDescriptor();
-        if (dd != null){
-            FileObject[] filesFO = ConfigurationUtils.getFacesConfigFiles(wm);
-            File[] files = new File[filesFO.length];
-            for (int i = 0; i < filesFO.length; i++)
-                files[i] = FileUtil.toFile(filesFO[i]);
-            if (files.length > 0)
-                return files;
+        if (wm != null) {
+            FileObject dd = wm.getDeploymentDescriptor();
+            if (dd != null){
+                FileObject[] filesFO = ConfigurationUtils.getFacesConfigFiles(wm);
+                File[] files = new File[filesFO.length];
+                for (int i = 0; i < filesFO.length; i++)
+                    files[i] = FileUtil.toFile(filesFO[i]);
+                if (files.length > 0)
+                    return files;
+            }
         }
         return null;
     }
