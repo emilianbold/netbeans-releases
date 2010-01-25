@@ -258,7 +258,7 @@ public class TreeModelEditor extends PropertyEditorSupport
             }
             parent.add(node);
         }
-        if (nodes.size() == 0) {
+        if (nodes.isEmpty()) {
             root = new DefaultMutableTreeNode("root"); // NOI18N
         }
         if (root == null) {
