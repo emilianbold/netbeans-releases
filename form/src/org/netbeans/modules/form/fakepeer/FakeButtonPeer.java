@@ -54,6 +54,7 @@ class FakeButtonPeer extends FakeComponentPeer
         super(target);
     }
 
+    @Override
     Component createDelegate() {
         return new Delegate();
     }

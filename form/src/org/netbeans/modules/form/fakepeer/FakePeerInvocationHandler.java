@@ -65,6 +65,7 @@ public class FakePeerInvocationHandler implements InvocationHandler {
     /**
      * @see InvocationHandler#invoke(Object proxy, Method method, Object[] args)
      */
+    @Override
     public Object invoke(Object proxy, Method method, Object[] args) 
        throws Throwable {        
        
