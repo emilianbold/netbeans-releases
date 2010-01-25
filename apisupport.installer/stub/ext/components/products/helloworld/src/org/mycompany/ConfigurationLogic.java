@@ -315,9 +315,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         if (SystemUtils.isWindows()) {
             icon = new File(location, ICON_WINDOWS);
         } else if (SystemUtils.isMacOS()) {
-            icon = new File(location, ICON_MACOSX);
+            icon = null;//new File(location, ICON_MACOSX);
         } else {
-            icon = new File(location, ICON_UNIX);
+            icon = null;//new File(location, ICON_UNIX);
         }
 
         if (SystemUtils.isWindows()) {
