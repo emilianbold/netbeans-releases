@@ -132,7 +132,7 @@ public class LayoutTestUtils implements LayoutConstants {
     
     static void dumpTestcode(List codeList, DataObject form, final int modelCounter) {
         FileWriter fw = null;
-        StringBuffer template = new StringBuffer();
+        StringBuilder template = new StringBuilder();
         
         if (form == null) return;
         try {
