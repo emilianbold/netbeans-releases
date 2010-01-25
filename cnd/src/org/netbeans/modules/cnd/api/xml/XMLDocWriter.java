@@ -82,6 +82,7 @@ abstract public class XMLDocWriter implements XMLEncoder {
     protected String encoding() {
 //	String lang = System.getenv("LANG");	// NOI18N
 	String encoding = "UTF-8";		// NOI18N
+        // See IZ 119431
 //	if (lang != null) {
 //	    if (lang.equals("zh") ||		// NOI18N
 //		lang.equals("zh.GBK") ||	// NOI18N
