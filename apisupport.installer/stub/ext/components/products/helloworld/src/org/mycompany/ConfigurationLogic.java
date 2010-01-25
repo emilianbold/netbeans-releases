@@ -283,6 +283,18 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         return false;
     }
 
+    @Override
+    public boolean requireDotAppForMacOs() {
+        return true;
+    }
+
+    @Override
+    public boolean wrapForMacOs() {
+        return true;
+    }
+
+
+
     private Shortcut getDesktopShortcut(final File directory) {
         return getShortcut(
                 getStrings("CL.desktop.shortcut.name"), // NOI18N
