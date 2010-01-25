@@ -85,14 +85,17 @@ public class Bugzilla {
     private Bugzilla() {
         ModuleLifecycleManager.instantiated = true;
         bcp = new BugzillaCorePlugin();
-        brc = new BugzillaRepositoryConnector(new File(BugtrackingRuntime.getInstance().getCacheStore(), "bugzillaconfiguration"));
-        clientManager = getRepositoryConnector().getClientManager();
-        BugzillaIssueProvider.getInstance();
         try {
             bcp.start(null);
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
+        // up to mylyn 3.3.1 it is esential not to create the BugzillaRepositoryConnector
+        // before the BugzillaCorePlugin was started. Other they won't be configured together
+        // in the BugzillaRepositoryConnector constructor
+        brc = new BugzillaRepositoryConnector();
+        clientManager = getRepositoryConnector().getClientManager();
+        BugzillaIssueProvider.getInstance();
     }
 
     public static synchronized Bugzilla getInstance() {
