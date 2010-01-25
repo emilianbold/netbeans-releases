@@ -835,6 +835,11 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
                             method.getName().toString())
                     : null;
         }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
     
     public enum SortBy implements Comparator<SortBy> {
