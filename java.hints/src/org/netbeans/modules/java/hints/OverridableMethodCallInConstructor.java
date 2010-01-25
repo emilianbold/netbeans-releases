@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.java.hints;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Scope;
@@ -52,6 +53,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
@@ -95,7 +97,11 @@ public class OverridableMethodCallInConstructor {
         if (scope.getEnclosingClass() != classElement) {
             return null;
         }
-        
+
+        if (classElement.getModifiers().contains(Modifier.FINAL)) {
+            return null;
+        }
+
         Set<Modifier> modifiers = methodInvocationElement.getModifiers();
         if (modifiers.contains(Modifier.PRIVATE) || 
             modifiers.contains(Modifier.FINAL) || 
@@ -107,13 +113,41 @@ public class OverridableMethodCallInConstructor {
                     OverridableMethodCallInConstructor.class,
                     "MSG_org.netbeans.modules.java.hints.OverridableMethodCallInConstructor"),
                     computeFixes((ExecutableElement)methodInvocationElement,
-                        ctx));
+                        classElement, ctx));
     }
 
-    private static Fix[] computeFixes(ExecutableElement ee, HintContext ctx) {
+    private static Fix[] computeFixes(ExecutableElement ee, Element classElement, HintContext ctx) {
         List<Fix> result = new ArrayList<Fix>();
+        ClassTree ct = ctx.getInfo().getTrees().getTree((TypeElement)classElement);
+        result.add(FixFactory.addModifiersFix(
+            ctx.getInfo(),
+            TreePath.getPath(
+                ctx.getInfo().getCompilationUnit(),
+                ct.getModifiers()
+            ),
+            Collections.singleton(Modifier.FINAL),
+            NbBundle.getMessage(OverridableMethodCallInConstructor.class,
+                "FIX_MakeClass", "final", ct.getSimpleName())));
         MethodTree mt = ctx.getInfo().getTrees().getTree(ee);
         Set<Modifier> flags = mt.getModifiers().getFlags();
+        result.add(FixFactory.addModifiersFix(
+            ctx.getInfo(),
+            TreePath.getPath(
+                ctx.getInfo().getCompilationUnit(),
+                mt.getModifiers()
+            ),
+            Collections.singleton(Modifier.FINAL),
+            NbBundle.getMessage(OverridableMethodCallInConstructor.class,
+                "FIX_MakeMethod", "final", mt.getName())));
+        result.add(FixFactory.addModifiersFix(
+            ctx.getInfo(),
+            TreePath.getPath(
+                ctx.getInfo().getCompilationUnit(),
+                mt.getModifiers()
+            ),
+            Collections.singleton(Modifier.STATIC),
+            NbBundle.getMessage(OverridableMethodCallInConstructor.class,
+                "FIX_MakeMethod", "static", mt.getName())));
         result.add(FixFactory.changeModifiersFix(
             ctx.getInfo(),
             TreePath.getPath(
