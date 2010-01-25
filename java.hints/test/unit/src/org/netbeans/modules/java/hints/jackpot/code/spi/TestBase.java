@@ -104,6 +104,12 @@ public abstract class TestBase extends NbTestCase {
         TreeLoader.DISABLE_CONFINEMENT_TEST = true;
     }
 
+    private String sourceLevel = "1.5";
+
+    protected void setSourceLevel(String sourceLevel) {
+        this.sourceLevel = sourceLevel;
+    }
+    
     private void prepareTest(String fileName, String code) throws Exception {
         clearWorkDir();
         File wdFile = getWorkDir();
@@ -123,6 +129,8 @@ public abstract class TestBase extends NbTestCase {
         TestUtilities.copyStringToFile(dataFile, code);
 
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache, extraClassPath());
+
+        SourceUtilsTestUtil.setSourceLevel(data, sourceLevel);
 
         DataObject od = DataObject.find(data);
         EditorCookie ec = od.getCookie(EditorCookie.class);
