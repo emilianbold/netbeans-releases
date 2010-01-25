@@ -85,7 +85,7 @@ class CodeSupport {
         
         @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
 
             if (parentStr != null && !parentStr.equals("")) {
                 buf.append(parentStr);
@@ -133,7 +133,7 @@ class CodeSupport {
 
         @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
 
             if (parentStr != null && !parentStr.equals("")) {
                 buf.append(parentStr);
@@ -170,7 +170,7 @@ class CodeSupport {
 
         @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             int varType = variable.getType();
 
             int declareMask = CodeVariable.SCOPE_MASK
@@ -215,7 +215,7 @@ class CodeSupport {
 
         @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             int type = variable.getType();
 
             if ((type & CodeVariable.SCOPE_MASK) == CodeVariable.FIELD) {
@@ -318,7 +318,7 @@ class CodeSupport {
 
         @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
 
             buf.append("new "); // NOI18N
             buf.append(constructor.getName());
@@ -377,7 +377,7 @@ class CodeSupport {
 
         @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
 
             if (parentExpression != null) {
                 if (parentStr != null && !parentStr.equals("")) {
@@ -441,7 +441,7 @@ class CodeSupport {
 
         @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
 
             if (parentExpression != null) {
                 if (parentStr != null && !parentStr.equals("")) {
