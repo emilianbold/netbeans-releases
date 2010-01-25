@@ -80,26 +80,26 @@ abstract public class XMLDocWriter implements XMLEncoder {
      */
 
     protected String encoding() {
-	String lang = System.getenv("LANG");	// NOI18N
+//	String lang = System.getenv("LANG");	// NOI18N
 	String encoding = "UTF-8";		// NOI18N
-	if (lang != null) {
-	    if (lang.equals("zh") ||		// NOI18N
-		lang.equals("zh.GBK") ||	// NOI18N
-		lang.equals("zh_CN.EUC") ||	// NOI18N
-		lang.equals("zh_CN.GB18030") ||	// NOI18N
-		lang.equals("zh_CN") ||		// NOI18N
-		lang.equals("zh_CN.GBK")) {	// NOI18N
-
-		encoding = "EUC-JP";		// NOI18N
-
-	    } else if (lang.equals("ja") ||	// NOI18N
-		       lang.equals("ja_JP.eucJP")) { // NOI18N
-
-		encoding = "EUC-JP";		// NOI18N
-	    } else {
-		encoding = "UTF-8";		// NOI18N
-	    }
-	}
+//	if (lang != null) {
+//	    if (lang.equals("zh") ||		// NOI18N
+//		lang.equals("zh.GBK") ||	// NOI18N
+//		lang.equals("zh_CN.EUC") ||	// NOI18N
+//		lang.equals("zh_CN.GB18030") ||	// NOI18N
+//		lang.equals("zh_CN") ||		// NOI18N
+//		lang.equals("zh_CN.GBK")) {	// NOI18N
+//
+//		encoding = "EUC-JP";		// NOI18N
+//
+//	    } else if (lang.equals("ja") ||	// NOI18N
+//		       lang.equals("ja_JP.eucJP")) { // NOI18N
+//
+//		encoding = "EUC-JP";		// NOI18N
+//	    } else {
+//		encoding = "UTF-8";		// NOI18N
+//	    }
+//	}
 	return encoding;
     } 
 
