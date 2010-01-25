@@ -1,7 +1,6 @@
 Code completion result for source line:
 ss.|sing # is completed
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     new(name)                       [STATIC,   Song
 METHOD     sing(text)                                 Song
 ATTRIBUTE  age                                        Song
 ATTRIBUTE  name                                       Song
@@ -65,9 +64,7 @@ METHOD     loop { }                                   Kernel
 METHOD     method(sym)                                Object
 METHOD     method_missing(symbol, *args)              Kernel
 METHOD     methods                                    Object
-METHOD     new                             [STATIC]   Object
 METHOD     new(args)                                  Class
-METHOD     new(super_class)                [STATIC]   Class
 METHOD     nil?                                       Object
 METHOD     object_id                                  Object
 METHOD     open(path, mode, perm)                     Kernel
