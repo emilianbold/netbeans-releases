@@ -95,12 +95,15 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
         textArea.setText(textBuffer.toString());
         
         textArea.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 updateValue();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 updateValue();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 updateValue();
             }

@@ -123,6 +123,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         columnsTable.getSelectionModel().addListSelectionListener(new ColumnSelectionListener());
         rowsTable.getSelectionModel().addListSelectionListener(new RowSelectionListener());
         titleListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (lastSelectedColumn != -1) {
                     columnTableModel.fireTableRowsUpdated(lastSelectedColumn, lastSelectedColumn); 
@@ -1235,11 +1236,13 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         }
     }
     
+    @Override
     public void setObject(Object table) {
         assert (table instanceof JTable);
         this.table = (JTable)table;
     }
 
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         assert (property instanceof RADProperty);
         
@@ -1280,6 +1283,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         expressionCombo = modelBoundCustomizer.getSubExpressionCombo();
         expressionCombo.setEnabled(false);
         expressionCombo.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 ColumnInfo info = columns.get(lastSelectedColumn);
                 Object expression = expressionCombo.getSelectedItem();
@@ -1301,6 +1305,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             }
         });
         modelBoundCustomizer.addTypeChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (modelBoundChoice.isSelected()) {
                     checkBindingType();
@@ -1317,6 +1322,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         layout.replace(modelBoundPanel, modelBoundCustomizer.getBindingPanel());
         
         modelFromComponentEd.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 updateModelCustomizers();
             }
@@ -1364,6 +1370,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
     }
 
     // FormAwareEditor
+    @Override
     public void updateFormVersionLevel() {
     }
 
@@ -1779,6 +1786,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
      */
     class ColumnSelectionListener implements ListSelectionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getValueIsAdjusting()) {
                 return;
@@ -1799,6 +1807,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
      */
     class RowSelectionListener implements ListSelectionListener {
 
+        @Override
         public void valueChanged(ListSelectionEvent e) {
             int[] index = rowsTable.getSelectedRows();
             boolean empty = (index.length == 0);
@@ -1824,10 +1833,12 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             }
         }
 
+        @Override
         public int getRowCount() {
             return (columns == null) ? 0 : columns.size();
         }
 
+        @Override
         public int getColumnCount() {
             int columnCount;
             switch (modelType) {
@@ -1866,6 +1877,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             }
         }
 
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             Object value = null;
             ColumnInfo info = columns.get(rowIndex);
