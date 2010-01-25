@@ -122,7 +122,7 @@ public class PrimitiveTypeArrayEditor extends PropertyEditorSupport
         char[] source = (char[]) array;
         result = new String[source.length];
         for (int i = 0; i < source.length; i++) {
-            result[i] = new String(convertChar2String(source[i]));
+            result[i] = convertChar2String(source[i]);
         } 
         return result;
     }    
