@@ -139,7 +139,6 @@ public final class Utils {
 
     private static File browseAction(final Component parent, File currentDirectory, String title, int mode) {
         JFileChooser chooser = new JFileChooser();
-        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setDialogTitle(title);
         chooser.setFileSelectionMode(mode);
         if (currentDirectory != null
