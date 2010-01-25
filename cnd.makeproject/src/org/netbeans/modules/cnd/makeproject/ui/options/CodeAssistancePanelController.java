@@ -59,34 +59,42 @@ public final class CodeAssistancePanelController extends OptionsPanelController 
 //    private CodeAssistancePanel panel = new CodeAssistancePanel();
     private ParserSettingsPanel panel = new ParserSettingsPanel();
     
+    @Override
     public void update() {
         panel.update();
     }
     
+    @Override
     public void applyChanges() {
         panel.save();
     }
     
+    @Override
     public void cancel() {
         panel.cancel();
     }
     
+    @Override
     public boolean isValid() {
         return panel.isDataValid();
     }
     
+    @Override
     public boolean isChanged() {
         return panel.isChanged();
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("cnd.optionsDialog"); // NOI18N
     }
     
+    @Override
     public JComponent getComponent(Lookup masterLookup) {
         return panel;
     }
     
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
         panel.addPropertyChangeListener(l);
     }

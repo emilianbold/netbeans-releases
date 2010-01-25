@@ -40,7 +40,7 @@
  */
 
 
-package org.netbeans.modules.cnd.toolchain.ui.options;
+package org.netbeans.modules.cnd.toolchain.ui.api;
 
 /** Manage the data for the ToolsPanel */
 public class LocalToolsPanelModel extends ToolsPanelModel {

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.toolchain.ui.options;
+package org.netbeans.modules.cnd.toolchain.ui.api;
 
 public interface IsChangedListener {
     /**

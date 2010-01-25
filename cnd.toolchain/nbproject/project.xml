@@ -227,7 +227,7 @@
                 <package>org.netbeans.modules.cnd.toolchain.actions</package>
                 <package>org.netbeans.modules.cnd.toolchain.api</package>
                 <package>org.netbeans.modules.cnd.toolchain.spi</package>
-                <package>org.netbeans.modules.cnd.toolchain.ui.options</package>
+                <package>org.netbeans.modules.cnd.toolchain.ui.api</package>
             </friend-packages>
         </data>
     </configuration>

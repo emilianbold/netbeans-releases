@@ -67,9 +67,9 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
-import org.netbeans.modules.cnd.toolchain.ui.options.IsChangedListener;
-import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManager;
-import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
+import org.netbeans.modules.cnd.toolchain.ui.api.IsChangedListener;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsCacheManager;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
@@ -80,7 +80,6 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     private Map<String, PredefinedPanel> predefinedPanels = new HashMap<String, PredefinedPanel>();
     private boolean updating = false;
     private boolean modified = false;
-    private ToolsPanel tp;
 //    private boolean initialized = false;
     
     /**
@@ -107,13 +106,10 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                 return label;
             }
         });
-        tp = ToolsPanel.getToolsPanel();
-        if (tp != null) {
-            // This gets called from commitValidation and tp is null - its not a run-time problem
-            // because the "real" way we create this a ToolsPanel exists. But not the commitValidation way!
-            ToolsPanel.addCompilerSetChangeListener(this);
-            ToolsPanel.addIsChangedListener(this);
-        }
+        // This gets called from commitValidation and tp is null - its not a run-time problem
+        // because the "real" way we create this a ToolsPanel exists. But not the commitValidation way!
+        ToolsPanelSupport.addCompilerSetChangeListener(this);
+        ToolsPanelSupport.addIsChangedListener(this);
     }
 
     @Override
@@ -140,7 +136,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     }
 
     private CompilerSetManager getCompilerSetManager(ExecutionEnvironment execEnv) {
-        ToolsCacheManager manager = ToolsPanel.getToolsCacheManager();
+        ToolsCacheManager manager = ToolsPanelSupport.getToolsCacheManager();
         CompilerSetManager copy = manager.getCompilerSetManagerCopy(execEnv, true);
         while (copy.isPending()) {
             try {
@@ -382,7 +378,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
         try {
             updating = true;
-            updateCompilerCollections(tp.getCurrentCompilerSet());
+            updateCompilerCollections(ToolsPanelSupport.getCurrentCompilerSet());
             PredefinedPanel[] viewedPanels = getPredefinedPanels();
             for (int i = 0; i < viewedPanels.length; i++) {
                 viewedPanels[i].update();

@@ -45,6 +45,7 @@
 
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelModel;
 import java.awt.Color;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -61,6 +62,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.openide.DialogDisplayer;
@@ -413,7 +415,7 @@ import org.openide.util.Utilities;
         if (txt.length() == 0) {
             return false;
         }
-        return ToolsPanel.supportedMake(txt);
+        return ToolsPanelSupport.supportedMake(txt);
     }
 
     boolean isToolsValid() {

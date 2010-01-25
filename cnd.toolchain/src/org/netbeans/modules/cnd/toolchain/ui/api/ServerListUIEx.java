@@ -37,9 +37,10 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.ui.options;
+package org.netbeans.modules.cnd.toolchain.ui.api;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -73,14 +74,13 @@ public abstract class ServerListUIEx extends ServerListUI {
             if (displayer instanceof ServerListUIEx) {
                 return ((ServerListUIEx) displayer).showServerListDialogImpl(cacheManager, selectedEnv);
             } else {
-                Logger.getLogger("cnd.remote.logger").warning( //NOI18N
-                        displayer.getClass().getName() + "should extend " + //NOI18N
-                        ServerListUIEx.class.getSimpleName());
+                Logger.getLogger("cnd.remote.logger").log( //NOI18N
+                        Level.WARNING, "{0}should extend {1}", new Object[]{displayer.getClass().getName(), ServerListUIEx.class.getSimpleName()}); //NOI18N
                 return false;
             }
         } else {
-            Logger.getLogger("cnd.remote.logger").warning( //NOI18N
-                    "Can not find " + ServerListUIEx.class.getSimpleName()); //NOI18N
+            Logger.getLogger("cnd.remote.logger").log( //NOI18N
+                    Level.WARNING, "Can not find {0}", ServerListUIEx.class.getSimpleName()); //NOI18N
             return false;
         }
     }
@@ -91,14 +91,13 @@ public abstract class ServerListUIEx extends ServerListUI {
             if (displayer instanceof ServerListUIEx) {
                 return ((ServerListUIEx) displayer).getServerListComponentImpl(cacheManager, selectedEnv);
             } else {
-                Logger.getLogger("cnd.remote.logger").warning( //NOI18N
-                        displayer.getClass().getName() + "should extend " + //NOI18N
-                        ServerListUIEx.class.getSimpleName());
+                Logger.getLogger("cnd.remote.logger").log( //NOI18N
+                        Level.WARNING, "{0}should extend {1}", new Object[]{displayer.getClass().getName(), ServerListUIEx.class.getSimpleName()}); //NOI18N
                 return new JPanel();
             }
         } else {
-            Logger.getLogger("cnd.remote.logger").warning( //NOI18N
-                    "Can not find " + ServerListUIEx.class.getSimpleName()); //NOI18N
+            Logger.getLogger("cnd.remote.logger").log( //NOI18N
+                    Level.WARNING, "Can not find {0}", ServerListUIEx.class.getSimpleName()); //NOI18N
             return new JPanel();
         }
     }

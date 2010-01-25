@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker;
 import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
-import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManager;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsCacheManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 

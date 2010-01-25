@@ -40,7 +40,7 @@
  */
 
 
-package org.netbeans.modules.cnd.toolchain.ui.options;
+package org.netbeans.modules.cnd.toolchain.ui.api;
 
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbPreferences;

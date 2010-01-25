@@ -101,9 +101,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ValidateInstrumentationProvider;
-import org.netbeans.modules.cnd.toolchain.ui.options.LocalToolsPanelModel;
-import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
-import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanelModel;
+import org.netbeans.modules.cnd.toolchain.ui.api.LocalToolsPanelModel;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelModel;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -1127,7 +1127,7 @@ public class MakeActionProvider implements ActionProvider {
         // Check for a valid make program
         if (conf.getDevelopmentHost().isLocalhost()) {
             file = new File(makeTool.getPath());
-            if ((!exists(makeTool.getPath(), pi) && Path.findCommand(makeTool.getPath()) == null) || !ToolsPanel.supportedMake(file.getPath())) {
+            if ((!exists(makeTool.getPath(), pi) && Path.findCommand(makeTool.getPath()) == null) || !ToolsPanelSupport.supportedMake(file.getPath())) {
                 runBTA = true;
             }
         } else {

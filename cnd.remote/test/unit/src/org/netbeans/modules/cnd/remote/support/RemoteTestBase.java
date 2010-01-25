@@ -66,7 +66,7 @@ import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.ui.wizard.HostValidatorImpl;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
-import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManager;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;

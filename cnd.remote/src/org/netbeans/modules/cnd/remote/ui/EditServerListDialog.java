@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.setup.CreateHostWizardIterator;
-import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManager;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;

@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
@@ -126,7 +126,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         rootFolder = new Folder(this, null, "root", "root", true); // NOI18N
         projectItems = new HashMap<String, Item>();
         setModified();
-        ToolsPanel.addCompilerSetModifiedListener(this);
+        ToolsPanelSupport.addCompilerSetModifiedListener(this);
     }
 
     /*
@@ -134,7 +134,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
      */
     @Override
     public void closed() {
-        ToolsPanel.removeCompilerSetModifiedListener(this);
+        ToolsPanelSupport.removeCompilerSetModifiedListener(this);
         for (Item item : getProjectItems()) {
             DataObject dao = item.getDataObject();
             if (dao != null) {

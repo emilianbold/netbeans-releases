@@ -63,8 +63,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.settings.CppSettings;
-import org.netbeans.modules.cnd.toolchain.ui.options.LocalToolsPanelModel;
-import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanelModel;
+import org.netbeans.modules.cnd.toolchain.ui.api.LocalToolsPanelModel;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelModel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
