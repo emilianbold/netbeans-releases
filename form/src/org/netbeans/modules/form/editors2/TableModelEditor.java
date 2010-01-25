@@ -399,7 +399,7 @@ public class TableModelEditor implements PropertyEditor, XMLPropertyEditor,
 
             // check the row count
             if (columnData.size() != rowCount) {
-                if (columnData.size() == 0)
+                if (columnData.isEmpty())
                     for (int ii=0; ii < rowCount; ii++)
                         columnData.add(null);
                 else
