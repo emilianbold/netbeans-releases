@@ -95,7 +95,7 @@ public final class DLightSessionConfiguration {
 
     @Override
     public String toString() {
-        return "DLight [" + dlightConfiguration.getConfigurationName() + "] Session Creation for " + target;//NOI18N
+        return "DLight [" + dlightConfiguration == null ? dlightConfigurationName : dlightConfiguration.getConfigurationName() + "] Session Creation for " + target;//NOI18N
     }
 
     public enum Mode{
