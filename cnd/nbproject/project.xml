@@ -419,20 +419,15 @@
                 <friend>org.netbeans.modules.cnd.script</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <package>org.netbeans.modules.cnd.actions</package>
-                <package>org.netbeans.modules.cnd.api.compilers</package>
-                <package>org.netbeans.modules.cnd.api.execution</package>
                 <package>org.netbeans.modules.cnd.api.picklist</package>
                 <package>org.netbeans.modules.cnd.api.utils</package>
                 <package>org.netbeans.modules.cnd.api.xml</package>
                 <package>org.netbeans.modules.cnd.builds</package>
-                <package>org.netbeans.modules.cnd.editor</package>
                 <package>org.netbeans.modules.cnd.editor.parser</package>
                 <package>org.netbeans.modules.cnd.execution</package>
                 <package>org.netbeans.modules.cnd.execution41.org.openide.cookies</package>
                 <package>org.netbeans.modules.cnd.execution41.org.openide.loaders</package>
                 <package>org.netbeans.modules.cnd.settings</package>
-                <package>org.netbeans.modules.cnd.spi.compilers</package>
-                <package>org.netbeans.modules.cnd.ui.options</package>
             </friend-packages>
         </data>
     </configuration>
