@@ -368,7 +368,7 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
             positions.add(BorderLayout.LINE_END);
         if (getComponentOnPosition(BorderLayout.LINE_START) == -1)
             positions.add(BorderLayout.LINE_START);
-        if (positions.size() == 0)
+        if (positions.isEmpty())
             positions.add(BorderLayout.CENTER);
 
         String[] free = new String[positions.size()];
