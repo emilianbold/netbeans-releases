@@ -81,14 +81,14 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
     }
 
     public H2DataStorage openStorage(String uniqueKey) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public String getUniqueKey(H2DataStorage storage) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public H2DataStorage openStorage(String uniqueKey, Mode mode) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
     }

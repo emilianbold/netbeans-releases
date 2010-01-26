@@ -160,7 +160,7 @@ public final class H2DataStorage extends SQLDataStorage {
 
     @Override
     public String toString() {
-        return "dburl=" + dbURL;
+        return "dburl=" + dbURL; // NOI18N
     }
 
 

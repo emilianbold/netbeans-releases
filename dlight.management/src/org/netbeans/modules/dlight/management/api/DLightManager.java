@@ -649,11 +649,11 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 
 
     public String save(DLightSessionHandler reference) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public String save(String dir, DLightSessionHandler reference) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public String save(ExecutionEnvironment env, String dir, DLightSessionHandler handler) {

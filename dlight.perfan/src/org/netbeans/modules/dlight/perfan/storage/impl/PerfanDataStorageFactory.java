@@ -63,14 +63,14 @@ public final class PerfanDataStorageFactory implements PersistentDataStorageFact
     }
 
     public PerfanDataStorage openStorage(String uniqueKey) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public PerfanDataStorage openStorage(String uniqueKey, Mode mode) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public String getUniqueKey(PerfanDataStorage storage) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 }
