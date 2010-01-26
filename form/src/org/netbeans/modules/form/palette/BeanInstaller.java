@@ -132,7 +132,7 @@ public final class BeanInstaller {
         
         if (unableToInstall.size() > 0) {
             Iterator iter = unableToInstall.iterator();
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             while (iter.hasNext()) {
                 sb.append(iter.next()+", "); // NOI18N
             }
