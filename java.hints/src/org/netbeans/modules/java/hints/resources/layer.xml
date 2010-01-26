@@ -362,6 +362,10 @@ made subject to such option by the copyright holder.
                 <folder name="bitwise_operations">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
                 </folder>
+
+                <folder name="code_maturity">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
             </folder>
 
             <folder name="suggestions">
