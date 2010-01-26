@@ -40,22 +40,23 @@
  */
 package org.netbeans.modules.cnd.makefile.lexer;
 
-import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.cnd.script.lexer.ShLanguageHierarchy;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageProvider;
 
 /**
- *
  * @author Jan Jancura
+ * @author Alexey Vladykin
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.spi.lexer.LanguageProvider.class)
 public class MakefileLanguageProvider extends LanguageProvider {
 
+    @Override
     public Language<MakefileTokenId> findLanguage(String mimeType) {
         if (MIMENames.MAKEFILE_MIME_TYPE.equals(mimeType)) {
             return new MakefileLanguageHierarchy().language();
@@ -65,11 +66,12 @@ public class MakefileLanguageProvider extends LanguageProvider {
 
     @Override
     public LanguageEmbedding<?> findLanguageEmbedding(
-            Token arg0,
-            LanguagePath arg1,
-            InputAttributes arg2) {
+            Token<?> token,
+            LanguagePath languagePath,
+            InputAttributes attributes) {
+        if (token.id() == MakefileTokenId.SHELL) {
+            return LanguageEmbedding.create(new ShLanguageHierarchy().language(), 0, 0);
+        }
         return null;
     }
 }
-
-

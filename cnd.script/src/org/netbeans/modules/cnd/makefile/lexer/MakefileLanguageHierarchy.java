@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.makefile.lexer;
 
-import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
 import java.util.Collection;
 
 import java.util.EnumSet;
@@ -55,18 +54,18 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public class MakefileLanguageHierarchy extends LanguageHierarchy<MakefileTokenId> {
 
+    @Override
     protected synchronized Collection<MakefileTokenId> createTokenIds() {
         return EnumSet.allOf(MakefileTokenId.class);
     }
 
+    @Override
     protected Lexer<MakefileTokenId> createLexer(LexerRestartInfo<MakefileTokenId> info) {
         return new MakefileLexer(info);
     }
 
+    @Override
     protected String mimeType() {
         return MIMENames.MAKEFILE_MIME_TYPE;
     }
 }
-
-
-
