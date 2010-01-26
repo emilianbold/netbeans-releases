@@ -110,7 +110,7 @@ Microsystems, Inc. All Rights Reserved.
                                          php(php), 
                                          enterprise(javaee), identity(javaee), groovy(javaee),
                                          ergonomics(ergonomics),
-                                         ide(baseide), nb6.0-etc(baseide), platform(baseide)
+                                         ide(baseide), nb-etc(baseide), platform(baseide)
                                          "/>
 
         <property name="fx.clusters" value="javafx(javafx), javafx-mac(javafx)"/>
