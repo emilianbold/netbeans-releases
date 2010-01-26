@@ -278,9 +278,11 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
                              getBundle().getString("PROP_layer"), // NOI18N
                              getBundle().getString("HINT_layer")) { // NOI18N
 
+                    @Override
                     public Object getTargetValue() {
                         return new Integer(layer);
                     }
+                    @Override
                     public void setTargetValue(Object value) {
                         layer = ((Integer)value).intValue();
                     }
