@@ -245,57 +245,90 @@ public class ClientJavaSourceHelper {
     private static List<MethodTree> createHttpMethods(WorkingCopy copy, HttpMethod httpMethod) {
         String path = httpMethod.getPath();
         List<MethodTree> httpMethods = new ArrayList<MethodTree>();
-        if (RestConstants.GET_ANNOTATION.equals(httpMethod.getType())) { //GET
+        String method = httpMethod.getType();
+        if (RestConstants.GET_ANNOTATION.equals(method)) { //GET
             boolean found = false;
             String produces = httpMethod.getProduceMime();
             if (produces.length() > 0) {
                 for (HttpMimeType mimeType : HttpMimeType.values()) {
                     if (produces.contains(mimeType.getMimeType())) {
-                        httpMethods.add(createHttpGETMethod(copy, mimeType, path));
+                        httpMethods.add(createHttpGETMethod(copy, mimeType, httpMethod.getReturnType(), path));
                         found = true;
                     }
                 }
             }
             if (!found) {
-                httpMethods.add(createHttpGETMethod(copy, null, path));
+                httpMethods.add(createHttpGETMethod(copy, null, httpMethod.getReturnType(), path));
             }
-        } else if (RestConstants.PUT_ANNOTATION.equals(httpMethod.getType())) { //PUT
-            //PENDING
-        } else if (RestConstants.POST_ANNOTATION.equals(httpMethod.getType())) { //POST
-            //PENDING
-        } else if (RestConstants.DELETE_ANNOTATION.equals(httpMethod.getType())) { //DELETE
-            //PENDING
+        } else if ( RestConstants.PUT_ANNOTATION.equals(method) ||
+                    RestConstants.POST_ANNOTATION.equals(method) ||
+                    RestConstants.DELETE_ANNOTATION.equals(method)
+                  ) {
+            boolean found = false;
+            String consumes = httpMethod.getConsumeMime();
+            if (consumes.length() > 0) { //NOI18N
+                for (HttpMimeType mimeType : HttpMimeType.values()) {
+                    if (consumes.contains(mimeType.getMimeType())) {
+                        httpMethods.add(createHttpPOSTMethod(copy, method, mimeType, httpMethod.getReturnType(), path));
+                        found = true;
+                    }
+                }
+            }
+            if (!found) {
+                httpMethods.add(createHttpPOSTMethod(copy, method, null, httpMethod.getReturnType(), path));
+            }
         }
 
         return httpMethods;
     }
 
-    private static MethodTree createHttpGETMethod(WorkingCopy copy, HttpMimeType mimeType, String path) {
+    private static MethodTree createHttpGETMethod(WorkingCopy copy, HttpMimeType mimeType, String responseType, String path) {
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
         ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
-        VariableTree classParam = maker.Variable(paramModifier, "responseType", maker.Identifier("Class<T>"), null); //NOI18N
+
+        VariableTree classParam = null;
+        ExpressionTree responseTree = null;
+        String bodyParam = ""; //NOI18N
+        List<TypeParameterTree> typeParams =  null;
+        if ("java.lang.String".equals(responseType)) { //NOI18N
+            responseTree = maker.Identifier("String"); //NOI18N
+            bodyParam="String.class"; //NOI18N
+            typeParams =  Collections.<TypeParameterTree>emptyList();
+        } else {
+            responseTree = maker.Identifier("T"); //NOI18N
+            bodyParam="responseType"; //NOI18N
+            classParam = maker.Variable(paramModifier, "responseType", maker.Identifier("Class<T>"), null); //NOI18N
+            typeParams = Collections.<TypeParameterTree>singletonList(maker.TypeParameter("T", Collections.<ExpressionTree>emptyList())); //NOI18N
+        }
+
+        List<VariableTree> paramList = new ArrayList<VariableTree>();
+        if (classParam != null) {
+            paramList.add(classParam);
+        }
+
         ExpressionTree throwsTree = JavaSourceHelper.createTypeTree(copy, "com.sun.jersey.api.client.UniformInterfaceException"); //NOI18N
+
         if (path.length() == 0) {
+            String body =
+                "{"+ //NOI18N
+                    (mimeType == null ?
+                        "   return webResource.get("+bodyParam+");" :  //NOI18N
+                        "   return webResource.accept("+mimeType.getMediaType()+").get("+bodyParam+");") +  //NOI18N
+                "}"; //NOI18N
             return maker.Method (
                     methodModifier,
                     "get"+(mimeType == null ? "" : mimeType.name()), //NOI18N
-                    maker.Identifier("T"), // NOI18N
-                    Collections.<TypeParameterTree>singletonList(maker.TypeParameter("T", Collections.<ExpressionTree>emptyList())),
-                    Collections.<VariableTree>singletonList(classParam),
+                    responseTree,
+                    typeParams,
+                    paramList,
                     Collections.singletonList(throwsTree), //throws
-                    "{"+ //NOI18N
-                        (mimeType == null ?
-                            "   return webResource.get(responseType);" :  //NOI18N
-                            "   return webResource.accept("+mimeType.getMediaType()+").get(responseType);") +  //NOI18N
-                    "}", //NOI18N
-                    null); //NOI18N
+                    body,
+                    null);
         } else {
             PathFormat pf = getPathFormat(path);
-            List<VariableTree> paramList = new ArrayList<VariableTree>();
-            paramList.add(classParam);
             for (String arg : pf.getArguments()) {
-                Tree typeTree = maker.Identifier("String");
+                Tree typeTree = maker.Identifier("String"); //NOI18N
                 ModifiersTree fieldModifier = maker.Modifiers(Collections.<Modifier>emptySet());
                 VariableTree fieldTree = maker.Variable(fieldModifier, arg, typeTree, null); //NOI18N
                 paramList.add(fieldTree);
@@ -303,14 +336,14 @@ public class ClientJavaSourceHelper {
             String body =
                     "{"+ //NOI18N
                         (mimeType == null ?
-                            "   return webResource.path("+getPathExpression(pf)+").get(responseType);" :  //NOI18N
-                            "   return webResource.path("+getPathExpression(pf)+").accept("+mimeType.getMediaType()+").get(responseType);") +  //NOI18N
+                            "   return webResource.path("+getPathExpression(pf)+").get("+bodyParam+");" :  //NOI18N
+                            "   return webResource.path("+getPathExpression(pf)+").accept("+mimeType.getMediaType()+").get("+bodyParam+");") +  //NOI18N
                     "}"; //NOI18N
             return maker.Method (
                     methodModifier,
                     "get"+(mimeType == null ? "" : mimeType.name()), //NOI18N
-                    maker.Identifier("T"), // NOI18N
-                    Collections.<TypeParameterTree>singletonList(maker.TypeParameter("T", Collections.<ExpressionTree>emptyList())),
+                    responseTree,
+                    typeParams,
                     paramList,
                     Collections.<ExpressionTree>singletonList(throwsTree), //throws
                     body,
@@ -454,5 +487,100 @@ public class ClientJavaSourceHelper {
         return "http://" + hostName + ":" + portNumber + "/" + //NOI18N
                 (contextRoot != null && !contextRoot.equals("") ? contextRoot : "") + //NOI18N
                 "/resources" + uri; //NOI18N
+    }
+
+    private static MethodTree createHttpPOSTMethod(WorkingCopy copy, String httpMethod, HttpMimeType requestMimeType, String responseType, String path) {
+        String methodPrefix = httpMethod.toLowerCase();
+        TreeMaker maker = copy.getTreeMaker();
+        ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
+        ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+
+        VariableTree classParam = null;
+        ExpressionTree responseTree = null;
+        String bodyParam1 = ""; //NOI18N
+        String ret = ""; //NOI18N
+        List<TypeParameterTree> typeParams =  Collections.<TypeParameterTree>emptyList();
+        if ("javax.ws.rs.core.Response".equals(responseType)) { //NOI18N
+            TypeElement clientResponseEl = copy.getElements().getTypeElement("com.sun.jersey.api.client.ClientResponse"); //NOI18N
+            ret = "return "; //NOI18N
+            responseTree = (clientResponseEl == null ?
+                copy.getTreeMaker().Identifier("com.sun.jersey.api.client.ClientResponse") : // NOI18N
+                copy.getTreeMaker().QualIdent(clientResponseEl));
+            bodyParam1 = (clientResponseEl == null ?
+                "com.sun.jersey.api.client.ClientResponse.class" : //NOI18N
+                "ClientResponse.class"); //NOI18N
+        } else if ("void".equals(responseType)) { //NOI18N
+            responseTree = maker.Identifier("void"); //NOI18N
+        } else if ("java.lang.String".equals(responseType)) { //NOI18N
+            responseTree = maker.Identifier("String"); //NOI18N
+            ret = "return "; //NOI18N
+            bodyParam1="String.class"; //NOI18N
+        } else {
+            responseTree = maker.Identifier("T"); //NOI18N
+            ret = "return "; //NOI18N
+            bodyParam1="requestType"; //NOI18N
+            classParam = maker.Variable(paramModifier, "requestType", maker.Identifier("Class<T>"), null); //NOI18N
+            typeParams = Collections.<TypeParameterTree>singletonList(maker.TypeParameter("T", Collections.<ExpressionTree>emptyList()));
+        }
+
+        // create param list
+        
+        List<VariableTree> paramList = new ArrayList<VariableTree>();
+        if (classParam != null) {
+            paramList.add(classParam);
+        }
+        String bodyParam2 = "";
+        if (!RestConstants.DELETE_ANNOTATION.equals(httpMethod) || requestMimeType != null) {
+            VariableTree objectParam = maker.Variable(paramModifier, "requestEntity", maker.Identifier("Object"), null); //NOI18N
+            paramList.add(objectParam);
+            bodyParam2=(bodyParam1.length() > 0 ? ", " : "") + "requestEntity"; //NOI18N
+        }
+        // throws
+        ExpressionTree throwsTree = JavaSourceHelper.createTypeTree(copy, "com.sun.jersey.api.client.UniformInterfaceException"); //NOI18N
+
+        if (path.length() == 0) {
+
+            // body
+            String body =
+                "{"+ //NOI18N
+                    (requestMimeType == null ?
+                        "   "+ret+"webResource."+methodPrefix+"("+bodyParam1+bodyParam2+");" :  //NOI18N
+                        "   "+ret+"webResource.type("+requestMimeType.getMediaType()+")."+methodPrefix+"("+bodyParam1+bodyParam2+");") +  //NOI18N
+                "}"; //NOI18N
+            return maker.Method (
+                    methodModifier,
+                    methodPrefix+(requestMimeType == null ? "" : requestMimeType.name()), //NOI18N
+                    responseTree,
+                    typeParams,
+                    paramList,
+                    Collections.singletonList(throwsTree),
+                    body,
+                    null); //NOI18N
+        } else {
+            // add path params to param list
+            PathFormat pf = getPathFormat(path);
+            for (String arg : pf.getArguments()) {
+                Tree typeTree = maker.Identifier("String"); //NOI18N
+                ModifiersTree fieldModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+                VariableTree fieldTree = maker.Variable(fieldModifier, arg, typeTree, null); //NOI18N
+                paramList.add(fieldTree);
+            }
+            // body
+            String body =
+                    "{"+ //NOI18N
+                        (requestMimeType == null ?
+                            "   "+ret+"webResource.path("+getPathExpression(pf)+")."+methodPrefix+"("+bodyParam1+bodyParam2+");" :  //NOI18N
+                            "   "+ret+"webResource.path("+getPathExpression(pf)+").type("+requestMimeType.getMediaType()+")."+methodPrefix+"("+bodyParam1+bodyParam2+");") +  //NOI18N
+                    "}"; //NOI18N
+            return maker.Method (
+                    methodModifier,
+                    methodPrefix+(requestMimeType == null ? "" : requestMimeType.name()), //NOI18N
+                    responseTree,
+                    typeParams,
+                    paramList,
+                    Collections.<ExpressionTree>singletonList(throwsTree),
+                    body,
+                    null); //NOI18N
+        }
     }
 }
