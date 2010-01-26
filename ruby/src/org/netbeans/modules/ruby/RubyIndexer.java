@@ -282,7 +282,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         }
     }
 
-    private static int getModifiersFlag(Set<Modifier> modifiers) {
+    static int getModifiersFlag(Set<Modifier> modifiers) {
         int flags = modifiers.contains(Modifier.STATIC) ? IndexedMethod.STATIC : 0;
         if (modifiers.contains(Modifier.PRIVATE)) {
             flags |= IndexedMethod.PRIVATE;
@@ -368,6 +368,7 @@ public class RubyIndexer extends EmbeddingIndexer {
         private final boolean platform;
         private final ContextKnowledge knowledge;
         private final MigrationIndexer migrationIndexer;
+        private final RailsIndexer railsIndexer;
 
         private TreeAnalyzer(RubyParseResult result,
                 IndexingSupport support,
@@ -382,6 +383,7 @@ public class RubyIndexer extends EmbeddingIndexer {
             this.platform = RubyUtils.isPlatformFile(file);
             this.knowledge = knowledge;
             this.migrationIndexer = new MigrationIndexer(knowledge, this);
+            this.railsIndexer = new RailsIndexer(knowledge, this);
         }
 
         FileObject getFile() {
@@ -396,11 +398,23 @@ public class RubyIndexer extends EmbeddingIndexer {
             return indexable;
         }
 
-        private String getRequireString(Set<String> requireSet) {
+        String getUrl() {
+            return url;
+        }
+
+        RubyParseResult getResult() {
+            return result;
+        }
+
+        MigrationIndexer getMigrationIndexer() {
+            return migrationIndexer;
+        }
+
+        String getRequireString(Set<String> requireSet) {
             return asCommaSeparatedString(requireSet);
         }
 
-        private String getIncludedString(Set<String> includes) {
+        String getIncludedString(Set<String> includes) {
             return asCommaSeparatedString(includes);
         }
 
@@ -460,58 +474,9 @@ public class RubyIndexer extends EmbeddingIndexer {
             requires = getRequireString(ar.getRequires());
             List<?extends AstElement> structure = ar.getElements();
 
-            // Rails special case
-            // in case of 2.3.2 fall through to do normal indexing as well, these special cases
-            // are needed for rails < 2.3.2, normal indexing handles 2.3.2 classes.
-            // if rails is in vendor/rails, we can't tell the version from
-            // the path, so playing safe and falling through to do also normal
-            // indexing in that case
-            boolean fallThrough = RubyUtils.isRails23OrHigher(file.getPath())
-                    || file.getPath().contains("vendor/rails"); //NOI18N
-            if (fileName.startsWith("acti")) { // NOI18N
-                if ("action_controller.rb".equals(fileName)) { // NOI18N
-                    // Locate "ActionController::Base.class_eval do"
-                    // and take those include statements and stick them into ActionController::Base
-                    handleRailsBase("ActionController"); // NOI18N
-                    if (!fallThrough) {
-                        return;
-                    }
-                } else if ("active_record.rb".equals(fileName)) { // NOI18N
-                    handleRailsBase("ActiveRecord"); // NOI18N
-//                    handleRailsClass("ActiveRecord", "ActiveRecord" + "::Migration", "Migration", "migration");
-                    // HACK
-                    migrationIndexer.handleMigrations();
-                    if (!fallThrough) {
-                        return;
-                    }
-                } else if ("action_mailer.rb".equals(fileName)) { // NOI18N
-                    handleRailsBase("ActionMailer"); // NOI18N
-                    if (!fallThrough) {
-                        return;
-                    }
-                } else if ("action_view.rb".equals(fileName)) { // NOI18N
-                    handleRailsBase("ActionView"); // NOI18N
-
-                    // HACK
-                    handleActionViewHelpers();
-                    if (!fallThrough) {
-                        return;
-                    }
-
-                //} else if ("action_web_service.rb".equals(fileName)) { // NOI18N
-                    // Uh oh - we have two different kinds of class eval here - one for ActionWebService, one for ActionController!
-                    // Gotta make this shiznit smarter!
-                    //handleRailsBase("ActionWebService::Base", "Base", "ActionWebService"); // NOI18N
-                    //handleRailsBase("ActionController:Base", "Base", "ActionController"); // NOI18N
-                }
-            } else if (fileName.equals("assertions.rb") && url.endsWith("lib/action_controller/assertions.rb")) { // NOI18N
-                handleRailsClass("Test::Unit", "Test::Unit::TestCase", "TestCase", "TestCase"); // NOI18N
-                if (!fallThrough) {
-                    return;
-                }
-            } else if (fileName.equals("schema_definitions.rb")) {
-                handleSchemaDefinitions();
-                // Fall through - also do normal indexing on the file
+            // rails special cases
+            if (!railsIndexer.index()) {
+                return;
             }
 
             if ((structure == null) || (structure.size() == 0)) {
@@ -529,116 +494,6 @@ public class RubyIndexer extends EmbeddingIndexer {
             }
 
             analyze(structure);
-        }
-
-        private void handleSchemaDefinitions() {
-            // Make sure we're in Rails 2.0...
-            if (url.indexOf("activerecord-2") == -1) { // NOI18N
-                return;
-            }
-            
-            Node root = AstUtilities.getRoot(result);
-
-            if (root == null) {
-                return;
-            }
-
-            Set<String> includeSet = new HashSet<String>();
-            Set<String> requireSet = new HashSet<String>();
-            scan(root, includeSet, requireSet);
-
-            IndexDocument document = support.createDocument(indexable);
-            documents.add(document);
-
-            // TODO:
-            //addIncluded(indexed);
-            String r = getRequireString(requireSet);
-            if (r != null) {
-                document.addPair(FIELD_REQUIRES, r, false, true);
-            }
-
-            addRequire(document);
-
-            String includes = getIncludedString(includeSet);
-
-            if (includes != null) {
-                document.addPair(FIELD_INCLUDES, includes, false, true);
-            }
-
-            int flags = 0;
-            document.addPair(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags), false, true);
-
-            String clz = "TableDefinition";
-            String classIn = "ActiveRecord::ConnectionAdapters";
-            String classFqn = classIn + "::" + clz;
-            String clzNoCase = clz.toLowerCase();
-            
-            document.addPair(FIELD_FQN_NAME, classFqn, true, true);
-            document.addPair(FIELD_CASE_INSENSITIVE_CLASS_NAME, clzNoCase, true, true);
-            document.addPair(FIELD_CLASS_NAME, clz, true, true);
-            document.addPair(FIELD_IN, classIn, false, true);
-
-            // Insert methods:
-            for (String type : new String[] { "string", "text", "integer", "float", "decimal", "datetime", "timestamp", "time", "date", "binary", "boolean" }) { // NOI18N
-                Set<Modifier> modifiers = EnumSet.of(Modifier.PUBLIC);
-
-                int mflags = getModifiersFlag(modifiers);
-                StringBuilder sb = new StringBuilder();
-                sb.append(type);
-                sb.append("(names,options);"); // NOI18N
-                sb.append(IndexedElement.flagToFirstChar(mflags));
-                sb.append(IndexedElement.flagToSecondChar(mflags));
-                sb.append(";;;options(=>limit|default:nil|null:bool|precision|scale)"); // NOI18N
-
-                String signature = sb.toString();
-
-                document.addPair(FIELD_METHOD_NAME, signature, true, true);
-            }
-        }
-
-        private void handleRailsBase(String classIn) {
-            handleRailsClass(classIn, classIn + "::Base", "Base", "base"); // NOI18N
-        }
-
-        /** There's some pretty complicated dynamic behavior in Rails in how
-         * the ActionController::Base class is decorated with module mixins;
-         * my code cannot handle this directly, but it's a really important
-         * special case to handle such that code completion works in the very
-         * key controller classes edited by users. (This logic is replicated
-         * in several other classes too - ActiveRecord etc.)
-         */
-        private void handleRailsClass(String classIn, String classFqn, String clz, String clzNoCase) {
-            Node root = knowledge.getRoot();
-
-            IndexDocument document = support.createDocument(indexable);
-            documents.add(document);
-
-            Set<String> includeSet = new HashSet<String>();
-            Set<String> requireSet = new HashSet<String>();
-            scan(root, includeSet, requireSet);
-
-            // TODO:
-            //addIncluded(indexed);
-            String r = getRequireString(requireSet);
-            if (r != null) {
-                document.addPair(FIELD_REQUIRES, r, false, true);
-            }
-
-            addRequire(document);
-
-            String includes = getIncludedString(includeSet);
-
-            if (includes != null) {
-                document.addPair(FIELD_INCLUDES, includes, false, true);
-            }
-
-            int flags = 0;
-            document.addPair(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags), false, true);
-
-            document.addPair(FIELD_FQN_NAME, classFqn, true, true);
-            document.addPair(FIELD_CASE_INSENSITIVE_CLASS_NAME, clzNoCase, true, true);
-            document.addPair(FIELD_CLASS_NAME, clz, true, true);
-            document.addPair(FIELD_IN, classIn, false, true);
         }
 
         /** Add an entry for a class which provides the given includes */
@@ -660,114 +515,6 @@ public class RubyIndexer extends EmbeddingIndexer {
             }
         }
         
-        /** 
-         * Action view has some special loading behavior of helpers - see actionview's
-         * "load_helpers" method.
-         * @todo Make sure that the Partials loading is working too
-         */
-        private void handleActionViewHelpers() {
-            if (file == null || file.getParent() == null) {
-                return;
-            }
-            assert file.getName().equals("action_view");
-            
-            FileObject helpers = file.getParent().getFileObject("action_view/helpers"); // NOI18N
-            if (helpers == null) {
-                return;
-            }
-            
-            StringBuilder include = new StringBuilder();
-            
-            for (FileObject helper : helpers.getChildren()) {
-                String name = helper.getName();
-                if (name.endsWith("_helper")) { // NOI18N
-                    String className = RubyUtils.underlinedNameToCamel(name);
-                    String fqn = "ActionView::Helpers::" + className; // NOI18N
-                    if (include.length() > 0) {
-                        include.append(",");
-                    }
-                    include.append(fqn);
-                }
-            }
-            
-            if (include.length() > 0) {
-                int flags = 0;
-                addClassIncludes("Base", "ActionView::Base", "ActionView", flags, 
-                        include.toString());
-            }
-        }
-        
-        private boolean scan(Node node, Set<String> includes, Set<String> requires) {
-            boolean found = false;
-
-            if (node instanceof FCallNode) {
-                String name = ((INameNode)node).getName();
-
-                if (name.equals("require")) { // XXX Load too?
-
-                    Node argsNode = ((FCallNode)node).getArgsNode();
-
-                    if (argsNode instanceof ListNode) {
-                        ListNode args = (ListNode)argsNode;
-
-                        if (args.size() > 0) {
-                            Node n = args.get(0);
-
-                            // For dynamically computed strings, we have n instanceof DStrNode
-                            // but I can't handle these anyway
-                        
-                            if (n instanceof StrNode) {
-                                String require = ((StrNode)n).getValue();
-
-                                if ((require != null) && (require.length() > 0)) {
-                                    requires.add(require.toString());
-                                }
-                            }
-                        }
-                    }
-                } else if ((includes != null) && name.equals("include")) {
-                    Node argsNode = ((FCallNode)node).getArgsNode();
-
-                    if (argsNode instanceof ListNode) {
-                        ListNode args = (ListNode)argsNode;
-
-                        if (args.size() > 0) {
-                            Node n = args.get(0);
-
-                            if (n instanceof Colon2Node) {
-                                includes.add(AstUtilities.getFqn((Colon2Node)n));
-                            } else if (n instanceof INameNode) {
-                                includes.add(((INameNode)n).getName());
-                            }
-                        }
-                    }
-                }
-            } else if (node instanceof CallNode) {
-                // Look for ActionController::Base.class_eval do block to make
-                // sure we have the right special case
-                CallNode call = (CallNode)node;
-
-                if (call.getName().equals("class_eval")) { // NOI18N
-                    found = true;
-
-                    // TODO Make sure the receivernode is ActionController::Base?
-                }
-            }
-
-            List<Node> list = node.childNodes();
-
-            for (Node child : list) {
-                if (child.isInvisible()) {
-                    continue;
-                }
-                if (scan(child, includes, requires)) {
-                    found = true;
-                }
-            }
-
-            return found;
-        }
-
         private void analyze(List<?extends AstElement> structure) {
             List<AstElement> topLevelMethods = null;
             IndexDocument globalDoc = null;
@@ -1308,7 +1055,7 @@ public class RubyIndexer extends EmbeddingIndexer {
             return false;
         }
 
-        private void addRequire(IndexDocument document) {
+        void addRequire(IndexDocument document) {
             // Don't generate "require" clauses for anything in generated ruby;
             // these classes are all built in and do not require any includes
             // (besides, the file names are bogus - they are just derived from
