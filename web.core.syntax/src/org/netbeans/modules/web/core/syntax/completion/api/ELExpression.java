@@ -1167,7 +1167,8 @@ public class ELExpression {
     }
 
     public boolean isResolvedExpression() {
-        return !getExpression().equals(getResolvedExpression());
+	//note:getResolvedExpression cannot be non-null if getExpression is null
+        return getResolvedExpression() != null && !getExpression().equals(getResolvedExpression());
     }
 
     public String getReplace() {
