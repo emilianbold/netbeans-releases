@@ -310,9 +310,7 @@ public class JLayeredPaneSupport extends AbsoluteLayoutSupport {
                     { // disabling this method due to limited persistence
                     } // capabilities (compatibility with previous versions)
                 };
-
-            for (int i=0; i < props.length; i++)
-                layeredProps[i+1] = props[i];
+            System.arraycopy(props, 0, layeredProps, 1, props.length);
 
             return layeredProps;
         }
