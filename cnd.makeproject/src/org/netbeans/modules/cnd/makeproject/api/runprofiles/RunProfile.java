@@ -203,7 +203,7 @@ public class RunProfile implements ConfigurationAuxObject {
         // 0 - file to store return code
         // 1 - executable name (quated if need, i.e. if it contains spaces, asterisks, etc.)
         // 2 - args (quated if need, i.e. if it contains spaces, asterisks, etc.)
-        // 3 - the same as {3}, but quotes are escaped with '\'
+        // 3 - the same as {2}, but quotes are escaped with '\'
         // 4 - (added by VK: the same as {1}, but quotes are escaped with '\'
         // fixing #178201 Run fails if 'Show profiling indicators' is off and the project is created in folder with space
         list.add(def);

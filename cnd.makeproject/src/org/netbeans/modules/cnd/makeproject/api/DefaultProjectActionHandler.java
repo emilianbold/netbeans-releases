@@ -102,7 +102,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         if (pae.getType() == ProjectActionEvent.Type.RUN ||
                 pae.getType() == ProjectActionEvent.Type.BUILD ||
                 pae.getType() == ProjectActionEvent.Type.CLEAN) {
-            String exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
+            String exe = pae.getExecutable();
             String args = getArguments();
             String[] env = getEnvironment();
             boolean showInput = pae.getType() == ProjectActionEvent.Type.RUN;
@@ -175,6 +175,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                             exe = exe + ".exe"; // NOI18N
                         }
                         // fixing #178201 Run fails if 'Show profiling indicators' is off and the project is created in folder with space
+                        exe = IpeUtils.quoteIfNecessary(exe);
                         StringBuilder b = new StringBuilder();
                         for (int i = 0; i < exe.length(); i++) {
                             if (exe.charAt(i) == '"') {
