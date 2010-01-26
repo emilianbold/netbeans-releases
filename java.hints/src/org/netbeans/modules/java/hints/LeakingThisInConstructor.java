@@ -89,10 +89,10 @@ public class LeakingThisInConstructor {
                     "MSG_org.netbeans.modules.java.hints.LeakingThisInConstructor"));
     }
 
-    @TriggerPattern(value="$v=$this")
+    @TriggerPattern(value="$v=$this") // NOI18N
     public static ErrorDescription hintOnAssignment(HintContext ctx) {
         Map<String,TreePath> variables = ctx.getVariables ();
-        TreePath thisPath = variables.get ("$this");
+        TreePath thisPath = variables.get ("$this"); // NOI18N
         Element e = ctx.getInfo().getTrees().getElement(thisPath);
         if (e == null || !e.getSimpleName().contentEquals(THIS_KEYWORD)) {
             return null;
