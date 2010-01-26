@@ -398,8 +398,9 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.nbheaven.sqe.core.maven</friend>
-                <friend>org.netbeans.modules.hudson.maven</friend>
+                <friend>org.netbeans.modules.apisupport.project</friend>
                 <friend>org.netbeans.modules.gwt4nb</friend>
+                <friend>org.netbeans.modules.hudson.maven</friend>
                 <friend>org.netbeans.modules.jbi.fuji.support</friend>
                 <friend>org.netbeans.modules.kenai.maven</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
