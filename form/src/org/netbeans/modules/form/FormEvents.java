@@ -322,7 +322,7 @@ public class FormEvents {
 
         if (eventList != null) {
             removed = eventList.remove(event);
-            if (eventList.size() == 0)
+            if (eventList.isEmpty())
                 usedMethods.remove(methodName);
         }
         else removed = false;
@@ -333,12 +333,12 @@ public class FormEvents {
     private void detachEventHandler(Event event, String handlerName) {
         List<Event> handlerEventList = eventHandlers.get(handlerName);
         handlerEventList.remove(event);
-        if (handlerEventList.size() == 0)
+        if (handlerEventList.isEmpty())
             eventHandlers.remove(handlerName); // handler is not used anymore
 
         formModel.fireEventHandlerRemoved(event,
                                           handlerName,
-                                          handlerEventList.size() == 0);
+                                          handlerEventList.isEmpty());
     }
 
     private void checkCompatibility(Event event1, Event event2) {
