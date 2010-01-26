@@ -329,6 +329,7 @@ public class BindingDesignSupport {
             observableList.addAll(prefList);
         }
         Comparator<BindingDescriptor> bdComparator = new Comparator<BindingDescriptor>() {
+            @Override
             public int compare(BindingDescriptor o1, BindingDescriptor o2) {
                 String path1 = o1.getPath();
                 String path2 = o2.getPath();
@@ -383,6 +384,7 @@ public class BindingDesignSupport {
                 JavaSource source = JavaSource.forFileObject(fob);
                 try {
                     source.runUserActionTask(new CancellableTask<CompilationController>() {
+                        @Override
                         public void run(CompilationController cc) throws Exception {
                             cc.toPhase(JavaSource.Phase.RESOLVED);
                             CompilationUnitTree cu = cc.getCompilationUnit();
@@ -405,7 +407,7 @@ public class BindingDesignSupport {
                             for (Tree clMember : clazz.getMembers()) {
                                 if (clMember.getKind() == Tree.Kind.METHOD) {
                                     MethodTree method = (MethodTree)clMember;
-                                    if (method.getParameters().size() != 0) continue;
+                                    if (!method.getParameters().isEmpty()) continue;
                                     Set<javax.lang.model.element.Modifier> modifiers = method.getModifiers().getFlags();
                                     if (modifiers.contains(javax.lang.model.element.Modifier.STATIC)
                                             || !modifiers.contains(javax.lang.model.element.Modifier.PUBLIC)) {
@@ -451,6 +453,7 @@ public class BindingDesignSupport {
                             superClass[0] = (typeName == null) ? FormUtils.typeToClass(type).getName() : typeName;
                         }
 
+                        @Override
                         public void cancel() {
                         }
 
@@ -584,6 +587,7 @@ public class BindingDesignSupport {
         final TypeHelper[] result = new TypeHelper[1];
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cu = cc.getCompilationUnit();
@@ -639,6 +643,7 @@ public class BindingDesignSupport {
                     }
                 }
 
+                @Override
                 public void cancel() {
                 }
             }, true);
@@ -1485,6 +1490,7 @@ public class BindingDesignSupport {
      * Form model listener that updates the bindings.
      */
     private class ModelListener implements FormModelListener {
+        @Override
         public void formChanged(FormModelEvent[] events) {
             if (events == null)
                 return;

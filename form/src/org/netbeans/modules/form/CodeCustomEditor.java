@@ -214,16 +214,19 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
     }
 
     // DocumentListener
+    @Override
     public void insertUpdate(DocumentEvent e) {
         invokeUpdate();
     }
 
     // DocumentListener
+    @Override
     public void removeUpdate(DocumentEvent e) {
         invokeUpdate();
     }
 
     // DocumentListener
+    @Override
     public void changedUpdate(DocumentEvent e) {
     }
 
@@ -251,6 +254,7 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
     }
 
     // updates the value in the property editor
+    @Override
     public void run() {
         propertyEditor.setValue(new RADConnectionPropertyEditor.RADConnectionDesignValue(codePane.getText()));
         ignoreUpdate = false;
