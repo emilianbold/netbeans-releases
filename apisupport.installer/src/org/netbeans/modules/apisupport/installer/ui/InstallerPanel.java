@@ -91,9 +91,8 @@ public class InstallerPanel extends javax.swing.JPanel {
         licenseLabel = new javax.swing.JLabel();
         licenseComboBox = new javax.swing.JComboBox();
         jCheckBox5 = new javax.swing.JCheckBox();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
         jSeparator2 = new javax.swing.JSeparator();
+        pack200Info = new javax.swing.JLabel();
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.Platforms.Label")); // NOI18N
 
@@ -109,31 +108,21 @@ public class InstallerPanel extends javax.swing.JPanel {
 
         jCheckBox5.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.pack200checkBox.text")); // NOI18N
 
-        jScrollPane1.setBorder(null);
-        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-
-        jTextArea1.setColumns(20);
-        jTextArea1.setEditable(false);
-        jTextArea1.setFont(new java.awt.Font("Tahoma", 0, 11));
-        jTextArea1.setLineWrap(true);
-        jTextArea1.setRows(5);
-        jTextArea1.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.Pack200.Description.Text")); // NOI18N
-        jTextArea1.setWrapStyleWord(true);
-        jTextArea1.setBorder(null);
-        jTextArea1.setOpaque(false);
-        jScrollPane1.setViewportView(jTextArea1);
+        pack200Info.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.Pack200.Description.Text")); // NOI18N
+        pack200Info.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        pack200Info.setFocusable(false);
+        pack200Info.setMaximumSize(new java.awt.Dimension(2147483647, 14));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1122, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 482, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(jLabel2)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -145,19 +134,18 @@ public class InstallerPanel extends javax.swing.JPanel {
                             .add(layout.createSequentialGroup()
                                 .add(licenseLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(licenseComboBox, 0, 264, Short.MAX_VALUE))))
+                                .add(licenseComboBox, 0, 904, Short.MAX_VALUE)))
+                        .add(0, 0, 0))))
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 482, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(8, 8, 8)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(21, 21, 21)
-                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE))
-                            .add(layout.createSequentialGroup()
-                                .add(jCheckBox5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
-                                .add(335, 335, 335)))))
+                        .add(jCheckBox5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1116, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1122, Short.MAX_VALUE)))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(31, 31, 31)
+                .add(pack200Info, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1091, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -181,11 +169,11 @@ public class InstallerPanel extends javax.swing.JPanel {
                     .add(licenseComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(7, 7, 7)
                 .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(1, 1, 1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jCheckBox5)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 48, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(77, 77, 77))
+                .add(pack200Info, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
+                .add(99, 99, 99))
         );
 
         jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.Platforms.Label")); // NOI18N
@@ -199,12 +187,11 @@ public class InstallerPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox jCheckBox4;
     private javax.swing.JCheckBox jCheckBox5;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JComboBox licenseComboBox;
     private javax.swing.JLabel licenseLabel;
+    private javax.swing.JLabel pack200Info;
     // End of variables declaration//GEN-END:variables
 
     
