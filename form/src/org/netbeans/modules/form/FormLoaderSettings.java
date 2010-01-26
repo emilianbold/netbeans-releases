@@ -590,7 +590,7 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
     }
     
     private static String fromArray(String[] items) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < items.length; i++) {
             sb.append(items[i]);
             if (i < items.length-1) {
