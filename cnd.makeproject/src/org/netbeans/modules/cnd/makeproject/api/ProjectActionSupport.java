@@ -52,7 +52,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
@@ -237,11 +237,13 @@ public class ProjectActionSupport {
 
         private ProgressHandle createProgressHandle() {
             ProgressHandle handle = ProgressHandleFactory.createHandle(tabNameSeq, new Cancellable() {
+                @Override
                 public boolean cancel() {
                     sa.actionPerformed(null);
                     return true;
                 }
             }, new AbstractAction() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     getTab().select();
                 }
@@ -253,6 +255,7 @@ public class ProjectActionSupport {
         private ProgressHandle createProgressHandleNoCancel() {
             ProgressHandle handle = ProgressHandleFactory.createHandle(tabNameSeq,
                     new AbstractAction() {
+                @Override
                         public void actionPerformed(ActionEvent e) {
                             getTab().select();
                         }
@@ -302,6 +305,7 @@ public class ProjectActionSupport {
             progressHandle.start();
             if (SwingUtilities.isEventDispatchThread()) {
                 RequestProcessor.getDefault().post(new Runnable(){
+                    @Override
                     public void run() {
                         go();
                     }
@@ -381,6 +385,7 @@ public class ProjectActionSupport {
             return currentHandler;
         }
 
+        @Override
         public void executionStarted(int pid) {
             if (additional != null) {
                 for (BuildAction action : additional) {
@@ -390,6 +395,7 @@ public class ProjectActionSupport {
             }
         }
 
+        @Override
         public void executionFinished(int rc) {
             if (additional != null) {
                 for (Action action : additional) {
@@ -426,6 +432,7 @@ public class ProjectActionSupport {
             if (rc == 0) {
                 currentAction++;
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         go();
                     }
@@ -577,6 +584,7 @@ public class ProjectActionSupport {
         //setEnabled(false); // initially, until ready
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             if (!isEnabled()) {
                 return;
@@ -598,6 +606,7 @@ public class ProjectActionSupport {
             putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.RerunAction.rerun")); // NOI18N
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             setEnabled(false);
             handleEvents.reRun();

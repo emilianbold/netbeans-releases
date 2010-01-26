@@ -463,62 +463,6 @@ public class IpeUtils {
         return dp.toString();
     }
 
-//    /** Get the value of an environment variable */
-//    public static String getenv(String name) {
-//        return getUnixEnv().getenv(name);
-//    }
-//    
-//    
-//    /** Same as getenv() */
-//    public static String valueOf(String name) {
-//        return IpeUtils.getenv(name);
-//    }
-//    
-//    
-//    /** Returns the whole name=value string */
-//    public static String entryFor(String name) {
-//        return getUnixEnv().entryFor(name);
-//    }
-//    
-//    
-//    /** Put the environment variable into the environment */
-//    public static void putenv(String entry) {
-//        getUnixEnv().putenv(entry);
-//    }
-//    
-//    
-//    /** Similar to putenv but takes separate arguments for name and value */
-//    public static void setValueOf(String name, String value) {
-//        getUnixEnv().setValueOf(name, value);
-//    }
-//    
-//    
-//    /** Return the whole environment in an array of Strings */
-//    public static String[] environ() {
-//        return getUnixEnv().environ();
-//    }
-//    
-//    
-//    /** The UnixEnv.dump() method */
-//    public static void envDump() {
-//        getUnixEnv().dump();
-//    }
-//    
-//    private static UnixEnv getUnixEnv() {
-//        UnixEnv env;
-//        
-//        if (wrEnv == null) {
-//            env = null;
-//        } else {
-//            env = (UnixEnv) wrEnv.get();
-//        }
-//        
-//        if (env == null) {
-//            env = new UnixEnv();
-//            wrEnv = new WeakReference(env);
-//        }
-//        return env;
-//    }
     /** Trim trailing slashes */
     public static String trimSlashes(String dir) {
         int trim = 0;
@@ -545,6 +489,7 @@ public class IpeUtils {
     public static void requestFocus(final Component c) {
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 if (c != null) {
                     if (c.getParent() != null) {
@@ -568,6 +513,7 @@ public class IpeUtils {
     public static void setDefaultButton(final JRootPane rootPane, final JButton button) {
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 if (button != null) {
                     if (button.getParent() != null && button.isVisible()) {
@@ -898,9 +844,9 @@ public class IpeUtils {
      */
     public static boolean isDbxguiEnabled() {
         if (!CndUtils.isStandalone()) {
-            Iterator iter = Lookup.getDefault().lookupAll(ModuleInfo.class).iterator();
+            Iterator<? extends ModuleInfo> iter = Lookup.getDefault().lookupAll(ModuleInfo.class).iterator();
             while (iter.hasNext()) {
-                ModuleInfo info = (ModuleInfo) iter.next();
+                ModuleInfo info = iter.next();
                 if (info.getCodeNameBase().indexOf("dbxgui") >= 0 && info.isEnabled()) { // NOI18N
                     return true;
                 }

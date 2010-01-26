@@ -76,6 +76,7 @@ import org.netbeans.modules.subversion.ui.relocate.RelocateAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.diff.PatchAction;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
+import org.netbeans.modules.subversion.ui.cleanup.CleanupAction;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -479,6 +480,7 @@ public class Annotator {
             actions.add(SystemAction.get(ResolveConflictsAction.class));
             actions.add(SystemAction.get(IgnoreAction.class));
             actions.add(null);
+            actions.add(SystemAction.get(CleanupAction.class));
             actions.add(SystemAction.get(SvnPropertiesAction.class));
         } else {
             ResourceBundle loc = NbBundle.getBundle(Annotator.class);
@@ -521,8 +523,11 @@ public class Annotator {
                 }
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(
+                                SystemAction.get(CleanupAction.class),
+                                loc.getString("CTL_PopupMenuItem_Cleanup"), context));
+                actions.add(SystemActionBridge.createAction(
                                 SystemAction.get(SvnPropertiesAction.class),
-                                loc.getString("CTL_PopupMenuItem_Properties"), context));
+                                loc.getString("CTL_PopupMenuItem_Properties"), context));actions.add(null);
             }
         }
         return actions.toArray(new Action[actions.size()]);

@@ -187,6 +187,11 @@ public final class FixFactory {
             return Collections.emptyList();
         }        
     }
+
+    //XXX: probably should not be in the "SPI"
+    public static boolean isSuppressWarningsFix(Fix f) {
+        return f instanceof FixImpl;
+    }
     
     private static boolean isSuppressWarningsSupported(CompilationInfo info) {
         //cannot suppress if there is no SuppressWarnings annotation in the platform:
@@ -405,7 +410,9 @@ public final class FixFactory {
                         return;
                     }
                     ModifiersTree mt = (ModifiersTree) path.getLeaf();
-                    Set<Modifier> modifiers = EnumSet.copyOf(mt.getFlags());
+                    Set<Modifier> modifiers = (mt.getFlags().isEmpty()) ?
+                        EnumSet.noneOf(Modifier.class) :
+                        EnumSet.copyOf(mt.getFlags());
                     modifiers.addAll(toAdd);
                     modifiers.removeAll(toRemove);
                     ModifiersTree newMod = wc.getTreeMaker().Modifiers(modifiers, mt.getAnnotations());

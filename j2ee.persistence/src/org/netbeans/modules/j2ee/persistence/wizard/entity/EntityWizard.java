@@ -108,13 +108,16 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         return new EntityWizard();
     }
     
+    @Override
     public String name() {
         return NbBundle.getMessage(EntityWizard.class, "LBL_EntityEJBWizardTitle");
     }
     
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
     }
     
+    @Override
     public void initialize(WizardDescriptor wizardDescriptor) {
         wiz = wizardDescriptor;
         Project project = Templates.getProject(wiz);
@@ -133,6 +136,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         Wizards.mergeSteps(wiz, panels, null);
     }
     
+    @Override
     public Set instantiate() throws IOException {
         
         FileObject result = generateEntity(
@@ -187,20 +191,25 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
     }
     
     
+    @Override
     public void addChangeListener(javax.swing.event.ChangeListener l) {
     }
     
+    @Override
     public void removeChangeListener(javax.swing.event.ChangeListener l) {
     }
     
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
     
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
     
+    @Override
     public void nextPanel() {
         if (! hasNext()) {
             throw new NoSuchElementException();
@@ -208,6 +217,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         index++;
     }
     
+    @Override
     public void previousPanel() {
         if (! hasPrevious()) {
             throw new NoSuchElementException();
@@ -215,6 +225,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         index--;
     }
     
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
@@ -247,6 +258,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         JavaSource targetSource = JavaSource.create(cpHelper.createClasspathInfo(), entityFo);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
+            @Override
             public void run(WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
@@ -316,6 +328,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
             super(delegate);
         }
         
+        @Override
         public boolean isValid() {
             if (!ProviderUtil.isValidServerInstanceOrNone(getProject())) {
                 getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,

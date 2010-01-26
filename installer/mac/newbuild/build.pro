@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project name="Mac Installer Properties" basedir="." >
+
+    <property name="packagemaker.path" value="/Developer/Applications/Utilities/PackageMaker.app/Contents/MacOS/PackageMaker"/>
    
     <property name="translatedfiles.src" value="${basedir}/../../../src"/>
         
@@ -11,7 +13,7 @@
     <property name="appname" value="NetBeans Dev ${buildnumber}"/> 
     <property name="mpkg.name_nb" value="NetBeans Dev ${buildnumber}"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
-    <property name="nbClusterDir" value="nb6.8"/>      
+    <property name="nbClusterDir" value="nb"/>      
     <property name="nb.check.build.number" value="0"/>
     <property name="nb.id" value="${buildnumber}"/>
 

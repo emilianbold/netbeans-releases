@@ -108,7 +108,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetDir)$(TargetName).dll ..\..\nbbuild\netbeans\webcommon1\native"
+				CommandLine="copy $(TargetDir)$(TargetName).dll ..\..\nbbuild\netbeans\webcommon\native"
 			/>
 		</Configuration>
 		<Configuration
@@ -204,7 +204,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy $(TargetDir)$(TargetName).dll ..\..\nbbuild\netbeans\webcommon1\native&#x0D;&#x0A;copy $(TargetDir)$(TargetName).dll ..\release\native&#x0D;&#x0A;"
+				CommandLine="copy $(TargetDir)$(TargetName).dll ..\..\nbbuild\netbeans\webcommon\native&#x0D;&#x0A;copy $(TargetDir)$(TargetName).dll ..\release\native&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>

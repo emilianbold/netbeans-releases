@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -67,6 +67,7 @@ public class AddExternalItemAction extends AbstractAction {
 	this.project = project;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
 	ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
 	ConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
@@ -87,8 +88,9 @@ public class AddExternalItemAction extends AbstractAction {
 	fileChooser.setAccessory(pathPanel);
 	fileChooser.setMultiSelectionEnabled(true);
 	int ret = fileChooser.showOpenDialog(null); // FIXUP
-	if (ret == FileChooser.CANCEL_OPTION)
-	    return;
+	if (ret == FileChooser.CANCEL_OPTION) {
+            return;
+        }
 
 	File[] files = fileChooser.getSelectedFiles();
 	ArrayList<Item> items = new ArrayList<Item>();
@@ -99,12 +101,13 @@ public class AddExternalItemAction extends AbstractAction {
                 continue;
             }
 	    String itemPath;
-	    if (PathPanel.getMode() == PathPanel.REL_OR_ABS)
-		itemPath = IpeUtils.toAbsoluteOrRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
-	    else if (PathPanel.getMode() == PathPanel.REL)
-		itemPath = IpeUtils.toRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
-	    else
-		itemPath = files[i].getPath();
+	    if (PathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                itemPath = IpeUtils.toAbsoluteOrRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
+            } else if (PathPanel.getMode() == PathPanel.REL) {
+                itemPath = IpeUtils.toRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
+            } else {
+                itemPath = files[i].getPath();
+            }
 	    itemPath = FilePathAdaptor.normalize(itemPath);
             Item item = makeProjectDescriptor.getExternalItemFolder().findItemByPath(itemPath);
 	    if (item != null) {
@@ -116,7 +119,8 @@ public class AddExternalItemAction extends AbstractAction {
                 items.add(item);
             }
 	}
-        if (items.size() > 0)
+        if (items.size() > 0) {
             MakeLogicalViewProvider.setVisible(project, items.toArray(new Item[items.size()]));
+        }
     }
 }

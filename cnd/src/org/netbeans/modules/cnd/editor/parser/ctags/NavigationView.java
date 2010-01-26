@@ -65,7 +65,6 @@ import javax.swing.UIManager;
 
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.modules.cnd.utils.MIMENames;
 
 import org.openide.ErrorManager;
@@ -80,6 +79,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
+import org.openide.util.NbPreferences;
 import org.openide.windows.TopComponent;
 
 /**
@@ -87,10 +87,13 @@ import org.openide.windows.TopComponent;
  */
 public class NavigationView extends ChoiceView {
 
+    private static final int DEFAULT_PARSING_DELAY = 2000;
+    private static final String PROP_PARSING_DELAY = "parsingDelay"; //NOI18N
+
     /**
      * Selection manager for keyboard events.
      */
-    SelectionManager selManager;
+    private SelectionManager selManager;
     /**
      * current source file object and editor support
      */
@@ -99,7 +102,7 @@ public class NavigationView extends ChoiceView {
     /**
      * Index/linenumber table - used to quickly determine context of current cursor position
      */
-    ArrayList<IndexLineNumber> indexLineNumber = null;
+    private ArrayList<IndexLineNumber> indexLineNumber = null;
     /**
      * Auto parse timers
      */
@@ -126,22 +129,26 @@ public class NavigationView extends ChoiceView {
     /**
      * Associated ExplorerManager.
      */
-    ExplorerManager manager;
+    private ExplorerManager manager;
     /**
      * TopComponent to listen to, or null if we should listen to
      * TopComponent.Registry.
      */
-    TopComponent topComponent = null;
+    private TopComponent topComponent = null;
     /**
      * Bundle
      */
-    static ResourceBundle bundle = null;
+    private static ResourceBundle bundle = null;
 
     /**
      * Constructor
      */
     public NavigationView() {
         initComponents();
+    }
+
+    private int getParsingDelay(){
+        return NbPreferences.forModule(NavigationView.class).getInt(PROP_PARSING_DELAY, DEFAULT_PARSING_DELAY);
     }
 
     /**
@@ -155,8 +162,8 @@ public class NavigationView extends ChoiceView {
         // Anyone ever heard of this property ? Me not... until I looked through Swing sources.
         this.putClientProperty("JComboBox.lightweightKeyboardNavigation", "Lightweight"); // NOI18N
 
-        if (CppSettings.getDefault().getParsingDelay() > 0) {
-            checkModifiedTimer = new Timer(CppSettings.getDefault().getParsingDelay(), new ActionListener() {
+        if (getParsingDelay() > 0) {
+            checkModifiedTimer = new Timer(getParsingDelay(), new ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent evt) {
@@ -179,10 +186,10 @@ public class NavigationView extends ChoiceView {
      * automatically based on the node position in the tree, but we use a flat list structure so it has to be done this way
      * FIXUP: perhaps use a real tree structure to avoid this, but it is more exprensive to create ????
      */
-    class MyNodeRenderer extends NodeRenderer {
+    private final class MyNodeRenderer extends NodeRenderer {
 
-        Border focusBorder = new LineBorder(UIManager.getColor("List.focusCellHighlight")); // NOI18N
-        Border emptyBorder = new EmptyBorder(1, 1, 1, 1);
+        private Border focusBorder = new LineBorder(UIManager.getColor("List.focusCellHighlight")); // NOI18N
+        private Border emptyBorder = new EmptyBorder(1, 1, 1, 1);
 
         @Override
         public java.awt.Component getListCellRendererComponent(
@@ -216,7 +223,7 @@ public class NavigationView extends ChoiceView {
         if (isPopupVisible()) {
             return;
         }
-        if (CppSettings.getDefault().getParsingDelay() <= 0) {
+        if (getParsingDelay() <= 0) {
             return;
         }
         if (checkCursorTimer != null) {
@@ -286,7 +293,7 @@ public class NavigationView extends ChoiceView {
         }
 
         long timeSinceLastModification = System.currentTimeMillis() - lastModified;
-        if (timeSinceLastModification < CppSettings.getDefault().getParsingDelay()) {
+        if (timeSinceLastModification < getParsingDelay()) {
             return;
         }
 
@@ -439,7 +446,7 @@ public class NavigationView extends ChoiceView {
 
         // parse file using ctags and create new nodes...
         MyCtagsTokenListener myCtagsTokenListener = new MyCtagsTokenListener();
-        if (CppSettings.getDefault().getParsingDelay() > 0) {
+        if (getParsingDelay() > 0) {
             CtagsParser ctagsParser = new CtagsParser(sname);
             ctagsParser.setCtagsTokenListener(myCtagsTokenListener);
 
@@ -458,7 +465,7 @@ public class NavigationView extends ChoiceView {
      * Implements combobox list with index and source file line number.
      * Also implements Comparator to be used when sorting and binary search lookup
      */
-    static class IndexLineNumber {
+    private final static class IndexLineNumber {
 
         private int index;
         private int lineNumber;
@@ -477,7 +484,7 @@ public class NavigationView extends ChoiceView {
         }
     }
 
-    static class IndexLineNumberComparator implements Comparator<IndexLineNumber> {
+    private final static class IndexLineNumberComparator implements Comparator<IndexLineNumber> {
 
         @Override
         public int compare(IndexLineNumber iln1, IndexLineNumber iln2) {
@@ -491,7 +498,7 @@ public class NavigationView extends ChoiceView {
         }
     }
 
-    static class NodesComparator implements Comparator<ViewNode> {
+    private final static class NodesComparator implements Comparator<ViewNode> {
 
         @Override
         public int compare(ViewNode iln1, ViewNode iln2) {
@@ -502,7 +509,7 @@ public class NavigationView extends ChoiceView {
     /**
      * Listener that will receive tokens (name/linenumber pairs) from parser
      */
-    class MyCtagsTokenListener implements CtagsTokenListener {
+    private final class MyCtagsTokenListener implements CtagsTokenListener {
 
         private ArrayList<ViewNode> nodes = null;
         private ArrayList<IndexLineNumber> lineNumberIndex = null;

@@ -45,7 +45,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Pisl
  */
-public class GSFPHPError implements org.netbeans.modules.csl.api.Error {
+public class GSFPHPError implements org.netbeans.modules.csl.api.Error.Badging {
 
     private final String displayName;
     private final FileObject file;
@@ -97,6 +97,11 @@ public class GSFPHPError implements org.netbeans.modules.csl.api.Error {
     }
 
     public boolean isLineError() {
+        return true;
+    }
+
+    @Override
+    public boolean showExplorerBadge() {
         return true;
     }
 }

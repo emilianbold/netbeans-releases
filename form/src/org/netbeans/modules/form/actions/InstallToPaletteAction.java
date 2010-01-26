@@ -66,6 +66,7 @@ public class InstallToPaletteAction extends NodeAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     public String getName() {
         if (name == null)
             name = org.openide.util.NbBundle.getBundle(InstallToPaletteAction.class)
@@ -73,6 +74,7 @@ public class InstallToPaletteAction extends NodeAction {
         return name;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("beans.adding"); // NOI18N
     }
@@ -82,10 +84,12 @@ public class InstallToPaletteAction extends NodeAction {
         return false;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         BeanInstaller.installBeans(activatedNodes);
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         for (Node n: activatedNodes) {
             FileObject fobj = n.getLookup().lookup(FileObject.class);

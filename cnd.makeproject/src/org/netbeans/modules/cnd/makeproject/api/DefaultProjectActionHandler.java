@@ -60,16 +60,16 @@ import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.execution.CompilerLineConvertor;
+import org.netbeans.modules.cnd.toolchain.spi.CompilerLineConvertor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
@@ -223,7 +223,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
             LineConvertor converter = null;
             if (pae.getType() == ProjectActionEvent.Type.BUILD) {
-                converter = new CompilerLineConvertor(pae.getProject(), execEnv, FileUtil.toFileObject(new File(runDirectory)));
+                converter = new CompilerLineConvertor(conf.getCompilerSet().getCompilerSet(), execEnv, FileUtil.toFileObject(new File(runDirectory)));
             }
             // TODO: this is actual only for sun studio compiler
             env.put("SPRO_EXPAND_ERRORS", ""); // NOI18N

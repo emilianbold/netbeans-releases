@@ -308,6 +308,10 @@ public class UtilsTest {
 
     @Test
     public void testBasicCommandLine() {
+        if (!Utilities.isWindows()) { //Pending - create a unix example
+                                      //with appropriate file separator
+            return;
+        }
         String cmdline = "cmd /c " + "c:\\foo\\cjcre.exe "
                 + "-ramsize 2K "
                 + "-e2psize 2K "
@@ -687,6 +691,10 @@ public class UtilsTest {
 
     @Test
     public void testSwitchesWithEqualsFollowedBySpacesInPath() {
+        if (!Utilities.isWindows()) { //Pending - create a unix example
+                                      //with appropriate file separator
+            return;
+        }
         String cmdline = "C:\\Program Files\\Java\\jdk1.6.0_14\\jre/bin/java"
                 + " -classpath H:\\NetBeans 6.8\\javacard1\\JCDK3.0.2_ConnectedEdition\\lib\\api_connected.jar;H:\\NetBeans 6.8\\javacard1\\JCDK3.0.2_ConnectedEdition\\lib\\api.jar;H:\\NetBeans 6.8\\javacard1\\JCDK3.0.2_ConnectedEdition\\lib\\romizer.jar;H:\\NetBeans 6.8\\javacard1\\JCDK3.0.2_ConnectedEdition\\lib\\tools.jar;H:\\NetBeans 6.8\\javacard1\\JCDK3.0.2_ConnectedEdition\\lib\\asm-all-3.1.jar;H:\\NetBeans 6.8\\javacard1\\JCDK3.0.2_ConnectedEdition\\lib\\bcel-5.2.jar;H:\\NetBeans 6.8\\javacard1\\JCDK3.0.2_ConnectedEdition\\lib\\commons-logging-1.1.jar;H:\\NetBeans 6.8\\javacard1\\JCDK3.0.2_ConnectedEdition\\lib\\commons-httpclient-3.0.jar;H:\\NetBeans 6.8\\javacard1\\JCDK3.0.2_ConnectedEdition\\lib\\commons-codec-1.3.jar;H:\\NetBeans 6.8\\javacard1\\JCDK3.0.2_ConnectedEdition\\lib\\commons-cli-1.0.jar;H:\\NetBeans 6.8\\javacard1\\JCDK3.0.2_ConnectedEdition\\lib\\ant-contrib-1.0b3.jar "
                 + "{{{-Djc.home=H:\\NetBeans 6.8\\javacard1\\JCDK3.0.2_ConnectedEdition}}} "

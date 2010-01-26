@@ -57,10 +57,10 @@ public final class InstalledFileLocatorProvider {
                 }
             }
 
-            File dlightDir = new File(junitWorkdir, "../../../nbbuild/netbeans/dlight2"); // NOI18N
+            File dlightDir = new File(junitWorkdir, "../../../nbbuild/netbeans/dlight"); // NOI18N
 
             if (!dlightDir.exists()) {
-                dlightDir = new File(junitWorkdir, "netbeans/dlight2"); // NOI18N
+                dlightDir = new File(junitWorkdir, "netbeans/dlight"); // NOI18N
             }
             
             System.setProperty("netbeans.dirs", dlightDir.getAbsolutePath() + File.pathSeparator + dirs); // NOI18N

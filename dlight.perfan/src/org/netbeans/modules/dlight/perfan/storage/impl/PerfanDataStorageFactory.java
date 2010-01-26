@@ -40,8 +40,9 @@ package org.netbeans.modules.dlight.perfan.storage.impl;
 
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory;
+import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory.Mode;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -49,7 +50,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author masha
  */
 @ServiceProvider(service = org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class)
-public final class PerfanDataStorageFactory implements DataStorageFactory<PerfanDataStorage> {
+public final class PerfanDataStorageFactory implements PersistentDataStorageFactory<PerfanDataStorage> {
 
     static final Collection<DataStorageType> supportedTypes = Collections.singletonList(PerfanDataStorage.storageType);
 
@@ -59,5 +60,17 @@ public final class PerfanDataStorageFactory implements DataStorageFactory<Perfan
 
     public PerfanDataStorage createStorage() {
         return new PerfanDataStorage();
+    }
+
+    public PerfanDataStorage openStorage(String uniqueKey) {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+    }
+
+    public PerfanDataStorage openStorage(String uniqueKey, Mode mode) {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+    }
+
+    public String getUniqueKey(PerfanDataStorage storage) {
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 }

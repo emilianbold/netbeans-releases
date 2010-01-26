@@ -718,7 +718,7 @@ public class LogReader {
         }
     }
 
-    // java -cp main/nbbuild/netbeans/cnd3/modules/org-netbeans-modules-cnd-dwarfdiscovery.jar:main/nbbuild/netbeans/cnd3/modules/org-netbeans-modules-cnd-discovery.jar:main/nbbuild/netbeans/cnd3/modules/org-netbeans-modules-cnd-apt.jar:main/nbbuild/netbeans/cnd3/modules/org-netbeans-modules-cnd-utils.jar:main/nbbuild/netbeans/platform8/core/org-openide-filesystems.jar:main/nbbuild/netbeans/platform8/lib/org-openide-util.jar org.netbeans.modules.cnd.dwarfdiscovery.provider.LogReader filename root
+    // java -cp main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-dwarfdiscovery.jar:main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-discovery.jar:main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-apt.jar:main/nbbuild/netbeans/cnd/modules/org-netbeans-modules-cnd-utils.jar:main/nbbuild/netbeans/platform/core/org-openide-filesystems.jar:main/nbbuild/netbeans/platform/lib/org-openide-util.jar org.netbeans.modules.cnd.dwarfdiscovery.provider.LogReader filename root
     public static void main(String[] args) {
         if (args.length < 2) {
             System.err.println("Not enough parameters. Format: bla-bla-bla filename root");

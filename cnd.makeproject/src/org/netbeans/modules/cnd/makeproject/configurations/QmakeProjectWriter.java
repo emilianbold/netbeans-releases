@@ -45,8 +45,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -303,9 +303,8 @@ public class QmakeProjectWriter {
         public String toString(LibraryItem item) {
             switch (item.getType()) {
                 case LibraryItem.PROJECT_ITEM:
-                    return projectLibToString(item);
                 case LibraryItem.LIB_FILE_ITEM:
-                    return IpeUtils.quoteIfNecessary(item.getPath());
+                    return libFileToOptionsString(item.getPath());
                 case LibraryItem.LIB_ITEM:
                 case LibraryItem.STD_LIB_ITEM:
                 case LibraryItem.OPTION_ITEM:
@@ -315,17 +314,32 @@ public class QmakeProjectWriter {
             }
         }
 
-        private String projectLibToString(LibraryItem item) {
+        private String libFileToOptionsString(String path) {
             StringBuilder buf = new StringBuilder();
-            if (compilerSet != null) {
-                buf.append(compilerSet.getDynamicLibrarySearchOption());
-                buf.append(IpeUtils.quoteIfNecessary(IpeUtils.getDirName(item.getPath())));
+            if (compilerSet != null && isDynamicLib(path)) {
+                String searchOption = compilerSet.getDynamicLibrarySearchOption();
+                if (searchOption.length() == 0) {
+                    // According to code in PlatformWindows and PlatformMacOSX,
+                    // on Windows and MacOS the "-L" option is used
+                    // for searching both static and dynamic libraries. (Why?)
+                    // Let's be consistent with that behavior. Detect this
+                    // special case by empty dynamic_library_search
+                    // and use the library_search option instead.
+                    searchOption = compilerSet.getLibrarySearchOption();
+                }
+
+                buf.append(searchOption);
+                buf.append(IpeUtils.quoteIfNecessary(IpeUtils.getDirName(path)));
                 buf.append(' '); // NOI18N
             }
-            buf.append(IpeUtils.quoteIfNecessary(item.getPath()));
+            buf.append(IpeUtils.quoteIfNecessary(path));
             return buf.toString();
         }
 
+        private boolean isDynamicLib(String path) {
+            return path.endsWith(".dll") || path.endsWith(".dylib") // NOI18N
+                    || path.endsWith(".so") || 0 <= path.indexOf(".so."); // NOI18N
+        }
     }
 
     private static class IncludeToString implements VectorConfiguration.ToString<String> {

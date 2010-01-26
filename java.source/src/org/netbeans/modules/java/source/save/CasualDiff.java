@@ -359,9 +359,33 @@ public class CasualDiff {
         tokenSequence.move(oldT.pos);
         tokenSequence.moveNext(); // First skip as move() does not position to token directly
         tokenSequence.moveNext();
+        int afterKindHint = tokenSequence.offset();
         moveToSrcRelevant(tokenSequence, Direction.FORWARD);
         insertHint = tokenSequence.offset();
         localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
+        if (kindChanged(oldT.mods.flags, newT.mods.flags)) {
+            int pos = oldT.pos;
+            if ((oldT.mods.flags & Flags.ANNOTATION) != 0) {
+                tokenSequence.move(pos);
+                tokenSequence.moveNext();
+                moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+                pos = tokenSequence.offset();
+            }
+            if ((newT.mods.flags & Flags.ANNOTATION) != 0) {
+                copyTo(localPointer, pos);
+                printer.print("@interface"); //NOI18N
+            } else if ((newT.mods.flags & Flags.ENUM) != 0) {
+                copyTo(localPointer, pos);
+                printer.print("enum"); //NOI18N
+            } else if ((newT.mods.flags & Flags.INTERFACE) != 0) {
+                copyTo(localPointer, pos);
+                printer.print("interface"); //NOI18N
+            } else {
+                copyTo(localPointer, pos);
+                printer.print("class"); //NOI18N
+            }
+            localPointer = afterKindHint;
+        }
         if (nameChanged(oldT.name, newT.name)) {
             copyTo(localPointer, insertHint);
             printer.print(newT.name);
@@ -1910,6 +1934,11 @@ public class CasualDiff {
                       " " + t1.getClass().getName();
               throw new AssertionError(msg);
         }
+    }
+
+    private boolean kindChanged(long oldFlags, long newFlags) {
+        return (oldFlags & (Flags.INTERFACE | Flags.ENUM | Flags.ANNOTATION))
+                != (newFlags & (Flags.INTERFACE | Flags.ENUM | Flags.ANNOTATION));
     }
 
     protected boolean nameChanged(Name oldName, Name newName) {

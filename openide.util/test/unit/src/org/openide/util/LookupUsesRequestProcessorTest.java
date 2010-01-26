@@ -44,6 +44,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -58,6 +59,7 @@ implements LookupListener {
         super(s);
     }
 
+    @RandomlyFails // NB-Core-Build #3891: Count is now 1 expected:<1> but was:<0>
     public void testMetaInfLookupDeliversEventsInRPThread() throws InterruptedException {
         ClassLoader l = new MyCL();
         Lookup lkp = Lookups.metaInfServices(l);

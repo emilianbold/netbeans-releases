@@ -47,7 +47,7 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -275,13 +275,14 @@ public class MakefileConfiguration {
             return new DirPanel(seed, this, propenv);
         }
         
+        @Override
         public void attachEnv(PropertyEnv propenv) {
             this.propenv = propenv;
         }
     }
     
-    class DirPanel extends FileChooser implements PropertyChangeListener {
-        PropertyEditorSupport editor;
+    private final class DirPanel extends FileChooser implements PropertyChangeListener {
+        private PropertyEditorSupport editor;
         
         public DirPanel(String seed, PropertyEditorSupport editor, PropertyEnv propenv) {
             super(
@@ -300,6 +301,7 @@ public class MakefileConfiguration {
             propenv.addPropertyChangeListener(this);
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
                 String path = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), getSelectedFile().getPath()); // FIXUP: not always relative path
@@ -309,7 +311,7 @@ public class MakefileConfiguration {
         }
     }
     
-    private class ElfEditor extends PropertyEditorSupport implements ExPropertyEditor {
+    private final class ElfEditor extends PropertyEditorSupport implements ExPropertyEditor {
         private PropertyEnv propenv;
         private String seed;
         
@@ -347,13 +349,14 @@ public class MakefileConfiguration {
             return new ElfPanel(seed, this, propenv);
         }
         
+        @Override
         public void attachEnv(PropertyEnv propenv) {
             this.propenv = propenv;
         }
     }
     
-    class ElfPanel extends FileChooser implements PropertyChangeListener {
-        PropertyEditorSupport editor;
+    private final class ElfPanel extends FileChooser implements PropertyChangeListener {
+        private PropertyEditorSupport editor;
         
         public ElfPanel(String seed, PropertyEditorSupport editor, PropertyEnv propenv) {
             super(
@@ -388,6 +391,7 @@ public class MakefileConfiguration {
             propenv.addPropertyChangeListener(this);
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID && getSelectedFile() != null) {
                 String path = IpeUtils.toRelativePath(makeConfiguration.getBaseDir(), getSelectedFile().getPath()); // FIXUP: not always relative path

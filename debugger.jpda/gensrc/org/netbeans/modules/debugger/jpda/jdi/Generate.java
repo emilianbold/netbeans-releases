@@ -1008,14 +1008,9 @@ public class Generate {
         if (com.sun.jdi.ReferenceType.class.getName().equals(className) && methodName.equals("constantPool")) {
             String catchNPE = "            try {\n"+
                               "    "+exec+
-                              "            } catch (java.lang.reflect.InvocationTargetException ex) {\n"+
-                              "                Throwable t = ex.getTargetException();\n"+
-                              "                if (t instanceof NullPointerException) {\n"+
-                              "                    // JDI defect http://bugs.sun.com/view_bug.do?bug_id=6822627\n"+
-                              "                    return null;\n"+
-                              "                } else {\n" +
-                              "                    throw ex;\n"+
-                              "                }\n"+
+                              "            } catch (NullPointerException ex) {\n"+
+                              "                // JDI defect http://bugs.sun.com/view_bug.do?bug_id=6822627\n"+
+                              "                return null;\n"+
                               "            }\n";
             return catchNPE;
         }

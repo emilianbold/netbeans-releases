@@ -53,7 +53,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -70,10 +69,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
@@ -171,6 +170,7 @@ public class ConfigurationMakefileWriter {
             final String msg = getString("TARGET_MISMATCH_TXT", platform.getDisplayName(), list.toString());
             final String title = getString("TARGET_MISMATCH_DIALOG_TITLE.TXT");
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     Object[] options = new Object[]{NotifyDescriptor.OK_OPTION};
                     DialogDescriptor nd = new DialogDescriptor(new ConfigurationWarningPanel(msg), title, true, options, NotifyDescriptor.OK_OPTION, 0, null, null);
@@ -199,19 +199,21 @@ public class ConfigurationMakefileWriter {
 
         File folder = new File(projectDescriptor.getBaseDir() + '/' + "nbproject"); // UNIX path // NOI18N
         File[] children = folder.listFiles();
-        for (int i = 0; i < children.length; i++) {
-            String filename = children[i].getName();
-            if (filename.startsWith("Makefile-") || filename.startsWith("Package-")) { // NOI18N
-                boolean protect = false;
-                for (MakeConfiguration conf : protectedConfs) {
-                        if (filename.equals("Makefile-" + conf.getName() + ".mk") // NOI18N
-                                || filename.equals("Package-" + conf.getName() + ".bash")) { // NOI18N
-                            protect = true;
-                            break;
+        if (children != null) {
+            for (int i = 0; i < children.length; i++) {
+                String filename = children[i].getName();
+                if (filename.startsWith("Makefile-") || filename.startsWith("Package-")) { // NOI18N
+                    boolean protect = false;
+                    for (MakeConfiguration conf : protectedConfs) {
+                            if (filename.equals("Makefile-" + conf.getName() + ".mk") // NOI18N
+                                    || filename.equals("Package-" + conf.getName() + ".bash")) { // NOI18N
+                                protect = true;
+                                break;
+                            }
                         }
+                    if (!protect) {
+                        children[i].delete();
                     }
-                if (!protect) {
-                    children[i].delete();
                 }
             }
         }

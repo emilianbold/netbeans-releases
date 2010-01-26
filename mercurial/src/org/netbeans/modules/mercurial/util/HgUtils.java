@@ -1553,7 +1553,7 @@ itor tabs #66700).
         return new File(file, ".hg").exists();
     }
 
-    public static CommitOptions[] createDefaultCommitOptions (HgFileNode[] nodes) {
+    public static CommitOptions[] createDefaultCommitOptions (HgFileNode[] nodes, boolean excludeNew) {
         CommitOptions[] commitOptions = new CommitOptions[nodes.length];
         for (int i = 0; i < nodes.length; i++) {
             HgFileNode node = nodes[i];
@@ -1565,6 +1565,9 @@ itor tabs #66700).
                 case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
                 case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
                     commitOptions[i] = CommitOptions.COMMIT_REMOVE;
+                    break;
+                case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
+                    commitOptions[i] = excludeNew ? CommitOptions.EXCLUDE : CommitOptions.COMMIT;
                     break;
                 default:
                     commitOptions[i] = CommitOptions.COMMIT;

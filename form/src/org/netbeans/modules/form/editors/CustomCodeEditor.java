@@ -182,6 +182,7 @@ public class CustomCodeEditor extends javax.swing.JPanel implements PropertyChan
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())
                 && evt.getNewValue() == PropertyEnv.STATE_VALID) {

@@ -67,6 +67,7 @@ public class InstallBeanAction extends CallableSystemAction {
      * presented as an item in a menu.
      * @return the name of the action
      */
+    @Override
     public String getName() {
         if (name == null)
             name = org.openide.util.NbBundle.getBundle(InstallBeanAction.class)
@@ -77,6 +78,7 @@ public class InstallBeanAction extends CallableSystemAction {
     /** Help context where to find more about the action.
      * @return the help context for this action
      */
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("beans.adding"); // NOI18N
     }
@@ -84,6 +86,7 @@ public class InstallBeanAction extends CallableSystemAction {
     /** This method is called by one of the "invokers" as a result of
      * some user's action that should lead to actual "performing" of the action.
      */
+    @Override
     public void performAction() {
         PaletteUtils.showPaletteManager();
     }

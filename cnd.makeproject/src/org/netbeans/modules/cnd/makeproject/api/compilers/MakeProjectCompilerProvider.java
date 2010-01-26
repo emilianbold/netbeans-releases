@@ -40,9 +40,9 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerProvider;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.toolchain.api.CompilerProvider;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -51,7 +51,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  *
  * @author gordonp
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.api.compilers.CompilerProvider.class, position=1000)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.toolchain.api.CompilerProvider.class, position=1000)
 public class MakeProjectCompilerProvider extends CompilerProvider {
 
     /**

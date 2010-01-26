@@ -40,13 +40,13 @@
  */
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
 import org.openide.nodes.Sheet;
@@ -119,6 +119,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         return CppUtils.reformatWhitespaces(options);
     }
     
+    @Override
     public String getAllOptions(BasicCompiler compiler) {
         CCCompilerConfiguration master;
         
@@ -183,10 +184,12 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         return options.toString();
     } 
 
+    @Override
     protected CompilerDescriptor getCompilerDescription(){
         return null;
     }
     
+    @Override
     protected String getUserIncludeFlag(){
         // TODO get from compiler descriptor.
         if (false) {
@@ -195,6 +198,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         return "-I"; // NOI18N
     }
 
+    @Override
     protected String getUserMacroFlag(){
         // TODO get from compiler descriptor.
         if (false) {

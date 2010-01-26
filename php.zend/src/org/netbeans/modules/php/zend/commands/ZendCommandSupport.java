@@ -62,9 +62,8 @@ import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.commands.FrameworkCommand;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.zend.ZendScript;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -75,6 +74,16 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
     static final Logger LOGGER = Logger.getLogger(ZendCommandSupport.class.getName());
 
     private static final String SEPARATOR = ":NB:"; // NOI18N
+
+    private static final String COMMANDS_PROVIDER_REL_PATH = "zend/NetBeansCommandsProvider.php"; // NOI18N
+    private static final File COMMANDS_PROVIDER;
+
+    static {
+        COMMANDS_PROVIDER = InstalledFileLocator.getDefault().locate(COMMANDS_PROVIDER_REL_PATH, "org.netbeans.modules.php.zend", false); // NOI18N
+        if (COMMANDS_PROVIDER == null || !COMMANDS_PROVIDER.isFile()) {
+            throw new IllegalStateException("Could not locate file " + COMMANDS_PROVIDER_REL_PATH);
+        }
+    }
 
     public ZendCommandSupport(PhpModule phpModule) {
         super(phpModule);
@@ -124,6 +133,9 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
         for (String param : zendScript.getParameters()) {
             externalProcessBuilder = externalProcessBuilder.addArgument(param);
         }
+        externalProcessBuilder = externalProcessBuilder.addEnvironmentVariable(
+                ZendScript.ENV_INCLUDE_PATH_PREPEND, COMMANDS_PROVIDER.getParentFile().getAbsolutePath());
+
         return externalProcessBuilder;
     }
 
@@ -147,12 +159,6 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
         try {
             if (task.get().intValue() == 0) {
                 freshCommands = lineProcessor.getCommands();
-                // # 179255
-                if (freshCommands.isEmpty()) {
-                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
-                            NbBundle.getMessage(ZendCommandSupport.class, "MSG_CopyNbCommandsProvider"),
-                            NotifyDescriptor.INFORMATION_MESSAGE));
-                }
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
@@ -171,6 +177,7 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
             if (!StringUtils.hasText(line)) {
                 return;
             }
+            // # 179255
             if (!line.contains(SEPARATOR)) {
                 // error occured
                 return;

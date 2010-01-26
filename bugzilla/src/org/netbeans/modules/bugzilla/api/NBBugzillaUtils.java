@@ -39,10 +39,16 @@
 
 package org.netbeans.modules.bugzilla.api;
 
+import java.net.URL;
+import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.repository.NBRepository;
+import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -50,31 +56,98 @@ import org.netbeans.modules.bugzilla.repository.NBRepository;
  */
 public class NBBugzillaUtils {
 
+    private static final String NB_BUGZILLA_PASSWORD = "nbbugzilla.password";                // NOI18N
+    private static final String NB_BUGZILLA_USERNAME = "nbbugzilla.username";                // NOI18N
+
+    private static Pattern netbeansUrlPattern = Pattern.compile("(https|http)://(([a-z]|\\d)+\\.)*([a-z]|\\d)*netbeans([a-z]|\\d)*(([a-z]|\\d)*\\.)+org(.*)"); // NOI18N
+
+    private static Preferences preferences;
+
     /**
      * Opens in the IDE the given issue from the netbeans repository
      *
      * @param issueID issue identifier
-     * @param username the user to connect with. Use null if none available.
-     * @param password the given users password. Use null if none available.
      */
-    public static void openIssue(String issueID, String username, String password) {
-        BugzillaRepository nbRepo = null;
-
-        BugzillaRepository[] repos = Bugzilla.getInstance().getRepositories();
-        for (BugzillaRepository repo : repos) {
-            if(repo.getUrl().startsWith(NBRepository.NB_BUGZILLA_URL)) {
-                nbRepo = repo;
-                break;
-            }
-        }
-
-        // XXX do we also want to look between kenai repositories?
-
+    public static void openIssue(String issueID) {
+        BugzillaRepository nbRepo = NBRepositorySupport.findNbRepository();
+        assert nbRepo != null;
         if(nbRepo == null) {
-            nbRepo = NBRepository.getInstance();
+            Bugzilla.LOG.warning("No bugzilla repository available for netbeans.org"); // NOI18N
+            return;
         }
-
         Issue.open(nbRepo, issueID);
+    }
+
+    /**
+     * Returns the netbeans.org username
+     * Shouldn't be called in awt
+     *
+     * @return username
+     */
+    public static String getNBUsername() {
+        String user = getPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
+        return user.equals("") ? null : user;                         // NOI18N
+    }
+
+    /**
+     * Returns the netbeans.org password
+     * Shouldn't be called in awt
+     *
+     * @return password
+     */
+    public static char[] getNBPassword() {
+        return Keyring.read(NB_BUGZILLA_PASSWORD);
+    }
+
+    /**
+     * Save the given username as a netbeans.org username.
+     * Shouldn't be called in awt
+     */
+    public static void saveNBUsername(String username) {
+        getPreferences().put(NB_BUGZILLA_USERNAME, username);
+    }
+
+    /**
+     * Saves the given value as a netbeans.org password
+     * Shouldn't be called in awt
+     */
+    public static void saveNBPassword(char[] password) {
+        if(password == null) {
+            Keyring.delete(NB_BUGZILLA_PASSWORD);
+        } else {
+            Keyring.save(
+                NB_BUGZILLA_PASSWORD,
+                password,
+                NbBundle.getMessage(
+                    NBBugzillaUtils.class,
+                    "NBRepositorySupport.password_keyring_description"));       // NOI18N
+
+        }
+    }
+
+    /**
+     * Determines wheter the given url is a netbeans.org url or not
+     *
+     * @return true if the given url is netbeans.org url, otherwise false
+     */
+    public static boolean isNbRepository(URL url) {
+        assert url != null;
+        boolean ret = netbeansUrlPattern.matcher(url.toString()).matches();
+        if(ret) {
+            return true;
+        }
+        String nbUrl = System.getProperty("netbeans.bugzilla.url");  // NOI18N
+        if(nbUrl == null || nbUrl.equals("")) {                      // NOI18N
+            return false;
+        }
+        return url.toString().startsWith(nbUrl);
+    }
+
+    private static Preferences getPreferences() {
+        if (preferences == null) {
+            preferences = NbPreferences.forModule(NBBugzillaUtils.class);
+        }
+        return preferences;
     }
     
 }

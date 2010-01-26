@@ -44,13 +44,13 @@ final class NetigsoModule extends Module {
 
     @Override
     public String getCodeNameBase() {
-        String version = manifest.getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
+        String version = getMainAttribute("Bundle-SymbolicName"); // NOI18N
         return version.replace('-', '_');
     }
 
     @Override
     public int getCodeNameRelease() {
-        String version = manifest.getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
+        String version = getMainAttribute("Bundle-SymbolicName"); // NOI18N
         int slash = version.lastIndexOf('/');
         if (slash != -1) {
             return Integer.parseInt(version.substring(slash + 1));
@@ -60,7 +60,7 @@ final class NetigsoModule extends Module {
 
     @Override
     public SpecificationVersion getSpecificationVersion() {
-        String version = manifest.getMainAttributes().getValue("Bundle-Version"); // NOI18N
+        String version = getMainAttribute("Bundle-Version"); // NOI18N
         if (version == null) {
             NetigsoModule.LOG.log(Level.WARNING, "No Bundle-Version for {0}", jar);
             return new SpecificationVersion("0.0");
@@ -78,7 +78,7 @@ final class NetigsoModule extends Module {
     @Override
     public String getImplementationVersion() {
         String explicit = super.getImplementationVersion(); // OIDE-M-I-V/-B-V added by NB build harness
-        return explicit != null ? explicit : manifest.getMainAttributes().getValue("Bundle-Version"); // NOI18N
+        return explicit != null ? explicit : getMainAttribute("Bundle-Version"); // NOI18N
     }
 
     @Override
@@ -112,7 +112,7 @@ final class NetigsoModule extends Module {
             loader.init(b);
             b.start();
         } catch (BundleException ex) {
-            throw (IOException)new IOException(ex.getMessage()).initCause(ex);
+            throw (IOException)new IOException("Cannot start " + jar).initCause(ex);
         }
         bundle = b;
     }
@@ -181,5 +181,13 @@ final class NetigsoModule extends Module {
     @Override
     public String toString() {
         return "Netigso: " + jar;
+    }
+
+    private String getMainAttribute(String attr) {
+        String s = manifest.getMainAttributes().getValue(attr);
+        if (s == null) {
+            return null;
+        }
+        return s.replaceFirst(";.*$", "");
     }
 }

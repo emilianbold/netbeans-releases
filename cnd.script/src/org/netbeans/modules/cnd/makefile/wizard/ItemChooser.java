@@ -60,7 +60,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
-import org.netbeans.modules.cnd.api.utils.IpeFileSystemView;
+import org.netbeans.modules.cnd.makefile.utils.IpeFileSystemView;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 
 /**
@@ -125,6 +125,7 @@ public class ItemChooser extends MakefileWizardPanel
      *  The default validation method. Most panels don't do validation so don't
      *  need to override this.
      */
+    @Override
     public boolean isPanelValid() { 
 	return (uncreatedDirOK && textNotFile) || directoryValid;
     }
@@ -327,6 +328,7 @@ public class ItemChooser extends MakefileWizardPanel
     }
 
 
+    @Override
     public void addNotify () {
 	super.addNotify();
 	dirText.selectAll();
@@ -335,6 +337,7 @@ public class ItemChooser extends MakefileWizardPanel
     }
 
 
+    @Override
     public void removeNotify() {
 	super.removeNotify();
 

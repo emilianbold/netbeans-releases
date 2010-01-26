@@ -45,7 +45,7 @@ import java.io.Writer;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;

@@ -73,19 +73,23 @@ public class SetAnchoringAction extends NodeAction {
 
     private JCheckBoxMenuItem[] items;
     
+    @Override
     protected boolean enable(Node[] nodes) {
         List comps = FormUtils.getSelectedLayoutComponents(nodes);
         return ((comps != null) && (comps.size() > 0));
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(SetAnchoringAction.class, "ACT_SetAnchoring"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) { }
 
     @Override
@@ -106,13 +110,16 @@ public class SetAnchoringAction extends NodeAction {
         HelpCtx.setHelpIDString(popupMenu, SetAnchoringAction.class.getName());
         
         popupMenu.addMenuListener(new MenuListener() {
+            @Override
             public void menuSelected(MenuEvent e) {
                 JMenu menu = (JMenu) e.getSource();
                 createAnchoringSubmenu(menu);
             }
             
+            @Override
             public void menuDeselected(MenuEvent e) {}
             
+            @Override
             public void menuCanceled(MenuEvent e) {}
         });
         return popupMenu;
@@ -219,6 +226,7 @@ public class SetAnchoringAction extends NodeAction {
     }
 
     private static class AnchoringMenuItemListener implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent evt) {
             Object source = evt.getSource();
             if (!(source instanceof AnchoringMenuItem)) {

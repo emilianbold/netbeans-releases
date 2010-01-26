@@ -233,7 +233,6 @@ final class RubyMethodTypeInferencer {
             RubyType type = indexedMethod.getType();
             resultType.append(type);
         }
-        index.logMostTimeConsuming();
         return resultType;
     }
 

@@ -70,6 +70,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -79,7 +80,7 @@ import org.openide.util.NbBundle;
  *
  * @author vita
  */
-@Hint(category="logging", enabled=false)
+@Hint(category="logging", suppressWarnings={"ClassWithoutLogger"}, enabled=false) //NOI18N
 public final class NoLoggers {
 
     public NoLoggers() {
@@ -120,19 +121,20 @@ public final class NoLoggers {
                     ctx,
                     ctx.getPath(),
                     NbBundle.getMessage(NoLoggers.class, "MSG_NoLoggers_checkNoLoggers", cls), //NOI18N
-                    new FixImpl(NbBundle.getMessage(NoLoggers.class, "MSG_NoLoggers_checkNoLoggers_Fix", cls), TreePathHandle.create(cls, ctx.getInfo())) //NOI18N
+                    new NoLoggersFix(NbBundle.getMessage(NoLoggers.class, "MSG_NoLoggers_checkNoLoggers_Fix", cls), TreePathHandle.create(cls, ctx.getInfo())), //NOI18N
+                    FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "ClassWithoutLogger") //NOI18N
             ));
         } else {
             return null;
         }
     }
 
-    private static final class FixImpl implements Fix {
+    private static final class NoLoggersFix implements Fix {
 
         private final String description;
         private final TreePathHandle loggerFieldHandle;
 
-        public FixImpl(String description, TreePathHandle loggerFieldHandle) {
+        public NoLoggersFix(String description, TreePathHandle loggerFieldHandle) {
             this.description = description;
             this.loggerFieldHandle = loggerFieldHandle;
         }

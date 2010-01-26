@@ -24,14 +24,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.core.netigso</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.libs.bugtracking</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -41,6 +33,14 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.libs.bugzilla</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.osgi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -82,6 +82,14 @@
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.kenai.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.keyring</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -212,7 +220,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.uihandler</friend>
+                <friend>org.netbeans.modules.bugzilla.exceptionreporter</friend>
                 <package>org.netbeans.modules.bugzilla.api</package>
             </friend-packages>
         </data>

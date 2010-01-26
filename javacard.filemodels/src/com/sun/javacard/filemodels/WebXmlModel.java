@@ -115,8 +115,7 @@ public final class WebXmlModel extends FileModel<WebXmlServletEntry>{
                     if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
                         if ("servlet-name".equals(child.getNodeName())) { //NOI18N
                             name = child.getTextContent();
-                        }
-                        if ("servlet-class".equals(child.getNodeName())) { //NOI18N
+                        } else if ("servlet-class".equals(child.getNodeName())) { //NOI18N
                             clazz = child.getTextContent();
                         } else {
                             handler.unrecognizedElementEncountered(child.getNodeName());

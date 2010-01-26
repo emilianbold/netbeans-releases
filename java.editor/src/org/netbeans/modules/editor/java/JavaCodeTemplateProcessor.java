@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.*;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.*;
 
 import java.io.IOException;
@@ -81,6 +82,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     public static final String NAMED = "named"; //NOI18N
     public static final String UNCAUGHT_EXCEPTION_TYPE = "uncaughtExceptionType"; //NOI18N
     public static final String UNCAUGHT_EXCEPTION_CATCH_STATEMENTS = "uncaughtExceptionCatchStatements"; //NOI18N
+    public static final String CURRENT_CLASS_NAME = "currClassName"; //NOI18N
 
     private static final String TRUE = "true"; //NOI18N
     private static final String NULL = "null"; //NOI18N
@@ -420,6 +422,9 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             } else if (NEW_VAR_NAME.equals(entry.getKey())) {
                 param2hints.put(param, NEW_VAR_NAME);
                 return newVarName(param.getInsertTextOffset() + 1);
+            } else if (CURRENT_CLASS_NAME.equals(entry.getKey())) {
+                param2hints.put(param, CURRENT_CLASS_NAME);
+                return owningClassName();
             } else if (NAMED.equals(entry.getKey())) {
                 name = param.getName();
             } else if (UNCAUGHT_EXCEPTION_TYPE.equals(entry.getKey())) {
@@ -726,6 +731,22 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     if (names.hasNext())
                         return names.next();
                 }
+            }
+        } catch (Exception e) {
+        }
+        return null;
+    }
+
+    private String owningClassName() {
+        try {
+            if (initParsing()) {
+                TreePath path = Utilities.getPathElementOfKind (Kind.CLASS, treePath);
+                if (path != null) {
+                    ClassTree tree = (ClassTree) path.getLeaf();
+                    String result = tree.getSimpleName().toString();
+                    return result;
+                }
+                return null;
             }
         } catch (Exception e) {
         }

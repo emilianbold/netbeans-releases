@@ -42,10 +42,10 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -101,6 +101,7 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
         return CppUtils.reformatWhitespaces(options);
     }
 
+    @Override
     public String getAllOptions(BasicCompiler compiler) {
         AssemblerConfiguration master = (AssemblerConfiguration) getMaster();
 

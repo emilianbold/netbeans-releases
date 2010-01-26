@@ -190,6 +190,7 @@ public class MnemonicEditor extends PropertyEditorSupport implements NamedProper
     }
 
     // NamedPropertyEditor implementation
+    @Override
     public String getDisplayName() {
         return NbBundle.getBundle(getClass()).getString("CTL_MnemonicsEditor_DisplayName"); // NOI18N
     }

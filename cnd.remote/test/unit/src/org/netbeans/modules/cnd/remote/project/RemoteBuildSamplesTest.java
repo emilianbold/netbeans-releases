@@ -45,7 +45,7 @@ import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -75,13 +75,14 @@ public class RemoteBuildSamplesTest extends RemoteBuildTestBase {
         assertEquals("Wrong tools collection", toolchain.ID,
                 CompilerSetManager.getDefault(getTestExecutionEnvironment()).getDefaultCompilerSet().getName());
 
+        clearRemoteSyncRoot();
         FileObject projectDirFO = prepareSampleProject(projectName, "Args_01");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         buildProject(makeProject, getSampleBuildTimeout(), TimeUnit.SECONDS);
     }
 
     @ForAllEnvironments
-    public void testBuildSample_Rfs_Gnu_Arguments_Once() throws Exception {
+    public void testBuildSample_Rfs_Gnu_Arguments_Once() throws Exception {        
         buildOnce(Sync.RFS, Toolchain.GNU, "Arguments", "Args_01");
     }
 
@@ -91,6 +92,7 @@ public class RemoteBuildSamplesTest extends RemoteBuildTestBase {
     public void testBuildSampleArgumentsTwice() throws Exception {
         setupHost();
         setSyncFactory("scp");
+        clearRemoteSyncRoot();
         FileObject projectDirFO = prepareSampleProject("Arguments", "Args_02");
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         System.err.printf("BUILDING FIRST TIME\n");

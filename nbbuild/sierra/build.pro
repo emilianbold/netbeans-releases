@@ -46,8 +46,13 @@
     <property name="netbeans.type" value="java"/>
 
     <!-- NetBeans latest nightly -->
-    <property name="netbeans.host" value="http://bits.netbeans.org"/>
-    <property name="netbeans.path" value="download/trunk/nightly/latest/zip"/>
+    <!-- property name="netbeans.host" value="http://bits.netbeans.org"/ -->
+    <!-- property name="netbeans.path" value="download/trunk/nightly/latest/zip"/ -->
+    <!-- property name="netbeans.user" value=".netbeans/dev"/ -->
+
+    <!-- NetBeans latest daily -->
+    <property name="netbeans.host" value="http://smetiste.czech.sun.com"/>
+    <property name="netbeans.path" value="builds/netbeans/trunk/daily/latest/zip"/>
     <property name="netbeans.user" value=".netbeans/dev"/>
 
     <!-- Sierra latest continuous -->
@@ -111,5 +116,5 @@
     <property name="jbi" location="${cache}/test/${test.cvs.path}"/>
     <property name="bpel.samples" value="${home}/bpel.samples/resources"/>
     <property name="xslt.samples" value="${home}/xslt.samples/resources"/>
-    <property name="build.number" value="${home}/nbbuild/netbeans/platform11/build_number"/>
+    <property name="build.number" value="${home}/nbbuild/netbeans/platform/build_number"/>
 </project>

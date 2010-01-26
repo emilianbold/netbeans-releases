@@ -59,12 +59,12 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.actions.BuildToolsAction;
+import org.netbeans.modules.cnd.toolchain.actions.BuildToolsAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
@@ -82,13 +82,12 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
@@ -97,16 +96,14 @@ import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ValidateInstrumentationProvider;
-import org.netbeans.modules.cnd.settings.CppSettings;
-import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
-import org.netbeans.modules.cnd.ui.options.ToolsPanel;
-import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
+import org.netbeans.modules.cnd.toolchain.ui.api.LocalToolsPanelModel;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelModel;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -161,13 +158,13 @@ public class MakeActionProvider implements ActionProvider {
         COMMAND_CUSTOM_ACTION,     };
 
     // Project
-    MakeProject project;
+    private MakeProject project;
 
     // Project Descriptor
-    MakeConfigurationDescriptor projectDescriptor = null;
+    private MakeConfigurationDescriptor projectDescriptor = null;
     /** Map from commands to ant targets */
-    Map<String, String[]> commands;
-    Map<String, String[]> commandsNoBuild;
+    private Map<String, String[]> commands;
+    private Map<String, String[]> commandsNoBuild;
     private boolean lastValidation = false;
 
     private static final String SAVE_STEP = "save"; // NOI18N
@@ -235,12 +232,15 @@ public class MakeActionProvider implements ActionProvider {
         return projectDescriptor;
     }
 
+    @Override
     public String[] getSupportedActions() {
         return supportedActions;
     }
 
+    @Override
     public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
+            project.setDeleted();
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return;
         }
@@ -352,6 +352,7 @@ public class MakeActionProvider implements ActionProvider {
                 public boolean cancel() {
                     return actionWorker.cancel();
                 }
+                @Override
                 public void runImpl() {
                     try {
                         if (!ConnectionManager.getInstance().isConnectedTo(record.getExecutionEnvironment())) {
@@ -368,6 +369,7 @@ public class MakeActionProvider implements ActionProvider {
                         final String message = MessageFormat.format(getString("ERR_Cant_Connect"), record.getDisplayName()); //NOI18N
                         final String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
                                         message, title, JOptionPane.ERROR_MESSAGE);
@@ -385,10 +387,6 @@ public class MakeActionProvider implements ActionProvider {
         String title = NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Validate_Host");
         ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
     }
-
-    //debug variables
-    public final static boolean useRsync = Boolean.getBoolean("cnd.remote.useRsync");
-    public static final String REMOTE_BASE_PATH = "~/NetBeansProjects/remote"; //NOI18N
 
     public void addAction(ArrayList<ProjectActionEvent> actionEvents, String projectName,
             MakeConfigurationDescriptor pd, MakeConfiguration conf, String command, Lookup context,
@@ -467,43 +465,6 @@ public class MakeActionProvider implements ActionProvider {
             }
             if (!ProjectSupport.saveAllProjects(getString("NeedToSaveAllText"))) { // NOI18N
                 return false;
-            }
-
-            if (useRsync && !conf.getDevelopmentHost().isLocalhost()) {
-                final String rsyncLocalPath = "rsync"; //NOI18N
-                CommandProvider provider = Lookup.getDefault().lookup(CommandProvider.class);
-                int result = provider.run(conf.getDevelopmentHost().getExecutionEnvironment(), "which rsync", null); //NOI18N
-                    String rsyncRemotePath = (result != 0 || provider.getOutput().indexOf(' ')>-1) ? "/opt/csw/bin/rsync" : provider.getOutput(); //NOI18N //YESCHEAT
-                // do sync
-                RunProfile runSyncProfile = conf.getProfile().clone(conf);
-                // TODO: remote and local rsync paths from toolchain
-                // TODO: real project name
-                String lpath = project.getProjectDirectory().getNameExt();
-                String remotePath = REMOTE_BASE_PATH + pi.separator() + lpath;
-                //String rsyncLocalPath = HostFacadeFactory.createLocalHostFacade().findInPath("rsync");
-                if (rsyncRemotePath == null || rsyncRemotePath.length() == 0 || rsyncLocalPath == null || rsyncLocalPath.length() == 0) {
-                    System.err.println("Rsync not fould in Toolchain: sources can not be synchronized");
-                    return false;
-                } else {
-                    // TODO: using getName() does not suite for non-standard ssh port
-                    String rsyncArgs = " --rsh=ssh --recursive --verbose --perms --links --delete --rsync-path=" + rsyncRemotePath + //NOI18N
-                            " --exclude \"build*\" --exclude \"dist*\" --cvs-exclude . " + //NOI18N
-                            conf.getDevelopmentHost().getHostKey() + ":" + remotePath; //NOI18N
-                    runSyncProfile.setArgs(rsyncArgs);
-                    runSyncProfile.getConsoleType().setValue(RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW);
-
-                    MakeConfiguration syncConf = (MakeConfiguration) conf.clone();
-                    syncConf.setDevelopmentHost(new DevelopmentHostConfiguration(ExecutionEnvironmentFactory.getLocal())); // rsync should be ran only locally
-                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                            project,
-                            actionEvent,
-                            projectName + " (Sync)", // NOI18N
-                            rsyncLocalPath, // NOI18N
-                            syncConf,
-                            runSyncProfile,
-                            false);
-                    actionEvents.add(projectActionEvent);
-                }
             }
         } else if (targetName.equals(RUN_STEP) || targetName.equals(DEBUG_STEP) || targetName.equals(DEBUG_STEPINTO_STEP) || targetName.equals(DEBUG_LOAD_ONLY_STEP)) {
 //            if (!validateBuildSystem(pd, conf, validated.get(), cancelled)) {
@@ -602,7 +563,7 @@ public class MakeActionProvider implements ActionProvider {
                             extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("DYLD_LIBRARY_PATH"); // NOI18N
                             }
                         if (extPath != null) {
-                            path.append(":" + extPath); // NOI18N
+                            path.append(":").append(extPath); // NOI18N
                             }
                         runProfile.getEnvironment().putenv("DYLD_LIBRARY_PATH", path.toString()); // NOI18N
                         }
@@ -626,14 +587,14 @@ public class MakeActionProvider implements ActionProvider {
                         if (extPath == null) {
                             if (cancelled.get()) {
                                 return false; // getEnv() might be costly for remote host
-                                }
+                            }
                             extPath = HostInfoProvider.getEnv(conf.getDevelopmentHost().getExecutionEnvironment()).get("LD_LIBRARY_PATH"); // NOI18N
-                            }
-                        if (extPath != null) {
-                            path.append(":" + extPath); // NOI18N
-                            }
-                        runProfile.getEnvironment().putenv("LD_LIBRARY_PATH", path.toString()); // NOI18N
                         }
+                        if (extPath != null) {
+                            path.append(":").append(extPath); // NOI18N
+                        }
+                        runProfile.getEnvironment().putenv("LD_LIBRARY_PATH", path.toString()); // NOI18N
+                    }
                 }
 
                 if (platform == PlatformTypes.PLATFORM_MACOSX ||
@@ -979,6 +940,7 @@ public class MakeActionProvider implements ActionProvider {
         return targetNames;
     }
 
+    @Override
     public boolean isActionEnabled(String command, Lookup context) {
         if (!isProjectDescriptorLoaded()) {
             return false;
@@ -1165,7 +1127,7 @@ public class MakeActionProvider implements ActionProvider {
         // Check for a valid make program
         if (conf.getDevelopmentHost().isLocalhost()) {
             file = new File(makeTool.getPath());
-            if ((!exists(makeTool.getPath(), pi) && Path.findCommand(makeTool.getPath()) == null) || !ToolsPanel.supportedMake(file.getPath())) {
+            if ((!exists(makeTool.getPath(), pi) && Path.findCommand(makeTool.getPath()) == null) || !ToolsPanelSupport.supportedMake(file.getPath())) {
                 runBTA = true;
             }
         } else {
@@ -1238,7 +1200,7 @@ public class MakeActionProvider implements ActionProvider {
                 model.setEnableRequiredCompilerCB(conf.isMakefileConfiguration());
                 if (bt.initBuildTools(model, errs, cs) && pd.okToChange()) {
                     String name = model.getSelectedCompilerSetName();
-                    CppSettings.getDefault().setCompilerSetName(name);
+                    ToolsPanelModel.resetCompilerSetName(name);
                     conf.getCRequired().setValue(model.isCRequired());
                     conf.getCppRequired().setValue(model.isCppRequired());
                     conf.getFortranRequired().setValue(model.isFortranRequired());
@@ -1296,7 +1258,7 @@ public class MakeActionProvider implements ActionProvider {
     private boolean validatePackaging(MakeConfiguration conf) {
         String errormsg = null;
 
-        if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
+        if (conf.getPackagingConfiguration().getFiles().getValue().isEmpty()) {
             errormsg = getString("ERR_EMPTY_PACKAGE");
         }
 
@@ -1326,7 +1288,7 @@ public class MakeActionProvider implements ActionProvider {
 
         if (errormsg != null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-            if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
+            if (conf.getPackagingConfiguration().getFiles().getValue().isEmpty()) {
                 MakeCustomizerProvider makeCustomizerProvider = project.getLookup().lookup(MakeCustomizerProvider.class);
                 if (makeCustomizerProvider != null) {
                     makeCustomizerProvider.showCustomizer("Packaging"); // NOI18N
@@ -1416,6 +1378,7 @@ public class MakeActionProvider implements ActionProvider {
 
         protected abstract void runImpl();
 
+        @Override
         public final void run() {
             thread = Thread.currentThread();
             if (!cancelled.get()) {
@@ -1423,6 +1386,7 @@ public class MakeActionProvider implements ActionProvider {
             }
         }
 
+        @Override
         public boolean cancel() {
             cancelled.set(true);
             if (thread != null) { // we never set it back to null => no sync
@@ -1477,6 +1441,7 @@ public class MakeActionProvider implements ActionProvider {
             return command;
         }
 
+        @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             if (evt.getSource() == buildButton) {
                 command = COMMAND_BUILD;

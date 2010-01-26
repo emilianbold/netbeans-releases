@@ -1426,10 +1426,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 if (!(isSuspended() || suspendedNoFire) || getState() == ThreadReference.THREAD_STATUS_ZOMBIE) {
                     return Collections.emptyList();
                 }
-                List monitorInfos = ThreadReferenceWrapper.ownedMonitorsAndFrames0(threadReference);
+                List<com.sun.jdi.MonitorInfo> monitorInfos = ThreadReferenceWrapper.ownedMonitorsAndFrames0(threadReference);
                 if (monitorInfos != null && monitorInfos.size() > 0) {
                     List<MonitorInfo> mis = new ArrayList<MonitorInfo>(monitorInfos.size());
-                    for (Object monitorInfo : monitorInfos) {
+                    for (com.sun.jdi.MonitorInfo monitorInfo : monitorInfos) {
                         mis.add(createMonitorInfo(monitorInfo));
                     }
                     return Collections.unmodifiableList(mis);
@@ -1451,8 +1451,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
      * @param mi com.sun.jdi.MonitorInfo
      * @return monitor info
      */
-    private MonitorInfo createMonitorInfo(Object mi) {
-        //com.sun.jdi.MonitorInfo _mi = (com.sun.jdi.MonitorInfo) mi;
+    private MonitorInfo createMonitorInfo(com.sun.jdi.MonitorInfo mi) {
         try {
             int depth = MonitorInfoWrapper.stackDepth(mi);
             CallStackFrame frame = null;
@@ -1708,9 +1707,9 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             return false;
         }
         try {
-            EventRequest/*com.sun.jdi.request.MonitorContendedEnteredRequest*/ monitorEnteredRequest =
-                    (EventRequest) EventRequestManagerWrapper.createMonitorContendedEnteredRequest(
-                    VirtualMachineWrapper.eventRequestManager(vm));
+            com.sun.jdi.request.MonitorContendedEnteredRequest monitorEnteredRequest =
+                    EventRequestManagerWrapper.createMonitorContendedEnteredRequest(
+                            VirtualMachineWrapper.eventRequestManager(vm));
 
             MonitorContendedEnteredRequestWrapper.addThreadFilter(monitorEnteredRequest, threadReference);
             submitMonitorEnteredRequest(monitorEnteredRequest);

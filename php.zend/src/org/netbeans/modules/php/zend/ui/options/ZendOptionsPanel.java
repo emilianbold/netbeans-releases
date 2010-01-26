@@ -55,10 +55,14 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -67,6 +71,7 @@ import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.zend.ZendScript;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -175,15 +180,14 @@ public class ZendOptionsPanel extends JPanel {
 
         zendLabel.setLabelFor(zendTextField);
 
-        org.openide.awt.Mnemonics.setLocalizedText(zendLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendLabel.text")); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.browseButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(zendLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendLabel.text"));
+        Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.browseButton.text"));
         browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
-
-        org.openide.awt.Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.searchButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.searchButton.text"));
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 searchButtonActionPerformed(evt);
@@ -191,22 +195,22 @@ public class ZendOptionsPanel extends JPanel {
         });
 
         zendScriptUsageLabel.setLabelFor(this);
-        org.openide.awt.Mnemonics.setLocalizedText(zendScriptUsageLabel, "HINT"); // NOI18N
+        Mnemonics.setLocalizedText(zendScriptUsageLabel, "HINT"); // NOI18N
 
         defaultParametersLabel.setLabelFor(defaultParametersForProjectTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(defaultParametersLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(defaultParametersLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersLabel.text")); // NOI18N
 
         noteLabel.setLabelFor(this);
-        org.openide.awt.Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.noteLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.noteLabel.text")); // NOI18N
 
         includePathInfoLabel.setLabelFor(this);
-        org.openide.awt.Mnemonics.setLocalizedText(includePathInfoLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.includePathInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(includePathInfoLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.includePathInfoLabel.text")); // NOI18N
 
         installationInfoLabel.setLabelFor(this);
-        org.openide.awt.Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.installationInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.installationInfoLabel.text")); // NOI18N
 
         learnMoreLabel.setLabelFor(this);
-        org.openide.awt.Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.learnMoreLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.learnMoreLabel.text"));
         learnMoreLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
                 learnMoreLabelMouseEntered(evt);
@@ -217,80 +221,80 @@ public class ZendOptionsPanel extends JPanel {
         });
 
         errorLabel.setLabelFor(this);
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        Mnemonics.setLocalizedText(errorLabel, "ERROR");
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(includePathInfoLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addComponent(includePathInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(138, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(installationInfoLabel)
+                .addComponent(installationInfoLabel)
                 .addContainerGap(229, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(learnMoreLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(509, Short.MAX_VALUE))
-            .add(layout.createSequentialGroup()
-                .add(0, 0, 0)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(defaultParametersLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(defaultParametersForProjectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(defaultParametersLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(defaultParametersForProjectTextField, GroupLayout.DEFAULT_SIZE, 377, Short.MAX_VALUE)
                         .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(errorLabel)
-                        .add(447, 447, 447))
-                    .add(layout.createSequentialGroup()
-                        .add(zendLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(zendScriptUsageLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(errorLabel)
+                        .addGap(447, 447, 447))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(zendLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(zendScriptUsageLabel)
                                 .addContainerGap())
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(zendTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(browseButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(searchButton)
-                                .add(0, 0, 0))))
-                    .add(noteLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(zendTextField, GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(browseButton)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(searchButton)
+                                .addGap(0, 0, 0))))
+                    .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
         );
 
-        layout.linkSize(new Component[] {browseButton, searchButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {browseButton, searchButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(zendLabel)
-                    .add(zendTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(searchButton)
-                    .add(browseButton))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(zendScriptUsageLabel)
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(defaultParametersLabel)
-                    .add(defaultParametersForProjectTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(noteLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(includePathInfoLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(18, 18, 18)
-                .add(installationInfoLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(learnMoreLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 26, Short.MAX_VALUE)
-                .add(errorLabel)
-                .add(0, 0, 0))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(zendLabel)
+                    .addComponent(zendTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(searchButton)
+                    .addComponent(browseButton))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(zendScriptUsageLabel)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(defaultParametersLabel)
+                    .addComponent(defaultParametersForProjectTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(includePathInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(installationInfoLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                .addComponent(errorLabel)
+                .addGap(0, 0, 0))
         );
 
         zendLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendLabel.AccessibleContext.accessibleName")); // NOI18N

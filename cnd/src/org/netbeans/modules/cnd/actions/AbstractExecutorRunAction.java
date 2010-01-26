@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -58,18 +59,18 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolchainProject;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.CMakeExecSupport;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
@@ -101,13 +102,14 @@ import org.openide.windows.InputOutput;
  */
 public abstract class AbstractExecutorRunAction extends NodeAction {
     private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
-    private static Logger logger = Logger.getLogger("org.netbeans.modules.cnd.actions.AbstractExecutorRunAction"); // NOI18N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.actions.AbstractExecutorRunAction"); // NOI18N
     static {
         if (TRACE) {
             logger.setLevel(Level.ALL);
         }
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         boolean enabled = false;
 
@@ -333,8 +335,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     }
 
     public static String findTools(String toolName){
-        List<String> list = new ArrayList<String>(Path.getPath());
-        for (String path : list) {
+        for (String path : Path.getPath()) {
             String task = path+File.separatorChar+toolName;
             File tool = new File(task);
             if (tool.exists() && tool.isFile()) {
@@ -354,9 +355,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         List<String> res = new ArrayList<String>();
         ExecutionSupport mes = node.getCookie(ExecutionSupport.class);
         if (mes != null) {
-            for(String s : mes.getEnvironmentVariables()){
-                res.add(s);
-            }
+            res.addAll(Arrays.asList(mes.getEnvironmentVariables()));
             return res;
         }
         return res;
@@ -402,6 +401,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return envMap;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP; // FIXUP ???
     }
@@ -488,11 +488,11 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     protected static void traceExecutable(String executable, String buildDir, StringBuilder argsFlat, Map<String, String> envMap) {
         if (TRACE) {
             StringBuilder buf = new StringBuilder("Run " + executable); // NOI18N
-            buf.append("\n\tin folder   " + buildDir); // NOI18N
-            buf.append("\n\targuments   " + argsFlat); // NOI18N
+            buf.append("\n\tin folder   ").append(buildDir); // NOI18N
+            buf.append("\n\targuments   ").append(argsFlat); // NOI18N
             buf.append("\n\tenvironment "); // NOI18N
             for (Map.Entry<String, String> v : envMap.entrySet()) {
-                buf.append("\n\t\t" + v.getKey() + "=" + v.getValue()); // NOI18N
+                buf.append("\n\t\t").append(v.getKey()).append("=").append(v.getValue()); // NOI18N
             }
              buf.append("\n"); // NOI18N
             logger.log(Level.INFO, buf.toString());
@@ -567,6 +567,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             this.syncWorker = syncWorker;
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             if (!(e instanceof NativeProcessChangeEvent)) {
                 return;
@@ -592,6 +593,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     }
                     shutdownSyncWorker();
                     postRunnable = new Runnable() {
+                        @Override
                         public void run() {
                             String message = getString("Output."+resourceKey+"Terminated", formatTime(System.currentTimeMillis() - startTimeMillis)); // NOI18N
                             String statusMessage = getString("Status."+resourceKey+"Terminated"); // NOI18N
@@ -612,6 +614,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     }
                     shutdownSyncWorker();
                     postRunnable = new Runnable() {
+                        @Override
                         public void run() {
                             String message = getString("Output."+resourceKey+"FailedToStart"); // NOI18N
                             String statusMessage = getString("Status."+resourceKey+"FailedToStart"); // NOI18N
@@ -632,6 +635,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                     }
                     shutdownSyncWorker();
                     postRunnable = new Runnable() {
+                        @Override
                         public void run() {
                             String message;
                             String statusMessage;
@@ -655,6 +659,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
 
+        @Override
         public void run() {
             if (postRunnable != null) {
                 postRunnable.run();
@@ -671,6 +676,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
 
+        @Override
         public LineConvertor newLineConvertor() {
             return new LineConvertor() {
                 @Override

@@ -295,54 +295,30 @@ public final class ObjectReferenceWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method referringObjects from JDK 1.6. */
-    public static java.util.List<com.sun.jdi.ObjectReference> referringObjects(com.sun.jdi.ObjectReference a, long b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static java.util.List<com.sun.jdi.ObjectReference> referringObjects0(com.sun.jdi.ObjectReference a, long b) {
         try {
-            return (java.util.List<com.sun.jdi.ObjectReference>) com.sun.jdi.ObjectReference.class.getMethod("referringObjects", long.class).invoke(a, b);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.referringObjects(b);
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            return java.util.Collections.emptyList();
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method referringObjects from JDK 1.6. */
-    public static java.util.List<com.sun.jdi.ObjectReference> referringObjects0(com.sun.jdi.ObjectReference a, long b) {
+    public static java.util.List<com.sun.jdi.ObjectReference> referringObjects(com.sun.jdi.ObjectReference a, long b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper {
         try {
-            return (java.util.List<com.sun.jdi.ObjectReference>) com.sun.jdi.ObjectReference.class.getMethod("referringObjects", long.class).invoke(a, b);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return java.util.Collections.emptyList();
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return java.util.Collections.emptyList();
-            }
-            throw new IllegalStateException(t);
+            return a.referringObjects(b);
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
         }
     }
 

@@ -108,7 +108,7 @@ made subject to such option by the copyright holder.
 
     <target name="zip">
         <zip destfile="netbeans-ruby.zip">
-            <zipfileset dir="${nbroot}/nbbuild/netbeans/ruby1" prefix="ruby1"/>
+            <zipfileset dir="${nbroot}/nbbuild/netbeans/ruby" prefix="ruby"/>
         </zip>
     </target>
 

@@ -45,7 +45,6 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +55,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
+import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
@@ -111,17 +111,13 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.AsynchronousI
     private NewNbModuleWizardIterator(NewNbModuleWizardIterator.Type type) {
         data = new NewModuleProjectData(type);
     }
-    private NewNbModuleWizardIterator(Type type, boolean osgi) {
-        data = new NewModuleProjectData(type, osgi);
-    }
-
     
     /**
      * Returns wizard for creating NetBeans module in general - i.e. either
      * standalone module, suite component or NB.org module.
      */
     public static NewNbModuleWizardIterator createModuleIterator(Map m) {
-        return new NewNbModuleWizardIterator(Type.MODULE, "bundle".equals(m.get("type"))); // NOI18N
+        return new NewNbModuleWizardIterator(Type.MODULE);
     }
     
     /**

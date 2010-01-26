@@ -88,7 +88,7 @@ public class BugzillaConnector extends BugtrackingConnector {
 
     public static String getConnectorName() {
         return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorName");           // NOI18N
-}
+    }
 
     @Override
     public IssueFinder getIssueFinder() {
@@ -101,5 +101,11 @@ public class BugzillaConnector extends BugtrackingConnector {
     public Lookup getLookup() {
         return Lookups.singleton(Bugzilla.getInstance().getKenaiSupport());
     }
+
+    @Override
+    public void fireRepositoriesChanged() {
+        super.fireRepositoriesChanged();
+    }
+
 
 }

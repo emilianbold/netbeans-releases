@@ -275,7 +275,7 @@ public class NbModuleProjectGenerator {
      */
     private static void createProjectXML(FileObject projectDir,
             String cnb, NbModuleProvider.NbModuleType type, boolean osgi) throws IOException {
-        String[] deps = osgi ? new String[] { "org.netbeans.core.netigso" } : new String[0]; // NOI18N
+        String[] deps = osgi ? new String[] {"org.netbeans.libs.osgi"} : new String[0]; // NOI18N
         ProjectXMLManager.generateEmptyModuleTemplate(
                 createFileObject(projectDir, AntProjectHelper.PROJECT_XML_PATH),
                 cnb, type, deps);

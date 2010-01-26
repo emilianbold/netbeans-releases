@@ -153,54 +153,26 @@ public final class VirtualMachineWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canForceEarlyReturn from JDK 1.6. */
-    public static boolean canForceEarlyReturn(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static boolean canForceEarlyReturn0(com.sun.jdi.VirtualMachine a) {
         try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canForceEarlyReturn").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.canForceEarlyReturn();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return false;
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canForceEarlyReturn from JDK 1.6. */
-    public static boolean canForceEarlyReturn0(com.sun.jdi.VirtualMachine a) {
+    public static boolean canForceEarlyReturn(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canForceEarlyReturn").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return false;
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return false;
-            }
-            throw new IllegalStateException(t);
+            return a.canForceEarlyReturn();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
@@ -229,106 +201,50 @@ public final class VirtualMachineWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canGetClassFileVersion from JDK 1.6. */
-    public static boolean canGetClassFileVersion(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
-        try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canGetClassFileVersion").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
-        }
-    }
-
-    // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canGetClassFileVersion from JDK 1.6. */
     public static boolean canGetClassFileVersion0(com.sun.jdi.VirtualMachine a) {
         try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canGetClassFileVersion").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return false;
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return false;
-            }
-            throw new IllegalStateException(t);
+            return a.canGetClassFileVersion();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return false;
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canGetConstantPool from JDK 1.6. */
-    public static boolean canGetConstantPool(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static boolean canGetClassFileVersion(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canGetConstantPool").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.canGetClassFileVersion();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canGetConstantPool from JDK 1.6. */
     public static boolean canGetConstantPool0(com.sun.jdi.VirtualMachine a) {
         try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canGetConstantPool").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return false;
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return false;
-            }
-            throw new IllegalStateException(t);
+            return a.canGetConstantPool();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return false;
+        }
+    }
+
+    // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
+    public static boolean canGetConstantPool(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        try {
+            return a.canGetConstantPool();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
@@ -357,158 +273,74 @@ public final class VirtualMachineWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canGetInstanceInfo from JDK 1.6. */
-    public static boolean canGetInstanceInfo(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
-        try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canGetInstanceInfo").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
-        }
-    }
-
-    // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canGetInstanceInfo from JDK 1.6. */
     public static boolean canGetInstanceInfo0(com.sun.jdi.VirtualMachine a) {
         try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canGetInstanceInfo").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return false;
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return false;
-            }
-            throw new IllegalStateException(t);
+            return a.canGetInstanceInfo();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return false;
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canGetMethodReturnValues from JDK 1.6. */
-    public static boolean canGetMethodReturnValues(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static boolean canGetInstanceInfo(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canGetMethodReturnValues").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.canGetInstanceInfo();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canGetMethodReturnValues from JDK 1.6. */
     public static boolean canGetMethodReturnValues0(com.sun.jdi.VirtualMachine a) {
         try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canGetMethodReturnValues").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return false;
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return false;
-            }
-            throw new IllegalStateException(t);
+            return a.canGetMethodReturnValues();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return false;
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canGetMonitorFrameInfo from JDK 1.6. */
-    public static boolean canGetMonitorFrameInfo(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static boolean canGetMethodReturnValues(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canGetMonitorFrameInfo").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.canGetMethodReturnValues();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canGetMonitorFrameInfo from JDK 1.6. */
     public static boolean canGetMonitorFrameInfo0(com.sun.jdi.VirtualMachine a) {
         try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canGetMonitorFrameInfo").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return false;
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return false;
-            }
-            throw new IllegalStateException(t);
+            return a.canGetMonitorFrameInfo();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return false;
+        }
+    }
+
+    // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
+    public static boolean canGetMonitorFrameInfo(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+        try {
+            return a.canGetMonitorFrameInfo();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
@@ -657,54 +489,26 @@ public final class VirtualMachineWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canRequestMonitorEvents from JDK 1.6. */
-    public static boolean canRequestMonitorEvents(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static boolean canRequestMonitorEvents0(com.sun.jdi.VirtualMachine a) {
         try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canRequestMonitorEvents").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.canRequestMonitorEvents();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return false;
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canRequestMonitorEvents from JDK 1.6. */
-    public static boolean canRequestMonitorEvents0(com.sun.jdi.VirtualMachine a) {
+    public static boolean canRequestMonitorEvents(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canRequestMonitorEvents").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return false;
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return false;
-            }
-            throw new IllegalStateException(t);
+            return a.canRequestMonitorEvents();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
@@ -781,54 +585,26 @@ public final class VirtualMachineWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canUseSourceNameFilters from JDK 1.6. */
-    public static boolean canUseSourceNameFilters(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
+    public static boolean canUseSourceNameFilters0(com.sun.jdi.VirtualMachine a) {
         try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canUseSourceNameFilters").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.canUseSourceNameFilters();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return false;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return false;
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method canUseSourceNameFilters from JDK 1.6. */
-    public static boolean canUseSourceNameFilters0(com.sun.jdi.VirtualMachine a) {
+    public static boolean canUseSourceNameFilters(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (Boolean) com.sun.jdi.VirtualMachine.class.getMethod("canUseSourceNameFilters").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return false;
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return false;
-            }
-            throw new IllegalStateException(t);
+            return a.canUseSourceNameFilters();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
@@ -977,28 +753,14 @@ public final class VirtualMachineWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method instanceCounts from JDK 1.6. */
     public static long[] instanceCounts(com.sun.jdi.VirtualMachine a, java.util.List<? extends com.sun.jdi.ReferenceType> b) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (long[]) com.sun.jdi.VirtualMachine.class.getMethod("instanceCounts", java.util.List.class).invoke(a, b);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.instanceCounts(b);
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 
@@ -1113,28 +875,14 @@ public final class VirtualMachineWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method mirrorOfVoid from JDK 1.6. */
     public static com.sun.jdi.VoidValue mirrorOfVoid(com.sun.jdi.VirtualMachine a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper {
         try {
-            return (com.sun.jdi.VoidValue) com.sun.jdi.VirtualMachine.class.getMethod("mirrorOfVoid").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.mirrorOfVoid();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
         }
     }
 

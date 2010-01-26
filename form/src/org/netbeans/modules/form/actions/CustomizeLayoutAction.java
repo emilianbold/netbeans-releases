@@ -57,6 +57,7 @@ public class CustomizeLayoutAction extends CookieAction {
 
     /** @return the mode of action. Possible values are disjunctions of MODE_XXX
      * constants. */
+    @Override
     protected int mode() {
         return MODE_EXACTLY_ONE;
     }
@@ -65,6 +66,7 @@ public class CustomizeLayoutAction extends CookieAction {
      *
      * @return list of classes the that the cookie tests
      */
+    @Override
     protected Class[] cookieClasses() {
         return new Class[] { RADComponentCookie.class };
     }
@@ -78,6 +80,7 @@ public class CustomizeLayoutAction extends CookieAction {
      * presented as an item in a menu.
      * @return the name of the action
      */
+    @Override
     public String getName() {
         if (name == null)
             name = org.openide.util.NbBundle.getBundle(CustomizeLayoutAction.class)
@@ -88,6 +91,7 @@ public class CustomizeLayoutAction extends CookieAction {
     /** Help context where to find more about the action.
      * @return the help context for this action
      */
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -97,6 +101,7 @@ public class CustomizeLayoutAction extends CookieAction {
      *
      * @param activatedNodes gives array of actually activated nodes.
      */
+    @Override
     protected void performAction(Node[] activatedNodes) {
         RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
         if (radCookie != null) {

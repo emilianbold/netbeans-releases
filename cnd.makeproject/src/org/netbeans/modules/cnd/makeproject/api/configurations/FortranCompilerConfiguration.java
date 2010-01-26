@@ -43,10 +43,10 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.api.utils.CppUtils;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.makeproject.api.compilers.SunFortranCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.openide.nodes.Sheet;
@@ -108,6 +108,7 @@ public class FortranCompilerConfiguration extends BasicCompilerConfiguration imp
         return CppUtils.reformatWhitespaces(options);
     }
 
+    @Override
     public String getAllOptions(BasicCompiler compiler) {
         CCompilerConfiguration master = (CCompilerConfiguration) getMaster();
 

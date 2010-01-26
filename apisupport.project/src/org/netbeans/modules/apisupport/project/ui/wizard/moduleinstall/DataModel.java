@@ -83,7 +83,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         try {
             ProjectXMLManager pxm = new ProjectXMLManager((NbModuleProject) getProject());
             for (ModuleDependency d : pxm.getDirectDependencies()) {
-                if (d.getModuleEntry().getCodeNameBase().equals("org.netbeans.core.netigso")) { // NOI18N
+                if (d.getModuleEntry().getCodeNameBase().equals("org.netbeans.libs.osgi")) { // NOI18N
                     osgi = true;
                 }
             }

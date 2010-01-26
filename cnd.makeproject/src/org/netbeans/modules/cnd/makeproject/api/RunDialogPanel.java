@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -115,8 +115,9 @@ public class RunDialogPanel extends javax.swing.JPanel {
 //            executableTextField.setEditable(false);
 //            executableBrowseButton.setEnabled(false);
         }
-        if (exePath != null)
+        if (exePath != null) {
             executableTextField.setText(exePath);
+        }
         guidanceTextarea.setText(getString("DIALOG_GUIDANCETEXT"));
         String[] savedExePaths = getExecutablePicklist().getElementsDisplayName();
         String feed = null;
@@ -321,10 +322,12 @@ public class RunDialogPanel extends javax.swing.JPanel {
 
     private void runDirectoryBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runDirectoryBrowseButtonActionPerformed
         String seed;
-        if (runDirectoryTextField.getText().length() > 0)
+        if (runDirectoryTextField.getText().length() > 0) {
             seed = runDirectoryTextField.getText();
-        else
+        }
+        else {
             seed = getExecutablePath();
+        }
         // Show the file chooser
         FileChooser fileChooser = new FileChooser(
                 getString("SelectWorkingDir"),
@@ -335,8 +338,9 @@ public class RunDialogPanel extends javax.swing.JPanel {
                 true
                 );
         int ret = fileChooser.showOpenDialog(this);
-        if (ret == FileChooser.CANCEL_OPTION)
+        if (ret == FileChooser.CANCEL_OPTION) {
             return;
+        }
         runDirectoryTextField.setText(fileChooser.getSelectedFile().getPath());
     }//GEN-LAST:event_runDirectoryBrowseButtonActionPerformed
     
@@ -356,8 +360,9 @@ public class RunDialogPanel extends javax.swing.JPanel {
         else {
             Project project = projectChoices[projectComboBox.getSelectedIndex()-1];
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            if (pdp == null)
+            if (pdp == null) {
                 return;
+            }
             MakeConfigurationDescriptor projectDescriptor = pdp.getConfigurationDescriptor();
             MakeConfiguration conf = projectDescriptor.getActiveConfiguration();
             RunProfile runProfile = conf.getProfile();
@@ -369,10 +374,12 @@ public class RunDialogPanel extends javax.swing.JPanel {
     
     private void executableBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executableBrowseButtonActionPerformed
         String seed = getExecutablePath();
-        if (seed.length() == 0 && FileChooser.getCurrectChooserFile() != null)
+        if (seed.length() == 0 && FileChooser.getCurrectChooserFile() != null) {
             seed = FileChooser.getCurrectChooserFile().getPath();
-        if (seed.length() == 0)
-            seed = System.getProperty("user.home"); // NOI18N
+        }
+        if (seed.length() == 0) {
+            seed = System.getProperty("user.home");
+        } // NOI18N
         
         FileFilter[] filter;
         if (Utilities.isWindows()){
@@ -392,8 +399,9 @@ public class RunDialogPanel extends javax.swing.JPanel {
                 false
                 );
         int ret = fileChooser.showOpenDialog(this);
-        if (ret == FileChooser.CANCEL_OPTION)
+        if (ret == FileChooser.CANCEL_OPTION) {
             return;
+        }
         executableTextField.setText(fileChooser.getSelectedFile().getPath());
     }//GEN-LAST:event_executableBrowseButtonActionPerformed
     
@@ -507,8 +515,9 @@ public class RunDialogPanel extends javax.swing.JPanel {
             clearError();
             if (documentEvent.getDocument() == executableTextField.getDocument()) {
                 projectComboBox.setSelectedIndex(0);
-                if (!validateExecutable())
+                if (!validateExecutable()) {
                     return;
+                }
                 runDirectoryTextField.setText(new File(executableTextField.getText()).getParentFile().getPath());
             }
             validateRunDirectory();
@@ -519,14 +528,17 @@ public class RunDialogPanel extends javax.swing.JPanel {
     
     // ModifiedDocumentListener
     public class ModifiedValidateDocumentListener implements DocumentListener {
+        @Override
         public void changedUpdate(javax.swing.event.DocumentEvent documentEvent) {
             validateFields(documentEvent);
         }
         
+        @Override
         public void insertUpdate(javax.swing.event.DocumentEvent documentEvent) {
             validateFields(documentEvent);
         }
         
+        @Override
         public void removeUpdate(javax.swing.event.DocumentEvent documentEvent) {
             validateFields(documentEvent);
         }
@@ -596,8 +608,9 @@ public class RunDialogPanel extends javax.swing.JPanel {
         if (picklist == null) {
             picklistHomeDir = System.getProperty("netbeans.user") + File.separator + "var" + File.separator + "picklists"; // NOI18N
             picklist = (DefaultPicklistModel)DefaultPicklistModel.restorePicklist(picklistHomeDir, picklistName);
-            if (picklist == null)
+            if (picklist == null) {
                 picklist = new DefaultPicklistModel(16);
+            }
         }
         return picklist;
     }

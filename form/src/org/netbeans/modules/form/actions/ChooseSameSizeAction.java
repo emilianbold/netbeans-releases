@@ -69,19 +69,23 @@ import org.netbeans.modules.form.layoutdesign.*;
 
 public class ChooseSameSizeAction extends NodeAction {
 
+    @Override
     protected boolean enable(Node[] nodes) {
         List comps = FormUtils.getSelectedLayoutComponents(nodes);
         return ((comps != null) && (comps.size() > 1));
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(ChooseSameSizeAction.class, "ACT_ChooseSameSize"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) { }
 
     @Override
@@ -102,13 +106,16 @@ public class ChooseSameSizeAction extends NodeAction {
         HelpCtx.setHelpIDString(popupMenu, ChooseSameSizeAction.class.getName());
         
         popupMenu.addMenuListener(new MenuListener() {
+            @Override
             public void menuSelected(MenuEvent e) {
                 JMenu menu = (JMenu) e.getSource();
                 createSameSizeSubmenu(menu);
             }
             
+            @Override
             public void menuDeselected(MenuEvent e) {}
             
+            @Override
             public void menuCanceled(MenuEvent e) {}
         });
         return popupMenu;
@@ -204,6 +211,7 @@ public class ChooseSameSizeAction extends NodeAction {
     }
 
     private static class SameSizeMenuItemListener implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent evt) {
             Object source = evt.getSource();
             if (!(source instanceof SameSizeMenuItem)) {

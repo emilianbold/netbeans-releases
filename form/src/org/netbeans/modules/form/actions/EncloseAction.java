@@ -66,19 +66,23 @@ import org.openide.util.actions.NodeAction;
  */
 public class EncloseAction extends NodeAction {
 
+    @Override
     public String getName() {
         return NbBundle.getBundle(EncloseAction.class).getString("ACT_EncloseInContainer"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean enable(Node[] nodes) {
         List comps = getComponents(nodes);
         return ((comps != null) && getContainer(comps) != null);
     }
 
+    @Override
     protected void performAction(Node[] nodes) {
     }
 
@@ -159,9 +163,11 @@ public class EncloseAction extends NodeAction {
                 popup.add(waitItem);
                 // Find the containers outside EQ, see issue 123794
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         final PaletteItem[] items = getAllContainers();
                         EventQueue.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 popup.removeAll();
                                 for (PaletteItem item : items) {
@@ -201,6 +207,7 @@ public class EncloseAction extends NodeAction {
                 this.paletteItem = paletteItem;
             }
 
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 RADVisualContainer metacont = getContainer(components);
                 if (metacont != null) {

@@ -103,4 +103,9 @@ public class JiraConnector extends BugtrackingConnector {
         return Lookups.singleton(Jira.getInstance().getKenaiSupport());
     }
 
+    @Override
+    public void fireRepositoriesChanged() {
+        super.fireRepositoriesChanged();
+    }
+
 }

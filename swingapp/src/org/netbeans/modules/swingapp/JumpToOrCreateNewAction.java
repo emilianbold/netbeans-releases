@@ -61,6 +61,7 @@ import org.openide.util.actions.NodeAction;
  */
 public class JumpToOrCreateNewAction extends NodeAction {
 
+    @Override
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
             RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
@@ -97,6 +98,7 @@ public class JumpToOrCreateNewAction extends NodeAction {
         return false;
     }
 
+    @Override
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
             RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
@@ -131,9 +133,11 @@ public class JumpToOrCreateNewAction extends NodeAction {
     protected boolean asynchronous() {
         return false;
     }
+    @Override
     public String getName() {
         return ""; // NOI18N
     }
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

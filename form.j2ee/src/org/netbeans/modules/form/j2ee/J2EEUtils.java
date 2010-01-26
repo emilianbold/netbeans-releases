@@ -403,6 +403,7 @@ public class J2EEUtils {
         String[] entity = null;
         try {
             entity = mappings.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, String[]>() {
+                @Override
                 public String[] run(EntityMappingsMetadata metadata) {
                     Entity[] entity = metadata.getRoot().getEntity();
                     for (int i=0; i<entity.length; i++) {
@@ -725,6 +726,7 @@ public class J2EEUtils {
             // PENDING merge into one task once it will be possible
             source.runModificationTask(new CancellableTask<WorkingCopy>() {
 
+                @Override
                 public void run(WorkingCopy wc) throws Exception {
                     wc.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cu = wc.getCompilationUnit();
@@ -812,6 +814,7 @@ public class J2EEUtils {
                     wc.rewrite(clazz, modifiedClass);
                 }
 
+                @Override
                 public void cancel() {
                 }
 
@@ -819,6 +822,7 @@ public class J2EEUtils {
             if (alreadyUpdated[0]) return;
             source.runModificationTask(new CancellableTask<WorkingCopy>() {
 
+                @Override
                 public void run(WorkingCopy wc) throws Exception {
                     wc.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cu = wc.getCompilationUnit();
@@ -856,12 +860,14 @@ public class J2EEUtils {
                     wc.rewrite(clazz, modifiedClass);
                 }
 
+                @Override
                 public void cancel() {
                 }
 
             }).commit();
             source.runModificationTask(new CancellableTask<WorkingCopy>() {
 
+                @Override
                 public void run(WorkingCopy wc) throws Exception {
                     wc.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cu = wc.getCompilationUnit();
@@ -899,6 +905,7 @@ public class J2EEUtils {
                     wc.rewrite(clazz, modifiedClass);
                 }
 
+                @Override
                 public void cancel() {
                 }
 
@@ -917,6 +924,7 @@ public class J2EEUtils {
         JavaSource source = JavaSource.forFileObject(entity);
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationUnitTree cu = cc.getCompilationUnit();
@@ -971,6 +979,7 @@ public class J2EEUtils {
                     }
                 }
 
+                @Override
                 public void cancel() {
                 }
             }, true);
@@ -993,6 +1002,7 @@ public class J2EEUtils {
         List<String> properties = Collections.emptyList();
         try {
             properties = mappings.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, List<String>>() {
+                @Override
                 public List<String> run(EntityMappingsMetadata metadata) {
                     Entity[] entities = metadata.getRoot().getEntity();
                     Entity entity = null;

@@ -88,6 +88,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
      * presented as an item in a menu.
      * @return the name of the action
      */
+    @Override
     public String getName() {
         if (name == null)
             name = org.openide.util.NbBundle.getBundle(TestAction.class)
@@ -98,6 +99,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
     /** Help context where to find more about the action.
      * @return the help context for this action
      */
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.testing"); // NOI18N
     }
@@ -108,6 +110,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
         return "org/netbeans/modules/form/resources/test_form.png"; // NOI18N
     }
 
+    @Override
     public void performAction() {
         if (formDesigner != null) {
             selectedLaf = null;
@@ -118,6 +121,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
         }
     }
 
+    @Override
     public void run() {
         RADVisualComponent topComp = formDesigner.getTopDesignComponent();
         if (topComp == null)
@@ -214,6 +218,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
             // Issue 66594 and 12084
             final boolean pack = shouldPack;
             EventQueue.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     if (pack) {
                         try {
@@ -339,6 +344,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
             return popup;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             Object o = e.getSource();
             if (o instanceof JComponent) {

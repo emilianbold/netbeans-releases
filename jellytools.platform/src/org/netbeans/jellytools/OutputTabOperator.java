@@ -49,7 +49,6 @@ import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.text.Document;
-import org.netbeans.core.output2.ui.AbstractOutputTab;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.CopyAction;
 import org.netbeans.jellytools.actions.FindAction;
@@ -255,7 +254,7 @@ public class OutputTabOperator extends JComponentOperator {
         // ((OutputTab)getSource()).getDocument().getLength();
         return runMapping(new MapIntegerAction("getLength") {
             public int map() {
-                Document document = ((AbstractOutputTab)getSource()).getOutputPane().getDocument();
+                Document document = documentForTab(getSource());
                 try {
                     Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
                     Method getLengthMethod = clazz.getDeclaredMethod("getLength", (Class[])null);
@@ -292,7 +291,7 @@ public class OutputTabOperator extends JComponentOperator {
         final int length = getLength();
         return (String)runMapping(new MapAction("getText") {
             public Object map() {
-                Document document = ((AbstractOutputTab)getSource()).getOutputPane().getDocument();
+                Document document = documentForTab(getSource());
                 try {
                     Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
                     Method getTextMethod = clazz.getDeclaredMethod("getText", new Class[] {int.class, int.class});
@@ -341,7 +340,7 @@ public class OutputTabOperator extends JComponentOperator {
     public int getLineCount() {
         return ((Integer)runMapping(new MapAction("getLineCount") {
             public Object map() {
-                Document document = ((AbstractOutputTab)getSource()).getOutputPane().getDocument();
+                Document document = documentForTab(getSource());
                 try {
                     Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
                     Method getElementCountMethod = clazz.getDeclaredMethod("getElementCount", (Class[])null);
@@ -361,7 +360,7 @@ public class OutputTabOperator extends JComponentOperator {
         // first make component visible because tab must be visible to dispatch events
         makeComponentVisible();
         if(outputPaneOperator == null) {
-            outputPaneOperator = ComponentOperator.createOperator(((AbstractOutputTab)getSource()).getOutputPane());
+            outputPaneOperator = ComponentOperator.createOperator(outputPaneForTab(getSource()));
             outputPaneOperator.copyEnvironment(this);
         }
         return outputPaneOperator;
@@ -374,7 +373,7 @@ public class OutputTabOperator extends JComponentOperator {
     public String getLine(final int line) {
         return (String)runMapping(new MapAction("getText") {
             public Object map() {
-                Document document = ((AbstractOutputTab)getSource()).getOutputPane().getDocument();
+                Document document = documentForTab(getSource());
                 try {
                     Class clazz = Class.forName("org.netbeans.core.output2.OutputDocument");
                     Method getLineStartMethod = clazz.getDeclaredMethod("getLineStart", new Class[] {int.class});
@@ -394,6 +393,23 @@ public class OutputTabOperator extends JComponentOperator {
                     throw new JemmyException("Getting text by reflection failed.", e);
                 }
             }});
+    }
+    
+    private static Component outputPaneForTab(Component tab) {
+        try {
+            return (Component) tab.getClass().getMethod("getOutputPane").invoke(tab);
+        } catch (Exception x) {
+            throw new JemmyException("Reflection failed: " + x, x);
+        }
+    }
+
+    private static Document documentForTab(Component tab) {
+        Component pane = outputPaneForTab(tab);
+        try {
+            return (Document) pane.getClass().getMethod("getDocument").invoke(pane);
+        } catch (Exception x) {
+            throw new JemmyException("Reflection failed: " + x, x);
+        }
     }
     
     /** SubChooser to determine OutputTab component

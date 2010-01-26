@@ -51,6 +51,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.gsf.HtmlKeystrokeHandler;
@@ -60,6 +61,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 
+@LanguageRegistration(mimeType="text/xhtml", useCustomEditorKit=true)
 public class XhtmlElLanguage extends DefaultLanguageConfig {
 
     public XhtmlElLanguage() {
@@ -87,7 +89,7 @@ public class XhtmlElLanguage extends DefaultLanguageConfig {
 
     @Override
     public boolean hasStructureScanner() {
-        return super.hasStructureScanner();
+        return true;
     }
 
     @Override

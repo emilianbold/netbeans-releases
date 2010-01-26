@@ -45,8 +45,8 @@ import java.lang.reflect.Field;
 import java.util.logging.Level;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.openide.util.NamedServicesProvider;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.implspi.NamedServicesProvider;
 
 /** 
  * @author Jaroslav Tulach
@@ -98,8 +98,6 @@ public class PathInLookupTest extends NbTestCase {
             new AbstractLookup(ic1), new AbstractLookup(ic2)
         };
 
-
-        @Override
         public Lookup create(String path) {
             int indx = -1;
             if (path.equals("MyServices/")) {

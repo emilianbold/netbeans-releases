@@ -59,6 +59,7 @@ public class ColorEditor extends ResourceWrapperEditor implements NamedPropertyE
         super(PropertyEditorManager.findEditor(Color.class));
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(ColorEditor.class, "ColorEditor_DisplayName"); // NOI18N
     }

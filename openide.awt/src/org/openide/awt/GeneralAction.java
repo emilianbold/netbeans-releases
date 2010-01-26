@@ -50,14 +50,13 @@ import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import org.netbeans.modules.openide.util.ActionsBridge;
-import org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable;
 import org.openide.awt.ContextAction.Performer;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.ActionInvoker;
 
 /**
  *
@@ -214,8 +213,7 @@ final class GeneralAction {
             assert EventQueue.isDispatchThread();
             final javax.swing.Action a = findAction();
             if (a != null) {
-                ActionRunnable ar = ActionRunnable.create(e, a, async);
-                ActionsBridge.doPerformAction(a, ar);
+                ActionInvoker.invokeAction(a, e, async, null);
             }
         }
 

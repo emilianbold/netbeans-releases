@@ -417,6 +417,25 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-debugger-ui-actions-BreakpointCustomizeAction.instance">
                     <attr name="position" intvalue="200"/>
                 </file>
+                <file name="ToggleSeparator.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="250"/>
+                </file>
+                <file name="org-netbeans-modules-debugger-ui-actions-BreakpointToggleActionOnBreakpoint.instance">
+                    <attr name="position" intvalue="300"/>
+                </file>
+            </folder>
+            <folder name="BreakpointActionsWithToggleNew">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>
+                <file name="org-netbeans-modules-debugger-ui-actions-BreakpointEnableAction.instance">
+                    <attr name="position" intvalue="100"/>
+                </file>
+                <file name="org-netbeans-modules-debugger-ui-actions-BreakpointCustomizeAction.instance">
+                    <attr name="position" intvalue="200"/>
+                </file>
+                <file name="org-netbeans-modules-debugger-ui-actions-BreakpointToggleActionToggleNew.instance">
+                    <attr name="position" intvalue="300"/>
+                </file>
             </folder>
             <folder name="OtherThreadActions">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle"/>

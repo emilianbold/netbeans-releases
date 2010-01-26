@@ -167,6 +167,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         return true;
     }
 
+    @Override
     public int beforeBreak(Document document, int offset, JTextComponent target)
         throws BadLocationException {
         isAfter = false;
@@ -481,6 +482,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 //XXX: workaround for issue #133210:
                 if (!IndexingManager.getDefault().isIndexing()) {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
                         }
@@ -783,6 +785,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         return false;
     }
 
+    @Override
     public boolean beforeCharInserted(Document document, int caretOffset, JTextComponent target, char ch)
         throws BadLocationException {
         isAfter = false;
@@ -1012,6 +1015,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
      * @return Whether the insert was handled
      * @throws BadLocationException if dotPos is not correct
      */
+    @Override
     public boolean afterCharInserted(Document document, int dotPos, JTextComponent target, char ch)
         throws BadLocationException {
         isAfter = true;
@@ -1257,6 +1261,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
     }
 
     /** Replaced by PHPBracesMatcher */
+    @Override
     public OffsetRange findMatching(Document document, int offset /*, boolean simpleSearch*/) {
         return OffsetRange.NONE;
     }
@@ -1271,6 +1276,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
     * @param ch the character that was deleted
     */
     @SuppressWarnings("fallthrough")
+    @Override
     public boolean charBackspaced(Document document, int dotPos, JTextComponent target, char ch)
             throws BadLocationException {
         BaseDocument doc = (BaseDocument) document;
@@ -1803,6 +1809,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         }
     }
 
+    @Override
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
 //        Node root = AstUtilities.getRoot(info);
 //
@@ -1950,6 +1957,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
     }
 
     // UGH - this method has gotten really ugly after successive refinements based on unit tests - consider cleaning up
+    @Override
     public int getNextWordOffset(Document document, int offset, boolean reverse) {
         BaseDocument doc = (BaseDocument)document;
         TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);

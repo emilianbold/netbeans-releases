@@ -73,7 +73,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -903,27 +903,29 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 File folderFile = new File(absPath);
                 if (folderFile.isDirectory() && folderFile.exists()) {
                     File[] children = folderFile.listFiles();
-                    for (File child : children) {
-                        if (!child.isFile()) {
-                            // it's a folder
-                            continue;
-                        }
-                        if (getFolder().findItemByName(child.getName()) != null) {
-                            // Already there
-                            continue;
-                        }
-                        if (!VisibilityQuery.getDefault().isVisible(child)) {
-                            // not visible
-                            continue;
-                        }
+                    if (children != null) {
+                        for (File child : children) {
+                            if (!child.isFile()) {
+                                // it's a folder
+                                continue;
+                            }
+                            if (getFolder().findItemByName(child.getName()) != null) {
+                                // Already there
+                                continue;
+                            }
+                            if (!VisibilityQuery.getDefault().isVisible(child)) {
+                                // not visible
+                                continue;
+                            }
 
-                        if (!MakeOptions.getInstance().getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child)) {
-                            continue;
-                        }
+                            if (!MakeOptions.getInstance().getViewBinaryFiles() && CndFileVisibilityQuery.getDefault().isIgnored(child)) {
+                                continue;
+                            }
 
-                        // Add file to the view
-                        Item item = new Item(child.getAbsolutePath());
-                        Folder.insertItemElementInList(collection2, item);
+                            // Add file to the view
+                            Item item = new Item(child.getAbsolutePath());
+                            Folder.insertItemElementInList(collection2, item);
+                        }
                     }
                 }
                 collection = collection2;

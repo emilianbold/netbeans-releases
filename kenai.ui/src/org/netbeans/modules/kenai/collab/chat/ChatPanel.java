@@ -388,9 +388,9 @@ public class ChatPanel extends javax.swing.JPanel {
     public ChatPanel(MultiUserChat muc) {
         super();
         this.muc=muc;
-        setName(muc.getRoom());
         KenaiProject kenaiProject = getKenaiProject();
         kenai = kenaiProject.getKenai();
+        setName(kenaiProject.getName() + "@" + kenai.getUrl().getHost().toString()); //NOI18N
         kc = KenaiConnection.getDefault(kenai);
         init();
         if (!kenai.getXMPPConnection().isConnected()) {

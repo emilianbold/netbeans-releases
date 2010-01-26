@@ -244,6 +244,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
 
         switchBox.addItemListener(new ItemListener() {
             private Component absoluteInLayout = absoluteComp;
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 if (switchBox.isSelected()) {
                     layout.replace(absoluteInLayout, relativeComp);
@@ -352,6 +353,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
     /** Name of the property this value belongs to. */
     public static final String ATTR_PROP_NAME = "property"; // NOI18N
 
+    @Override
     public void readFromXML(Node element) throws IOException {
         if (!XML_FONT_ROOT.equals(element.getNodeName())) {
             // Backward compatibility with the default FontEditor from core
@@ -391,6 +393,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
         }
     }
 
+    @Override
     public Node storeToXML(Document doc) {
         Object value = getUnwrappedValue();
         org.w3c.dom.Element el = doc.createElement(XML_FONT_ROOT);
@@ -441,6 +444,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
          */
         FormProperty property;
 
+        @Override
         public Object getDesignValue() {
             Font value = defaultValue(property);
             if (value != null) {
@@ -733,6 +737,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
 
         private class Listener implements ItemListener, ChangeListener {
             // called when some of the checkboxes/radiobuttons is selected/unselected
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 if (ignoreUpdates) return;
                 ignoreUpdates = true;
@@ -764,6 +769,7 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
             }
 
             // called when the size of the font is changed in one of the spinners
+            @Override
             public void stateChanged(ChangeEvent e) {
                 if (ignoreUpdates) return;
                 ignoreUpdates = true;

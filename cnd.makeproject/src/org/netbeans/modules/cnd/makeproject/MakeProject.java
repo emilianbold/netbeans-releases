@@ -56,6 +56,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -68,8 +69,8 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.ToolchainProject;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -161,6 +162,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private Set<String> cppExtensions = MakeProject.createExtensionSet();
     private String sourceEncoding = null;
     private boolean isOpenHookDone = false;
+    private AtomicBoolean isDeleted = new AtomicBoolean(false);
 
     private final MakeSources sources;
     private final MutableCP sourcepath;
@@ -218,6 +220,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
     }
 
+    @Override
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
@@ -244,6 +247,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         return helper;
     }
 
+    @Override
     public Lookup getLookup() {
         return lookup;
     }
@@ -278,6 +282,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                 });
     }
 
+    @Override
     public void configurationXmlChanged(AntProjectEvent ev) {
         if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
             // Could be various kinds of changes, but name & displayName might have changed.
@@ -287,6 +292,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
     }
 
+    @Override
     public void propertiesChanged(AntProjectEvent ev) {
         // currently ignored (probably better to listen to evaluator() if you need to)
     }
@@ -529,10 +535,12 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             this.configurationProvider = configurationProvider;
         }
 
+        @Override
         public String[] getRecommendedTypes() {
             return RECOMMENDED_TYPES;
         }
 
+        @Override
         public String[] getPrivilegedTemplates() {
             MakeConfigurationDescriptor configurationDescriptor =
                     configurationProvider.getConfigurationDescriptor(false);
@@ -550,6 +558,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     public String getName() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
 
+            @Override
             public String run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -568,6 +577,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     public void setName(final String name) {
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
 
+            @Override
             public Void run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -661,10 +671,12 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private class MakeSubprojectProvider implements SubprojectProvider {
 
         // Add a listener to changes in the set of subprojects.
+        @Override
         public void addChangeListener(ChangeListener listener) {
         }
 
         // Get a set of projects which this project can be considered to depend upon somehow.
+        @Override
         public Set<Project> getSubprojects() {
             Set<Project> subProjects = new HashSet<Project>();
             Set<String> subProjectLocations = new HashSet<String>();
@@ -712,6 +724,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
 
         //Remove a listener to changes in the set of subprojects.
+        @Override
         public void removeChangeListener(ChangeListener listener) {
         }
     }
@@ -733,11 +746,13 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             pcs.firePropertyChange(prop, null, null);
         }
 
+        @Override
         public String getName() {
             String name = PropertyUtils.getUsablePropertyName(MakeProject.this.getName());
             return name;
         }
 
+        @Override
         public String getDisplayName() {
             String name = MakeProject.this.getName();
 
@@ -788,6 +803,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             return name;
         }
 
+        @Override
         public Icon getIcon() {
             Icon icon = null;
             icon = MakeConfigurationDescriptor.MAKEFILE_ICON;
@@ -824,14 +840,17 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             return icon;
         }
 
+        @Override
         public Project getProject() {
             return MakeProject.this;
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             pcs.addPropertyChangeListener(listener);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
@@ -839,6 +858,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     private static final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
 
+        @Override
         protected void projectXmlSaved() throws IOException {
             /*
             genFilesHelper.refreshBuildScript(
@@ -861,6 +881,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         openedTasks.add(task);
     }
 
+    @Override
     public void run() {
         // This is ugly solution introduced for waiting finished opened tasks in discovery module.
         // see method org.netbeans.modules.cnd.discovery.projectimport.ImportProject.doWork().
@@ -884,12 +905,19 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
     }
 
+    void setDeleted(){
+        isDeleted.set(true);
+    }
+
     private synchronized void onProjectClosed(){
-        if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
-            projectDescriptorProvider.getConfigurationDescriptor().saveAndClose();
+        if (!isDeleted.get()) {
+            if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
+                projectDescriptorProvider.getConfigurationDescriptor().saveAndClose();
+            }
         }
         if (isOpenHookDone) {
             GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+            isOpenHookDone = false;
         }
     }
 
@@ -898,10 +926,12 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         ProjectOpenedHookImpl() {
         }
 
+        @Override
         protected void projectOpened() {
             onProjectOpened();
         }
 
+        @Override
         protected void projectClosed() {
             onProjectClosed();
         }
@@ -909,6 +939,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     private final class MakeArtifactProviderImpl implements MakeArtifactProvider {
 
+        @Override
         public MakeArtifact[] getBuildArtifacts() {
             List<MakeArtifact> artifacts = new ArrayList<MakeArtifact>();
 
@@ -941,10 +972,12 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             this.projectDescriptorProvider = projectDescriptorProvider;
         }
 
+        @Override
         public boolean canSearch() {
             return true;
         }
 
+        @Override
         public Iterator<DataObject> objectsToSearch() {
             MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
             Folder rootFolder = projectDescriptor.getLogicalFolders();
@@ -968,6 +1001,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     class RemoteProjectImpl implements RemoteProject {
+        @Override
         public ExecutionEnvironment getDevelopmentHost() {
             DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
             return (devHost == null) ? null : devHost.getExecutionEnvironment();
@@ -976,6 +1010,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     class ToolchainProjectImpl implements ToolchainProject {
 
+        @Override
         public CompilerSet getCompilerSet() {
             MakeConfiguration conf = getActiveConfiguration();
             if (conf != null) {
@@ -998,6 +1033,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             this.sources.addChangeListener(WeakListeners.change(this, this.sources));
         }
 
+        @Override
         public List<? extends PathResourceImplementation> getResources() {
             final long currentEventId;
             synchronized (this) {
@@ -1025,14 +1061,17 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             return list;
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             pcs.addPropertyChangeListener(listener);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             synchronized (this) {
                 resources = null;
@@ -1058,28 +1097,34 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             this.delegate.addPropertyChangeListener(this);
         }
 
+        @Override
         public boolean includes(URL root, String resource) {
             return !CndFileVisibilityQuery.getDefault().isIgnored(resource);
         }
 
+        @Override
         public URL[] getRoots() {
             return delegate.getRoots();
         }
 
+        @Override
         public ClassPathImplementation getContent() {
             return delegate.getContent();
         }
 
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             pcs.addPropertyChangeListener(listener);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             pcs.firePropertyChange(new PropertyChangeEvent(this, evt.getPropertyName(), evt.getOldValue(), evt.getNewValue()));
         }
@@ -1092,6 +1137,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             this.sources = sources;
         }
 
+        @Override
         public ClassPath findClassPath(FileObject file, String type) {
             if (MakeProjectPaths.SOURCES.equals(type)) {
                 for (SourceGroup sg : sources.getSourceGroups("generic")) { // NOI18N

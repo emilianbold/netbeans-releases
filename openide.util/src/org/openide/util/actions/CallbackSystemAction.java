@@ -225,9 +225,8 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
         final Object ap = getActionPerformer();
 
         if (ap != null) {
-            org.netbeans.modules.openide.util.ActionsBridge.doPerformAction(
-                this,
-                new org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable(ev, this, asynchronous ()) {
+            org.openide.util.actions.ActionInvoker.invokeAction(
+                this, ev, asynchronous(), new Runnable() {
                     public void run() {
                         if (ap == getActionPerformer()) {
                             getActionPerformer().performAction(CallbackSystemAction.this);
@@ -600,14 +599,12 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
             final Action a = findAction();
 
             if (a != null) {
-                org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable run;
-                run = new org.netbeans.modules.openide.util.ActionsBridge.ActionRunnable(e, delegate, delegate.asynchronous()) {
-                            public void run() {
-                                a.actionPerformed(e);
-                            }
-                        };
-
-                org.netbeans.modules.openide.util.ActionsBridge.doPerformAction(delegate, run);
+                Runnable run = new Runnable() {
+                    public void run() {
+                        a.actionPerformed(e);
+                    }
+                };
+                org.openide.util.actions.ActionInvoker.invokeAction(delegate, e, delegate.asynchronous(), run);
             } else {
                 // XXX #30303 if the action falls back to the old behaviour
                 // it may not be performed in case it is in dialog and
@@ -707,7 +704,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
 
                 return delegate.getMenuPresenter();
             } else {
-                return org.netbeans.modules.openide.util.AWTBridge.getDefault().createMenuPresenter(this);
+                return org.openide.util.actions.ActionPresenterProvider.getDefault().createMenuPresenter(this);
             }
         }
 
@@ -716,7 +713,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
 
                 return delegate.getPopupPresenter();
             } else {
-                return org.netbeans.modules.openide.util.AWTBridge.getDefault().createPopupPresenter(this);
+                return org.openide.util.actions.ActionPresenterProvider.getDefault().createPopupPresenter(this);
             }
         }
 
@@ -725,7 +722,7 @@ public abstract class CallbackSystemAction extends CallableSystemAction implemen
 
                 return delegate.getToolbarPresenter();
             } else {
-                return org.netbeans.modules.openide.util.AWTBridge.getDefault().createToolbarPresenter(this);
+                return org.openide.util.actions.ActionPresenterProvider.getDefault().createToolbarPresenter(this);
             }
         }
 

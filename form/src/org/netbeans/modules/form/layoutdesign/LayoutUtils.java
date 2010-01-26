@@ -551,10 +551,12 @@ public class LayoutUtils implements LayoutConstants {
             while (true);
         }
 
+        @Override
         public boolean hasNext() {
             return next != null;
         }
 
+        @Override
         public Object next() {
             if (next == null)
                 throw new NoSuchElementException();
@@ -564,6 +566,7 @@ public class LayoutUtils implements LayoutConstants {
             return ret;
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }

@@ -1237,7 +1237,7 @@ public class TraceModel extends TraceModelBase {
             CharSequence absPath = fileImpl.getAbsolutePath();
             fileImpl = null;
             ParserThreadManager.instance().waitEmptyProjectQueue((ProjectBase) prj);
-            sleep(100);
+            waitProjectParsed(getProject(), false);
             RepositoryAccessor.getRepository().debugClear();
             fileImpl = (FileImpl) prj.findFile(absPath);
         }

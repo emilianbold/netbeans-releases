@@ -57,7 +57,7 @@ import java.util.List;
 public interface DataStorage {
 
     /**
-     *  Attaches ServiceInfoDataStorage
+     * Attaches ServiceInfoDataStorage
      * @param serviceInfoStorage ServiceInfoDataStorage to be attached
      */
     void attachTo(ServiceInfoDataStorage serviceInfoStorage);
@@ -74,8 +74,7 @@ public interface DataStorage {
     boolean hasData(DataTableMetadata data);
 
     /**
-     * Adds rows <code>data</code> to the table with name <code>tableName</code> of this
-     * soprage.
+     * Adds rows <code>data</code> to the table with name <code>tableName</code> of this  storage.
      * @param tableName table name to add data into
      * @param data data to add
      */
@@ -98,7 +97,7 @@ public interface DataStorage {
 
     /**
      * Creates tables: invoked to create {@link org.netbeans.modules.dlight.api.storage.DataTableMetadata} needed
-     * @param tableMetadatas tables decsription to create in the storage
+     * @param tableMetadatas tables description to create in the storage
      */
     void createTables(List<DataTableMetadata> tableMetadatas);
 
@@ -107,5 +106,11 @@ public interface DataStorage {
      * @return <code>true</code> if succeeded, <code>false</code> otherwise
      */
     boolean shutdown();
+
+    /**
+     * Returns the storage services provided by the DataStorage
+     * @return
+     */
+  //  Collection<DataStorageService> getDataStorageServices();
 
 }

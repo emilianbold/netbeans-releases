@@ -50,8 +50,8 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.builds.ImportUtils;
@@ -83,6 +83,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         return object instanceof QtProjectDataObject;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         for (int i = 0; i < activatedNodes.length; i++){
             performAction(activatedNodes[i]);
@@ -97,9 +98,11 @@ public class QMakeAction extends AbstractExecutorRunAction {
         if (SwingUtilities.isEventDispatchThread()){
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
                 private ExecutionService es;
+                @Override
                 public void doWork() {
                     es = QMakeAction.prepare(node, listener, outputListener, project, inputOutput);
                 }
+                @Override
                 public void doPostRunInEDT() {
                     if (es != null) {
                         es.run();

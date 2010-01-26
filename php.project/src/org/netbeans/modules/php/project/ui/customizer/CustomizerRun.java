@@ -40,8 +40,6 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.CardLayout;
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.Collator;
@@ -49,16 +47,16 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListCellRenderer;
 import javax.swing.plaf.UIResource;
-import org.jdesktop.layout.GroupLayout;
-import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -206,37 +204,37 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         runPanel.setLayout(new CardLayout());
 
-        GroupLayout layout = new GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
 
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                    .add(GroupLayout.LEADING, runPanel, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                    .add(GroupLayout.LEADING, separator, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-                    .add(layout.createSequentialGroup()
-                        .add(configLabel)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(configCombo, 0, 142, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(configNew)
-                        .addPreferredGap(LayoutStyle.RELATED)
-                        .add(configDel)))
-                .add(0, 0, 0))
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                    .addComponent(runPanel, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                    .addComponent(separator, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(configLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(configCombo, 0, 142, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(configNew)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(configDel)))
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(configLabel)
-                    .add(configCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .add(configNew)
-                    .add(configDel))
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(separator, GroupLayout.PREFERRED_SIZE, 2, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.UNRELATED)
-                .add(runPanel, GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(configLabel)
+                    .addComponent(configCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(configNew)
+                    .addComponent(configDel))
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(runPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
                 .addContainerGap())
         );
 

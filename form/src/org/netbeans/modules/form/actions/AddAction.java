@@ -66,6 +66,7 @@ public class AddAction extends CallableSystemAction {
 
     private static String name;
 
+    @Override
     public String getName() {
         if (name == null)
             name = org.openide.util.NbBundle.getBundle(AddAction.class)
@@ -73,6 +74,7 @@ public class AddAction extends CallableSystemAction {
         return name;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(AddAction.class);
     }
@@ -102,6 +104,7 @@ public class AddAction extends CallableSystemAction {
     public JMenuItem getPopupPresenter() {
         JMenuItem menu = new PaletteMenuView(
             new NodeAcceptor() {
+            @Override
                 public boolean acceptNodes(Node[] nodes) {
                     if (nodes.length != 1)
                         return false;
@@ -170,6 +173,7 @@ public class AddAction extends CallableSystemAction {
         return false;
     }
 
+    @Override
     public void performAction() {
     }
 

@@ -58,7 +58,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.cnd.api.utils.IpeFileSystemView;
+import org.netbeans.modules.cnd.makefile.utils.IpeFileSystemView;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 
 /**
@@ -192,12 +192,12 @@ public abstract class FileChooserPanel extends MakefileWizardPanel
 		// See if the user has already typed a directory. If so use it.
 		String cur = IpeUtils.expandPath(text.getText());
 		if (cur.length() > 0 && (file = new File(cur)).isDirectory()) {
-		    if (cur.charAt(0) == '.')
-			cwd = new File(getMakefileData().getBaseDirectory() + File.separator + cur);
-		    else
-			cwd = file;
-		}
-		else {
+		    if (cur.charAt(0) == '.') {
+                        cwd = new File(getMakefileData().getBaseDirectory() + File.separator + cur);
+                    } else {
+                        cwd = file;
+                    }
+		} else {
 		    cwd = new File(getMakefileData().getBaseDirectory());
 		}
 		fc.setCurrentDirectory(cwd);
@@ -299,12 +299,14 @@ public abstract class FileChooserPanel extends MakefileWizardPanel
 	((JTextComponent) evt.getComponent()).setSelectionEnd(0);
     }
 
+    @Override
     public void addNotify() {
 	super.addNotify();
 	IpeUtils.requestFocus(text);
     }
 
 
+    @Override
     public void removeNotify() {
 	super.removeNotify();
 

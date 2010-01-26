@@ -55,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.UIManager;
+import org.netbeans.modules.cnd.utils.ui.StringArrayCustomEditor;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -332,8 +333,8 @@ import org.openide.util.NbBundle;
         public final JLabel label = new JLabel();
         public final JEditorPane textfield = new JEditorPane();
         public final JButton button = new JButton();
-        public List<String> list;
-        public String defaultValue;
+        private List<String> list;
+        private String defaultValue;
         
     }
 }

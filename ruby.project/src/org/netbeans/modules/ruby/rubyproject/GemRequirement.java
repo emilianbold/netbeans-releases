@@ -95,13 +95,13 @@ public final class GemRequirement implements Comparable<GemRequirement>{
      */
     private final String operator;
 
-    static GemRequirement fromString(String gemRequirement) {
+    public static GemRequirement fromString(String gemRequirement) {
         String[] parts = gemRequirement.split(" ");
         if (parts.length == 1) {
             // contains just the name
             return new GemRequirement(gemRequirement, "", "", Status.UNKNOWN);
         }
-        assert parts.length == 3;
+        assert parts.length == 3 : "Invalid requirement " + gemRequirement;
         return new GemRequirement(parts[0], parts[2], parts[1], Status.UNKNOWN);
     }
 
@@ -116,6 +116,10 @@ public final class GemRequirement implements Comparable<GemRequirement>{
 
     public static GemRequirement forGem(Gem gem) {
         return new GemRequirement(gem.getName(), null, null, Status.INSTALLED);
+    }
+
+    public static String[] getOperators() {
+        return new String[]{">=", ">", "=", "<=", "<", "!=", "~>"};
     }
 
     Status getStatus() {

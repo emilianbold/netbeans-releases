@@ -131,7 +131,7 @@ public class ParseProjectXmlTest extends NbTestCase {
         assertEquals("One file generated", 1, arr.length);
         assertEquals(dashCnb + ".xml", arr[0]);
 
-        fakeproj.setProperty("cluster.path.final", filePath(nball, "nbbuild/netbeans/platform11")
+        fakeproj.setProperty("cluster.path.final", filePath(nball, "nbbuild/netbeans/platform")
                 + File.pathSeparator + getWorkDir());
         final String prj = filePath(nball, "apisupport.project/test/unit/data/example-external-projects/suite1/action-project");
         fakeproj.setProperty("basedir",prj);

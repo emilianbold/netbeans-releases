@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Vector;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

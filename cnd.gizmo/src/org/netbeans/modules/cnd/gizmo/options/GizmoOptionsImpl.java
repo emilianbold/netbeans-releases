@@ -45,8 +45,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
@@ -86,6 +86,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         dlightConfigurationName = new GizmoStringConfiguration(this);
     }
 
+    @Override
     public DLightConfiguration getDLightConfiguration() {
         List<DLightConfiguration> list = getValidConfigurations();
         if (list == null) {
@@ -174,7 +175,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
             }
         }
 
-        if (confs.size() == 0) {
+        if (confs.isEmpty()) {
             DLightConfiguration config = DLightConfigurationManager.getInstance().getConfigurationByName(GIZMO_SIMPLE_CONFIGURATION); // NOI18N
             confs.add(config);
         }
@@ -182,6 +183,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         return confs;
     }
 
+    @Override
     public void init(Configuration conf) {
         if (isInitialized()) {
             return;
@@ -232,6 +234,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         setInitialized(true);
     }
 
+    @Override
     public Collection<String> getNames() {
         List<DLightTool> tools = new ArrayList<DLightTool>(getDLightConfiguration().getToolsSet());
         Collection<String> result = new ArrayList<String>();
@@ -243,6 +246,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         return result;
     }
 
+    @Override
     public void initialize() {
         clearChanged();
     }
@@ -257,6 +261,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         return getProfileOnRun().getModified();
     }
 
+    @Override
     public String getId() {
         return PROFILE_ID;
     }
@@ -279,6 +284,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         return profileOnRun;
     }
 
+    @Override
     public boolean getProfileOnRunValue() {
         return getProfileOnRun().getValue();
     }
@@ -287,34 +293,41 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         this.profileOnRun = profileOnRun;
     }
 
+    @Override
     public void setProfileOnRunValue(boolean profileOnRunValue) {
         boolean oldValue = getProfileOnRunValue();
         getProfileOnRun().setValue(profileOnRunValue);
         checkPropertyChange(PROFILE_ON_RUN_PROP, oldValue, getProfileOnRunValue());
     }
 
+    @Override
     public boolean shared() {
         return false;
     }
 
+    @Override
     public XMLDecoder getXMLDecoder() {
         return new GizmoOptionsXMLCodec(this);
     }
 
+    @Override
     public XMLEncoder getXMLEncoder() {
         return new GizmoOptionsXMLCodec(this);
     }
 
     // interface ProfileAuxObject
+    @Override
     public boolean hasChanged() {
         return needSave;
     }
 
     // interface ProfileAuxObject
+    @Override
     public void clearChanged() {
         needSave = false;
     }
 
+    @Override
     public void assign(ConfigurationAuxObject auxObject) {
         boolean oldBoolValue;
         GizmoOptionsImpl gizmoOptions = (GizmoOptionsImpl) auxObject;

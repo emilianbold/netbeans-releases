@@ -50,7 +50,7 @@ import java.util.Vector;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.openide.DialogDescriptor;
@@ -65,7 +65,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     private ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel;
     private boolean first = true;
 
-    public ParserConfigurationPanel(ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel) {
+    /*package-local*/ ParserConfigurationPanel(ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel) {
         initComponents();
         this.sourceFoldersDescriptorPanel = sourceFoldersDescriptorPanel;
 
@@ -77,6 +77,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         macroEditButton.getAccessibleContext().setAccessibleDescription(getString("MACRO_EDIT_BUTTON_AD"));
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("NewMakeWizardP4"); // NOI18N
     }
@@ -104,11 +105,14 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                     if (dir != null) {
                         buf.append(dir.getAbsolutePath());
                         if (dir.isDirectory()) {
-                            for (File sub : dir.listFiles()){
-                                if (sub.isDirectory()) {
-                                    if (sub.getName().toLowerCase().endsWith("include")) { // NOI18N
-                                        buf.append(';');
-                                        buf.append(sub.getAbsolutePath());
+                            final File[] listFiles = dir.listFiles();
+                            if (listFiles != null) {
+                                for (File sub : listFiles){
+                                    if (sub.isDirectory()) {
+                                        if (sub.getName().toLowerCase().endsWith("include")) { // NOI18N
+                                            buf.append(';');
+                                            buf.append(sub.getAbsolutePath());
+                                        }
                                     }
                                 }
                             }

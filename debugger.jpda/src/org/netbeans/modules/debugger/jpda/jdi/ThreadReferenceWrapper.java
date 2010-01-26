@@ -82,46 +82,22 @@ public final class ThreadReferenceWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method forceEarlyReturn from JDK 1.6. */
-    public static void forceEarlyReturn(com.sun.jdi.ThreadReference a, com.sun.jdi.Value b) throws com.sun.jdi.InvalidTypeException, com.sun.jdi.ClassNotLoadedException, com.sun.jdi.IncompatibleThreadStateException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
+    public static void forceEarlyReturn(com.sun.jdi.ThreadReference a, com.sun.jdi.Value b) throws com.sun.jdi.InvalidTypeException, com.sun.jdi.ClassNotLoadedException, com.sun.jdi.IncompatibleThreadStateException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
         try {
-            com.sun.jdi.ThreadReference.class.getMethod("forceEarlyReturn", com.sun.jdi.Value.class).invoke(a, b);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InvalidTypeException) {
-                throw (com.sun.jdi.InvalidTypeException) t;
-            }
-            if (t instanceof com.sun.jdi.ClassNotLoadedException) {
-                throw (com.sun.jdi.ClassNotLoadedException) t;
-            }
-            if (t instanceof com.sun.jdi.IncompatibleThreadStateException) {
-                throw (com.sun.jdi.IncompatibleThreadStateException) t;
-            }
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            if (t instanceof java.lang.IllegalThreadStateException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper((java.lang.IllegalThreadStateException) t);
-            }
-            if (t instanceof com.sun.jdi.NativeMethodException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper((com.sun.jdi.NativeMethodException) t);
-            }
-            if (t instanceof com.sun.jdi.InvalidStackFrameException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper((com.sun.jdi.InvalidStackFrameException) t);
-            }
-            throw new IllegalStateException(t);
+            a.forceEarlyReturn(b);
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
+        } catch (java.lang.IllegalThreadStateException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper(ex);
+        } catch (com.sun.jdi.NativeMethodException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper(ex);
+        } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
         }
     }
 
@@ -371,66 +347,34 @@ public final class ThreadReferenceWrapper {
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method ownedMonitorsAndFrames from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.MonitorInfo*/> ownedMonitorsAndFrames(com.sun.jdi.ThreadReference a) throws com.sun.jdi.IncompatibleThreadStateException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper {
+    public static java.util.List<com.sun.jdi.MonitorInfo> ownedMonitorsAndFrames0(com.sun.jdi.ThreadReference a) throws com.sun.jdi.IncompatibleThreadStateException, org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper {
         try {
-            return (java.util.List<Object/*com.sun.jdi.MonitorInfo*/>) com.sun.jdi.ThreadReference.class.getMethod("ownedMonitorsAndFrames").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.IncompatibleThreadStateException) {
-                throw (com.sun.jdi.IncompatibleThreadStateException) t;
-            }
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            if (t instanceof java.lang.IllegalThreadStateException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper((java.lang.IllegalThreadStateException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.ownedMonitorsAndFrames();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return java.util.Collections.emptyList();
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            return java.util.Collections.emptyList();
+        } catch (java.lang.IllegalThreadStateException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method ownedMonitorsAndFrames from JDK 1.6. */
-    public static java.util.List<Object/*com.sun.jdi.MonitorInfo*/> ownedMonitorsAndFrames0(com.sun.jdi.ThreadReference a) throws com.sun.jdi.IncompatibleThreadStateException, org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper {
+    public static java.util.List<com.sun.jdi.MonitorInfo> ownedMonitorsAndFrames(com.sun.jdi.ThreadReference a) throws com.sun.jdi.IncompatibleThreadStateException, org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper {
         try {
-            return (java.util.List<Object/*com.sun.jdi.MonitorInfo*/>) com.sun.jdi.ThreadReference.class.getMethod("ownedMonitorsAndFrames").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.IncompatibleThreadStateException) {
-                throw (com.sun.jdi.IncompatibleThreadStateException) t;
-            }
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return java.util.Collections.emptyList();
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return java.util.Collections.emptyList();
-            }
-            if (t instanceof java.lang.IllegalThreadStateException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper((java.lang.IllegalThreadStateException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.ownedMonitorsAndFrames();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.ObjectCollectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper(ex);
+        } catch (java.lang.IllegalThreadStateException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper(ex);
         }
     }
 

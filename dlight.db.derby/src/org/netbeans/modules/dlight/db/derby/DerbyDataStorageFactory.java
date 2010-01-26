@@ -43,9 +43,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory.Mode;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.impl.SQLDataStorageFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -76,5 +78,29 @@ public final class DerbyDataStorageFactory extends SQLDataStorageFactory<DerbyDa
             DLightLogger.getLogger(DerbyDataStorageFactory.class).log(Level.SEVERE, null, ex);
             return null;
         }
+    }
+
+    public DerbyDataStorage openStorage(String uniqueKey) {
+        try {
+            //the unique key us the url to open storage
+            return new DerbyDataStorage(uniqueKey);
+        } catch (SQLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    public String getUniqueKey(DerbyDataStorage storage) {
+        return storage.getURL();
+    }
+
+    public DerbyDataStorage openStorage(String uniqueKey, Mode mode) {
+        try {
+            //the unique key us the url to open storage
+            return new DerbyDataStorage(uniqueKey);
+        } catch (SQLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 }

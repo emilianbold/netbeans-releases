@@ -382,7 +382,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderReadOnly")); // NOI18N
             return false;
         }
-        File[] kids = destFolder.listFiles();
         if (destFolder.exists()) {
             if (destFolder.isFile()) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_NotAFolder", makefileTextField.getText()));  // NOI18N

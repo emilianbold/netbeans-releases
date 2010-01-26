@@ -109,7 +109,7 @@ public final class H2DataStorage extends SQLDataStorage {
 
                 public boolean accept(File dir, String name) {
                     return dir.isDirectory() && name.startsWith("h2_db_dlight"); // NOI18N
-                    }
+                }
             });
             int generalNameLength = "h2_db_dlight".length();//NOI18N
             int newValue = 0;
@@ -129,7 +129,7 @@ public final class H2DataStorage extends SQLDataStorage {
                     }
                 }
             }, "H2DataStorage removing old data bases");//NOI18N
-            }
+        }
     }
 
     private void initStorageTypes() {
@@ -157,6 +157,13 @@ public final class H2DataStorage extends SQLDataStorage {
         result = result && Util.deleteLocalDirectory(new File(folderToDelete));
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "dburl=" + dbURL; // NOI18N
+    }
+
+
 
     @Override
     public void createTables(List<DataTableMetadata> tableMetadatas) {

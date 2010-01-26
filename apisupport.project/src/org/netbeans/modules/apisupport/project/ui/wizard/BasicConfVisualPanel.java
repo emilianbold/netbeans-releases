@@ -224,6 +224,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         getData().setProjectDisplayName(displayNameValue.getText());
         getData().setBundle(getBundleValue());
         getData().setLayer(getLayerValue());
+        getData().setOsgi(osgi.isSelected());
     }
     
     private String getCodeNameBaseValue() {
@@ -316,6 +317,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         filler = new javax.swing.JLabel();
         cnbHint = new javax.swing.JLabel();
         generateLayer = new javax.swing.JCheckBox();
+        osgi = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -385,6 +387,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
         confPanel.add(filler, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(cnbHint, getMessage("LBL_CodeNameBaseHint"));
@@ -406,6 +409,14 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         confPanel.add(generateLayer, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(osgi, NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel.osgi")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
+        confPanel.add(osgi, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -431,6 +442,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     private javax.swing.JCheckBox generateLayer;
     private javax.swing.JLabel layer;
     private javax.swing.JTextField layerValue;
+    private javax.swing.JCheckBox osgi;
     // End of variables declaration//GEN-END:variables
     
 }

@@ -76,6 +76,7 @@ public class SelectLayoutAction extends CallableSystemAction {
      * presented as an item in a menu.
      * @return the name of the action
      */
+    @Override
     public String getName() {
         if (name == null)
             name = org.openide.util.NbBundle.getBundle(SelectLayoutAction.class)
@@ -86,6 +87,7 @@ public class SelectLayoutAction extends CallableSystemAction {
     /** Help context where to find more about the action.
      * @return the help context for this action
      */
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -119,6 +121,7 @@ public class SelectLayoutAction extends CallableSystemAction {
         return false;
     }
 
+    @Override
     public void performAction() {
     }
 
@@ -232,6 +235,7 @@ public class SelectLayoutAction extends CallableSystemAction {
             this.paletteItem = paletteItem;
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt) {
             Node[] nodes = getNodes();
             for (int i = 0; i < nodes.length; i++) {

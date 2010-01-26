@@ -113,7 +113,7 @@ public abstract class PhpUnit extends PhpProgram {
     // suite file
     public static final File SUITE;
     public static final String SUITE_RUN = "run=%s"; // NOI18N
-    private static final String SUITE_NAME = "NetBeansSuite.php"; // NOI18N
+    private static final String SUITE_REL_PATH = "phpunit/NetBeansSuite.php"; // NOI18N
 
     // php props
     public static final char DIRECTORY_SEPARATOR = '/'; // NOI18N
@@ -136,9 +136,9 @@ public abstract class PhpUnit extends PhpProgram {
     static volatile int[] version = null;
 
     static {
-        SUITE = InstalledFileLocator.getDefault().locate(SUITE_NAME, "org.netbeans.modules.php.project", false);  // NOI18N
+        SUITE = InstalledFileLocator.getDefault().locate(SUITE_REL_PATH, "org.netbeans.modules.php.project", false);  // NOI18N
         if (SUITE == null || !SUITE.isFile()) {
-            throw new IllegalStateException("Could not locate file " + SUITE_NAME);
+            throw new IllegalStateException("Could not locate file " + SUITE_REL_PATH);
         }
     }
 

@@ -78,6 +78,7 @@ import org.netbeans.modules.form.layoutdesign.LayoutConstants.PaddingType;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.modules.form.project.ClassPathUtils;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -341,6 +342,12 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             explorerManager.setRootContext(new AbstractNode(Children.LEAF));
         }
         initialized = false;
+
+        if (formEditor == null && preLoadTask != null) {
+            // designer closed before form loading started
+            preLoadTask = null;
+            StatusDisplayer.getDefault().setStatusText(""); // NOI18N
+        }
 
         removeAll();
                 
@@ -1787,6 +1794,82 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     @Override
     public void componentShowing() {
         super.componentShowing();
+        if (!formEditor.isFormLoaded()) {
+            // Let the TC showing finish, just invoke a task out of EDT to find
+            // out form's superclass, then continue form loading in EDT again.
+            if (preLoadTask == null) {
+                preLoadTask = new PreLoadTask(formEditor.getFormDataObject());
+                RequestProcessor.getDefault().post(preLoadTask);
+
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        StatusDisplayer.getDefault().setStatusText(
+                            FormUtils.getFormattedBundleString(
+                                "FMT_PreparingForm", // NOI18N
+                                new Object[] { formEditor.getFormDataObject().getName() }));
+                    }
+                });
+            }
+        } else {
+            finishComponentShowing();
+        }
+    }
+
+    private PreLoadTask preLoadTask;
+
+    private class PreLoadTask implements Runnable {
+        private FormDataObject formDataObject;
+
+        PreLoadTask(FormDataObject fdo) {
+            formDataObject = fdo;
+        }
+
+        public void run() {
+            final GandalfPersistenceManager persistenceManager = getPersistenceManager();
+            final String superClassName = (persistenceManager != null) ? computeSuperClass() : null;
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    if (formEditor != null) {
+                        try {
+                            if (persistenceManager != null) {
+                                // Persistence manager will load the form in the same
+                                // EDT round (can't be used for other forms during that time).
+                                persistenceManager.setPrefetchedSuperclassName(superClassName);
+                                formEditor.setPersistenceManager(persistenceManager);
+                            }
+                            preLoadTask = null; // set back to null in EDT
+                            finishComponentShowing();
+                        } finally {
+                            if (persistenceManager != null) { // cleanup just for sure
+                                persistenceManager.setPrefetchedSuperclassName(null);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        private GandalfPersistenceManager getPersistenceManager() {
+            try {
+                GandalfPersistenceManager gandalf = (GandalfPersistenceManager) PersistenceManager.getManagers().next();
+                if (gandalf.canLoadForm(formDataObject)) {
+                    return gandalf;
+                }
+            } catch (Exception ex) { // failure not interesting here
+            }
+            return null;
+        }
+
+        private String computeSuperClass() {
+            try {
+                return GandalfPersistenceManager.determineSuperClassName(formDataObject.getPrimaryFile());
+            } catch (Exception ex) { // failure not interesting here
+            }
+            return null;
+        }
+    }
+
+    private void finishComponentShowing() {
         if (!formEditor.isFormLoaded()) {
             formEditor.loadFormDesigner();
             if (!formEditor.isFormLoaded()) { // there was a loading error

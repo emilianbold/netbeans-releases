@@ -45,8 +45,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
 import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -67,7 +67,7 @@ import org.netbeans.modules.dlight.util.DLightLogger;
 public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 
     private final List<DLightConfigurationOptionsListener> listeners = new ArrayList<DLightConfigurationOptionsListener>();
-    private static Logger log = DLightLogger.getLogger(GizmoConfigurationOptions.class);
+    private static final Logger log = DLightLogger.getLogger(GizmoConfigurationOptions.class);
     private String DLightCollectorString = "SunStudio";//NOI18N
     private List<String> DLightIndicatorDPStrings = Arrays.asList("SunStudio");//NOI18N
     private static final String SUNSTUDIO = "SunStudio";//NOI18N
@@ -81,14 +81,17 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
     private boolean profileOnRun = true;
     private GizmoOptions gizmoOptions = null;
 
+    @Override
     public void turnCollectorsState(boolean turnState) {
         areCollectorsTurnedOn = turnState;
     }
 
+    @Override
     public boolean profileOnRun() {
         return profileOnRun;
     }
 
+    @Override
     public Collection<String> getActiveToolNames() {
         if (gizmoOptions == null) {
             return null;
@@ -199,10 +202,12 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         return ConfigurationSupport.getProjectActiveConfiguration(currentProject);
     }
 
+    @Override
     public boolean areCollectorsTurnedOn() {
         return areCollectorsTurnedOn;
     }
 
+    @Override
     public List<DataCollector<?>> getCollectors(DLightTool tool) {
         List<DataCollector<?>> collectors = tool.getCollectors();
         List<DataCollector<?>> result = new ArrayList<DataCollector<?>>();
@@ -214,6 +219,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         return result;
     }
 
+    @Override
     public List<IndicatorDataProvider<?>> getIndicatorDataProviders(DLightTool tool) {
         List<IndicatorDataProvider<?>> idps = tool.getIndicatorDataProviders();
         List<IndicatorDataProvider<?>> result = new ArrayList<IndicatorDataProvider<?>>();
@@ -228,10 +234,12 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         return result;
     }
 
+    @Override
     public boolean validateToolsRequiredUserInteraction() {
         return false;
     }
 
+    @Override
     public void addListener(DLightConfigurationOptionsListener listener) {
 
         if (listener == null) {
@@ -246,6 +254,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
 
     }
 
+    @Override
     public void removeListener(DLightConfigurationOptionsListener listener) {
         synchronized (this) {
             listeners.remove(listener);

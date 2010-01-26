@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Map;

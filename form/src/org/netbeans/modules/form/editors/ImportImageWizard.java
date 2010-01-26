@@ -150,6 +150,7 @@ class ImportImageWizard extends WizardDescriptor {
         try {
             FileUtil.runAtomicAction(
             new FileSystem.AtomicAction() {
+                @Override
                 public void run() throws IOException {
                     for (int i=0; i < selectedFiles.length; i++) {
                         File f = selectedFiles[i];
@@ -214,6 +215,7 @@ class ImportImageWizard extends WizardDescriptor {
         private EventListenerList listenerList;
         private boolean setSelectedFiles;
 
+        @Override
         public Component getComponent() {
             if (fileChooser == null) {
                 fileChooser = new JFileChooser(lastDirectoryUsed);
@@ -224,6 +226,7 @@ class ImportImageWizard extends WizardDescriptor {
                 fileChooser.setMultiSelectionEnabled(true);
 
                 fileChooser.addActionListener(new ActionListener() {
+                    @Override
                     public void actionPerformed(ActionEvent ev) {
                         if (JFileChooser.APPROVE_SELECTION.equals(ev.getActionCommand()))
                             wizard.stepToNext();
@@ -233,6 +236,7 @@ class ImportImageWizard extends WizardDescriptor {
                 });
 
                 fileChooser.addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent ev) {
                         if (!setSelectedFiles && JFileChooser.SELECTED_FILES_CHANGED_PROPERTY
                                             .equals(ev.getPropertyName()))
@@ -250,16 +254,19 @@ class ImportImageWizard extends WizardDescriptor {
             return fileChooser;
         }
 
+        @Override
         public HelpCtx getHelp() {
             return HelpCtx.DEFAULT_HELP;
         }
 
         // readSettings is called before getComponent
+        @Override
         public void readSettings(Object settings) {
             wizard = (ImportImageWizard) settings;
             setSelectedFiles = true; // set only once when getComponent is called
         }
 
+        @Override
         public void storeSettings(Object settings) {
             if (fileChooser != null) {
                 File[] files = fileChooser.getSelectedFiles();
@@ -270,21 +277,25 @@ class ImportImageWizard extends WizardDescriptor {
             }
         }
 
+        @Override
         public boolean isValid() {
             return fileChooser != null && fileChooser.getSelectedFiles().length > 0;
         }
 
 
+        @Override
         public boolean isFinishPanel() {
             return wizard != null && wizard.targetFolder != null;
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             if (listenerList == null)
                 listenerList = new EventListenerList();
             listenerList.add(ChangeListener.class, l);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
             if (listenerList != null)
                 listenerList.remove(ChangeListener.class, l);
@@ -316,11 +327,13 @@ class ImportImageWizard extends WizardDescriptor {
         private EventListenerList listenerList;
         private boolean setTargetFolder;
 
+        @Override
         public Component getComponent() {
             if (cpfChooser == null) {
                 cpfChooser = new ClassPathFileChooser(
                         wizard.fileInProject,
                         new ClassPathFileChooser.Filter() {
+                    @Override
                             public boolean accept(FileObject fo) {
                                 return fo.isFolder();
                             }
@@ -328,6 +341,7 @@ class ImportImageWizard extends WizardDescriptor {
                         true, false);
 
                 cpfChooser.addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent ev) {
                         if (!setTargetFolder && ClassPathFileChooser.PROP_SELECTED_FILE
                                     .equals(ev.getPropertyName()))
@@ -346,22 +360,26 @@ class ImportImageWizard extends WizardDescriptor {
             return cpfChooser;
         }
 
+        @Override
         public HelpCtx getHelp() {
             return HelpCtx.DEFAULT_HELP;
         }
 
         // readSettings is called before getComponent
+        @Override
         public void readSettings(Object settings) {
             wizard = (ImportImageWizard) settings;
             setTargetFolder = true; // set only once when getComponent is called
         }
 
+        @Override
         public void storeSettings(Object settings) {
             if (cpfChooser != null) {
                 wizard.targetFolder = cpfChooser.getSelectedFile();
             }
         }
 
+        @Override
         public boolean isValid() {
             if (cpfChooser != null) {
                 FileObject fo = cpfChooser.getSelectedFile();
@@ -373,12 +391,14 @@ class ImportImageWizard extends WizardDescriptor {
             return false;
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             if (listenerList == null)
                 listenerList = new EventListenerList();
             listenerList.add(ChangeListener.class, l);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
             if (listenerList != null)
                 listenerList.remove(ChangeListener.class, l);

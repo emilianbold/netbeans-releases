@@ -59,6 +59,7 @@ import org.netbeans.modules.form.*;
  */
 public class EditFormAction extends NodeAction {
 
+    @Override
     protected boolean enable(Node[] nodes) {
         boolean ret = false;
         if (nodes != null && nodes.length == 1) {
@@ -85,6 +86,7 @@ public class EditFormAction extends NodeAction {
         setEnabled(enable(nodes));
     }
 
+    @Override
     protected void performAction(Node[] nodes) {
         if (nodes != null && nodes.length == 1) {
             RADComponentCookie radCookie = nodes[0].getCookie(RADComponentCookie.class);
@@ -119,10 +121,12 @@ public class EditFormAction extends NodeAction {
         return false;
     }
 
+    @Override
     public String getName() {
         return ""; // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

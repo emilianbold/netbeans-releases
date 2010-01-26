@@ -93,6 +93,9 @@ public final class Utils {
     private static boolean tarInitialized = false;
 
     private static String tarExecutable = null;
+
+    private static boolean lsInitialized = false;
+    private static String lsExecutable = null;
     /**
      * Setter for the 'project' property.
      *
@@ -530,6 +533,17 @@ public final class Utils {
         tarInitialized = true;
         return tarExecutable;
     }
+    private static final String findLsExecutable() {
+        if (!lsInitialized) {
+            try {
+                run(LS_EXECUTABLE);
+                lsExecutable = LS_EXECUTABLE;
+            } catch (IOException ex) {
+            }
+            lsInitialized = true;
+        }        
+        return lsExecutable;
+    }
     /**
      * Untars a tar(.tar.gz|.tgz|.tar.bz2|.tar.bzip2) archive to the specified directory.
      *
@@ -824,7 +838,12 @@ public final class Utils {
     
     public static int getPermissions(final File file) {
         try {
-            final Results results = run(file.getParentFile(), getLsExecutable(), "-ld", file.getName());
+            final String lsExec = getLsExecutable();
+            if (lsExec == null) {
+                //no ls found
+                return 777;
+            }
+            final Results results = run(file.getParentFile(), lsExec, "-ld", file.getName());
             
             final String output = results.getStdout().toString().trim();
             
@@ -1019,7 +1038,8 @@ public final class Utils {
         return getExecutable(UNPACKER_EXECUTABLE_PROPERTY, UNPACKER_EXECUTABLE);
     }
     public static String getLsExecutable() {
-        return getExecutable(LS_EXECUTABLE_PROPERTY, LS_EXECUTABLE);
+        final String value = project.getProperty(LS_EXECUTABLE_PROPERTY);
+        return (value == null || value.equals("")) ? findLsExecutable() : value;
     }
     public static String getUnzipExecutable() {
         return getExecutable(UNZIP_EXECUTABLE_PROPERTY, NATIVE_UNZIP_EXECUTABLE);

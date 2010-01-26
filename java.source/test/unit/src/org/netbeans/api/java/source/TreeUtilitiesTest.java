@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,7 +50,11 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -66,7 +70,9 @@ public class TreeUtilitiesTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
+        clearWorkDir();
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
         super.setUp();
     }
@@ -394,5 +400,34 @@ public class TreeUtilitiesTest extends NbTestCase {
         assertTrue(info.getTreeUtilities().isEnumConstant((VariableTree) b));
         Tree ii = clazz.getMembers().get(2);
         assertFalse(info.getTreeUtilities().isEnumConstant((VariableTree) ii));
+    }
+
+    public void testUncaughtExceptionHandler() throws Exception {
+        String code = "package test;\n" +
+                      "public class Test {\n" +
+                      "    public static void test() {\n" +
+                      "        t(ne|w Runnable() {\n" +
+                      "            public void run() {\n" +
+                      "                throw new UnsupportedOperationException();\n" +
+                      "            }\n" +
+                      "        });\n"+
+                      "    }\n" +
+                      "    private static void t(Runnable r) {}\n" +
+                      "}\n";
+        int pos = code.indexOf('|');
+
+        prepareTest("Test", code.replaceAll(Pattern.quote("|"), ""));
+
+        TreePath tp = info.getTreeUtilities().pathFor(pos);
+        Set<TypeMirror> uncaughtExceptions = info.getTreeUtilities().getUncaughtExceptions(tp);
+        Set<String> uncaughtExceptionStrings = new HashSet<String>();
+
+        for (TypeMirror tm : uncaughtExceptions) {
+            uncaughtExceptionStrings.add(tm.toString());
+        }
+
+        Set<String> golden = new HashSet<String>();
+
+        assertEquals(golden, uncaughtExceptionStrings);
     }
 }

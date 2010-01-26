@@ -121,14 +121,17 @@ public class FormCodeSupport {
             this.property = property;
         }
 
+        @Override
         public Class getType() {
             return property.getValueType();
         }
 
+        @Override
         public CodeExpression getParentExpression() {
             return null;
         }
 
+        @Override
         public Object getValue() {
             try {
                 return property.getValue();
@@ -138,10 +141,12 @@ public class FormCodeSupport {
             return null;
         }
 
+        @Override
         public Object getMetaObject() {
             return property;
         }
 
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             try {
                 PropertyEditor pred = property.getPropertyEditor();
@@ -152,6 +157,7 @@ public class FormCodeSupport {
             return null;
         }
 
+        @Override
         public CodeExpression[] getCreationParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
@@ -164,14 +170,17 @@ public class FormCodeSupport {
             this.property = property;
         }
 
+        @Override
         public Class getType() {
             return property.getValueType();
         }
 
+        @Override
         public CodeExpression getParentExpression() {
             return null;
         }
 
+        @Override
         public Object getValue() {
             try {
                 return property.getRealValue();
@@ -182,14 +191,17 @@ public class FormCodeSupport {
             return null;
         }
 
+        @Override
         public Object getMetaObject() {
             return property;
         }
 
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             return property.getJavaInitializationString();
         }
 
+        @Override
         public CodeExpression[] getCreationParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
@@ -204,26 +216,32 @@ public class FormCodeSupport {
             this.propertyEditor = prEd;
         }
 
+        @Override
         public Class getType() {
             return type;
         }
 
+        @Override
         public CodeExpression getParentExpression() {
             return null;
         }
 
+        @Override
         public Object getValue() {
             return propertyEditor.getValue();
         }
 
+        @Override
         public Object getMetaObject() {
             return propertyEditor;
         }
 
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             return propertyEditor.getJavaInitializationString();
         }
 
+        @Override
         public CodeExpression[] getCreationParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
@@ -236,31 +254,37 @@ public class FormCodeSupport {
             this.component = component;
         }
 
+        @Override
         public Class getType() {
             return component.getBeanClass();
         }
 
+        @Override
         public CodeExpression getParentExpression() {
             return null;
         }
 
+        @Override
         public Object getMetaObject() {
             return component;
         }
 
+        @Override
         public Object getValue() {
             return component.getBeanInstance();
         }
 
+        @Override
         public CodeExpression[] getCreationParameters() {
             return CodeStructure.EMPTY_PARAMS;
         }
 
+        @Override
         public String getJavaCodeString(String parentStr, String[] paramsStr) {
             if (component == component.getFormModel().getTopRADComponent())
                 return "this"; // NOI18N
 
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
 
             buf.append("new "); // NOI18N
             buf.append(component.getBeanClass().getName().replace('&','.')); // NOI18N

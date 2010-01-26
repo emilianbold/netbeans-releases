@@ -70,7 +70,7 @@ import org.openide.util.Lookup;
  * 
  * @author  Petr Nejedly, Jesse Glick
  */
-public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessibleClassLoader {
+public class ProxyClassLoader extends ClassLoader {
 
     private static final Logger LOGGER = Logger.getLogger(ProxyClassLoader.class.getName());
     private static final boolean LOG_LOADING;
@@ -555,14 +555,6 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         return packages.values().toArray(new Package[packages.size()]);
     }
     
-    public Package getPackageAccessibly(String name) {
-        return getPackage(name);
-    }
-    
-    public Package[] getPackagesAccessibly() {
-        return getPackages();
-    }
-
     /** Coalesce parent classloaders into an optimized set.
      * This means that all parents of the specified classloaders
      * are also added recursively, removing duplicates along the way.

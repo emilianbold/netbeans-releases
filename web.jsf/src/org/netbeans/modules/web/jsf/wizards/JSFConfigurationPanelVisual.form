@@ -66,11 +66,11 @@
                               <Component id="rbRegisteredLibrary" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbLibraries" pref="289" max="32767" attributes="0"/>
+                                  <Component id="cbLibraries" pref="293" max="32767" attributes="0"/>
                                   <Group type="102" alignment="1" attributes="0">
                                       <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="jtNewLibraryName" alignment="1" pref="213" max="32767" attributes="1"/>
-                                          <Component id="jtFolder" alignment="1" pref="213" max="32767" attributes="1"/>
+                                          <Component id="jtNewLibraryName" alignment="1" pref="217" max="32767" attributes="1"/>
+                                          <Component id="jtFolder" alignment="1" pref="217" max="32767" attributes="1"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="jbBrowse" min="-2" max="-2" attributes="0"/>
@@ -153,11 +153,8 @@
             <Component class="javax.swing.JComboBox" name="cbLibraries">
               <Properties>
                 <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                  <StringArray count="4">
-                    <StringItem index="0" value="Item 1"/>
-                    <StringItem index="1" value="Item 2"/>
-                    <StringItem index="2" value="Item 3"/>
-                    <StringItem index="3" value="Item 4"/>
+                  <StringArray count="1">
+                    <StringItem index="0" value="Search Libraries..."/>
                   </StringArray>
                 </Property>
               </Properties>
@@ -280,8 +277,8 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="tServletName" alignment="0" pref="314" max="32767" attributes="0"/>
-                                  <Component id="tURLPattern" alignment="0" pref="314" max="32767" attributes="0"/>
+                                  <Component id="tServletName" alignment="0" pref="318" max="32767" attributes="0"/>
+                                  <Component id="tURLPattern" alignment="0" pref="318" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">

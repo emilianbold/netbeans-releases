@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -78,7 +78,6 @@ import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
 
-import static com.sun.source.tree.Tree.Kind.*;
 
 /**
  *
@@ -194,7 +193,7 @@ public final class AddCast implements ErrorRule<Void> {
             int position = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), expression[0]);
             Class interf = expression[0].getKind().asInterface();
             boolean wrapWithBrackets = interf == BinaryTree.class || interf == ConditionalExpressionTree.class;
-            result.add(new AddCastFix(info.getJavaSource(), new HintDisplayNameVisitor(info).scan(expression[0], null), Utilities.getTypeName(tm[0], false).toString(), position, wrapWithBrackets));
+            result.add(new AddCastFix(info.getJavaSource(), org.netbeans.modules.java.hints.errors.Utilities.shortDisplayName(info, expression[0]), Utilities.getTypeName(tm[0], false).toString(), position, wrapWithBrackets));
         }
         
         return result;
@@ -216,124 +215,4 @@ public final class AddCast implements ErrorRule<Void> {
         return NbBundle.getMessage(AddCast.class, "DSC_Add_Cast");
     }
     
-    private static final Map<Kind, String> operator2DN;
-    
-    static {
-        operator2DN = new HashMap<Kind, String>();
-        
-        operator2DN.put(AND, "&");
-        operator2DN.put(XOR, "^");
-        operator2DN.put(OR, "|");
-        operator2DN.put(CONDITIONAL_AND, "&&");
-        operator2DN.put(CONDITIONAL_OR, "||");
-        operator2DN.put(MULTIPLY_ASSIGNMENT, "*=");
-        operator2DN.put(DIVIDE_ASSIGNMENT, "/=");
-        operator2DN.put(REMAINDER_ASSIGNMENT, "%=");
-        operator2DN.put(PLUS_ASSIGNMENT, "+=");
-        operator2DN.put(MINUS_ASSIGNMENT, "-=");
-        operator2DN.put(LEFT_SHIFT_ASSIGNMENT, "<<=");
-        operator2DN.put(RIGHT_SHIFT_ASSIGNMENT, ">>=");
-        operator2DN.put(UNSIGNED_RIGHT_SHIFT_ASSIGNMENT, ">>>=");
-        operator2DN.put(AND_ASSIGNMENT, "&=");
-        operator2DN.put(XOR_ASSIGNMENT, "^=");
-        operator2DN.put(OR_ASSIGNMENT, "|=");
-        operator2DN.put(BITWISE_COMPLEMENT, "~");
-        operator2DN.put(LOGICAL_COMPLEMENT, "!");
-        operator2DN.put(MULTIPLY, "*");
-        operator2DN.put(DIVIDE, "/");
-        operator2DN.put(REMAINDER, "%");
-        operator2DN.put(PLUS, "+");
-        operator2DN.put(MINUS, "-");
-        operator2DN.put(LEFT_SHIFT, "<<");
-        operator2DN.put(RIGHT_SHIFT, ">>");
-        operator2DN.put(UNSIGNED_RIGHT_SHIFT, ">>>");
-        operator2DN.put(LESS_THAN, "<");
-        operator2DN.put(GREATER_THAN, ">");
-        operator2DN.put(LESS_THAN_EQUAL, "<=");
-        operator2DN.put(GREATER_THAN_EQUAL, ">=");
-        operator2DN.put(EQUAL_TO, "==");
-        operator2DN.put(NOT_EQUAL_TO, "!=");
-    }
-    
-    private static class HintDisplayNameVisitor extends TreeScanner<String, Void> {
-        
-        private CompilationInfo info;
-
-        public HintDisplayNameVisitor(CompilationInfo info) {
-            this.info = info;
-        }
-        
-        public @Override String visitIdentifier(IdentifierTree tree, Void v) {
-            return "..." + tree.getName().toString();
-        }
-        
-        public @Override String visitMethodInvocation(MethodInvocationTree tree, Void v) {
-            ExpressionTree methodSelect = tree.getMethodSelect();
-            
-            return "..." + simpleName(methodSelect) + "(...)"; // NOI18N
-        }
-
-        public @Override String visitArrayAccess(ArrayAccessTree node, Void p) {
-            return "..." + simpleName(node.getExpression()) + "[]"; // NOI18N
-        }
-        
-        public @Override String visitNewClass(NewClassTree nct, Void p) {
-            return "...new " + simpleName(nct.getIdentifier()) + "(...)"; // NOI18N
-        }
-
-        @Override
-        public String visitBinary(BinaryTree node, Void p) {
-            String dn = operator2DN.get(node.getKind());
-            
-            return scan(node.getLeftOperand(), p) + dn + scan(node.getRightOperand(), p);
-        }
-
-        @Override
-        public String visitLiteral(LiteralTree node, Void p) {
-            if (node.getValue() instanceof String)
-                return "...";
-            
-            int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), node);
-            int end   = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), node);
-            
-            return info.getText().substring(start, end);
-        }
-        
-        private String simpleName(Tree t) {
-            if (t.getKind() == Kind.IDENTIFIER) {
-                return ((IdentifierTree) t).getName().toString();
-            }
-            
-            if (t.getKind() == Kind.MEMBER_SELECT) {
-                return ((MemberSelectTree) t).getIdentifier().toString();
-            }
-            
-            if (t.getKind() == Kind.METHOD_INVOCATION) {
-                return scan(t, null);
-            }
-            
-            if (t.getKind() == Kind.PARAMETERIZED_TYPE) {
-                return simpleName(((ParameterizedTypeTree) t).getType()) + "<...>"; // NOI18N
-            }
-            
-            if (t.getKind() == Kind.ARRAY_ACCESS) {
-                return simpleName(((ArrayAccessTree) t).getExpression()) + "[]"; //NOI18N
-            }
-
-            if (t.getKind() == Kind.PARENTHESIZED) {
-                return "(" + simpleName(((ParenthesizedTree)t).getExpression()) + ")"; //NOI18N
-            }
-
-            if (t.getKind() == Kind.TYPE_CAST) {
-                return simpleName(((TypeCastTree)t).getType());
-            }
-
-            if (t.getKind() == Kind.ARRAY_TYPE) {
-                return simpleName(((ArrayTypeTree)t).getType());
-            }
-            
-            throw new IllegalStateException("Currently unsupported kind of tree: " + t.getKind()); // NOI18N
-        }
-    }
-
 }

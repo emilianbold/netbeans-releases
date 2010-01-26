@@ -69,6 +69,7 @@ public class StringEditor extends ResourceWrapperEditor implements NamedProperty
         super(new org.netbeans.modules.form.editors.StringEditor());
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(StringEditor.class, "StringEditor_DisplayName"); // NOI18N
     }

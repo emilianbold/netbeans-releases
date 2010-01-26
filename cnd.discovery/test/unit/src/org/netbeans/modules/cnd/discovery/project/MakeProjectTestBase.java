@@ -52,15 +52,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
@@ -140,6 +140,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
 
     private void waitModelTasks(ModelImpl model) {
         Cancellable task = model.enqueueModelTask(new Runnable() {
+            @Override
             public void run() {
             }
         }, "wait finished other tasks"); //NOI18N
@@ -250,6 +251,14 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                                     if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                                         return "-spec macx-g++ QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
                                     } else {
+                                        if (Utilities.isWindows()) {
+                                            for (CompilerSet set : CompilerSetManager.getDefault().getCompilerSets()){
+                                                if (set.getCompilerFlavor().getToolchainDescriptor().getName().startsWith("MinGW")) {
+                                                    CompilerSetManager.getDefault().setDefault(set);
+                                                    break;
+                                                }
+                                            }
+                                        }
                                         return "QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
                                     }
                                 }
@@ -345,10 +354,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         if (map.isEmpty()) {
             return true;
         }
-        ArrayList<String> list = new ArrayList<String>(Path.getPath());
-        //String additionalPath = CndCoreTestUtils.getDownloadBase().getAbsolutePath()+File.separatorChar+"cmake-2.6.4/bin";
-        //list.add(additionalPath);
-        for (String path : list) {
+        for (String path : Path.getPath()) {
             for(Map.Entry<String, String> entry : map.entrySet()){
                 if (entry.getValue() == null) {
                     String task = path+File.separatorChar+entry.getKey();

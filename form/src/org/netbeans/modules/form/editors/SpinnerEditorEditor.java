@@ -358,6 +358,7 @@ public class SpinnerEditorEditor extends PropertyEditorSupport
     /** Name of the format attribute. */
     private static final String ATTR_FORMAT = "format"; // NOI18N
     
+    @Override
     public void readFromXML(Node element) throws IOException {
         NamedNodeMap attributes = element.getAttributes();
         String typeTxt = attributes.getNamedItem(ATTR_TYPE).getNodeValue();
@@ -370,6 +371,7 @@ public class SpinnerEditorEditor extends PropertyEditorSupport
         setValue(new FormSpinnerEditor(property, type, format));
     }
 
+    @Override
     public Node storeToXML(Document doc) {
         org.w3c.dom.Element el = doc.createElement(XML_SPINNER_EDITOR);
         Object value = getValue();
@@ -391,6 +393,7 @@ public class SpinnerEditorEditor extends PropertyEditorSupport
      * 
      * @return display name of the editor.
      */
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(getClass(), "CTL_SpinnerEditorEditor_DisplayName"); // NOI18N
     }
@@ -401,6 +404,7 @@ public class SpinnerEditorEditor extends PropertyEditorSupport
      * @param formModel form model.
      * @param property 
      */
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         this.property = property;
     }
@@ -408,6 +412,7 @@ public class SpinnerEditorEditor extends PropertyEditorSupport
     /**
      * Raise form version to 6.0 - this editor is available since NB 6.0.
      */
+    @Override
     public void updateFormVersionLevel() {
         property.getPropertyContext().getFormModel()
                 .raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
@@ -505,6 +510,7 @@ public class SpinnerEditorEditor extends PropertyEditorSupport
          * 
          * @return design value.
          */
+        @Override
         public Object getDesignValue() {
             Object value = null;
             switch (type) {

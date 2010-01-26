@@ -41,10 +41,12 @@ package org.netbeans.modules.languages.yaml;
 
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
 
 /**
@@ -52,6 +54,7 @@ import org.netbeans.modules.parsing.spi.Parser;
  *
  * @author Tor Norbye
  */
+@LanguageRegistration(mimeType="text/x-yaml") //NOI18N
 public class YamlLanguage extends DefaultLanguageConfig {
 
     @Override
@@ -97,5 +100,10 @@ public class YamlLanguage extends DefaultLanguageConfig {
     @Override
     public CodeCompletionHandler getCompletionHandler() {
         return new YamlCompletion();
+    }
+
+    @Override
+    public InstantRenamer getInstantRenamer() {
+        return null;
     }
 }

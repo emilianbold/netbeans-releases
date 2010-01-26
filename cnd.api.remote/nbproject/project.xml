@@ -50,10 +50,10 @@
             <friend-packages>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
+                <friend>com.sun.tools.debugger.common</friend>
+                <friend>com.sun.tools.debugger.dbx</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
                 <friend>com.sun.tools.debugger.gdb</friend>
-                <friend>com.sun.tools.debugger.dbx</friend>
-                <friend>com.sun.tools.debugger.common</friend>
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common</friend>
@@ -65,6 +65,7 @@
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
+                <friend>org.netbeans.modules.cnd.toolchain</friend>
                 <package>org.netbeans.modules.cnd.api.remote</package>
                 <package>org.netbeans.modules.cnd.spi.remote</package>
             </friend-packages>

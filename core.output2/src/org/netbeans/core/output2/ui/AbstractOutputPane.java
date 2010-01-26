@@ -258,6 +258,9 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         }
     }
 
+    /**
+     * Accessed reflectively from org.netbeans.jellytools.OutputTabOperator.
+     */
     public final Document getDocument() {
         return textView.getDocument();
     }

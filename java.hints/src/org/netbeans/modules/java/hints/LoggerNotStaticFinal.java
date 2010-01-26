@@ -47,6 +47,7 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -57,6 +58,7 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -66,12 +68,12 @@ import org.openide.util.NbBundle;
  *
  * @author vita
  */
-@Hint(category="logging")
+@Hint(category="logging", suppressWarnings={"NonConstantLogger"}) //NOI18N
 public class LoggerNotStaticFinal {
 
     @TriggerPatterns({
-        @TriggerPattern(value="$mods$ java.util.logging.Logger $LOG;"),
-        @TriggerPattern(value="$mods$ java.util.logging.Logger $LOG = $init;")
+        @TriggerPattern(value="$mods$ java.util.logging.Logger $LOG;"), //NOI18N
+        @TriggerPattern(value="$mods$ java.util.logging.Logger $LOG = $init;") //NOI18N
     })
     public static ErrorDescription checkLoggerDeclaration(HintContext ctx) {
         Element e = ctx.getInfo().getTrees().getElement(ctx.getPath());
@@ -81,29 +83,35 @@ public class LoggerNotStaticFinal {
             return ErrorDescriptionFactory.forName(
                     ctx,
                     ctx.getPath(),
-                    NbBundle.getMessage(LoggerNotStaticFinal.class, "MSG_LoggerNotStaticFinal_checkLoggerDeclaration", e),
-                    new FixImpl(NbBundle.getMessage(LoggerNotStaticFinal.class, "MSG_LoggerNotStaticFinal_checkLoggerDeclaration_fix", e), TreePathHandle.create(e, ctx.getInfo())));
+                    NbBundle.getMessage(LoggerNotStaticFinal.class, "MSG_LoggerNotStaticFinal_checkLoggerDeclaration", e), //NOI18N
+                    new LoggerNotStaticFinalFix(NbBundle.getMessage(LoggerNotStaticFinal.class, "MSG_LoggerNotStaticFinal_checkLoggerDeclaration_fix", e), TreePathHandle.create(e, ctx.getInfo())), //NOI18N
+                    FixFactory.createSuppressWarningsFix(ctx.getInfo(), ctx.getPath(), "NonConstantLogger") //NOI18N
+            );
         } else {
             return null;
         }
     }
 
-    private static final class FixImpl implements Fix {
+    private static final class LoggerNotStaticFinalFix implements Fix {
 
         private final String text;
         private final TreePathHandle loggerFieldHandle;
 
-        public FixImpl(String text, TreePathHandle loggerFieldHandle) {
+        public LoggerNotStaticFinalFix(String text, TreePathHandle loggerFieldHandle) {
             this.text = text;
             this.loggerFieldHandle = loggerFieldHandle;
         }
 
+        @Override
         public String getText() {
             return text;
         }
 
+        @Override
         public ChangeInfo implement() throws Exception {
             JavaSource.forFileObject(loggerFieldHandle.getFileObject()).runModificationTask(new Task<WorkingCopy>() {
+
+                @Override
                 public void run(WorkingCopy wc) throws Exception {
                     wc.toPhase(Phase.RESOLVED);
                     TreePath tp = loggerFieldHandle.resolve(wc);

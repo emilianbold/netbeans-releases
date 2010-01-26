@@ -162,7 +162,7 @@ public final class LibProjectImpl extends ProjectBase {
     @Override
     public boolean isStable(CsmFile skipFile) {
         if (!isDisposing()) {
-            return !ParserQueue.instance().hasFiles(this, (FileImpl) skipFile);
+            return !ParserQueue.instance().hasPendingProjectRelatedWork(this, (FileImpl) skipFile);
         }
         return false;
     }

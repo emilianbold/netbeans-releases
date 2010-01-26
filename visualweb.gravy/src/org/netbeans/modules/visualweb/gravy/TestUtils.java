@@ -984,7 +984,7 @@ public class TestUtils {
     }
     
     private static final String
-            CREATOR_SYSTEM_DIR = "visualweb1" + File.separator + "config",
+            CREATOR_SYSTEM_DIR = "visualweb" + File.separator + "config",
             CREATOR_INSTALL_PROPERTIES_FILE_NAME = "com-sun-rave-install.properties";
     //            CREATOR_SYSTEM_DIR = "system",
     //            CREATOR_INSTALL_PROPERTIES_FILE_NAME = "install.properties";

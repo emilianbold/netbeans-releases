@@ -142,7 +142,7 @@ public class JsIndexerTest extends JsTestBase {
 //        JsIndexer indexer = new JsIndexer();
 //        assertTrue(indexer.acceptQueryPath("/foo/bar/baz"));
 //        assertFalse(indexer.acceptQueryPath("/foo/jruby/lib/ruby/gems/1.8/gems"));
-//        assertFalse(indexer.acceptQueryPath("/foo/netbeans/ruby2/rubystubs/0.2"));
+//        assertFalse(indexer.acceptQueryPath("/foo/netbeans/ruby/rubystubs/0.2"));
 //    }
 
     public void testIndex0() throws Exception {

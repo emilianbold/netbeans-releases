@@ -66,14 +66,12 @@ import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.exceptions.DownloadException;
-import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiFrame;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiSeparator;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import org.netbeans.installer.wizard.Wizard;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
 
@@ -208,12 +206,18 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
             currentUi = null;
             return;
         }
-        if (!SwingUtilities.isEventDispatchThread()) {         
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    updateWizardUi(wizardUi);
-                }
-            });
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        updateWizardUi(wizardUi);
+                    }
+                });
+            } catch (InterruptedException e) {
+                LogManager.log("Error during updating wizard UI", e);
+            } catch (InvocationTargetException e) {
+                LogManager.log("Error during updating wizard UI", e);
+            }
             return;
         }
         
@@ -250,20 +254,7 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                              
         // handle the default buttons - Enter
         
-        if(currentUi == null) {
-            LogManager.log("currentUI is null");
-        }
-        if(getRootPane() == null) {
-            LogManager.log("getRootPane() is null");
-            LogManager.log("currentUI is " + currentUi);
-            if(currentUi!=null) {
-                LogManager.log("currentUI.title=" + currentUi.getTitle());
-                LogManager.log("currentUI.name=" + currentUi.getName());
-            }
-        }
-        NbiButton enterButton = currentUi.getDefaultEnterButton();
-        
-        getRootPane().setDefaultButton(enterButton);
+        getRootPane().setDefaultButton(currentUi.getDefaultEnterButton());
         
         // handle the default buttons - Escape
         getRootPane().getInputMap(JRootPane.WHEN_IN_FOCUSED_WINDOW).put(

@@ -49,6 +49,7 @@ import org.openide.util.actions.NodeAction;
 
 public class CustomCodeAction extends NodeAction {
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         RADComponent metacomp = getComponent(activatedNodes);
         if (metacomp != null)
@@ -60,6 +61,7 @@ public class CustomCodeAction extends NodeAction {
         return false;
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         return getComponent(activatedNodes) != null;
     }
@@ -76,10 +78,12 @@ public class CustomCodeAction extends NodeAction {
         return null;
     }
 
+    @Override
     public String getName() {
         return org.openide.util.NbBundle.getMessage(CustomCodeAction.class, "ACT_CustomCode"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP; // "gui.custom_code" ?
     }
