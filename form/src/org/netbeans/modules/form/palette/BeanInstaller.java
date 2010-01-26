@@ -141,14 +141,14 @@ public final class BeanInstaller {
             String message = MessageFormat.format(messageFormat, new Object[] {sb.toString()});
             NotifyDescriptor nd = new NotifyDescriptor.Message(message);
             DialogDisplayer.getDefault().notify(nd);
-            if (beans.size() == 0) return;
+            if (beans.isEmpty()) return;
         }
 
         String message = null;
-        if (beans.size() == 0) {
+        if (beans.isEmpty()) {
             message = PaletteUtils.getBundleString("MSG_noBeansUnderNodes"); // NOI18N
         }
-        if (noBeans.size() != 0) {
+        if (!noBeans.isEmpty()) {
             Iterator<String> iter = noBeans.iterator();
             while (iter.hasNext()) {
                 String className = iter.next();
@@ -166,7 +166,7 @@ public final class BeanInstaller {
             NotifyDescriptor nd = new NotifyDescriptor.Message(message);
             DialogDisplayer.getDefault().notify(nd);
         }
-        if (beans.size() == 0) return;
+        if (beans.isEmpty()) return;
 
         String category = CategorySelector.selectCategory();
         if (category == null)
