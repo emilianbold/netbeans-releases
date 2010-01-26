@@ -145,7 +145,7 @@ import org.netbeans.spi.lexer.TokenFactory;
                 break;
 
             default:
-                throw new IllegalStateException("Internal lexer error"); //
+                throw new IllegalStateException("Internal lexer error"); // NOI18N
         }
         return token;
     }
