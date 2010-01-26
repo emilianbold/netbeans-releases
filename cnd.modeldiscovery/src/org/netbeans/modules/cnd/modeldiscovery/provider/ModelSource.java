@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modeldiscovery.provider;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -197,8 +198,9 @@ public class ModelSource implements SourceFileProperties {
                     }
                 } else {
                     if (pkgConfig != null) {
-                        ResolvedPath rp = pkgConfig.getResolvedPath(include.getIncludeName().toString());
-                        if (rp != null) {
+                        Collection<ResolvedPath> listRP = pkgConfig.getResolvedPath(include.getIncludeName().toString());
+                        if (listRP != null && !listRP.isEmpty()) {
+                            ResolvedPath rp = listRP.iterator().next();
                             res.add(rp.getIncludePath());
                             for(PackageConfiguration pc : rp.getPackages()){
                                 for(String p : pc.getIncludePaths()){
