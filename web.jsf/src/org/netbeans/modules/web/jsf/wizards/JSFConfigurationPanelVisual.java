@@ -113,18 +113,19 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     }
 
     void initLibraries() {
+        long time = System.currentTimeMillis();
         if (libsInitialized) {
             return;
         }
 
         final Vector <String> items = new Vector <String>();
         jsfLibraries.clear();
-        final boolean[] hasFinished = new boolean[]{false};
         final Runnable libraryFinder = new Runnable() {
 
             @Override
             public void run() {
                 synchronized (this) {
+                    long time = System.currentTimeMillis();
                     List<URL> content;
                     for (Library library : LibraryManager.getDefault().getLibraries()) {
                         if (!"j2se".equals(library.getType())) { // NOI18N
@@ -156,34 +157,20 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                             Exceptions.printStackTrace(exception);
                         }
                     }
-                    hasFinished[0] = true;
-                    notifyAll();
+                    setLibraryModel(items);
+                    LOG.finest("Time spent in initLibraries in Runnable = "+(System.currentTimeMillis()-time) +" ms");  //NOI18N
                 }
             }
         };
         RequestProcessor.getDefault().post(libraryFinder);
 
-        RequestProcessor.getDefault().post(new Runnable() {
-
-            @Override
-            public void run() {
-                synchronized (libraryFinder) {
-                    try {
-                        while (!hasFinished[0]) {
-                            libraryFinder.wait();
-                        }
-                        setLibraryModel(items);
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        });
         libsInitialized = true;
 //        repaint();
+        LOG.finest("Time spent in "+this.getClass().getName() +" initLibraries = "+(System.currentTimeMillis()-time) +" ms");   //NOI18N
     }
 
     private void setLibraryModel(Vector<String> items) {
+        long time = System.currentTimeMillis();
         cbLibraries.setModel(new DefaultComboBoxModel(items));
         if (items.size() == 0) {
             rbRegisteredLibrary.setEnabled(false);
@@ -201,6 +188,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
 //        libsInitialized = true;
         repaint();
+        LOG.finest("Time spent in "+this.getClass().getName() +" setLibraryModel = "+(System.currentTimeMillis()-time) +" ms");   //NOI18N
     }
     
     /**
