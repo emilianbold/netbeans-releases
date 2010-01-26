@@ -1351,7 +1351,7 @@ public class FormEditor {
                             if (tree.getKind() == Tree.Kind.METHOD) {
                                 MethodTree method = (MethodTree)tree;
                                 if ("initComponents".equals(method.getName().toString()) // NOI18N
-                                        && (method.getParameters().size() == 0)) {
+                                        && (method.getParameters().isEmpty())) {
                                     ModifiersTree modifiers = method.getModifiers();
                                     for (AnnotationTree annotation : modifiers.getAnnotations()) {
                                         if (annotation.getAnnotationType().toString().contains("SuppressWarnings")) { // NOI18N
