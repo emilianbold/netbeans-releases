@@ -83,11 +83,14 @@ import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.util.EntityMethodGenerator;
 import org.netbeans.modules.j2ee.persistence.util.JPAClassPathHelper;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor;
+import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -101,6 +104,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
     private EntityWizardDescriptor ejbPanel;
+    private PersistenceUnitWizardDescriptor puPanel;
     private WizardDescriptor wiz;
     private SourceGroup[] sourceGroups;
     
@@ -132,7 +136,20 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         } else {
             targetChooserPanel = new ValidatingPanel(JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true));
         }
-        panels = new WizardDescriptor.Panel[] {targetChooserPanel};
+        //
+        boolean noPuNeeded = true;
+        try {
+            noPuNeeded = ProviderUtil.persistenceExists(project) || !ProviderUtil.isValidServerInstanceOrNone(project);
+        } catch (InvalidPersistenceXmlException ex) {
+            Logger.getLogger(EntityWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml"); //NOI18N
+        }
+        if(noPuNeeded){
+            panels =  new WizardDescriptor.Panel[] {targetChooserPanel};
+        } else {
+            puPanel = new PersistenceUnitWizardDescriptor(project);
+            panels = new WizardDescriptor.Panel[] {targetChooserPanel, puPanel};
+        }
+        
         Wizards.mergeSteps(wiz, panels, null);
     }
     
@@ -147,10 +164,17 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 );
         
         try{
-            PersistenceUnit punit = ejbPanel.getPersistenceUnit();
-            if (punit != null){
-                ProviderUtil.addPersistenceUnit(punit, Templates.getProject(wiz));
+            boolean isCreatePU = ejbPanel.isCreatePU();
+            Project project = Templates.getProject(wiz);
+            if(isCreatePU)
+            {
+                PersistenceUnit punit = Util.buildPersistenceUnitUsingData(project, puPanel.getPersistenceUnitName(), puPanel.getPersistenceConnection()!=null ? puPanel.getPersistenceConnection().getName() : puPanel.getDatasource(), TableGeneration.NONE, puPanel.getSelectedProvider());
+                ProviderUtil.setTableGeneration(punit, puPanel.getTableGeneration(), puPanel.getSelectedProvider());
+                if (punit != null){
+                    ProviderUtil.addPersistenceUnit(punit, project);
+                }
             }
+
             addEntityToPersistenceUnit(result);
             PersistenceUtils.logUsage(EntityWizard.class, "USG_PERSISTENCE_ENTITY", null);
         } catch (InvalidPersistenceXmlException ipx){
@@ -206,7 +230,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
     
     @Override
     public boolean hasNext() {
-        return index < panels.length - 1;
+        return index < panels.length - 1 && ejbPanel.isCreatePU();
     }
     
     @Override
@@ -337,5 +361,12 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
             }
             return super.isValid();
         }
+
+        @Override
+        public boolean isFinishPanel() {
+            return isValid();
+        }
+
+
     }
 }
