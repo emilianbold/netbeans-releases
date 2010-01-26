@@ -55,7 +55,7 @@ import org.openide.util.Utilities;
  */
 public class PackageConfigTestCase extends CndBaseTestCase {
 
-    private static final boolean TRACE = false;
+    private static final boolean TRACE = true;
 
     public PackageConfigTestCase(String testName) {
         super(testName);
@@ -115,7 +115,7 @@ public class PackageConfigTestCase extends CndBaseTestCase {
             if (TRACE) {
                 System.out.print("Package: " + pkg.getName());
             }
-            packages.append(pkg.getName() + " ");
+            packages.append(pkg.getName()).append(" ");
             StringBuilder buf = new StringBuilder();
             for (String p : pkg.getIncludePaths()) {
                 if (buf.length() > 0) {
