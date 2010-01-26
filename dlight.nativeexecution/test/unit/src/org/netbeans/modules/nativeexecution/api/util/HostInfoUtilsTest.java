@@ -416,10 +416,8 @@ public class HostInfoUtilsTest extends NativeExecutionBaseTestCase {
             result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows"), "cmd.exe", true); // NOI18N
             assertNotNull(result);
 
-            if (info.getShell() != null) {
-                result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", WindowsSupport.getInstance().convertToShellPath("c:\\Windows\\system32")), "cmd.exe", false); // NOI18N
-                assertNotNull(result);
-            }
+            result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows\\system32"), "cmd.exe", false); // NOI18N
+            assertNotNull(result);
 
             result = HostInfoUtils.searchFile(env, Arrays.asList("/wrongPath", "c:\\Windows"), "cmd.exe", false); // NOI18N
             assertNull(result);

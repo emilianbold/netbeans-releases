@@ -96,7 +96,7 @@ public final class ServerRecord implements Lookup.Provider {
     }
 
     private Lookup create(ExecutionEnvironment env) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        throw new UnsupportedOperationException("Not yet implemented"); // NOI18N
     }
     
 //    /**

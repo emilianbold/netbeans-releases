@@ -60,6 +60,8 @@ import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -103,15 +105,26 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
     @org.junit.Test
     @ForAllEnvironments(section = "remote.platforms")
     public void testGetExpander_ExecutionEnvironment_String() {
-        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        Task task = RequestProcessor.getDefault().post(new Runnable() {
 
+            @Override
+            public void run() {
+                try {
+                    // Make sure that host is connected!
+                    ConnectionManager.getInstance().connectTo(execEnv);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (CancellationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
         try {
-            // Make sure that host is connected!
-            ConnectionManager.getInstance().connectTo(execEnv);
-        } catch (IOException ex) {
+            task.waitFinished(20000);
+        } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
+            assertFalse("Cannot connect to " + execEnv.getDisplayName(), false); // NOI18N
         }
 
         System.out.println("--- getExpander --- " + execEnv.toString()); // NOI18N
