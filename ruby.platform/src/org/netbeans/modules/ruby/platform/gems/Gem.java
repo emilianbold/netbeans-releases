@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ruby.platform.gems;
 
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -56,12 +55,6 @@ import org.netbeans.modules.ruby.platform.Util;
  */
 public final class Gem implements Comparable<Gem> {
 
-    private static final String[] RAILS_GEMS = new String[]{"actionmailer", "actionpack", "activerecord", // NOI18N
-        "activeresource", "activesupport", "rails", // NOI18N
-        "actionwebservice"}; // NOI18N    actionwebservice is Rails 1.x only
-
-    private static final String RAKE_GEM = "rake"; //NOI18N
-    
     private String name;
     private String desc;
     private String installedVersions;
@@ -71,41 +64,6 @@ public final class Gem implements Comparable<Gem> {
         this.name = name;
         this.installedVersions = installedVersions;
         this.availableVersions = availableVersions;
-    }
-
-    /**
-     * Returns the gem name from the given <code>gemUrl</code>.
-     *
-     * @param gemUrl an URL of a gem.
-     * @return
-     */
-    public static String getGemName(URL gemUrl) {
-        String urlString = gemUrl.getFile();
-        if (urlString.endsWith("/lib/")) {
-            urlString = urlString.substring(urlString.lastIndexOf('/', urlString.length()-6)+1,
-                    urlString.length()-5);
-        }
-        return urlString;
-    }
-    
-    public static boolean isRailsGem(String name) {
-        for (String each : RAILS_GEMS) {
-            if (each.equals(name)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static boolean isRakeGem(String name) {
-        return RAKE_GEM.equals(name);
-    }
-
-    /**
-     * @return the names of the Rails framework gems.
-     */
-    public static String[] getRailsGems() {
-        return RAILS_GEMS;
     }
 
     public String getName() {
