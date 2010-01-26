@@ -858,6 +858,8 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                     return Collections.emptyList();
                 } catch (InternalExceptionWrapper ex) {
                     return Collections.emptyList();
+                } catch (ObjectCollectedExceptionWrapper ex) {
+                    return Collections.emptyList();
                 }
                 return new AbstractList<ObjectVariable>() {
                     public ObjectVariable get(int i) {

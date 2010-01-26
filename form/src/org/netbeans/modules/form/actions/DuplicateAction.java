@@ -67,19 +67,23 @@ public class DuplicateAction  extends NodeAction {
         return false;
     }
 
+    @Override
     protected boolean enable(Node[] nodes) {
         List comps = FormUtils.getSelectedLayoutComponents(nodes);
         return ((comps != null) && getParent(comps) != null);
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(AlignAction.class, "ACT_Duplicate"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected void performAction(Node[] nodes) {
         duplicate(nodes, -1, -1);
     }

@@ -50,7 +50,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
@@ -75,19 +75,22 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     private static String DEF_BUILD_COMMAND_FMT = "{0} -f {1}"; // NOI18N
     private static String DEF_CLEAN_COMMAND_FMT = "{0} -f {1} clean"; // NOI18N
     
-    public BuildActionsPanel(BuildActionsDescriptorPanel buildActionsDescriptorPanel) {
+    /*package-local*/ BuildActionsPanel(BuildActionsDescriptorPanel buildActionsDescriptorPanel) {
         initComponents();
         instructionsTextArea.setBackground(instructionPanel.getBackground());
         this.buildActionsDescriptorPanel = buildActionsDescriptorPanel;
         documentListener = new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 update(e);
             }
             
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 update(e);
             }
             
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 update(e);
             }
@@ -114,15 +117,18 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         outputBrowseButton.getAccessibleContext().setAccessibleDescription(getString("OUTPUT_BROWSE_BUTTON_AD"));
     }
     
-    class MakefileDocumentListener implements DocumentListener {
+    private final class MakefileDocumentListener implements DocumentListener {
+        @Override
         public void changedUpdate( DocumentEvent e ) {
             makefileFieldChanged();
         }
         
+        @Override
         public void insertUpdate( DocumentEvent e ) {
             makefileFieldChanged();
         }
         
+        @Override
         public void removeUpdate( DocumentEvent e ) {
             makefileFieldChanged();
         }
@@ -147,6 +153,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         outputTextField.setText(""); // NOI18N
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(BuildActionsPanel.class);
     }
@@ -395,8 +402,9 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
                 false
                 );
         int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION)
+        if (ret == JFileChooser.CANCEL_OPTION) {
             return;
+        }
         //String path = IpeUtils.toRelativePath(buildCommandWorkingDirTextField.getText(), fileChooser.getSelectedFile().getPath()); // FIXUP: not always relative path
         String path = FilePathAdaptor.normalize(fileChooser.getSelectedFile().getPath());
         outputTextField.setText(path);
@@ -423,8 +431,9 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
                 false
                 );
         int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION)
+        if (ret == JFileChooser.CANCEL_OPTION) {
             return;
+        }
         String path = fileChooser.getSelectedFile().getPath();
         path = FilePathAdaptor.normalize(path);
         buildCommandWorkingDirTextField.setText(path);

@@ -68,6 +68,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.cnd.toolchain</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.dlight</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -228,17 +236,17 @@
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-		    <run-dependency>
-                       <specification-version>8.0</specification-version>
-	             </run-dependency>
+                    <run-dependency>
+                        <specification-version>8.0</specification-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.util.lookup</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-		    <run-dependency>
-                       <specification-version>8.0</specification-version>
-	             </run-dependency>
+                    <run-dependency>
+                        <specification-version>8.0</specification-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.windows</code-name-base>

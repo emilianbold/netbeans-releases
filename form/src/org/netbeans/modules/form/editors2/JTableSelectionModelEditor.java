@@ -99,6 +99,7 @@ public class JTableSelectionModelEditor extends EnumEditor implements FormCodeAw
         super.setValue(value);
     }
 
+    @Override
     public String getSourceCode() {
         String code = super.getJavaInitializationString();
         if (code != null) {
@@ -118,6 +119,7 @@ public class JTableSelectionModelEditor extends EnumEditor implements FormCodeAw
      * @param formModel form model.
      * @param property property being edited.
      */
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         this.property = property;
     }
@@ -125,6 +127,7 @@ public class JTableSelectionModelEditor extends EnumEditor implements FormCodeAw
     /**
      * Raise form version to 6.1 - this editor is available since NB 6.1.
      */
+    @Override
     public void updateFormVersionLevel() {
         property.getPropertyContext().getFormModel()
                 .raiseVersionLevel(FormModel.FormVersion.NB61, FormModel.FormVersion.NB61);

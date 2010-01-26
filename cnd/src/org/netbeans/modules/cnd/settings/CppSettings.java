@@ -49,7 +49,6 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.ErrorManager;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -71,14 +70,9 @@ public final class CppSettings extends SharedClassObject {
     /** serial uid */
     static final long serialVersionUID = -2942467713237077336L;
 
-    private static final int DEFAULT_PARSING_DELAY = 2000;
-
-    // Properties
-    private static final String PROP_PARSING_DELAY = "parsingDelay"; //NOI18N
     private static final String PROP_REPLACEABLE_STRINGS_TABLE = "replaceableStringsTable"; //NOI18N
     private static final String PROP_GDB_NAME = "gdbName"; // NOI18N
     private static final String PROP_GDB_PATH = "gdbPath"; // NOI18N
-    private static final String PROP_COMPILER_SET_NAME = "compilerSetName"; // NOI18N
     private static final String PROP_GDB_REQUIRED = "gdbRequired"; // NOI18N
     private static final String PROP_ARRAY_REPEAT_THRESHOLD = "arrayRepeatThreshold"; // NOI18N
     
@@ -104,22 +98,6 @@ public final class CppSettings extends SharedClassObject {
         return cppSettings;
     }
     
-    public String getCompilerSetName() {
-        String name = getPreferences().get(PROP_COMPILER_SET_NAME, null);
-        if (name == null) {
-            return "";
-        } else {
-            return name;
-        }
-    }
-    
-    public void setCompilerSetName(String name) {
-        String n = getCompilerSetName();
-        if (n == null || !n.equals(name)) {
-            getPreferences().put(PROP_COMPILER_SET_NAME, name);
-            firePropertyChange(PROP_COMPILER_SET_NAME, n, name);
-        }
-    }
     
     public String getGdbName() {
         String name = getPreferences().get(PROP_GDB_NAME, null);
@@ -159,30 +137,6 @@ public final class CppSettings extends SharedClassObject {
         }
     }
     
-    /**
-     * Gets the delay time for the start of the parsing.
-     * @return The time in milis
-     */
-    public int getParsingDelay() {
-        int delay = getPreferences().getInt(PROP_PARSING_DELAY, DEFAULT_PARSING_DELAY);
-        return delay;
-    }
-
-    /**
-     * Sets the delay time for the start of the parsing.
-     * @param delay The time in milis
-     */
-    public void setParsingDelay(int delay) {
-        if (delay != 0 && delay < 1000) {
-            IllegalArgumentException e = new IllegalArgumentException();
-	    ErrorManager.getDefault().annotate(e, getString("INVALID_AUTO_PARSING_DELAY"));
-	    throw e;
-	}
-        int oldValue = getParsingDelay();
-        getPreferences().putInt(PROP_PARSING_DELAY, delay);
-        firePropertyChange(PROP_PARSING_DELAY, Integer.valueOf(oldValue), Integer.valueOf(delay));
-    }
-
     /**
      * Sets the replaceable strings table - used during instantiating
      * from template.
@@ -282,6 +236,7 @@ public final class CppSettings extends SharedClassObject {
      */
     @ServiceProvider(service = CreateFromTemplateAttributesProvider.class)
     public static final class AttributesProvider implements CreateFromTemplateAttributesProvider {
+        @Override
         public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
             if (MIMENames.CND_TEXT_MIME_TYPES.contains(template.getPrimaryFile().getMIMEType())) {
                 Map<String, Object> map = new HashMap<String, Object>();

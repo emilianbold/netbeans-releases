@@ -137,7 +137,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.autoupdate.pluginimporter</friend>
-                <friend>org.netbeans.modules.cnd</friend>
+                <friend>org.netbeans.modules.cnd.toolchain</friend>
                 <package>org.netbeans.modules.autoupdate.ui.api</package>
             </friend-packages>
         </data>

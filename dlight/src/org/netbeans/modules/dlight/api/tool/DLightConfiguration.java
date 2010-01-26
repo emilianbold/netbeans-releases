@@ -325,13 +325,32 @@ public final class DLightConfiguration {
             }
         }
 
-        public List<DataCollector<?>> getCollectors(DLightTool tool) {
-            return tool.getCollectors();
+ public List<DataCollector<?>> getCollectors(DLightTool tool) {
+        List<DataCollector<?>> collectors = tool.getCollectors();
+        List<DataCollector<?>> result = new ArrayList<DataCollector<?>>();
+        for (DataCollector<?> collector : collectors) {
+            if (collector.getName().equals(DLightConfiguration.this.collectorProviders)) {
+                result.add(collector);
+            }
+        }
+        return result;
+    }
+
+    public List<IndicatorDataProvider<?>> getIndicatorDataProviders(DLightTool tool) {
+        final String[] DLightIndicatorDPStrings = DLightConfiguration.this.indicatorProviders;
+        List<IndicatorDataProvider<?>> idps = tool.getIndicatorDataProviders();
+        List<IndicatorDataProvider<?>> result = new ArrayList<IndicatorDataProvider<?>>();
+        for (IndicatorDataProvider<?> idp : idps) {
+            for (String idpStringName : DLightIndicatorDPStrings) {
+                if (idp.getName().equals(idpStringName)) {
+                    result.add(idp);
+                    break;
+                }
+            }
         }
 
-        public List<IndicatorDataProvider<?>> getIndicatorDataProviders(DLightTool tool) {
-            return tool.getIndicatorDataProviders();
-        }
+        return result;
+    }
 
         public boolean validateToolsRequiredUserInteraction() {
             return true;

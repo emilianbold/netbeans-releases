@@ -188,7 +188,7 @@ public class MeasurementTestCase extends RemoteTestBase {
     }
 
     private String getDestDir(ExecutionEnvironment execEnv) {
-        return  "/tmp/" + execEnv.getUser() + "/sync-worker-measurements-test/" + Math.random() + "/";
+        return getRemoteTmpDir() + "/sync-worker-measurements-test/" + Math.random() + "/";
     }
 
     @Override

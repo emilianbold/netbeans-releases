@@ -40,7 +40,7 @@
  */
 
 package org.netbeans.modules.cnd.makeproject.api.platforms;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 
 public class PlatformSolarisIntel extends PlatformSolaris {
     public static final String NAME = "Solaris-x86"; // NOI18N

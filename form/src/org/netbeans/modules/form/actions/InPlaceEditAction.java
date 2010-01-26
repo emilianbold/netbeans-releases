@@ -62,6 +62,7 @@ public class InPlaceEditAction extends NodeAction {
     *
     * @param activatedNodes current activated nodes, may be empty but not <code>null</code>
     */
+    @Override
     protected void performAction(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
             RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
@@ -87,6 +88,7 @@ public class InPlaceEditAction extends NodeAction {
     * @param activatedNodes current activated nodes, may be empty but not <code>null</code>
     * @return <code>true</code> to be enabled, <code>false</code> to be disabled
     */
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
             RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
@@ -106,6 +108,7 @@ public class InPlaceEditAction extends NodeAction {
      * presented as an item in a menu.
      * @return the name of the action
      */
+    @Override
     public String getName() {
         if (name == null)
             name = org.openide.util.NbBundle.getBundle(InPlaceEditAction.class)
@@ -117,6 +120,7 @@ public class InPlaceEditAction extends NodeAction {
      * Help context where to find more about the action.
      * @return the help context for this action
      */
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.quickref"); // NOI18N
     }

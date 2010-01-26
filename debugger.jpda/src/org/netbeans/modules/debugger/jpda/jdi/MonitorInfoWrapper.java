@@ -46,7 +46,7 @@ package org.netbeans.modules.debugger.jpda.jdi;
 // perform the desired modifications there and re-generate by "ant generate".
 
 /**
- * Wrapper for MonitorInfo JDI class from JDK 1.6.
+ * Wrapper for MonitorInfo JDI class.
  * Use methods of this class instead of direct calls on JDI objects.
  * These methods assure that exceptions thrown from JDI calls are handled appropriately.
  *
@@ -57,142 +57,58 @@ public final class MonitorInfoWrapper {
     private MonitorInfoWrapper() {}
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method monitor from JDK 1.6. */
-    public static com.sun.jdi.ObjectReference monitor(Object/*com.sun.jdi.MonitorInfo*/ a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
-        Class monitorInfoClass;
+    public static com.sun.jdi.ObjectReference monitor(com.sun.jdi.MonitorInfo a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
         try {
-            monitorInfoClass = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass("com.sun.jdi.MonitorInfo");
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalStateException(ex);
-        }
-        try {
-            return (com.sun.jdi.ObjectReference) monitorInfoClass.getMethod("monitor").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            if (t instanceof com.sun.jdi.InvalidStackFrameException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper((com.sun.jdi.InvalidStackFrameException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.monitor();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method stackDepth from JDK 1.6. */
-    public static int stackDepth(Object/*com.sun.jdi.MonitorInfo*/ a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
-        Class monitorInfoClass;
+    public static int stackDepth0(com.sun.jdi.MonitorInfo a) throws org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
         try {
-            monitorInfoClass = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass("com.sun.jdi.MonitorInfo");
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalStateException(ex);
-        }
-        try {
-            return (Integer) monitorInfoClass.getMethod("stackDepth").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            if (t instanceof com.sun.jdi.InvalidStackFrameException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper((com.sun.jdi.InvalidStackFrameException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.stackDepth();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            return 0;
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            return 0;
+        } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method stackDepth from JDK 1.6. */
-    public static int stackDepth0(Object/*com.sun.jdi.MonitorInfo*/ a) throws org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
-        Class monitorInfoClass;
+    public static int stackDepth(com.sun.jdi.MonitorInfo a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
         try {
-            monitorInfoClass = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass("com.sun.jdi.MonitorInfo");
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalStateException(ex);
-        }
-        try {
-            return (Integer) monitorInfoClass.getMethod("stackDepth").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                return 0;
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                return 0;
-            }
-            if (t instanceof com.sun.jdi.InvalidStackFrameException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper((com.sun.jdi.InvalidStackFrameException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.stackDepth();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
         }
     }
 
     // DO NOT MODIFY THIS CODE, GENERATED AUTOMATICALLY
-    /** Wrapper for method thread from JDK 1.6. */
-    public static com.sun.jdi.ThreadReference thread(Object/*com.sun.jdi.MonitorInfo*/ a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
-        Class monitorInfoClass;
+    public static com.sun.jdi.ThreadReference thread(com.sun.jdi.MonitorInfo a) throws org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper, org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper {
         try {
-            monitorInfoClass = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class).loadClass("com.sun.jdi.MonitorInfo");
-        } catch (ClassNotFoundException ex) {
-            throw new IllegalStateException(ex);
-        }
-        try {
-            return (com.sun.jdi.ThreadReference) monitorInfoClass.getMethod("thread").invoke(a);
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException(ex);
-        } catch (SecurityException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException(ex);
-        } catch (java.lang.reflect.InvocationTargetException ex) {
-            Throwable t = ex.getTargetException();
-            if (t instanceof com.sun.jdi.InternalException) {
-                org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report((com.sun.jdi.InternalException) t);
-                throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper((com.sun.jdi.InternalException) t);
-            }
-            if (t instanceof com.sun.jdi.VMDisconnectedException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper((com.sun.jdi.VMDisconnectedException) t);
-            }
-            if (t instanceof com.sun.jdi.InvalidStackFrameException) {
-                throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper((com.sun.jdi.InvalidStackFrameException) t);
-            }
-            throw new IllegalStateException(t);
+            return a.thread();
+        } catch (com.sun.jdi.InternalException ex) {
+            org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
+            throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
+        } catch (com.sun.jdi.VMDisconnectedException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper(ex);
+        } catch (com.sun.jdi.InvalidStackFrameException ex) {
+            throw new org.netbeans.modules.debugger.jpda.jdi.InvalidStackFrameExceptionWrapper(ex);
         }
     }
 

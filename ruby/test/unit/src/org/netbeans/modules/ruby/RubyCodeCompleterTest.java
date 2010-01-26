@@ -443,6 +443,18 @@ public class RubyCodeCompleterTest extends RubyCodeCompleterTestBase {
         checkCompletion("testfiles/define_method.rb", "Calcutec.new.shuffle_dat^a");
     }
 
+    public void testExtendWith() throws Exception {
+        checkCompletion("testfiles/extend_with.rb", "added_class_m^ethod :something");
+    }
+
+    public void testExtendWith2() throws Exception {
+        checkCompletion("testfiles/extend_with.rb", "Includes.added_class_^method");
+    }
+
+    public void testExtendWith3() throws Exception {
+        checkCompletion("testfiles/extend_with.rb", "i.added_class_m^ethod");
+    }
+
     // TODO uncomment when reindexed
 //    public void testIndexedConstantMethods() throws Exception {
 //        checkCompletion("testfiles/constants.rb", "REXML::COPYRIGHT.ls^");

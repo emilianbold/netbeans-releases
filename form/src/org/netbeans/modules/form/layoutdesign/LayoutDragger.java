@@ -1711,7 +1711,7 @@ class LayoutDragger implements LayoutConstants {
         
         @Override
         public String toString() {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             sb.append("distance=").append(distance); // NOI18N
             sb.append(",alignment=").append(alignment); // NOI18N
             sb.append(",nextTo=").append(nextTo); // NOI18N

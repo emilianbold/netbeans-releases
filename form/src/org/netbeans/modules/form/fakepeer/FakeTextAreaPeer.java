@@ -115,7 +115,7 @@ class FakeTextAreaPeer extends FakeTextComponentPeer
                 int i = target.getCaretPosition();
                 int len = text.length();
                 
-                StringBuffer buf = new StringBuffer(len);
+                StringBuilder buf = new StringBuilder(len);
 
                 for ( ; i < len; i++) {
                     char ch = text.charAt(i);

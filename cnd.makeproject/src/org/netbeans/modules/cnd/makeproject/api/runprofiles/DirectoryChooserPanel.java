@@ -45,7 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -69,6 +69,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements Propert
         propenv.addPropertyChangeListener(this);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
             editor.setValue(directoryTextField.getText());
@@ -123,12 +124,14 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements Propert
     }// </editor-fold>//GEN-END:initComponents
 
 private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-            if (seed == null && FileChooser.getCurrectChooserFile() != null)
-		seed = FileChooser.getCurrectChooserFile().getPath();
+            if (seed == null && FileChooser.getCurrectChooserFile() != null) {
+                seed = FileChooser.getCurrectChooserFile().getPath();
+            }
 	    FileChooser fileChooser = new FileChooser(getString("Run_Directory"), getString("SelectLabel"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
 	    int ret = fileChooser.showOpenDialog(this);
-	    if (ret == JFileChooser.CANCEL_OPTION)
-		return;
+	    if (ret == JFileChooser.CANCEL_OPTION) {
+                return;
+            }
 	    String dirPath = fileChooser.getSelectedFile().getPath();
             directoryTextField.setText(dirPath);
 }//GEN-LAST:event_browseButtonActionPerformed

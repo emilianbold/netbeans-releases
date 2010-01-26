@@ -65,6 +65,7 @@ import org.netbeans.modules.form.*;
 
 public class DesignParentAction extends NodeAction {
     
+    @Override
     protected boolean enable(Node[] nodes) {
         boolean ret = false;
         if (nodes != null && nodes.length == 1){
@@ -100,6 +101,7 @@ public class DesignParentAction extends NodeAction {
         return false;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
     }
 
@@ -116,10 +118,12 @@ public class DesignParentAction extends NodeAction {
         return false;
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(DesignParentAction.class, "ACT_DesignParentAction"); // NOI18N
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -197,6 +201,7 @@ public class DesignParentAction extends NodeAction {
     }
 
     private static class DesignParentMenuItemListener implements ActionListener {
+        @Override
         public void actionPerformed(ActionEvent evt) {
             
             Object source = evt.getSource();

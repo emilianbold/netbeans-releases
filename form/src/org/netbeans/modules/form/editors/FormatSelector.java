@@ -966,6 +966,7 @@ public class FormatSelector {
             delegate = new DefaultListCellRenderer();
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             FormatInfo info = (FormatInfo)value;
             Component comp = delegate.getListCellRendererComponent(list, info.getDisplayName(), index, isSelected, cellHasFocus);

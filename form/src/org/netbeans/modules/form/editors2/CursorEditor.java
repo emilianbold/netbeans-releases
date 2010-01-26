@@ -106,6 +106,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
         current = new Cursor(Cursor.DEFAULT_CURSOR);
     }
 
+    @Override
     public void attachEnv(PropertyEnv env) {
         this.env = env;
         env.getFeatureDescriptor().setValue("canEditAsText", Boolean.TRUE); // NOI18N
@@ -215,6 +216,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
             getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CursorCustomEditor"));
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName())
                     && evt.getNewValue() == PropertyEnv.STATE_VALID) {
@@ -243,6 +245,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
      * @param element the XML DOM element representing a subtree of XML from which the value should be loaded
      * @exception IOException thrown when the value cannot be restored from the specified XML element
      */
+    @Override
     public void readFromXML(org.w3c.dom.Node element) throws java.io.IOException {
         if (!XML_CURSOR.equals(element.getNodeName())) {
             throw new java.io.IOException();
@@ -261,6 +264,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
      * @param doc The XML document to store the XML in - should be used for creating nodes only
      * @return the XML DOM element representing a subtree of XML from which the value should be loaded
      */
+    @Override
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         org.w3c.dom.Element el = doc.createElement(XML_CURSOR);
         el.setAttribute(ATTR_ID, getAsText());
@@ -272,6 +276,7 @@ public class CursorEditor extends PropertyEditorSupport  implements
     // NamedPropertyEditor implementation
 
     /** @return display name of the property editor */
+    @Override
     public String getDisplayName() {
         return org.openide.util.NbBundle.getBundle(CursorEditor.class).getString("CTL_CursorEditor_DisplayName");
     }

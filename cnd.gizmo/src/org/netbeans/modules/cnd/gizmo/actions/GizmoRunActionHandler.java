@@ -47,8 +47,8 @@ import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -100,10 +100,12 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         this.listeners = new CopyOnWriteArrayList<ExecutionListener>();
     }
 
+    @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
         this.pae = pae;
     }
 
+    @Override
     public void execute(InputOutput io) {
         MakeConfiguration conf = pae.getConfiguration();
         ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
@@ -196,6 +198,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
 
         DLightExecutorService.submit(new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     session = handle.get();
@@ -209,10 +212,12 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }, "DLight Session for " + target.toString()); // NOI18N
     }
 
+    @Override
     public boolean canCancel() {
         return true;
     }
 
+    @Override
     public void cancel() {
         if (session != null) {
             DLightToolkitManagement.getInstance().stopSession(session);
@@ -220,16 +225,19 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         }
     }
 
+    @Override
     public void addExecutionListener(ExecutionListener l) {
         if (!listeners.contains(l)) {
             listeners.add(l);
         }
     }
 
+    @Override
     public void removeExecutionListener(ExecutionListener l) {
         listeners.remove(l);
     }
 
+    @Override
     public void targetStateChanged(DLightTargetChangeEvent event) {
         switch (event.state) {
             case INIT:
@@ -323,6 +331,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
 
     private static class SimpleOutputConvertorFactory implements LineConvertorFactory {
 
+        @Override
         public LineConvertor newLineConvertor() {
             return LineConvertors.proxy(LineConvertors.filePattern(null, Pattern.compile("^file://([^:]*[^ ])(:)([0-9]*).*"), null, 1, 3), // NOI18N
                     LineConvertors.httpUrl());

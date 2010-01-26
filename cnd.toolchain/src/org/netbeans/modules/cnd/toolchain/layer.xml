@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="CND">
+        <folder name="ToolChain">
+            <file name="SunStudio_12.2_solaris-sparc.xml" url="resources/SunStudio_12.2_solaris-sparc.xml">
+                <attr name="position" intvalue="1120"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
+            </file>
+            <file name="SunStudio_12.2_solaris-x86_linux.xml" url="resources/SunStudio_12.2_solaris-x86_linux.xml">
+                <attr name="position" intvalue="1125"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
+            </file>
+
+            <file name="SunStudioExpressAten_solaris-sparc.xml" url="resources/SunStudioExpressAten_solaris-sparc.xml">
+                <attr name="position" intvalue="1130"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
+            </file>
+            <file name="SunStudioExpressAten_solaris-x86_linux.xml" url="resources/SunStudioExpressAten_solaris-x86_linux.xml">
+                <attr name="position" intvalue="1135"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
+            </file>
+
+            <file name="SunStudio_12.1_solaris-sparc.xml" url="resources/SunStudio_12.1_solaris-sparc.xml">
+                <attr name="position" intvalue="1140"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
+            </file>
+            <file name="SunStudio_12.1_solaris-x86_linux.xml" url="resources/SunStudio_12.1_solaris-x86_linux.xml">
+                <attr name="position" intvalue="1145"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
+            </file>
+
+            <file name="SunStudioExpressCeres.xml" url="resources/SunStudioExpressCeres.xml">
+                <attr name="position" intvalue="1150"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
+            </file>
+            <file name="SunStudio_12.xml" url="resources/SunStudio_12.xml">
+                <attr name="position" intvalue="1160"/>
+                <attr name="extends" stringvalue="SunStudio"/>
+            </file>
+            <file name="SunStudio_11.xml" url="resources/SunStudio_11.xml">
+                <attr name="position" intvalue="1170"/>
+                <attr name="extends" stringvalue="SunStudio"/>
+            </file>
+            <file name="SunStudio_10.xml" url="resources/SunStudio_10.xml">
+                <attr name="position" intvalue="1180"/>
+                <attr name="extends" stringvalue="SunStudio"/>
+            </file>
+            <file name="SunStudio_9.xml" url="resources/SunStudio_9.xml">
+                <attr name="position" intvalue="1210"/>
+                <attr name="extends" stringvalue="SunStudio"/>
+            </file>
+            <file name="SunStudio_8.xml" url="resources/SunStudio_8.xml">
+                <attr name="position" intvalue="1220"/>
+                <attr name="extends" stringvalue="SunStudio"/>
+            </file>
+            <!-- General SunStudio -->
+            <file name="SunStudio.xml" url="resources/SunStudio.xml">
+                <attr name="position" intvalue="1910"/>
+            </file>
+            <!-- SunStudio on Update Center -->
+            <!-- Ready  but commented because dbx does not supported yet -->
+            <!-- file name="SunStudioLite.xml" url="resources/SunStudioLite.xml">
+                <attr name="position" intvalue="1920"/>
+                <attr name="extends" stringvalue="SunStudio_12"/>
+            </file -->
+            <!-- Windows -->
+            <file name="Cygwin_4.x.xml" url="resources/Cygwin_4.x.xml">
+                <attr name="position" intvalue="3010"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
+            <file name="Cygwin.xml" url="resources/Cygwin.xml">
+                <attr name="position" intvalue="3020"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
+            <file name="MinGW.xml" url="resources/MinGW.xml">
+                <attr name="position" intvalue="3110"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
+            <file name="MinGW_TDM.xml" url="resources/MinGW_TDM.xml">
+                <attr name="position" intvalue="3120"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
+            <file name="Interix.xml" url="resources/Interix.xml">
+                <attr name="position" intvalue="3310"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
+            <!-- Ready  but commented -->
+            <!--file name="Intel.xml" url="resources/Intel.xml">
+                <attr name="position" intvalue="3410"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file-->
+            <!-- Not ready yet -->
+            <!--file name="Intel_windows.xml" url="resources/Intel_windows.xml">
+                <attr name="position" intvalue="3420"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file-->
+            <!-- Ready  but commented -->
+            <!--file name="Icecream.xml" url="resources/Icecream.xml">
+                <attr name="position" intvalue="3510"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file-->
+            <!-- Partly ready and commented -->
+            <!--file name="MSVC.xml" url="resources/MSVC.xml">
+               <attr name="position" intvalue="3610"/>
+            </file-->
+            <file name="WinAVR.xml" url="resources/WinAVR.xml">
+                <attr name="position" intvalue="3710"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
+            <file name="GNU_solaris.xml" url="resources/GNU_solaris.xml">
+                <attr name="position" intvalue="4010"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
+            <file name="GNU_mac.xml" url="resources/GNU_mac.xml">
+                <attr name="position" intvalue="4020"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
+            <file name="GNU.xml" url="resources/GNU.xml">
+                <attr name="position" intvalue="4030"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Actions">
+        <folder name="Build">
+            <file name="org-netbeans-modules-cnd-toolchain-actions-BuildToolsAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.toolchain.actions.BuildToolsAction"/>
+            </file>
+        </folder>
+    </folder> <!-- Actions -->
+</filesystem>

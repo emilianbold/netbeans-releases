@@ -49,6 +49,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
 import java.io.File;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 
 /**
  * Table model for the Commit dialog table.
@@ -110,7 +111,7 @@ public class CommitTableModel extends AbstractTableModel {
 
     void setNodes(HgFileNode [] nodes) {
         this.nodes = nodes;
-        commitOptions = HgUtils.createDefaultCommitOptions(nodes);
+        commitOptions = HgUtils.createDefaultCommitOptions(nodes, HgModuleConfig.getDefault().getExludeNewFiles());
         fireTableDataChanged();
     }
     

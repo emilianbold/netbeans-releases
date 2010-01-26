@@ -54,6 +54,7 @@ public class EditContainerAction extends NodeAction {
 
     private static String name;
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
             RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
@@ -78,6 +79,7 @@ public class EditContainerAction extends NodeAction {
         return false;
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length == 1) {
             RADComponentCookie radCookie = activatedNodes[0].getCookie(RADComponentCookie.class);
@@ -100,6 +102,7 @@ public class EditContainerAction extends NodeAction {
         setEnabled(enable(nodes));
     }
 
+    @Override
     public String getName() {
         if (name == null)
             name = org.openide.util.NbBundle.getBundle(EditContainerAction.class)
@@ -107,6 +110,7 @@ public class EditContainerAction extends NodeAction {
         return name;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.containers.designing"); // NOI18N
     }

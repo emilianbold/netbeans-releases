@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import java.awt.BorderLayout;
-import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditorSupport;
 import java.beans.PropertyVetoException;
@@ -48,17 +47,12 @@ import java.beans.VetoableChangeListener;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
-import org.netbeans.modules.cnd.ui.options.ServerListUIEx;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
-import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
+import org.netbeans.modules.cnd.toolchain.ui.api.ServerListUIEx;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsCacheManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
-import org.openide.windows.WindowManager;
 
 /**
  * Popup a dialog which lets the user reconnect to an offline remote host.
@@ -105,6 +99,7 @@ public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeL
      * @param evt A PropertyEnv where we can control the custom property editor
      * @throws java.beans.PropertyVetoException
      */
+    @Override
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         boolean changed = false;
         ExecutionEnvironment env = selectedEnv.get();

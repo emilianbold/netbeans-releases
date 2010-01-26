@@ -40,16 +40,16 @@
 package org.netbeans.modules.java.hints.jackpot.code.spi;
 
 import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -104,6 +104,12 @@ public abstract class TestBase extends NbTestCase {
         TreeLoader.DISABLE_CONFINEMENT_TEST = true;
     }
 
+    private String sourceLevel = "1.5";
+
+    protected void setSourceLevel(String sourceLevel) {
+        this.sourceLevel = sourceLevel;
+    }
+    
     private void prepareTest(String fileName, String code) throws Exception {
         clearWorkDir();
         File wdFile = getWorkDir();
@@ -123,6 +129,8 @@ public abstract class TestBase extends NbTestCase {
         TestUtilities.copyStringToFile(dataFile, code);
 
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache, extraClassPath());
+
+        SourceUtilsTestUtil.setSourceLevel(data, sourceLevel);
 
         DataObject od = DataObject.find(data);
         EditorCookie ec = od.getCookie(EditorCookie.class);
@@ -189,6 +197,50 @@ public abstract class TestBase extends NbTestCase {
         }
 
         assertTrue("The warnings provided by the hint do not match expected warnings. Provided warnings: " + errorsNames.toString(), Arrays.equals(golden, errorsNames.toArray(new String[0])));
+    }
+
+    protected void performAnalysisContainsTest(String fileName, String code, String... golden) throws Exception {
+        prepareTest(fileName, code);
+
+        Set<String> goldenSet = new HashSet<String>();
+        for (String s : golden) {
+            goldenSet.add(s);
+        }
+
+        List<ErrorDescription> errors = computeErrors(info);
+        Collections.sort (errors, ERRORS_COMPARATOR);
+        List<String> errorsNames = new LinkedList<String>();
+
+        errors = errors != null ? errors : Collections.<ErrorDescription>emptyList();
+
+        for (ErrorDescription d : errors) {
+            goldenSet.remove(d.toString());
+            errorsNames.add(d.toString());
+        }
+        assertTrue("The warnings provided by the hint do not contain expected warnings. Provided warnings: " + errorsNames.toString(), goldenSet.isEmpty());
+    }
+
+    protected void performAnalysisExcludesTest(String fileName, String code, String... golden) throws Exception {
+        prepareTest(fileName, code);
+
+        Set<String> goldenSet = new HashSet<String>();
+        for (String s : golden) {
+            goldenSet.add(s);
+        }
+
+        List<ErrorDescription> errors = computeErrors(info);
+        Collections.sort (errors, ERRORS_COMPARATOR);
+        List<String> errorsNames = new LinkedList<String>();
+
+        errors = errors != null ? errors : Collections.<ErrorDescription>emptyList();
+
+        boolean fail = false;
+        for (ErrorDescription d : errors) {
+            if (goldenSet.remove(d.getDescription()))
+                fail = true;
+            errorsNames.add(d.toString());
+        }
+        assertFalse("The warnings provided by the hint do not exclude expected warnings. Provided warnings: " + errorsNames.toString(), fail);
     }
 
     protected String performFixTest(String fileName, String code, String errorDescriptionToString, String fixDebugString, String golden) throws Exception {

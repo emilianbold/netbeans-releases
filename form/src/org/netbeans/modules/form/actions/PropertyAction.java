@@ -77,13 +77,14 @@ public class PropertyAction extends AbstractAction {
         this.property = property;
         String name = (String)property.getValue("actionName"); // NOI18N
         if (name == null) {
-            StringBuffer sb = new StringBuffer(property.getName());
+            StringBuilder sb = new StringBuilder(property.getName());
             sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
             name = sb.toString();
         }
         putValue(Action.NAME, name);
     }
 
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent e) {
         try {
             PropertyEditor propEd = property.getPropertyEditor();
@@ -99,6 +100,7 @@ public class PropertyAction extends AbstractAction {
                 DialogDescriptor.DEFAULT_ALIGN,
                 HelpCtx.DEFAULT_HELP,
                 new ActionListener() {
+                @Override
                     public void actionPerformed(ActionEvent e) {
                         try {
                             String action = e.getActionCommand();

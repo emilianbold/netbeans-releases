@@ -81,6 +81,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
      * 
      * @return diaplay name of this property editor.
      */
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(getClass(), "TableColumnModelEditor"); // NOI18N
     }
@@ -91,6 +92,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
      * @param formModel form model.
      * @param property property being edited.
      */
+    @Override
     public void setContext(FormModel formModel, FormProperty property) {
         this.property = (RADProperty)property;
     }
@@ -98,6 +100,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
     /**
      * Raise form version to 6.0 - this editor is available since NB 6.0.
      */
+    @Override
     public void updateFormVersionLevel() {
         property.getPropertyContext().getFormModel()
                 .raiseVersionLevel(FormModel.FormVersion.NB60, FormModel.FormVersion.NB60);
@@ -142,6 +145,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
         g.drawString(msg, rectangle.x, rectangle.y + (rectangle.height - fm.getHeight())/2 + fm.getAscent());
     }
 
+    @Override
     public String getSourceCode() {
         RADComponent comp = property.getRADComponent();
         CodeVariable var = comp.getCodeExpression().getVariable();
@@ -221,6 +225,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
     private static final String ATTR_RESOURCE_KEY = "resourceKey"; // NOI18N
     private static final String ATTR_NO_RESOURCE = "noResource"; // NOI18N
 
+    @Override
     public void readFromXML(Node element) throws IOException {
         org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
         String selectionModelTxt = attributes.getNamedItem(ATTR_SELECTION_MODEL).getNodeValue();
@@ -319,6 +324,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
         }
     }
 
+    @Override
     public Node storeToXML(Document doc) {
         Object value = getValue();
         org.w3c.dom.Element el = null;
@@ -417,6 +423,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
             return columns;
         }
 
+        @Override
         public Object getDesignValue() {
             Object value = null;
             try {
@@ -576,10 +583,12 @@ public class TableColumnModelEditor extends PropertyEditorSupport
             prop.getRADComponent().setPropertyListener(this);
         }
 
+        @Override
         public Object getTargetValue() throws IllegalAccessException, InvocationTargetException {
             return value;
         }
 
+        @Override
         public void setTargetValue(Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             this.value = value;
         }

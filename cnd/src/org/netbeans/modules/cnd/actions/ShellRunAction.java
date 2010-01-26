@@ -53,12 +53,12 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetUtils;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
-import org.netbeans.modules.cnd.api.execution.ExecutionListener;
-import org.netbeans.modules.cnd.api.execution.LinkSupport;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
+import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -82,6 +82,7 @@ import org.openide.windows.WindowManager;
  */
 public class ShellRunAction extends AbstractExecutorRunAction {
 
+    @Override
     public String getName() {
         return getString("BTN_Run"); // NOI18N
     }
@@ -91,6 +92,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         return object != null && object.getCookie(ShellExecSupport.class) != null;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         // Save everything first
         LifecycleManager.getDefault().saveAll();
@@ -109,9 +111,11 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         if (SwingUtilities.isEventDispatchThread()){
             final ModalMessageDlg.LongWorker runner = new ModalMessageDlg.LongWorker() {
                 private ExecutionService es;
+                @Override
                 public void doWork() {
                     es = prepare(node, listener, outputListener, project, inputOutput);
                 }
+                @Override
                 public void doPostRunInEDT() {
                     if (es != null) {
                         es.run();
@@ -232,7 +236,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
     }
 
     private static String findWindowsShell(String shellCommand, ExecutionEnvironment execEnv, Node node) {
-        int i = shellCommand.lastIndexOf("/"); // UNIX PATH // NOI18N
+        int i = shellCommand.lastIndexOf('/'); // UNIX PATH // NOI18N
         if (i >= 0) {
             shellCommand = shellCommand.substring(i + 1);
         }

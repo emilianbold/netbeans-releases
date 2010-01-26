@@ -603,6 +603,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             </xsl:if>
                             <jvmarg line="${{debug-args-line}}"/>
                             <jvmarg value="-Xrunjdwp:transport=${{debug-transport}},address=${{jpda.address}}"/>
+                            <jvmarg line="${{runmain.jvmargs}}"/>
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>

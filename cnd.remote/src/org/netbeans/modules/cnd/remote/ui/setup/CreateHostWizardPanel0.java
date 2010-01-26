@@ -43,7 +43,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupProvider;
 import org.netbeans.modules.cnd.spi.remote.setup.HostSetupWorker;
-import org.netbeans.modules.cnd.ui.options.ToolsCacheManager;
+import org.netbeans.modules.cnd.toolchain.ui.api.ToolsCacheManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -71,6 +71,7 @@ import org.openide.util.HelpCtx;
         return selectedWorker;
     }
 
+    @Override
     public CreateHostVisualPanel0 getComponent() {
         if (component == null) {
             component = new CreateHostVisualPanel0(this, providers);
@@ -78,10 +79,12 @@ import org.openide.util.HelpCtx;
         return component;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     public boolean isValid() {
         return getComponent().getSelectedProvider() != null;
     }
@@ -90,14 +93,17 @@ import org.openide.util.HelpCtx;
     // change support
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         changeSupport.fireChange();
         applyChanges();
@@ -105,10 +111,12 @@ import org.openide.util.HelpCtx;
 
     ////////////////////////////////////////////////////////////////////////////
     // settings
+    @Override
     public void readSettings(WizardDescriptor settings) {
         getComponent().reset();
     }
 
+    @Override
     public void storeSettings(WizardDescriptor settings) {
         applyChanges();
     }

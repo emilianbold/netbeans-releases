@@ -47,6 +47,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -89,7 +90,9 @@ public final class UIUtils {
     // Usage logging
     private static Logger metricsLogger;
     private static final String USG_KENAI = "USG_KENAI"; // NOI18N
-    private static Set<String> loggedParams; // to avoid logging same params more than once in a session
+    /** To avoid logging same params more than once in a session. Expecting
+     * less than 20 possible combinations at max. */
+    private static Set<String> loggedParams = Collections.synchronizedSet(new HashSet<String>());
 
     public static String getPrefName(Kenai kenai, String name)  {
         return kenai.getUrl().getHost() + name;
@@ -318,9 +321,9 @@ public final class UIUtils {
         return result;
     }
 
-    public static synchronized void logKenaiUsage(Object... parameters) {
+    public static void logKenaiUsage(Object... parameters) {
         String paramStr = getParamString(parameters);
-        if (loggedParams == null || !loggedParams.contains(paramStr)) {
+        if (loggedParams.add(paramStr)) {
             // not logged in this session yet
             if (metricsLogger == null) {
                 metricsLogger = Logger.getLogger("org.netbeans.ui.metrics.kenai"); // NOI18N
@@ -329,11 +332,6 @@ public final class UIUtils {
             rec.setParameters(parameters);
             rec.setLoggerName(metricsLogger.getName());
             metricsLogger.log(rec);
-
-            if (loggedParams == null) {
-                loggedParams = new HashSet<String>();
-            }
-            loggedParams.add(paramStr);
         }
     }
 

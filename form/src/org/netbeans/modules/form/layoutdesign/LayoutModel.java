@@ -710,7 +710,7 @@ public class LayoutModel implements LayoutConstants {
         }
         
         private void mergeSubRegions(List regions, int dimension) {
-            if (regions.size() == 0) {
+            if (regions.isEmpty()) {
                 horizontal = new LayoutInterval(PARALLEL);
                 vertical = new LayoutInterval(PARALLEL);
                 return;
@@ -858,7 +858,7 @@ public class LayoutModel implements LayoutConstants {
     private void addChange(LayoutEvent change) {
         if (recordingChanges && !undoRedoInProgress) {
             redoMap.clear();
-            if (undoMap.size() == 0)
+            if (undoMap.isEmpty())
                 oldestMark = changeMark;
 
             undoMap.put(new Integer(changeMark++), change);
@@ -920,7 +920,7 @@ public class LayoutModel implements LayoutConstants {
         int m2 = ((Integer)toMark).intValue();
 
         while (m1 < m2) {
-            Object m = new Integer(m1);
+            Integer m = new Integer(m1);
             undoMap.remove(m);
             redoMap.remove(m);
             m1++;
@@ -985,6 +985,7 @@ public class LayoutModel implements LayoutConstants {
         Set<LayoutComponent> roots = new TreeSet<LayoutComponent>(new Comparator<LayoutComponent>() {
             // comparator to ensure stable order of dump; according to tree
             // hierarchy, order within container, name
+            @Override
             public int compare(LayoutComponent lc1, LayoutComponent lc2) {
                 if (lc1 == lc2)
                     return 0;
@@ -1040,7 +1041,7 @@ public class LayoutModel implements LayoutConstants {
                 rootId = idToNameMap.get(rootId);
             }
             if (rootId != null)
-                sb.append("  <Root id=\""+rootId+"\">\n"); // NOI18N
+                sb.append("  <Root id=\"").append(rootId).append("\">\n"); // NOI18N
             else
                 sb.append("  <Root>\n"); // NOI18N
             sb.append(saveContainerLayout(root, idToNameMap, 2, true));
@@ -1184,7 +1185,7 @@ public class LayoutModel implements LayoutConstants {
                 fireEvent(ev);
             }
             
-            if (l.size() == 0) {
+            if (l.isEmpty()) {
                 map.remove(linkIdInt);
             }
 
