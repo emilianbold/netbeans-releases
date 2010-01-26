@@ -232,7 +232,7 @@ public class FormEvents {
     // package private interface
 
     static String getEventIdName(Method eventMethod) {
-        StringBuffer buf = new StringBuffer(64);
+        StringBuilder buf = new StringBuilder(64);
 
         buf.append("$"); // NOI18N
         buf.append(eventMethod.getDeclaringClass().getName());
@@ -370,7 +370,7 @@ public class FormEvents {
     }
 
     private static String fullMethodName(Method m) {
-        StringBuffer name = new StringBuffer();
+        StringBuilder name = new StringBuilder();
         name.append(m.getName());
         name.append("("); // NOI18N
 
