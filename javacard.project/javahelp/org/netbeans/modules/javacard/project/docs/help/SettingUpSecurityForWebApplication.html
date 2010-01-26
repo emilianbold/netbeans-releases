@@ -10,13 +10,8 @@ for applications by encrypting and decrypting data. An SSL implementation needs 
 digital signature, key establishment, bulk encryption, and message digest. </p><p class="p">The Java Card 3 platform implements the SSL key establishment algorithm through the
 use of a set of certificates and keys as <b>key</b>=<b>value</b> pairs specified in
 the <tt>config.properties</tt> file.</p><p class="p">You do not have to set up security when running samples provided with
-the plugin. The plugins provide a default <tt>config.properties</tt> file that is used when
-running the sample projects. However, custom implementations that use SSL require that you
-generate corresponding custom certificates and keys and add them to the implementation&#39;s <tt>config.properties</tt>
-file. See <a href="CustomizingJavaCardPlatform.html">Customizing a Java Card Platform</a> if you are creating and deploying a custom Java Card 3 client-server implementation. Unless your custom SSL certificates and keys are issued by a valid certificate
-authority they will be treated by the client application as untrusted certificates. To
-successfully run your client-server application with your custom SSL certificates and keys, you must
-add your certificate to the browser&#39;s list of accepted certificates.</p>
+the plugin or the Java Card 3 Kenai project site. The plugins provide a default <tt>config.properties</tt> file that is used when
+running the sample projects.</p>
 <p>See the appropriate Java Card 3 platform documentation on the Java Card 3 Kenai project site for detailed information about setting up security for a project.</p>
 </body>
 </html>

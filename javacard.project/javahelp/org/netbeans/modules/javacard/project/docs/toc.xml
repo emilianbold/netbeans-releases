@@ -35,8 +35,11 @@
         <tocitem target="org.netbeans.modules.javacard.CustomizeDevice" text="Customize a Device" expand="false"></tocitem>
         <tocitem target="org.netbeans.modules.javacard.RemoveDeviceFromPlatform" text="Remove a Device From a Platform" expand="false">
     </tocitem></tocitem>
-    <<tocitem target="org.netbeans.modules.javacard.DebuggingApplications" text="Debugging Applications" expand="false">
-        <tocitem target="org.netbeans.modules.javacard.DebugApplication2" text="Debug an Application" expand="false"></tocitem>
+    <tocitem target="org.netbeans.modules.javacard.DebuggingApplications" text="Debugging Applications" expand="false">
+        <tocitem target="org.netbeans.modules.javacard.SettingBreakpoints" text="Setting Breakpoints in Code" expand="false"></tocitem>
+	<tocitem target="org.netbeans.modules.javacard.SettingWatches" text="Setting Watches" expand="false"></tocitem>
+	<tocitem target="org.netbeans.modules.javacard.StartingDebugging" text="Starting a Debugging Session" expand="false"></tocitem>
+	<tocitem target="org.netbeans.modules.javacard.SteppingThroughCode" text="Stepping Through Code" expand="false"></tocitem>
     </tocitem>
     <tocitem target="org.netbeans.modules.javacard.CreatingClassicAppletProject" text="Creating a Classic Applet Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.CreateClassicAppletProjectFromTemplate" text="Create a Classic Applet Project From the Template" expand="false"></tocitem>
@@ -118,13 +121,6 @@
     <tocitem target="org.netbeans.modules.javacard.GetRefAppSample" text="Getting the Transit Reference Application Sample" expand="false"></tocitem>
     <tocitem target="org.netbeans.modules.javacard.SettingUpSecurityForWebApplication" text="Setting Up Security for Your Project" expand="false">
         <tocitem target="org.netbeans.modules.javacard.AcceptingUntrustedCertificates" text="Accepting Untrusted Certificates" expand="false"></tocitem></tocitem></tocitem>
- <tocitem target="org.netbeans.modules.javacard.CustomizingJavaCardPlatform" text="Customizing a Java Card Platform" expand="true">
-    <tocitem target="org.netbeans.modules.javacard.BuildingCustomJavaCardPlatformRI" text="Building a Custom Java Card Platform RI" expand="false"></tocitem>
-    <tocitem target="org.netbeans.modules.javacard.ConfiguringCustomRI" text="Configuring a Custom Java Card Platform RI" expand="false">
-        <tocitem target="org.netbeans.modules.javacard.GeneratingCustomSSLCertificatesKeys" text="Generating Custom SSL Certificates and Keys" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.UsingCustomSSLCertificatesKeys" text="Using Custom SSL Certificates and Keys" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.CustomizingRuntimeNode" text="Customizing the Runtime Node" expand="false"></tocitem>
-        <tocitem target="org.netbeans.modules.javacard.CustomizingDeviceNode" text="Customizing the Device Node" expand="false"></tocitem></tocitem></tocitem>
  <tocitem target="org.netbeans.modules.javacard.Troubleshooting" text="Troubleshooting" expand="true">
     <tocitem target="org.netbeans.modules.javacard.UnableRunSamples" text="Unable to Run a Sample" expand="false">
         <tocitem target="org.netbeans.modules.javacard.GettingUpdatedSamples" text="Getting Updated Samples" expand="false"></tocitem></tocitem>
