@@ -39,7 +39,9 @@ public class SuiteInstallerProjectProperties {
 
     public static final String LICENSE_TYPE = "installer.license.type";
     public static final String LICENSE_FILE = "installer.license.file";
+    public static final String LICENSE_TYPE_NO = "no";
     public static final String LICENSE_TYPE_FILE = "file";
+    public static final String LICENSE_TYPE_CUSTOM = "custom";
     
     private StoreGroup installerPropGroup = new StoreGroup();
     private Project suiteProject;
@@ -71,9 +73,9 @@ public class SuiteInstallerProjectProperties {
             //End of hack
             /***********************/
             Collection c = suiteProject.getLookup().lookupAll(Object.class);//.lookup(AntProjectHelper.class);
-            for (Object i : c) {
-                System.out.println("###" + i.getClass());
-            }
+            //for (Object i : c) {
+            //    System.out.println("###" + i.getClass());
+            //}
             propEval = helper.getStandardPropertyEvaluator();
             
             windowsModel = installerPropGroup.createToggleButtonModel(propEval, GENERATE_FOR_WINDOWS);
@@ -117,7 +119,7 @@ public class SuiteInstallerProjectProperties {
             if (key.startsWith(prefix)) {
                 String type = key.substring(prefix.length());
                 String value = NbBundle.getMessage(SuiteInstallerProjectProperties.class, key);
-                if (type.equals("no")) {
+                if (type.equals(LICENSE_TYPE_NO)) {
                     //No License is the first option
                     names.add(0, value);
                     types.add(0, type);
@@ -127,7 +129,7 @@ public class SuiteInstallerProjectProperties {
                 }
             }
         }
-        licenseModel = new LicenseComboBoxModel(names, types);
+        licenseModel = new LicenseComboBoxModel(suiteProject, names, types);
 
         if (propEval.getProperty(LICENSE_FILE) != null) {
             

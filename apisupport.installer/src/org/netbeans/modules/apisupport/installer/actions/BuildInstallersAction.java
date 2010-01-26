@@ -185,7 +185,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         }
 
                         
-                        if (licenseFile==null && licenseType != null && !licenseType.equals("no")) {
+                        if (licenseFile==null && licenseType != null && !licenseType.equals(SuiteInstallerProjectProperties.LICENSE_TYPE_NO)) {
                             Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "License type defined to " + licenseType);
                             String licenseResource = null;
                             try {

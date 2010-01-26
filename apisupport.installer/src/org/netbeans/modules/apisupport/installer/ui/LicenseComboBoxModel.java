@@ -38,11 +38,17 @@
  */
 package org.netbeans.modules.apisupport.installer.ui;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.ComboBoxModel;
+import javax.swing.JFileChooser;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -55,8 +61,10 @@ public class LicenseComboBoxModel implements ComboBoxModel {
     private List<String> types;
     private String selectedItem;
     private boolean selectedItemFromList;
+    private Project suiteProject;
 
-    public LicenseComboBoxModel(List<String> names, List<String> types) {
+    public LicenseComboBoxModel(Project suiteProject, List<String> names, List<String> types) {
+        this.suiteProject = suiteProject;
         this.names = new LinkedList<String>();
         this.names.addAll(names);
 
@@ -92,9 +100,24 @@ public class LicenseComboBoxModel implements ComboBoxModel {
 
     // comboboxmodel ////////////////////////////////////////////////////////////
     public void setSelectedItem(Object item) {
+        String oldSelectedItem = selectedItem;
         selectedItem = (String) item;
 
         if (names.indexOf(item) != -1) {
+            if (types.get(names.indexOf(selectedItem)).equals(
+                    SuiteInstallerProjectProperties.LICENSE_TYPE_CUSTOM)) {
+
+                File home = FileUtil.toFile(suiteProject.getProjectDirectory());
+                File licenseFile = new FileChooserBuilder("installer-license-dir").setTitle(NbBundle.getMessage(LicenseComboBoxModel.class, "InstallerPanel_License.FileChooser.Title")).
+                        setDefaultWorkingDirectory(home).setFilesOnly(true).showOpenDialog();
+                if (licenseFile != null) {
+                    names.add(licenseFile.getAbsolutePath());
+                    types.add(SuiteInstallerProjectProperties.LICENSE_TYPE_FILE);
+                    selectedItem = names.get(names.size() - 1);
+                } else {
+                    selectedItem = oldSelectedItem;
+                }
+            }
             selectedItemFromList = true;
         } else {
             selectedItemFromList = false;
