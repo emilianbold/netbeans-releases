@@ -65,7 +65,7 @@ public abstract class PkgConfigManager {
     
     public static interface PkgConfig {
         PackageConfiguration getPkgConfig(String pkg);
-        ResolvedPath getResolvedPath(String include);
+        Collection<ResolvedPath> getResolvedPath(String include);
     }
 
     public static interface PackageConfiguration {
