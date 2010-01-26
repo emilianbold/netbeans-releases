@@ -37,8 +37,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.project;
+package org.netbeans.modules.cnd.discovery.project.tests;
 
+import org.netbeans.modules.cnd.discovery.project.cases.QT_QLifeTestCase;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
@@ -47,17 +48,16 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
  *
  * @author Alexander Simon
  */
-public class ConfigureDiscoverySuiteTest extends CndBaseTestSuite {
+public class QMakeDiscoverySuiteTest extends CndBaseTestSuite {
 
-    public ConfigureDiscoverySuiteTest() {
-        super("C/C++ Configure Discovery Test"); // NOI18N
+    public QMakeDiscoverySuiteTest() {
+        super("C/C++ QMake Discovery Test"); // NOI18N
 
-        addTestSuite(PkgConfigTestCase.class);
-        addTestSuite(LiteSqlTestCase.class);
+        addTestSuite(QT_QLifeTestCase.class);
     }
 
     public static Test suite() {
-        TestSuite suite = new ConfigureDiscoverySuiteTest();
+        TestSuite suite = new QMakeDiscoverySuiteTest();
         return suite;
     }
 }

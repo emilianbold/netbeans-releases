@@ -170,7 +170,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         return new File(path+File.separator+"configure");
     }
 
-    public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers){
+    public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder){
         Map<String, String> tools = findTools();
         CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
         if (useSunCompilers) {
@@ -200,7 +200,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             return;
         }
         try {
-            final String path = download(URL, additionalScripts, tools);
+            final String path = download(URL, additionalScripts, tools)+subFolder;
 
             final File configure = detectConfigure(path);
             final File makeFile = new File(path+File.separator+"Makefile");
@@ -209,6 +209,11 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                     assertTrue("Cannot find configure or Makefile in folder "+path, false);
                 }
             }
+            if (Utilities.isWindows()){
+                // cygwin does not allow test discovery in real time, so disable tests on windows
+                return;
+            }
+
             WizardDescriptor wizard = new WizardDescriptor() {
                 @Override
                 public synchronized Object getProperty(String name) {
@@ -225,7 +230,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                             return configure.getAbsolutePath();
                         }
                     } else if ("realFlags".equals(name)) {
-                        if (path.indexOf("cmake-")>0) {
+                        if (path.indexOf("cmake-")>0 && subFolder.isEmpty()) {
                             if (isSUN) {
                                 return "CMAKE_C_COMPILER=cc CMAKE_CXX_COMPILER=CC CFLAGS=-g CXXFLAGS=-g CMAKE_BUILD_TYPE=Debug CMAKE_CXX_FLAGS_DEBUG=-g CMAKE_C_FLAGS_DEBUG=-g";
                             } else {
@@ -293,6 +298,8 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                 }
                 i++;
             }
+            assertEquals("Failed configure", ImportProject.State.Successful, importer.getState().get(ImportProject.Step.Configure));
+            assertEquals("Failed build", ImportProject.State.Successful, importer.getState().get(ImportProject.Step.Make));
             CsmModel model = CsmModelAccessor.getModel();
             Project makeProject = importer.getProject();
             assertTrue("Not found model", model != null);

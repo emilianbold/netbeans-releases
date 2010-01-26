@@ -37,27 +37,24 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.project;
+package org.netbeans.modules.cnd.discovery.project.cases;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import org.junit.Test;
+import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
 
 /**
- *
+ * Not in suite
  * @author Alexander Simon
  */
-public class CMakeDiscoverySuiteTest extends CndBaseTestSuite {
+public class CMakeExampleTestCase extends MakeProjectTestBase {
 
-    public CMakeDiscoverySuiteTest() {
-        super("C/C++ CMake Discovery Test"); // NOI18N
-
-        //addTestSuite(CMakeTestCase.class);
-        addTestSuite(MysqlConnectorTestCase.class);
+    public CMakeExampleTestCase() {
+        super("CMakeExample");
     }
 
-    public static Test suite() {
-        TestSuite suite = new CMakeDiscoverySuiteTest();
-        return suite;
+    @Test
+    public void testCmake(){
+        performTestProject("http://www.cmake.org/files/v2.6/cmake-2.6.4.tar.gz", null, false, "/Example");
     }
 }
+

@@ -37,26 +37,34 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.project;
+package org.netbeans.modules.cnd.discovery.project.cases;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.Test;
+import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
 
 /**
  *
  * @author Alexander Simon
  */
-public class LongDiscoverySuiteTest extends CndBaseTestSuite {
+public class MysqlConnectorTestCase extends MakeProjectTestBase {
 
-    public LongDiscoverySuiteTest() {
-        super("C/C++ Long Discovery Test"); // NOI18N
-
-        addTestSuite(TesseractTestCase.class);
+    public MysqlConnectorTestCase() {
+        super("MysqlConnector");
     }
 
-    public static Test suite() {
-        TestSuite suite = new LongDiscoverySuiteTest();
-        return suite;
+    @Override
+    protected List<String> requiredTools() {
+        List<String> res = new ArrayList<String>(super.requiredTools());
+        res.add("cmake");
+        return res;
+    }
+
+    @Test
+    public void testMysqlConnector(){
+        List<String> list = new ArrayList<String>();
+        list.add("rm -f Makefile");
+        performTestProject("http://download.softagency.net/MySQL/Downloads/Connector-C/mysql-connector-c-6.0.1.tar.gz", list, false, "");
     }
 }

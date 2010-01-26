@@ -37,23 +37,23 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.project;
+package org.netbeans.modules.cnd.discovery.project.cases;
 
 import org.junit.Test;
+import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
 
 /**
- * Not in suite
+ *
  * @author Alexander Simon
  */
-public class CMakeTestCase extends MakeProjectTestBase {
+public class PkgConfigTestCase extends MakeProjectTestBase {
 
-    public CMakeTestCase() {
-        super("CMake");
+    public PkgConfigTestCase() {
+        super("PkgConfig");
     }
 
     @Test
-    public void testCmake(){
-        performTestProject("http://www.cmake.org/files/v2.6/cmake-2.6.4.tar.gz", null, false);
+    public void testPkgConfig(){
+        performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz", null, false, "");
     }
 }
-

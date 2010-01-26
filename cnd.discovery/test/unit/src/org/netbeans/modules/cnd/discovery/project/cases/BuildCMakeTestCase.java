@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,34 +31,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.project;
+package org.netbeans.modules.cnd.discovery.project.cases;
 
-import org.netbeans.junit.NbTestCase;
+import org.junit.Test;
+import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
 
 /**
  * Not in suite
  * @author Alexander Simon
  */
-public class OpenSolarisTestCase extends NbTestCase {
+public class BuildCMakeTestCase extends MakeProjectTestBase {
 
-    /** Creates a new instance of BaseTestCase */
-    public OpenSolarisTestCase() {
-        super("OpenSolarisTest");
+    public BuildCMakeTestCase() {
+        super("BuildCMake");
     }
 
-    public void testCreateproject() {
-        StandAlone.main(new String[]{"-project=open-solaris"
-                                     ,"-root=/net/elif/export1/sside/pomona/wsb101"
-                                     //,"-root=/export/opensolaris/testws88"
-                                     //,"-netbeans-project=/export/opensolaris/testws88/pomona"
-                                     ,"-netbeans-project=/var/tmp/pomona"
-                                     //,"-nightly-log=/export/opensolaris/log.2008-05-20.04:26/nightly.log"
-        });
+    @Test
+    public void testCmake(){
+        performTestProject("http://www.cmake.org/files/v2.6/cmake-2.6.4.tar.gz", null, false, "");
     }
 }
+
