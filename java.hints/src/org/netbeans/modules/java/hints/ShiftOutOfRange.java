@@ -39,14 +39,11 @@
 
 package org.netbeans.modules.java.hints;
 
-import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.util.Map;
-import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationInfo;
@@ -58,11 +55,12 @@ import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFacto
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
+
 /**
  *
  * @author Jan Jancura
  */
-@Hint(category="general")
+@Hint(category="bitwise_operations")
 public class ShiftOutOfRange {
 
     @TriggerPatterns ({
