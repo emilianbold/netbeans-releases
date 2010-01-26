@@ -127,7 +127,7 @@ testresult "$TESTDIR" "outgoing.changes" "$HGOUT"
 
 OUT_COUNT=`hg out --no-merges --template 'change: {node|short}\n' $push_url | grep '^change: ' | wc -l`
 if [ "$OUT_COUNT" -gt 0 ]; then
-    echo "Let the build start. There is $OUT_COUNT outgoing changes."
+    echo "Let the build start. There are $OUT_COUNT outgoing changes."
 else
     echo "No outgoing changes. No reason to do build."
     echo >"nbbuild/no-outgoing-changes-no-build.zip"
