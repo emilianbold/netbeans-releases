@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
+import org.netbeans.modules.cnd.repository.queue.KeyValueQueue;
 import org.netbeans.modules.cnd.repository.queue.RepositoryQueue;
 import org.netbeans.modules.cnd.repository.queue.RepositoryThreadManager;
 import org.netbeans.modules.cnd.repository.queue.RepositoryWriter;
@@ -67,6 +68,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -292,7 +294,15 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
         } finally {
             queueLock.writeLock().unlock();
         }
-        assert queue.clearQueue(new UnitFilter(unitName)).isEmpty();
+        if (CndUtils.isDebugMode()) {
+            Collection<KeyValueQueue.Entry<Key, Persistent>> clearQueue = queue.clearQueue(new UnitFilter(unitName));
+            if (!clearQueue.isEmpty()) {
+                System.err.println("UNSAVED ENTRIES FOR " + unitName);
+                for (KeyValueQueue.Entry<Key, Persistent> entry : clearQueue) {
+                    System.err.printf("\n\t{0}\n\t{1}", entry.getKey(), entry.getValue());
+                }
+            }
+        }
 
         //clean the repository cach files here if it is necessary
         //
