@@ -1056,7 +1056,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     private void updateDesignerActions() {
         Collection selectedIds = selectedLayoutComponentIds();
-        boolean enabled = (layoutDesigner == null) ? false : layoutDesigner.canAlign(selectedIds);;
+        boolean enabled = (layoutDesigner == null) ? false : layoutDesigner.canAlign(selectedIds);
         Iterator iter = getDesignerActions(true).iterator();
         while (iter.hasNext()) {
             Action action = (Action)iter.next();
