@@ -38,4 +38,19 @@
         </folder>
     </folder>
 
+    <folder name="Templates">
+        <folder name="Project">
+            <folder name="Maven2">
+                <file name="OSGi">
+                    <attr name="position" intvalue="290"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.SimpleWizardIterator.createOSGiIterator"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/OSGiDescription.html"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/maven_osgi_16.png"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>
