@@ -187,11 +187,11 @@ public class CompletionContextImpl extends CompletionContext {
                 noNamespaceSchemaLocation = attr.getValue().trim();
                 continue;
             }            
-            if(!attr.getName().startsWith(XMLConstants.XMLNS_ATTRIBUTE))
+            if(! attrName.startsWith(XMLConstants.XMLNS_ATTRIBUTE))
                 continue;            
-            if(attr.getName().equals(defNS))
+            if(attrName.equals(defNS))
                 this.defaultNamespace = attr.getValue();
-            declaredNamespaces.put(attr.getName(), attr.getValue());
+            declaredNamespaces.put(attrName, attr.getValue());
         }
     }
             
