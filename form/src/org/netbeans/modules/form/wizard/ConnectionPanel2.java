@@ -227,7 +227,7 @@ class ConnectionPanel2 extends javax.swing.JPanel {
     }
 
     private static String getMethodName(MethodDescriptor desc) {
-        StringBuffer sb = new StringBuffer(desc.getName());
+        StringBuilder sb = new StringBuilder(desc.getName());
         Class[] params = desc.getMethod().getParameterTypes();
         if ((params == null) ||(params.length == 0)) {
             sb.append("()"); // NOI18N
