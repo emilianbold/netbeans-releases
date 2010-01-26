@@ -371,7 +371,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
     {
         private static final String[] WELL_KNOWN_FILES = {"web.xml", "webservices.xml", 
             "struts-config.xml", "faces-config.xml", "portlet.xml", "navigator.xml", 
-            "managed-beans.xml"}; //NOI18N
+            "managed-beans.xml", "beans.xml"}; //NOI18N
         
         private static final java.util.Comparator<FileObject> COMPARATOR = 
             new NodeComparator();
