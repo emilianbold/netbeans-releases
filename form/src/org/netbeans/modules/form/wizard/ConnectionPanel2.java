@@ -47,7 +47,6 @@ import javax.swing.event.*;
 
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.form.*;
 import org.openide.WizardDescriptor;
 
 /**
