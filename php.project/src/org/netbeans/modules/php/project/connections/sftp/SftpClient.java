@@ -485,6 +485,11 @@ public class SftpClient implements RemoteClient {
         public long getSize() {
             return entry.getAttrs().getSize();
         }
+
+        @Override
+        public long getTimestamp() {
+            return entry.getAttrs().getMTime();
+        }
     }
 
     private static class SftpLogger implements com.jcraft.jsch.Logger {

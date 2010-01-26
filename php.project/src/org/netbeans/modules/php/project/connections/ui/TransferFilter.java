@@ -137,8 +137,8 @@ public final class TransferFilter extends JPanel {
         return showTransferDialog(transferFiles, TransferFileTableModel.Type.UPLOAD, timestamp);
     }
 
-    public static Set<TransferFile> showDownloadDialog(Set<TransferFile> transferFiles) {
-        return showTransferDialog(transferFiles, TransferFileTableModel.Type.DOWNLOAD, -1);
+    public static Set<TransferFile> showDownloadDialog(Set<TransferFile> transferFiles, long timestamp) {
+        return showTransferDialog(transferFiles, TransferFileTableModel.Type.DOWNLOAD, timestamp);
     }
 
     public static TransferFilter getEmbeddableDownloadDialog(Set<TransferFile> transferFiles) {
@@ -164,7 +164,7 @@ public final class TransferFilter extends JPanel {
         String title = null;
         switch (type) {
             case DOWNLOAD:
-                model = new TransferFileDownloadModel(wrapTransferFiles(transferFiles));
+                model = new TransferFileDownloadModel(wrapTransferFiles(transferFiles, timestamp));
                 title = NbBundle.getMessage(TransferFilter.class, "Download_Title");
                 break;
             case UPLOAD:
@@ -193,11 +193,7 @@ public final class TransferFilter extends JPanel {
     }
 
     private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer) {
-        List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>(toTransfer.size());
-        for (TransferFile transferFile : toTransfer) {
-            retval.add(new TransferFileUnit(transferFile, TransferFileTableModel.isMarkedAsDefault()));
-        }
-        return retval;
+        return wrapTransferFiles(toTransfer, -1);
     }
 
     private static List<TransferFileUnit> wrapTransferFiles(Collection<TransferFile> toTransfer,  long timestamp) {

@@ -139,7 +139,7 @@ public final class TransferFile {
         boolean file = remoteFile.isFile();
         long size = directory ? 0L : remoteFile.getSize();
 
-        return new TransferFile(name, relativePath, parentRelativePath, size, directory, file);
+        return new TransferFile(name, relativePath, parentRelativePath, size, directory, file, remoteFile.getTimestamp());
     }
 
     /**

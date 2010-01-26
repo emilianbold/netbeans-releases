@@ -74,4 +74,12 @@ public interface RemoteFile {
      * @return the file size (in bytes) of the remote file.
      */
     long getSize();
+
+    /**
+     * Return the timestamp (in <b>seconds</b>) of the remote file last modification or <code>-1</code> if not known.
+     * <p>
+     * Not guaranteed what is returned for directories.
+     * @return the timestamp (in <b>seconds</b>) of the remote file last modification or <code>-1</code> if not known.
+     */
+    long getTimestamp();
 }
