@@ -134,7 +134,7 @@ public final class BeanInstaller {
             Iterator iter = unableToInstall.iterator();
             StringBuilder sb = new StringBuilder();
             while (iter.hasNext()) {
-                sb.append(iter.next()+", "); // NOI18N
+                sb.append(iter.next()).append(", "); // NOI18N
             }
             sb.delete(sb.length()-2, sb.length());
             String messageFormat = PaletteUtils.getBundleString("MSG_cannotInstallBeans"); // NOI18N
