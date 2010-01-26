@@ -520,8 +520,9 @@ public class PhpProjectProperties implements ConfigManager.ConfigProvider {
             }
         }
 
-        // reset timestamp of the last upload
+        // reset timestamp of the last upload & download
         ProjectSettings.resetLastUpload(project);
+        ProjectSettings.resetLastDownload(project);
 
         // UI log
         logUsage(helper.getProjectDirectory(), ProjectPropertiesSupport.getSourcesDirectory(project),

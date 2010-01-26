@@ -56,6 +56,7 @@ public final class ProjectSettings {
     private static final String PROJECT_PREFERENCES_PATH = "projects"; // NOI18N
 
     private static final String LAST_UPLOAD = "lastUpload"; // NOI18N
+    private static final String LAST_DONWLOAD = "lastDownload"; // NOI18N
     private static final String DEBUG_URLS = "debugUrls"; // NOI18N
     private static final String DEBUG_URLS_DELIMITER = "??NB??"; // NOI18N
     private static final int DEBUG_URLS_LIMIT = 10;
@@ -81,6 +82,21 @@ public final class ProjectSettings {
 
     public static void resetLastUpload(Project project) {
         setLastUpload(project, -1);
+    }
+
+    /**
+     * @return timestamp <b>in seconds</b> of the last download of a project or <code>-1</code> if not found.
+     */
+    public static long getLastDownload(Project project) {
+        return getPreferences(project).getLong(LAST_DONWLOAD, -1);
+    }
+
+    public static void setLastDownload(Project project, long timestamp) {
+        getPreferences(project).putLong(LAST_DONWLOAD, timestamp);
+    }
+
+    public static void resetLastDownload(Project project) {
+        setLastDownload(project, -1);
     }
 
     public static List<String> getDebugUrls(Project project) {

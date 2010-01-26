@@ -50,7 +50,6 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
@@ -127,19 +126,17 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         
         try{
             if (ProviderUtil.isValidServerInstanceOrNone(project) && !isPersistenceUnitDefined()) {
-                String warning = NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_NoPersistenceUnit");
-                p.setPersistenceUnitButtonVisibility(true, warning);
+                p.setPersistenceUnitButtonVisibility(true);
             } else {
-                p.setPersistenceUnitButtonVisibility(false, null);
+                p.setPersistenceUnitButtonVisibility(false);
             }
         } catch (InvalidPersistenceXmlException ipx){
-            String warning = NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_InvalidPersistenceXml", ipx.getPath());
-            p.setPersistenceUnitButtonVisibility(false, warning);
+            p.setPersistenceUnitButtonVisibility(false);
         }
     }
     
     private boolean isPersistenceUnitDefined() throws InvalidPersistenceXmlException {
-        return ProviderUtil.persistenceExists(project) || getPersistenceUnit() != null;
+        return ProviderUtil.persistenceExists(project);
     }
     
     @Override
@@ -156,14 +153,21 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         return p.getPrimaryKeyClassName();
     }
     
-    public PersistenceUnit getPersistenceUnit(){
-        return p.getPersistenceUnit();
+//    public PersistenceUnit getPersistenceUnit(){
+//        return p.getPersistenceUnit();
+//    }
+
+    public boolean isCreatePU(){
+        return p.isCreatePU();
     }
+
     @Override
     public boolean isFinishPanel() {
         return isValid();
     }
     
+    
+
     protected final void fireChangeEvent() {
         Iterator it;
         synchronized (changeListeners) {
@@ -179,6 +183,7 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
     public void stateChanged(ChangeEvent e) {
         fireChangeEvent();
     }
-    
+
+
 }
 
