@@ -81,7 +81,7 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizar
 
     @Override
     public Component getComponent() {
-        if ((markedBeans == null) && ((allBeans == null) || (allBeans.size() == 0))) {
+        if ((markedBeans == null) && ((allBeans == null) || (allBeans.isEmpty()))) {
             // No beans found
             String messageKey;
             if (sourceType == ClassSource.JarEntry.class)
