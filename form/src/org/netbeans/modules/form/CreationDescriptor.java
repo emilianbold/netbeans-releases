@@ -376,7 +376,7 @@ public class CreationDescriptor {
         
         @Override
         public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             buf.append("new "); // NOI18N
             buf.append(theClass.getCanonicalName());
             if (genericTypes != null) {
@@ -499,7 +499,7 @@ public class CreationDescriptor {
         
         @Override
         public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes) {
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             if (expressionType == null) expressionType = describedClass;
             if (!expressionType.isAssignableFrom(method.getReturnType())) { // Issue 71220
                 buf.append('(').append(expressionType.getName()).append(')');
