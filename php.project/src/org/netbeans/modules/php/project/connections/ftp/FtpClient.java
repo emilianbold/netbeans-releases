@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.project.connections.ftp;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -47,6 +49,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.net.ProtocolCommandEvent;
@@ -76,6 +79,9 @@ public class FtpClient implements RemoteClient {
 
     private final FtpConfiguration configuration;
     private final FTPClient ftpClient;
+
+    // @GuardedBy(this)
+    private Long timestampDiff = null;
 
 
     public FtpClient(FtpConfiguration configuration, InputOutput io) {
@@ -380,6 +386,38 @@ public class FtpClient implements RemoteClient {
         return rights;
     }
 
+    synchronized long getTimestampDiff() {
+        if (timestampDiff != null) {
+            return timestampDiff;
+        }
+        timestampDiff = 0L;
+        // try to calculate the time difference between remote and local pc
+        try {
+            File tmpFile = File.createTempFile("netbeans-timestampdiff-", ".txt"); // NOI18N
+            long now = tmpFile.lastModified();
+
+            final String remotePath = configuration.getInitialDirectory() + "/" + tmpFile.getName(); // NOI18N
+            InputStream is = new FileInputStream(tmpFile);
+            try {
+                if (storeFile(remotePath, is)) {
+                    FTPFile remoteFile = getFile(remotePath);
+                    if (remoteFile != null) {
+                        timestampDiff = now - remoteFile.getTimestamp().getTimeInMillis();
+                    }
+                    deleteFile(remotePath);
+                }
+            } finally {
+                is.close();
+                if (!tmpFile.delete()) {
+                    tmpFile.deleteOnExit();
+                }
+            }
+        } catch (Exception ex) {
+            LOGGER.log(Level.INFO, "Unable to calculate time difference", ex);
+        }
+        return timestampDiff;
+    }
+
     private static final class PrintCommandListener implements ProtocolCommandListener {
         private final InputOutput io;
 
@@ -417,7 +455,7 @@ public class FtpClient implements RemoteClient {
         }
     }
 
-    private static final class RemoteFileImpl implements RemoteFile {
+    private final class RemoteFileImpl implements RemoteFile {
         private final FTPFile ftpFile;
 
         public RemoteFileImpl(FTPFile ftpFile) {
@@ -439,6 +477,11 @@ public class FtpClient implements RemoteClient {
 
         public long getSize() {
             return ftpFile.getSize();
+        }
+
+        @Override
+        public long getTimestamp() {
+            return TimeUnit.SECONDS.convert(ftpFile.getTimestamp().getTimeInMillis() + getTimestampDiff(), TimeUnit.MILLISECONDS);
         }
     }
 }
