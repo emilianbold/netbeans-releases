@@ -134,12 +134,27 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                         String appName = "";
                         String appIcon = null;
                         String licenseType = null;
+                        File licenseFile = null;
+
                         boolean usePack200 = false;
                         try {
                             InputStream is = propertiesFile.getInputStream();
                             ps.load(is);
                             appName = ps.getProperty("app.name");
                             licenseType = ps.getProperty("installer.license.type");
+                            String licenseFileProp = ps.getProperty("installer.license.file");
+                            if(licenseFileProp!=null) {
+                                licenseFile = new File(licenseFileProp);
+                                if(!licenseFile.equals(licenseFile.getAbsoluteFile())) {
+                                    //relative to suite dir
+                                    licenseFile = new File(suiteLocation, licenseFileProp);
+                                }
+                                //if(!licenseFile.exists()) {
+                                //    licenseFile = null;
+                                //}
+                            }
+
+
                             usePack200 = Boolean.parseBoolean(ps.getProperty(SuiteInstallerProjectProperties.USE_PACK200_COMPRESSION));
                             appIcon = ps.getProperty("app.icon");
                             if (appName == null) {
@@ -169,8 +184,8 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                             Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "Can`t store properties", ex);
                         }
 
-                        File licenseFile = null;
-                        if (licenseType != null && !licenseType.equals("no")) {
+                        
+                        if (licenseFile==null && licenseType != null && !licenseType.equals("no")) {
                             Logger.getLogger(BuildInstallersAction.class.getName()).log(Level.WARNING, "License type defined to " + licenseType);
                             String licenseResource = null;
                             try {

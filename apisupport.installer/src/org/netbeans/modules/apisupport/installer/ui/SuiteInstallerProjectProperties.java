@@ -1,5 +1,6 @@
 package org.netbeans.modules.apisupport.installer.ui;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,6 +19,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -36,6 +38,9 @@ public class SuiteInstallerProjectProperties {
     public static final String USE_PACK200_COMPRESSION = "installer.pack200.enabled";
 
     public static final String LICENSE_TYPE = "installer.license.type";
+    public static final String LICENSE_FILE = "installer.license.file";
+    public static final String LICENSE_TYPE_FILE = "file";
+    
     private StoreGroup installerPropGroup = new StoreGroup();
     private Project suiteProject;
     private PropertyEvaluator propEval;
@@ -123,11 +128,25 @@ public class SuiteInstallerProjectProperties {
             }
         }
         licenseModel = new LicenseComboBoxModel(names, types);
-        if (propEval.getProperty(LICENSE_TYPE) != null) {
+
+        if (propEval.getProperty(LICENSE_FILE) != null) {
+            
+            File licenseFile = new File(propEval.getProperty(LICENSE_FILE));
+            if(!licenseFile.equals(licenseFile.getAbsoluteFile())) {
+                licenseFile = new File(FileUtil.toFile(suiteProject.getProjectDirectory()),
+                        propEval.getProperty(LICENSE_FILE));
+            }
+            
+            licenseModel.getNames().add(licenseFile.getAbsolutePath());
+            licenseModel.getTypes().add(LICENSE_TYPE_FILE);
+            String name = licenseModel.getNames().get(licenseModel.getNames().size() - 1);
+            licenseModel.setSelectedItem(name);             
+        }
+        
+        else if (propEval.getProperty(LICENSE_TYPE) != null) {
             int index = licenseModel.getTypes().indexOf(propEval.getProperty(LICENSE_TYPE));
             if (index != -1) {
                 licenseModel.setSelectedItem(licenseModel.getNames().get(index));
-
             }
         }
     }
@@ -155,7 +174,33 @@ public class SuiteInstallerProjectProperties {
                     if (licenseName != null) {
                         int index = licenseModel.getNames().indexOf(licenseName);
                         if (index != -1) {
-                            ep.setProperty(LICENSE_TYPE, licenseModel.getTypes().get(index));
+                            String type = licenseModel.getTypes().get(index);
+                            if(type.equals(LICENSE_TYPE_FILE)) {
+                                ep.setProperty(LICENSE_FILE, licenseName.replace("\\", "/"));
+                                File f = new File(licenseName);
+                                File suiteLocation = FileUtil.toFile(suiteProject.getProjectDirectory());
+                                if(!f.equals(f.getAbsoluteFile())) {
+                                    f = new File(suiteLocation, licenseName);
+                                }
+
+                                File parent = f.getAbsoluteFile().getParentFile();
+                                while(parent!=null) {
+                                    if(parent.equals(suiteLocation)) {
+                                        String parentPath = parent.getAbsolutePath();
+                                        String filePath = f.getAbsolutePath();
+                                        if(filePath.startsWith(parentPath)) {
+                                            ep.setProperty(LICENSE_FILE,
+                                                    filePath.substring(parentPath.length() + 1).replace("\\", "/"));
+                                        }
+                                        break;
+                                    }
+                                    parent = parent.getParentFile();
+                                }
+                                ep.remove(LICENSE_TYPE);
+                            } else {
+                                ep.setProperty(LICENSE_TYPE, type);
+                                ep.remove(LICENSE_FILE);
+                            }
                         }
                     }
                     //storeRest(ep);

@@ -111,7 +111,6 @@ public class InstallerPanel extends javax.swing.JPanel {
         pack200Info.setText(org.openide.util.NbBundle.getMessage(InstallerPanel.class, "InstallerPanel.Pack200.Description.Text")); // NOI18N
         pack200Info.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         pack200Info.setFocusable(false);
-        pack200Info.setMaximumSize(new java.awt.Dimension(2147483647, 14));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -134,7 +133,7 @@ public class InstallerPanel extends javax.swing.JPanel {
                             .add(layout.createSequentialGroup()
                                 .add(licenseLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(licenseComboBox, 0, 904, Short.MAX_VALUE)))
+                                .add(licenseComboBox, 0, 941, Short.MAX_VALUE)))
                         .add(0, 0, 0))))
             .add(layout.createSequentialGroup()
                 .addContainerGap()
