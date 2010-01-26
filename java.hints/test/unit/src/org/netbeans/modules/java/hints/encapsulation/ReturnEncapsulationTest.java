@@ -120,7 +120,7 @@ public class ReturnEncapsulationTest extends TestBase {
                             "        return d;\n"+
                             "    }\n"+
                             "}",
-                            "4:8-4:17:verifier:Return of Date or Calandar Field");
+                            "4:8-4:17:verifier:Return of Date or Calendar Field");
     }
 
     public void testReturnDateLocal() throws Exception {
@@ -143,7 +143,7 @@ public class ReturnEncapsulationTest extends TestBase {
                             "        return d;\n"+
                             "    }\n"+
                             "}",
-                            "4:8-4:17:verifier:Return of Date or Calandar Field");
+                            "4:8-4:17:verifier:Return of Date or Calendar Field");
     }
 
     public void testReturnCalendarLocal() throws Exception {
