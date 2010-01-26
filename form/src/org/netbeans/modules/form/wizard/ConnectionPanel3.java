@@ -131,7 +131,7 @@ class ConnectionPanel3 extends javax.swing.JPanel {
     }
 
     String getParametersText() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < pickers.length; i++) {
             buf.append(pickers[i].getText());
             if (i != pickers.length - 1)
@@ -155,7 +155,7 @@ class ConnectionPanel3 extends javax.swing.JPanel {
     }
 
     private String getPreviewText() {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < pickers.length; i++) {
             buf.append(pickers[i].getPreviewText());
             if (i != pickers.length - 1)
