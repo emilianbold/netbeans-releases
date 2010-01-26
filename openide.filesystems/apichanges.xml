@@ -46,6 +46,23 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+           <change id="JarFileSystem-constructor-file">
+              <api name="filesystems"/>
+              <summary>Effective constructor for JarFileSystem</summary>
+              <version major="7" minor="35"/>
+              <date day="26" month="1" year="2010"/>
+              <author login="jtulach"/>
+              <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+              <description>
+                  <p>
+                      New constructor for <code>JarFileSystem</code>
+                      that initializes everything without opening the underlaying
+                      JAR file.
+                  </p>
+              </description>
+              <class package="org.openide.filesystems" name="JarFileSystem"/>
+              <issue number="177461"/>
+          </change>
         <change id="MIMEResolverImpl">
             <api name="filesystems"/>
             <summary>Access methods added to <code>MIMEResolver.UIHelpers</code></summary>
