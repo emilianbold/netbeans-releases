@@ -407,7 +407,7 @@ public class BindingDesignSupport {
                             for (Tree clMember : clazz.getMembers()) {
                                 if (clMember.getKind() == Tree.Kind.METHOD) {
                                     MethodTree method = (MethodTree)clMember;
-                                    if (method.getParameters().size() != 0) continue;
+                                    if (!method.getParameters().isEmpty()) continue;
                                     Set<javax.lang.model.element.Modifier> modifiers = method.getModifiers().getFlags();
                                     if (modifiers.contains(javax.lang.model.element.Modifier.STATIC)
                                             || !modifiers.contains(javax.lang.model.element.Modifier.PUBLIC)) {
