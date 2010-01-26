@@ -1283,7 +1283,7 @@ public class FormModel
     void fireEvents(FormModelEvent ... events) {
         java.util.List targets;
         synchronized(this) {
-            if (listeners == null || listeners.size() == 0) {
+            if (listeners == null || listeners.isEmpty()) {
                 return;
             }
             targets = (ArrayList) listeners.clone();
