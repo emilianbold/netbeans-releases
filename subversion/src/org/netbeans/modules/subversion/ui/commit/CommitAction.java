@@ -169,8 +169,8 @@ public class CommitAction extends ContextAction {
         Set<File> ret = new HashSet<File>();
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         for (File file : fileList) {
-            File parent = null;
-            while((parent = file.getParentFile()) != null) {
+            File parent = file;
+            while((parent = parent.getParentFile()) != null) {
                 if (checked.contains(parent)) {
                     break;
                 }
