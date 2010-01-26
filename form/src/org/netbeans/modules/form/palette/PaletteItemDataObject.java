@@ -152,6 +152,7 @@ class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory
         return new ItemNode();
     }
 
+    @Override
     public <T extends Node.Cookie> T createCookie(Class<T> cookieClass) {
         if (PaletteItem.class.equals(cookieClass)) {
             if (!fileLoaded)
@@ -270,6 +271,7 @@ class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory
         }
         
 
+        @Override
         protected MultiDataObject createMultiObject(FileObject primaryFile)
             throws DataObjectExistsException, IOException
         {
