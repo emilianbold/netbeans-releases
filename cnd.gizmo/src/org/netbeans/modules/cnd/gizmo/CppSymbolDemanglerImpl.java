@@ -40,7 +40,9 @@ package org.netbeans.modules.cnd.gizmo;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -98,6 +100,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
         }
     }
 
+    @Override
     public String demangle(String symbolName) {
         String mangledName = stripModuleAndOffset(symbolName);
 
@@ -123,6 +126,7 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
         return demangledName;
     }
 
+    @Override
     public List<String> demangle(List<String> symbolNames) {
         List<String> result = new ArrayList<String>(symbolNames.size());
 
@@ -224,49 +228,55 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
         }
 
         final NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+        npb.setExecutable(demanglerTool);
 
-        if (demanglerTool.indexOf(GCPPFILT) >= 0 || demanglerTool.indexOf(CPPFILT) >=0) {
-            StringBuilder cmdline = new StringBuilder();
-            cmdline.append(ECHO).append(" \""); // NOI18N
-            for (String name : mangledNames) {
-                cmdline.append(name).append('\n'); // NOI18N
-            }
-            cmdline.append("\" | ").append(demanglerTool); // NOI18N
-            npb.setCommandLine(cmdline.toString());
-        } else {
-            npb.setExecutable(demanglerTool);
+        // This code used to run 'echo mangled names | demangler' if demangler reads stdin,
+        // but pipes and NativeProcessBuilder.setCommandLine() do not work together
+        // on Windows (bug #177849), so the code had to be rewritten.
+        final boolean demanglerReadsStdin = demanglerTool.contains(GCPPFILT) || demanglerTool.contains(CPPFILT);
+        if (!demanglerReadsStdin) {
             npb.setArguments(mangledNames.toArray(new String[mangledNames.size()]));
         }
 
-        try {
-            Future<Process> task = DLightExecutorService.submit(npb, "CPPSymbolDemangler call");//NOI18N
-            NativeProcess np = (NativeProcess) task.get();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(np.getInputStream()));
-            try {
-                ListIterator<String> it = mangledNames.listIterator();
-                while (it.hasNext()) {
-                    String line = reader.readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    if (line.length() == 0) {
-                        continue;
-                    }
+        Future<Process> task = DLightExecutorService.submit(npb, "CPPSymbolDemangler call");//NOI18N
 
-                    it.next();
-                    if (cppCompiler == CPPCompiler.SS) {
-                        int eqPos = line.indexOf(EQUALS_EQUALS);
-                        if (0 <= eqPos) {
-                            line = line.substring(eqPos + EQUALS_EQUALS.length());
+        try {
+            NativeProcess np = (NativeProcess) task.get();
+
+            // Arrange for collection of output in a separate thread.
+            // Start a thread right here without any exector services
+            // to make sure that execution is not blocked or delayed.
+            DemanglerOutputCollector outputCollector = new DemanglerOutputCollector(np.getInputStream());
+            Thread outputCollectorThread = new Thread(outputCollector);
+            outputCollectorThread.start();
+
+            if (demanglerReadsStdin) {
+                try {
+                    OutputStream outputStream = np.getOutputStream();
+                    try {
+                        for (String mangledName : mangledNames) {
+                            outputStream.write(mangledName.getBytes());
+                            outputStream.write('\n');
                         }
+                        outputStream.flush();
+                    } finally {
+                        outputStream.close();
                     }
-                    it.set(line);
+                } catch (IOException ex) {
+                    // hide it
                 }
-            } finally {
-                reader.close();
             }
-        } catch (IOException ex) {
-            // hide it
+
+            np.waitFor();
+            outputCollectorThread.join();
+
+            List<String> demangledNames = outputCollector.getDemangledNames();
+            if (demangledNames.size() == mangledNames.size()) {
+                for (int i = 0; i < mangledNames.size(); ++i) {
+                    mangledNames.set(i, demangledNames.get(i));
+                }
+            }
+
         } catch (InterruptedException e) {
         } catch (ExecutionException execException) {
         }
@@ -318,5 +328,45 @@ public class CppSymbolDemanglerImpl implements CppSymbolDemangler {
     /*package*/ boolean isToolAvailable() {
         checkDemanglerIfNeeded();
         return demanglerTool != null;
+    }
+
+    private static class DemanglerOutputCollector implements Runnable {
+
+        private final InputStream inputStream;
+        private final List<String> demangledNames;
+
+        private DemanglerOutputCollector(InputStream inputStream) {
+            this.inputStream = inputStream;
+            this.demangledNames = new ArrayList<String>();
+        }
+
+        @Override
+        public void run() {
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                try {
+                    while (true) {
+                        String line = reader.readLine();
+                        if (line == null) {
+                            break;
+                        }
+                        if (line.length() == 0) {
+                            continue;
+                        }
+
+                        int eqPos = line.indexOf(EQUALS_EQUALS);
+                        demangledNames.add(0 <= eqPos ? line.substring(eqPos + EQUALS_EQUALS.length()) : line);
+                    }
+                } finally {
+                    reader.close();
+                }
+            } catch (IOException ex) {
+                // hide it
+            }
+        }
+
+        private List<String> getDemangledNames() {
+            return demangledNames;
+        }
     }
 }
