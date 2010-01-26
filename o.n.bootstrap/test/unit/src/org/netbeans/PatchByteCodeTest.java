@@ -64,13 +64,13 @@ public class PatchByteCodeTest extends NbTestCase {
     }
 
     public void testPatchingPublic() throws Exception {
-        Class c = new L().loadClass(C.class.getName());
+        Class<?> c = new L().loadClass(C.class.getName());
         assertNotSame(c, C.class);
         Member m;
-        m = c.getDeclaredConstructor(Boolean.TYPE);
+        m = c.getDeclaredConstructor(boolean.class);
         assertEquals(0, m.getModifiers() & Modifier.PUBLIC);
         assertEquals(Modifier.PRIVATE, m.getModifiers() & Modifier.PRIVATE);
-        m = c.getDeclaredConstructor(Integer.TYPE);
+        m = c.getDeclaredConstructor(int.class);
         assertEquals(Modifier.PUBLIC, m.getModifiers() & Modifier.PUBLIC);
         assertEquals(0, m.getModifiers() & Modifier.PRIVATE);
         m = c.getDeclaredMethod("m1");

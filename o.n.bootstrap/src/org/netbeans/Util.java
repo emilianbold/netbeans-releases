@@ -348,7 +348,7 @@ public final class Util implements Stamps.Updater {
         if (dep.getType() != Dependency.TYPE_PACKAGE) {
             throw new IllegalArgumentException("Not a package dependency"); // NOI18N
         }
-        if (! (cl instanceof Util.PackageAccessibleClassLoader) && cl != Util.class.getClassLoader()) {
+        if (! (cl instanceof ProxyClassLoader) && cl != Util.class.getClassLoader()) {
             throw new IllegalArgumentException("Not a package-accessible classloader: " + cl); // NOI18N
         }
         String name = dep.getName();
@@ -396,8 +396,8 @@ public final class Util implements Stamps.Updater {
         }
         if (packageName != null) {
             Package pkg;
-            if (cl instanceof Util.PackageAccessibleClassLoader) {
-                pkg = ((Util.PackageAccessibleClassLoader)cl).getPackageAccessibly(packageName);
+            if (cl instanceof ProxyClassLoader) {
+                pkg = ((ProxyClassLoader) cl).getPackage(packageName);
             } else {
                 pkg = Package.getPackage(packageName);
             }
@@ -443,17 +443,6 @@ public final class Util implements Stamps.Updater {
             // Satisfied sample class.
             return true;
         }
-    }
-
-    /**
-     * Interface to permit a couple of methods in ClassLoader to be made public. 
-     * @since 2.1
-     */
-    public interface PackageAccessibleClassLoader {
-        /** @see ClassLoader#getPackage */
-        Package getPackageAccessibly (String name);
-        /** @see ClassLoader#getPackages */
-        Package[] getPackagesAccessibly ();
     }
 
     /** 

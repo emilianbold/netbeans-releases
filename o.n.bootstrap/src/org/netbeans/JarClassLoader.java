@@ -532,8 +532,10 @@ public class JarClassLoader extends ProxyClassLoader {
                         }
                     }
                 }
+            } catch (ZipException x) {
+                LOGGER.log(Level.INFO, "Cannot open " + file, x);
             } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, null, ioe);
+                LOGGER.log(Level.WARNING, "problems with " + file, ioe);
             } finally {
                 releaseJarFile();
             }
