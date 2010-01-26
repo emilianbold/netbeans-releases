@@ -61,6 +61,7 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
     /** Gets the supported layout manager class - JScrollPane.
      * @return the class supported by this delegate
      */
+    @Override
     public Class getSupportedClass() {
         return JScrollPane.class;
     }

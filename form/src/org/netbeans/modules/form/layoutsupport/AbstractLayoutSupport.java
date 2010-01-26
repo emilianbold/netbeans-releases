@@ -128,6 +128,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @param fromCode indicates whether to initialize from code structure
      * @exception any Exception occurred during initialization
      */
+    @Override
     public void initialize(LayoutSupportContext layoutContext,
                            LayoutManager lmInstance,
                            boolean fromCode)
@@ -198,6 +199,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @return true if only certain container is supported,
      *         false if a layout manager for use in any container is supported
      */
+    @Override
     public boolean isDedicated() {
         Class cls = getSupportedClass();
         return cls != null && !LayoutManager.class.isAssignableFrom(cls);
@@ -210,6 +212,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @return true if the container can be used as default (empty) instance
      *         with this layout support
      */
+    @Override
     public boolean checkEmptyContainer(Container cont) {
         return true;
     }
@@ -220,6 +223,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * support.
      * @return whether a node should be created for the layout
      */
+    @Override
     public boolean shouldHaveNode() {
         Class cls = getSupportedClass();
         return cls == null || LayoutManager.class.isAssignableFrom(cls);
@@ -229,6 +233,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * of supported class here.
      * @return display name of supported layout
      */
+    @Override
     public String getDisplayName() {
         Class cls = getSupportedClass();
         String name;
@@ -251,6 +256,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      *        ICON_COLOR_32x32, ICON_MONO_16x16, ICON_MONO_32x32
      * @return icon to be used for layout node
      */
+    @Override
     public Image getIcon(int type) {
         if (metaLayout != null) {
             Image icon = metaLayout.getBeanInfo().getIcon(type);
@@ -273,6 +279,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * of individual components constraints.
      * @return properties of supported layout
      */
+    @Override
     public Node.PropertySet[] getPropertySets() {
         Node.PropertySet[] propertySets;
 
@@ -288,6 +295,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
                 FormUtils.getBundleString("CTL_PropertiesTab"), // NOI18N
                 FormUtils.getBundleString("CTL_PropertiesTabHint")) // NOI18N
             {
+                @Override
                 public Node.Property[] getProperties() {
                     return AbstractLayoutSupport.this.getProperties();
                 }
@@ -319,6 +327,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * customizer class from layout manager's BeanInfo.
      * @return layout bean customizer class, null if no customizer is provided
      */
+    @Override
     public Class getCustomizerClass() {
         return metaLayout == null ? null :
             metaLayout.getBeanInfo().getBeanDescriptor().getCustomizerClass();
@@ -332,6 +341,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * manager bean instance). The default implementation returns null.
      * @return instance of layout support customizer
      */
+    @Override
     public Component getSupportCustomizer() {
         return null;
     }
@@ -340,6 +350,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * components).
      * @return whole container's layout code
      */
+    @Override
     public CodeGroup getLayoutCode() {
         return setLayoutCode;
     }
@@ -348,6 +359,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * component to the layout (container).
      * @return one component's layout code
      */
+    @Override
     public CodeGroup getComponentCode(int index) {
         return componentCodeGroups.get(index);
     }
@@ -356,6 +368,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @param index index of the component in the layout
      * @return CodeExpression for a component
      */
+    @Override
     public CodeExpression getComponentCodeExpression(int index) {
         return componentCodeExpressions.get(index);
     }
@@ -363,6 +376,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     /** Gets number of components in the layout.
      * @return number of components in the layout
      */
+    @Override
     public int getComponentCount() {
         return componentCodeExpressions != null ?
                  componentCodeExpressions.size() : 0;
@@ -381,6 +395,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @param index position at which the components are to be added (inserted);
      *        -1 means that the components will be added at the end
      */
+    @Override
     public void acceptNewComponents(CodeExpression[] compExpressions,
                                     LayoutConstraints[] constraints,
                                     int index)
@@ -395,6 +410,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * any change.
      * @param ev PropertyChangeEvent object describing the change
      */
+    @Override
     public void acceptContainerLayoutChange(PropertyChangeEvent ev)
         throws PropertyVetoException
     {
@@ -413,6 +429,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @param index index of the component in the layout
      * @param ev PropertyChangeEvent object describing the change
      */
+    @Override
     public void acceptComponentLayoutChange(int index, PropertyChangeEvent ev)
         throws PropertyVetoException
     {
@@ -429,6 +446,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @param index position at which the components should be added (inserted);
      *        if -1, the components should be added at the end
      */
+    @Override
     public void addComponents(CodeExpression[] newCompExps,
                               LayoutConstraints[] newConstraints,
                               int index)
@@ -462,6 +480,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * The code structures describing the layout is updated immediately.
      * @param index index of the component in the layout
      */
+    @Override
     public void removeComponent(int index) {
         componentCodeExpressions.remove(index);
         componentCodeGroups.remove(index);
@@ -471,6 +490,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     /** Removes all components from the layout (at metadata level).
      * The code structures describing the layout is updated immediately.
      */
+    @Override
     public void removeAll() {
         if (componentCodeExpressions != null)
             componentCodeExpressions.clear();
@@ -489,6 +509,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      *        default container (e.g. like content pane of JFrame)
      * @return whether the current layout is different from the default one
      */
+    @Override
     public boolean isLayoutChanged(Container defaultContainer,
                                    Container defaultContainerDelegate)
     {
@@ -519,6 +540,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @param index index of the component in the layout
      * @return layout constraints of given component
      */
+    @Override
     public LayoutConstraints getConstraints(int index) {
         return index < 0 || index >= componentConstraints.size() ? null :
                componentConstraints.get(index);
@@ -534,6 +556,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @param components [input] real components in a real container having the
      *                           previous layout
      */
+    @Override
     public void convertConstraints(LayoutConstraints[] previousConstraints,
                                    LayoutConstraints[] currentConstraints,
                                    Component[] components)
@@ -546,6 +569,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @param containerDelegate effective container delegate of the container
      *        (e.g. like content pane of JFrame)
      */
+    @Override
     public void setLayoutToContainer(Container container,
                                      Container containerDelegate)
     {
@@ -578,6 +602,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @param components components to be added
      * @param index position at which to add the components to container
      */
+    @Override
     public void addComponentsToContainer(Container container,
                                          Container containerDelegate,
                                          Component[] components,
@@ -602,6 +627,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @return whether it was possible to remove the component (some containers
      *         may not support removing individual components reasonably)
      */
+    @Override
     public boolean removeComponentFromContainer(Container container,
                                                 Container containerDelegate,
                                                 Component component)
@@ -618,6 +644,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @return whether it was possible to clear the container (some containers
      *         may not support this)
      */
+    @Override
     public boolean clearContainer(Container container,
                                   Container containerDelegate)
     {
@@ -637,6 +664,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @param containerDelegate effective container delegate of the container
      *        (e.g. like content pane of JFrame)
      */
+    @Override
     public void processMouseClick(Point p,
                                   Container container,
                                   Container containerDelegate)
@@ -649,6 +677,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * The default implementation does nothing.
      * @param index position (index) of the selected component in container
      */
+    @Override
     public void selectComponent(int index) {
     }
 
@@ -661,6 +690,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @param containerDelegate effective container delegate of the container
      *        (e.g. like content pane of JFrame)
      */
+    @Override
     public void arrangeContainer(Container container,
                                  Container containerDelegate)
     {
@@ -685,6 +715,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      *         does not use component constraints, or if default constraints
      *         should be used
      */
+    @Override
     public LayoutConstraints getNewConstraints(Container container,
                                                Container containerDelegate,
                                                Component component,
@@ -713,6 +744,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      *         container; may return -1 if the layout rather uses component
      *         constraints, or if a default index should be used
      */
+    @Override
     public int getNewIndex(Container container,
                            Container containerDelegate,
                            Component component,
@@ -758,6 +790,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      *         constraints or index are invalid, or if the painting is not
      *         implemented)
      */
+    @Override
     public boolean paintDragFeedback(Container container, 
                                      Container containerDelegate,
                                      Component component,
@@ -778,6 +811,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @param index position of the component in its container
      * @return resizing options for the component; 0 if no resizing is possible
      */
+    @Override
     public int getResizableDirections(Container container,
                                       Container containerDelegate,
                                       Component component,
@@ -799,6 +833,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      * @return component layout constraints for resized component; null if
      *         resizing is not possible or not implemented
      */
+    @Override
     public LayoutConstraints getResizedConstraints(Container container,
                                                    Container containerDelegate,
                                                    Component component,
@@ -817,6 +852,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      *        current ones)
      * @return cloned layout delegate instance
      */
+    @Override
     public LayoutSupportDelegate cloneLayoutSupport(
                                      LayoutSupportContext targetContext,
                                      CodeExpression[] targetComponents)
