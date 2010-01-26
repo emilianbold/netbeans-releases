@@ -206,7 +206,7 @@ public class ConnectionWizard extends WizardDescriptor {
             } */
             buf.append(excName);
             buf.append(") {\n"); // NOI18N
-            buf.append("  "+excName); // NOI18N
+            buf.append("  ").append(excName); // NOI18N
             buf.append(".printStackTrace();\n"); // NOI18N
         }
         if (!allExceptions.isEmpty())
