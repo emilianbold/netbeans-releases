@@ -622,6 +622,7 @@ public class FormLoaderSettings implements HelpCtx.Provider   {
         return FormUtils.getBundleString("CTL_FormSettings"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.configuring"); // NOI18N
     } 
