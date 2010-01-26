@@ -150,7 +150,7 @@ public class ConnectionWizard extends WizardDescriptor {
         if (!finished || actionType == ConnectionWizardPanel2.CODE_TYPE)
             return null;
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         Set<Class> allExceptions = new HashSet<Class>();
 
         // params can be specified as method calls which in turn may produce exceptions
