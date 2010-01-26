@@ -134,17 +134,27 @@ public class XMLCompletionQuery implements XMLTokenIDs {
                     return null;
                 }
 
+                /***************************************************************
+                 * The functionality "Inserting of an appropriate closing end tag"
+                 * has been moved to the module "xml.schema.completion". The method
+                 * "org.netbeans.modules.xml.schema.completion.CompletionQuery.query(...)"
+                 * creates (if it's necessary) an instance of the class CompletionResultItem,
+                 * related to a closing end tag.
+                 * (CompletionResultItem endTagResultItem = CompletionUtil.getEndTagCompletionItem(...))
+                 ***************************************************************
                 if (helper.getCompletionType() == SyntaxQueryHelper.COMPLETION_TYPE_VALUE) {
                     //might be the end tag autocompletion
-                    if(helper.getToken().getTokenID() == XMLDefaultTokenContext.TAG) {
+                    if (helper.getToken().getTokenID() == XMLDefaultTokenContext.TAG) {
                     SyntaxElement se = helper.getSyntaxElement();
-                        if(se instanceof StartTag) {
+                        if (se instanceof StartTag) {
                             String tagName = ((StartTag)se).getNodeName();
-                            if(tagName != null && !XMLBraceMatcher.hasEndTag(doc, offset, tagName))
+                            if (tagName != null && !XMLBraceMatcher.hasEndTag(doc,
+                                offset, tagName))
                                 list.add(new EndTagAutocompletionResultItem(tagName));
                         }
                     }
                 }
+                ***************************************************************/
                 
                 if (list.isEmpty() && helper.getPreText().startsWith("</")) { // NOI18N
                     List stlist = findStartTag((SyntaxNode)helper.getSyntaxElement(), !helper.getPreText().endsWith("/") ? "/" : "");
@@ -161,33 +171,38 @@ public class XMLCompletionQuery implements XMLTokenIDs {
                 
                 String debugMsg = Boolean.getBoolean("netbeans.debug.xml") ? " " + helper.getOffset() + "-" + helper.getEraseCount() : "";
                 String title = NbBundle.getMessage(XMLCompletionQuery.class, "MSG_result", helper.getPreText()) + debugMsg;
-                
+
+                /***************************************************************
+                 * The functionality "Inserting of an appropriate closing end tag"
+                 * has been moved to the module "xml.schema.completion". The method
+                 * "org.netbeans.modules.xml.schema.completion.CompletionQuery.query(...)"
+                 * creates (if it's necessary) an instance of the class CompletionResultItem,
+                 * related to a closing end tag.
+                 * (CompletionResultItem endTagResultItem = CompletionUtil.getEndTagCompletionItem(...))
+                 ***************************************************************
                 // add to the list end tag if detected '<'
                 // unless following end tag is of the same name
-                
                 if (helper.getPreText().endsWith("<") && helper.getToken().getTokenID() == TEXT) { // NOI18N
                     List startTags = findStartTag((SyntaxNode)helper.getSyntaxElement(), "/"); // NOI18N
-                    
                     boolean addEndTag = true;
-                    SyntaxNode ctx = (SyntaxNode)helper.getSyntaxElement();
+                    SyntaxNode ctx = (SyntaxNode) helper.getSyntaxElement();
                     SyntaxElement nextElement = ctx != null ? ctx.getNext() : null;
                     if (nextElement instanceof EndTag) {
                         EndTag endtag = (EndTag) nextElement;
                         String nodename = endtag.getNodeName();
                         if (nodename != null && startTags.isEmpty() == false) {
-                            ElementResultItem item = (ElementResultItem)startTags.get(0);
+                            ElementResultItem item = (ElementResultItem) startTags.get(0);
                             if (("/" + nodename).equals(item.getItemText())) {  // NOI18N
                                 addEndTag = false;
                             }
                         }
                     }
-                    
                     if (addEndTag) {
                         all.addAll(startTags);
                     }
-                    
                 }
-                
+                ***************************************************************/
+
                 all.addAll(list);
                 if(!all.isEmpty())
                     return all;
