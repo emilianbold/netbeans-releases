@@ -1337,7 +1337,7 @@ public class FormUtils
     }
     
     public static String getMethodName(String name, Class[] params) {        
-	StringBuffer sb = new StringBuffer(name);
+	StringBuilder sb = new StringBuilder(name);
         if ((params == null) ||(params.length == 0)) {
             sb.append("()"); // NOI18N
         } else {
