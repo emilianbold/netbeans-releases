@@ -76,6 +76,7 @@ class ConnectionPanel3 extends javax.swing.JPanel {
         setName(bundle.getString("CTL_CW_Step3_Title")); // NOI18N
 
         paramsChangeListener = new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent evt) {
                 updatePreview();
             }
@@ -110,6 +111,7 @@ class ConnectionPanel3 extends javax.swing.JPanel {
             pickers[i] = new ParametersPicker(wizardPanel.getFormModel(),
                                               parameters[i]);
             pickers[i].addChangeListener(new ChangeListener() {
+                @Override
                 public void stateChanged(ChangeEvent evt) {
                     updatePreview();
                 }
