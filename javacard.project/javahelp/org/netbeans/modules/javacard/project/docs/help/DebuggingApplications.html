@@ -18,5 +18,53 @@ host.</p><p class="p">Ports used by IDE communication to and from debugproxy and
 and from the Java Card RI are distinguished by the names &#8220;listen port&#8221; and &#8220;remote
 port&#8221; respectively.</p>
 <p class="p">The Java Card platform debugger uses IDE menus and procedures for debugging applications. When you start a debugging session, the debugger windows appear automatically at the bottom of your screen. You can also debug applications that are running on a remote machine by attaching the debugger to the application process. See the appropriate Java Card 3 platform documentation on the Java Card 3 Kenai project site for detailed information about the Java Card 3 platform debugging protocol and procedures.</p>
+
+<p class="p">The following topics describe the basic sequence of activities completed by a developer
+when debugging an application for the Java Card 3 platform:</p>
+<table cellspacing="1" cellpadding="1" border="1">
+<tr>
+	<td>Task</td>
+	<td>Use the IDE to:</td>
+</tr>
+<tr>
+	<td>Prepare to run the debugger</td>
+	<td><ul>
+	    	<li><a href="SettingBreakpoints.html">Set breakpoints in your code</a>:<br>
+			Debug &gt; New Breakpoint
+			</li>
+	    	<li><a href="SettingWatches.html">Set watches in your code</a>:<br>
+			Debug &gt; New Watch
+			</li>
+</ul></td>
+</tr>
+<tr>
+	<td>Run the debugger</td>
+	<td><ul>
+	    	<li><a href="StartingDebugging.html">Start a debugger session</a>:<br>
+			Debug &gt; Debug Project<br>
+			Debug &gt; Debug File</li>
+	</ul></td>
+</tr>
+<tr>
+	<td>Monitor your code</td>
+	<td><ul>
+	<li><a href="SteppingThroughCode.html">Step through your code</a>:<br>
+	Debug &gt; Step <i>option</i></li>
+	<li>View debugging information.</li>
+	<li>View application threads.</li>
+	<li>Fix any errors and continue debugging.</li>
+	</ul></td>
+</tr>
+<tr>
+	<td>Finish the debugger session</td>
+	<td><ul>
+	    	<li>Stop the debugger:<br>
+			Debug &gt; Finish Debugger Session</li>
+			</ul></td>
+</tr>
+</table>
+
+
+
 </body>
 </html>
