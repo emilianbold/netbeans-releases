@@ -170,6 +170,7 @@ made subject to such option by the copyright holder.
               <nbprofiledirect>
                   <classpath>
                       <path path="${{run.test.classpath}}"/>
+                      <path path="${{j2ee.platform.classpath}}"/>
                   </classpath>
               </nbprofiledirect>
 
@@ -180,6 +181,7 @@ made subject to such option by the copyright holder.
                   <test name="${{profile.class}}"/>
                   <classpath>
                       <path path="${{run.test.classpath}}"/>
+                      <path path="${{j2ee.platform.classpath}}"/>
                   </classpath>
                   <syspropertyset>
                       <propertyref prefix="test-sys-prop."/>
