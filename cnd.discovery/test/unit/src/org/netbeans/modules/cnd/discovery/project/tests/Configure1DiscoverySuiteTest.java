@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.discovery.project.tests;
 
 import org.netbeans.modules.cnd.discovery.project.cases.PkgConfigTestCase;
-import org.netbeans.modules.cnd.discovery.project.cases.LiteSqlTestCase;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
@@ -49,17 +48,16 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
  *
  * @author Alexander Simon
  */
-public class ConfigureDiscoverySuiteTest extends CndBaseTestSuite {
+public class Configure1DiscoverySuiteTest extends CndBaseTestSuite {
 
-    public ConfigureDiscoverySuiteTest() {
+    public Configure1DiscoverySuiteTest() {
         super("C/C++ Configure Discovery Test"); // NOI18N
 
         addTestSuite(PkgConfigTestCase.class);
-        addTestSuite(LiteSqlTestCase.class);
     }
 
     public static Test suite() {
-        TestSuite suite = new ConfigureDiscoverySuiteTest();
+        TestSuite suite = new Configure1DiscoverySuiteTest();
         return suite;
     }
 }
