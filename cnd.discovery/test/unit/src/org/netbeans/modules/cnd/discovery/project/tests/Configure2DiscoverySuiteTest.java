@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,47 +31,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.script.lexer;
+package org.netbeans.modules.cnd.discovery.project.tests;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenId;
-
+import org.netbeans.modules.cnd.discovery.project.cases.LiteSqlTestCase;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author Jan Jancura
+ * @author Alexander Simon
  */
-public enum ShTokenId implements TokenId {
+public class Configure2DiscoverySuiteTest extends CndBaseTestSuite {
 
-    KEYWORD ("keyword"), // NOI18N
-    COMMAND ("command"), // NOI18N
-    OPERATOR ("operator"), // NOI18N
-    LABEL ("label"), // NOI18N
-    WHITESPACE ("whitespace"), // NOI18N
-    NUMBER ("number"), // NOI18N
-    STRING ("string"), // NOI18N
-    IDENTIFIER ("identifier"), // NOI18N
-    COMMENT ("comment"), // NOI18N
-    ERROR ("error"); // NOI18N
+    public Configure2DiscoverySuiteTest() {
+        super("C/C++ Configure Discovery Test"); // NOI18N
 
-    private String  name;
-    
-    ShTokenId (
-        String  name
-    ) {
-        this.name = name;
+        addTestSuite(LiteSqlTestCase.class);
     }
 
-    public String primaryCategory () {
-        return name;
-    }
-
-    private static final Language<ShTokenId> LANGUAGE =
-            new ShLanguageHierarchy().language();
-
-    public static Language<ShTokenId> language() {
-        return LANGUAGE;
+    public static Test suite() {
+        TestSuite suite = new Configure2DiscoverySuiteTest();
+        return suite;
     }
 }

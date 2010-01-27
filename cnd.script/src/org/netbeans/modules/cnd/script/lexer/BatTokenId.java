@@ -73,7 +73,10 @@ public enum BatTokenId implements TokenId {
         return name;
     }
 
+    private static final Language<BatTokenId> LANGUAGE =
+            new BatLanguageHierarchy().language();
+
     public static Language<BatTokenId> language() {
-        return new BatLanguageHierarchy().language();
+        return LANGUAGE;
     }
 }
