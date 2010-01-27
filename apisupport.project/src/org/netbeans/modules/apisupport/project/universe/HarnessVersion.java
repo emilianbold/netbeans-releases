@@ -67,7 +67,7 @@ public enum HarnessVersion {
     public String getDisplayName() {
         switch (this) {
             case V50:
-                return NbBundle.getMessage(HarnessVersion.class, "LBL_HarnessVersion_5.0");
+                return NbBundle.getMessage(HarnessVersion.class, "LBL_harness_version_5.0");
             case V50u1:
                 return NbBundle.getMessage(HarnessVersion.class, "LBL_harness_version_5.0u1");
             case V55u1:
