@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -98,6 +98,7 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.queries.AccessibilityQueryImpl;
+import org.netbeans.modules.apisupport.project.queries.AnnotationProcessingQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.AntArtifactProviderImpl;
@@ -291,6 +292,7 @@ public final class NbModuleProject implements Project {
         ic.add(UILookupMergerSupport.createRecommendedTemplatesMerger());
         ic.add(new TemplateAttributesProvider(getHelper(), getModuleType() == NbModuleType.NETBEANS_ORG));
         ic.add(new FileEncodingQueryImpl());
+        ic.add(new AnnotationProcessingQueryImpl());
 
         if (getModuleType() == NbModuleType.SUITE_COMPONENT) {
             ic.add(new SuiteProviderImpl());
