@@ -280,7 +280,7 @@ implements Stamps.Updater {
      * @return the stream to read the definition from or null, if it does not
      *   make sense to represent this module as bundle
      */
-    private static final InputStream fakeBundle(Module m) throws IOException {
+    private static InputStream fakeBundle(Module m) throws IOException {
         String exp = (String) m.getAttribute("OpenIDE-Module-Public-Packages"); // NOI18N
         if ("-".equals(exp)) { // NOI18N
             return null;
@@ -347,6 +347,7 @@ implements Stamps.Updater {
         }
     }
 
+    @Override
     public void flushCaches(DataOutputStream os) throws IOException {
         Writer w = new OutputStreamWriter(os);
         for (String s : registered) {
@@ -356,6 +357,7 @@ implements Stamps.Updater {
         w.close();
     }
 
+    @Override
     public void cacheReady() {
     }
 }
