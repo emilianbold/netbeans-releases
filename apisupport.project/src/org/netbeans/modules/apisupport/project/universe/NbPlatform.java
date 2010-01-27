@@ -51,9 +51,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
@@ -64,18 +62,15 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -103,26 +98,6 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     private final PropertyChangeSupport pcs;
     private final SourceRootsSupport srs;
     private final JavadocRootsSupport jrs;
-
-    // should proceed in chronological order so we can do compatibility tests with >=
-    /** Unknown version - platform might be invalid, or just predate any 5.0 release version. */
-    public static final int HARNESS_VERSION_UNKNOWN = 0;
-    /** Harness version found in 5.0. */
-    public static final int HARNESS_VERSION_50 = 1;
-    /** Harness version found in 5.0 update 1 and 5.5. */
-    public static final int HARNESS_VERSION_50u1 = 2;
-    /** Harness version found in 5.5 update 1. */
-    public static final int HARNESS_VERSION_55u1 = 3;
-    /** Harness version found in 6.0. */
-    public static final int HARNESS_VERSION_60 = 4;
-    /** Harness version found in 6.1. */
-    public static final int HARNESS_VERSION_61 = 5;
-    /** Harness version found in 6.5. */
-    public static final int HARNESS_VERSION_65 = 6;
-    /** Harness version found in 6.7. */
-    public static final int HARNESS_VERSION_67 = 7;
-    /** Harness version found in 6.8. */
-    public static final int HARNESS_VERSION_68 = 8;
 
     static {
         final File install = NbPlatform.defaultPlatformLocation();
@@ -467,15 +442,13 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     private String label;
     private File nbdestdir;
     private File harness;
-    private URL[] javadocRoots;
-    private int harnessVersion = -1;
+    private HarnessVersion harnessVersion;
     
     private NbPlatform(String id, String label, File nbdestdir, File harness, URL[] sources, URL[] javadoc) {
         this.id = id;
         this.label = label;
         this.nbdestdir = nbdestdir;
         this.harness = harness;
-        this.javadocRoots = javadoc;
         pcs = new PropertyChangeSupport(this);
         srs = new SourceRootsSupport(sources, this);
         srs.addPropertyChangeListener(new PropertyChangeListener() {
@@ -766,8 +739,8 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         if (coreJar != null) {
             String platformDir = coreJar.getParentFile().getParentFile().getName();
             assert platformDir.startsWith("platform"); // NOI18N
-            int version = Integer.parseInt(platformDir.substring(8)); // 8 == "platform".length
-            valid = version >= 6;
+            String version = platformDir.substring("platform".length());
+            valid = /* NB 6.9+ */version.isEmpty() || Integer.parseInt(version) >= 6;
         }
         return valid;
     }
@@ -894,12 +867,12 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     /**
      * Get the version of this platform's harness.
      */
-    public int getHarnessVersion() {
-        if (harnessVersion != -1) {
+    public HarnessVersion getHarnessVersion() {
+        if (harnessVersion != null) {
             return harnessVersion;
         }
         if (!isValid()) {
-            return harnessVersion = HARNESS_VERSION_UNKNOWN;
+            return harnessVersion = HarnessVersion.UNKNOWN;
         }
         File harnessJar = new File(harness, "modules" + File.separatorChar + "org-netbeans-modules-apisupport-harness.jar"); // NOI18N
         if (harnessJar.isFile()) {
@@ -909,23 +882,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                     String spec = jf.getManifest().getMainAttributes().getValue(ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION);
                     if (spec != null) {
                         SpecificationVersion v = new SpecificationVersion(spec);
-                        if (v.compareTo(new SpecificationVersion("1.18")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_68;
-                        } else if (v.compareTo(new SpecificationVersion("1.14")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_67;
-                        } else if (v.compareTo(new SpecificationVersion("1.12")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_65;
-                        } else if (v.compareTo(new SpecificationVersion("1.11")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_61;
-                        } else if (v.compareTo(new SpecificationVersion("1.10")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_60;
-                        } else if (v.compareTo(new SpecificationVersion("1.9")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_55u1;
-                        } else if (v.compareTo(new SpecificationVersion("1.7")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_50u1;
-                        } else if (v.compareTo(new SpecificationVersion("1.6")) >= 0) { // NOI18N
-                            return harnessVersion = HARNESS_VERSION_50;
-                        } // earlier than beta2? who knows...
+                        return harnessVersion = HarnessVersion.forHarnessModuleVersion(v);
                     }
                 } finally {
                     jf.close();
@@ -936,7 +893,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);
             }
         }
-        return harnessVersion = HARNESS_VERSION_UNKNOWN;
+        return harnessVersion = HarnessVersion.UNKNOWN;
     }
     
     /**
@@ -973,36 +930,7 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
             throw (IOException) e.getException();
         }
         this.harness = harness;
-        harnessVersion = -1;
-    }
-    
-    /**
-     * Gets a quick display name for the <em>version</em> of a harness.
-     * @param {@link #HARNESS_VERSION_50} etc.
-     * @return a short display name
-     */
-    public static String getHarnessVersionDisplayName(int version) {
-        switch (version) {
-            case HARNESS_VERSION_50:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_5.0");
-            case HARNESS_VERSION_50u1:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_5.0u1");
-            case HARNESS_VERSION_55u1:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_5.5u1");
-            case HARNESS_VERSION_60:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.0");
-            case HARNESS_VERSION_61:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.1");
-            case HARNESS_VERSION_65:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.5");
-            case HARNESS_VERSION_67:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.7");
-            case HARNESS_VERSION_68:
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_6.8");
-            default:
-                assert version == HARNESS_VERSION_UNKNOWN;
-                return NbBundle.getMessage(NbPlatform.class, "LBL_harness_version_unknown");
-        }
+        harnessVersion = null;
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {

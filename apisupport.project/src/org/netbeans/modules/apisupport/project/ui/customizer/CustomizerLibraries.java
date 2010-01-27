@@ -85,6 +85,7 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.modules.apisupport.project.ui.platform.PlatformComponentFactory;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListCellRenderer;
@@ -244,7 +245,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         addDepButton.setEnabled(okEnabled && getProperties().isActivePlatformValid());
         boolean javaEnabled = getProperties().isNetBeansOrg() ||
                 (getProperties().isStandalone() &&
-                /* #71631 */ ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1);
+                /* #71631 */ ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion().compareTo(HarnessVersion.V50u1) >= 0);
         javaPlatformCombo.setEnabled(javaEnabled);
         javaPlatformButton.setEnabled(javaEnabled);
 
