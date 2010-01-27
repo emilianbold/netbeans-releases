@@ -281,6 +281,9 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         assert this.name != null;
         PersistentUtils.writeUTF(name, output);
         output.writeBoolean(typeUnnamed);
+        if (typeUnnamed) {
+            super.writeUID(output);
+        }
         assert this.type != null;
         PersistentUtils.writeType(this.type, output);
 
@@ -300,6 +303,9 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         this.name = PersistentUtils.readUTF(input, QualifiedNameCache.getManager());
         assert this.name != null;
         typeUnnamed = input.readBoolean();
+        if (typeUnnamed) {
+            super.readUID(input);
+        }
         this.type = PersistentUtils.readType(input);
         assert this.type != null;
 
