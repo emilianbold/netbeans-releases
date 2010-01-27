@@ -190,7 +190,7 @@ public class AnnotationsHolder implements PropertyChangeListener {
     }
 
     private void assertUiThread() {
-        if (SwingUtilities.isEventDispatchThread()) {
+        if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("AnnotationsHolder.getAnnotations should be called only from AWT thread!");
         }
     }
