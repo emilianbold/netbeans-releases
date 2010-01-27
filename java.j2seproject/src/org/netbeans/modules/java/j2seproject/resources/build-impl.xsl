@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -371,6 +371,10 @@ is divided into following sections:
                         <xsl:attribute name="default">${javac.classpath}</xsl:attribute>
                     </attribute>
                     <attribute>
+                        <xsl:attribute name="name">apcmdline</xsl:attribute>
+                        <xsl:attribute name="default">${ap.cmd.line.internal}</xsl:attribute>
+                    </attribute>
+                    <attribute>
                         <xsl:attribute name="name">includes</xsl:attribute>
                         <xsl:attribute name="default">${includes}</xsl:attribute>
                     </attribute>
@@ -432,6 +436,7 @@ is divided into following sections:
                             </classpath>
                             <compilerarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <compilerarg line="${{javac.compilerargs}}"/>
+                            <compilerarg line="@{{apcmdline}}"/>
                             <customize/>
                         </javac>
                     </sequential>
@@ -718,8 +723,38 @@ is divided into following sections:
                 </presetdef>
             </target>
             
+            <target name="-init-ap-cmdline-prepare">
+                <property name="annotation.processing.enabled" value="true" />
+                <property name="annotation.processing.processors.list" value="" />
+                <property name="annotation.processing.run.all.processors" value="true" />
+                <property name="javac.processorpath" value="${{javac.classpath}}" />
+                <condition property="ap.supported.internal" value="true">
+                    <not>
+                        <matches string="${{javac.source}}" pattern="1\.[0-5](\..*)?" />
+                    </not>
+                </condition>
+            </target>
+            <target name="-init-ap-cmdline-supported" depends="-init-ap-cmdline-prepare" if="ap.supported.internal">
+                <pathconvert property="javac.processorpath.internal">
+                    <path path="${{javac.processorpath}}"/>
+                </pathconvert>
+                <condition property="ap.processors.internal" value="-processor ${{annotation.processing.processors.list}}" else="">
+                    <isfalse value="${{annotation.processing.run.all.processors}}" />
+                </condition>
+                <pathconvert property="ap.generated.sources.internal">
+                  <path location="${{build.generated.sources.dir}}/ap-source-output"/>
+                </pathconvert>
+                <mkdir dir="${{ap.generated.sources.internal}}"/>
+                <condition property="ap.cmd.line.internal" value="-processorpath ${{javac.processorpath.internal}} ${{ap.processors.internal}} -s ${{ap.generated.sources.internal}}" else="-proc:none">
+                    <istrue value="${{annotation.processing.enabled}}" />
+                </condition>
+            </target>
+            <target name="-init-ap-cmdline" depends="-init-ap-cmdline-prepare,-init-ap-cmdline-supported">
+                <property name="ap.cmd.line.internal" value=""/>
+            </target>
+
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-java,-init-presetdef-jar</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-java,-init-presetdef-jar,-init-ap-cmdline</xsl:attribute>
             </target>
             
             <xsl:comment>
