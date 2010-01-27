@@ -64,29 +64,23 @@ import org.openide.loaders.DataObject;
 public class AnnotationsHolder implements PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(AnnotationsHolder.class.getName());
-    private static final Map<DataObject, AnnotationsHolder> file2Annotations = new HashMap<DataObject, AnnotationsHolder>();
+    private static final Map<DataObject, AnnotationsHolder> file2holders = new HashMap<DataObject, AnnotationsHolder>();
     
     public static synchronized AnnotationsHolder get(FileObject file) {
         try {
             DataObject od = DataObject.find(file);
-            AnnotationsHolder a = file2Annotations.get(od);
-
+            AnnotationsHolder a = file2holders.get(od);
             if (a != null) {
                 return a;
             }
-
-            EditorCookie.Observable ec = od.getLookup().lookup(EditorCookie.Observable.class);
-            
+            EditorCookie.Observable ec = od.getLookup().lookup(EditorCookie.Observable.class);            
             if (ec == null) {
                 return null;
-            }
-            
-            file2Annotations.put(od, a = new AnnotationsHolder(od, ec));
-            
+            }            
+            file2holders.put(od, a = new AnnotationsHolder(od, ec));            
             return a;
         } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            
+            LOGGER.log(Level.INFO, null, ex);            
             return null;
         }
     }
@@ -96,10 +90,8 @@ public class AnnotationsHolder implements PropertyChangeListener {
     
     private AnnotationsHolder(DataObject file, EditorCookie.Observable ec) {
         this.file = file;
-        this.ec   = ec;
-        
-        ec.addPropertyChangeListener(this);
-        
+        this.ec   = ec;        
+        ec.addPropertyChangeListener(this);        
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -118,14 +110,12 @@ public class AnnotationsHolder implements PropertyChangeListener {
     }
     
     private void checkForReset() {
-        assert SwingUtilities.isEventDispatchThread();
-        
+        assert SwingUtilities.isEventDispatchThread();        
         if (ec.getOpenedPanes() == null) {
             //reset:
             synchronized (AnnotationsHolder.class) {
-                file2Annotations.remove(file);
-            }
-            
+                file2holders.remove(file);
+            }            
             setNewAnnotations(Collections.<OverriddeAnnotation>emptyList());
             ec.removePropertyChangeListener(this);
         }
