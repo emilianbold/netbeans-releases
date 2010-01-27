@@ -3,7 +3,7 @@ OpenIDE-Module: org.netbeans.core.netigso
 OpenIDE-Module-Install: org/netbeans/core/netigso/Installer.class
 OpenIDE-Module-Localizing-Bundle: org/netbeans/core/netigso/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
-OpenIDE-Module-Needs: org.osgi.framework.launch.FrameworkFactory
+OpenIDE-Module-Recommends: org.osgi.framework.launch.FrameworkFactory
 AutoUpdate-Essential-Module: true
 
 
