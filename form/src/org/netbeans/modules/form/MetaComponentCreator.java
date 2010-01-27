@@ -156,6 +156,7 @@ public class MetaComponentCreator {
         try { // Look&Feel UI defaults remapping needed
             return (RADComponent) FormLAF.executeWithLookAndFeel(formModel,
                 new Mutex.ExceptionAction() {
+                    @Override
                     public Object run() throws Exception {
                         return copyComponent2(sourceComp, null, target);
                     }
@@ -234,6 +235,7 @@ public class MetaComponentCreator {
         try { // Look&Feel UI defaults remapping needed
             FormLAF.executeWithLookAndFeel(formModel,
                 new Mutex.ExceptionAction() {
+                    @Override
                     public Object run() throws Exception {
                         preMetaComp = createVisualComponent(compClass);
                         String typeParams = classSource.getTypeParameters();
@@ -356,6 +358,7 @@ public class MetaComponentCreator {
         try { // Look&Feel UI defaults remapping needed
             return (RADComponent) FormLAF.executeWithLookAndFeel(formModel,
                 new Mutex.ExceptionAction() {
+                    @Override
                     public Object run() throws Exception {
                         return createAndAddComponent2(compClass, target, constraints);
                     }
@@ -1278,6 +1281,7 @@ public class MetaComponentCreator {
             try {
                 return (Class)FormLAF.executeWithLookAndFeel(formModel,
                     new Mutex.ExceptionAction() {
+                        @Override
                         public Object run() throws Exception {
                             Class clazz = prepareClass0(classSource);
                             if (clazz != null) {
@@ -1349,8 +1353,10 @@ public class MetaComponentCreator {
         JavaSource js = JavaSource.forFileObject(fo);
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
