@@ -51,9 +51,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
@@ -64,18 +62,15 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -766,8 +761,8 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         if (coreJar != null) {
             String platformDir = coreJar.getParentFile().getParentFile().getName();
             assert platformDir.startsWith("platform"); // NOI18N
-            int version = Integer.parseInt(platformDir.substring(8)); // 8 == "platform".length
-            valid = version >= 6;
+            String version = platformDir.substring("platform".length());
+            valid = /* NB 6.9+ */version.isEmpty() || Integer.parseInt(version) >= 6;
         }
         return valid;
     }
