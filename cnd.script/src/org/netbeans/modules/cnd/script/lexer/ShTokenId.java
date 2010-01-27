@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.script.lexer;
 
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 
 
@@ -71,5 +72,9 @@ public enum ShTokenId implements TokenId {
 
     public String primaryCategory () {
         return name;
+    }
+
+    public static Language<ShTokenId> language() {
+        return new ShLanguageHierarchy().language();
     }
 }
