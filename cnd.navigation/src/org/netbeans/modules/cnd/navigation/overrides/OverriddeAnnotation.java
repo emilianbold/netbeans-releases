@@ -53,6 +53,8 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.text.Annotation;
 import org.openide.text.NbDocument;
@@ -74,7 +76,7 @@ public class OverriddeAnnotation extends Annotation {
     private final Position pos;
     private final String shortDescription;
     private final AnnotationType type;
-    private final Collection<? extends CsmMethod> methods;
+    private final Collection<CsmUID<CsmMethod>> methodUIDs;
     
     public OverriddeAnnotation(StyledDocument document, CsmFunction func, AnnotationType type,
             String shortDescription, Collection<? extends CsmMethod> methods) {
@@ -83,7 +85,10 @@ public class OverriddeAnnotation extends Annotation {
         this.pos = new DeclarationPosition(func);
         this.type = type;
         this.shortDescription = shortDescription;
-        this.methods = methods;
+        methodUIDs = new ArrayList<CsmUID<CsmMethod>>(methods.size());
+        for (CsmMethod m : methods) {
+            methodUIDs.add(UIDs.get(m));
+        }
     }
     
     @Override
@@ -111,6 +116,7 @@ public class OverriddeAnnotation extends Annotation {
         NbDocument.removeAnnotation(document, this);
     }
     
+    @Override
     public String toString() {
         return "[IsOverriddenAnnotation: " + shortDescription + "]"; //NOI18N
     }
@@ -121,9 +127,9 @@ public class OverriddeAnnotation extends Annotation {
     
     public String debugDump() {
         List<String> elementNames = new ArrayList<String>();        
-        for(CsmFunction fun : methods) {
-            elementNames.add(fun.toString());
-        }        
+        for(CsmUID<CsmMethod> uid : methodUIDs) {
+            elementNames.add(uid.toString());
+        }
         Collections.sort(elementNames);       
         return "IsOverriddenAnnotation: type=" + type.name() + ", elements:" + elementNames.toString(); //NOI18N
     }
@@ -143,10 +149,10 @@ public class OverriddeAnnotation extends Annotation {
 //    }
     
     void performGoToAction(Point position) {
-        if (methods.size() == 1) {
-            CsmUtilities.openSource(methods.iterator().next());
-        } else if (methods.size() > 1) {
-            CsmUtilities.openSource(methods.iterator().next()); //TODO: XXX
+        if (methodUIDs.size() == 1) {
+            CsmUtilities.openSource(methodUIDs.iterator().next().getObject());
+        } else if (methodUIDs.size() > 1) {
+            CsmUtilities.openSource(methodUIDs.iterator().next().getObject()); //TODO: XXX
         } else {
             throw new IllegalStateException("method list should not be empty"); // NOI18N
         }
