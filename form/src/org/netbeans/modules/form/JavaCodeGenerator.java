@@ -2312,7 +2312,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (codeData != null)
             propertyInitializationString = CUSTOM_CODE_MARK + propertyInitializationString + CUSTOM_CODE_MARK;
 
-	if(remainingProperties.size() == 0) {		    		    
+	if(remainingProperties.isEmpty()) {
 	    generateSimpleSetterCode(prop, 
 				     prop.getPartialSetterCode(propertyInitializationString),
 				     setterVariable, 
