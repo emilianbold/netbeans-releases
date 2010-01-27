@@ -97,6 +97,7 @@ public class FmtOptions {
     public static final String spacesPerTab = SimpleValueNames.SPACES_PER_TAB;
     public static final String indentSize = SimpleValueNames.INDENT_SHIFT_WIDTH;
     public static final String continuationIndentSize = "continuationIndentSize"; //NOI18N
+    public static final String itemsInArrayDeclarationIndentSize = "itemsInArrayDeclarationIndentSize"; //NOI18N
     public static final String reformatComments = "reformatComments"; //NOI18N
     public static final String indentHtml = "indentHtml"; //NOI18N
     public static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
@@ -155,6 +156,7 @@ public class FmtOptions {
             { tabSize, "8"}, //NOI18N
             { indentSize, "4"}, //NOI18N
             { continuationIndentSize, "8"}, //NOI18N
+            { itemsInArrayDeclarationIndentSize, "4"}, // NOI18N
             { reformatComments, FALSE }, //NOI18N
             { indentHtml, TRUE }, //NOI18N
             { rightMargin, "80"}, //NOI18N
