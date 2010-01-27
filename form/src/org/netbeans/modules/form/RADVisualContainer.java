@@ -45,7 +45,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import org.netbeans.modules.form.RADVisualComponent.MenuType;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
@@ -290,7 +290,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     private static Class[] getPossibleSubmenus(MenuType menuContainerType) {
         if (supportedMenus == null) {
-            supportedMenus = new HashMap<MenuType, Class[]>();
+            supportedMenus = new EnumMap<MenuType, Class[]>(MenuType.class);
             supportedMenus.put(MenuType.JMenuBar, new Class[] { JMenu.class });
             supportedMenus.put(MenuType.JMenu,
                                new Class[] { JMenuItem.class,
