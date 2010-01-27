@@ -79,6 +79,7 @@ import org.openide.util.Lookup;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
 
+    @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         RefactoringInfo.ChangeType changeType = null;
         List<FileObject> fileList = new LinkedList<FileObject>();
@@ -116,8 +117,10 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                     final String[] oldNames = new String[1];
                     try {
                         source.runUserActionTask(new CancellableTask<CompilationController>() {
+                            @Override
                             public void cancel() {
                             }
+                            @Override
                             public void run(CompilationController controller) throws Exception {
                                 controller.toPhase(JavaSource.Phase.RESOLVED);
                                 Element el = tpHandle.resolveElement(controller);
@@ -227,21 +230,26 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
             this.refInfo = refInfo;
         }
 
+        @Override
         public Problem preCheck() {
             return null;
         }
 
+        @Override
         public Problem checkParameters() {
             return null;
         }
 
+        @Override
         public Problem fastCheckParameters() {
             return null;
         }
 
+        @Override
         public void cancelRequest() {
         }
 
+        @Override
         public Problem prepare(RefactoringElementsBag refactoringElements) {
             // even if guarded blocks are not affected directly we might want some changes
             for (FileObject file : refInfo.getOriginalFiles()) {
