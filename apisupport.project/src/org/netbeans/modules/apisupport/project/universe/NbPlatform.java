@@ -442,7 +442,6 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
     private String label;
     private File nbdestdir;
     private File harness;
-    private URL[] javadocRoots;
     private HarnessVersion harnessVersion;
     
     private NbPlatform(String id, String label, File nbdestdir, File harness, URL[] sources, URL[] javadoc) {
@@ -450,7 +449,6 @@ public final class NbPlatform implements SourceRootsProvider, JavadocRootsProvid
         this.label = label;
         this.nbdestdir = nbdestdir;
         this.harness = harness;
-        this.javadocRoots = javadoc;
         pcs = new PropertyChangeSupport(this);
         srs = new SourceRootsSupport(sources, this);
         srs.addPropertyChangeListener(new PropertyChangeListener() {
