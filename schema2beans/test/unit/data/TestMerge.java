@@ -73,7 +73,7 @@ public class TestMerge extends BaseTest {
     // significant increase of mem usage.  (Note that sometimes JDK changes
     // can change this number too.)
     //
-    static float memUsageReference = 4436;
+    static float memUsageReference = 1684;
 
     
     public class MyListener implements PropertyChangeListener {
