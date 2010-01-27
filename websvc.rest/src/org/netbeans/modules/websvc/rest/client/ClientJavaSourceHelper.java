@@ -76,6 +76,7 @@ import org.netbeans.modules.websvc.rest.model.api.HttpMethod;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
+import org.netbeans.modules.websvc.rest.model.api.SubResourceLocator;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
@@ -119,8 +120,22 @@ public class ClientJavaSourceHelper {
         RestServiceDescription desc = resourceNode.getLookup().lookup(RestServiceDescription.class);
         List<RestMethodDescription> methods =  desc.getMethods();
         String uriTemplate = desc.getUriTemplate();
+        PathFormat pf = null;
+        if (uriTemplate.length() == 0) { // subresource locator
+            // find recursively the root resource
+            RootResourcePath rootResourcePath = getRootResourcePath(resourceNode, desc.getClassName(), "");
+            uriTemplate = rootResourcePath.getRootPath();
+            pf = rootResourcePath.getPathFormat();
+        }
         if (!uriTemplate.startsWith("/")) {
             uriTemplate = "/"+uriTemplate;
+        }
+        if (uriTemplate.endsWith("/")) {
+            uriTemplate = uriTemplate.substring(0, uriTemplate.length()-1);
+        }
+        // subresource locator is detected by string constant
+        if (pf != null && pf.getArguments().length == 0 && pf.getPattern().length() > 0) {
+            uriTemplate = uriTemplate+"/"+pf.getPattern();
         }
         Project prj = resourceNode.getLookup().lookup(Project.class);
         String resourceUri =
@@ -131,7 +146,8 @@ public class ClientJavaSourceHelper {
                 JavaSource.forFileObject(targetFo),
                 desc.getName(),
                 resourceUri,
-                methods);
+                methods,
+                pf);
     }
 
 
@@ -139,7 +155,8 @@ public class ClientJavaSourceHelper {
             JavaSource source,
             final String resourceName,
             final String resourceUri,
-            final List<RestMethodDescription> restMethodDesc) {
+            final List<RestMethodDescription> restMethodDesc,
+            final PathFormat pf) {
         try {
             ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
 
@@ -149,7 +166,7 @@ public class ClientJavaSourceHelper {
 
                     ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
                     String className = resourceName+"_JerseyClient"; //NOI18N
-                    ClassTree modifiedTree = ClientJavaSourceHelper.addJerseyClientClass(copy, tree, className, resourceUri, restMethodDesc);
+                    ClassTree modifiedTree = ClientJavaSourceHelper.addJerseyClientClass(copy, tree, className, resourceUri, restMethodDesc, pf);
 
                     copy.rewrite(tree, modifiedTree);
                 }
@@ -161,11 +178,12 @@ public class ClientJavaSourceHelper {
         }
     }
 
-    public static ClassTree addJerseyClientClass (
+    private static ClassTree addJerseyClientClass (
             WorkingCopy copy,
             ClassTree tree, String className,
             String resourceURI,
-            List<RestMethodDescription> restMethodDesc) {
+            List<RestMethodDescription> restMethodDesc,
+            PathFormat pf) {
 
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree modifs = maker.Modifiers(Collections.<Modifier>singleton(Modifier.STATIC));
@@ -199,19 +217,71 @@ public class ClientJavaSourceHelper {
 
         // add constructor
         ModifiersTree emtyModifier = maker.Modifiers(Collections.<Modifier>emptySet());
-        TypeElement clientEl = copy.getElements().getTypeElement("com.sun.jersey.api.client.Client");
+        TypeElement clientEl = copy.getElements().getTypeElement("com.sun.jersey.api.client.Client"); // NOI18N
+        boolean isSubresource = (pf != null && pf.getArguments().length>0);
+
+        List<VariableTree> paramList = new ArrayList<VariableTree>();
+        if (isSubresource) {
+            for (String arg : pf.getArguments()) {
+                Tree argTypeTree = maker.Identifier("String"); //NOI18N
+                ModifiersTree fieldModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+                VariableTree argFieldTree = maker.Variable(fieldModifier, arg, argTypeTree, null); //NOI18N
+                paramList.add(argFieldTree);
+            }
+        }
+
+        String subresourceExpr = (isSubresource ? "    String subresourcePath = "+getPathExpression(pf)+";" : ""); //NOI18N
+        String resURI = (isSubresource ? "RESOURCE_URI+\"/\"+subresourcePath" : "RESOURCE_URI"); //NOI18N
         String body =
                 "{"+ //NOI18N
                 "   client = new "+(clientEl == null ? "com.sun.jersey.api.client.":"")+"Client();"+ //NOI18N
-                "   webResource = client.resource(RESOURCE_URI);"+ //NOI18N
+                subresourceExpr +
+                "   webResource = client.resource("+resURI+");"+ //NOI18N
                 "}"; //NOI18N
         MethodTree constructorTree = maker.Constructor (
                 emtyModifier,
                 Collections.<TypeParameterTree>emptyList(),
-                Collections.<VariableTree>emptyList(),
+                paramList,
                 Collections.<ExpressionTree>emptyList(),
                 body);
         modifiedInnerClass = maker.addClassMember(modifiedInnerClass, constructorTree);
+
+        // add setSubresourcaPath() method for SubresourceLocators
+        if (isSubresource) {
+            ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
+//            paramList = new ArrayList<VariableTree>();
+//            for (String arg : pf.getArguments()) {
+//                Tree argTypeTree = maker.Identifier("String"); //NOI18N
+//                ModifiersTree fieldModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+//                VariableTree argFieldTree = maker.Variable(fieldModifier, arg, argTypeTree, null); //NOI18N
+//                paramList.add(argFieldTree);
+//            }
+            body =
+                "{"+ //NOI18N
+                "   String subresourcePath = "+getPathExpression(pf)+";"+ //NOI18N
+                "   webResource = client.resource(RESOURCE_URI+\"/\"+subresourcePath);"+ //NOI18N
+                "}"; //NOI18N
+            MethodTree methodTree = maker.Method (
+                    methodModifier,
+                    "setSubresourcePath", //NOI18N
+                    JavaSourceHelper.createTypeTree(copy, "void"), //NOI18N
+                    Collections.<TypeParameterTree>emptyList(),
+                    paramList,
+                    Collections.<ExpressionTree>emptyList(),
+                    body,
+                    null); //NOI18N
+            modifiedInnerClass = maker.addClassMember(modifiedInnerClass, methodTree);
+        }
+
+        // add wrappers for http methods (GET/POST/PUT/DELETE)
+        for (RestMethodDescription methodDesc : restMethodDesc) {
+            if (methodDesc instanceof HttpMethod) {
+                List<MethodTree> httpMethods = createHttpMethods(copy, (HttpMethod)methodDesc);
+                for (MethodTree httpMethod : httpMethods) {
+                    modifiedInnerClass = maker.addClassMember(modifiedInnerClass, httpMethod);
+                }
+            }
+        }
 
         // add close()
         ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
@@ -227,16 +297,6 @@ public class ClientJavaSourceHelper {
                 "}", //NOI18N
                 null); //NOI18N
         modifiedInnerClass = maker.addClassMember(modifiedInnerClass, methodTree);
-
-        //
-        for (RestMethodDescription methodDesc : restMethodDesc) {
-            if (methodDesc instanceof HttpMethod) {
-                List<MethodTree> httpMethods = createHttpMethods(copy, (HttpMethod)methodDesc);
-                for (MethodTree httpMethod : httpMethods) {
-                    modifiedInnerClass = maker.addClassMember(modifiedInnerClass, httpMethod);
-                }
-            }
-        }
 
         ClassTree modifiedTree = tree;
         return maker.addClassMember(modifiedTree, modifiedInnerClass);
@@ -582,5 +642,87 @@ public class ClientJavaSourceHelper {
                     body,
                     null); //NOI18N
         }
+    }
+
+    static class RootResourcePath {
+        private PathFormat pathFormat;
+        private String rootPath;
+
+        public RootResourcePath() {
+        }
+
+        public RootResourcePath(PathFormat pathFormat, String rootPath) {
+            this.pathFormat = pathFormat;
+            this.rootPath = rootPath;
+        }
+
+        public PathFormat getPathFormat() {
+            return pathFormat;
+        }
+
+        public void setPathFormat(PathFormat pathFormat) {
+            this.pathFormat = pathFormat;
+        }
+
+        public String getRootPath() {
+            return rootPath;
+        }
+
+        public void setRootPath(String rootPath) {
+            this.rootPath = rootPath;
+        }
+    }
+
+    private static RootResourcePath getRootResourcePath(Node resourceNode, String resourceClass, String uriTemplate) {
+        String resourceUri = uriTemplate.startsWith("/") ? uriTemplate.substring(1) : uriTemplate; //NOI18N
+        if (resourceUri.endsWith("/")) { //NOI18N
+            resourceUri = resourceUri.substring(0, resourceUri.length()-1);
+        }
+        Node projectNode = resourceNode.getParentNode();
+        if (projectNode != null) {
+            for (Node sibling : projectNode.getChildren().getNodes()) {
+                if (resourceNode != sibling) {
+                    RestServiceDescription desc = sibling.getLookup().lookup(RestServiceDescription.class);
+                    if (desc != null) {
+                        for (RestMethodDescription m : desc.getMethods()) {
+                            if (m instanceof SubResourceLocator) {
+                                SubResourceLocator resourceLocator = (SubResourceLocator)m;
+                                if (resourceClass.equals(resourceLocator.getReturnType())) {
+                                    // detect resource locator uri
+                                    String resourceLocatorUri = resourceLocator.getUriTemplate();
+                                    if (resourceLocatorUri.endsWith("/")) { //NOI18N
+                                        resourceLocatorUri = resourceLocatorUri.substring(0, resourceLocatorUri.length()-1);
+                                    }
+                                    if (resourceLocatorUri.startsWith("/")) { //NOI18N
+                                        resourceLocatorUri = resourceLocatorUri.substring(1);
+                                    }
+
+                                    String parentResourceUri = desc.getUriTemplate();
+                                    if (parentResourceUri.length() > 0) {
+                                        // found root resource
+                                        String subresourceUri = null;
+                                        if (resourceLocatorUri.length() > 0) {
+                                            if (resourceUri.length() > 0) {
+                                                subresourceUri = resourceLocatorUri+"/"+resourceUri;
+                                            } else {
+                                                subresourceUri = resourceLocatorUri;
+                                            }
+                                        } else {
+                                            subresourceUri = resourceUri;
+                                        }
+                                        PathFormat pf = getPathFormat(subresourceUri);
+                                        return new RootResourcePath(pf, parentResourceUri);
+                                    } else {
+                                        // searching recursively for
+                                        return getRootResourcePath(sibling, desc.getClassName(), resourceLocatorUri+"/"+uriTemplate); //NOI8N
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return new RootResourcePath(getPathFormat(uriTemplate), uriTemplate);
     }
 }
