@@ -45,6 +45,7 @@ import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.websvc.api.support.LogUtils;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -106,6 +107,11 @@ public class RESTClientGenerator implements CodeGenerator {
             Node resourceNode = explorerPanel.getSelectedService();
             // Generate Jersey Client
             ClientJavaSourceHelper.generateJerseyClient(resourceNode, targetSource);
+            // logging usage of action
+            Object[] params = new Object[2];
+            params[0] = LogUtils.WS_STACK_JAXRS;
+            params[1] = "GENERATE REST RESOURCE"; // NOI18N
+            LogUtils.logWsAction(params);
         }
     }
 }
