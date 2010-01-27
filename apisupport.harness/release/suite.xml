@@ -309,7 +309,8 @@ made subject to such option by the copyright holder.
         <copy file="${harness.dir}/launchers/${app.exe.prefix}app_w.exe" tofile="${build.launcher.dir}/bin/${app.name}_w.exe" failonerror="false" overwrite="true"/>
 
         <copy file="${harness.dir}/launchers/app.sh" tofile="${build.launcher.dir}/bin/${app.name}"/>
-        <copy file="${harness.dir}/etc/app.conf" tofile="${build.launcher.dir}/etc/${app.name}.conf">
+        <property name="app.conf" location="${harness.dir}/etc/app.conf"/>
+        <copy file="${app.conf}" tofile="${build.launcher.dir}/etc/${app.name}.conf">
             <filterchain>
                 <replacestring from="$${branding.token}" to="${branding.token}"/>
             </filterchain>
