@@ -44,7 +44,6 @@ package org.netbeans.modules.form;
 
 import java.beans.*;
 import java.util.*;
-import java.awt.*;
 
 import org.openide.awt.Mnemonics;
 
