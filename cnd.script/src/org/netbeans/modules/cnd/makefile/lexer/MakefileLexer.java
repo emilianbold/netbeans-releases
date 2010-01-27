@@ -80,6 +80,10 @@ import org.netbeans.spi.lexer.TokenFactory;
     private static final Set<String> KEYWORDS = new HashSet<String>(Arrays.asList(
             "include", // NOI18N
             "ifdef", // NOI18N
+            "ifndef", // NOI18N
+            "ifeq", // NOI18N
+            "ifneq", // NOI18N
+            "else", // NOI18N
             "endif")); // NOI18N
 
     private static enum State {
