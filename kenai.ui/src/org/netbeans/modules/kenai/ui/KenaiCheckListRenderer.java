@@ -34,37 +34,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.kenai.ui;
 
-package org.netbeans.modules.kenai.ui.nodes;
-
-import org.netbeans.modules.kenai.api.KenaiManager;
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.openide.util.NbBundle;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import javax.swing.JCheckBox;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
 
 /**
  *
  * @author Jan Becicka
  */
-public class RemoveInstanceAction extends AbstractAction {
+public class KenaiCheckListRenderer extends JPanel implements ListCellRenderer {
 
-    public Kenai key;
-    public RemoveInstanceAction(Kenai name) {
-        super(NbBundle.getMessage(RemoveInstanceAction.class, "CTL_RemoveInstance"));
-        this.key = name;
+    private ListCellRenderer delegateRenderer;
+    private ListSelectionModel model;
+    private JCheckBox checkBox = new JCheckBox();
+
+    public KenaiCheckListRenderer(ListCellRenderer renderer, ListSelectionModel selectionModel) {
+        super();
+        this.delegateRenderer = renderer;
+        this.model = selectionModel;
+        setLayout(new BorderLayout());
+        setOpaque(false);
+        checkBox.setOpaque(false);
     }
 
-
     @Override
-    public void actionPerformed(ActionEvent e) {
-        KenaiManager.getDefault().removeKenai(key);
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return !"https://kenai.com".equals(key.getUrl().toString());
+    public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        Component renderer = delegateRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        checkBox.setSelected(model.isSelectedIndex(index));
+        removeAll();
+        add(checkBox, BorderLayout.WEST);
+        add(renderer, BorderLayout.CENTER);
+        return this;
     }
 }

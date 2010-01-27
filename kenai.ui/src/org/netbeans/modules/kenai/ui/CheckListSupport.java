@@ -34,37 +34,63 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.nodes;
+package org.netbeans.modules.kenai.ui;
 
-import org.netbeans.modules.kenai.api.KenaiManager;
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.openide.util.NbBundle;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
-/**
- *
- * @author Jan Becicka
- */
-public class RemoveInstanceAction extends AbstractAction {
+public class CheckListSupport extends MouseAdapter implements ListSelectionListener, ActionListener {
+    
+    private ListSelectionModel sModel = new DefaultListSelectionModel();
 
-    public Kenai key;
-    public RemoveInstanceAction(Kenai name) {
-        super(NbBundle.getMessage(RemoveInstanceAction.class, "CTL_RemoveInstance"));
-        this.key = name;
+    private JList list = new JList();
+    
+    private int checkBoxWidth = new JCheckBox().getPreferredSize().width;
+
+    public CheckListSupport(JList list){
+        this.list = list;
+        list.setCellRenderer(new KenaiCheckListRenderer(list.getCellRenderer(), sModel));
+        list.registerKeyboardAction(this, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), JComponent.WHEN_FOCUSED);
+        list.addMouseListener(this);
+        sModel.addListSelectionListener(this);
     }
 
+    public ListSelectionModel getSelectionModel(){
+        return sModel;
+    }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        KenaiManager.getDefault().removeKenai(key);
+    private void select(int index){
+        if(index<0)
+            return;
+
+        if(sModel.isSelectedIndex(index))
+            sModel.removeSelectionInterval(index, index);
+        else
+            sModel.addSelectionInterval(index, index);
     }
 
     @Override
-    public boolean isEnabled() {
-        return !"https://kenai.com".equals(key.getUrl().toString());
+    public void mouseClicked(MouseEvent me){
+        int index = list.locationToIndex(me.getPoint());
+        if(index<0)
+            return;
+        if(me.getX()>list.getCellBounds(index, index).x+checkBoxWidth)
+            return;
+        select(index);
+    }
+
+    @Override
+    public void valueChanged(ListSelectionEvent e){
+        list.repaint(list.getCellBounds(e.getFirstIndex(), e.getLastIndex()));
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e){
+        select(list.getSelectedIndex());
     }
 }
