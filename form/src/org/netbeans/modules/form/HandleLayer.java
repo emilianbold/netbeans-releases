@@ -1178,7 +1178,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         RADVisualContainer parent = null;
 
  	//outside of a frame, there are no selected components so just return null
- 	if(selectedComps.size() == 0) return null;
+ 	if(selectedComps.isEmpty()) return null;
 
         for (Iterator it = selectedComps.iterator(); it.hasNext(); ) {
             RADComponent metacomp = (RADComponent) it.next();
@@ -2179,7 +2179,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             }
 
             if (toSelect.size() > 1
-                    || (toSelect.size() == 1 && subContainers.size() == 0))
+                    || (toSelect.size() == 1 && subContainers.isEmpty()))
                 return true;
 
             RADComponent theOnlyOne = toSelect.size() == 1 ? toSelect.get(0) : null;
