@@ -1331,8 +1331,8 @@ public class FileStatusCache {
                                     LABELS_CACHE_LOG.log(Level.WARNING, "LabelInfoRefreshTask: failed getting info and info for {0}", file.getAbsolutePath());
                                     LABELS_CACHE_LOG.log(Level.INFO, null, ex);
                                 }
-                                labels.put(file, FAKE_LABEL_INFO);
                             }
+                            labels.put(file, FAKE_LABEL_INFO);
                         }
                     }
                     synchronized (fileLabels) {
