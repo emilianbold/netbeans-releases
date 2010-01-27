@@ -1477,7 +1477,7 @@ class JavaCodeGenerator extends CodeGenerator {
             if (codeData == null)
                 generateEmptyLineIfNeeded(writer);
 
-            StringBuffer buf = new StringBuffer(); // we need the entire creation statement written at once
+            StringBuilder buf = new StringBuilder(); // we need the entire creation statement written at once
 
             if (localVariable || isFinalFieldVariable(varType)) { // also generate declaration
                 generateDeclarationPre(comp, writer, codeData);
@@ -2067,7 +2067,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 sizeText = "pack();\n"; // NOI18N
             else if (formPolicy == RADVisualFormContainer.GEN_BOUNDS) {
                 if (genCenter) {
-                    StringBuffer sizeBuffer = new StringBuffer();
+                    StringBuilder sizeBuffer = new StringBuilder();
                     if (genSize) {
 //                                sizeBuffer.append("pack();\n"); // NOI18N
                         sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
@@ -3131,7 +3131,7 @@ class JavaCodeGenerator extends CodeGenerator {
             String initText = formEditorSupport.getInitComponentSection().getText();
             int index = initText.lastIndexOf("private class "); // NOI18N
             if (index >= 0) {
-                StringBuffer nameBuffer = new StringBuffer(16);
+                StringBuilder nameBuffer = new StringBuilder(16);
                 index += "private class ".length(); // NOI18N
 
                 int length = initText.length();
@@ -3572,7 +3572,7 @@ class JavaCodeGenerator extends CodeGenerator {
             } catch (Exception ex) {} // ignore
         }
         
-        StringBuffer tab = new StringBuffer(spacesPerTab);
+        StringBuilder tab = new StringBuilder(spacesPerTab);
         for (int i=0; i < spacesPerTab; i++)
             tab.append(" "); // NOI18N
         
@@ -3588,7 +3588,7 @@ class JavaCodeGenerator extends CodeGenerator {
         int indentLevel = minIndentLevel;
         boolean lastLineEmpty = false;
         int codeLength = code.length();
-        StringBuffer buffer = new StringBuffer(codeLength);
+        StringBuilder buffer = new StringBuilder(codeLength);
         
         int i = 0;
         while (i < codeLength) {
