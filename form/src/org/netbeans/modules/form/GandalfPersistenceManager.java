@@ -2898,7 +2898,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (eventListener == null || paramTypes == null)
             return eventName;
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append("$"); // NOI18N
         buf.append(eventListener);
         buf.append("."); // NOI18N
@@ -4637,7 +4637,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         if (metaObject instanceof Constructor) {
             Constructor ctor = (Constructor) metaObject;
-            StringBuffer buf3 = new StringBuffer();
+            StringBuilder buf3 = new StringBuilder();
             Class[] paramTypes = ctor.getParameterTypes();
 
             for (int i=0; i < paramTypes.length; i++) {
@@ -4752,7 +4752,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private static void saveMethod(Method method,
                                    StringBuffer buf, String indent)
     {
-        StringBuffer buf2 = new StringBuffer();
+        StringBuilder buf2 = new StringBuilder();
         Class[] paramTypes = method.getParameterTypes();
 
         for (int i=0; i < paramTypes.length; i++) {
@@ -5672,7 +5672,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         oos.close();
 
         byte[] bosBytes = bos.toByteArray();
-        StringBuffer buf = new StringBuffer(bosBytes.length*4);
+        StringBuilder buf = new StringBuilder(bosBytes.length*4);
         for (int i=0; i < bosBytes.length; i++) {
             if (i+1 < bosBytes.length)
                 buf.append(bosBytes[i]+","); // NOI18N
@@ -5822,7 +5822,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (text == null)
             return ""; // NOI18N
 
-        StringBuffer sb = new StringBuffer(text.length());
+        StringBuilder sb = new StringBuilder(text.length());
         for (int i=0; i<text.length(); i++) {
             char c = text.charAt(i);
             if (c >= 0x0020 && c <= 0x007f) {
@@ -5952,7 +5952,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             return errMsg;
 
         String link = null;
-        StringBuffer pathBuf = new StringBuffer();
+        StringBuilder pathBuf = new StringBuilder();
         for (int i=path.size()-1; i >= 0; i--) {
             pathBuf.append(path.get(i));
             if (i > 0) {
@@ -5981,7 +5981,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             format = property ? "FMT_ERR_LoadingLayoutConstraintsProperty" : // NOI18N
                                 "FMT_ERR_LoadingLayoutConstraints"; // NOI18N
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         buf.append(FormUtils.getFormattedBundleString(
                         format, new Object[] { pathBuf.toString() }));
         buf.append("\n"); // NOI18N
@@ -6171,7 +6171,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 return getKey(value.getRADComponent().getName(), getValueName());
             }                
             private String getKey(String beanName, String propertyName) {
-                StringBuffer sb = new StringBuffer();
+                StringBuilder sb = new StringBuilder();
                 sb.append("["); // NOI18N
                 sb.append(beanName);
                 sb.append(", "); // NOI18N
