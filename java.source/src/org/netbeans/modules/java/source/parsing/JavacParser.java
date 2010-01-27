@@ -689,6 +689,7 @@ public class JavacParser extends Parser {
         options.add("-source");  // NOI18N
         options.add(validatedSourceLevel.name);
         options.add("-proc:none"); // NOI18N, Disable annotation processors
+        options.add("-XDfindDiamond"); //XXX: should be part of options
 
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {            
