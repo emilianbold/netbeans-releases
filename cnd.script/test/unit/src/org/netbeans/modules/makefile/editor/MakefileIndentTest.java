@@ -71,6 +71,11 @@ public class MakefileIndentTest extends NbTestCase {
         MockMimeLookup.setInstances(mimePath, factory);
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testRuleIndent1() throws BadLocationException {
         createDocument("build: myapp|");
         indentNewLine();

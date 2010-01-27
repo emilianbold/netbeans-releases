@@ -189,8 +189,6 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
 
         try {
             Process p = npb.call();
-            int result = p.waitFor();
-            assertEquals(0, result);
 
             List<String> pout = ProcessUtils.readProcessOutput(p);
             int ok = 0;
@@ -206,6 +204,9 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
                     }
                 }
             }
+
+            int result = p.waitFor();
+            assertEquals(0, result);
 
             assertEquals(2, ok);
         } catch (InterruptedException ex) {

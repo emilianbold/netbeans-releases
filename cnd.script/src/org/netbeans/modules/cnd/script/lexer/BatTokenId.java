@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.script.lexer;
 
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 
 
@@ -70,5 +71,9 @@ public enum BatTokenId implements TokenId {
 
     public String primaryCategory () {
         return name;
+    }
+
+    public static Language<BatTokenId> language() {
+        return new BatLanguageHierarchy().language();
     }
 }

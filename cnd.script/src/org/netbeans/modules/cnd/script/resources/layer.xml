@@ -339,6 +339,11 @@
             <folder name="x-make">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
 
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+
                 <file name="MakefileIndentTaskFactory.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.editor.MakefileIndentTaskFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
@@ -369,6 +374,12 @@
 
             <folder name="sh">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
+
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.script.lexer.ShTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -378,6 +389,7 @@
                         </folder>
                     </folder>
                 </folder>
+
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.script.editor.ShellKit"/>
                     <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit"/>
@@ -386,6 +398,12 @@
 
             <folder name="bat">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.script.resources.Bundle"/>
+
+                <file name="language.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.script.lexer.BatTokenId.language"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
+                </file>
+
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">

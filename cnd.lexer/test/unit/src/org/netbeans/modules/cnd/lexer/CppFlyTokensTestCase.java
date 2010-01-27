@@ -75,6 +75,11 @@ public class CppFlyTokensTestCase extends NbTestCase {
     protected void tearDown() throws java.lang.Exception {
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testHCpp() throws Exception {
         File testJComponentFile = new File(getDataDir() + "/testfiles/istream.txt");
         FileReader r = new FileReader(testJComponentFile);

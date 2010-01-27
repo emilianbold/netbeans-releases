@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.makefile.lexer;
 
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 
 /**
@@ -117,5 +118,9 @@ public enum MakefileTokenId implements TokenId {
     @Override
     public String primaryCategory() {
         return category;
+    }
+
+    public static final Language<MakefileTokenId> language() {
+        return new MakefileLanguageHierarchy().language();
     }
 }
