@@ -72,6 +72,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
     /** Gets the supported layout manager class - BoxLayout.
      * @return the class supported by this delegate
      */
+    @Override
     public Class getSupportedClass() {
         return BoxLayout.class;
     }
@@ -337,10 +338,12 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
                                 getBundle().getString("PROP_axis"), // NOI18N
                                 getBundle().getString("HINT_axis")) // NOI18N
             {
+                @Override
                 public Object getTargetValue() {
                     return new Integer(axis);
                 }
 
+                @Override
                 public void setTargetValue(Object value) {
                     int ax = ((Integer)value).intValue();
                     if (ax == BoxLayout.X_AXIS || ax == BoxLayout.Y_AXIS

@@ -113,6 +113,7 @@ class FormOthersNode extends FormNode {
             setKeys(formModel.getOtherComponents().toArray());
         }
 
+        @Override
         protected Node[] createNodes(Object key) {
             Node node = new RADComponentNode((RADComponent)key);
             node.getChildren().getNodes(); // enforce subnodes creation
@@ -133,14 +134,17 @@ class FormOthersNode extends FormNode {
             this.children = children;
         }
 
+        @Override
         public Node[] getNodes() {
             return children.getNodes();
         }
 
+        @Override
         public int getNodesCount() {
             return getNodes().length;
         }
 
+        @Override
         public void reorder(int[] perm) {
             ComponentContainer cont = children.getFormModel().getModelContainer();
             cont.reorderSubComponents(perm);
