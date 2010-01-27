@@ -119,6 +119,7 @@ public class ParametersPicker extends javax.swing.JPanel {
             }
 
             beanCombo.addItemListener(new ItemListener() {
+                @Override
                 public void itemStateChanged(ItemEvent evt) {
                     int index = beanCombo.getSelectedIndex();
                     if (index == 0) {
@@ -569,6 +570,7 @@ public class ParametersPicker extends javax.swing.JPanel {
         final DialogDescriptor dd = new DialogDescriptor(picker, title);
         dd.setValid(picker.isPickerValid());
         picker.addPropertyChangeListener("pickerValid", new PropertyChangeListener() { // NOI18N
+            @Override
             public void propertyChange(PropertyChangeEvent evt2) {
                 dd.setValid(((Boolean)evt2.getNewValue()).booleanValue());
             }
@@ -616,6 +618,7 @@ public class ParametersPicker extends javax.swing.JPanel {
         final DialogDescriptor dd = new DialogDescriptor(propertyPicker, title);
         dd.setValid(propertyPicker.isPickerValid());
         propertyPicker.addPropertyChangeListener("pickerValid", new PropertyChangeListener() { // NOI18N
+            @Override
             public void propertyChange(PropertyChangeEvent evt2) {
                 dd.setValid(((Boolean)evt2.getNewValue()).booleanValue());
             }
@@ -717,6 +720,7 @@ public class ParametersPicker extends javax.swing.JPanel {
     // -------
 
     static class ComponentComparator implements Comparator<RADComponent> {
+        @Override
         public int compare(RADComponent comp1, RADComponent comp2) {
             if (comp1 == comp2)
                 return 0;
