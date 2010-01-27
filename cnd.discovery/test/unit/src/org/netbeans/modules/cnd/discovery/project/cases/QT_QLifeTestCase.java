@@ -37,22 +37,41 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.project;
+package org.netbeans.modules.cnd.discovery.project.cases;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
+import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Alexander Simon
  */
-public class TesseractTestCase extends MakeProjectTestBase {
+public class QT_QLifeTestCase extends MakeProjectTestBase {
 
-    public TesseractTestCase() {
-        super("Tesseract");
+    public QT_QLifeTestCase() {
+        super("QLife");
+    }
+
+    @Override
+    protected List<String> requiredTools() {
+        List<String> res = new ArrayList<String>(super.requiredTools());
+        res.add("qmake");
+        res.add("sed");
+        return res;
     }
 
     @Test
-    public void testTesseract(){
-        performTestProject("http://tesseract-ocr.googlecode.com/files/tesseract-2.03.tar.gz", null, false);
+    public void testQLife(){
+        List<String> list = new ArrayList<String>();
+        //list.add("qmake qlife.pro");
+        if (Utilities.isWindows()) {
+            // There are troubles with generated Makefile on Windows - attempt to fix it.
+            // Note: MSYS make is required to run patched Makefile.
+            list.add("sed -e 's:\\\\\\(.\\):/\\1:g' -i Makefile");
+        }
+        performTestProject("http://personal.inet.fi/koti/rkauppila/projects/life/qlife-qt4-0.9.tar.gz", list, false, "");
     }
 }

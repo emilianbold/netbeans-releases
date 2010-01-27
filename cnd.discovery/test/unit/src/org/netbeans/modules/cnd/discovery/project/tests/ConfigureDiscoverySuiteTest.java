@@ -37,22 +37,29 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.project;
+package org.netbeans.modules.cnd.discovery.project.tests;
 
-import org.junit.Test;
+import org.netbeans.modules.cnd.discovery.project.cases.PkgConfigTestCase;
+import org.netbeans.modules.cnd.discovery.project.cases.LiteSqlTestCase;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
  * @author Alexander Simon
  */
-public class PkgConfigTestCase extends MakeProjectTestBase {
+public class ConfigureDiscoverySuiteTest extends CndBaseTestSuite {
 
-    public PkgConfigTestCase() {
-        super("PkgConfig");
+    public ConfigureDiscoverySuiteTest() {
+        super("C/C++ Configure Discovery Test"); // NOI18N
+
+        addTestSuite(PkgConfigTestCase.class);
+        addTestSuite(LiteSqlTestCase.class);
     }
 
-    @Test
-    public void testPkgConfig(){
-        performTestProject("http://pkgconfig.freedesktop.org/releases/pkg-config-0.23.tar.gz", null, false);
+    public static Test suite() {
+        TestSuite suite = new ConfigureDiscoverySuiteTest();
+        return suite;
     }
 }

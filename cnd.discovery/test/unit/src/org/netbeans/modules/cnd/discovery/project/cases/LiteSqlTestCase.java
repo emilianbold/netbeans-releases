@@ -37,9 +37,10 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.project;
+package org.netbeans.modules.cnd.discovery.project.cases;
 
 import org.junit.Test;
+import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
 
 
 /**
@@ -54,7 +55,7 @@ public class LiteSqlTestCase extends MakeProjectTestBase {
 
     @Test
     public void testLiteSql(){
-        performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.3/litesql-0.3.3.tar.gz", null, false);
+        performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.3/litesql-0.3.3.tar.gz", null, false, "");
 //        performTestProject("http://www.mirrorservice.org/sites/download.sourceforge.net/pub/sourceforge/l/project/li/litesql/litesql/0.3.5-beta/litesql-0.3.5-src.tar.gz", null, false);
     }
 }

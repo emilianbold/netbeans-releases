@@ -45,6 +45,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import static org.netbeans.lib.lexer.test.LexerTestUtilities.assertNextTokenEquals;
 
 /**
  * @author Alexey Vladykin
@@ -72,47 +73,121 @@ public class MakefileLexerTest extends NbTestCase {
         TokenHierarchy<?> hi = TokenHierarchy.create(text, new MakefileLanguageHierarchy().language());
         TokenSequence<?> ts = hi.tokenSequence();
 
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.LINE_COMMENT, "# Environment\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.IDENTIFIER, "MKDIR");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.MACRO_OPERATOR, "=");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.IDENTIFIER, "mkdir");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.IDENTIFIER, "BUILDDIR");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.MACRO_OPERATOR, "=");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.IDENTIFIER, "build/");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.MACRO, "${CONF}");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.IDENTIFIER, "OS");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.MACRO_OPERATOR, ":=");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.MACRO, "$(shell uname | grep -i Darwin)");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.IDENTIFIER, "build");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, ":");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.TAB, "\t");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.MACRO, "$(COMPILE.cc)");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.IDENTIFIER, "source.cpp");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.RULE_OPERATOR, "-");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.IDENTIFIER, "o");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.IDENTIFIER, "source.o");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.SPECIAL_TARGET, ".PHONY");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, ":");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.IDENTIFIER, "build");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.KEYWORD, "include");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.IDENTIFIER, "foo.mk");
-        LexerTestUtilities.assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+        assertNextTokenEquals(ts, MakefileTokenId.COMMENT, "# Environment");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "MKDIR");
+        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, "=");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "mkdir");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "BUILDDIR");
+        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, "=");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "build/");
+        assertNextTokenEquals(ts, MakefileTokenId.MACRO, "${CONF}");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "OS");
+        assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
+        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, ":=");
+        assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
+        assertNextTokenEquals(ts, MakefileTokenId.MACRO, "$(shell uname | grep -i Darwin)");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "build");
+        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, ":");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+        assertNextTokenEquals(ts, MakefileTokenId.TAB, "\t");
+        assertNextTokenEquals(ts, MakefileTokenId.SHELL, "$(COMPILE.cc) source.cpp -o source.o");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+        assertNextTokenEquals(ts, MakefileTokenId.SPECIAL_TARGET, ".PHONY");
+        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, ":");
+        assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "build");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+        assertNextTokenEquals(ts, MakefileTokenId.KEYWORD, "include");
+        assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "foo.mk");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
 
-        assertFalse("No more tokens", ts.moveNext());
+        assertFalse("Unexpected tokens remaining", ts.moveNext());
+    }
+
+    public void testBare() {
+        String text = "a\\ b := a\\:b\n";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, new MakefileLanguageHierarchy().language());
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "a\\ b");
+        assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
+        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, ":=");
+        assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "a\\:b");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+
+        assertFalse("Unexpected tokens remaining", ts.moveNext());
+    }
+
+    public void testTabs() {
+        String text = "\tfoo\n\t\tbar\n \tbaz";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, new MakefileLanguageHierarchy().language());
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        assertNextTokenEquals(ts, MakefileTokenId.TAB, "\t");
+        assertNextTokenEquals(ts, MakefileTokenId.SHELL, "foo");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+        assertNextTokenEquals(ts, MakefileTokenId.TAB, "\t");
+        assertNextTokenEquals(ts, MakefileTokenId.SHELL, "\tbar");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+        assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " \t");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "baz");
+
+        assertFalse("Unexpected tokens remaining", ts.moveNext());
+    }
+
+    public void testNewline() {
+        String text = "var = foo\\\n\\\r\n\tbar\n";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, new MakefileLanguageHierarchy().language());
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "var");
+        assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
+        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, "=");
+        assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "foo");
+        assertNextTokenEquals(ts, MakefileTokenId.ESCAPED_NEW_LINE, "\\\n");
+        assertNextTokenEquals(ts, MakefileTokenId.ESCAPED_NEW_LINE, "\\\r\n");
+        assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, "\t");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "bar");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+
+        assertFalse("Unexpected tokens remaining", ts.moveNext());
+    }
+
+    public void testShell() {
+        String text = "\techo foo\\\nbar\\\n\tbaz";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, new MakefileLanguageHierarchy().language());
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        assertNextTokenEquals(ts, MakefileTokenId.TAB, "\t");
+        assertNextTokenEquals(ts, MakefileTokenId.SHELL, "echo foo\\\nbar\\\n\tbaz");
+
+        assertFalse("Unexpected tokens remaining", ts.moveNext());
+    }
+
+    public void testMacro() {
+        String text = "ab=$(a\nb)\ncd=$(c\\\nd)";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, new MakefileLanguageHierarchy().language());
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "ab");
+        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, "=");
+        assertNextTokenEquals(ts, MakefileTokenId.MACRO, "$(a");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "b)");
+        assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "cd");
+        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, "=");
+        assertNextTokenEquals(ts, MakefileTokenId.MACRO, "$(c\\\nd)");
+
+        assertFalse("Unexpected tokens remaining", ts.moveNext());
     }
 }
