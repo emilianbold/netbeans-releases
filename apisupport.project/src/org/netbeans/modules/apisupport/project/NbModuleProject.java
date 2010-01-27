@@ -116,6 +116,7 @@ import org.netbeans.modules.apisupport.project.ui.ModuleOperations;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
@@ -312,11 +313,11 @@ public final class NbModuleProject implements Project {
     /**
      * Get the minimum harness version required to work with this module.
      */
-    public int getMinimumHarnessVersion() {
+    public HarnessVersion getMinimumHarnessVersion() {
         if (helper.createAuxiliaryConfiguration().getConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true) != null) {
-            return NbPlatform.HARNESS_VERSION_50;
+            return HarnessVersion.V50;
         } else {
-            return NbPlatform.HARNESS_VERSION_55u1;
+            return HarnessVersion.V55u1;
         }
     }
 
@@ -848,7 +849,7 @@ public final class NbModuleProject implements Project {
     
     public void refreshBuildScripts(boolean checkForProjectXmlModified, NbPlatform customPlatform) throws IOException {
         String buildImplPath =
-                    customPlatform.getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
+                    customPlatform.getHarnessVersion().compareTo(HarnessVersion.V65) <= 0
                     || eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
                     ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
         genFilesHelper.refreshBuildScript(
