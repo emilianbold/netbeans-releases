@@ -55,17 +55,14 @@ import org.netbeans.spi.lexer.LanguageProvider;
 @org.openide.util.lookup.ServiceProvider(service = LanguageProvider.class)
 public class ShLanguageProvider extends LanguageProvider {
 
-    private static final Language<ShTokenId> LANGUAGE =
-            new ShLanguageHierarchy().language();
-
     public static Language<ShTokenId> language() {
-        return LANGUAGE;
+        return new ShLanguageHierarchy().language();
     }
 
     @Override
     public Language<ShTokenId> findLanguage(String mimeType) {
         if (MIMENames.SHELL_MIME_TYPE.equals(mimeType)) {
-            return LANGUAGE;
+            return language();
         }
         return null;
     }

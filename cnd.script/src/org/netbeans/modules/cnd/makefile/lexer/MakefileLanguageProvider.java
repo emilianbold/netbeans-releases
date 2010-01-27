@@ -56,17 +56,14 @@ import org.netbeans.spi.lexer.LanguageProvider;
 @org.openide.util.lookup.ServiceProvider(service = LanguageProvider.class)
 public final class MakefileLanguageProvider extends LanguageProvider {
 
-    private static final Language<MakefileTokenId> LANGUAGE =
-            new MakefileLanguageHierarchy().language();
-
     public static Language<MakefileTokenId> language() {
-        return LANGUAGE;
+        return new MakefileLanguageHierarchy().language();
     }
 
     @Override
     public Language<MakefileTokenId> findLanguage(String mimeType) {
         if (MIMENames.MAKEFILE_MIME_TYPE.equals(mimeType)) {
-            return LANGUAGE;
+            return language();
         }
         return null;
     }
