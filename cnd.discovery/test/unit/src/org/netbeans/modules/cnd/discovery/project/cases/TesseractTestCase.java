@@ -37,33 +37,23 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.discovery.project;
+package org.netbeans.modules.cnd.discovery.project.cases;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.Test;
+import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
 
 /**
  *
  * @author Alexander Simon
  */
-public class MysqlConnectorTestCase extends MakeProjectTestBase {
+public class TesseractTestCase extends MakeProjectTestBase {
 
-    public MysqlConnectorTestCase() {
-        super("MysqlConnector");
-    }
-
-    @Override
-    protected List<String> requiredTools() {
-        List<String> res = new ArrayList<String>(super.requiredTools());
-        res.add("cmake");
-        return res;
+    public TesseractTestCase() {
+        super("Tesseract");
     }
 
     @Test
-    public void testMysqlConnector(){
-        List<String> list = new ArrayList<String>();
-        list.add("rm -f Makefile");
-        performTestProject("http://download.softagency.net/MySQL/Downloads/Connector-C/mysql-connector-c-6.0.1.tar.gz", list, false);
+    public void testTesseract(){
+        performTestProject("http://tesseract-ocr.googlecode.com/files/tesseract-2.03.tar.gz", null, false, "");
     }
 }

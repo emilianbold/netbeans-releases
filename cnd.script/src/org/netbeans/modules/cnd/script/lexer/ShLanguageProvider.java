@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.script.lexer;
 
 import org.netbeans.api.lexer.InputAttributes;
@@ -50,26 +49,29 @@ import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageProvider;
 
 /**
- *
  * @author Jan Jancura
+ * @author Alexey Vladykin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.lexer.LanguageProvider.class)
+@org.openide.util.lookup.ServiceProvider(service = LanguageProvider.class)
 public class ShLanguageProvider extends LanguageProvider {
-    
-    public Language<ShTokenId> findLanguage (String mimeType) {
-        if (MIMENames.SHELL_MIME_TYPE.equals (mimeType))
-            return new ShLanguageHierarchy ().language ();
+
+    public static Language<ShTokenId> language() {
+        return new ShLanguageHierarchy().language();
+    }
+
+    @Override
+    public Language<ShTokenId> findLanguage(String mimeType) {
+        if (MIMENames.SHELL_MIME_TYPE.equals(mimeType)) {
+            return language();
+        }
         return null;
     }
 
     @Override
-    public LanguageEmbedding<?> findLanguageEmbedding (
-        Token arg0,
-        LanguagePath arg1,
-        InputAttributes arg2
-    ) {
+    public LanguageEmbedding<?> findLanguageEmbedding(
+            Token<?> token,
+            LanguagePath languagePath,
+            InputAttributes attributes) {
         return null;
     }
 }
-
-

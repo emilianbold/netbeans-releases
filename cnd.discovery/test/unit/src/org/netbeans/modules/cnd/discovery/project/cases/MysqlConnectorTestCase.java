@@ -37,60 +37,34 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.remote.api;
+package org.netbeans.modules.cnd.discovery.project.cases;
 
-import java.beans.PropertyChangeListener;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Lookup;
-import org.openide.util.NotImplementedException;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.Test;
+import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Alexander Simon
  */
-public final class ServerRecord implements Lookup.Provider {
+public class MysqlConnectorTestCase extends MakeProjectTestBase {
 
-    public  static final String PROP_DISPLAY_NAME = "DISPLAY_NAME"; //NOI18N
-
-    private final Lookup lookup;
-    private String displayName;
-
-    /*package*/ ServerRecord(ExecutionEnvironment env) {
-        lookup = createLookup(env);
-        displayName = env.getDisplayName();
+    public MysqlConnectorTestCase() {
+        super("MysqlConnector");
     }
 
-    /** 
-     * Same as getLookup.lookup(ExecutionEnvironment.class)
-     */
-    public ExecutionEnvironment getExecutionEnvironment() {
-        return getLookup().lookup(ExecutionEnvironment.class);
-    }
-
-    /** Use lookup to get additional properties */
     @Override
-    public Lookup getLookup() {
-        return lookup;
+    protected List<String> requiredTools() {
+        List<String> res = new ArrayList<String>(super.requiredTools());
+        res.add("cmake");
+        return res;
     }
 
-    /** Gets this record user-definable display name */
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    /*package*/ void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        throw new NotImplementedException();
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        throw new NotImplementedException();
-    }
-
-    private Lookup createLookup(ExecutionEnvironment env) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    @Test
+    public void testMysqlConnector(){
+        List<String> list = new ArrayList<String>();
+        list.add("rm -f Makefile");
+        performTestProject("http://download.softagency.net/MySQL/Downloads/Connector-C/mysql-connector-c-6.0.1.tar.gz", list, false, "");
     }
 }
