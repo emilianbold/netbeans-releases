@@ -183,7 +183,11 @@ public class AnnotationsHolder implements PropertyChangeListener {
             SwingUtilities.invokeLater(doAttachDetach);
         }
     }
-    
+
+    /**
+     * Gets annotations that have been attached to the document.
+     * Should be called ONLY FROM AWT THREAD
+     */
     public synchronized List<OverriddeAnnotation> getAttachedAnnotations() {
         assertUiThread();
         return new ArrayList<OverriddeAnnotation>(attachedAnnotations);
