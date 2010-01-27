@@ -61,6 +61,11 @@ public class ScannerTestCase extends NbTestCase {
         super(testName);
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testGNUpatterns() throws Exception {
         ToolchainDescriptor toolchain = ToolchainManager.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
         String[] GCC_ERROR_SCANNER = new String[]{"^([a-zA-Z]:[^:$]*|[^:$]*):([0-9]+)[\\.:]([^:$]*):([^$]*)", // NOI18N

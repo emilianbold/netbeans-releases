@@ -72,6 +72,11 @@ public class ReadRegistryTestCase extends NbTestCase {
         super.tearDown();
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testCygwin() throws Exception {
         ToolchainDescriptor d = ToolchainManager.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
         assertNotNull(d);

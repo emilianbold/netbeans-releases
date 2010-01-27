@@ -61,6 +61,11 @@ public class ShLexerTest extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testSimple() {
         String text = "#!/bin/sh\n\n" +
                 "for f in foo.tar foo.bar; do\n" +

@@ -61,6 +61,11 @@ public class MakefileLexerTest extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testSimple() {
         String text = "# Environment\n" +
                       "MKDIR=mkdir\n" +
