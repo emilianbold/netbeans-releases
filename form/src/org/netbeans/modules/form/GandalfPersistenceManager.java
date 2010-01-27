@@ -252,6 +252,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
      * @return true if this persistence manager can load the form
      * @exception PersistenceException if any unexpected problem occurred
      */
+    @Override
     public boolean canLoadForm(FormDataObject formObject)
         throws PersistenceException
     {
@@ -616,8 +617,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
         final String[] result = new String[1];
         JavaSource js = JavaSource.forFileObject(javaFile);
         js.runUserActionTask(new CancellableTask<CompilationController>() {
+            @Override
             public void cancel() {
             }
+            @Override
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ClassTree formClass = null;
@@ -5775,6 +5778,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             // probably not necessary, but there is no guarantee that
             // the order of attributes will remain the same in DOM
             Collections.sort(attribList, new Comparator<org.w3c.dom.Node>() {
+                @Override
                 public int compare(org.w3c.dom.Node n1, org.w3c.dom.Node n2) {
                     return n1.getNodeName().compareTo(n2.getNodeName());
                 }
