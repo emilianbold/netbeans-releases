@@ -133,7 +133,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                                         Element parentEl = el.getEnclosingElement();
                                         if (parentEl.getKind() == ElementKind.METHOD
                                                 && "initComponents".equals(parentEl.getSimpleName().toString()) // NOI18N
-                                                && ((ExecutableElement)parentEl).getParameters().size() == 0) {
+                                                && ((ExecutableElement)parentEl).getParameters().isEmpty()) {
                                             changeTypes[0] = RefactoringInfo.ChangeType.VARIABLE_RENAME;
                                         }
                                         break;
