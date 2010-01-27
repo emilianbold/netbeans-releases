@@ -325,6 +325,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     // the following methods implement ComponentContainer interface
 
     /** @return all subcomponents (including the menu component) */
+    @Override
     public RADComponent[] getSubBeans() {
         int n = subComponents.size();
         if (containerMenu != null)
@@ -338,6 +339,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         return components;
     }
 
+    @Override
     public void initSubComponents(RADComponent[] initComponents) {
         if (subComponents == null)
             subComponents = new ArrayList<RADVisualComponent>(initComponents.length);
@@ -360,6 +362,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             refillContainerInstance();
     }
 
+    @Override
     public void reorderSubComponents(int[] perm) {
         RADVisualComponent[] components = new RADVisualComponent[subComponents.size()];
         LayoutConstraints[] constraints;
@@ -387,6 +390,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         }
     }
 
+    @Override
     public void add(RADComponent comp) {
         add(comp, -1);
     }
@@ -419,6 +423,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         }
     }
 
+    @Override
     public void remove(RADComponent comp) {
         if (comp == containerMenu) {
             containerMenu = null;
@@ -436,6 +441,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         }
     }
 
+    @Override
     public int getIndexOf(RADComponent comp) {
         if (comp != null && comp == containerMenu)
             return subComponents.size();
