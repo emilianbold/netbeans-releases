@@ -247,6 +247,12 @@ implements Stamps.Updater {
             activator = new NetigsoActivator();
             configMap.put("felix.bootdelegation.classloaders", activator);
             FrameworkFactory frameworkFactory = Lookup.getDefault().lookup(FrameworkFactory.class);
+            if (frameworkFactory == null) {
+                throw new IllegalStateException(
+                    "Cannot find OSGi framework implementation." + // NOI18N
+                    " Is org.netbeans.libs.felix module or similar enabled?" // NOI18N
+                );
+            }
             framework = frameworkFactory.newFramework(configMap);
             framework.init();
             new NetigsoServices(framework);
