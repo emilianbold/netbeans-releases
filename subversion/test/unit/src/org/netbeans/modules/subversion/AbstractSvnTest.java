@@ -55,7 +55,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import org.netbeans.modules.subversion.util.FileUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.utils.TestUtilities;
 import org.netbeans.modules.versioning.util.Utils;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
