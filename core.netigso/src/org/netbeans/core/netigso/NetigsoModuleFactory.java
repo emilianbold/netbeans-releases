@@ -336,7 +336,9 @@ implements Stamps.Updater {
         if (is != null) {
             try {
                 NetigsoActivator.register(m);
-                getContainer().getBundleContext().installBundle("netigso://" + m.getCodeNameBase(), is);
+                final String name = "netigso://" + m.getCodeNameBase();
+                NetigsoModule.LOG.log(Level.FINE, "Installing fake bundle {0}", name);
+                getContainer().getBundleContext().installBundle(name, is);
                 is.close();
             } catch (BundleException ex) {
                 throw new IOException(ex.getMessage());

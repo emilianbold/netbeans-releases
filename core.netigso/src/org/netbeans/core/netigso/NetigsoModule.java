@@ -108,6 +108,7 @@ final class NetigsoModule extends Module {
         Bundle b = null;
         try {
             BundleContext bc = NetigsoModuleFactory.getContainer().getBundleContext();
+            LOG.log(Level.FINE, "Installing bundle {0}", jar);
             b = bc.installBundle(jar.toURI().toURL().toExternalForm());
             loader.init(b);
             b.start();
