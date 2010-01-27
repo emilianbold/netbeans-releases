@@ -120,7 +120,10 @@ public enum MakefileTokenId implements TokenId {
         return category;
     }
 
+    private static final Language<MakefileTokenId> LANGUAGE =
+            new MakefileLanguageHierarchy().language();
+
     public static final Language<MakefileTokenId> language() {
-        return new MakefileLanguageHierarchy().language();
+        return LANGUAGE;
     }
 }

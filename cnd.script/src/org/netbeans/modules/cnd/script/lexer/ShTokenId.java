@@ -74,7 +74,10 @@ public enum ShTokenId implements TokenId {
         return name;
     }
 
+    private static final Language<ShTokenId> LANGUAGE =
+            new ShLanguageHierarchy().language();
+
     public static Language<ShTokenId> language() {
-        return new ShLanguageHierarchy().language();
+        return LANGUAGE;
     }
 }
