@@ -60,7 +60,6 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
 
         private final ExecutionEnvironment executionEnvironment;
         private String home = null;
-        private PathMap mapper;
         private Map<String, String> envCache = null;
         private Boolean isCshShell;
         private Integer platform;
@@ -90,10 +89,7 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
 
         @Override
         public synchronized PathMap getMapper() {
-            if (mapper == null) {
-                mapper = RemotePathMap.getPathMap(executionEnvironment);
-            }
-            return mapper;
+            return RemotePathMap.getPathMap(executionEnvironment);
         }
 
         @Override
