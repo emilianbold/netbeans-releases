@@ -295,7 +295,7 @@ public class ParametersPicker extends javax.swing.JPanel {
                 return(selectedComponent.getName());
             }
         } else if (propertyButton.isSelected()) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             if (selectedComponent != formModel.getTopRADComponent()) {
                 sb.append(selectedComponent.getName());
                 sb.append("."); // NOI18N
@@ -308,7 +308,7 @@ public class ParametersPicker extends javax.swing.JPanel {
             }
             return  sb.toString();
         } else if (methodButton.isSelected()) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             if (selectedComponent != formModel.getTopRADComponent()) {
                 sb.append(selectedComponent.getName());
                 sb.append("."); // NOI18N
