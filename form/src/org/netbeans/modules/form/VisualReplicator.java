@@ -671,6 +671,7 @@ public class VisualReplicator {
                 Iterator<RADProperty> applyProperties;
                 if (clone instanceof Window) { // some properties should not be set to Window, e.g. visible
                     applyProperties = metacomp.getBeanPropertiesIterator(new FormProperty.Filter() {
+                        @Override
                         public boolean accept(FormProperty property) {
                             return !"visible".equals(property.getName()); // NOI18N
                         }
@@ -984,6 +985,7 @@ public class VisualReplicator {
 
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.ViewConverter.class)
     public static class DefaultConverter implements ViewConverter {
+        @Override
         public Convert convert(Object component, boolean root, boolean designRestrictions) {
             Class compClass = component.getClass();
             Class convClass = null;
@@ -1041,6 +1043,7 @@ public class VisualReplicator {
             }
         }
 
+        @Override
         public boolean canVisualize(Class componentClass) {
             return false; // not able to visualize non-visual components
               // AWT menus are converted, but never used as the root in the design view
@@ -1054,9 +1057,11 @@ public class VisualReplicator {
             this.converted = converted;
             this.enclosed = enclosed;
         }
+        @Override
         public Object getConverted() {
             return converted;
         }
+        @Override
         public Object getEnclosed() {
             return enclosed;
         }

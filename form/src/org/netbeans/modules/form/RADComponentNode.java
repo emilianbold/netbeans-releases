@@ -129,6 +129,7 @@ public class RADComponentNode extends FormNode
             if (!iconsInitialized) {
                 // getIconForClass invokes getNodes(true) which cannot be called in Mutex
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         Image icon = PaletteUtils.getIconForClass(component.getBeanClass().getName(), iconType, true);
 			iconsInitialized = true;
@@ -395,6 +396,7 @@ public class RADComponentNode extends FormNode
                 component.getFormModel().removeComponent(component, true);
             } else {
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         component.getFormModel().removeComponent(component, true);
                     }
@@ -461,6 +463,7 @@ public class RADComponentNode extends FormNode
         }
 
         customizer.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 FormProperty[] properties;
                 if (evt.getPropertyName() != null) {
@@ -489,6 +492,7 @@ public class RADComponentNode extends FormNode
         // we run this as privileged to avoid security problems - because
         // the property change is fired from untrusted bean customizer code
         AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
             public Object run() {
                 Object oldValue = evt != null ? evt.getOldValue() : null;
                 Object newValue = evt != null ? evt.getNewValue() : null;
@@ -569,6 +573,7 @@ public class RADComponentNode extends FormNode
     // -----------------------------------------------------------------------------
     // RADComponentCookie implementation
     
+    @Override
     public RADComponent getRADComponent() {
         return component;
     }
@@ -576,6 +581,7 @@ public class RADComponentNode extends FormNode
     // -----------------------------------
     // FormPropertyCookie implementation
     
+    @Override
     public FormProperty getProperty(String name) {
         return component.getPropertyByName(name, FormProperty.class, true);
         //        Node.Property prop = component.getPropertyByName(name, true);
@@ -625,6 +631,7 @@ public class RADComponentNode extends FormNode
             setKeys(keys);
         }
         
+        @Override
         protected Node[] createNodes(Object key) {
             Node node;
             if (key == keyLayout)
@@ -639,6 +646,7 @@ public class RADComponentNode extends FormNode
     
     private final class ComponentsIndex extends org.openide.nodes.Index.Support {
         
+        @Override
         public Node[] getNodes() {
             RADComponent[] comps;
             if (component instanceof RADVisualContainer)
@@ -655,10 +663,12 @@ public class RADComponentNode extends FormNode
             return nodes;
         }
         
+        @Override
         public int getNodesCount() {
             return getNodes().length;
         }
         
+        @Override
         public void reorder(int[] perm) {
             if (component instanceof ComponentContainer) {
                 ComponentContainer cont = (ComponentContainer) component;
