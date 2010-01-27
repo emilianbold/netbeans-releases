@@ -45,7 +45,6 @@ package org.netbeans.modules.form;
 import java.awt.*;
 import java.beans.*;
 
-import org.openide.explorer.propertysheet.*;
 import org.openide.explorer.propertysheet.editors.*;
 
 /**
