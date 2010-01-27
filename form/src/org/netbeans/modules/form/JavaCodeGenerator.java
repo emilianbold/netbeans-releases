@@ -2071,7 +2071,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     if (genSize) {
 //                                sizeBuffer.append("pack();\n"); // NOI18N
                         sizeBuffer.append("java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();\n"); // NOI18N
-                        sizeBuffer.append("setBounds((screenSize.width-"+formSize.width+")/2, (screenSize.height-"+formSize.height+")/2, "+formSize.width + ", " + formSize.height + ");\n"); // NOI18N
+                        sizeBuffer.append("setBounds((screenSize.width-").append(formSize.width).append(")/2, (screenSize.height-").append(formSize.height).append(")/2, ").append(formSize.width).append(", ").append(formSize.height).append(");\n"); // NOI18N
 //                                sizeBuffer.append("setSize(new java.awt.Dimension("+formSize.width + ", " + formSize.height + "));\n"); // NOI18N
 //                                sizeBuffer.append("setLocation((screenSize.width-"+formSize.width+")/2,(screenSize.height-"+formSize.height+")/2);\n"); // NOI18N
                     }
