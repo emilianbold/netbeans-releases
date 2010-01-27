@@ -541,6 +541,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                             cutOrder.add(new int[] {columns ? bound.x : bound.y, j});
                         }
                         Collections.sort(cutOrder, new Comparator<int[]>() {
+                            @Override
                             public int compare(int[] i1, int[] i2) {
                                 return (i1[0] == i2[0]) ? (i1[1] - i2[1]) : (i1[0] - i2[0]);
                             }
@@ -1791,6 +1792,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     // ---------
     // MouseListener implementation
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         if (SwingUtilities.isRightMouseButton(e)
             && !draggingEnded && !endDragging(null))
@@ -1805,6 +1807,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         e.consume();
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         if (!HandleLayer.this.isVisible())
             return;
@@ -1851,6 +1854,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         e.consume();
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
         if (formDesigner.getDesignerMode() == FormDesigner.MODE_ADD) {
             formDesigner.requestActive();
@@ -1868,6 +1872,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         }
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
         if (draggedComponent != null && formDesigner.getDesignerMode() == FormDesigner.MODE_ADD) {
             draggedComponent.move(null);
@@ -1876,6 +1881,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         }
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         formDesigner.componentActivated();
         if (!HandleLayer.this.isVisible())
@@ -1954,6 +1960,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     // ---------
     // MouseMotionListener implementation
 
+    @Override
     public void mouseDragged(MouseEvent e) {
         if (formDesigner.getDesignerMode() != FormDesigner.MODE_SELECT)
             return; // dragging makes sense only selection mode
@@ -2010,6 +2017,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         e.consume();
     }
 
+    @Override
     public void mouseMoved(MouseEvent e) {
         Point p = e.getPoint();
         if (lastMousePosition != null) {
@@ -2474,6 +2482,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             else {
                 // re-init in next AWT round - to have the designer updated
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         init();
                         move(e);
@@ -3048,6 +3057,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     showingComponents = null;
                     movingBounds = new Rectangle[0];
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             formDesigner.toggleSelectionMode(); // calls endDragging(null)
                         }
@@ -3128,6 +3138,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     if ((bDesc != null) && (bDesc.getValue("customizeOnCreation") != null)) { // NOI18N
                         modifiers &= ~InputEvent.SHIFT_MASK;
                         EventQueue.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 RADComponentNode node = addedComponent.getNodeReference();
                                 if (node.hasCustomizer()) {
@@ -3195,6 +3206,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         /** Additional assistant context requested by newComponentDrop. */
         private String additionalDropContext;
         
+        @Override
         public void dragEnter(DropTargetDragEvent dtde) {
             try {
                 dropAction = dtde.getDropAction();
@@ -3256,6 +3268,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             }
         }
         
+        @Override
         public void dragOver(java.awt.dnd.DropTargetDragEvent dtde) {
             if (draggedComponent != null) {
                 if ((newComponentDrop != null) && (dropAction != dtde.getDropAction())) {
@@ -3271,9 +3284,11 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             }
         }
         
+        @Override
         public void dropActionChanged(java.awt.dnd.DropTargetDragEvent dtde) {
         }
         
+        @Override
         public void dragExit(java.awt.dnd.DropTargetEvent dte) {
             if (draggedComponent != null) {
                 endDragging(null);
@@ -3281,6 +3296,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             }
         }
         
+        @Override
         public void drop(java.awt.dnd.DropTargetDropEvent dtde) {
             if (draggedComponent != null) {
                 NewComponentDrag newComponentDrag = ((NewComponentDrag)draggedComponent);
