@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.gizmo.CppSymbolDemanglerFactoryImpl;
 import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
 import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
+import org.netbeans.modules.dlight.api.execution.DLightSessionConfiguration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -192,9 +193,13 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         target.addTargetListener(this);
 
 
-        //WE are here only when Profile On RUn 
+        //WE are here only when Profile On RUn
+        DLightSessionConfiguration sessionConfiguration = new DLightSessionConfiguration();
+        sessionConfiguration.setDLightTarget(target);
+        sessionConfiguration.setDLightConfiguration(configuration);
+        sessionConfiguration.setSessionName(IpeUtils.getBaseName(pae.getExecutable()));
         final Future<DLightSessionHandler> handle = DLightToolkitManagement.getInstance().createSession(
-                target, configuration, IpeUtils.getBaseName(pae.getExecutable()));
+                sessionConfiguration);
 
         DLightExecutorService.submit(new Runnable() {
 
