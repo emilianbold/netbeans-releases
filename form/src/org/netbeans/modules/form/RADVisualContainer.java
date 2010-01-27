@@ -436,7 +436,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             else {
                 getContainerDelegate(getBeanInstance()).remove(index);
             }
-            if (subComponents.remove(comp))
+            if (subComponents.remove((RADVisualComponent)comp))
                 comp.setParentComponent(null);
         }
     }
