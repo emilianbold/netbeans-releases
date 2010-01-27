@@ -147,7 +147,7 @@ public class OverrideAnnotationAction extends AbstractAction {
         }
 
         List<OverriddeAnnotation> annotations = new LinkedList<OverriddeAnnotation>();
-        for(OverriddeAnnotation a : ah.getAnnotations()) {
+        for(OverriddeAnnotation a : ah.getAttachedAnnotations()) {
             int offset = a.getPosition().getOffset();
             if (startOffset <= offset && offset <= endOffset) {
                 annotations.add(a);
@@ -171,7 +171,7 @@ public class OverrideAnnotationAction extends AbstractAction {
             return null;
         }
 
-        for(OverriddeAnnotation a : ah.getAnnotations()) {
+        for(OverriddeAnnotation a : ah.getAttachedAnnotations()) {
             int offset = a.getPosition().getOffset();
             if (startOffset <= offset && offset <= endOffset) {
                 if (desc.getShortDescription().equals(a.getShortDescription())) {
