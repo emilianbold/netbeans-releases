@@ -52,6 +52,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.swing.KeyStroke;
 import org.openide.util.NbBundle;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -75,7 +76,7 @@ public class MethodChooserSupport implements PropertyChangeListener {
     private JPDAThread currentThread;
     private String url;
     private ReferenceType clazzRef;
-    private MethodSelector chooser;
+    private MethodChooser chooser;
 
     ArrayList<Annotation> annotations;
     private int startLine;
@@ -95,42 +96,46 @@ public class MethodChooserSupport implements PropertyChangeListener {
         return selectedIndex;
     }
 
-    public MethodSelector.Segment[] getSegments() {
-        MethodSelector.Segment[] segments = new MethodSelector.Segment[operations.length];
+    public MethodChooser.Segment[] getSegments() {
+        MethodChooser.Segment[] segments = new MethodChooser.Segment[operations.length];
         for (int x = 0; x < segments.length; x++) {
             int start = operations[x].getMethodStartPosition().getOffset();
             int end = operations[x].getMethodEndPosition().getOffset();
-            segments[x] = new MethodSelector.Segment(start, end);
+            segments[x] = new MethodChooser.Segment(start, end);
         }
         return segments;
+    }
+
+    public int getSegmentsCount() {
+        return operations.length;
     }
 
     public String getHint() {
         return NbBundle.getMessage(MethodChooserSupport.class, "MSG_RunIntoMethod_Status_Line_Help");
     }
 
-    public MethodSelector.KeyCode[] getStopEvents() {
-        return new MethodSelector.KeyCode[] {
-            new MethodSelector.KeyCode(KeyEvent.VK_F8, 0),
-            new MethodSelector.KeyCode(KeyEvent.VK_F7, KeyEvent.SHIFT_DOWN_MASK),
-            new MethodSelector.KeyCode(KeyEvent.VK_F7, KeyEvent.CTRL_DOWN_MASK)
+    public KeyStroke[] getStopEvents() {
+        return new KeyStroke[] {
+            KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0),
+            KeyStroke.getKeyStroke(KeyEvent.VK_F7, KeyEvent.SHIFT_DOWN_MASK),
+            KeyStroke.getKeyStroke(KeyEvent.VK_F7, KeyEvent.CTRL_DOWN_MASK)
         };
     }
 
-    public MethodSelector.KeyCode[] getConfirmEvents() {
-        return new MethodSelector.KeyCode[] {
-            new MethodSelector.KeyCode(KeyEvent.VK_F7, 0)
+    public KeyStroke[] getConfirmEvents() {
+        return new KeyStroke[] {
+            KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)
         };
     }
 
-    public MethodSelector createChooser(MethodSelector.ReleaseListener listener) {
-        return new MethodSelector(
-                    url, getSegments(), selectedIndex, listener,
+    public MethodChooser createChooser() {
+        return new MethodChooser(
+                    url, getSegments(), selectedIndex,
                     getHint(), getStopEvents(), getConfirmEvents()
                 );
     }
 
-    public void tearUp(MethodSelector selector) {
+    public void tearUp(MethodChooser selector) {
         // hack - disable org.netbeans.modules.debugger.jpda.projects.ToolTipAnnotation
         System.setProperty("org.netbeans.modules.debugger.jpda.doNotShowTooltips", "true"); // NOI18N
         this.chooser = selector;

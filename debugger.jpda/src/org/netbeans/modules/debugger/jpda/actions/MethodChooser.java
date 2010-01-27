@@ -40,13 +40,8 @@
  */
 package org.netbeans.modules.debugger.jpda.actions;
 
-import com.sun.jdi.AbsentInformationException;
-import com.sun.jdi.Location;
-import com.sun.jdi.ReferenceType;
-
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -54,16 +49,13 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import javax.swing.JEditorPane;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -72,48 +64,57 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyleConstants;
 
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.api.editor.settings.AttributesUtilities;
-import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.editor.BaseCaret;
-import org.netbeans.editor.Coloring;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
-import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
-import org.netbeans.modules.debugger.jpda.EditorContextBridge;
+import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 
-import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
-import org.netbeans.spi.debugger.jpda.EditorContext;
-import org.openide.ErrorManager;
+import org.netbeans.spi.editor.highlighting.HighlightsLayer;
+import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
+import org.netbeans.spi.editor.highlighting.ZOrder;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.Annotation;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-public class MethodChooser implements KeyListener, MouseListener,
-        MouseMotionListener, PropertyChangeListener, FocusListener {
+/**
+ * Support for Step Into action implementations. It allows the user to select
+ * directly in a source file a method call the debugger should step into.
+ * A simple graphical interface is provided. The user can navigate among available
+ * method calls. The navigation can be done by the keyboard as well as by the mouse.
+ *
+ * <p>The method chooser is initialized by an url (pointing to a source file), an array of
+ * {@link Segment} elemets (each of them corresponds typically to a method call name
+ * in the source file) and an index of the segment element which is displayed
+ * as the default selection.
+ *
+ * <p>Optionally, [todo]
+ *
+ * <p>It is also possible to pass a text, which should be shown at the editor pane's
+ * status line after the selection mode has been activated. This text serves as a hint
+ * to the user how to make the method call selection.
+ *
+ * xml [todo]
+ *
+ * @author Daniel Prusa
+ * @since 2.22
+ */
+public class MethodChooser implements KeyListener, MouseListener, MouseMotionListener, FocusListener {
 
     private static AttributeSet defaultHyperlinkHighlight;
-    
-    private JPDADebuggerImpl debugger;
-    private JPDAThread currentThread;
+
     private String url;
-    private ReferenceType clazzRef;
-    private int methodLine;
-    private int methodOffset;
+    private Segment[] segments;
+    private int selectedIndex = -1;
+    private String hintText;
+    private KeyStroke[] stopEvents;
+    private KeyStroke[] confirmEvents;
     
     private AttributeSet attribsLeft = null;
     private AttributeSet attribsRight = null;
@@ -128,47 +129,233 @@ public class MethodChooser implements KeyListener, MouseListener,
     private Cursor arrowCursor;
     private Cursor originalCursor;
     
-    private JEditorPane editorPane;
     private Document doc;
+    private JEditorPane editorPane;
+    private List<ReleaseListener> releaseListeners = new ArrayList<ReleaseListener>();
 
     private int startLine;
     private int endLine;
-    private Operation[] operations;
-    private Location[] locations;
-    private ArrayList<Annotation> annotations;
-    private boolean performAction = false;
-    private int selectedIndex = -1;
     private int mousedIndex = -1;
-    private ActionListener releaseListener;
     private boolean isInSelectMode = false;
 
-    MethodChooser(JPDADebuggerImpl debugger, String url, ReferenceType clazz, int methodLine, int methodOffset) {
-        this.debugger = debugger;
-        this.currentThread = debugger.getCurrentThread();
+    /**
+     * Creates an instance of {@link MethodChooser}.
+     *
+     * @param url Url of the source file.
+     * @param segments Array of segments where each of the segments represents one method
+     *      call. The user traverses the calls in the order given by the array.
+     * @param initialIndex Index of a call that should be preselected when the method chooser
+     *      is shown.
+     */
+    public MethodChooser(String url, Segment[] segments, int initialIndex) {
+        this(url, segments, initialIndex, null, new KeyStroke[0], new KeyStroke[0]);
+    }
+
+    /**
+     * Creates an instance of {@link MethodChooser}. Supports optional parameters.
+     *
+     * @param url Url of the source file.
+     * @param segments Array of segments where each of the segments represents one method
+     *      call. The user traverses the calls in the order given by the array.
+     * @param initialIndex Index of a call that should be preselected when the method chooser
+     *      is shown.
+     * @param hintText Text which is displayed in the editor pane's status line. Serves as a hint
+     *      informing briefly the user how to make a selection.
+     * @param stopEvents Custom key strokes which should stop the selection mode.
+     *      For example, it is possible to pass a {@link KeyStroke} corresponding to
+     *      the shortcut of Step Over action. Then, whenever the shorcut is pressed, the selection
+     *      mode is cancelled. The generated {@link KeyEvent} is not consumed thus can be
+     *      handled and invokes Step Over action.
+     *      Note that a method chooser can be always cancelled by Esc or by clicking outside the
+     *      visualized area in the source editor.
+     * @param confirmEvents Custom key strokes which confirm the current selection.
+     *      By default, a selection can be confirmed by Enter or Space Bar. It is possible
+     *      to extend this set of confirmation keys.
+     */
+    public MethodChooser(String url, Segment[] segments, int initialIndex, String hintText,
+            KeyStroke[] stopEvents, KeyStroke[] confirmEvents) {
         this.url = url;
-        this.clazzRef = clazz;
-        //this.methodLine = methodLine; [TODO]
-        this.methodOffset = methodOffset;
-        
-        //Operation currOp = currentThread.getCurrentOperation();
-        //List<Operation> lastOps = currentThread.getLastOperations();
-        //Operation lastOp = lastOps != null && lastOps.size() > 0 ? lastOps.get(lastOps.size() -1) : null;
+        this.segments = segments;
+        this.selectedIndex = initialIndex;
+        this.hintText = hintText;
+        if (stopEvents == null) {
+            stopEvents = new KeyStroke[0];
+        }
+        if (confirmEvents == null) {
+            confirmEvents = new KeyStroke[0];
+        }
+        this.stopEvents = stopEvents;
+        this.confirmEvents = confirmEvents;
     }
 
-    public void setReleaseListener(ActionListener releaseListener) {
-        this.releaseListener = releaseListener;
+    /**
+     * Sets up and displays the method selection mode.
+     *
+     * @return <code>true</code> if a {@link JEditorPane} has been found and the selection mode
+     *          has been properly displayed
+     */
+    public boolean showUI() {
+        findEditorPane();
+        if (editorPane == null) {
+            return false; // cannot do anything without editor
+        }
+        doc = editorPane.getDocument();
+        // compute start line and end line
+        int minOffs = Integer.MAX_VALUE;
+        int maxOffs = 0;
+        for (int x = 0; x < segments.length; x++) {
+            minOffs = Math.min(segments[x].getStartOffset(), minOffs);
+            maxOffs = Math.max(segments[x].getEndOffset(), maxOffs);
+        }
+        try {
+            startLine = Utilities.getLineOffset((BaseDocument)doc, minOffs) + 1;
+            endLine = Utilities.getLineOffset((BaseDocument)doc, maxOffs) + 1;
+        } catch (BadLocationException e) {
+        }
+        // continue by showing method selection ui
+        editorPane.putClientProperty(MethodChooser.class, this);
+        editorPane.addKeyListener(this);
+        editorPane.addMouseListener(this);
+        editorPane.addMouseMotionListener(this);
+        editorPane.addFocusListener(this);
+        originalCursor = editorPane.getCursor();
+        handCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+        arrowCursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
+        editorPane.setCursor(arrowCursor);
+        Caret caret = editorPane.getCaret();
+        if (caret instanceof BaseCaret) {
+            ((BaseCaret)caret).setVisible(false);
+        }
+        requestRepaint();
+        if (hintText != null && hintText.trim().length() > 0) {
+            Utilities.setStatusText(editorPane, " " + hintText);
+        }
+        isInSelectMode = true;
+        return true;
     }
 
-    public static OffsetsBag getHighlightsBag(Document doc) {
+    /**
+     * Ends the method selection mode, clears all used ui elements. Notifies each registered
+     * {@link ReleaseListener}.
+     *
+     * @param performAction <code>true</code> indicates that the current selection should
+     *          be used to perform an action, <code>false</code> means that the selection mode
+     *          has beencancelled
+     */
+    public synchronized void releaseUI(boolean performAction) {
+        if (!isInSelectMode) {
+            return; // do nothing
+        }
+        getHighlightsBag(doc).clear();
+        editorPane.removeKeyListener(this);
+        editorPane.removeMouseListener(this);
+        editorPane.removeMouseMotionListener(this);
+        editorPane.removeFocusListener(this);
+        editorPane.putClientProperty(MethodChooser.class, null);
+        editorPane.setCursor(originalCursor);
+        Caret caret = editorPane.getCaret();
+        if (caret instanceof BaseCaret) {
+            ((BaseCaret)caret).setVisible(true);
+        }
+
+        if (hintText != null && hintText.trim().length() > 0) {
+            Utilities.clearStatusText(editorPane);
+        }
+        isInSelectMode = false;
+        for (ReleaseListener listener : releaseListeners) {
+            listener.released(performAction);
+        }
+    }
+
+    /**
+     * Can be used to check whether the selection mode is activated.
+     *
+     * @return <code>true</code> if the method selection mode is currently displayed
+     */
+    public boolean isUIActive() {
+        return isInSelectMode;
+    }
+
+    /**
+     * Returns index of {@link Segment} that is currently selected. If the method
+     * chooser has been released, it corresponds to the final selection made by the user.
+     *
+     * @return index of currently selected method
+     */
+    public int getSelectedIndex() {
+        return selectedIndex;
+    }
+
+    /**
+     * Registers {@link ReleaseListener}. The listener is notified when the selection
+     * mode finishes. This occurs whenever the user comfirms (or cancels) the current
+     * selection. It also occrus when {@link #releaseUI} is called.
+     *
+     * @param listener an instance of {@link ReleaseListener} to be registered
+     */
+    public synchronized void addReleaseListener(ReleaseListener listener) {
+        releaseListeners.add(listener);
+    }
+
+    /**
+     * Unregisters {@link ReleaseListener}.
+     *
+     * @param listener an instance of {@link ReleaseListener} to be unregistered
+     */
+    public synchronized void removeReleaseListener(ReleaseListener listener) {
+        releaseListeners.remove(listener);
+    }
+
+    /**
+     * This method should be referenced in xml layer files. To display the method
+     * chooser ui correctly, it is required to register an instance of
+     * {@link HighlightsLayerFactory} using the following pattern.
+     * <verbatim>
+        <folder name="Editors">
+            <folder name="text">
+                <folder name="x-java">
+                    <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+     * </verbatim>
+     * <code>"x-java"</code> should be replaced by the targeted mime type
+     *
+     * @return highligts layer factory that handles method chooser ui visualization
+     */
+    public static HighlightsLayerFactory createHighlihgtsLayerFactory() {
+        return new MethodChooserHighlightsLayerFactory();
+    }
+
+    static OffsetsBag getHighlightsBag(Document doc) {
         OffsetsBag bag = (OffsetsBag) doc.getProperty(MethodChooser.class);
         if (bag == null) {
             doc.putProperty(MethodChooser.class, bag = new OffsetsBag(doc, true));
         }
         return bag;
     }
-    
-    public boolean run() {
-        DataObject dobj = getDataObject(url);
+
+    private void findEditorPane() {
+        editorPane = null;
+        FileObject file;
+        try {
+            file = URLMapper.findFileObject(new URL(url));
+        } catch (MalformedURLException e) {
+            return;
+        }
+        if (file == null) {
+            return;
+        }
+        DataObject dobj = null;
+        try {
+            dobj = DataObject.find(file);
+        } catch (DataObjectNotFoundException ex) {
+        }
+        if (dobj == null) {
+            return;
+        }
         final EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -184,229 +371,11 @@ public class MethodChooser implements KeyListener, MouseListener,
         } catch (InvocationTargetException ex) {
             Exceptions.printStackTrace(ex);
         }
-        if (editorPane == null) {
-            return false;  // Can not do anything without editor
-        }
-        doc = editorPane.getDocument();
-        
-        if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
-            return false;
-        }
-        
-        boolean selectionIsFinal = collectOperations();
-        if (selectedIndex == -1) {
-            // [TODO] perform classical Step Into
-            return false;
-        }
-        if (selectionIsFinal || operations.length == 1) {
-            // perform action directly
-            String name = operations[selectedIndex].getMethodName();
-            boolean success = RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex], true);
-            return success;
-        }
-        // continue by showing method selection ui
-        
-        // hack - disable org.netbeans.modules.debugger.jpda.projects.ToolTipAnnotation
-        System.setProperty("org.netbeans.modules.debugger.jpda.doNotShowTooltips", "true"); // NOI18N
-        debugger.addPropertyChangeListener(this);
-        debugger.getThreadsCollector().addPropertyChangeListener(this);
-        editorPane.putClientProperty(MethodChooser.class, this);
-        editorPane.addKeyListener(this);
-        editorPane.addMouseListener(this);
-        editorPane.addMouseMotionListener(this);
-        editorPane.addFocusListener(this);
-        originalCursor = editorPane.getCursor();
-        handCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-        arrowCursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
-        editorPane.setCursor(arrowCursor);
-        Caret caret = editorPane.getCaret();
-        if (caret instanceof BaseCaret) {
-            ((BaseCaret)caret).setVisible(false);
-        }
-        annotateLines();
-        requestRepaint();
-        Coloring coloring = new Coloring(null, 0, null, Color.CYAN);
-        Utilities.setStatusText(editorPane, " " + NbBundle.getMessage(
-                MethodChooser.class, "MSG_RunIntoMethod_Status_Line_Help"), coloring);
-        isInSelectMode = true;
-        return true;
-    }
-
-    private synchronized void release() {
-        debugger.removePropertyChangeListener(this);
-        debugger.getThreadsCollector().removePropertyChangeListener(this);
-        getHighlightsBag(doc).clear();
-        editorPane.removeKeyListener(this);
-        editorPane.removeMouseListener(this);
-        editorPane.removeMouseMotionListener(this);
-        editorPane.removeFocusListener(this);
-        editorPane.putClientProperty(MethodChooser.class, null);
-        editorPane.setCursor(originalCursor);
-        Caret caret = editorPane.getCaret();
-        if (caret instanceof BaseCaret) {
-            ((BaseCaret)caret).setVisible(true);
-        }
-        clearAnnotations();
-        // hack - enable org.netbeans.modules.debugger.jpda.projects.ToolTipAnnotation
-        System.clearProperty("org.netbeans.modules.debugger.jpda.doNotShowTooltips"); // NOI18N
-        Utilities.clearStatusText(editorPane);
-        
-        if (performAction) {
-            performAction = false;
-            final String name = operations[selectedIndex].getMethodName();
-            debugger.getRequestProcessor().post(new Runnable() {
-                public void run() {
-                    RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex], true);
-                }
-            });
-        }
-        if (releaseListener != null) {
-            releaseListener.actionPerformed(null);
-            releaseListener = null;
-        }
-        isInSelectMode = false;
-    }
-
-    boolean isInSelectMode() {
-        return isInSelectMode;
-    }
-
-    void doStepIntoCurrentSelection() {
-        performAction = true;
-        release();
-    }
-    
-    private DataObject getDataObject(String url) {
-        FileObject file;
-        try {
-            file = URLMapper.findFileObject(new URL(url));
-        } catch (MalformedURLException e) {
-            return null;
-        }
-        if (file == null) {
-            return null;
-        }
-        try {
-            return DataObject.find(file);
-        } catch (DataObjectNotFoundException ex) {
-            return null;
-        }
-    }
-
-    private boolean collectOperations() {
-        methodLine = currentThread.getLineNumber(null); // [TODO]
-        
-        List<Location> locs = java.util.Collections.emptyList();
-        try {
-            while (methodLine > 0 && (locs = ReferenceTypeWrapper.locationsOfLine(clazzRef, methodLine)).isEmpty()) {
-                methodLine--;
-            }
-        } catch (InternalExceptionWrapper aiex) {
-        } catch (VMDisconnectedExceptionWrapper aiex) {
-            return false;
-        } catch (ObjectCollectedExceptionWrapper aiex) {
-            return false;
-        } catch (ClassNotPreparedExceptionWrapper aiex) {
-        } catch (AbsentInformationException aiex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
-        }
-        if (locs.isEmpty()) {
-            return false;
-        }
-        Expression expr = debugger.getExpressionPool().getExpressionAt(locs.get(0), url);
-        if (expr == null) {
-            return false;
-        }
-        Operation currOp = currentThread.getCurrentOperation();
-        List<Operation> lastOpsList = currentThread.getLastOperations();
-        Operation lastOp = lastOpsList != null && lastOpsList.size() > 0 ? lastOpsList.get(lastOpsList.size() - 1) : null;
-        Operation selectedOp = null;
-        Operation[] tempOps = expr.getOperations();
-        if (tempOps.length == 0) {
-            return false;
-        }
-        Location[] tempLocs = expr.getLocations();
-        operations = new Operation[tempOps.length];
-        locations = new Location[tempOps.length];
-        for (int x = 0; x < tempOps.length; x++) {
-            operations[x] = tempOps[x];
-            locations[x] = tempLocs[x];
-        }
-        startLine = operations[0].getMethodStartPosition().getLine();
-        endLine = operations[operations.length - 1].getMethodEndPosition().getLine();
-        for (int i = 1; i < (operations.length - 1); i++) {
-            int line = operations[i].getMethodStartPosition().getLine();
-            if (line < startLine) {
-                startLine = line;
-            }
-            if (line > endLine) {
-                endLine = line;
-            }
-        }
-
-        int currOpIndex = -1;
-        int lastOpIndex = -1;
-
-        if (currOp != null) {
-            int index = currOp.getBytecodeIndex();
-            for (int x = 0; x < operations.length; x++) {
-                if (operations[x].getBytecodeIndex() == index) {
-                    currOpIndex = x;
-                    break;
-                }
-            }
-        }
-        if (lastOp != null) {
-            int index = lastOp.getBytecodeIndex();
-            for (int x = 0; x < operations.length; x++) {
-                if (operations[x].getBytecodeIndex() == index) {
-                    lastOpIndex = x;
-                    break;
-                }
-            }
-        }
-
-        if (currOpIndex == -1) {
-            selectedOp = operations[operations.length - 1];
-        } else if (currOpIndex == lastOpIndex) {
-            tempOps = new Operation[operations.length - 1 - currOpIndex];
-            tempLocs = new Location[operations.length - 1 - currOpIndex];
-            for (int x = 0; x < tempOps.length; x++) {
-                tempOps[x] = operations[x + currOpIndex + 1];
-                tempLocs[x] = locations[x + currOpIndex + 1];
-            }
-            operations = tempOps;
-            locations = tempLocs;
-            if (operations.length == 0) {
-                return false;
-            }
-            selectedOp = operations[0];
-        } else {
-            selectedIndex = currOpIndex;
-            // do not show UI, continue directly using the selection
-            return true;
-        }
-
-        Object[][] elems = new Object[operations.length][2];
-        for (int i = 0; i < operations.length; i++) {
-            elems[i][0] = operations[i];
-            elems[i][1] = locations[i];
-        }
-        Arrays.sort(elems, new OperatorsComparator());
-        selectedIndex = 0;
-        for (int i = 0; i < operations.length; i++) {
-            operations[i] = (Operation)elems[i][0];
-            locations[i] = (Location)elems[i][1];
-            if (operations[i].equals(selectedOp)) {
-                selectedIndex = i;
-            }
-        }
-        return false;
     }
 
     private void requestRepaint() {
         if (attribsLeft == null) {
-            Color foreground = Color.BLACK;
+            Color foreground = editorPane.getForeground();
 
             attribsLeft = createAttribs(EditorStyleConstants.LeftBorderLineColor, foreground, EditorStyleConstants.TopBorderLineColor, foreground, EditorStyleConstants.BottomBorderLineColor, foreground);
             attribsRight = createAttribs(EditorStyleConstants.RightBorderLineColor, foreground, EditorStyleConstants.TopBorderLineColor, foreground, EditorStyleConstants.BottomBorderLineColor, foreground);
@@ -415,23 +384,23 @@ public class MethodChooser implements KeyListener, MouseListener,
 
             attribsHyperlink = getHyperlinkHighlight();
             
-            attribsMethod = createAttribs(StyleConstants.Foreground, Color.BLACK,
+            attribsMethod = createAttribs(StyleConstants.Foreground, foreground,
                     StyleConstants.Bold, Boolean.TRUE);
             
             attribsArea = createAttribs(
-                    StyleConstants.Foreground, Color.BLACK,
+                    StyleConstants.Foreground, foreground,
                     StyleConstants.Italic, Boolean.FALSE,
                     StyleConstants.Bold, Boolean.FALSE);
         }
         
         OffsetsBag newBag = new OffsetsBag(doc, true);
-        int start = operations[0].getStartPosition().getOffset();
-        int end = operations[operations.length - 1].getEndPosition().getOffset();
+        int start = segments[0].getStartOffset();
+        int end = segments[segments.length - 1].getEndOffset();
         newBag.addHighlight(start, end, attribsArea);
         
-        for (int i = 0; i < operations.length; i++) {
-            int startOffset = operations[i].getMethodStartPosition().getOffset();
-            int endOffset = operations[i].getMethodEndPosition().getOffset();
+        for (int i = 0; i < segments.length; i++) {
+            int startOffset = segments[i].getStartOffset();
+            int endOffset = segments[i].getEndOffset();
             newBag.addHighlight(startOffset, endOffset, attribsMethod);
             if (selectedIndex == i) {
                 int size = endOffset - startOffset;
@@ -458,33 +427,6 @@ public class MethodChooser implements KeyListener, MouseListener,
         bag.setHighlights(newBag);
     }
 
-    private void annotateLines() {
-        annotations = new ArrayList<Annotation>();
-        EditorContext context = EditorContextBridge.getContext();
-        JPDAThread thread = debugger.getCurrentThread();
-        Operation currOp = thread.getCurrentOperation();
-        int currentLine = currOp != null ? currOp.getStartPosition().getLine() : thread.getLineNumber(null);
-        String annoType = currOp != null ?
-            EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE :
-            EditorContext.CURRENT_LINE_ANNOTATION_TYPE;
-        for (int lineNum = startLine; lineNum <= endLine; lineNum++) {
-            if (lineNum != currentLine) {
-                Object anno = context.annotate(url, lineNum, annoType, null);
-                if (anno instanceof Annotation) {
-                    annotations.add((Annotation)anno);
-                }
-            } // if
-        } // for
-    }
-    
-    private void clearAnnotations() {
-        if (annotations != null) {
-            for (Annotation anno : annotations) {
-                anno.detach();
-            }
-        }
-    }
-    
     private AttributeSet createAttribs(Object... keyValuePairs) {
         List<Object> list = new ArrayList<Object>();
         for (int i = keyValuePairs.length / 2 - 1; i >= 0; i--) {
@@ -500,8 +442,6 @@ public class MethodChooser implements KeyListener, MouseListener,
     }
 
     private AttributeSet getHyperlinkHighlight() {
-        //FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
-        //AttributeSet hyperlinksHighlight = fcs.getFontColors("hyperlinks"); //NOI18N
         synchronized(this) {
             if (defaultHyperlinkHighlight == null) {
                 defaultHyperlinkHighlight = AttributesUtilities.createImmutable(
@@ -514,41 +454,37 @@ public class MethodChooser implements KeyListener, MouseListener,
     // **************************************************************************
     // KeyListener implementation
     // **************************************************************************
-    
+
+    /**
+     * Invoked when a key has been typed.
+     */
+    @Override
     public void keyTyped(KeyEvent e) {
         e.consume();
     }
 
+    /**
+     * Invoked when a key has been pressed.
+     */
+    @Override
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
         boolean consumeEvent = true;
         switch (code) {
             case KeyEvent.VK_ENTER:
             case KeyEvent.VK_SPACE:
-            case KeyEvent.VK_F7: // [TODO]
-                if (e.isControlDown() || e.isShiftDown()) {
-                    release();
-                    consumeEvent = false;
-                } else {
-                    // selection confirmed
-                    performAction = true;
-                    release();
-                }
-                break;
-            case KeyEvent.VK_F8: // [TODO]
-                // step over
-                release();
-                consumeEvent = false;
+                // selection confirmed
+                releaseUI(true);
                 break;
             case KeyEvent.VK_ESCAPE:
                 // action canceled
-                release();
+                releaseUI(false);
                 break;
             case KeyEvent.VK_RIGHT:
             case KeyEvent.VK_DOWN:
             case KeyEvent.VK_TAB:
                 selectedIndex++;
-                if (selectedIndex == operations.length) {
+                if (selectedIndex == segments.length) {
                     selectedIndex = 0;
                 }
                 requestRepaint();
@@ -557,7 +493,7 @@ public class MethodChooser implements KeyListener, MouseListener,
             case KeyEvent.VK_UP:    
                 selectedIndex--;
                 if (selectedIndex < 0) {
-                    selectedIndex = operations.length - 1;
+                    selectedIndex = segments.length - 1;
                 }
                 requestRepaint();
                 break;
@@ -566,15 +502,36 @@ public class MethodChooser implements KeyListener, MouseListener,
                 requestRepaint();
                 break;
             case KeyEvent.VK_END:
-                selectedIndex = operations.length - 1;
+                selectedIndex = segments.length - 1;
                 requestRepaint();
                 break;
+            default:
+                int mods = e.getModifiersEx();
+                for (int x = 0; x < stopEvents.length; x++) {
+                    if (stopEvents[x].getKeyCode() == code &&
+                            (stopEvents[x].getModifiers() & mods) == stopEvents[x].getModifiers()) {
+                        releaseUI(false);
+                        consumeEvent = false;
+                        break;
+                    }
+                }
+                for (int x = 0; x < confirmEvents.length; x++) {
+                    if (confirmEvents[x].getKeyCode() == code &&
+                            (confirmEvents[x].getModifiers() & mods) == confirmEvents[x].getModifiers()) {
+                        releaseUI(true);
+                        break;
+                    }
+                }
         }
         if (consumeEvent) {
             e.consume();
         }
     }
 
+    /**
+     * Invoked when a key has been released.
+     */
+    @Override
     public void keyReleased(KeyEvent e) {
         e.consume();
     }
@@ -582,7 +539,12 @@ public class MethodChooser implements KeyListener, MouseListener,
     // **************************************************************************
     // MouseListener and MouseMotionListener implementation
     // **************************************************************************
-    
+
+    /**
+     * Invoked when the mouse button has been clicked (pressed
+     * and released) on the component.
+     */
+    @Override
     public void mouseClicked(MouseEvent e) {
         if (e.isPopupTrigger()) {
             return;
@@ -595,29 +557,33 @@ public class MethodChooser implements KeyListener, MouseListener,
             }
             if (mousedIndex != -1) {
                 selectedIndex = mousedIndex;
-                performAction = true;
-                release();
+                releaseUI(true);
                 return;
             }
         }
         try {
             int line = Utilities.getLineOffset((BaseDocument) doc, position) + 1;
             if (line < startLine || line > endLine) {
-                release();
+                releaseUI(false);
                 return;
             }
         } catch (BadLocationException ex) {
         }
     }
-    
+
+    /**
+     * Invoked when the mouse cursor has been moved onto the component
+     * but no buttons have been pushed.
+     */
+    @Override
     public void mouseMoved(MouseEvent e) {
         e.consume();
         int position = editorPane.viewToModel(e.getPoint());
         int newIndex = -1;
         if (position >= 0) {
-            for (int x = 0; x < operations.length; x++) {
-                int start = operations[x].getMethodStartPosition().getOffset();
-                int end = operations[x].getMethodEndPosition().getOffset();
+            for (int x = 0; x < segments.length; x++) {
+                int start = segments[x].getStartOffset();
+                int end = segments[x].getEndOffset();
                 if (position >= start && position <= end) {
                     newIndex = x;
                     break;
@@ -635,22 +601,43 @@ public class MethodChooser implements KeyListener, MouseListener,
         }
     }
 
+    /**
+     * Invoked when a mouse button has been released on the component.
+     */
+    @Override
     public void mouseReleased(MouseEvent e) {
         e.consume();
     }
 
+    /**
+     * Invoked when a mouse button has been pressed on the component.
+     */
+    @Override
     public void mousePressed(MouseEvent e) {
         e.consume();
     }
 
+    /**
+     * Invoked when the mouse exits the component.
+     */
+    @Override
     public void mouseExited(MouseEvent e) {
         e.consume();
     }
 
+    /**
+     * Invoked when the mouse enters the component.
+     */
+    @Override
     public void mouseEntered(MouseEvent e) {
         e.consume();
     }
-    
+
+    /**
+     * Invoked when a mouse button is pressed on the component and then
+     * dragged.
+     */
+    @Override
     public void mouseDragged(MouseEvent e) {
         e.consume();
     }
@@ -658,50 +645,109 @@ public class MethodChooser implements KeyListener, MouseListener,
     // **************************************************************************
     // FocusListener implementation
     // **************************************************************************
-    
+
+    /**
+     * Invoked when the component gains the keyboard focus.
+     */
+    @Override
     public void focusGained(FocusEvent e) {
         editorPane.getCaret().setVisible(false);
     }
 
+    /**
+     * Invoked when the component loses the keyboard focus.
+     */
+    @Override
     public void focusLost(FocusEvent e) {
     }
-    
+
     // **************************************************************************
-    // PropertyChangeListener implementation
+    // public inner classes
     // **************************************************************************
-    
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED ||
-                currentThread != debugger.getCurrentThread() || !currentThread.isSuspended()) {
-            release();
+
+    /**
+     * Represents an interval of offsets in a document. Used to pass entry points
+     * of method calls among which the user selects the desired one to step into.
+     */
+    public static class Segment {
+        int startOffset;
+        int endOffset;
+
+        /**
+         * Creates a new instance of {@link Segment}.
+         *
+         * @param startOffset segment start offset (inclusive)
+         * @param endOffset segment end offset (exclusive)
+         */
+        public Segment(int startOffset, int endOffset) {
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
         }
+
+        /**
+         * Returns the start offset.
+         *
+         * @return the start offset
+         */
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        /**
+         * Returns the endt offset.
+         *
+         * @return the end offset
+         */
+        public int getEndOffset() {
+            return endOffset;
+        }
+
     }
-    
+
+    /**
+     * An instance of {@link ReleaseListener} can be registered using {@link MethodChooser#addReleaseListener}.
+     * It is notified when the selection mode finishes (e.g. if the user confirms the current selection).
+     * The selection mode finishes whenever {@link #releaseUI} is called.
+     */
+    public interface ReleaseListener {
+
+        /**
+         * Called on the method selection mode finish.
+         *
+         * @param performAction <code>true</code> means that the current selection has been confirmed
+         *          and the proper action (Step Into) is expected to be performed, <code>false</code>
+         *          means that the method chooser has been cancelled
+         */
+        public void released(boolean performAction);
+
+    }
+
     // **************************************************************************
-    // inner classes
+    // private inner classes
     // **************************************************************************
-    
+
+    static class MethodChooserHighlightsLayerFactory implements HighlightsLayerFactory {
+
+        @Override
+        public HighlightsLayer[] createLayers(Context context) {
+            return new HighlightsLayer[] {
+                HighlightsLayer.create(MethodChooser.class.getName(),
+                        ZOrder.TOP_RACK, false, MethodChooser.getHighlightsBag(context.getDocument()))
+            };
+        }
+
+    }
+
     private static final class TooltipResolver implements HighlightAttributeValue<String> {
 
         public TooltipResolver() {
         }
 
+        @Override
         public String getValue(JTextComponent component, Document document, Object attributeKey, int startOffset, int endOffset) {
             return NbBundle.getMessage(MethodChooser.class, "MSG_Step_Into_Method");
         }
-        
-    }
-    
-    private static final class OperatorsComparator implements Comparator {
 
-        public int compare(Object o1, Object o2) {
-            Object[] a1 = (Object[])o1;
-            Object[] a2 = (Object[])o2;
-            Operation op1 = (Operation)a1[0];
-            Operation op2 = (Operation)a2[0];
-            return op1.getMethodStartPosition().getOffset() - op2.getMethodStartPosition().getOffset();
-        }
-        
     }
-    
+
 }

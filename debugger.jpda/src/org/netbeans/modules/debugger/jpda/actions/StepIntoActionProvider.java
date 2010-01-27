@@ -79,7 +79,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     public static final String ACTION_SMART_STEP_INTO = "smartStepInto";
 
     private StepIntoNextMethod stepInto;
-    private MethodSelector currentMethodChooser;
+    private MethodChooser currentMethodChooser;
 
     public StepIntoActionProvider (ContextProvider contextProvider) {
         super (
@@ -190,14 +190,13 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
             }
             final MethodChooserSupport cSupport = new MethodChooserSupport(debugger, url, clazz, methodLine, methodOffset);
             boolean continuedDirectly = cSupport.init();
-            MethodSelector.Segment[] segments = cSupport.getSegments();
-            if (segments.length == 0) {
+            if (cSupport.getSegmentsCount() == 0) {
                 return false;
             }
             if (continuedDirectly) {
                 return true;
             }
-            MethodSelector.ReleaseListener releaseListener = new MethodSelector.ReleaseListener() {
+            MethodChooser.ReleaseListener releaseListener = new MethodChooser.ReleaseListener() {
                 @Override
                 public void released(boolean performAction) {
                     synchronized (this) {
@@ -209,13 +208,16 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
                     }
                 }
             };
-            MethodSelector chooser = cSupport.createChooser(releaseListener);
+            MethodChooser chooser = cSupport.createChooser();
+            chooser.addReleaseListener(releaseListener);
             boolean success = chooser.showUI();
             if (success && chooser.isUIActive()) {
                 synchronized (this) {
                     cSupport.tearUp(chooser);
                     currentMethodChooser = chooser;
                 }
+            } else {
+                chooser.removeReleaseListener(releaseListener);
             }
             return success;
         } else {
