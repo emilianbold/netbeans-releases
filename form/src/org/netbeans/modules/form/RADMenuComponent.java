@@ -44,7 +44,6 @@ package org.netbeans.modules.form;
 import org.openide.util.datatransfer.NewType;
 
 import java.awt.*;
-import javax.swing.*;
 import java.util.*;
 
 import org.netbeans.modules.form.project.ClassSource;
