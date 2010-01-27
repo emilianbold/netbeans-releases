@@ -1438,10 +1438,10 @@ public class MetaComponentCreator {
                 changes.put("text", varName); // NOI18N
             }
             if(comp instanceof JCheckBoxMenuItem) {
-                changes.put("selected", new Boolean(true)); // NOI18N
+                changes.put("selected", Boolean.TRUE); // NOI18N
             }
             if(comp instanceof JRadioButtonMenuItem) {
-                changes.put("selected", new Boolean(true)); // NOI18N
+                changes.put("selected", Boolean.TRUE); // NOI18N
             }
         } else if (comp instanceof AbstractButton) { // JButton, JToggleButton, JCheckBox, JRadioButton
             String txt = ((AbstractButton)comp).getText();
