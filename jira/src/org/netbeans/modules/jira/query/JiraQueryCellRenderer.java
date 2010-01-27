@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -26,7 +27,7 @@ import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
 import org.netbeans.modules.bugtracking.spi.Issue;
 import org.netbeans.modules.jira.JiraConfig;
-import org.netbeans.modules.jira.issue.JiraIssueNode;
+import org.netbeans.modules.jira.issue.JiraIssueNode.MultiValueFieldProperty;
 import org.netbeans.modules.jira.issue.JiraIssueNode.PriorityProperty;
 import org.netbeans.modules.jira.issue.JiraIssueNode.SummaryProperty;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
@@ -45,6 +46,8 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private final JiraQuery query;
     private final QueryTableCellRenderer defaultIssueRenderer;
     private TwoLabelPanel twoLabelPanel;
+    private MultiLabelPanel multiLabelPanel;
+
     private static Icon subtaskIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/jira/resources/subtask.png"));    // NOI18N
 
     private final IssueTable issueTable;
@@ -61,7 +64,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
         fixRowHeightIfNeeded(table, row);
 
-        if(!(value instanceof JiraIssueNode.SummaryProperty)) {
+        if(!(value instanceof SummaryProperty) && !(value instanceof MultiValueFieldProperty)) {
             JLabel renderer = (JLabel) defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             if(value instanceof PriorityProperty) {
                 PriorityProperty property = (PriorityProperty) value;
@@ -70,10 +73,36 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
                 renderer.setIcon(icon);
                 return renderer;
             }
-//            else {
-//                renderer.setIcon(null);
-//            }
             return renderer;
+        }
+
+        if(value instanceof MultiValueFieldProperty) {
+            MultiValueFieldProperty p = (MultiValueFieldProperty) value;
+            MultiLabelPanel panel = getMultiLabelPanel();
+            String stringValue = p.getValue();
+            String[] values = stringValue.split(",");                           // NOI18N
+            if(values.length < 2) {
+                return (JLabel) defaultIssueRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
+
+            TableCellStyle style = null;
+            if(query.isSaved()) {
+                style = QueryTableCellRenderer.getCellStyle(table, query, p, isSelected, row);
+            } else {
+                style = QueryTableCellRenderer.getDefaultCellStyle(table, isSelected, row);
+            }
+            for (int i = 0; i < values.length; i++) {
+                RendererLabel label = new RendererLabel();
+                String s = values[i];
+                label.setFont(defaultIssueRenderer.getFont());
+                label.setText(s);
+                QueryTableCellRenderer.setRowColors(style, label);
+                QueryTableCellRenderer.setRowColors(style, panel);
+                label.setAlignmentX(Component.LEFT_ALIGNMENT);
+                panel.add(label);
+            }
+            adjustRowHeightIfNeeded(panel, table, row);
+            return panel;
         }
 
         SummaryProperty summaryProperty = (SummaryProperty) value;
@@ -82,7 +111,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
         TableCellStyle style = null;
         if(issue.hasSubtasks()) {
-            TwoLabelPanel panel = getTwoLabelPanel(table.getFont());
+            TwoLabelPanel panel = getTwoLabelPanel();
             panel.setFontSize(table.getFont(), panel.north);
             if(query.isSaved()) {
                 style = QueryTableCellRenderer.getCellStyle(table, query, summaryProperty, isSelected, row);
@@ -110,7 +139,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             
             return panel;
         } else if(issue.isSubtask() ) {
-            TwoLabelPanel panel = getTwoLabelPanel(table.getFont());
+            TwoLabelPanel panel = getTwoLabelPanel();
             panel.setFontSize(table.getFont(), panel.south);
 
             if(query.isSaved()) {
@@ -148,8 +177,8 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
         int h = (int) panel.getPreferredSize().getHeight();
         h = h + table.getRowMargin();
-        if (table.getRowHeight(row) != h) {
-            table.setRowHeight(h);
+        if (table.getRowHeight(row) < h) {
+            table.setRowHeight(row, h);
         } 
     }
 
@@ -167,9 +196,17 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         }
     }
 
-    private TwoLabelPanel getTwoLabelPanel(Font font) {
+    private MultiLabelPanel getMultiLabelPanel() {
+        if(multiLabelPanel == null) {
+            multiLabelPanel = new MultiLabelPanel();
+        }
+        multiLabelPanel.removeAll();
+        return multiLabelPanel;
+    }
+
+    private TwoLabelPanel getTwoLabelPanel() {
         if(twoLabelPanel == null) {
-            twoLabelPanel = new TwoLabelPanel(font);
+            twoLabelPanel = new TwoLabelPanel();
         }
         return twoLabelPanel;
     }
@@ -197,7 +234,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private class TwoLabelPanel extends JPanel {
         RendererLabel north = new RendererLabel();
         RendererLabel south = new RendererLabel();
-        public TwoLabelPanel(Font font) {
+        public TwoLabelPanel() {
             setLayout(new BorderLayout());
             add(north, BorderLayout.NORTH);
             add(south, BorderLayout.SOUTH);
@@ -214,6 +251,12 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
                 north.setFont(smalerFont);
                 south.setFont(defaultFont);
             }
+        }
+    }
+
+    private class MultiLabelPanel extends JPanel {
+        public MultiLabelPanel() {
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         }
     }
 
