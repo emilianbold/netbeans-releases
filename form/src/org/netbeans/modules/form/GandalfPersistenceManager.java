@@ -3480,7 +3480,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (convIndex >= 0) { // standard constraints (saved in buf2)
             buf.append(indent);
             addElementOpen(buf, XML_CONSTRAINTS);
-            buf.append(indent + ONE_INDENT);
+            buf.append(indent).append(ONE_INDENT);
             addElementOpenAttr(
                 buf,
                 XML_CONSTRAINT,
@@ -3491,7 +3491,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                    layout31ConstraintsNames[convIndex]) }
             );
             buf.append(buf2);
-            buf.append(indent + ONE_INDENT);
+            buf.append(indent).append(ONE_INDENT);
             addElementClose(buf, XML_CONSTRAINT);
             buf.append(indent);
             addElementClose(buf, XML_CONSTRAINTS);
@@ -3681,7 +3681,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 for (int i = 0; i < children.length; i++) {
                     String elementType = children[i] instanceof ComponentContainer
                             ? XML_MENU_CONTAINER : XML_MENU_COMPONENT;
-                    buf.append(indent + ONE_INDENT);
+                    buf.append(indent).append(ONE_INDENT);
                     addElementOpenAttr(
                         buf,
                         elementType,
@@ -3689,7 +3689,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         new String[] { children[i].getBeanClass().getName(),
                                        children[i].getName() });
                     saveMenuComponent(children[i], buf, indent + ONE_INDENT + ONE_INDENT);
-                    buf.append(indent + ONE_INDENT); addElementClose(buf, elementType);
+                    buf.append(indent).append(ONE_INDENT); addElementClose(buf, elementType);
                 }
                 buf.append(indent); addElementClose(buf, XML_SUB_COMPONENTS);
             }
@@ -3759,7 +3759,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             FormProperty prop = props[i];
             if (!prop.isChanged() || ResourceSupport.isInjectedProperty(prop)) {
                 if (prop.getPreCode() != null || prop.getPostCode() != null) {
-                    buf.append(indent + ONE_INDENT);
+                    buf.append(indent).append(ONE_INDENT);
                     // in this case save only the pre/post code
                     addLeafElementOpenAttr(
                         buf,
@@ -3908,7 +3908,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 		}                
             }		    
             else {
-                buf.append(indent + ONE_INDENT);
+                buf.append(indent).append(ONE_INDENT);
                 addLeafElementOpenAttr(
                     buf,
                     XML_SERIALIZED_PROPERTY_VALUE,
@@ -4054,7 +4054,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 saveNodeIntoText(buf, valueNode, indent + ONE_INDENT);
             }
             else {
-                buf.append(indent + ONE_INDENT);
+                buf.append(indent).append(ONE_INDENT);
                 addLeafElementOpenAttr(
                     buf,
                     XML_SERIALIZED_PROPERTY_VALUE,
@@ -5675,9 +5675,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         StringBuilder buf = new StringBuilder(bosBytes.length*4);
         for (int i=0; i < bosBytes.length; i++) {
             if (i+1 < bosBytes.length)
-                buf.append(bosBytes[i]+","); // NOI18N
+                buf.append(bosBytes[i]).append(","); // NOI18N
             else
-                buf.append(""+bosBytes[i]); // NOI18N
+                buf.append("").append(bosBytes[i]); // NOI18N
         }
         return buf.toString();
     }
@@ -5835,7 +5835,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     default: sb.append(c); break;
                 }
             } else {
-                sb.append("&#x" + Integer.toHexString(c) + ";"); // NOI18N
+                sb.append("&#x").append(Integer.toHexString(c)).append(";"); // NOI18N
             }
         }
 
