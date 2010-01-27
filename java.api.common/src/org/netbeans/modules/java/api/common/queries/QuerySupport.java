@@ -293,10 +293,10 @@ public final class QuerySupport {
      * @param runAllAnnotationProcessorsProperty when true, {@link Result#annotationProcessorsToRun()} will return null
      * @param annotationProcessorsProperty should contain comma separated list of annotation processors to run (will be returned from  {@link Result#annotationProcessorsToRun()})
      * @param sourceOutputProperty directory to which the annotation processors generate source files (will be returned from  {@link Result#sourceOutputProperty()})
-     * @return a {@link AptQueryImplementation} to provide annotation processing configuration data for this project.
+     * @return a {@link AnnotationProcessingQueryImplementation} to provide annotation processing configuration data for this project.
      * @since org.netbeans.modules.java.api.common/0 1.14
      */
-    public static AnnotationProcessingQueryImplementation createAptQuery(AntProjectHelper helper, PropertyEvaluator evaluator,
+    public static AnnotationProcessingQueryImplementation createAnnotationProcessingQuery(AntProjectHelper helper, PropertyEvaluator evaluator,
             String annotationProcessingEnabledProperty, String annotationProcessingEnabledInEditorProperty, String runAllAnnotationProcessorsProperty, String annotationProcessorsProperty, String sourceOutputProperty) {
         return new AnnotationProcessingQueryImpl(helper, evaluator, annotationProcessingEnabledProperty, annotationProcessingEnabledInEditorProperty, runAllAnnotationProcessorsProperty, annotationProcessorsProperty, sourceOutputProperty);
     }
