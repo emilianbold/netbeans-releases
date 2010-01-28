@@ -37,7 +37,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.script.lexer;
+package org.netbeans.modules.cnd.script.lexer;
 
 import org.netbeans.modules.cnd.script.lexer.ShLanguageHierarchy;
 import org.netbeans.api.lexer.TokenHierarchy;

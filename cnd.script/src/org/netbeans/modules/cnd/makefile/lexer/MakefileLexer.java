@@ -197,13 +197,15 @@ import org.netbeans.spi.lexer.TokenFactory;
                 return readMacro(input, factory);
 
             case ':':
-                if (input.read() != '=') {
+                if (input.read() == '=') {
+                    return factory.createToken(MakefileTokenId.COLON_EQUALS);
+                } else {
                     input.backup(1);
+                    return factory.createToken(MakefileTokenId.COLON);
                 }
-                return factory.createToken(MakefileTokenId.SEPARATOR);
 
             case '=':
-                return factory.createToken(MakefileTokenId.SEPARATOR);
+                return factory.createToken(MakefileTokenId.EQUALS);
 
             case LexerInput.EOF:
                 return null;

@@ -38,10 +38,14 @@
  */
 package org.netbeans.modules.cnd.makefile.parser;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
+import org.netbeans.modules.cnd.makefile.model.MakefileElement;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -53,28 +57,28 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
  */
 public class MakefileParser extends Parser {
 
-    private volatile boolean cancelled;
+    private final AtomicBoolean cancelled;
     private MakefileModel result;
 
     /*package*/ MakefileParser() {
+        cancelled = new AtomicBoolean();
     }
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        TokenSequence<MakefileTokenId> ts = snapshot.getTokenHierarchy().tokenSequence(MakefileTokenId.language());
-        if (ts != null) {
-            parse(snapshot, ts);
-        }
+        result = null;
+        cancelled.set(false);
+        result = parse(snapshot, cancelled);
     }
 
     @Override
-    public Result getResult(Task task) throws ParseException {
-        return cancelled? null : result;
+    public MakefileModel getResult(Task task) throws ParseException {
+        return result;
     }
 
     @Override
     public void cancel() {
-        this.cancelled = true;
+        cancelled.set(true);
     }
 
     @Override
@@ -87,9 +91,120 @@ public class MakefileParser extends Parser {
         // nothing to listen to => no reason to register listeners
     }
 
-    private void parse(Snapshot snapshot, TokenSequence<MakefileTokenId> ts) throws ParseException {
-        result = new MakefileModel(snapshot, Arrays.asList(
-                new AssignmentImpl("a", "b"), // NOI18N
-                new RuleImpl(Arrays.asList("sample"), Arrays.asList("sample")))); // NOI18N
+
+    private static MakefileModel parse(Snapshot snapshot, AtomicBoolean cancelled) {
+        TokenSequence<MakefileTokenId> tokenSequence =
+                snapshot.getTokenHierarchy().tokenSequence(MakefileTokenId.language());
+
+        if (tokenSequence == null) {
+            return null;
+        }
+
+        List<MakefileElement> makefileElements = new ArrayList<MakefileElement>();
+
+        int startIndex = 0;
+        while (tokenSequence.moveNext() && !cancelled.get()) {
+            Token<MakefileTokenId> token = tokenSequence.token();
+
+            switch (token.id()) {
+                case EQUALS:
+                case COLON_EQUALS:
+                    tokenSequence.moveIndex(startIndex);
+                    makefileElements.add(createAssignment(tokenSequence));
+                    startIndex = tokenSequence.index();
+                    break;
+
+                case COLON:
+                    tokenSequence.moveIndex(startIndex);
+                    makefileElements.add(createRule(tokenSequence));
+                    startIndex = tokenSequence.index();
+                    break;
+
+                case COMMENT:
+                case NEW_LINE:
+                    startIndex = tokenSequence.index() + 1;
+            }
+        }
+
+        return cancelled.get()? null : new MakefileModel(snapshot, makefileElements);
+    }
+
+    private static AssignmentImpl createAssignment(TokenSequence<MakefileTokenId> tokenSequence) {
+        StringBuilder nameBuilder = new StringBuilder();
+        NAME_LOOP: while (tokenSequence.moveNext()) {
+            Token<MakefileTokenId> token = tokenSequence.token();
+            switch (token.id()) {
+                case EQUALS:
+                case COLON_EQUALS:
+                    break NAME_LOOP;
+                default:
+                    nameBuilder.append(token.text());
+            }
+        }
+
+        StringBuilder valueBuilder = new StringBuilder();
+        VALUE_LOOP: while (tokenSequence.moveNext()) {
+            Token<MakefileTokenId> token = tokenSequence.token();
+            switch (token.id()) {
+                case COMMENT:
+                case NEW_LINE:
+                    break VALUE_LOOP;
+                default:
+                    valueBuilder.append(token.text());
+            }
+        }
+
+        return new AssignmentImpl(nameBuilder.toString().trim(), valueBuilder.toString());
+    }
+
+    private static RuleImpl createRule(TokenSequence<MakefileTokenId> tokenSequence) {
+        StringBuilder nameBuilder = new StringBuilder();
+
+        List<String> targets = new ArrayList<String>();
+        TARGETS_LOOP: while (tokenSequence.moveNext()) {
+            Token<MakefileTokenId> token = tokenSequence.token();
+            switch (token.id()) {
+                case COLON:
+                    if (0 < nameBuilder.length()) {
+                        targets.add(nameBuilder.toString());
+                        nameBuilder.setLength(0);
+                    }
+                    break TARGETS_LOOP;
+                case WHITESPACE:
+                case ESCAPED_NEW_LINE:
+                    if (0 < nameBuilder.length()) {
+                        targets.add(nameBuilder.toString());
+                        nameBuilder.setLength(0);
+                    }
+                    break;
+                default:
+                    nameBuilder.append(token.text());
+            }
+        }
+        
+        List<String> prereqs = new ArrayList<String>();
+        PREREQS_LOOP: while (tokenSequence.moveNext()) {
+            Token<MakefileTokenId> token = tokenSequence.token();
+            switch (token.id()) {
+                case WHITESPACE:
+                case ESCAPED_NEW_LINE:
+                    if (0 < nameBuilder.length()) {
+                        prereqs.add(nameBuilder.toString());
+                        nameBuilder.setLength(0);
+                    }
+                    break;
+                case COMMENT:
+                case NEW_LINE:
+                    if (0 < nameBuilder.length()) {
+                        prereqs.add(nameBuilder.toString());
+                        nameBuilder.setLength(0);
+                    }
+                    break PREREQS_LOOP;
+                default:
+                    nameBuilder.append(token.text());
+            }
+        }
+
+        return new RuleImpl(targets, prereqs);
     }
 }
