@@ -48,6 +48,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -77,6 +78,7 @@ import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.SubResourceLocator;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
@@ -543,10 +545,16 @@ public class ClientJavaSourceHelper {
                 contextRoot = contextRoot.substring(1);
             }
         }
-
+        String applicationPath = "resources"; //NOI18N
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        if (restSupport != null) {
+            try {
+                applicationPath = restSupport.getApplicationPath();
+            } catch (IOException ex) {}
+        }
         return "http://" + hostName + ":" + portNumber + "/" + //NOI18N
                 (contextRoot != null && !contextRoot.equals("") ? contextRoot : "") + //NOI18N
-                "/resources" + uri; //NOI18N
+                "/"+applicationPath + uri; //NOI18N
     }
 
     private static MethodTree createHttpPOSTMethod(WorkingCopy copy, String httpMethod, HttpMimeType requestMimeType, String responseType, String path) {
