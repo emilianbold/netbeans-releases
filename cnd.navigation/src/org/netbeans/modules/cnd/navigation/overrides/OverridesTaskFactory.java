@@ -103,47 +103,6 @@ public class OverridesTaskFactory extends EditorAwareCsmFileTaskFactory {
         return RESCHEDULE_DELAY;
     }
 
-    private static void computeAnnotations(
-            Collection<? extends CsmOffsetableDeclaration> toProcess,
-            Collection<OverriddeAnnotation> toAdd, CsmFile file, StyledDocument doc, DataObject dobj) {
-
-        for (CsmOffsetableDeclaration decl : toProcess) {
-            if (CsmKindUtilities.isFunction(decl)) {
-                OverriddeAnnotation anno = computeAnnotation((CsmFunction) decl, doc);
-                if (anno != null) {
-                    toAdd.add(anno);
-                }
-            } else if (CsmKindUtilities.isClass(decl)) {
-                computeAnnotations(((CsmClass) decl).getMembers(), toAdd, file, doc, dobj);
-
-            } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
-                computeAnnotations(((CsmNamespaceDefinition) decl).getDeclarations(), toAdd, file, doc, dobj);
-            }
-        }
-    }
-
-    private static OverriddeAnnotation computeAnnotation(CsmFunction func, StyledDocument doc) {
-        if (CsmKindUtilities.isMethod(func)) {
-            CsmMethod meth = (CsmMethod) func;
-            final Collection<? extends CsmMethod> baseMethods = CsmVirtualInfoQuery.getDefault().getBaseDeclaration(meth);
-            if (OverriddeAnnotation.LOGGER.isLoggable(Level.FINEST)) {
-                OverriddeAnnotation.LOGGER.log(Level.FINEST, "Found {0} base decls for {1}", new Object[]{baseMethods.size(), func});
-                for (CsmMethod baseMethod : baseMethods) {
-                    OverriddeAnnotation.LOGGER.log(Level.FINEST, "    {0}", baseMethod);
-                }
-            }
-            if (!baseMethods.isEmpty()) {
-                boolean itself = baseMethods.size() == 1 && baseMethods.iterator().next().equals(func);
-                if (!itself) {
-                    CsmMethod m = baseMethods.iterator().next(); //TODO: XXX
-                    String desc = NbBundle.getMessage(OverridesTaskFactory.class, "LAB_Overrides", m.getQualifiedName().toString());
-                    return new OverriddeAnnotation(doc, func,  OverriddeAnnotation.AnnotationType.OVERRIDES, desc, baseMethods);
-                }
-            }
-        }
-        return null;
-    }
-
     private static int getInt(String name, int result){
         String text = System.getProperty(name);
         if( text != null ) {
@@ -193,7 +152,7 @@ public class OverridesTaskFactory extends EditorAwareCsmFileTaskFactory {
             final Collection<OverriddeAnnotation> toAdd = new ArrayList<OverriddeAnnotation>();
             OverriddeAnnotation.LOGGER.log(Level.FINE, ">> Computing annotations for {0}", file);
             long time = System.currentTimeMillis();
-            computeAnnotations(file.getDeclarations(), toAdd, file, doc, dobj);
+            ComputeAnnotations.computeAnnotations(file.getDeclarations(), toAdd, file, doc, dobj);
             time = System.currentTimeMillis() - time;
             OverriddeAnnotation.LOGGER.log(Level.FINE, "<< Computed sannotations for {0} in {1} ms", new Object[] { file, time });
             final Collection<OverriddeAnnotation> toClear;
