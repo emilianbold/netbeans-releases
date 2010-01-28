@@ -49,7 +49,6 @@ import javax.swing.table.AbstractTableModel;
 import java.util.*;
 import java.io.File;
 import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Table model for the Commit dialog table.
@@ -58,6 +57,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class CommitTableModel extends AbstractTableModel {
 
+    public static final String COLUMN_NAME_COMMIT    = "commit"; // NOI18N
     public static final String COLUMN_NAME_NAME    = "name"; // NOI18N
     public static final String COLUMN_NAME_STATUS  = "status"; // NOI18N
     public static final String COLUMN_NAME_ACTION  = "action"; // NOI18N
@@ -68,7 +68,6 @@ public class CommitTableModel extends AbstractTableModel {
         String repositoryPath;
         String rootLocalPath;
     }
-    private Set<SVNUrl> repositoryRoots;
     private RootFile rootFile;
 
     /**
@@ -78,6 +77,9 @@ public class CommitTableModel extends AbstractTableModel {
 
     {
         ResourceBundle loc = NbBundle.getBundle(CommitTableModel.class);
+        columnLabels.put(COLUMN_NAME_COMMIT, new String [] {
+                                          loc.getString("CTL_CommitTable_Column_Commit"),  // NOI18N
+                                          loc.getString("CTL_CommitTable_Column_Description")}); // NOI18N
         columnLabels.put(COLUMN_NAME_NAME, new String [] {
                                           loc.getString("CTL_CommitTable_Column_File"), 
                                           loc.getString("CTL_CommitTable_Column_File")});
@@ -132,35 +134,46 @@ public class CommitTableModel extends AbstractTableModel {
         return ret;
     }
     
+    @Override
     public String getColumnName(int column) {
         return columnLabels.get(columns[column])[0];
     }
 
+    @Override
     public int getColumnCount() {
         return columns.length;
     }
 
+    @Override
     public int getRowCount() {
         return nodes.length;
     }
 
+    @Override
     public Class getColumnClass(int columnIndex) {
         String col = columns[columnIndex];
-        if (col.equals(COLUMN_NAME_ACTION)) {
+        if (col.equals(COLUMN_NAME_COMMIT)) {
+            return Boolean.class;
+        } else if (col.equals(COLUMN_NAME_ACTION)) {
             return CommitOptions.class;
+        } else {
+            return String.class;
         }
-        return String.class;
     }
 
+    @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         String col = columns[columnIndex];
-        return col.equals(COLUMN_NAME_ACTION);
+        return col.equals(COLUMN_NAME_COMMIT);
     }
 
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         SvnFileNode node;
         String col = columns[columnIndex];
-        if (col.equals(COLUMN_NAME_NAME)) {
+        if (col.equals(COLUMN_NAME_COMMIT)) {
+            return commitOptions[rowIndex] != CommitOptions.EXCLUDE;
+        } else if (col.equals(COLUMN_NAME_NAME)) {
             return nodes[rowIndex].getName();
         } else if (col.equals(COLUMN_NAME_BRANCH)) {
             String branch = nodes[rowIndex].getCopy();
@@ -190,14 +203,17 @@ public class CommitTableModel extends AbstractTableModel {
         throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
     }
 
+    @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         String col = columns[columnIndex];
         if (col.equals(COLUMN_NAME_ACTION)) {
             commitOptions[rowIndex] = (CommitOptions) aValue;
-            fireTableCellUpdated(rowIndex, columnIndex);
+        } else if (col.equals(COLUMN_NAME_COMMIT)) {
+            commitOptions[rowIndex] = getCommitOptions(rowIndex, ((Boolean) aValue));
         } else {
             throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
         }
+        fireTableRowsUpdated(rowIndex, rowIndex);
     }
 
     private void defaultCommitOptions() {
@@ -213,17 +229,32 @@ public class CommitTableModel extends AbstractTableModel {
         return commitOptions[row];
     }
 
-    private Set<SVNUrl> getRepositoryRoots() {
-        if(repositoryRoots == null) {
-            repositoryRoots = new HashSet<SVNUrl>();
-        }
-        return repositoryRoots;
-    }
-
     void setRootFile(String repositoryPath, String rootLocalPath) {
         rootFile = new RootFile();
         rootFile.repositoryPath = repositoryPath;
         rootFile.rootLocalPath = rootLocalPath;
     }
 
+    void setIncluded (int[] rows, boolean include, boolean recursively) {
+        for (int rowIndex : rows) {
+            commitOptions[rowIndex] = getCommitOptions(rowIndex, include);
+        }
+        fireTableRowsUpdated(0, getRowCount() - 1);
+    }
+
+    void setAdded (int[] rows, CommitOptions addOption) {
+        for (int rowIndex : rows) {
+            commitOptions[rowIndex] = addOption;
+        }
+        fireTableRowsUpdated(0, getRowCount() - 1);
+    }
+
+    private CommitOptions getCommitOptions (int rowIndex, boolean include) {
+        return include ? getCommitOptions(rowIndex) : CommitOptions.EXCLUDE;
+    }
+
+    private CommitOptions getCommitOptions (int rowIndex) {
+        SvnFileNode node = nodes[rowIndex];
+        return SvnUtils.getDefaultCommitOptions(node, false);
+    }
 }
