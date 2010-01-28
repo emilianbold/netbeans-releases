@@ -344,6 +344,16 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
 
+                <file name="ParserFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.parser.MakefileParserFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
+                </file>
+
+                <file name="NavigatorUpdaterTaskFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.navigator.NavigatorUpdaterTaskFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
+
                 <file name="MakefileIndentTaskFactory.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.editor.MakefileIndentTaskFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
