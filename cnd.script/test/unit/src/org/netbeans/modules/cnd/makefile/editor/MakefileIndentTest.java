@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.makefile.editor;
+package org.netbeans.modules.cnd.makefile.editor;
 
 import org.netbeans.modules.cnd.makefile.editor.MakefileIndentTaskFactory;
 import javax.swing.text.BadLocationException;

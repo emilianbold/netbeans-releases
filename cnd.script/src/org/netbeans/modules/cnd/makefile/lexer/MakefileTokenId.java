@@ -89,9 +89,19 @@ public enum MakefileTokenId implements TokenId {
     MACRO("macro"), // NOI18N
 
     /**
-     * Separator: <code>:</code>, <code>;</code>, <code>=</code>
+     * Equals character.
      */
-    SEPARATOR("separator"), // NOI18N
+    EQUALS("separator"), // NOI18N
+
+    /**
+     * Colon character.
+     */
+    COLON("separator"), // NOI18N
+
+    /**
+     * Colon character followed by equals character.
+     */
+    COLON_EQUALS("separator"), // NOI18N
 
     /**
      * Keyword: <code>include</code>, <code>ifdef</code>, <code>endif</code>

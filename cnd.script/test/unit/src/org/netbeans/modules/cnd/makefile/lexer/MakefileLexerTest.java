@@ -37,12 +37,10 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.makefile.lexer;
+package org.netbeans.modules.cnd.makefile.lexer;
 
-import org.netbeans.modules.cnd.makefile.lexer.MakefileLanguageHierarchy;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import static org.netbeans.lib.lexer.test.LexerTestUtilities.assertNextTokenEquals;
@@ -81,30 +79,30 @@ public class MakefileLexerTest extends NbTestCase {
         assertNextTokenEquals(ts, MakefileTokenId.COMMENT, "# Environment");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "MKDIR");
-        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, "=");
+        assertNextTokenEquals(ts, MakefileTokenId.EQUALS, "=");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "mkdir");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "BUILDDIR");
-        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, "=");
+        assertNextTokenEquals(ts, MakefileTokenId.EQUALS, "=");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "build/");
         assertNextTokenEquals(ts, MakefileTokenId.MACRO, "${CONF}");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "OS");
         assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
-        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, ":=");
+        assertNextTokenEquals(ts, MakefileTokenId.COLON_EQUALS, ":=");
         assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
         assertNextTokenEquals(ts, MakefileTokenId.MACRO, "$(shell uname | grep -i Darwin)");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "build");
-        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, ":");
+        assertNextTokenEquals(ts, MakefileTokenId.COLON, ":");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.TAB, "\t");
         assertNextTokenEquals(ts, MakefileTokenId.SHELL, "$(COMPILE.cc) source.cpp -o source.o");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.SPECIAL_TARGET, ".PHONY");
-        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, ":");
+        assertNextTokenEquals(ts, MakefileTokenId.COLON, ":");
         assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "build");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
@@ -123,7 +121,7 @@ public class MakefileLexerTest extends NbTestCase {
 
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "a\\ b");
         assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
-        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, ":=");
+        assertNextTokenEquals(ts, MakefileTokenId.COLON_EQUALS, ":=");
         assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "a\\:b");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
@@ -155,7 +153,7 @@ public class MakefileLexerTest extends NbTestCase {
 
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "var");
         assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
-        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, "=");
+        assertNextTokenEquals(ts, MakefileTokenId.EQUALS, "=");
         assertNextTokenEquals(ts, MakefileTokenId.WHITESPACE, " ");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "foo");
         assertNextTokenEquals(ts, MakefileTokenId.ESCAPED_NEW_LINE, "\\\n");
@@ -184,13 +182,13 @@ public class MakefileLexerTest extends NbTestCase {
         TokenSequence<?> ts = hi.tokenSequence();
 
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "ab");
-        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, "=");
+        assertNextTokenEquals(ts, MakefileTokenId.EQUALS, "=");
         assertNextTokenEquals(ts, MakefileTokenId.MACRO, "$(a");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "b)");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "cd");
-        assertNextTokenEquals(ts, MakefileTokenId.SEPARATOR, "=");
+        assertNextTokenEquals(ts, MakefileTokenId.EQUALS, "=");
         assertNextTokenEquals(ts, MakefileTokenId.MACRO, "$(c\\\nd)");
 
         assertFalse("Unexpected tokens remaining", ts.moveNext());
