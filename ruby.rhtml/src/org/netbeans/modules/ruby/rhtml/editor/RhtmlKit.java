@@ -60,14 +60,14 @@ import org.netbeans.editor.ext.ExtKit.ToggleCommentAction;
 import org.netbeans.editor.ext.html.dtd.Registry;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.csl.core.DeleteToNextCamelCasePosition;
-import org.netbeans.modules.csl.core.DeleteToPreviousCamelCasePosition;
-import org.netbeans.modules.csl.core.NextCamelCasePosition;
-import org.netbeans.modules.csl.core.PreviousCamelCasePosition;
-import org.netbeans.modules.csl.core.SelectCodeElementAction;
-import org.netbeans.modules.csl.core.SelectNextCamelCasePosition;
-import org.netbeans.modules.csl.core.SelectPreviousCamelCasePosition;
-import org.netbeans.modules.csl.editor.InstantRenameAction;
+import org.netbeans.modules.csl.api.DeleteToNextCamelCasePosition;
+import org.netbeans.modules.csl.api.DeleteToPreviousCamelCasePosition;
+import org.netbeans.modules.csl.api.InstantRenameAction;
+import org.netbeans.modules.csl.api.NextCamelCasePosition;
+import org.netbeans.modules.csl.api.PreviousCamelCasePosition;
+import org.netbeans.modules.csl.api.SelectCodeElementAction;
+import org.netbeans.modules.csl.api.SelectNextCamelCasePosition;
+import org.netbeans.modules.csl.api.SelectPreviousCamelCasePosition;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
@@ -489,7 +489,7 @@ public class RhtmlKit extends HtmlKit {
                 }
                 final BaseDocument doc = (BaseDocument)target.getDocument();
                 doc.runAtomic(new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         try {
                             Caret caret = target.getCaret();
                             int startPos;

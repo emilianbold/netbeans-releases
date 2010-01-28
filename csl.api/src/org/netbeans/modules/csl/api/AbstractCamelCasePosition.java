@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.csl.core;
+package org.netbeans.modules.csl.api;
 
 import java.awt.event.ActionEvent;
 import java.util.MissingResourceException;

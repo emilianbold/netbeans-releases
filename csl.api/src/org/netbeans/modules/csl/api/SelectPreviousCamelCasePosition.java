@@ -38,23 +38,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.csl.core;
+package org.netbeans.modules.csl.api;
 
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
 /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
-public final class DeleteToPreviousCamelCasePosition extends SelectPreviousCamelCasePosition {
-    public static final String deletePreviousCamelCasePosition = "delete-previous-camel-case-position"; //NOI18N
+public class SelectPreviousCamelCasePosition extends PreviousCamelCasePosition {
+    public static final String selectPreviousCamelCasePosition = "select-previous-camel-case-position"; //NOI18N
 
-    public DeleteToPreviousCamelCasePosition(Action originalAction) {
-        // XXX Why does this get called so many times?        
-        super(deletePreviousCamelCasePosition, originalAction);
+    public SelectPreviousCamelCasePosition(Action originalAction) {
+        this(selectPreviousCamelCasePosition, originalAction);
     }
+
+    protected SelectPreviousCamelCasePosition(String name, Action originalAction) {
+        super(name, originalAction);
+    }
+
     protected @Override void moveToNewOffset(JTextComponent textComponent, int offset) throws BadLocationException {
-        textComponent.getDocument().remove(offset, textComponent.getCaretPosition() - offset);
+        textComponent.getCaret().moveDot(offset);
     }
 }
-
-

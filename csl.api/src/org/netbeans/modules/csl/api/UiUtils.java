@@ -38,23 +38,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.csl.core;
+package org.netbeans.modules.csl.api;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.navigation.Icons;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -106,7 +106,7 @@ public final class UiUtils {
         
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
+                public @Override void run() {
                     doOpen(fo, offset);
                 }
             });
@@ -118,6 +118,18 @@ public final class UiUtils {
 
     public static ImageIcon getElementIcon( ElementKind elementKind, Collection<Modifier> modifiers ) {
         return Icons.getElementIcon(elementKind, modifiers);
+    }
+
+    public static KeystrokeHandler getBracketCompletion(Document doc, int offset) {
+        BaseDocument baseDoc = (BaseDocument)doc;
+        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
+        for (Language l : list) {
+            if (l.getBracketCompletion() != null) {
+                return l.getBracketCompletion();
+            }
+        }
+
+        return null;
     }
 
     // Private methods ---------------------------------------------------------
@@ -179,7 +191,7 @@ public final class UiUtils {
         final DeclarationLocation[] result = new DeclarationLocation[] { null };
         try {
             Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singleton(source), new UserTask() {
-                public void run(ResultIterator resultIterator) throws ParseException {
+                public @Override void run(ResultIterator resultIterator) throws ParseException {
                     if (resultIterator.getSnapshot().getMimeType().equals(handle.getMimeType())) {
                         Parser.Result r = resultIterator.getParserResult();
                         if (r instanceof ParserResult) {

@@ -41,7 +41,6 @@ package org.netbeans.modules.csl.core;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -62,11 +61,19 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
+import org.netbeans.modules.csl.api.DeleteToNextCamelCasePosition;
+import org.netbeans.modules.csl.api.DeleteToPreviousCamelCasePosition;
 import org.netbeans.modules.csl.api.GsfLanguage;
+import org.netbeans.modules.csl.api.InstantRenameAction;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.api.NextCamelCasePosition;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.editor.InstantRenameAction;
-import org.netbeans.modules.csl.editor.ToggleBlockCommentAction;
+import org.netbeans.modules.csl.api.PreviousCamelCasePosition;
+import org.netbeans.modules.csl.api.SelectCodeElementAction;
+import org.netbeans.modules.csl.api.SelectNextCamelCasePosition;
+import org.netbeans.modules.csl.api.SelectPreviousCamelCasePosition;
+import org.netbeans.modules.csl.api.ToggleBlockCommentAction;
+import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.editor.hyperlink.GoToSupport;
 import org.netbeans.modules.csl.editor.semantic.GoToMarkOccurrencesAction;
 import org.netbeans.modules.csl.spi.CommentHandler;
@@ -125,7 +132,7 @@ public final class CslEditorKit extends NbEditorKit {
             public int[] findMatchingBlock(int offset, boolean simpleSearch)
                     throws BadLocationException {
                 // Do parenthesis matching, if applicable
-                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, offset);
+                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, offset);
                 if (bracketCompletion != null) {
                     OffsetRange range = bracketCompletion.findMatching(getDocument(), offset/*, simpleSearch*/);
                     if (range == OffsetRange.NONE) {
@@ -218,18 +225,6 @@ public final class CslEditorKit extends NbEditorKit {
         return null;
     }
 
-    /* package */ static KeystrokeHandler getBracketCompletion(Document doc, int offset) {
-        BaseDocument baseDoc = (BaseDocument)doc;
-        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages(baseDoc, offset);
-        for (Language l : list) {
-            if (l.getBracketCompletion() != null) {
-                return l.getBracketCompletion();
-            }
-        }
-
-        return null;
-    }
-
     /**
      * Returns true if bracket completion is enabled in options.
      */
@@ -252,7 +247,7 @@ public final class CslEditorKit extends NbEditorKit {
         protected void insertString(BaseDocument doc, int dotPos, Caret caret, String str,
             boolean overwrite) throws BadLocationException {
             if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
+                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
                     // TODO - check if we're in a comment etc. and if so, do nothing
@@ -283,7 +278,7 @@ public final class CslEditorKit extends NbEditorKit {
                 BaseDocument doc = (BaseDocument)document;
 
                 if (completionSettingEnabled()) {
-                    KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
+                    KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
                     if (bracketCompletion != null) {
                         try {
@@ -327,7 +322,7 @@ public final class CslEditorKit extends NbEditorKit {
         @Override
         protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
             if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, caret.getDot());
+                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, caret.getDot());
 
                 if (bracketCompletion != null) {
                     try {
@@ -384,7 +379,7 @@ public final class CslEditorKit extends NbEditorKit {
         protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch)
             throws BadLocationException {
             if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
+                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
                     boolean success = bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);

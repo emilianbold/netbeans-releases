@@ -39,12 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.csl.core;
+package org.netbeans.modules.csl.api;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.openide.ErrorManager;
@@ -67,7 +66,7 @@ import org.openide.ErrorManager;
             return -1;
         }
 
-        KeystrokeHandler bc = CslEditorKit.getBracketCompletion(doc, offset);
+        KeystrokeHandler bc = UiUtils.getBracketCompletion(doc, offset);
         if (bc != null) {
             int nextOffset = bc.getNextWordOffset(doc, offset, false);
             if (nextOffset != -1) {
@@ -94,7 +93,7 @@ import org.openide.ErrorManager;
 
         final Document doc = textComponent.getDocument();
         
-        KeystrokeHandler bc = CslEditorKit.getBracketCompletion(doc, offset);
+        KeystrokeHandler bc = UiUtils.getBracketCompletion(doc, offset);
         if (bc != null) {
             int nextOffset = bc.getNextWordOffset(
                     doc, offset, true);
