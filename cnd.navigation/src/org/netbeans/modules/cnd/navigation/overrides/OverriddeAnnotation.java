@@ -40,12 +40,25 @@
  */
 package org.netbeans.modules.cnd.navigation.overrides;
 
+import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Point;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
@@ -53,7 +66,10 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.ui.PopupUtil;
 import org.openide.text.Annotation;
 import org.openide.text.NbDocument;
 
@@ -74,7 +90,7 @@ public class OverriddeAnnotation extends Annotation {
     private final Position pos;
     private final String shortDescription;
     private final AnnotationType type;
-    private final Collection<? extends CsmMethod> methods;
+    private final Collection<CsmUID<CsmMethod>> methodUIDs;
     
     public OverriddeAnnotation(StyledDocument document, CsmFunction func, AnnotationType type,
             String shortDescription, Collection<? extends CsmMethod> methods) {
@@ -83,7 +99,10 @@ public class OverriddeAnnotation extends Annotation {
         this.pos = new DeclarationPosition(func);
         this.type = type;
         this.shortDescription = shortDescription;
-        this.methods = methods;
+        methodUIDs = new ArrayList<CsmUID<CsmMethod>>(methods.size());
+        for (CsmMethod m : methods) {
+            methodUIDs.add(UIDs.get(m));
+        }
     }
     
     @Override
@@ -111,6 +130,7 @@ public class OverriddeAnnotation extends Annotation {
         NbDocument.removeAnnotation(document, this);
     }
     
+    @Override
     public String toString() {
         return "[IsOverriddenAnnotation: " + shortDescription + "]"; //NOI18N
     }
@@ -121,9 +141,9 @@ public class OverriddeAnnotation extends Annotation {
     
     public String debugDump() {
         List<String> elementNames = new ArrayList<String>();        
-        for(CsmFunction fun : methods) {
-            elementNames.add(fun.toString());
-        }        
+        for(CsmUID<CsmMethod> uid : methodUIDs) {
+            elementNames.add(uid.toString());
+        }
         Collections.sort(elementNames);       
         return "IsOverriddenAnnotation: type=" + type.name() + ", elements:" + elementNames.toString(); //NOI18N
     }
@@ -143,46 +163,15 @@ public class OverriddeAnnotation extends Annotation {
 //    }
     
     void performGoToAction(Point position) {
-        if (methods.size() == 1) {
-            CsmUtilities.openSource(methods.iterator().next());
-        } else if (methods.size() > 1) {
-            CsmUtilities.openSource(methods.iterator().next()); //TODO: XXX
+        if (methodUIDs.size() == 1) {
+            CsmUtilities.openSource(methodUIDs.iterator().next().getObject());
+        } else if (methodUIDs.size() > 1) {
+//            CsmUtilities.openSource(methodUIDs.iterator().next().getObject()); //TODO: XXX
+            String caption = getShortDescription();
+            PopupUtil.showPopup(new Popup(caption), caption, position.x, position.y, true, 0);
         } else {
             throw new IllegalStateException("method list should not be empty"); // NOI18N
         }
-//        if (type == AnnotationType.IMPLEMENTS || type == AnnotationType.OVERRIDES) {
-//            if (declarations.size() == 1) {
-//                ElementDescription desc = declarations.get(0);
-//                FileObject file = desc.getSourceFile();
-//
-//                if (file != null) {
-//                    ElementOpen.open(file, desc.getHandle());
-//                } else {
-//                    Toolkit.getDefaultToolkit().beep();
-//                }
-//
-//                return ;
-//            }
-//        }
-//
-//        String caption;
-//
-//        switch (type) {
-//            case IMPLEMENTS:
-//                caption = NbBundle.getMessage(IsOverriddenAnnotation.class, "CAP_Implements");
-//                break;
-//            case OVERRIDES:
-//                caption = NbBundle.getMessage(IsOverriddenAnnotation.class, "CAP_Overrides");
-//                break;
-//            case HAS_IMPLEMENTATION:
-//            case IS_OVERRIDDEN:
-//                caption = shortDescription;
-//                break;
-//            default:
-//                throw new IllegalStateException("Currently not implemented: " + type); //NOI18N
-//        }
-//
-//        PopupUtil.showPopup(new IsOverriddenPopup(caption, declarations), caption, position.x, position.y, true, 0);
     }
 
     private static class DeclarationPosition implements Position {
@@ -198,6 +187,83 @@ public class OverriddeAnnotation extends Annotation {
             return offset;
         }
 
+    }
+
+    static class Element {
+        public final CsmMethod method;
+        public Element(CsmMethod method) {
+            this.method = method;
+        }
+        @Override
+        public String toString() {
+            return method.getQualifiedName().toString();
+        }
+    }
+
+    class Popup extends JPanel implements FocusListener {
+        
+        private JLabel title;
+        private JList list;
+        private JScrollPane scrollPane;
+
+        public Popup(String caption) {
+            super(new BorderLayout());
+
+            title = new JLabel(caption);
+            title.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+            add(title, BorderLayout.NORTH);
+
+            list = new JList();
+            list.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+            scrollPane = new JScrollPane(list);
+            add(scrollPane, BorderLayout.CENTER);
+
+            DefaultListModel model = new DefaultListModel();
+            for (CsmUID<CsmMethod> uid : methodUIDs) {
+                model.addElement(new Element(uid.getObject()));
+            }
+            list.setModel(model);
+            list.setSelectedIndex(0);
+
+            list.addKeyListener(new java.awt.event.KeyAdapter() {
+                @Override
+                public void keyPressed(java.awt.event.KeyEvent evt) {
+                    if (evt.getKeyCode() == KeyEvent.VK_ENTER && evt.getModifiers() == 0) {
+                        openSelected();
+                    }
+                }
+            });
+            list.addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mouseClicked(java.awt.event.MouseEvent evt) {
+                    if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 1) {
+                        openSelected();
+                    }
+                }
+            });
+
+            list.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            addFocusListener(this);
+            setBorder(BorderFactory.createEtchedBorder());
+        }
+
+        private void openSelected() {
+            Element el = (Element) list.getSelectedValue();
+            if (el != null) {
+                CsmUtilities.openSource(el.method);
+            }
+            PopupUtil.hidePopup();
+        }
+
+        @Override
+        public void focusGained(FocusEvent arg0) {
+            list.requestFocus();
+            list.requestFocusInWindow();
+        }
+
+        @Override
+        public void focusLost(FocusEvent arg0) {
+        }
     }
 
 }
