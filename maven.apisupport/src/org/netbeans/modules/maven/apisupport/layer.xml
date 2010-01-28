@@ -62,28 +62,6 @@ made subject to such option by the copyright holder.
                     <attr name="misplaced.action.allowed" boolvalue="true"/>
                 </file>
             </folder>
-            <folder name="Archetypes">
-                <file name="nbm-archetype">
-                    <attr name="position" intvalue="200"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.apisupport.Bundle"/>
-                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
-                    <attr name="artifactId" stringvalue="nbm-archetype"/>
-                    <attr name="version" stringvalue="1.2"/>
-                    <!--attr name="repository" stringvalue=""/-->
-                    <attr name="nameBundleKey" stringvalue="TIT_NBM_Archetype"/>
-                    <attr name="descriptionBundleKey" stringvalue="DESC_NBM_Archetype"/>
-                </file>
-                <file name="netbeans-platform-app-archetype">
-                    <attr name="position" intvalue="205"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.apisupport.Bundle"/>
-                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
-                    <attr name="artifactId" stringvalue="netbeans-platform-app-archetype"/>
-                    <attr name="version" stringvalue="1.3-SNAPSHOT"/>
-                    <attr name="repository" stringvalue="http://snapshots.repository.codehaus.org/"/>
-                    <attr name="nameBundleKey" stringvalue="TIT_Platform_Application_Archetype"/>
-                    <attr name="descriptionBundleKey" stringvalue="DESC_Platform_Application_Archetype"/>
-                </file>
-            </folder>
         </folder>
     </folder>
     <folder name="Templates">
