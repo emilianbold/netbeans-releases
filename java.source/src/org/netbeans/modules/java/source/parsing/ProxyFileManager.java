@@ -63,11 +63,22 @@ import org.netbeans.modules.java.source.util.Iterators;
 public class ProxyFileManager implements JavaFileManager {
 
     private static final Location ALL = new Location () {
-        public String getName() { return "ALL";}   //NOI18N        
+        public String getName() { return "ALL";}   //NOI18N
 
         public boolean isOutputLocation() { return false; }
     };
-    
+
+    /**
+     * Workaround to allow Filer ask for getFileForOutput for StandardLocation.SOURCE_PATH
+     * which is not allowed but Filer does not allow write anyway => safe to do it.
+     */
+    private static final Location SOURCE_PATH_WRITE = new Location () {
+        @Override
+        public String getName() { return "SOURCE_PATH_WRITE"; }  //NOI18N
+        @Override
+        public boolean isOutputLocation() { return false;}
+    };
+
     private final JavaFileManager bootPath;
     private final JavaFileManager classPath;
     private final JavaFileManager sourcePath;
@@ -138,6 +149,9 @@ public class ProxyFileManager implements JavaFileManager {
         else if (location == StandardLocation.SOURCE_OUTPUT && this.aptSources != null) {
             return new JavaFileManager[] {this.aptSources};
         }
+        else if (location == SOURCE_PATH_WRITE) {
+            return new JavaFileManager[] {this.sourcePath};
+        }
         else if (location == ALL) {
             return getAllFileManagers();
         }
@@ -194,7 +208,9 @@ public class ProxyFileManager implements JavaFileManager {
     
     public FileObject getFileForOutput(Location l, String packageName, String relativeName, FileObject sibling) 
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
-        JavaFileManager[] fms = getFileManager (l);
+        JavaFileManager[] fms = getFileManager(
+                l == StandardLocation.SOURCE_PATH ?
+                    SOURCE_PATH_WRITE : l);
         assert fms.length <=1;
         if (fms.length == 0) {
             return null;
