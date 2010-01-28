@@ -86,6 +86,7 @@ public class ComputeAnnotations {
         if (CsmKindUtilities.isMethod(func)) {
             CsmMethod meth = (CsmMethod) func;
             final Collection<? extends CsmMethod> baseMethods = CsmVirtualInfoQuery.getDefault().getBaseDeclaration(meth);
+            final Collection<? extends CsmMethod> overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverridenMethods(meth, false);
             if (OverriddeAnnotation.LOGGER.isLoggable(Level.FINEST)) {
                 OverriddeAnnotation.LOGGER.log(Level.FINEST, "Found {0} base decls for {1}", new Object[]{baseMethods.size(), func});
                 for (CsmMethod baseMethod : baseMethods) {
@@ -99,6 +100,10 @@ public class ComputeAnnotations {
                     String desc = NbBundle.getMessage(OverridesTaskFactory.class, "LAB_Overrides", m.getQualifiedName().toString());
                     return new OverriddeAnnotation(doc, func,  OverriddeAnnotation.AnnotationType.OVERRIDES, desc, baseMethods);
                 }
+            }
+            if (!overriddenMethods.isEmpty()) {
+                String desc = NbBundle.getMessage(OverridesTaskFactory.class, "LAB_IsOverriden");
+                return new OverriddeAnnotation(doc, func,  OverriddeAnnotation.AnnotationType.IS_OVERRIDDEN, desc, overriddenMethods);
             }
         }
         return null;
