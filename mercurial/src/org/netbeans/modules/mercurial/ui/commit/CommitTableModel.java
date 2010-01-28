@@ -58,6 +58,7 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
  */
 public class CommitTableModel extends AbstractTableModel {
 
+    public static final String COLUMN_NAME_COMMIT    = "commit"; // NOI18N
     public static final String COLUMN_NAME_NAME    = "name"; // NOI18N
     public static final String COLUMN_NAME_STATUS  = "status"; // NOI18N
     public static final String COLUMN_NAME_ACTION  = "action"; // NOI18N
@@ -78,6 +79,9 @@ public class CommitTableModel extends AbstractTableModel {
 
     {
         ResourceBundle loc = NbBundle.getBundle(CommitTableModel.class);
+        columnLabels.put(COLUMN_NAME_COMMIT, new String [] {
+                                          loc.getString("CTL_CommitTable_Column_Commit"),  // NOI18N
+                                          loc.getString("CTL_CommitTable_Column_Description")}); // NOI18N
         columnLabels.put(COLUMN_NAME_NAME, new String [] {
                                           loc.getString("CTL_CommitTable_Column_File"),  // NOI18N
                                           loc.getString("CTL_CommitTable_Column_File")}); // NOI18N
@@ -132,35 +136,46 @@ public class CommitTableModel extends AbstractTableModel {
         return ret;
     }
     
+    @Override
     public String getColumnName(int column) {
         return columnLabels.get(columns[column])[0];
     }
 
+    @Override
     public int getColumnCount() {
         return columns.length;
     }
 
+    @Override
     public int getRowCount() {
         return nodes.length;
     }
 
+    @Override
     public Class getColumnClass(int columnIndex) {
         String col = columns[columnIndex];
-        if (col.equals(COLUMN_NAME_ACTION)) {
+        if (col.equals(COLUMN_NAME_COMMIT)) {
+            return Boolean.class;
+        } else if (col.equals(COLUMN_NAME_ACTION)) {
             return CommitOptions.class;
+        } else {
+            return String.class;
         }
-        return String.class;
     }
 
+    @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         String col = columns[columnIndex];
-        return col.equals(COLUMN_NAME_ACTION);
+        return col.equals(COLUMN_NAME_COMMIT);
     }
 
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         HgFileNode node;
         String col = columns[columnIndex];
-        if (col.equals(COLUMN_NAME_NAME)) {
+        if (col.equals(COLUMN_NAME_COMMIT)) {
+            return commitOptions[rowIndex] != CommitOptions.EXCLUDE;
+        } else if (col.equals(COLUMN_NAME_NAME)) {
             return nodes[rowIndex].getName();
         // TODO deal with branch?
         //} else if (col.equals(COLUMN_NAME_BRANCH)) {
@@ -169,8 +184,6 @@ public class CommitTableModel extends AbstractTableModel {
         } else if (col.equals(COLUMN_NAME_STATUS)) {
             node = nodes[rowIndex];
             FileInformation finfo =  node.getInformation();
-            //TODO what should we do with this?
-            //finfo.getEntry(node.getFile());  // HACK returned value is not interesting, point is side effect, it loads ISVNStatus structure
             return finfo.getStatusText();
         } else if (col.equals(COLUMN_NAME_ACTION)) {
             return commitOptions[rowIndex];
@@ -192,14 +205,17 @@ public class CommitTableModel extends AbstractTableModel {
         throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
     }
 
+    @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         String col = columns[columnIndex];
         if (col.equals(COLUMN_NAME_ACTION)) {
             commitOptions[rowIndex] = (CommitOptions) aValue;
-            fireTableCellUpdated(rowIndex, columnIndex);
+        } else if (col.equals(COLUMN_NAME_COMMIT)) {
+            commitOptions[rowIndex] = ((Boolean) aValue) ? getCommitOptions(rowIndex) : CommitOptions.EXCLUDE;
         } else {
             throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
         }
+        fireTableRowsUpdated(rowIndex, rowIndex);
     }
 
     public HgFileNode getNode(int row) {
@@ -216,4 +232,18 @@ public class CommitTableModel extends AbstractTableModel {
         rootFile.rootLocalPath = rootLocalPath;
     }
 
+    void setIncluded (int[] rows, boolean include) {
+        for (int rowIndex : rows) {
+            commitOptions[rowIndex] = include ? getCommitOptions(rowIndex) : CommitOptions.EXCLUDE;
+        }
+        fireTableRowsUpdated(0, getRowCount() - 1);
+    }
+
+    private CommitOptions getCommitOptions (int rowIndex) {
+        HgFileNode node = nodes[rowIndex];
+        FileInformation finfo =  node.getInformation();
+        return (finfo.getStatus() & (FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) == 0
+                ? CommitOptions.COMMIT
+                : CommitOptions.COMMIT_REMOVE;
+    }
 }
