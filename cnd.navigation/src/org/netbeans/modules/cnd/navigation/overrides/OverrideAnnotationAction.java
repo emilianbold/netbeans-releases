@@ -48,14 +48,17 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.ImplementationProvider;
 import org.netbeans.editor.Utilities;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -83,7 +86,22 @@ public class OverrideAnnotationAction extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (!invokeDefaultAction((JTextComponent) e.getSource())) {
-            System.err.printf("??????????????????????????????\n");
+            // sorry, don't know how to do without deprecated ImplementationProvider
+            Action actions[] = ImplementationProvider.getDefault().getGlyphGutterActions((JTextComponent) e.getSource());
+            if (actions == null) {
+                return ;
+            }
+            int nextAction = 0;
+            while (nextAction < actions.length && actions[nextAction] != this) {
+                nextAction++;
+            }
+            nextAction++;
+            if (actions.length > nextAction) {
+                Action a = actions[nextAction];
+                if (a!=null && a.isEnabled()){
+                    a.actionPerformed(e);
+                }
+            }
         }
     }
 
@@ -93,7 +111,8 @@ public class OverrideAnnotationAction extends AbstractAction {
             final int currentPosition = comp.getCaretPosition();
             final Annotations annotations = ((BaseDocument) doc).getAnnotations();
             //final Map<String, List<ElementDescription>> caption2Descriptions = new LinkedHashMap<String, List<ElementDescription>>();
-            final Point[] p = new Point[1];
+            final AtomicReference<Point> point = new AtomicReference<Point>();
+            final AtomicReference<OverriddeAnnotation> anno = new AtomicReference<OverriddeAnnotation>();
             doc.render(new Runnable() {
                 @Override
                 public void run() {
@@ -101,7 +120,6 @@ public class OverrideAnnotationAction extends AbstractAction {
                         int line = Utilities.getLineOffset((BaseDocument) doc, currentPosition);
                         int startOffset = Utilities.getRowStartFromLineOffset((BaseDocument) doc, line);
                         int endOffset = Utilities.getRowEnd((BaseDocument) doc, startOffset);
-                        p[0] = comp.modelToView(startOffset).getLocation();
                         AnnotationDesc desc = annotations.getActiveAnnotation(line);
                         if (desc == null) {
                             return ;
@@ -116,9 +134,9 @@ public class OverrideAnnotationAction extends AbstractAction {
 
                         for (OverriddeAnnotation a : annos) {
                             if (a != null) {
-                                a.mouseClicked(comp, p[0]);
-// UNCOMMENT
-//                                caption2Descriptions.put(computeCaption(a.getType(), a.getShortDescription()), a.getDeclarations());
+                                anno.set(a);
+                                point.set(comp.modelToView(startOffset).getLocation());
+                                break;
                             }
                         }
                     }  catch (BadLocationException ex) {
@@ -126,7 +144,11 @@ public class OverrideAnnotationAction extends AbstractAction {
                     }
                 }
             });
-            return true;
+
+            if (anno.get() != null) {
+                anno.get().mouseClicked(comp, point.get());
+                return true;
+            }
         }
         return false;
     }
