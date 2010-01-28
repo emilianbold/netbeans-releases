@@ -90,35 +90,35 @@ import org.openide.util.NbBundle;
  * method calls. The navigation can be done using a keyboard as well as a mouse.
  *
  * <p>The method chooser is initialized by an url (pointing to a source file), an array of
- * {@link Segment} elemets (each of them corresponds typically to a method call name
+ * {@link Segment} elements (each of them corresponds typically to a method call name
  * in the source file) and an index of the segment element which is displayed
  * as the default selection.
  *
- * <p>Optionally, two sets of (additional) shorcuts that confirm, resp. cancel the selection
+ * <p>Optionally, two sets of (additional) shortcuts that confirm, resp. cancel the selection
  * mode can be specified.
  * It is also possible to pass a text, which should be shown at the editor pane's
  * status line after the selection mode has been activated. This text serves as a hint
  * to the user how to make the method call selection.
  *
  * <p>Method chooser does not use any special highlighting for the background of the
- * area where the selection takes place. If it is requred it can be done by attaching
- * instances {@link Annotation} to the proper source file's lines. These annotation should
+ * area where the selection takes place. If it is required it can be done by attaching
+ * instances of {@link Annotation} to the proper source file's lines. These annotation should
  * be added before calling {@link #showUI} and removed after calling {@link #releaseUI}.
  *
  * <p>To display the method chooser's ui correctly, it is required to register
  * {@link HighlightsLayerFactory} created by {@link #createHighlihgtsLayerFactory}
- * in xml layer file. An example follows.
- * <verbatim>
-    <folder name="Editors">
-        <folder name="text">
-            <folder name="x-java">
-                <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
- * </verbatim>
+ * in an xml layer. An example follows.
+ *
+ * <pre class="examplecode">
+    &lt;folder name=&quot;Editors&quot;&gt;
+        &lt;folder name=&quot;text&quot;&gt;
+            &lt;folder name=&quot;x-java&quot;&gt;
+                &lt;file name=&quot;org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance&quot;&gt;
+                    &lt;attr name=&quot;instanceCreate&quot; methodvalue=&quot;org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory&quot;/&gt;
+                &lt;/file&gt;
+            &lt;/folder&gt;
+        &lt;/folder&gt;
+    &lt;/folder&gt;</pre>
  * <code>"x-java"</code> should be replaced by the targeted mime type.
  *
  * @author Daniel Prusa
@@ -331,17 +331,16 @@ public class MethodChooser {
      * This method should be referenced in xml layer files. To display the method
      * chooser ui correctly, it is required to register an instance of
      * {@link HighlightsLayerFactory} using the following pattern.
-     * <verbatim>
-        <folder name="Editors">
-            <folder name="text">
-                <folder name="x-java">
-                    <file name="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>
-     * </verbatim>
+     * <pre class="examplecode">
+    &lt;folder name=&quot;Editors&quot;&gt;
+        &lt;folder name=&quot;text&quot;&gt;
+            &lt;folder name=&quot;x-java&quot;&gt;
+                &lt;file name=&quot;org.netbeans.spi.editor.highlighting.HighlightsLayerFactory.instance&quot;&gt;
+                    &lt;attr name=&quot;instanceCreate&quot; methodvalue=&quot;org.netbeans.spi.debugger.ui.MethodChooser.createHighlihgtsLayerFactory&quot;/&gt;
+                &lt;/file&gt;
+            &lt;/folder&gt;
+        &lt;/folder&gt;
+    &lt;/folder&gt;</pre>
      * <code>"x-java"</code> should be replaced by the targeted mime type
      *
      * @return highligts layer factory that handles method chooser ui visualization
