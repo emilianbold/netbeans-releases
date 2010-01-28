@@ -39,11 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.subversion.util;
+package org.netbeans.modules.versioning.util;
 
 import java.io.*;
 import java.util.logging.Level;
-import org.netbeans.modules.subversion.Subversion;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -99,7 +98,7 @@ public class FileUtils {
                     if(preserveTimestamp) target.setLastModified(files[i].lastModified());
                 }
             } catch (IOException ex) {
-                Subversion.LOG.log(Level.INFO, null, ex); // should not happen
+                Utils.logWarn(FileUtils.class, ex);
             }
         }
     }
@@ -300,7 +299,7 @@ public class FileUtils {
             }
             checkoutFolder = FileUtil.normalizeFile(tmp);
         } catch (IOException e) {
-            Subversion.LOG.log(Level.SEVERE, null, e);
+            Utils.logError(FileUtils.class, e);
         }
         return checkoutFolder;
     }
