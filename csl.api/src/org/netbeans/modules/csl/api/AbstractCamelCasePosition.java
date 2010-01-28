@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.csl.core;
+package org.netbeans.modules.csl.api;
 
 import java.awt.event.ActionEvent;
 import java.util.MissingResourceException;
@@ -117,7 +117,7 @@ public abstract class AbstractCamelCasePosition extends BaseAction {
         if (name == null) return null;
         String shortDesc;
         try {
-            shortDesc = NbBundle.getBundle(GsfEditorKitFactory.class).getString(name); // NOI18N
+            shortDesc = NbBundle.getBundle(AbstractCamelCasePosition.class).getString(name); // NOI18N
         }catch (MissingResourceException mre){
             shortDesc = name;
         }
