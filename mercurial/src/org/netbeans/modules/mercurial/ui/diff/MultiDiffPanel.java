@@ -349,11 +349,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
             nextAction.setEnabled(false);
         }
         prevAction.setEnabled(currentIndex > 0 || currentDifferenceIndex > 0);
-
-        if (splitPane != null) {
-            dividerSet = false;
-            updateSplitLocation();
-        }
     }
     
     @Override
@@ -377,6 +372,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                     updateSplitLocation();
                 }
             });
+            return;
         }
         dividerSet = true;
         JTable jt = fileTable.getTable();
@@ -728,6 +724,10 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, DiffS
                             }
                             if (currentModelIndex == fi) {
                                 setDiffIndex(currentIndex, 0);
+                            }
+                            if (splitPane != null) {
+                                dividerSet = false;
+                                updateSplitLocation();
                             }
                         }
                     });
