@@ -68,6 +68,8 @@ public final class EjbJarProjectCreateData {
 
     private File libFolder;
 
+    private boolean cdiEnabled;
+    
     public EjbJarProjectCreateData() {
     }
 
@@ -149,6 +151,14 @@ public final class EjbJarProjectCreateData {
 
     public void setTestFolders(File[] testFolders) {
         this.testFolders = testFolders;
+    }
+
+    public boolean isCDIEnabled() {
+        return cdiEnabled;
+    }
+
+    public void setCDIEnabled(boolean cdiEnabled) {
+        this.cdiEnabled = cdiEnabled;
     }
 
 }

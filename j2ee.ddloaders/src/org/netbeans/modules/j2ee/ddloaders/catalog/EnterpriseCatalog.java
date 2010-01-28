@@ -108,6 +108,8 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
         // web 2.2 and 2.3 dtds
         schemas.add(new SchemaInfo("web-app_2_2.dtd", "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN", true)); //NO18N
         schemas.add(new SchemaInfo("web-app_2_3.dtd", "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN", true)); //NO18N
+        // cdi
+        schemas.add(new SchemaInfo("beans_1_0.xsd", JAVAEE_NS));
        
     }
     
