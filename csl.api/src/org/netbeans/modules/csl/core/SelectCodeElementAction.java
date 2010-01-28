@@ -105,14 +105,14 @@ public final class SelectCodeElementAction extends BaseAction {
         if (name == null) return null;
         String shortDesc;
         try {
-            shortDesc = NbBundle.getBundle(GsfEditorKitFactory.class).getString(name); // NOI18N
+            shortDesc = NbBundle.getBundle(SelectCodeElementAction.class).getString(name); // NOI18N
         }catch (MissingResourceException mre){
             shortDesc = name;
         }
         return shortDesc;
     }
     
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+    public @Override void actionPerformed(ActionEvent evt, JTextComponent target) {
         if (target != null) {
             int selectionStartOffset = target.getSelectionStart();
             int selectionEndOffset = target.getSelectionEnd();
@@ -181,7 +181,7 @@ public final class SelectCodeElementAction extends BaseAction {
             ignoreNextCaretUpdate = true;
         }
         
-        public void caretUpdate(CaretEvent e) {
+        public @Override void caretUpdate(CaretEvent e) {
             if (!ignoreNextCaretUpdate) {
                 synchronized (this) {
                     selectionInfos = null;
@@ -194,7 +194,7 @@ public final class SelectCodeElementAction extends BaseAction {
         public void cancel() {
         }
 
-        public void run (ResultIterator resultIterator) throws ParseException {
+        public @Override void run (ResultIterator resultIterator) throws ParseException {
             Parser.Result parserResult = resultIterator.getParserResult (target.getCaretPosition ());
             if(!(parserResult instanceof ParserResult)) {
                 return ;
@@ -256,7 +256,7 @@ public final class SelectCodeElementAction extends BaseAction {
             return selIndex;
         }
 
-        public void run() {
+        public @Override void run() {
             if (selIndex == -1) {
                 // Try to figure out the selected AST index based on the editor selection
                 selIndex = computeSelIndex(true);

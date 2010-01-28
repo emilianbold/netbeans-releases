@@ -160,7 +160,7 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.PreviewableFix;
 import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.csl.core.GsfEditorKitFactory;
+import org.netbeans.modules.csl.core.CslEditorKit;
 import org.netbeans.modules.csl.core.GsfIndentTaskFactory;
 import org.netbeans.modules.csl.core.GsfReformatTaskFactory;
 import org.netbeans.modules.csl.core.LanguageRegistry;
@@ -2068,8 +2068,7 @@ public abstract class CslTestBase extends NbTestCase {
         org.netbeans.modules.csl.core.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
         assertNotNull(language);
         if (!language.useCustomEditorKit()) {
-            GsfEditorKitFactory factory = new GsfEditorKitFactory(language);
-            return factory.kit();
+            return new CslEditorKit(mimeType);
         }
         fail("Must override getEditorKit() for useCustomEditorKit languages");
         return null;

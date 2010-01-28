@@ -67,7 +67,7 @@ import org.openide.ErrorManager;
             return -1;
         }
 
-        KeystrokeHandler bc = GsfEditorKitFactory.getBracketCompletion(doc, offset);
+        KeystrokeHandler bc = CslEditorKit.getBracketCompletion(doc, offset);
         if (bc != null) {
             int nextOffset = bc.getNextWordOffset(doc, offset, false);
             if (nextOffset != -1) {
@@ -94,7 +94,7 @@ import org.openide.ErrorManager;
 
         final Document doc = textComponent.getDocument();
         
-        KeystrokeHandler bc = GsfEditorKitFactory.getBracketCompletion(doc, offset);
+        KeystrokeHandler bc = CslEditorKit.getBracketCompletion(doc, offset);
         if (bc != null) {
             int nextOffset = bc.getNextWordOffset(
                     doc, offset, true);
@@ -124,7 +124,7 @@ import org.openide.ErrorManager;
         }
         final Document document = textComponent.getDocument();
         Runnable r = new Runnable() {
-            public void run() {
+            public @Override void run() {
                 try {
                     if (length > 0) {
                         document.remove(offset, length);

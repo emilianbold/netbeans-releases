@@ -62,7 +62,6 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.csl.core.DeleteToNextCamelCasePosition;
 import org.netbeans.modules.csl.core.DeleteToPreviousCamelCasePosition;
-import org.netbeans.modules.csl.core.GsfEditorKitFactory;
 import org.netbeans.modules.csl.core.NextCamelCasePosition;
 import org.netbeans.modules.csl.core.PreviousCamelCasePosition;
 import org.netbeans.modules.csl.core.SelectCodeElementAction;
@@ -74,7 +73,6 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rhtml.spi.DtdResolver;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -155,14 +153,24 @@ public class RhtmlKit extends HtmlKit {
             new RhtmlToggleCommentAction(),
             new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
-            new NextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, nextWordAction)),
-            new PreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, previousWordAction)),
-            new SelectNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionNextWordAction)),
-            new SelectPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, selectionPreviousWordAction)),
-            new DeleteToNextCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removeNextWordAction)),
-            new DeleteToPreviousCamelCasePosition(GsfEditorKitFactory.findAction(superActions, removePreviousWordAction)),
+            new NextCamelCasePosition(findAction(superActions, nextWordAction)),
+            new PreviousCamelCasePosition(findAction(superActions, previousWordAction)),
+            new SelectNextCamelCasePosition(findAction(superActions, selectionNextWordAction)),
+            new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction)),
+            new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction)),
+            new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction)),
             new InstantRenameAction(),
          });
+    }
+
+    private static Action findAction(Action [] actions, String name) {
+        for(Action a : actions) {
+            Object nameObj = a.getValue(Action.NAME);
+            if (nameObj instanceof String && name.equals(nameObj)) {
+                return a;
+            }
+        }
+        return null;
     }
 
     private boolean handleDeletion(BaseDocument doc, int dotPos) {

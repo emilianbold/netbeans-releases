@@ -117,7 +117,7 @@ public abstract class AbstractCamelCasePosition extends BaseAction {
         if (name == null) return null;
         String shortDesc;
         try {
-            shortDesc = NbBundle.getBundle(GsfEditorKitFactory.class).getString(name); // NOI18N
+            shortDesc = NbBundle.getBundle(AbstractCamelCasePosition.class).getString(name); // NOI18N
         }catch (MissingResourceException mre){
             shortDesc = name;
         }
