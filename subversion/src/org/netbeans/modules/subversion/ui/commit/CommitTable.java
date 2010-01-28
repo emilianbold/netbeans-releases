@@ -358,6 +358,15 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
             }
         });
         Mnemonics.setLocalizedText(item, item.getText());
+        item = menu.add(new PopupAction(NbBundle.getMessage(CommitTable.class, include ? "CTL_CommitTable_IncludeRecursivelyAction" : "CTL_CommitTable_ExcludeRecursivelyAction")) { // NOI18N
+            @Override
+            public void performAction (ActionEvent e) {
+                int[] rows = getRows();
+                tableModel.setIncluded(rows, include, true);
+            }
+        });
+        Mnemonics.setLocalizedText(item, item.getText());
+        item.setEnabled(anyDirectory);
         item = menu.add(new PopupAction(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_AddTextAction")) { // NOI18N
             @Override
             public void performAction (ActionEvent e) {
