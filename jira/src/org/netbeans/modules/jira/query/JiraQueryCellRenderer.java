@@ -178,7 +178,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         int h = (int) panel.getPreferredSize().getHeight();
         h = h + table.getRowMargin();
         if (table.getRowHeight(row) < h) {
-            table.setRowHeight(row, h);
+            table.setRowHeight(h);
         } 
     }
 
