@@ -43,6 +43,7 @@ package org.netbeans.modules.java.source.parsing;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -226,13 +227,25 @@ public class ProxyFileManager implements JavaFileManager {
     }
     
     public boolean handleOption (String current, Iterator<String> remains) {
+        final Iterable<String> defensiveCopy = copy(remains);
         for (JavaFileManager m : getFileManager(ALL)) {
-            if (m.handleOption(current, remains)) {
+            if (m.handleOption(current, defensiveCopy.iterator())) {
                 return true;
             }
         }
-        
         return false;
+    }
+
+    private static Iterable<String> copy(final Iterator<String> from) {
+        if (!from.hasNext()) {
+            return Collections.<String>emptyList();
+        } else {
+            final LinkedList<String> result = new LinkedList<String>();
+            while (from.hasNext()) {
+                result.add(from.next());
+            }
+            return result;
+        }
     }
 
     public boolean hasLocation(JavaFileManager.Location location) {
