@@ -39,11 +39,12 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -52,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.util.Lookup;
 
@@ -61,7 +63,8 @@ import org.openide.util.Lookup;
  */
 public abstract class CsmVirtualInfoQuery {
     public abstract boolean isVirtual(CsmMethod method);
-    public abstract Collection<CsmMethod> getBaseDeclaration(CsmMethod method);
+    public abstract Collection<CsmMethod> getTopmostBaseDeclarations(CsmMethod method);
+    public abstract Collection<CsmMethod> getFirstBaseDeclarations(CsmMethod method);
     public abstract Collection<CsmMethod> getOverridenMethods(CsmMethod method, boolean searchFromBase);
     private static final CsmVirtualInfoQuery EMPTY = new Empty();
     
@@ -121,56 +124,71 @@ public abstract class CsmVirtualInfoQuery {
             }
             return false;
         }
-        
+
         @Override
-        public Collection<CsmMethod> getBaseDeclaration(CsmMethod method) {
+        public Collection<CsmMethod> getTopmostBaseDeclarations(CsmMethod method) {
+            return getBaseDeclaration(method, false);
+        }
+
+        @Override
+        public Collection<CsmMethod> getFirstBaseDeclarations(CsmMethod method) {
+            return getBaseDeclaration(method, true);
+        }
+
+        private Collection<CsmMethod> getBaseDeclaration(CsmMethod method, boolean first) {
             Set<CharSequence> antilLoop = new HashSet<CharSequence>();
             CharSequence sig = method.getSignature();
-            CsmMethod met = processMethod(sig, method.getContainingClass(), antilLoop);
-            if (met != null) {
-                CsmMethod next = met;
-                while(next != null) {
-                    met = next;
-                    CsmClass base = next.getContainingClass();
-                    next = null;
-                    if (base != null) {
-                        for(CsmInheritance inh : base.getBaseClasses()){
-                            CsmMethod m = processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop);
-                            if (m != null) {
-                                next = m;
-                                break;
+            Collection<CsmMethod> result = new ArrayList<CsmMethod>();
+            for(CsmInheritance inh : method.getContainingClass().getBaseClasses()) {
+                AtomicReference<CsmMethod> branchResult = new AtomicReference<CsmMethod>();
+                if (processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, branchResult, first)) {
+                    CsmMethod m = branchResult.get();
+                    CndUtils.assertTrue(m != null, "Branch result should not be null"); //NOI18N
+                    result.add(m);
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Searches for method with the given signature in the given class and its ancestors.
+         * @param sig signature to search
+         * @param cls class to start with
+         * @param antilLoop prevents infinite loops
+         * @param result if a method with the given signature is found, it's stored in result - even if it is not virtual.
+         * @param first if true, returns first found method, otherwise the topmost one
+         * @return true if method found and it is virtual, otherwise false
+         */
+        private boolean processMethod(CharSequence sig, CsmClass cls, Set<CharSequence> antilLoop, AtomicReference<CsmMethod> result, boolean first){
+            if (cls == null || antilLoop.contains(cls.getQualifiedName())) {
+                return false;
+            }
+            antilLoop.add(cls.getQualifiedName());
+            for(CsmMember member : cls.getMembers()){
+                if (CsmKindUtilities.isMethod(member)) {
+                    CsmMethod method = (CsmMethod) member;
+                    if (CharSequenceKey.Comparator.compare(sig, method.getSignature()) == 0) {
+                        if (first) {
+                            if (result.get() == null) {
+                                result.set(method);
+                            }
+                        } else {
+                            result.set(method);
+                        }
+                        if (method.isVirtual()) {
+                            if (first) {
+                                return true;
                             }
                         }
                     }
                 }
             }
-            if (met == null) {
-                return Collections.<CsmMethod>emptyList();
-            }
-            return Collections.<CsmMethod>singleton(met);
-        }
-
-        private CsmMethod processMethod(CharSequence sig, CsmClass cls, Set<CharSequence> antilLoop){
-            if (cls == null || antilLoop.contains(cls.getQualifiedName())) {
-                return null;
-            }
-            antilLoop.add(cls.getQualifiedName());
-            for(CsmMember m : cls.getMembers()){
-                if (CsmKindUtilities.isMethod(m)) {
-                    CsmMethod met = (CsmMethod) m;
-                    if (CharSequenceKey.Comparator.compare(sig, met.getSignature())==0
-                        && met.isVirtual()){
-                        return met;
-                    }
-                }
-            }
             for(CsmInheritance inh : cls.getBaseClasses()){
-                CsmMethod met = processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop);
-                if (met != null) {
-                    return met;
+                if( processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, result, first)) {
+                    return true;
                 }
             }
-            return null;
+            return (result.get() != null && result.get().isVirtual());
         }
 
         @Override
@@ -178,7 +196,7 @@ public abstract class CsmVirtualInfoQuery {
             Set<CsmMethod> res = new HashSet<CsmMethod>();
             CsmClass cls;
             if (searchFromBase) {
-                Iterator<CsmMethod> it = getBaseDeclaration(method).iterator();
+                Iterator<CsmMethod> it = getTopmostBaseDeclarations(method).iterator();
                 if (it.hasNext()){
                     method = it.next();
                 }

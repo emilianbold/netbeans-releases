@@ -1,0 +1,3 @@
+6:OVERRIDES Base::foo proper_parent_single.cc:2
+10:OVERRIDES DescA::foo proper_parent_single.cc:6
+14:OVERRIDES DescB::foo proper_parent_single.cc:10

@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Pattern;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
@@ -69,7 +70,19 @@ public class OverrideTestCase extends ProjectBasedTestCase {
         performTest("primitive.cc");
     }
 
+    public void testProperParentSingle() throws Exception {
+        performTest("proper_parent_single.cc", "\\d*:OVERRIDES .*");
+    }
+
+    public void testProperParentMulty() throws Exception {
+        performTest("proper_parent_multy.cc", "\\d*:OVERRIDES .*");
+    }
+
     private void performTest(String sourceFileName) throws Exception {
+        performTest(sourceFileName, null);
+    }
+
+    private void performTest(String sourceFileName, String patternString) throws Exception {
         File testSourceFile = getDataFile(sourceFileName);
         assertNotNull(testSourceFile);
         StyledDocument doc = (StyledDocument) getBaseDocument(testSourceFile);
@@ -93,7 +106,7 @@ public class OverrideTestCase extends ProjectBasedTestCase {
         File workDir = getWorkDir();
         File output = new File(workDir, goldenFileName); //NOI18N        
         PrintStream streamOut = new PrintStream(output);
-        dumpAnnotations(annotations, doc, streamOut);
+        dumpAnnotations(annotations, doc, streamOut, patternString);
         streamOut.close();
 
         File goldenDataFile = getGoldenFile(goldenFileName);
@@ -102,7 +115,7 @@ public class OverrideTestCase extends ProjectBasedTestCase {
         }
         if (CndCoreTestUtils.diff(output, goldenDataFile, null)) {
             System.err.printf("---------- Annotations dump for failed %s.%s ----------\n", getClass().getSimpleName(), getName());
-            dumpAnnotations(annotations, doc, System.err);
+            dumpAnnotations(annotations, doc, System.err, patternString);
             System.err.println();
             // copy golden
             File goldenCopyFile = new File(workDir, goldenFileName + ".golden");
@@ -111,7 +124,8 @@ public class OverrideTestCase extends ProjectBasedTestCase {
         }
     }
 
-    private void dumpAnnotations(Collection<OverriddeAnnotation> annotations, StyledDocument doc, PrintStream ps) {
+    private void dumpAnnotations(Collection<OverriddeAnnotation> annotations, StyledDocument doc, PrintStream ps, String patternString) {
+        Pattern pattern = (patternString == null) ? null : Pattern.compile(patternString);
         for (OverriddeAnnotation anno : annotations) {
             StringBuilder sb = new StringBuilder();
             int line = NbDocument.findLineNumber(doc, anno.getPosition().getOffset()) + 1; // convert to 1-based
@@ -134,7 +148,9 @@ public class OverrideTestCase extends ProjectBasedTestCase {
                 sb.append(':');
                 sb.append(gotoLine);
             }
-            ps.printf("%s\n", sb);
+            if (pattern == null || pattern.matcher(sb).matches()) {
+                ps.printf("%s\n", sb);
+            }
         }
     }
 }
