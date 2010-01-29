@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -208,7 +209,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         if (set == null) {
-            set = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
+            set = CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
         }
         if (set == null) {
             return false;
@@ -232,7 +233,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         if (set == null) {
-            set = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
+            set = CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
         }
         return set;
     }
@@ -254,7 +255,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         if (set == null) {
-            set = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
+            set = CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
         }
         String command = null;
         if (set != null) {

@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.DialogDescriptor;
 import org.openide.util.Exceptions;
@@ -332,7 +333,7 @@ import org.openide.util.NbBundle;
             String baseDirectory = getBaseDirectory();
             CompilerFlavor flavor = getFamily();
             CompilerSet cs = CompilerSetFactory.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavor, compilerSetName);
-            ((CompilerSetManagerImpl)CompilerSetManagerAccessor.getDefault()).initCompilerSet(cs);
+            ((CompilerSetManagerImpl)CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal())).initCompilerSet(cs);
             return cs;
         } else {
             synchronized (lock) {

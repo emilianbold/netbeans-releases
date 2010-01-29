@@ -52,7 +52,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.api.remote.RemoteFile;
 import org.netbeans.modules.nativeexecution.api.util.Path;
@@ -63,6 +62,7 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  *
@@ -125,7 +125,7 @@ public class PkgConfigImpl implements PkgConfig {
             String baseDirectory = getPkgConfihPath();
             if (baseDirectory == null) {
                 if (set == null) {
-                    set = CompilerSetManagerAccessor.getDefault().getCompilerSet(CompilerFlavorAccessor.toFlavor("Cygwin", PlatformTypes.PLATFORM_WINDOWS)); // NOI18N
+                    set = CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal()).getCompilerSet(CompilerFlavorAccessor.toFlavor("Cygwin", PlatformTypes.PLATFORM_WINDOWS)); // NOI18N
                 }
                 if (set != null){
                     baseDirectory = set.getDirectory();

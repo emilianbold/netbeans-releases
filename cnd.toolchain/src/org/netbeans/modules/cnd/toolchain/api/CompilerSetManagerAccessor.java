@@ -66,9 +66,4 @@ public class CompilerSetManagerAccessor {
     public static CompilerSetManager getDefault(ExecutionEnvironment env) {
         return CompilerSetManagerAccessorImpl.getDefault(env);
     }
-
-    public static CompilerSetManager getDefault() {
-        return CompilerSetManagerAccessorImpl.getDefault();
-    }
-
 }

@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerSetFactory;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 
@@ -138,11 +139,11 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
 
         CompilerFlavor flavor = CompilerFlavorAccessor.toFlavor(flavorName, platform);
         CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
-        CompilerSet compilerSetold = CompilerSetManagerAccessor.getDefault().getCompilerSet("MyCompilerSet");
+        CompilerSet compilerSetold = CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal()).getCompilerSet("MyCompilerSet");
         if (compilerSetold != null) {
-            CompilerSetManagerAccessor.getDefault().remove(compilerSetold);
+            CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal()).remove(compilerSetold);
         }
-        CompilerSetManagerAccessor.getDefault().add(compilerSet);
+        CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal()).add(compilerSet);
         conf.getCompilerSet().setNameAndFlavor("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
 
@@ -205,11 +206,11 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
 
         CompilerFlavor flavor = CompilerFlavorAccessor.toFlavor(flavorName, platform);
         CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
-        CompilerSet compilerSetold = CompilerSetManagerAccessor.getDefault().getCompilerSet("MyCompilerSet");
+        CompilerSet compilerSetold = CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal()).getCompilerSet("MyCompilerSet");
         if (compilerSetold != null) {
-            CompilerSetManagerAccessor.getDefault().remove(compilerSetold);
+            CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal()).remove(compilerSetold);
         }
-        CompilerSetManagerAccessor.getDefault().add(compilerSet);
+        CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal()).add(compilerSet);
         conf.getCompilerSet().setNameAndFlavor("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
 

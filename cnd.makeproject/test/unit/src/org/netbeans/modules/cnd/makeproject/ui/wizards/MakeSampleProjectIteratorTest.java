@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 
@@ -89,7 +90,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
     @Before @Override
     public void setUp() throws Exception {
         super.setUp();
-        List<CompilerSet> sets = CompilerSetManagerAccessor.getDefault().getCompilerSets();
+        List<CompilerSet> sets = CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal()).getCompilerSets();
         for (CompilerSet set : sets) {
             if (set.getName().equals("SunStudio")) {
                 SunStudioSet = set;
@@ -257,7 +258,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         final CountDownLatch done = new CountDownLatch(1);
         final AtomicInteger build_rc = new AtomicInteger(-1);
 
-        CompilerSetManagerAccessor.getDefault().setDefault(set);
+        CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
         MakeOptions.setDefaultMakeOptions(makeOptions);
 
         File workDir = getWorkDir();//new File("/tmp");
