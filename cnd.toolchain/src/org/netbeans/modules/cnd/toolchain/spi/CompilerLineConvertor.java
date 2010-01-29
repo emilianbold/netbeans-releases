@@ -47,7 +47,8 @@ import java.util.List;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ScannerDescriptor;
 import org.netbeans.modules.cnd.toolchain.spi.ErrorParserProvider.ErrorParser;
@@ -138,7 +139,7 @@ public class CompilerLineConvertor implements LineConvertor {
 	}
 	List<CompilerFlavor> flavors = new ArrayList<CompilerFlavor>();
 	flavors.add(set.getCompilerFlavor());
-	for(CompilerFlavor flavor : CompilerFlavor.getFlavors(platform)) {
+	for(CompilerFlavor flavor : CompilerFlavorAccessor.getFlavors(platform)) {
 	    if (!flavors.contains(flavor)){
 		boolean found = false;
 		for(CompilerFlavor f : flavors) {

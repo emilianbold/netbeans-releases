@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.dlight.spi.SunStudioLocator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -62,13 +62,13 @@ public final class SunStudioLocatorCndImpl implements SunStudioLocator {
     @Override
     public Collection<SunStudioDescription> getSunStudioLocations() {
         Collection<SunStudioDescription> result = new ArrayList<SunStudioDescription>();
-        List<CompilerSet> compilerCollections = env.isLocal() ? CompilerSetManager.getDefault().getCompilerSets() : CompilerSetManager.getDefault(env).getCompilerSets(); // NOI18N
+        List<CompilerSet> compilerCollections = env.isLocal() ? CompilerSetManagerAccessor.getDefault().getCompilerSets() : CompilerSetManagerAccessor.getDefault(env).getCompilerSets(); // NOI18N
         if (compilerCollections.size() == 1 && compilerCollections.get(0).getName().equals(CompilerSet.None)) {
             return result;
         }
 
         for (CompilerSet compilerSet : compilerCollections) {
-            if (!compilerSet.isSunCompiler()) {
+            if (!compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
                 continue;
             }
             String binDir = compilerSet.getDirectory();

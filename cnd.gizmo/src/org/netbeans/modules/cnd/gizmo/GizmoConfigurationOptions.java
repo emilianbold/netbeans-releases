@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptions;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationOptionsListener;
@@ -124,13 +125,13 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         }
 
         //if we have sun studio compiler along compiler collections presentedCompiler
-        CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
+        CompilerSetManager compilerSetManager = CompilerSetManagerAccessor.getDefault(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
         List<CompilerSet> compilers = compilerSetManager.getCompilerSets();
 
         boolean hasSunStudio = false;
 
         for (CompilerSet cs : compilers) {
-            if (cs.isSunCompiler()) {
+            if (cs.getCompilerFlavor().isSunStudioCompiler()) {
                 hasSunStudio = true;
                 break;
             }
@@ -261,7 +262,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         }
     }
 
-    private final void notifyListeners(String toolName, boolean isEnabled) {
+    private void notifyListeners(String toolName, boolean isEnabled) {
         synchronized (this) {
             for (DLightConfigurationOptionsListener l : listeners) {
                 l.dlightToolEnabling(toolName, isEnabled);

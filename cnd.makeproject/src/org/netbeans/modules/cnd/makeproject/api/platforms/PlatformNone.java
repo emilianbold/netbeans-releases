@@ -58,15 +58,18 @@ public class PlatformNone extends Platform {
         super(NAME, NbBundle.getBundle(PlatformNone.class).getString("NoPlatform"), PlatformTypes.PLATFORM_NONE);
     }
 
+    @Override
     public LibraryItem.StdLibItem[] getStandardLibraries() {
         return standardLibrariesLinux;
     }
     
+    @Override
     public String getLibraryName(String baseName) {
         // Use Linux style
         return "lib" + baseName + ".so"; // NOI18N
     }
     
+    @Override
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
         if (libName.endsWith(".so")) { // NOI18N
             int i = libName.indexOf(".so"); // NOI18N
@@ -76,8 +79,10 @@ public class PlatformNone extends Platform {
             if (libName.startsWith("lib")) { // NOI18N
                 libName = libName.substring(3);
             }
-            return compilerSet.getLibrarySearchOption() +  IpeUtils.escapeOddCharacters(libDir)
-                    + " " + compilerSet.getLibraryOption() + IpeUtils.escapeOddCharacters(libName); // NOI18N
+            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag()
+                    +  IpeUtils.escapeOddCharacters(libDir)
+                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag()
+                    + IpeUtils.escapeOddCharacters(libName); // NOI18N
         } else {
             return IpeUtils.escapeOddCharacters(libPath);
         }

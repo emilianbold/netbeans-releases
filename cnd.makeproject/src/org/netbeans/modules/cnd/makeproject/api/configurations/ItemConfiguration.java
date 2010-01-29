@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodePro
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -106,25 +106,25 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public boolean isCompilerToolConfiguration() {
-        switch (getTool()) {
-            case Tool.Assembler:
-            case Tool.CCCompiler:
-            case Tool.CCompiler:
-            case Tool.FortranCompiler:
+        switch (ToolKind.getTool(getTool())) {
+            case Assembler:
+            case CCCompiler:
+            case CCompiler:
+            case FortranCompiler:
                 return true;
         }
         return false;
     }
 
     public BasicCompilerConfiguration getCompilerConfiguration() {
-        switch (getTool()) {
-            case Tool.Assembler:
+        switch (ToolKind.getTool(getTool())) {
+            case Assembler:
                 return getAssemblerConfiguration();
-            case Tool.CCCompiler:
+            case CCCompiler:
                 return getCCCompilerConfiguration();
-            case Tool.CCompiler:
+            case CCompiler:
                 return getCCompilerConfiguration();
-            case Tool.FortranCompiler:
+            case FortranCompiler:
                 return getFortranCompilerConfiguration();
         }
         return null;
@@ -167,7 +167,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 //            CompilerSet set = CompilerSetManager.getDefault(((MakeConfiguration)configuration).getDevelopmentHost().getName()).getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
 //            tool = set.getToolKind(genericName);
 //        }
-        setTool(Tool.getTool(name));
+        setTool(ToolKind.getTool(name).ordinal());
     }
 
     public void setTool(int tool) {
@@ -189,9 +189,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 //    }
 
     protected String[] getToolNames() {
-//        CompilerSet set = CompilerSetManager.getDefault(((MakeConfiguration)configuration).getDevelopmentHost().getName()).getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
-//        return set.getToolGenericNames();
-        return Tool.getCompilerToolNames();
+        return new String[]{ToolKind.CCompiler.getDisplayName(), ToolKind.CCCompiler.getDisplayName(),
+                            ToolKind.FortranCompiler.getDisplayName(), ToolKind.Assembler.getDisplayName(),
+                            ToolKind.CustomTool.getDisplayName()};
     }
 
     // Custom Tool
@@ -200,7 +200,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public synchronized CustomToolConfiguration getCustomToolConfiguration() {
-        if (getTool() == Tool.CustomTool) {
+        if (getTool() == ToolKind.CustomTool.ordinal()) {
             if (lastConfiguration == null) {
                 lastConfiguration = new CustomToolConfiguration();
             }
@@ -216,7 +216,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public synchronized CCompilerConfiguration getCCompilerConfiguration() {
-        if (getTool() == Tool.CCompiler) {
+        if (getTool() == ToolKind.CCompiler.ordinal()) {
             if (lastConfiguration == null) {
                 FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
                 if (folderConfiguration != null) {
@@ -237,7 +237,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public synchronized CCCompilerConfiguration getCCCompilerConfiguration() {
-        if (getTool() == Tool.CCCompiler) {
+        if (getTool() == ToolKind.CCCompiler.ordinal()) {
             if (lastConfiguration == null) {
                 FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
                 if (folderConfiguration != null) {
@@ -258,7 +258,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public synchronized FortranCompilerConfiguration getFortranCompilerConfiguration() {
-        if (getTool() == Tool.FortranCompiler) {
+        if (getTool() == ToolKind.FortranCompiler.ordinal()) {
             if (lastConfiguration == null) {
                 lastConfiguration = new FortranCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getFortranCompilerConfiguration());
             }
@@ -274,7 +274,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public synchronized AssemblerConfiguration getAssemblerConfiguration() {
-        if (getTool() == Tool.Assembler) {
+        if (getTool() == ToolKind.Assembler.ordinal()) {
             if (lastConfiguration == null) {
                 lastConfiguration = new AssemblerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getAssemblerConfiguration());
             }
@@ -285,16 +285,19 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     // interface ConfigurationAuxObject
+    @Override
     public boolean shared() {
         return true;
     }
 
     // interface ConfigurationAuxObject
+    @Override
     public boolean hasChanged() {
         return needSave;
     }
 
     // interface ProfileAuxObject
+    @Override
     public void clearChanged() {
         needSave = false;
     }
@@ -314,10 +317,12 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 //    static public String getId(String path) {
 //        return "item-" + path; // NOI18N
 //    }
+    @Override
     public String getId() {
         return item.getId();
     }
 
+    @Override
     public void assign(ConfigurationAuxObject profileAuxObject) {
         if (!(profileAuxObject instanceof ItemConfiguration)) {
             // FIXUP: exception ????
@@ -333,20 +338,20 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         setItem(i.getItem());
         getExcluded().assign(i.getExcluded());
         setTool(i.getTool());
-        switch (getTool()) {
-            case Tool.Assembler:
+        switch (ToolKind.getTool(getTool())) {
+            case Assembler:
                 getAssemblerConfiguration().assign(i.getAssemblerConfiguration());
                 break;
-            case Tool.CCCompiler:
+            case CCCompiler:
                 getCCCompilerConfiguration().assign(i.getCCCompilerConfiguration());
                 break;
-            case Tool.CCompiler:
+            case CCompiler:
                 getCCompilerConfiguration().assign(i.getCCompilerConfiguration());
                 break;
-            case Tool.CustomTool:
+            case CustomTool:
                 getCustomToolConfiguration().assign(i.getCustomToolConfiguration());
                 break;
-            case Tool.FortranCompiler:
+            case FortranCompiler:
                 getFortranCompilerConfiguration().assign(i.getFortranCompilerConfiguration());
                 break;
             default:
@@ -363,20 +368,20 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         ItemConfiguration i = (ItemConfiguration) profileAuxObject;
         getExcluded().assign(i.getExcluded());
         setTool(i.getTool());
-        switch (getTool()) {
-            case Tool.Assembler:
+        switch (ToolKind.getTool(getTool())) {
+            case Assembler:
                 getAssemblerConfiguration().assign(i.getAssemblerConfiguration());
                 break;
-            case Tool.CCCompiler:
+            case CCCompiler:
                 getCCCompilerConfiguration().assign(i.getCCCompilerConfiguration());
                 break;
-            case Tool.CCompiler:
+            case CCompiler:
                 getCCompilerConfiguration().assign(i.getCCompilerConfiguration());
                 break;
-            case Tool.CustomTool:
+            case CustomTool:
                 getCustomToolConfiguration().assign(i.getCustomToolConfiguration());
                 break;
-            case Tool.FortranCompiler:
+            case FortranCompiler:
                 getFortranCompilerConfiguration().assign(i.getFortranCompilerConfiguration());
                 break;
             default:
@@ -398,20 +403,20 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 
         i.setExcluded(getExcluded().clone());
         i.setTool(getTool());
-        switch (getTool()) {
-            case Tool.Assembler:
+        switch (ToolKind.getTool(getTool())) {
+            case Assembler:
                 i.setAssemblerConfiguration(getAssemblerConfiguration().clone());
                 break;
-            case Tool.CCCompiler:
+            case CCCompiler:
                 i.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
                 break;
-            case Tool.CCompiler:
+            case CCompiler:
                 i.setCCompilerConfiguration(getCCompilerConfiguration().clone());
                 break;
-            case Tool.CustomTool:
+            case CustomTool:
                 i.setCustomToolConfiguration(getCustomToolConfiguration().clone());
                 break;
-            case Tool.FortranCompiler:
+            case FortranCompiler:
                 i.setFortranCompilerConfiguration(getFortranCompilerConfiguration().clone());
                 break;
             default:
@@ -422,14 +427,17 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 
     //
     // XML codec support
+    @Override
     public XMLDecoder getXMLDecoder() {
         return new ItemXMLCodec(this);
     }
 
+    @Override
     public XMLEncoder getXMLEncoder() {
         return new ItemXMLCodec(this);
     }
 
+    @Override
     public void initialize() {
         // FIXUP: this doesn't make sense...
     }
@@ -481,20 +489,24 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             return getString("ToolTxt1");
         }
 
+        @Override
         public Integer getValue() {
             return Integer.valueOf(getTool());
         }
 
+        @Override
         public void setValue(Integer v) {
 //            String newTool = (String) v;
 //            setTool(newTool);
             setTool(v);
         }
 
+        @Override
         public boolean canWrite() {
             return true;
         }
 
+        @Override
         public boolean canRead() {
             return true;
         }
@@ -515,7 +527,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         @Override
         public String getAsText() {
             int val = ((Integer) getValue()).intValue();
-            return Tool.getName(val);
+            return ToolKind.getTool(val).getDisplayName();
 //            CompilerSet set = CompilerSetManager.getDefault(((MakeConfiguration)configuration).getDevelopmentHost().getName()).getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
 //            return set.getTool(val).getGenericName();
         }
@@ -523,7 +535,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         @Override
         public void setAsText(String text) throws java.lang.IllegalArgumentException {
 //            setValue(text);
-            setValue(Tool.getTool(text));
+            setValue(ToolKind.getTool(text));
         }
 
         @Override
@@ -534,17 +546,19 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 
     private static class StringRONodeProp extends PropertySupport<String> {
 
-        String value;
+        private String value;
 
         public StringRONodeProp(String name, String value) {
             super(name, String.class, name, name, true, false);
             this.value = value;
         }
 
+        @Override
         public String getValue() {
             return value;
         }
 
+        @Override
         public void setValue(String v) {
         }
     }

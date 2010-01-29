@@ -42,11 +42,12 @@ package org.netbeans.modules.cnd.makeproject;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.api.project.DefaultSystemSettings;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 
 /**
  * This is an implementation of DefaultSystemSetting.
@@ -59,15 +60,15 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings {
         int kind;        
         switch (language) {
             case C:
-                kind = Tool.CCompiler;
+                kind = ToolKind.CCompiler.ordinal();
                 break;
             case CPP:
-                kind = Tool.CCCompiler;
+                kind = ToolKind.CCCompiler.ordinal();
                 break;
             default:
                 return null;
         }
-        CompilerSet compilerSet = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        CompilerSet compilerSet = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
         Tool compiler = compilerSet.getTool(kind);
         if (compiler instanceof BasicCompiler) {
             return (BasicCompiler)compiler;
@@ -75,6 +76,7 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings {
         return null;
     }
 
+    @Override
     public List<String> getSystemIncludes(NativeFileItem.Language language) {
         BasicCompiler compiler = getDefaultCompiler(language);
         if (compiler != null) {            
@@ -84,6 +86,7 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings {
         }
     }
 
+    @Override
     public List<String> getSystemMacros(NativeFileItem.Language language) {
         BasicCompiler compiler = getDefaultCompiler(language);
         if (compiler != null) {            

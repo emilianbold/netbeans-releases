@@ -37,39 +37,55 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.api;
+package org.netbeans.modules.cnd.toolchain.compilers.impl;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
-import org.openide.util.Lookup;
+import java.io.IOException;
+import java.io.Writer;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author Alexander Simon
+ * Sometimes we need to make process of setting up compiler set verbose.
+ * This class allows to plug in a writer to report the process of
+ * compiler set setup to
+ * @author Vladimir Kvashin
  */
-public abstract class ToolChainPathProvider {
-    private static final ToolChainPathProvider DEFAULT = new DefaultToolChainPathProvider();
+public class CompilerSetReporter {
 
-    public static ToolChainPathProvider getDefault() {
-	return DEFAULT;
+    private static Writer writer;
+
+    private CompilerSetReporter() {
     }
 
-    public abstract String getPath(CompilerFlavor flavor);
+    /**
+     * Sets a writer to report the process of compiler set setup to
+     * @param writer if null, no reporting occurs
+     */
+    public static synchronized void setWriter(Writer writer) {
+        CompilerSetReporter.writer = writer;
+    }
 
-    private static final class DefaultToolChainPathProvider extends ToolChainPathProvider {
-        private final Lookup.Result<ToolChainPathProvider> res;
-        DefaultToolChainPathProvider() {
-            res = Lookup.getDefault().lookupResult(ToolChainPathProvider.class);
-        }
+    /* package-local */
+    public static void report(String msgKey) {
+        report(msgKey, true);
+    }
 
-	@Override
-	public String getPath(CompilerFlavor flavor) {
-	    for (ToolChainPathProvider service : res.allInstances()) {
-                String path = service.getPath(flavor);
-                if (path != null) {
-                    return path;
+    /* package-local */
+    public static synchronized void report(String msgKey, boolean addLineFeed, Object... params) {
+        if (writer != null) {
+            try {
+                writer.write(NbBundle.getMessage(CompilerSetReporter.class, msgKey, params));
+                if (addLineFeed) {
+                    writer.write('\n');
                 }
-	    }
-            return null;
-	}
+                writer.flush();
+            } catch (IOException ex) {
+            }
+        }
     }
+
+    /* package-local */
+    public static boolean canReport() {
+        return writer != null;
+    }
+
 }

@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTestSuite;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
@@ -65,7 +66,7 @@ public class HostSetupTest extends RemoteTestBase {
     public void testHostSetup() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         setupHost(execEnv);
-        CompilerSetManager csm = CompilerSetManager.getDefault(execEnv);
+        CompilerSetManager csm = CompilerSetManagerAccessor.getDefault(execEnv);
         final List<CompilerSet> compilerSets = csm.getCompilerSets();
         dumpCompilerSets(execEnv, compilerSets);
 

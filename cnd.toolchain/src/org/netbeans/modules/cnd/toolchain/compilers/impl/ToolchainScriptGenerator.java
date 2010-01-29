@@ -37,11 +37,12 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.api;
+package org.netbeans.modules.cnd.toolchain.compilers.impl;
 
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
 import org.openide.util.NbBundle;
@@ -50,7 +51,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-final class ToolchainScriptGenerator {
+public final class ToolchainScriptGenerator {
     private static final boolean TRACE = true;
     private static final String[] platforms = new String[]{
             "PLATFORM_SOLARIS_SPARC", // NOI18N
@@ -73,7 +74,7 @@ final class ToolchainScriptGenerator {
     private ToolchainScriptGenerator(){
     }
 
-    static final String generateScript(String path){
+    public static String generateScript(String path){
         ToolchainScriptGenerator generator = new ToolchainScriptGenerator();
         generator.prefix(path);
         generator.scanPaths();
@@ -97,7 +98,7 @@ final class ToolchainScriptGenerator {
                     line("PATH=$PATH"); // NOI18N
                 }
                 ArrayList<String> dirlist = new ArrayList<String>();
-                CompilerSetManager.appendDefaultLocations(platformsID[i], dirlist);
+                CompilerSetManagerImpl.appendDefaultLocations(platformsID[i], dirlist);
                 for(String s : dirlist) {
                     line("PATH=$PATH:"+s); // NOI18N
                 }
@@ -136,7 +137,7 @@ final class ToolchainScriptGenerator {
         }
     }
     private void platformPath(int platform){
-        for (ToolchainDescriptor d : ToolchainManager.getImpl().getToolchains(platform)) {
+        for (ToolchainDescriptor d : ToolchainManagerImpl.getImpl().getToolchains(platform)) {
             if (d.isAbstract()) {
                 continue;
             }

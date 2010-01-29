@@ -39,8 +39,9 @@
 
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -66,7 +67,7 @@ public class GeneralTool extends Tool {
 
     @Override
     public ToolDescriptor getDescriptor() {
-        switch (getKind()) {
+        switch (ToolKind.getTool(getKind())) {
             case QMakeTool:
                 return getFlavor().getToolchainDescriptor().getQMake();
             case CMakeTool:

@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.ErrorManager;

@@ -38,11 +38,11 @@
  */
 package org.netbeans.modules.cnd.toolchain.api;
 
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -69,7 +69,7 @@ public class CompilerSetManagerEvents {
 
     public CompilerSetManagerEvents(ExecutionEnvironment env) {
         this.executionEnvironment = env;
-        this.isCodeModelInfoReady = CompilerSetManager.getDefault(executionEnvironment).isComplete();
+        this.isCodeModelInfoReady = ((CompilerSetManagerImpl)CompilerSetManagerAccessor.getDefault(executionEnvironment)).isComplete();
     }
 
     private final ExecutionEnvironment executionEnvironment;
@@ -85,7 +85,7 @@ public class CompilerSetManagerEvents {
         }
     }
 
-    /* package */ void runTasks() {
+    public void runTasks() {
         isCodeModelInfoReady = true;
         if (tasks != null) {
             for (Runnable task : tasks) {

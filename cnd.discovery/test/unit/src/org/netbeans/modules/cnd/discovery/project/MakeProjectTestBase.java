@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -129,7 +130,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         shutdownModel();
     }
 
-    private final void shutdownModel() {
+    private void shutdownModel() {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         waitModelTasks(model);
         model.shutdown();
@@ -172,28 +173,28 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
 
     public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder){
         Map<String, String> tools = findTools();
-        CompilerSet def = CompilerSetManager.getDefault().getDefaultCompilerSet();
+        CompilerSet def = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
         if (useSunCompilers) {
-            if (def != null && def.isGnuCompiler()) {
-                for(CompilerSet set : CompilerSetManager.getDefault().getCompilerSets()){
-                    if (set.isSunCompiler()) {
-                        CompilerSetManager.getDefault().setDefault(set);
+            if (def != null && def.getCompilerFlavor().isGnuCompiler()) {
+                for(CompilerSet set : CompilerSetManagerAccessor.getDefault().getCompilerSets()){
+                    if (set.getCompilerFlavor().isSunStudioCompiler()) {
+                        CompilerSetManagerAccessor.getDefault().setDefault(set);
                         break;
                     }
                 }
             }
         } else {
-            if (def != null && def.isSunCompiler()) {
-                for(CompilerSet set : CompilerSetManager.getDefault().getCompilerSets()){
-                    if (set.isGnuCompiler()) {
-                        CompilerSetManager.getDefault().setDefault(set);
+            if (def != null && def.getCompilerFlavor().isSunStudioCompiler()) {
+                for(CompilerSet set : CompilerSetManagerAccessor.getDefault().getCompilerSets()){
+                    if (set.getCompilerFlavor().isGnuCompiler()) {
+                        CompilerSetManagerAccessor.getDefault().setDefault(set);
                         break;
                     }
                 }
             }
         }
-        def = CompilerSetManager.getDefault().getDefaultCompilerSet();
-        final boolean isSUN = def != null ? def.isSunCompiler() : false;
+        def = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
+        final boolean isSUN = def != null ? def.getCompilerFlavor().isSunStudioCompiler() : false;
         if (tools == null) {
             assertTrue("Please install required tools.", false);
             System.err.println("Test did not run because required tools do not found");
@@ -257,9 +258,9 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                                         return "-spec macx-g++ QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
                                     } else {
                                         if (Utilities.isWindows()) {
-                                            for (CompilerSet set : CompilerSetManager.getDefault().getCompilerSets()){
+                                            for (CompilerSet set : CompilerSetManagerAccessor.getDefault().getCompilerSets()){
                                                 if (set.getCompilerFlavor().getToolchainDescriptor().getName().startsWith("MinGW")) {
-                                                    CompilerSetManager.getDefault().setDefault(set);
+                                                    CompilerSetManagerAccessor.getDefault().setDefault(set);
                                                     break;
                                                 }
                                             }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,31 +34,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.toolchain.api;
 
-import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainScriptGenerator;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetImpl;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerFlavorImpl;
+import java.util.List;
 
 /**
  *
  * @author Alexander Simon
  */
-public class ScriptGeneratorTestCase  extends NbTestCase {
-
-    public ScriptGeneratorTestCase(String testName) {
-        super(testName);
+public class CompilerFlavorAccessor {
+    private CompilerFlavorAccessor() {
     }
 
-    @Override
-    protected int timeOut() {
-        return 500000;
+    public static CompilerFlavor getUnknown(int platform) {
+        return CompilerFlavorImpl.getUnknown(platform);
     }
 
-    public void testGNUpatterns() throws Exception {
-        String s = ToolchainScriptGenerator.generateScript(null);
-        s = ToolchainScriptGenerator.generateScript("/opt/SUNWspro/bin");
+    public static List<CompilerFlavor> getFlavors(int platform) {
+        return CompilerFlavorImpl.getFlavors(platform);
+    }
+
+    public static CompilerFlavor toFlavor(String name, int platform) {
+        return CompilerFlavorImpl.toFlavor(name, platform);
+    }
+
+    public static String mapOldToNew(String flavor, int version) {
+        if (version <= 43) {
+            if (flavor.equals("Sun")) { // NOI18N
+                return "SunStudio"; // NOI18N
+            } else if (flavor.equals("SunExpress")) { // NOI18N
+                return "SunStudioExpress"; // NOI18N
+            } else if (flavor.equals("Sun12")) { // NOI18N
+                return "SunStudio_12"; // NOI18N
+            } else if (flavor.equals("Sun11")) { // NOI18N
+                return "SunStudio_11"; // NOI18N
+            } else if (flavor.equals("Sun10")) { // NOI18N
+                return "SunStudio_10"; // NOI18N
+            } else if (flavor.equals("Sun9")) { // NOI18N
+                return "SunStudio_9"; // NOI18N
+            } else if (flavor.equals("Sun8")) { // NOI18N
+                return "SunStudio_8"; // NOI18N
+            } else if (flavor.equals("DJGPP")) { // NOI18N
+                return "GNU"; // NOI18N
+            } else if (flavor.equals("Interix")) { // NOI18N
+                return "GNU"; // NOI18N
+            } else if (flavor.equals(CompilerSetImpl.UNKNOWN)) {
+                return "GNU"; // NOI18N
+            }
+        }
+        return flavor;
     }
 }

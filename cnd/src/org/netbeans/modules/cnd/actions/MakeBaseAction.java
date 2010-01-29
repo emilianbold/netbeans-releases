@@ -52,7 +52,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
@@ -60,8 +60,8 @@ import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerLineConvertor;
 import org.netbeans.modules.cnd.settings.MakeSettings;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainProject;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
+import org.netbeans.modules.cnd.toolchain.spi.ToolchainProject;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -133,9 +133,9 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         final FileObject fileObject = dataObject.getPrimaryFile();
         File makefile = FileUtil.toFile(fileObject);
         // Build directory
-        String buildDir = getBuildDirectory(node,Tool.MakeTool);
+        String buildDir = getBuildDirectory(node,ToolKind.MakeTool.ordinal());
         // Executable
-        String executable = getCommand(node, project, Tool.MakeTool, "make"); // NOI18N
+        String executable = getCommand(node, project, ToolKind.MakeTool.ordinal(), "make"); // NOI18N
         // Arguments
         String[] args;
         if (target.length() == 0) {
@@ -208,7 +208,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             }
         }
         if (set == null) {
-            set = CompilerSetManager.getDefault().getDefaultCompilerSet();
+            set = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
         }
         return set;
     }

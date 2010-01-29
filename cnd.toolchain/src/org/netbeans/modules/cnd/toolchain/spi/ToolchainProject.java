@@ -37,7 +37,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.api;
+package org.netbeans.modules.cnd.toolchain.spi;
+
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 
 /**
  * Interface is returned by project lookup.

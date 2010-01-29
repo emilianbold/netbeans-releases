@@ -37,51 +37,39 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.api;
+package org.netbeans.modules.cnd.toolchain.spi;
 
-import java.io.IOException;
-import java.io.Writer;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.openide.util.Lookup;
 
 /**
- * Sometimes we need to make process of setting up compiler set verbose.
- * This class allows to plug in a writer to report the process of
- * compiler set setup to
- * @author Vladimir Kvashin
+ *
+ * @author Alexander Simon
  */
-public class CompilerSetReporter {
+public abstract class ToolChainPathProvider {
+    private static final ToolChainPathProvider DEFAULT = new DefaultToolChainPathProvider();
 
-    private static Writer writer;
-
-    /**
-     * Sets a writer to report the process of compiler set setup to
-     * @param writer if null, no reporting occurs
-     */
-    public static synchronized void setWriter(Writer writer) {
-        CompilerSetReporter.writer = writer;
+    public static ToolChainPathProvider getDefault() {
+	return DEFAULT;
     }
 
-    /* package-local */
-    static void report(String msgKey) {
-        report(msgKey, true);
-    }
+    public abstract String getPath(CompilerFlavor flavor);
 
-    /* package-local */
-    static synchronized void report(String msgKey, boolean addLineFeed, Object... params) {
-        if (writer != null) {
-            try {
-                writer.write(NbBundle.getMessage(CompilerSetReporter.class, msgKey, params));
-                if (addLineFeed) {
-                    writer.write('\n');
-                }
-                writer.flush();
-            } catch (IOException ex) {
-            }
+    private static final class DefaultToolChainPathProvider extends ToolChainPathProvider {
+        private final Lookup.Result<ToolChainPathProvider> res;
+        DefaultToolChainPathProvider() {
+            res = Lookup.getDefault().lookupResult(ToolChainPathProvider.class);
         }
-    }
 
-    /* package-local */
-    static boolean canReport() {
-        return writer != null;
+	@Override
+	public String getPath(CompilerFlavor flavor) {
+	    for (ToolChainPathProvider service : res.allInstances()) {
+                String path = service.getPath(flavor);
+                if (path != null) {
+                    return path;
+                }
+	    }
+            return null;
+	}
     }
 }

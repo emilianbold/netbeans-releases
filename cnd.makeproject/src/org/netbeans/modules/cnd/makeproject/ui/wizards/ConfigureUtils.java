@@ -42,11 +42,12 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 import java.io.File;
 import org.netbeans.modules.cnd.actions.AbstractExecutorRunAction;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -200,16 +201,16 @@ public final class ConfigureUtils {
             if (buf.length() > 0) {
                 buf.append(' '); // NOI18N
             }
-            buf.append(key + flag);
+            buf.append(key).append(flag);
         }
     }
 
     private static int getPlatform(){
-        return CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment()).getPlatform();
+        return CompilerSetManagerAccessor.getDefault(CompilerSetManagerAccessor.getDefaultExecutionEnvironment()).getPlatform();
     }
 
     private static boolean isSunStodio(){
-        CompilerSet def = CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
+        CompilerSet def = CompilerSetManagerAccessor.getDefault(CompilerSetManagerAccessor.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
         if (def != null) {
             CompilerFlavor flavor = def.getCompilerFlavor();
             if (flavor.isSunStudioCompiler()) {
@@ -220,8 +221,8 @@ public final class ConfigureUtils {
     }
 
     private static String getDefaultC(){
-        CompilerSet def = CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
-        String cCompiler = getToolPath(def, Tool.CCompiler);
+        CompilerSet def = CompilerSetManagerAccessor.getDefault(CompilerSetManagerAccessor.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
+        String cCompiler = getToolPath(def, ToolKind.CCompiler.ordinal());
         if (cCompiler != null) {
             return cCompiler;
         }
@@ -236,8 +237,8 @@ public final class ConfigureUtils {
     }
 
     private static String getDefaultCpp(){
-        CompilerSet def = CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
-        String cppCompiler = getToolPath(def, Tool.CCCompiler);
+        CompilerSet def = CompilerSetManagerAccessor.getDefault(CompilerSetManagerAccessor.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
+        String cppCompiler = getToolPath(def, ToolKind.CCCompiler.ordinal());
         if (cppCompiler != null) {
             return cppCompiler;
         }
@@ -270,7 +271,7 @@ public final class ConfigureUtils {
     }
 
     private static String getCompilerFlags(){
-        CompilerSet def = CompilerSetManager.getDefault(CompilerSetManager.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
+        CompilerSet def = CompilerSetManagerAccessor.getDefault(CompilerSetManagerAccessor.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
         if (def != null) {
             CompilerFlavor flavor = def.getCompilerFlavor();
             if (flavor.isSunStudioCompiler()) {
