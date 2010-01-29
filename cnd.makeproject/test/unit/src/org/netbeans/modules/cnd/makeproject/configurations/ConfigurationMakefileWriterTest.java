@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetFactory;
+import org.netbeans.modules.cnd.toolchain.spi.CompilerSetFactory;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;

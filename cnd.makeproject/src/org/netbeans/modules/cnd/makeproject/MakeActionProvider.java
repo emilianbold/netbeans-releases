@@ -103,7 +103,7 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ValidateInstrumentationProvider;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetFactory;
+import org.netbeans.modules.cnd.toolchain.spi.CompilerSetFactory;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.toolchain.ui.api.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelModel;

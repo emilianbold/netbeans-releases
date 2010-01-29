@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,64 +34,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.toolchain.api;
+package org.netbeans.modules.cnd.toolchain.compilers.impl;
 
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * CompilerSetManagerEvents handles tasks which depends on CompilerSetManager activity and
- * have to survive CompilerSetManager.deepCopy()
- * 
- * There is only one (and I hope there would be only one) such event -- Code Model Readiness
  *
- * @author Sergey Grinev
+ * @author as204739
  */
-public class CompilerSetManagerEvents {
+public abstract class APIAccessor {
 
-    private static final Map<ExecutionEnvironment, CompilerSetManagerEvents> map =
-            new HashMap<ExecutionEnvironment, CompilerSetManagerEvents>();
+    private static APIAccessor INSTANCE;
 
-    public static synchronized CompilerSetManagerEvents get(ExecutionEnvironment env) {
-        CompilerSetManagerEvents instance = map.get(env);
-        if (instance == null) {
-            instance = new CompilerSetManagerEvents(env);
-            map.put(env, instance);
-        }
-        return instance;
-    }
-
-    public CompilerSetManagerEvents(ExecutionEnvironment env) {
-        this.executionEnvironment = env;
-        this.isCodeModelInfoReady = ((CompilerSetManagerImpl)CompilerSetManagerAccessor.getDefault(executionEnvironment)).isComplete();
-    }
-
-    private final ExecutionEnvironment executionEnvironment;
-
-    private boolean isCodeModelInfoReady;
-    private List<Runnable> tasks = new ArrayList<Runnable>();
-
-    public void runOnCodeModelReadiness(Runnable task) {
-        if (executionEnvironment.isLocal() || isCodeModelInfoReady) {
-            task.run();
-        } else {
-            tasks.add(task);
-        }
-    }
-
-    public void runTasks() {
-        isCodeModelInfoReady = true;
-        if (tasks != null) {
-            for (Runnable task : tasks) {
-                task.run();
+    public static synchronized APIAccessor get() {
+        if (INSTANCE == null) {
+            Class<?> c = Tool.class;
+            try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                // ignore
             }
         }
-        tasks = null;
+
+        assert INSTANCE != null : "There is no API package accessor available!"; //NOI18N
+        return INSTANCE;
     }
+
+    /**
+     * Register the accessor. The method can only be called once
+     * - othewise it throws IllegalStateException.
+     *
+     * @param accessor instance.
+     */
+    public static void register(APIAccessor accessor) {
+        if (INSTANCE != null) {
+            throw new IllegalStateException("Already registered"); // NOI18N
+        }
+        INSTANCE = accessor;
+    }
+
+    public abstract Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, int kind, String name, String displayName, String path);
 }

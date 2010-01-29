@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerProvider;
+import org.netbeans.modules.cnd.toolchain.spi.CompilerProvider;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.toolchain.api.ToolKind;
