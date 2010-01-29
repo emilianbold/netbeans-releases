@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -60,10 +61,16 @@ import org.openide.util.NbBundle;
  */
 public class ComputeAnnotations {
 
+    private static final ComputeAnnotations INSTANCE = new ComputeAnnotations();
+
     private ComputeAnnotations() {
     }
 
-    public static void computeAnnotations(
+    public static ComputeAnnotations getInstance() {
+        return INSTANCE;
+    }
+
+    public void computeAnnotations(
             Collection<? extends CsmOffsetableDeclaration> toProcess,
             Collection<OverriddeAnnotation> toAdd, CsmFile file, StyledDocument doc, DataObject dobj) {
 
@@ -82,9 +89,9 @@ public class ComputeAnnotations {
         }
     }
 
-    private static OverriddeAnnotation computeAnnotation(CsmFunction func, StyledDocument doc) {
+    private OverriddeAnnotation computeAnnotation(CsmFunction func, StyledDocument doc) {
         if (CsmKindUtilities.isMethod(func)) {
-            CsmMethod meth = (CsmMethod) func;
+            CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(func);
             final Collection<? extends CsmMethod> baseMethods = CsmVirtualInfoQuery.getDefault().getBaseDeclaration(meth);
             final Collection<? extends CsmMethod> overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverridenMethods(meth, false);
             if (OverriddeAnnotation.LOGGER.isLoggable(Level.FINEST)) {
@@ -97,16 +104,15 @@ public class ComputeAnnotations {
                 boolean itself = baseMethods.size() == 1 && baseMethods.iterator().next().equals(func);
                 if (!itself) {
                     CsmMethod m = baseMethods.iterator().next(); //TODO: XXX
-                    String desc = NbBundle.getMessage(OverridesTaskFactory.class, "LAB_Overrides", m.getQualifiedName().toString());
+                    String desc = NbBundle.getMessage(getClass(), "LAB_Overrides", m.getQualifiedName().toString());
                     return new OverriddeAnnotation(doc, func,  OverriddeAnnotation.AnnotationType.OVERRIDES, desc, baseMethods);
                 }
             }
             if (!overriddenMethods.isEmpty()) {
-                String desc = NbBundle.getMessage(OverridesTaskFactory.class, "LAB_IsOverriden");
+                String desc = NbBundle.getMessage(getClass(), "LAB_IsOverriden");
                 return new OverriddeAnnotation(doc, func,  OverriddeAnnotation.AnnotationType.IS_OVERRIDDEN, desc, overriddenMethods);
             }
         }
         return null;
     }
-
 }

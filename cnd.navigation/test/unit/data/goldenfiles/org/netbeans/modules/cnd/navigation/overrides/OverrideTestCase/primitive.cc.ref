@@ -1,0 +1,9 @@
+4:IS_OVERRIDDEN PrimitiveDescendant::v_func primitive.cc:15
+5:IS_OVERRIDDEN PrimitiveDescendant::v_inline_func primitive.cc:16
+7:IS_OVERRIDDEN PrimitiveDescendant::nv_func primitive.cc:18
+8:IS_OVERRIDDEN PrimitiveDescendant::nv_inline_func primitive.cc:19
+15:OVERRIDES PrimitiveAncestor::v_func primitive.cc:4
+16:OVERRIDES PrimitiveAncestor::v_inline_func primitive.cc:5
+26:OVERRIDES PrimitiveAncestor::v_func primitive.cc:4
+29:IS_OVERRIDDEN PrimitiveDescendant::nv_func primitive.cc:18
+35:OVERRIDES PrimitiveAncestor::v_func primitive.cc:4
