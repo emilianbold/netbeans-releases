@@ -60,10 +60,16 @@ import org.openide.util.NbBundle;
  */
 public class ComputeAnnotations {
 
+    private static final ComputeAnnotations INSTANCE = new ComputeAnnotations();
+
     private ComputeAnnotations() {
     }
 
-    public static void computeAnnotations(
+    public static ComputeAnnotations getInstance() {
+        return INSTANCE;
+    }
+
+    public void computeAnnotations(
             Collection<? extends CsmOffsetableDeclaration> toProcess,
             Collection<OverriddeAnnotation> toAdd, CsmFile file, StyledDocument doc, DataObject dobj) {
 
@@ -82,7 +88,7 @@ public class ComputeAnnotations {
         }
     }
 
-    private static OverriddeAnnotation computeAnnotation(CsmFunction func, StyledDocument doc) {
+    private OverriddeAnnotation computeAnnotation(CsmFunction func, StyledDocument doc) {
         if (CsmKindUtilities.isMethod(func)) {
             CsmMethod meth = (CsmMethod) func;
             final Collection<? extends CsmMethod> baseMethods = CsmVirtualInfoQuery.getDefault().getBaseDeclaration(meth);
@@ -97,16 +103,15 @@ public class ComputeAnnotations {
                 boolean itself = baseMethods.size() == 1 && baseMethods.iterator().next().equals(func);
                 if (!itself) {
                     CsmMethod m = baseMethods.iterator().next(); //TODO: XXX
-                    String desc = NbBundle.getMessage(OverridesTaskFactory.class, "LAB_Overrides", m.getQualifiedName().toString());
+                    String desc = NbBundle.getMessage(getClass(), "LAB_Overrides", m.getQualifiedName().toString());
                     return new OverriddeAnnotation(doc, func,  OverriddeAnnotation.AnnotationType.OVERRIDES, desc, baseMethods);
                 }
             }
             if (!overriddenMethods.isEmpty()) {
-                String desc = NbBundle.getMessage(OverridesTaskFactory.class, "LAB_IsOverriden");
+                String desc = NbBundle.getMessage(getClass(), "LAB_IsOverriden");
                 return new OverriddeAnnotation(doc, func,  OverriddeAnnotation.AnnotationType.IS_OVERRIDDEN, desc, overriddenMethods);
             }
         }
         return null;
     }
-
 }

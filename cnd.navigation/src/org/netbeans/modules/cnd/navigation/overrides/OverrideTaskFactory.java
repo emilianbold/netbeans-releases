@@ -60,12 +60,12 @@ import org.openide.loaders.DataObjectNotFoundException;
  * @author Vladimir Kvashin
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position=30)
-public class OverridesTaskFactory extends EditorAwareCsmFileTaskFactory {
+public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
 
     private static final int TASK_DELAY = getInt("cnd.overrides.delay", 500); // NOI18N
     private static final int RESCHEDULE_DELAY = getInt("cnd.overrides.reschedule.delay", 500); // NOI18N
 
-    public OverridesTaskFactory() {
+    public OverrideTaskFactory() {
     }
 
     @Override
@@ -144,7 +144,7 @@ public class OverridesTaskFactory extends EditorAwareCsmFileTaskFactory {
             final Collection<OverriddeAnnotation> toAdd = new ArrayList<OverriddeAnnotation>();
             OverriddeAnnotation.LOGGER.log(Level.FINE, ">> Computing annotations for {0}", file);
             long time = System.currentTimeMillis();
-            ComputeAnnotations.computeAnnotations(file.getDeclarations(), toAdd, file, doc, dobj);
+            ComputeAnnotations.getInstance().computeAnnotations(file.getDeclarations(), toAdd, file, doc, dobj);
             time = System.currentTimeMillis() - time;
             OverriddeAnnotation.LOGGER.log(Level.FINE, "<< Computed sannotations for {0} in {1} ms", new Object[] { file, time });
             final Collection<OverriddeAnnotation> toClear;
