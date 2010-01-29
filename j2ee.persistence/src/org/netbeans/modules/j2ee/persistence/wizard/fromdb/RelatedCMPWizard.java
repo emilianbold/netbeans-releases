@@ -271,7 +271,7 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
 
         // create the pu first if needed
         if(helper.isCreatePU()) {
-            Util.addPersistenceUnitToProject(project, Util.buildPersistenceUnitUsingData(project, helper.getTableSource().getName(), null, null));
+            Util.addPersistenceUnitToProject(project, Util.buildPersistenceUnitUsingData(project, null, helper.getTableSource().getName(), null, null));
        }
         
         final String title = NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "TXT_EjbGeneration" : "TXT_EntityClassesGeneration");

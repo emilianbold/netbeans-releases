@@ -42,6 +42,7 @@
 package org.netbeans.modules.subversion;
 
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.net.MalformedURLException;
 import java.util.regex.Pattern;
@@ -331,6 +332,15 @@ public class SvnModuleConfig {
         getPreferences().putBoolean(PROP_EXCLUDE_NEW_FILES, excludeNewFiles);
     }
     
+    public Color getColor(String colorName, Color defaultColor) {
+         int colorRGB = getPreferences().getInt(colorName, defaultColor.getRGB());
+         return new Color(colorRGB);
+    }
+
+    public void setColor(String colorName, Color value) {
+         getPreferences().putInt(colorName, value.getRGB());
+    }
+
     // private methods ~~~~~~~~~~~~~~~~~~
     
     private synchronized Set<String> getCommitExclusions() {

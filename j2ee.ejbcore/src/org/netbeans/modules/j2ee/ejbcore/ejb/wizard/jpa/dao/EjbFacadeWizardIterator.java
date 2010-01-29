@@ -49,10 +49,13 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.awt.Component;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -65,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.JavaSource;
@@ -112,6 +116,7 @@ import org.openide.util.NbBundle;
     
     private static final String WIZARD_PANEL_CONTENT_DATA = WizardDescriptor.PROP_CONTENT_DATA; // NOI18N
 
+    private static final String FACADE_ABSTRACT = "AbstractFacade"; //NOI18N
     private static final String FACADE_SUFFIX = "Facade"; //NOI18N
     private static final String FACADE_REMOTE_SUFFIX = FACADE_SUFFIX + "Remote"; //NOI18N
     private static final String FACADE_LOCAL_SUFFIX = FACADE_SUFFIX + "Local"; //NOI18N
@@ -224,6 +229,85 @@ import org.openide.util.NbBundle;
         final Set<FileObject> createdFiles = new HashSet<FileObject>();
         final String entitySimpleName = JavaIdentifiers.unqualify(entityFQN);
         final String variableName = entitySimpleName.toLowerCase().charAt(0) + entitySimpleName.substring(1);
+
+        //create the abstract facade class
+        final String afName = pkg + "." + FACADE_ABSTRACT;
+        FileObject afFO = targetFolder.getFileObject(FACADE_ABSTRACT, "java");
+        if (afFO == null){
+            afFO = GenerationUtils.createClass(targetFolder, FACADE_ABSTRACT, null);
+            createdFiles.add(afFO);
+
+            JavaSource source = JavaSource.forFileObject(afFO);
+            source.runModificationTask(new Task<WorkingCopy>(){
+                public void run(WorkingCopy workingCopy) throws Exception {
+                    workingCopy.toPhase(Phase.RESOLVED);
+                    ClassTree classTree = SourceUtils.getPublicTopLevelTree(workingCopy);
+                    assert classTree != null;
+                    TreeMaker maker = workingCopy.getTreeMaker();
+                    GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
+                    TreePath classTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), classTree);
+                    TypeElement classElement = (TypeElement)workingCopy.getTrees().getElement(classTreePath);
+
+                    String genericsTypeName = "T";      //NOI18N
+                    List<GenerationOptions> methodOptions = getAbstractFacadeMethodOptions(genericsTypeName, "entity"); //NOI18N
+                    List<Tree> members = new ArrayList();
+                    String entityClassVar = "entityClass";                                              //NOI18N
+                    Tree classObjectTree = genUtils.createType("java.lang.Class<" + genericsTypeName + ">", classElement);     //NOI18N
+                    members.add(maker.Variable(genUtils.createModifiers(Modifier.PRIVATE),entityClassVar,classObjectTree,null));
+                    members.add(maker.Constructor(
+                            genUtils.createModifiers(Modifier.PUBLIC),
+                            Collections.EMPTY_LIST,
+                            Arrays.asList(new VariableTree[]{genUtils.createVariable(entityClassVar,classObjectTree)}),
+                            Collections.EMPTY_LIST,
+                            "{this." + entityClassVar + " = " + entityClassVar + ";}"));    //NOI18N
+                    for(GenerationOptions option: methodOptions){
+                        Tree returnType = (option.getReturnType() == null || option.getReturnType().equals("void"))?  //NOI18N
+                                                maker.PrimitiveType(TypeKind.VOID):
+                                                genUtils.createType(option.getReturnType(), classElement);
+                        List<VariableTree> vars = option.getParameterName() == null ? Collections.EMPTY_LIST :
+                            Arrays.asList(new VariableTree[]{
+                            genUtils.createVariable(
+                                    option.getParameterName(),
+                                    genUtils.createType(option.getParameterType(), classElement)
+                                    )
+                        });
+
+                        if (option.getOperation() == null){
+                            members.add(maker.Method(
+                                     maker.Modifiers(EnumSet.of(Modifier.PUBLIC, Modifier.ABSTRACT)),
+                                     option.getMethodName(),
+                                     returnType,
+                                     Collections.EMPTY_LIST,
+                                     vars,
+                                     (List<ExpressionTree>)Collections.EMPTY_LIST,
+                                     (BlockTree)null,
+                                     null));
+                        } else {
+                            members.add(maker.Method(
+                                     genUtils.createModifiers(Modifier.PUBLIC),
+                                     option.getMethodName(),
+                                     returnType,
+                                     (List<TypeParameterTree>)Collections.EMPTY_LIST,
+                                     vars,
+                                     (List<ExpressionTree>)Collections.EMPTY_LIST,
+                                     "{" + option.getCallLines("getEntityManager()", entityClassVar) + "}", //NOI18N
+                                     null));
+                        }
+                    }
+
+                    ClassTree newClassTree = maker.Class(
+                            maker.Modifiers(EnumSet.of(Modifier.PUBLIC, Modifier.ABSTRACT)),
+                            classTree.getSimpleName(),
+                            Arrays.asList(maker.TypeParameter(genericsTypeName, Collections.EMPTY_LIST)),
+                            null,
+                            Collections.EMPTY_LIST,
+                            members);
+
+                    workingCopy.rewrite(classTree, newClassTree);
+                }
+            }).commit();
+
+        }
         
         // create the facade
         FileObject existingFO = targetFolder.getFileObject(entitySimpleName + FACADE_SUFFIX, "java");
@@ -271,7 +355,7 @@ import org.openide.util.NbBundle;
             createdFiles.add(remote);
         }
 
-        // add implements clauses to the facade
+        // add implements and extends clauses to the facade
         source.runModificationTask(new Task<WorkingCopy>() {
 
             public void run(WorkingCopy parameter) throws Exception {
@@ -279,6 +363,7 @@ import org.openide.util.NbBundle;
                 ClassTree classTree = SourceUtils.getPublicTopLevelTree(parameter);
                 assert classTree != null;
                 GenerationUtils genUtils = GenerationUtils.newInstance(parameter);
+                TreeMaker maker = parameter.getTreeMaker();
                 ClassTree newClassTree = classTree;
                 if (hasLocal){
                     newClassTree = genUtils.addImplementsClause(newClassTree, localInterfaceFQN);
@@ -286,6 +371,17 @@ import org.openide.util.NbBundle;
                 if (hasRemote){
                     newClassTree = genUtils.addImplementsClause(newClassTree, remoteInterfaceFQN);
                 }
+                newClassTree = maker.setExtends(newClassTree, (ExpressionTree)genUtils.createType(
+                        afName + "<" + entityFQN + ">",
+                        SourceUtils.getPublicTopLevelElement(parameter)
+                ));
+                MethodTree constructor = maker.Constructor(
+                        genUtils.createModifiers(Modifier.PUBLIC),
+                        Collections.EMPTY_LIST,
+                        Collections.EMPTY_LIST,
+                        Collections.EMPTY_LIST,
+                        "{super(" + entitySimpleName + ".class);}");            //NOI18N
+                newClassTree = maker.addClassMember(newClassTree, constructor);
                 parameter.rewrite(classTree, newClassTree);
             }
         }).commit();
@@ -299,6 +395,22 @@ import org.openide.util.NbBundle;
      */ 
     private List<GenerationOptions> getMethodOptions(String entityFQN, String variableName){
 
+        GenerationOptions getEMOptions = new GenerationOptions();
+        getEMOptions.setMethodName("getEntityManager"); //NOI18N
+        getEMOptions.setOperation(GenerationOptions.Operation.GET_EM);
+        getEMOptions.setReturnType("javax.persistence.EntityManager");//NOI18N
+
+        return Arrays.<GenerationOptions>asList(getEMOptions);
+    }
+
+    private List<GenerationOptions> getAbstractFacadeMethodOptions(String entityFQN, String variableName){
+        //abstract methods
+
+        GenerationOptions getEMOptions = new GenerationOptions();
+        getEMOptions.setMethodName("getEntityManager"); //NOI18N
+        getEMOptions.setReturnType("javax.persistence.EntityManager");//NOI18N
+
+        //implemented methods
         GenerationOptions createOptions = new GenerationOptions();
         createOptions.setMethodName("create"); //NOI18N
         createOptions.setOperation(GenerationOptions.Operation.PERSIST);
@@ -347,7 +459,7 @@ import org.openide.util.NbBundle;
         countOptions.setReturnType("int");//NOI18N
         countOptions.setQueryAttribute(getEntityName(entityFQN));
 
-        return Arrays.<GenerationOptions>asList(createOptions, editOptions, destroyOptions, findOptions, findAllOptions, findSubOptions, countOptions);
+        return Arrays.<GenerationOptions>asList(getEMOptions, createOptions, editOptions, destroyOptions, findOptions, findAllOptions, findSubOptions, countOptions);
     }
 
     /**

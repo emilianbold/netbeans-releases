@@ -57,6 +57,7 @@ public class JToolBarSupport extends AbstractLayoutSupport {
     /** Gets the supported layout manager class - JToolBar.
      * @return the class supported by this delegate
      */
+    @Override
     public Class getSupportedClass() {
         return JToolBar.class;
     }

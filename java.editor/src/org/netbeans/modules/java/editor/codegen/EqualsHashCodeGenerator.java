@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.java.editor.codegen;
 
+import java.util.Map.Entry;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
@@ -63,8 +64,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -538,10 +539,19 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
 
         return KindOfType.OTHER;
     }
+
+    private static String choosePattern(CompilationInfo info, TypeMirror tm, Map<Acceptor, String> patterns) {
+        for (Entry<Acceptor, String> e : patterns.entrySet()) {
+            if (e.getKey().accept(info, tm)) {
+                return e.getValue();
+            }
+        }
+
+        throw new IllegalStateException();
+    }
     
-    private static ExpressionTree prepareExpression(WorkingCopy wc, Map<KindOfType, String> patterns, TypeMirror tm, VariableElement ve, Scope scope) {
-        KindOfType kind = detectKind(wc, tm);
-        String pattern = patterns.get(kind);
+    private static ExpressionTree prepareExpression(WorkingCopy wc, Map<Acceptor, String> patterns, TypeMirror tm, VariableElement ve, Scope scope) {
+        String pattern = choosePattern(wc, tm, patterns);
 
         assert pattern != null;
         
@@ -562,25 +572,71 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         OTHER;
     }
 
-    private static final Map<KindOfType, String> EQUALS_PATTERNS;
-    private static final Map<KindOfType, String> HASH_CODE_PATTERNS;
+    private static final Map<Acceptor, String> EQUALS_PATTERNS;
+    private static final Map<Acceptor, String> HASH_CODE_PATTERNS;
 
     static {
-        EQUALS_PATTERNS = new EnumMap<KindOfType, String>(KindOfType.class);
+        EQUALS_PATTERNS = new LinkedHashMap<Acceptor, String>();
 
-        EQUALS_PATTERNS.put(KindOfType.PRIMITIVE, "this.{VAR} != other.{VAR}");
-        EQUALS_PATTERNS.put(KindOfType.ARRAY_PRIMITIVE, "! java.util.Arrays.equals(this.{VAR}, other.{VAR}");
-        EQUALS_PATTERNS.put(KindOfType.ARRAY, "! java.util.Arrays.deepEquals(this.{VAR}, other.{VAR}");
-        EQUALS_PATTERNS.put(KindOfType.STRING, "(this.{VAR} == null) ? (other.{VAR} != null) : !this.{VAR}.equals(other.{VAR})");
-        EQUALS_PATTERNS.put(KindOfType.OTHER, "this.{VAR} != other.{VAR} && (this.{VAR} == null || !this.{VAR}.equals(other.{VAR}))");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.PRIMITIVE), "this.{VAR} != other.{VAR}");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY_PRIMITIVE), "! java.util.Arrays.equals(this.{VAR}, other.{VAR}");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY), "! java.util.Arrays.deepEquals(this.{VAR}, other.{VAR}");
+        EQUALS_PATTERNS.put(new MethodExistsAcceptor("java.util.Objects", "equals"), "java.util.Objects.equals(this.{VAR}, other.{VAR})");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.STRING), "(this.{VAR} == null) ? (other.{VAR} != null) : !this.{VAR}.equals(other.{VAR})");
+        EQUALS_PATTERNS.put(new SimpleAcceptor(KindOfType.OTHER), "this.{VAR} != other.{VAR} && (this.{VAR} == null || !this.{VAR}.equals(other.{VAR}))");
 
-        HASH_CODE_PATTERNS = new EnumMap<KindOfType, String>(KindOfType.class);
+        HASH_CODE_PATTERNS = new LinkedHashMap<Acceptor, String>();
 
-        HASH_CODE_PATTERNS.put(KindOfType.PRIMITIVE, "this.{VAR}.hashCode()");
-        HASH_CODE_PATTERNS.put(KindOfType.ARRAY_PRIMITIVE, "java.util.Arrays.hashCode(this.{VAR}");
-        HASH_CODE_PATTERNS.put(KindOfType.ARRAY, "java.util.Arrays.deepHashCode(this.{VAR}");
-        HASH_CODE_PATTERNS.put(KindOfType.STRING, "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
-        HASH_CODE_PATTERNS.put(KindOfType.OTHER, "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.PRIMITIVE), "this.{VAR}.hashCode()");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY_PRIMITIVE), "java.util.Arrays.hashCode(this.{VAR}");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.ARRAY), "java.util.Arrays.deepHashCode(this.{VAR}");
+        HASH_CODE_PATTERNS.put(new MethodExistsAcceptor("java.util.Objects", "hashCode"), "java.util.Objects.hashCode(this.{VAR})");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.STRING), "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
+        HASH_CODE_PATTERNS.put(new SimpleAcceptor(KindOfType.OTHER), "(this.{VAR} != null ? this.{VAR}.hashCode() : 0)");
+    }
+
+    private static interface Acceptor {
+        public boolean accept(CompilationInfo info, TypeMirror tm);
+    }
+
+    private static final class SimpleAcceptor implements Acceptor {
+        private final KindOfType kind;
+
+        public SimpleAcceptor(KindOfType kind) {
+            this.kind = kind;
+        }
+
+        public boolean accept(CompilationInfo info, TypeMirror tm) {
+            return detectKind(info, tm) == kind;
+        }
+
+    }
+
+    private static final class MethodExistsAcceptor implements Acceptor {
+        private final String fqn;
+        private final String methodName;
+
+        public MethodExistsAcceptor(String fqn, String methodName) {
+            this.fqn = fqn;
+            this.methodName = methodName;
+        }
+
+        public boolean accept(CompilationInfo info, TypeMirror tm) {
+            TypeElement clazz = info.getElements().getTypeElement(fqn);
+
+            if (clazz == null) {
+                return false;
+            }
+
+            for (ExecutableElement m : ElementFilter.methodsIn(clazz.getEnclosedElements())) {
+                if (m.getSimpleName().contentEquals(methodName)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
     }
 
 }

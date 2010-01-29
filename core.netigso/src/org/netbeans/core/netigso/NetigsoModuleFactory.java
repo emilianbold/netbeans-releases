@@ -247,6 +247,12 @@ implements Stamps.Updater {
             activator = new NetigsoActivator();
             configMap.put("felix.bootdelegation.classloaders", activator);
             FrameworkFactory frameworkFactory = Lookup.getDefault().lookup(FrameworkFactory.class);
+            if (frameworkFactory == null) {
+                throw new IllegalStateException(
+                    "Cannot find OSGi framework implementation." + // NOI18N
+                    " Is org.netbeans.libs.felix module or similar enabled?" // NOI18N
+                );
+            }
             framework = frameworkFactory.newFramework(configMap);
             framework.init();
             new NetigsoServices(framework);
@@ -274,7 +280,7 @@ implements Stamps.Updater {
      * @return the stream to read the definition from or null, if it does not
      *   make sense to represent this module as bundle
      */
-    private static final InputStream fakeBundle(Module m) throws IOException {
+    private static InputStream fakeBundle(Module m) throws IOException {
         String exp = (String) m.getAttribute("OpenIDE-Module-Public-Packages"); // NOI18N
         if ("-".equals(exp)) { // NOI18N
             return null;
@@ -330,7 +336,9 @@ implements Stamps.Updater {
         if (is != null) {
             try {
                 NetigsoActivator.register(m);
-                getContainer().getBundleContext().installBundle("netigso://" + m.getCodeNameBase(), is);
+                final String name = "netigso://" + m.getCodeNameBase();
+                NetigsoModule.LOG.log(Level.FINE, "Installing fake bundle {0}", name);
+                getContainer().getBundleContext().installBundle(name, is);
                 is.close();
             } catch (BundleException ex) {
                 throw new IOException(ex.getMessage());
@@ -339,6 +347,7 @@ implements Stamps.Updater {
         }
     }
 
+    @Override
     public void flushCaches(DataOutputStream os) throws IOException {
         Writer w = new OutputStreamWriter(os);
         for (String s : registered) {
@@ -348,6 +357,7 @@ implements Stamps.Updater {
         w.close();
     }
 
+    @Override
     public void cacheReady() {
     }
 }

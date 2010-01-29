@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
-  <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,78,0,0,5,21"/>
-  </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -24,11 +21,11 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="lWebBrowser" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="cbWebBrowser" pref="1132" max="32767" attributes="0"/>
+                      <Component id="cbWebBrowser" pref="1294" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="editBrowserButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator2" alignment="0" pref="1291" max="32767" attributes="2"/>
+                  <Component id="jSeparator2" alignment="0" pref="1494" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lWebProxy" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
@@ -42,12 +39,12 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="bMoreProxy" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="errorLabel" pref="1105" max="32767" attributes="0"/>
+                                      <Component id="errorLabel" pref="1254" max="32767" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="lProxyHost" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="tfProxyHost" pref="1016" max="32767" attributes="2"/>
+                                      <Component id="tfProxyHost" pref="1137" max="32767" attributes="2"/>
                                       <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                                       <Component id="lProxyPort" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -57,12 +54,12 @@
                           </Group>
                       </Group>
                   </Group>
-                  <Component id="jSeparator3" alignment="0" pref="1291" max="32767" attributes="2"/>
+                  <Component id="jSeparator3" alignment="0" pref="1494" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lUsage" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="lblUsageInfo" alignment="0" pref="1205" max="32767" attributes="0"/>
+                          <Component id="lblUsageInfo" alignment="0" pref="1365" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jUsageCheck" min="-2" max="-2" attributes="0"/>
                               <EmptySpace pref="838" max="32767" attributes="0"/>

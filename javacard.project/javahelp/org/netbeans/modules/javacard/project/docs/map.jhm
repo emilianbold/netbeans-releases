@@ -45,7 +45,10 @@
 	<mapID target="org.netbeans.modules.javacard.CustomizeDevice" url="help/CustomizeDevice.html"/>
 	<mapID target="org.netbeans.modules.javacard.RemoveDeviceFromPlatform" url="help/RemoveDeviceFromPlatform.html"/>
 	<mapID target="org.netbeans.modules.javacard.DebuggingApplications" url="help/DebuggingApplications.html"/>
-	<mapID target="org.netbeans.modules.javacard.DebugApplication2" url="help/DebugApplication2.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingBreakpoints" url="help/SettingBreakpoints.html"/>
+	<mapID target="org.netbeans.modules.javacard.SettingWatches" url="help/SettingWatches.html"/>
+	<mapID target="org.netbeans.modules.javacard.StartingDebugging" url="help/StartingDebugging.html"/>
+	<mapID target="org.netbeans.modules.javacard.SteppingThroughCode" url="help/SteppingThroughCode.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreatingClassicAppletProject" url="help/CreatingClassicAppletProject.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreateClassicAppletProjectFromTemplate" url="help/CreateClassicAppletProjectFromTemplate.html"/>
 	<mapID target="org.netbeans.modules.javacard.CreateClassicAppletProjectFromExistingCode" url="help/CreateClassicAppletProjectFromExistingCode.html"/>
@@ -147,13 +150,6 @@
 	<mapID target="org.netbeans.modules.javacard.GetRefAppSample" url="help/GetRefAppSample.html"/>
 	<mapID target="org.netbeans.modules.javacard.SettingUpSecurityForWebApplication" url="help/SettingUpSecurityForWebApplication.html"/>
 	<mapID target="org.netbeans.modules.javacard.AcceptingUntrustedCertificates" url="help/AcceptingUntrustedCertificates.html"/>
-	<mapID target="org.netbeans.modules.javacard.CustomizingJavaCardPlatform" url="help/CustomizingJavaCardPlatform.html"/>
-	<mapID target="org.netbeans.modules.javacard.BuildingCustomJavaCardPlatformRI" url="help/BuildingCustomJavaCardPlatformRI.html"/>
-	<mapID target="org.netbeans.modules.javacard.ConfiguringCustomRI" url="help/ConfiguringCustomRI.html"/>
-	<mapID target="org.netbeans.modules.javacard.GeneratingCustomSSLCertificatesKeys" url="help/GeneratingCustomSSLCertificatesKeys.html"/>
-	<mapID target="org.netbeans.modules.javacard.UsingCustomSSLCertificatesKeys" url="help/UsingCustomSSLCertificatesKeys.html"/>
-	<mapID target="org.netbeans.modules.javacard.CustomizingRuntimeNode" url="help/CustomizingRuntimeNode.html"/>
-	<mapID target="org.netbeans.modules.javacard.CustomizingDeviceNode" url="help/CustomizingDeviceNode.html"/>
 	<mapID target="org.netbeans.modules.javacard.Troubleshooting" url="help/Troubleshooting.html"/>
 	<mapID target="org.netbeans.modules.javacard.UnableRunSamples" url="help/UnableRunSamples.html"/>
 	<mapID target="org.netbeans.modules.javacard.GettingUpdatedSamples" url="help/GettingUpdatedSamples.html"/>

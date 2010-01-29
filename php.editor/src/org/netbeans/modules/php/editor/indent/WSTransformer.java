@@ -44,13 +44,16 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
+import org.netbeans.api.editor.EditorUtilities;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenUtilities;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
@@ -338,6 +341,17 @@ class WSTransformer extends DefaultTreePathVisitor {
         super.visit(node);
     }
 
+    @Override
+    public void visit(ArrayCreation node) {
+        //super.visit(node);
+        int startOffset = node.getStartOffset();
+        TokenSequence<PHPTokenId> ts = tokenSequence(node.getStartOffset());
+        ts.move(startOffset);
+        if (ts.moveNext() && ts.movePrevious()) {
+
+        }
+
+    }
 
     @Override
     public void visit(ForStatement node) {
@@ -717,6 +731,7 @@ class WSTransformer extends DefaultTreePathVisitor {
             return offset;
         }
 
+        @Override
         public int compareTo(Replacement r) {
             return offset.compareTo(r.offset);
         }

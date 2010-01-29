@@ -195,7 +195,7 @@ public final class GemFilesParser {
      * or <code>null</code> if parsing was unsuccessful.
      */
     public static String[] parseNameAndVersion(URL gemUrl) {
-        return parseNameAndVersion(Gem.getGemName(gemUrl));
+        return parseNameAndVersion(Gems.getGemName(gemUrl));
     }
 
 }

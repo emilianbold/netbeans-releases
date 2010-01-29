@@ -146,7 +146,7 @@ public class AptSourceFileManager extends SourceFileManager {
                     throw new IllegalArgumentException("Invalid path argument: " + ownerRootURL);    //NOI18N
                 }
             }
-            return true;
+            return false;   //Pass the option to all FileManagers
         }
         else {
             return super.handleOption(head, tail);

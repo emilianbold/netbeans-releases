@@ -47,6 +47,7 @@ import org.netbeans.modules.xml.axi.AnyAttribute;
 import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.CompletionPaintComponent.ElementPaintComponent;
+import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
 import org.netbeans.modules.xml.schema.model.Attribute.Use;
 
 /**
@@ -54,8 +55,8 @@ import org.netbeans.modules.xml.schema.model.Attribute.Use;
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
 public class ElementResultItem extends CompletionResultItem {
-    
     private int caretPosition = 0;
+    private String replacingText;
     
     /**
      * Creates a new instance of ElementResultItem
@@ -97,26 +98,32 @@ public class ElementResultItem extends CompletionResultItem {
      * Add mandatory attributes. See issue: 108720
      */
     @Override
-    public String getReplacementText(){
+    public String getReplacementText() {
+        replacingText = null;
+
         AbstractElement element = (AbstractElement)axiComponent;
         StringBuffer buffer = new StringBuffer();
         boolean firstAttr = false;
-        for(AbstractAttribute aa : element.getAttributes()) {
-            if(aa instanceof AnyAttribute)
-                continue;
+        for (AbstractAttribute aa : element.getAttributes()) {
+            if (aa instanceof AnyAttribute) continue;
+            
             Attribute a = (Attribute)aa;
-            if(a.getUse() == Use.REQUIRED) {
-                if(buffer.length() == 0)
+            if (a.getUse() == Use.REQUIRED) {
+                if (buffer.length() == 0)
                     firstAttr = true;
-                buffer.append(" " + a.getName()+
-                        AttributeResultItem.ATTRIBUTE_EQUALS_AND_VALUE_STRING);
-                if(firstAttr) {
-                    caretPosition = buffer.length() -1;
+                buffer.append(" " + a.getName() +
+                    AttributeResultItem.ATTRIBUTE_EQUALS_AND_VALUE_STRING);
+                if (firstAttr) {
+                    caretPosition = buffer.length() - 1;
                     firstAttr = false;
                 }                
             }
         }
-        return itemText + buffer.toString();
+        replacingText = 
+            (CompletionUtil.TAG_FIRST_CHAR +
+            itemText + buffer.toString() +
+            CompletionUtil.TAG_LAST_CHAR);
+        return replacingText;
     }
         
     public CompletionPaintComponent getPaintComponent() {
@@ -133,6 +140,6 @@ public class ElementResultItem extends CompletionResultItem {
      */
     @Override
     public int getCaretPosition() {
-        return itemText.length() + caretPosition;
+        return ((replacingText == null ? 0 : replacingText.length()) + caretPosition);
     }    
 }

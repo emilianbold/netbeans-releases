@@ -1,0 +1,17 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en-US"><head>
+<!-- GenHTML revision 23224-->    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+<title>Stepping Through Code - Java Card 3 Development
+   </title></head><body class="body"><a name="SteppingThroughCode"></a><h2>Stepping Through Code</h2>
+<p class="p">When execution of your program is halted, you can step through your lines of code using the following commands on the Debug menu or toolbar:</p>
+<dl>
+<dt>Step Over</dt><dd>Executes one source line. If the source line contains a call, executes the entire routine without stepping through the individual instructions.</dd>
+<dt>Step Over Expression</dt><dd>Executes one method call in an expression. If an expression has multiple method calls, you can use Step Over Expression to step through an expression and view the value of each method call in the expression in the Local Variables window. Each time you use the Step Over Expression command, the debugger advances to the next method call in the expression and the completed method call is underlined. Step Over Expression behaves like Step Over when there are no additional method calls.</dd>
+<dt>Step Into</dt><dd>Executes one method call in a source line. If the line has more than one method call, you can choose which method call to step into by using the arrow keys or mouse in the source editor to select the method call. The selected method call to step into is indicated by a box around the method call in the source editor. The most likely method call in the line is selected by default.</dd>
+<dt>Step Into Next Method</dt><dd>Executes one source line. If the source line contains a call, the IDE stops just before executing the first statement of the routine. You can also start a debugging session with the Step Into command. Program execution stops on the first line after the main routine before any changes have been made to the state of the program.</dd>
+<dt>Step Out</dt><dd>Executes one source line or, if the source line is part of a routine, executes the remaining lines of the routine and returns control to the caller of the routine. The completed method call is highlighted in the Source Editor.</dd>
+</dl>
+</body>
+</html>

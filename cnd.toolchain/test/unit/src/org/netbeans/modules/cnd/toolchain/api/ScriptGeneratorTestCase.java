@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.toolchain.api;
 
-import org.netbeans.modules.cnd.toolchain.api.ToolchainScriptGenerator;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -50,6 +49,11 @@ public class ScriptGeneratorTestCase  extends NbTestCase {
 
     public ScriptGeneratorTestCase(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected int timeOut() {
+        return 500000;
     }
 
     public void testGNUpatterns() throws Exception {

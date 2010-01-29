@@ -42,6 +42,7 @@
 package org.netbeans.modules.mercurial;
 
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -600,6 +601,15 @@ public class HgModuleConfig {
         } else {
             DialogDisplayer.getDefault().notifyLater(nd);
         }
+    }
+
+    public Color getColor(String colorName, Color defaultColor) {
+         int colorRGB = getPreferences().getInt(colorName, defaultColor.getRGB());
+         return new Color(colorRGB);
+    }
+
+    public void setColor(String colorName, Color value) {
+         getPreferences().putInt(colorName, value.getRGB());
     }
     
     synchronized Set<String> getCommitExclusions() {

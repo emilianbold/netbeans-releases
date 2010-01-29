@@ -42,8 +42,6 @@
 package org.netbeans.modules.xml.schema.completion;
 
 import java.awt.*;
-import java.util.Map;
-import java.util.HashMap;
 import javax.swing.*;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
 import org.netbeans.modules.xml.axi.Attribute;
@@ -54,6 +52,22 @@ import org.netbeans.modules.xml.schema.model.Attribute.Use;
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
 public abstract class CompletionPaintComponent extends JPanel {
+    public static final int DEFAULT_ICON_WIDTH = 16;
+    public static final int DEFAULT_ICON_TEXT_GAP = 5;
+
+    protected int drawX;
+    protected int drawY;
+    protected int drawHeight;
+    private Font drawFont;
+    private int iconTextGap = DEFAULT_ICON_TEXT_GAP;
+    private int fontHeight;
+    private int ascent;
+    private FontMetrics fontMetrics;
+    private boolean isSelected;
+    private CompletionResultItem completionItem;
+
+    private static final String THROWS = " throws "; // NOI18N
+    private static String str; //completion item text
 
     /**
      * Creates a new instance of CompletionPaintComponent
@@ -72,6 +86,7 @@ public abstract class CompletionPaintComponent extends JPanel {
         return isSelected;
     }
     
+    @Override
     public void paintComponent(Graphics g) {
         g.setColor(getBackground());
         java.awt.Rectangle r = g.getClipBounds();
@@ -106,6 +121,8 @@ public abstract class CompletionPaintComponent extends JPanel {
             drawX += icon.getIconWidth() + iconTextGap;
             drawHeight = Math.max(fontHeight, icon.getIconHeight());
         } else {
+            int extraPaintGap = completionItem.getExtraPaintGap();
+            drawX += extraPaintGap + iconTextGap;
             drawHeight = fontHeight;
         }
         if (i != null) {
@@ -141,6 +158,7 @@ public abstract class CompletionPaintComponent extends JPanel {
         : defaultColor;
     }
 
+    @Override
     public void setFont(Font font) {
         super.setFont(font);
         fontMetrics = this.getFontMetrics(font);
@@ -153,6 +171,7 @@ public abstract class CompletionPaintComponent extends JPanel {
         return drawFont;
     }
 
+    @Override
     public Dimension getPreferredSize() {
         draw(null);
         Insets i = getInsets();
@@ -172,7 +191,8 @@ public abstract class CompletionPaintComponent extends JPanel {
         public AttributePaintComponent(CompletionResultItem item) {
             super(item);
         }
-        
+
+        @Override
         protected Font getDrawFont() {
             AbstractAttribute aa = (AbstractAttribute)getCompletionItem().
                     getAXIComponent();
@@ -185,7 +205,13 @@ public abstract class CompletionPaintComponent extends JPanel {
             return super.getFont();
         }
     }
-    
+
+    public static class DefaultCompletionPaintComponent extends CompletionPaintComponent {
+        public DefaultCompletionPaintComponent(CompletionResultItem item) {
+            super(item);
+        }
+    }
+
     public static class ElementPaintComponent extends CompletionPaintComponent {
         public ElementPaintComponent(CompletionResultItem item) {
             super(item);
@@ -197,18 +223,4 @@ public abstract class CompletionPaintComponent extends JPanel {
             super(item);
         }        
     }
-    
-    protected int drawX;
-    protected int drawY;
-    protected int drawHeight;
-    private Font drawFont;
-    private int iconTextGap = 5;
-    private int fontHeight;
-    private int ascent;
-    private FontMetrics fontMetrics;
-    private boolean isSelected;
-    private CompletionResultItem completionItem;
-    
-    private static final String THROWS = " throws "; // NOI18N
-    private static String str; //completion item text
 }

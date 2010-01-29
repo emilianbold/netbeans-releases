@@ -95,6 +95,7 @@ import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.swing.outline.Outline;
 import org.openide.DialogDisplayer;
@@ -325,7 +326,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         Map<File, ClusterNode> clusterToNode = new HashMap<File, ClusterNode>();
         libChildren.platformNodes.clear();
 
-        boolean newPlaf = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() >= NbPlatform.HARNESS_VERSION_67;
+        boolean newPlaf = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion().compareTo(HarnessVersion.V67) >= 0;
 
         for (ModuleEntry platformModule : platformModules) {
             File clusterDirectory = platformModule.getClusterDirectory();
@@ -398,7 +399,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         Set<String> disabledModules = new TreeSet<String>();
         List<ClusterInfo> clusterPath = new ArrayList<ClusterInfo>();
 
-        boolean oldPlaf = getProperties().getActivePlatform().getHarnessVersion() < NbPlatform.HARNESS_VERSION_67;
+        boolean oldPlaf = getProperties().getActivePlatform().getHarnessVersion().compareTo(HarnessVersion.V67) < 0;
 
         assert refreshTask != null;
         if (! refreshTask.isFinished()) {
@@ -821,6 +822,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         // #110085: some more unwanted ones...
         DISABLED_PLATFORM_MODULES.add("org.netbeans.modules.templates"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.netbeans.libs.jsr223"); // NOI18N
+        DISABLED_PLATFORM_MODULES.add("org.jdesktop.layout"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.openide.options"); // NOI18N
         DISABLED_PLATFORM_MODULES.add("org.netbeans.api.visual"); // NOI18N
         
@@ -1829,7 +1831,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private void updateJavaPlatformEnabled() { // #71631
-        boolean enabled = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion() >= NbPlatform.HARNESS_VERSION_50u1;
+        boolean enabled = ((NbPlatform) platformValue.getSelectedItem()).getHarnessVersion().compareTo(HarnessVersion.V50u1) >= 0;
         javaPlatformCombo.setEnabled(enabled);
         javaPlatformButton.setEnabled(enabled); // #72061
     }

@@ -75,6 +75,7 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
     // ----------
     // WizardDescriptor.Panel implementation
 
+    @Override
     public java.awt.Component getComponent() {
         if (projectChooser == null) { // create the UI component for the wizard step
             projectChooser = ProjectChooser.projectChooser();
@@ -90,6 +91,7 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
             projectChooser.setControlButtonsAreShown(false);
 
             projectChooser.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent ev) {
                     String propName = ev.getPropertyName();
                     if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(propName)
@@ -102,11 +104,13 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
         return projectChooser;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelp() {
         // PENDING
         return new org.openide.util.HelpCtx("beans.adding"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
         if (projectChooser != null) {
             File file = projectChooser.getSelectedFile();
@@ -129,9 +133,11 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
         return false;
     }
 
+    @Override
     public void readSettings(AddToPaletteWizard settings) {
     }
 
+    @Override
     public void storeSettings(AddToPaletteWizard settings) {
         if (projectChooser == null)
             return;
@@ -162,10 +168,12 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
         settings.setJARFiles(entries);
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
         cs.addChangeListener(listener);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
         cs.removeChangeListener(listener);
     }

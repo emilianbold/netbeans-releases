@@ -72,6 +72,11 @@ public class WriteRegistryTestCase extends NbTestCase {
         super.tearDown();
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testWrtiteDescriptor() throws Exception {
         List<ToolchainDescriptor> original = ToolchainManager.getImpl().getAllToolchains();
         ToolchainManager.getImpl().writeToolchains();

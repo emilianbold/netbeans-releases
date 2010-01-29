@@ -65,6 +65,7 @@ import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.platform.gems.Gems;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
@@ -111,6 +112,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         this.platform = new RubyPlatformProvider(evaluator).getPlatform();
     }
 
+    @Override
     public synchronized List<PathResourceImplementation> getResources() {
         if (this.resourcesCache == null) {
                 //TODO: May also listen on CP, but from Platform it should be fixed.
@@ -179,7 +181,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private void filterAndAddGems(Collection<URL> gemsToAdd, List<PathResourceImplementation> result) {
         Collection<URL> filtered = requiredGems.filterNotRequiredGems(gemsToAdd);
         for (URL url : filtered) {
-            String gem = Gem.getGemName(url);
+            String gem = Gems.getGemName(url);
             if (gemFilter.include(gem)) {
                 result.add(ClassPathSupport.createResource(url));
                 continue;
@@ -243,7 +245,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         gemUrls.get("actionwebservice");
 
         boolean first = true;
-        for (String gemName : Gem.getRailsGems()) { // NOI18N
+        for (String gemName : Gems.getRailsGems()) { // NOI18N
             URL url = gemUrls.get(gemName);
             if (url != null) {
                 String urlString = url.toExternalForm();

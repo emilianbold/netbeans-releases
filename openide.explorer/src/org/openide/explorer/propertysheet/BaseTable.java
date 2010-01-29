@@ -54,6 +54,7 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
@@ -229,6 +230,7 @@ abstract class BaseTable extends JTable implements FocusListener {
         InputMap imp = getInputMap();
         ActionMap am = getActionMap();
 
+        if (!GraphicsEnvironment.isHeadless()) {
         //Issue 37919, reinstate support for up/down cycle focus transfer.
         //being focus cycle root mangles this in some dialogs
         imp.put(
@@ -240,6 +242,7 @@ abstract class BaseTable extends JTable implements FocusListener {
             KeyStroke.getKeyStroke(KeyEvent.VK_TAB, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask(), false),
             ACTION_FOCUS_NEXT
         );
+        }
 
         Action ctrlTab = new CTRLTabAction();
         am.put(ACTION_FOCUS_NEXT, ctrlTab);

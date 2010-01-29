@@ -199,21 +199,15 @@ public class PkgConfigImpl implements PkgConfig {
     }
 
     @Override
-    public ResolvedPath getResolvedPath(String include) {
+    public Collection<ResolvedPath> getResolvedPath(String include) {
         Map<String, List<Pair>> map = getLibraryItems();
         List<Pair> pairs = map.get(include);
         if (pairs != null && pairs.size() > 0){
-            if (true || pairs.size() == 1) {
-                // get first found package
-                return new ResolvedPathImpl(pairs.get(0).path, pairs.get(0).configurations);
-            } else {
-                String path = pairs.get(0).path;
-                Set<PackageConfiguration> set = new LinkedHashSet<PackageConfiguration>();
-                for(Pair p : pairs){
-                    set.addAll(p.configurations);
-                }
-                return new ResolvedPathImpl(path, set);
+            ArrayList<ResolvedPath> res = new ArrayList<ResolvedPath>(pairs.size());
+            for(Pair p : pairs){
+                res.add(new ResolvedPathImpl(p.path, p.configurations));
             }
+            return res;
         }
         return null;
     }

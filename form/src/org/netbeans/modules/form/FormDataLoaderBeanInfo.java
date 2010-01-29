@@ -49,7 +49,6 @@ import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /** Form data loader bean info.
  *

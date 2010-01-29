@@ -2207,6 +2207,21 @@ public class AstUtilities {
     }
 
     /**
+     * Like {@link #getName(org.jrubyparser.ast.Node) }, but instead of throwing
+     * a CCE returns <code>null</code> if the given <code>node</code> wasn't an
+     * instance of {@ INameNode}.
+     *
+     * @param node
+     * @return the name or <code>null</code>.
+     */
+    static String safeGetName(final Node node) {
+        if (node instanceof INameNode) {
+            return getName(node);
+        }
+        return null;
+    }
+
+    /**
      * Finds exit points of a method definition for the given node.
      *
      * @param defNode {@link MethodDefNode method definition node}

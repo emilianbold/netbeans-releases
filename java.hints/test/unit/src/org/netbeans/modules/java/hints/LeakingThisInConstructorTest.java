@@ -76,5 +76,25 @@ public class LeakingThisInConstructorTest extends TestBase {
                             "}",
                             "2:39-2:43:verifier:Leaking this in constructor"
                             );
-    }   
+    }
+    public void testReportInAssignment() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public Test() { B.x = this; }\n" +
+                            "}\n" +
+                            "class B { public static Object x }",
+                            "2:20-2:30:verifier:Leaking this in constructor"
+                            );
+    }
+
+    public void testDoNotReportAssignmentInMethod() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "    public void foo() { B.x = this; }\n" +
+                            "}\n" +
+                            "class B { public static Object x }"
+                            );
+    }
 }

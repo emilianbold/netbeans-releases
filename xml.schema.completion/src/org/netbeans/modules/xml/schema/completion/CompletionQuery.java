@@ -52,11 +52,10 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.openide.filesystems.FileObject;
 
 /**
- *
  * @author Samaresh (Samaresh.Panda@Sun.Com)
+ * @author Alex Petrov (Alexey.Petrov@Sun.Com)
  */
 public class CompletionQuery extends AsyncCompletionQuery {
-        
     /**
      * Creates a new instance of CompletionQuery
      */
@@ -64,28 +63,29 @@ public class CompletionQuery extends AsyncCompletionQuery {
         this.primaryFile = primaryFile;
     }    
     
-    /**
-     *
-     */
     @Override
     protected void prepareQuery(JTextComponent component) {
         this.component = component;
     }
     
-    /**
-     *
-     */
-    protected void query(CompletionResultSet resultSet,
-            Document doc, int caretOffset) {
-        
-        XMLSyntaxSupport support = ((XMLSyntaxSupport)((BaseDocument)doc).getSyntaxSupport());
-        if(support.noCompletion(component) || !CompletionUtil.canProvideCompletion((BaseDocument)doc)) {
-            resultSet.finish();
-            return;
+    protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+        XMLSyntaxSupport support = 
+            (XMLSyntaxSupport) ((BaseDocument) doc).getSyntaxSupport();
+
+        CompletionResultItem endTagResultItem = CompletionUtil.getEndTagCompletionItem(
+            component, (BaseDocument) doc);
+        List<CompletionResultItem> completionItems = null;
+
+        if (! support.noCompletion(component) &&
+           (CompletionUtil.canProvideCompletion((BaseDocument) doc))) {
+            completionItems = getCompletionItems(doc, caretOffset);
         }
-        
-        List<CompletionResultItem> items = getCompletionItems(doc, caretOffset);
-        if(items != null) resultSet.addAllItems(items);
+        if (endTagResultItem != null) resultSet.addItem(endTagResultItem);
+        if ((completionItems != null) && (completionItems.size() > 0)) {
+            resultSet.addAllItems(completionItems);
+        } else if (endTagResultItem != null) {
+            endTagResultItem.setExtraPaintGap(-CompletionPaintComponent.DEFAULT_ICON_TEXT_GAP);
+        }
         resultSet.finish();
     }
         
@@ -106,13 +106,15 @@ public class CompletionQuery extends AsyncCompletionQuery {
                 
         //Step 3: Query
         switch (context.getCompletionType()) {
+            case COMPLETION_TYPE_ELEMENT_VALUE:
+                completionItems = CompletionUtil.getElementValues(context);
+                if ((completionItems != null) && (completionItems.size() > 0)) {
+                    break;
+                }
+
             case COMPLETION_TYPE_ELEMENT:
                 completionItems = CompletionUtil.getElements(context);
                 break;
-                
-            case COMPLETION_TYPE_ELEMENT_VALUE:
-                completionItems = CompletionUtil.getElementValues(context);
-                break;            
                 
             case COMPLETION_TYPE_ATTRIBUTE:
                 completionItems = CompletionUtil.getAttributes(context);

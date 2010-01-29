@@ -67,11 +67,13 @@ public class PHPNewLineIndenter {
     private Collection<ScopeDelimiter> scopeDelimiters = null;
     private int indentSize;
     private int continuationSize;
+    private int itemsArrayDeclararionSize;
 
     public PHPNewLineIndenter(Context context) {
         this.context = context;
         indentSize = CodeStyle.get(context.document()).getIndentSize();
         continuationSize = CodeStyle.get(context.document()).getContinuationIndentSize();
+        itemsArrayDeclararionSize = CodeStyle.get(context.document()).getItemsInArrayDeclarationIndentSize();
         int initialIndentSize = CodeStyle.get(context.document()).getInitialIndent();
 
         scopeDelimiters = Arrays.asList(
@@ -226,7 +228,7 @@ public class PHPNewLineIndenter {
                                     if (startExpression != -1) {
                                         int offsetArrayDeclaration = offsetArrayDeclaration(startExpression, ts);
                                         if (offsetArrayDeclaration > -1) {
-                                            newIndent = Utilities.getRowIndent(doc, offsetArrayDeclaration) + indentSize;
+                                            newIndent = Utilities.getRowIndent(doc, offsetArrayDeclaration) + itemsArrayDeclararionSize;
                                         }
                                         else {
                                             newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;

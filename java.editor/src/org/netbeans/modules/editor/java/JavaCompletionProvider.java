@@ -3714,6 +3714,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                         TypeElement te = controller.getElements().getTypeElement("java.lang.Enum"); //NOI18N
                         if (te != null)
                             ret.add(types.getDeclaredType(te));
+                        if (controller.getSourceVersion().compareTo(SourceVersion.RELEASE_7) >= 0) {
+                            te = controller.getElements().getTypeElement("java.lang.String"); //NOI18N
+                            if (te != null)
+                                ret.add(types.getDeclaredType(te));
+                        }
                         return ret;
                     case METHOD_INVOCATION:
                         MethodInvocationTree mi = (MethodInvocationTree)tree;

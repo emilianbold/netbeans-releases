@@ -63,6 +63,7 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
     /** Gets the supported layout manager class - BorderLayout.
      * @return the class supported by this delegate
      */
+    @Override
     public Class getSupportedClass() {
         return BorderLayout.class;
     }
@@ -367,7 +368,7 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
             positions.add(BorderLayout.LINE_END);
         if (getComponentOnPosition(BorderLayout.LINE_START) == -1)
             positions.add(BorderLayout.LINE_START);
-        if (positions.size() == 0)
+        if (positions.isEmpty())
             positions.add(BorderLayout.CENTER);
 
         String[] free = new String[positions.size()];
@@ -424,6 +425,7 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
             this.direction = direction;
         }
 
+        @Override
         public Node.Property[] getProperties() {
             if (properties == null) {
                 properties = new FormProperty[] {
@@ -433,10 +435,12 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
                             getBundle().getString("PROP_direction"), // NOI18N
                             getBundle().getString("HINT_direction")) // NOI18N
                     {
+                    @Override
                         public Object getTargetValue() {
                             return direction;
                         }
 
+                    @Override
                         public void setTargetValue(Object value) {
                             direction = (String)value;
                         }
@@ -458,10 +462,12 @@ public class BorderLayoutSupport extends AbstractLayoutSupport
             return properties;
         }
 
+        @Override
         public Object getConstraintsObject() {
             return direction;
         }
 
+        @Override
         public LayoutConstraints cloneConstraints() {
             return new BorderConstraints(direction);
         }

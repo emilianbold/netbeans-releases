@@ -106,13 +106,13 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     // special values when no features are created
     public static final String NO_REPO = "none"; // NOI18N
     public static final String NO_ISSUES = "none"; // NOI18N
-    //TODO: add instance
-    private Kenai kenai = KenaiManager.getDefault().getKenai("https://kenai.com");
+    private Kenai kenai;
 
     private Logger logger = Logger.getLogger("org.netbeans.modules.kenai"); // NOI18N
 
-    NewKenaiProjectWizardIterator(Node [] activatedNodes) {
+    NewKenaiProjectWizardIterator(Node [] activatedNodes, Kenai kenai) {
         this.activeNodes = activatedNodes != null ? activatedNodes : new Node[]{};
+        this.kenai = kenai;
     }
 
     public Set<CreatedProjectInfo> instantiate(ProgressHandle handle) throws IOException {

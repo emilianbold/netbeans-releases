@@ -50,6 +50,7 @@ import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.netbeans.modules.ruby.platform.gems.GemFilesParser;
+import org.netbeans.modules.ruby.platform.gems.Gems;
 import org.netbeans.modules.ruby.rubyproject.GemRequirement.Status;
 import org.openide.util.Parameters;
 
@@ -145,12 +146,14 @@ public final class RequiredGems  {
         Parameters.notNull("gemRequirements", gemRequirements);
         synchronized (this) {
             if (requirements == null) {
-                requirements = new ArrayList<GemRequirement>(gemRequirements);
-            } else {
-                for (GemRequirement each : gemRequirements) {
-                    if (!requirements.contains(each)) {
-                        requirements.add(each);
-                    }
+                requirements = new ArrayList<GemRequirement>();
+                for (GemIndexingStatus status : getGemIndexingStatuses()) {
+                    requirements.add(status.getRequirement());
+                }
+            } 
+            for (GemRequirement each : gemRequirements) {
+                if (!requirements.contains(each)) {
+                    requirements.add(each);
                 }
             }
         }
@@ -212,7 +215,7 @@ public final class RequiredGems  {
      * @return the filtered collection.
      */
     public synchronized Collection<URL> filterNotRequiredGems(Collection<URL> gemUrls) {
-        if (requirements == null) {
+        if (requirements == null && forTests) {
             return gemUrls;
         }
 
@@ -225,6 +228,14 @@ public final class RequiredGems  {
                 // special cases, rails and rake (which are not listed by rake gems)
                 if (isRailsOrRake(name)) { //NOI18N
                     result.add(url);
+                    continue;
+                }
+                // filter out testing gems if no requirements are specified
+                if (requirements == null && !forTests) {
+                    // by default exclude testing gems
+                    if (!Gems.isTestingGem(name)) {
+                        result.add(url);
+                    }
                     continue;
                 }
                 for (GemRequirement each : requirements) {
@@ -342,7 +353,7 @@ public final class RequiredGems  {
     }
 
     private static boolean isRailsOrRake(String name) {
-        return Gem.isRailsGem(name) || Gem.isRakeGem(name);
+        return Gems.isRailsGem(name) || Gems.isRakeGem(name);
     }
 
     private static List<GemRequirement> mergeVersions(List<GemRequirement> requirements) {
