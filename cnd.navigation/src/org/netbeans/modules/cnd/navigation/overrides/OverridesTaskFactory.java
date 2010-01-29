@@ -46,14 +46,7 @@ import java.util.Collections;
 import java.util.logging.Level;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
-import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
 import org.netbeans.modules.cnd.model.tasks.EditorAwareCsmFileTaskFactory;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -61,7 +54,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -157,51 +149,10 @@ public class OverridesTaskFactory extends EditorAwareCsmFileTaskFactory {
             OverriddeAnnotation.LOGGER.log(Level.FINE, "<< Computed sannotations for {0} in {1} ms", new Object[] { file, time });
             final Collection<OverriddeAnnotation> toClear;
             AnnotationsHolder.get(dobj.getPrimaryFile()).setNewAnnotations(toAdd);
-//            synchronized (annotations) {
-//                toClear = new ArrayList<OverriddeAnnotation>(annotations);
-//                annotations.clear();
-//                annotations.addAll(toAdd);
-//            }
-//            Runnable r = new Runnable() {
-//                @Override
-//                public void run() {
-//                    for (OverriddeAnnotation anno : toClear) {
-//                        anno.detachImpl();
-//                    }
-//                    for (OverriddeAnnotation anno : toAdd) {
-//                        anno.attach();
-//                    }
-//                }
-//            };
-//            if (SwingUtilities.isEventDispatchThread()) {
-//                r.run();
-//            } else {
-//                SwingUtilities.invokeLater(r);
-//            }
         }
 
         private void clearAnnotations(StyledDocument doc, DataObject dobj) {
             AnnotationsHolder.get(dobj.getPrimaryFile()).setNewAnnotations(Collections.<OverriddeAnnotation>emptyList());
-//            final Collection<OverriddeAnnotation> toClear;
-//            synchronized (annotations) {
-//                toClear = new ArrayList<OverriddeAnnotation>(annotations);
-//                annotations.clear();
-//            }
-//            if (!toClear.isEmpty()) {
-//                Runnable r = new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        for (OverriddeAnnotation anno : toClear) {
-//                            anno.detachImpl();
-//                        }
-//                    }
-//                };
-//                if (SwingUtilities.isEventDispatchThread()) {
-//                    r.run();
-//                } else {
-//                    SwingUtilities.invokeLater(r);
-//                }
-//            }
         }
 
 
