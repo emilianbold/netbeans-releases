@@ -79,6 +79,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
        
         if (ProviderUtil.isValidServerInstanceOrNone(project)){
             connectDatasources();
+            if(dsCombo.getItemCount()>0)dsCombo.setSelectedIndex(0);//select first available instead of empty
         }
         
         PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
@@ -112,6 +113,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         dsPopulator.connect(dsCombo);
         
         dsCombo.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 checkValidity();
             }
@@ -119,12 +121,15 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         
         ((JTextComponent)dsCombo.getEditor().getEditorComponent()).
                 getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 checkValidity();
             }
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 checkValidity();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 checkValidity();
             }
@@ -144,6 +149,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         }
     }
     
+    @Override
     public String getPersistenceUnitName() {
         return unitNameTextField.getText();
     }
@@ -152,6 +158,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         return ((JTextComponent)dsCombo.getEditor().getEditorComponent()).getText();
     }
     
+    @Override
     public void setPreselectedDB(String db) {
         boolean hasItem = false;
         for (int i = 0; i < dsCombo.getItemCount(); i++) {
@@ -181,6 +188,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
     }
     
     
+    @Override
     public String getTableGeneration() {
         if (ddlCreate.isSelected()) {
             return Provider.TABLE_GENERATION_CREATE;
@@ -191,6 +199,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         }
     }
     
+    @Override
     public boolean isValidPanel() {
         try{
             if (!isNameValid()){
@@ -211,6 +220,7 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         return Strings.isEmpty(getPersistenceUnitName()) ? false : isNameUnique();
     }
     
+    @Override
     public Provider getSelectedProvider() {
         return (Provider) providerCombo.getSelectedItem();
     }
