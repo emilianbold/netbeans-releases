@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
@@ -201,7 +200,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         ExecutionEnvironment execEnv = getMakeConfiguration().getDevelopmentHost().getExecutionEnvironment();
 
         //if we have sun studio compiler along compiler collections presentedCompiler
-        CompilerSetManager compilerSetManager = CompilerSetManagerAccessor.getDefault(execEnv);
+        CompilerSetManager compilerSetManager = CompilerSetManager.get(execEnv);
         List<CompilerSet> compilers = compilerSetManager.getCompilerSets();
         boolean hasSunStudio = false;
         for (CompilerSet cs : compilers) {

@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainManagerImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -66,7 +66,7 @@ public class CompilerSetFactory {
      * @returns The best fitting compiler set (may be an empty CompilerSet)
      */
     public static CompilerSet getCompilerSet(ExecutionEnvironment env, String name, int platform) {
-        CompilerSet cs = CompilerSetManagerAccessor.getDefault(env).getCompilerSet(CompilerFlavorImpl.toFlavor(name, platform));
+        CompilerSet cs = CompilerSetManager.get(env).getCompilerSet(CompilerFlavorImpl.toFlavor(name, platform));
         if (cs == null) {
             CompilerFlavor flavor = CompilerFlavorImpl.toFlavor(name, platform);
             flavor = flavor == null ? CompilerFlavorImpl.getUnknown(platform) : flavor;

@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -199,7 +198,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         ServerRecord record = ServerList.get(execEnv);
         assertNotNull(record);
-        final CompilerSetManager csm = CompilerSetManagerAccessor.getDefault(execEnv);
+        final CompilerSetManager csm = CompilerSetManager.get(execEnv);
         for (CompilerSet cset : csm.getCompilerSets()) {
             if (cset.getName().equals(name)) {
                 csm.setDefault(cset);

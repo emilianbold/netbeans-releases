@@ -92,7 +92,7 @@ import org.openide.util.TaskListener;
  * Manage a set of CompilerSets. The CompilerSets are dynamically created based on which compilers
  * are found in the user's $PATH variable.
  */
-public final class CompilerSetManagerImpl implements CompilerSetManager {
+public final class CompilerSetManagerImpl extends CompilerSetManager {
 
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
@@ -1110,11 +1110,6 @@ public final class CompilerSetManagerImpl implements CompilerSetManager {
             }
         }
         return null;
-    }
-
-    /** Look up i18n strings here */
-    private static String getString(String s) {
-        return NbBundle.getMessage(CompilerSetManager.class, s);
     }
 
     @Override

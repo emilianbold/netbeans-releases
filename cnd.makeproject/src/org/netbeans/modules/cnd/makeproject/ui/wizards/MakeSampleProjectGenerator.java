@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
@@ -143,7 +142,7 @@ public class MakeSampleProjectGenerator {
             changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
 
             ExecutionEnvironment env = ServerList.getDefaultRecord().getExecutionEnvironment();
-            CompilerSetManager compilerSetManager = CompilerSetManagerAccessor.getDefault(env);
+            CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
             int platform = compilerSetManager.getPlatform();
             CompilerSet compilerSet = compilerSetManager.getDefaultCompilerSet();
             String variant = null;
@@ -192,7 +191,7 @@ public class MakeSampleProjectGenerator {
         if (!logger.isLoggable(Level.INFO)) {
             return;
         }
-        CompilerSetManager compilerSetManager = CompilerSetManagerAccessor.getDefault(env);
+        CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
         CompilerSet compilerSet = compilerSetManager.getDefaultCompilerSet();
         LogRecord logRecord = new LogRecord(Level.INFO, ConfigurationDescriptorProvider.USG_PROJECT_CREATE_CND);
         logRecord.setLoggerName(logger.getName());

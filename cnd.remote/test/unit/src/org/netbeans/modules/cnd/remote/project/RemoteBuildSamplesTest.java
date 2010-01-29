@@ -47,7 +47,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 /**
  *
@@ -73,7 +73,7 @@ public class RemoteBuildSamplesTest extends RemoteBuildTestBase {
 
         setDefaultCompilerSet(toolchain.ID);
         assertEquals("Wrong tools collection", toolchain.ID,
-                CompilerSetManagerAccessor.getDefault(getTestExecutionEnvironment()).getDefaultCompilerSet().getName());
+                CompilerSetManager.get(getTestExecutionEnvironment()).getDefaultCompilerSet().getName());
 
         clearRemoteSyncRoot();
         FileObject projectDirFO = prepareSampleProject(projectName, "Args_01");
