@@ -79,7 +79,6 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
        
         if (ProviderUtil.isValidServerInstanceOrNone(project)){
             connectDatasources();
-            if(dsCombo.getItemCount()>0)dsCombo.setSelectedIndex(0);//select first available instead of empty
         }
         
         PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
