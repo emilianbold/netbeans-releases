@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport.Worker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -403,7 +402,7 @@ class RemoteSyncActions {
     }
 
     private static ExecutionEnvironment getEnv(Project project) {
-        ExecutionEnvironment developmentHost = CompilerSetManagerAccessor.getDefaultExecutionEnvironment();
+        ExecutionEnvironment developmentHost = ServerList.getDefaultRecord().getExecutionEnvironment();
         if (project != null) {
             RemoteProject info = project.getLookup().lookup(RemoteProject.class);
             if (info != null) {

@@ -39,29 +39,14 @@
 
 package org.netbeans.modules.cnd.toolchain.api;
 
-import org.netbeans.modules.cnd.toolchain.compilers.impl.NoCompilersPanel;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetImpl;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetPreferences;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainScriptGenerator;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
-import java.util.Collection;
-import java.util.HashMap;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerAccessorImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
 
 /**
  *
- * @author as204739
+ * @author Alexander Simon
  */
 public class CompilerSetManagerAccessor {
-
-    private static final HashMap<ExecutionEnvironment, CompilerSetManagerImpl> managers = new HashMap<ExecutionEnvironment, CompilerSetManagerImpl>();
-    private static final Object MASTER_LOCK = new Object();
 
     private CompilerSetManagerAccessor() {
     }
@@ -79,104 +64,11 @@ public class CompilerSetManagerAccessor {
      * @return A default CompilerSetManager for the given key
      */
     public static CompilerSetManager getDefault(ExecutionEnvironment env) {
-        return getDefaultImpl(env, true);
+        return CompilerSetManagerAccessorImpl.getDefault(env);
     }
 
     public static CompilerSetManager getDefault() {
-        return getDefault(ExecutionEnvironmentFactory.getLocal());
-    }
-
-    /** Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault() */
-    public static CompilerSetManager create(ExecutionEnvironment env) {
-        CompilerSetManager newCsm = new CompilerSetManagerImpl(env);
-        if (newCsm.getCompilerSets().size() == 1 && newCsm.getCompilerSets().get(0).getName().equals(CompilerSetImpl.None)) {
-            newCsm.remove(newCsm.getCompilerSets().get(0));
-        }
-        return newCsm;
-    }
-
-    /** Replace the default CompilerSetManager. Let registered listeners know its been updated */
-    public static void setManagers(Collection<CompilerSetManager> csms) {
-        synchronized (MASTER_LOCK) {
-            CompilerSetPreferences.clearPersistence();
-            managers.clear();
-            for (CompilerSetManager csm : csms) {
-                CompilerSetManagerImpl impl = (CompilerSetManagerImpl) csm;
-                impl.completeCompilerSets();
-                CompilerSetPreferences.saveToDisk(impl);
-                managers.put(impl.getExecutionEnvironment(), impl);
-            }
-        }
-    }
-
-    public static String getRemoteScript(String path) {
-        return ToolchainScriptGenerator.generateScript(path);
-    }
-
-    public static void save(CompilerSetManager csm) {
-        synchronized (MASTER_LOCK) {
-            CompilerSetPreferences.saveToDisk(csm);
-        }
-    }
-
-    public static CompilerSetManager getDeepCopy(ExecutionEnvironment execEnv, boolean initialize) {
-        return ((CompilerSetManagerImpl)getDefaultImpl(execEnv, initialize)).deepCopy();
-    }
-
-    public static ExecutionEnvironment getDefaultExecutionEnvironment() {
-        return ServerList.getDefaultRecord().getExecutionEnvironment();
-    }
-
-    private static CompilerSetManager getDefaultImpl(ExecutionEnvironment env, boolean initialize) {
-        CompilerSetManagerImpl csm = null;
-        boolean no_compilers = false;
-
-        synchronized (MASTER_LOCK) {
-            csm = managers.get(env);
-            if (csm == null) {
-                csm = CompilerSetPreferences.restoreFromDisk(env);
-                if (csm != null && csm.getDefaultCompilerSet() == null) {
-                    CompilerSetPreferences.saveToDisk(csm);
-                }
-            }
-            if (csm == null) {
-                csm = new CompilerSetManagerImpl(env, initialize);
-                if (csm.isValid()) {
-                    CompilerSetPreferences.saveToDisk(csm);
-                } else if (!csm.isPending() && !csm.isUninitialized()) {
-                    no_compilers = true;
-                }
-            }
-            if (csm != null) {
-                managers.put(env, csm);
-            }
-        }
-
-        if (no_compilers) {
-            // workaround to fix IZ#164028: Full IDE freeze when opening GizmoDemo project on Linux
-            // we postpone dialog displayer until EDT is free to process
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    DialogDescriptor dialogDescriptor = new DialogDescriptor(
-                            new NoCompilersPanel(),
-                            getString("NO_COMPILERS_FOUND_TITLE"),
-                            true,
-                            new Object[]{DialogDescriptor.OK_OPTION},
-                            DialogDescriptor.OK_OPTION,
-                            DialogDescriptor.BOTTOM_ALIGN,
-                            null,
-                            null);
-                    DialogDisplayer.getDefault().notify(dialogDescriptor);
-                }
-            });
-        }
-        return csm;
-    }
-
-    /** Look up i18n strings here */
-    private static String getString(String s) {
-        return NbBundle.getMessage(CompilerSetManagerAccessor.class, s);
+        return CompilerSetManagerAccessorImpl.getDefault();
     }
 
 }

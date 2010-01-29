@@ -144,7 +144,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         if (project == null) {
             project = findInOpenedProject(fileObject);
         }
-        ExecutionEnvironment developmentHost = CompilerSetManagerAccessor.getDefaultExecutionEnvironment();
+        ExecutionEnvironment developmentHost = ServerList.getDefaultRecord().getExecutionEnvironment();
         if (project != null) {
             RemoteProject info = project.getLookup().lookup(RemoteProject.class);
             if (info != null) {

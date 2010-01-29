@@ -81,8 +81,8 @@ public class PlatformNone extends Platform {
             }
             return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag()
                     +  IpeUtils.escapeOddCharacters(libDir)
-                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag()
-                    + IpeUtils.escapeOddCharacters(libName); // NOI18N
+                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
+                    + IpeUtils.escapeOddCharacters(libName);
         } else {
             return IpeUtils.escapeOddCharacters(libPath);
         }

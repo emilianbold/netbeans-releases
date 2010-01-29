@@ -61,6 +61,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
@@ -141,7 +142,7 @@ public class MakeSampleProjectGenerator {
             //changeXmlFileByTagName(doc, "folderPath", workingDir, "X-PROJECTDIR-X"); // NOI18N
             changeXmlFileByTagName(doc, "defaultConf", systemOs, "X-DEFAULTCONF-X"); // NOI18N
 
-            ExecutionEnvironment env = CompilerSetManagerAccessor.getDefaultExecutionEnvironment();
+            ExecutionEnvironment env = ServerList.getDefaultRecord().getExecutionEnvironment();
             CompilerSetManager compilerSetManager = CompilerSetManagerAccessor.getDefault(env);
             int platform = compilerSetManager.getPlatform();
             CompilerSet compilerSet = compilerSetManager.getDefaultCompilerSet();

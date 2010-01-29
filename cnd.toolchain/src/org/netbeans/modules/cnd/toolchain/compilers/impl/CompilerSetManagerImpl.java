@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.toolchain.compilers.impl;
 
+import org.netbeans.modules.cnd.toolchain.spi.ToolchainScriptGenerator;
 import java.io.File;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -70,7 +71,6 @@ import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetFactory;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerEvents;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetProvider;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
@@ -211,7 +211,7 @@ public final class CompilerSetManagerImpl implements CompilerSetManager {
                 }
             }
             if (save) {
-                CompilerSetManagerAccessor.save(this);
+                CompilerSetManagerAccessorImpl.save(this);
             }
         } finally {
             CompilerSetReporter.setWriter(null);
@@ -389,7 +389,7 @@ public final class CompilerSetManagerImpl implements CompilerSetManager {
      * @param dirlist An ArrayList of the current PATH
      * @return A possibly modified ArrayList
      */
-    static ArrayList<String> appendDefaultLocations(int platform, ArrayList<String> dirlist) {
+    public static ArrayList<String> appendDefaultLocations(int platform, ArrayList<String> dirlist) {
         for (ToolchainDescriptor d : ToolchainManagerImpl.getImpl().getToolchains(platform)) {
             if (d.isAbstract()) {
                 continue;
