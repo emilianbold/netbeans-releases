@@ -92,12 +92,12 @@ public class ComputeAnnotations {
     private OverriddeAnnotation computeAnnotation(CsmFunction func, StyledDocument doc) {
         if (CsmKindUtilities.isMethod(func)) {
             CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(func);
-            final Collection<? extends CsmMethod> baseMethods = CsmVirtualInfoQuery.getDefault().getBaseDeclaration(meth);
+            final Collection<? extends CsmMethod> baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
             final Collection<? extends CsmMethod> overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverridenMethods(meth, false);
             if (OverriddeAnnotation.LOGGER.isLoggable(Level.FINEST)) {
-                OverriddeAnnotation.LOGGER.log(Level.FINEST, "Found {0} base decls for {1}", new Object[]{baseMethods.size(), func});
+                OverriddeAnnotation.LOGGER.log(Level.FINEST, "Found {0} base decls for {1}", new Object[]{baseMethods.size(), toString(func)});
                 for (CsmMethod baseMethod : baseMethods) {
-                    OverriddeAnnotation.LOGGER.log(Level.FINEST, "    {0}", baseMethod);
+                    OverriddeAnnotation.LOGGER.log(Level.FINEST, "    {0}", toString(baseMethod));
                 }
             }
             if (!baseMethods.isEmpty()) {
@@ -114,5 +114,18 @@ public class ComputeAnnotations {
             }
         }
         return null;
+    }
+
+    private static CharSequence toString(CsmFunction func) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(func.getClass().getSimpleName());
+        sb.append(' ');
+        sb.append(func.getQualifiedName());
+        sb.append(" [");
+        sb.append(func.getContainingFile().getName());
+        sb.append(':');
+        sb.append(func.getStartPosition().getLine());
+        sb.append(']');
+        return sb;
     }
 }
