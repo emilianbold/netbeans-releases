@@ -66,7 +66,7 @@ public class GenerateJnlpFileTask extends Task {
     private static final String DEFAULT_APPLICATION_DESC = "${APPLICATION.DESC}";
     private static final String DEFAULT_APPLICATION_DESC_SHORT = "${APPLICATION.DESC.SHORT}";
     private static final String DEFAULT_JNLP_ICON = "${JNLP.ICONS}";
-    private static final String DEFAULT_JNLP_OFFLINE = "${JNLP.OFFLINE.ALLOWED}";
+    private static final String JNLP_UPDATE = "${JNLP.UPDATE}";
     private static final String DEFAULT_JNLP_SECURITY = "${JNLP.SECURITY}";
     private static final String DEFAULT_JNLP_RESOURCES_RUNTIME = "${JNLP.RESOURCES.RUNTIME}";
     private static final String DEFAULT_JNLP_RESOURCES_MAIN_JAR = "${JNLP.RESOURCES.MAIN.JAR}";
@@ -203,6 +203,7 @@ public class GenerateJnlpFileTask extends Task {
         }
         
         processInformationElem(docDom);
+        processBackgroundElem(docDom, jnlpElem);
         processSecurityElem(docDom, jnlpElem);
         processResourcesElem(docDom);
         processDescriptorElem(docDom);
@@ -281,12 +282,6 @@ public class GenerateJnlpFileTask extends Task {
                                     String fileName = stripFilename(iconProp);
                                     informationElem.appendChild(createIconElement(docDom, fileName, "default"));
                                 }
-                            } else if (nodeValue.equals(DEFAULT_JNLP_OFFLINE)) {
-                                informationElem.removeChild(node);
-                                String offlineProp = getProperty("jnlp.offline-allowed", null); // property in project.properties
-                                if (offlineProp.equalsIgnoreCase("true")) {
-                                    informationElem.appendChild(docDom.createElement("offline-allowed"));
-                                }
                             }
                             break;
                         default:
@@ -297,7 +292,28 @@ public class GenerateJnlpFileTask extends Task {
             }
         }   
     }
-    
+
+    private void processBackgroundElem(final Document docDom, final Node parent) {
+        assert docDom != null;
+        assert parent != null;
+        NodeList childNodes = parent.getChildNodes();
+        int len = childNodes.getLength();
+        for (int i = 0; i < len; i++) {
+            Node node = childNodes.item(i);
+            if (node != null && node.getNodeType() == Node.COMMENT_NODE) { // node might be null (don't know why)
+                if (node.getNodeValue().equals(JNLP_UPDATE)) {
+                    String offlineProp = getProperty("jnlp.offline-allowed", null); // property in project.properties
+                    final Element updateElm = docDom.createElement("update");
+                    final String updateVal = offlineProp.equalsIgnoreCase("true") ? //NOI18N
+                        "background" :  //NOI18N
+                        "always";       //NOI18N
+                    updateElm.setAttribute("check", updateVal); //NOI18N
+                    parent.replaceChild(updateElm, node);
+                }
+            }
+        }
+    }
+
     private Element createIconElement(Document doc, String href, String kind) {
         Element iconElem = doc.createElement("icon");
         iconElem.setAttribute("href", href);
