@@ -270,12 +270,14 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
     }
 
     private void addExtCluster(ClusterInfo ci) {
+        Set<String> disabledModuleCNB = new HashSet<String>(Arrays.asList(getProperties().getDisabledModules()));
         Children.SortedArray moduleCh = new Children.SortedArray();
         try {
             ModuleList ml = ModuleList.scanCluster(ci.getClusterDir(), null, false, ci);
             moduleCh.setComparator(MODULES_COMPARATOR);
             for (ModuleEntry entry : ml.getAllEntries()) {
-                moduleCh.add(new Node[] { new BinaryModuleNode(entry, ci.isEnabled()) });
+                moduleCh.add(new Node[] { new BinaryModuleNode(entry, 
+                        ! disabledModuleCNB.contains(entry.getCodeNameBase()) && ci.isEnabled()) });
                 extraBinaryModules.add(entry);
             }
         } catch (IOException e) {
@@ -290,11 +292,13 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         assert ci.getProject() != null;
         assert ci.getProject().getLookup().lookup(SuiteProvider.class) != null;
 
+        Set<String> disabledModuleCNB = new HashSet<String>(Arrays.asList(getProperties().getDisabledModules()));
         Children.SortedArray moduleCh = new Children.SortedArray();
         moduleCh.setComparator(MODULES_COMPARATOR);
         Set<NbModuleProject> modules = SuiteUtils.getSubProjects(ci.getProject());
         for (NbModuleProject modPrj : modules) {
-            moduleCh.add(new Node[] { new SuiteComponentNode(modPrj, ci.isEnabled()) });
+            moduleCh.add(new Node[] { new SuiteComponentNode(modPrj, 
+                    ! disabledModuleCNB.contains(modPrj.getCodeNameBase()) && ci.isEnabled()) });
         }
         return new ClusterNode(ci, moduleCh);
     }
