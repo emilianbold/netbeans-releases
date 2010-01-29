@@ -45,9 +45,10 @@ import java.util.List;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 
@@ -64,7 +65,7 @@ import org.openide.util.NbBundle;
         initComponents();
         this.csm = csm;
         
-        List<CompilerFlavor> list = CompilerFlavor.getFlavors(csm.getPlatform());
+        List<CompilerFlavor> list = CompilerFlavorAccessor.getFlavors(csm.getPlatform());
         for (CompilerFlavor cf : list) {
             cbFamily.addItem(cf);
         }
@@ -91,7 +92,7 @@ import org.openide.util.NbBundle;
     }
     
     private void updateDataFamily() {
-        CompilerSet.CompilerFlavor flavor = (CompilerSet.CompilerFlavor)cbFamily.getSelectedItem();
+        CompilerFlavor flavor = (CompilerFlavor)cbFamily.getSelectedItem();
         String suggestedName = csm.getUniqueCompilerSetName(flavor.toString());
         tfName.setText(suggestedName);
         updateDataName();
@@ -144,8 +145,8 @@ import org.openide.util.NbBundle;
         return tfBaseDirectory.getText();
     }
     
-    public CompilerSet.CompilerFlavor getFamily() {
-        return (CompilerSet.CompilerFlavor)cbFamily.getSelectedItem();
+    public CompilerFlavor getFamily() {
+        return (CompilerFlavor)cbFamily.getSelectedItem();
     }
     
     public String getCompilerSetName() {

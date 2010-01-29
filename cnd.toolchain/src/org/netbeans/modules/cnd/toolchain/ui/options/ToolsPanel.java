@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
@@ -1011,8 +1012,8 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 //                cancelled.set(true);
 //                return;
 //            }
-            CompilerSetManager newCsm = CompilerSetManager.create(execEnv);
-            newCsm.initialize(false, true);
+            CompilerSetManager newCsm = CompilerSetManagerAccessor.create(execEnv);
+            newCsm.initialize(false, true, null);
             while (newCsm.isPending()) {
                 log.finest("\twaiting for compiler manager to initialize...");
                 try {

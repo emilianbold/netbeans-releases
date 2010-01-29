@@ -63,7 +63,7 @@ public final class CompilerSetUtils {
      */
     public static String getCygwinBase() {
         if (cygwinBase == null) {
-            ToolchainManagerImpl tcm = ToolchainManager.getImpl();
+            ToolchainManagerImpl tcm = ToolchainManagerImpl.getImpl();
             ToolchainDescriptor td = tcm.getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
             if (td != null) {
                 String cygwinBin = tcm.getBaseFolder(td, PlatformTypes.PLATFORM_WINDOWS);
@@ -103,7 +103,7 @@ public final class CompilerSetUtils {
         if (res != null) {
             return res;
         }
-        ToolchainManagerImpl tcm = ToolchainManager.getImpl();
+        ToolchainManagerImpl tcm = ToolchainManagerImpl.getImpl();
         for(ToolchainDescriptor td : tcm.getToolchains(PlatformTypes.PLATFORM_WINDOWS)){
             if (td != null) {
                 res = getCommandDir(td);
@@ -125,7 +125,7 @@ public final class CompilerSetUtils {
         if (td != null) {
             String dir = commandsFolders.get(td);
             if (dir == null) {
-                ToolchainManagerImpl tcm = ToolchainManager.getImpl();
+                ToolchainManagerImpl tcm = ToolchainManagerImpl.getImpl();
                 String msysBin = tcm.getCommandFolder(td, PlatformTypes.PLATFORM_WINDOWS);
                 if (msysBin != null) {
                     dir = msysBin.replace("\\", "/"); // NOI18N
@@ -141,7 +141,7 @@ public final class CompilerSetUtils {
         return null;
     }
 
-    static String getPlatformName(int platform) {
+    public static String getPlatformName(int platform) {
         switch (platform) {
             case PlatformTypes.PLATFORM_LINUX:
                 return "linux"; // NOI18N
@@ -174,7 +174,7 @@ public final class CompilerSetUtils {
         }
     }
 
-    static String findCommand(String name) {
+    public static String findCommand(String name) {
         String path = Path.findCommand(name);
         if (path == null) {
             String dir = CompilerSetUtils.getCommandFolder(null);
@@ -185,7 +185,7 @@ public final class CompilerSetUtils {
         return path;
     }
 
-    static String findCommand(String cmd, String dir) {
+    public static String findCommand(String cmd, String dir) {
         File file;
         String cmd2 = null;
         if (cmd.length() > 0) {
@@ -221,7 +221,7 @@ public final class CompilerSetUtils {
     /** Same as the C library basename function: given a path, return
      * its filename.
      */
-    public static final String getBaseName(String path) {
+    public static String getBaseName(String path) {
         int sep = path.lastIndexOf('/');
         if (sep == -1) {
             sep = path.lastIndexOf('\\');

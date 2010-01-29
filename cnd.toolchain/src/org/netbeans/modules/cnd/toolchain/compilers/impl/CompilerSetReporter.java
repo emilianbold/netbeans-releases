@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,22 +31,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.api;
+package org.netbeans.modules.cnd.toolchain.compilers.impl;
 
-import java.util.EventObject;
+import java.io.IOException;
+import java.io.Writer;
+import org.openide.util.NbBundle;
 
 /**
- * Track changes in compiler sets. Mostly used by CompilerSetConfigurations, so they don't
- * contain removed compiler set references.
- *
- * @author gordonp
+ * Sometimes we need to make process of setting up compiler set verbose.
+ * This class allows to plug in a writer to report the process of
+ * compiler set setup to
+ * @author Vladimir Kvashin
  */
-public class CompilerSetEvent extends EventObject {
-    
-    /** Creates a new instance of CompilerSetEvent */
-    public CompilerSetEvent(Object source) {
-        super(source);
+public class CompilerSetReporter {
+
+    private static Writer writer;
+
+    private CompilerSetReporter() {
     }
+
+    /**
+     * Sets a writer to report the process of compiler set setup to
+     * @param writer if null, no reporting occurs
+     */
+    public static synchronized void setWriter(Writer writer) {
+        CompilerSetReporter.writer = writer;
+    }
+
+    /* package-local */
+    public static void report(String msgKey) {
+        report(msgKey, true);
+    }
+
+    /* package-local */
+    public static synchronized void report(String msgKey, boolean addLineFeed, Object... params) {
+        if (writer != null) {
+            try {
+                writer.write(NbBundle.getMessage(CompilerSetReporter.class, msgKey, params));
+                if (addLineFeed) {
+                    writer.write('\n');
+                }
+                writer.flush();
+            } catch (IOException ex) {
+            }
+        }
+    }
+
+    /* package-local */
+    public static boolean canReport() {
+        return writer != null;
+    }
+
 }

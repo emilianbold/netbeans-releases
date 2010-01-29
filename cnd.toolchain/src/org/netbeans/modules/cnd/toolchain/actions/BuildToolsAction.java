@@ -51,6 +51,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.toolchain.ui.options.DownloadUtils;
 import org.netbeans.modules.cnd.toolchain.ui.api.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
@@ -144,7 +145,7 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
         ExecutionEnvironment env = model.getSelectedDevelopmentHost();
         if (env.isLocal()){
             if (cs == null) {
-                cs = CompilerSetManager.getDefault().getDefaultCompilerSet();
+                cs = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
             }
             if (cs != null) {
                 if (cs.isUrlPointer()){
@@ -173,6 +174,7 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
         performAction();
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return null;
     }

@@ -106,6 +106,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -530,7 +531,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private void downloadRemoteFile(File file){
         if (file != null && !file.exists()) {
-            ExecutionEnvironment developmentHost = CompilerSetManager.getDefaultExecutionEnvironment();
+            ExecutionEnvironment developmentHost = CompilerSetManagerAccessor.getDefaultExecutionEnvironment();
             if (developmentHost.isRemote()) {
                 String remoteFile = HostInfoProvider.getMapper(developmentHost).getRemotePath(file.getAbsolutePath());
                 try {

@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import java.io.File;
 import java.util.List;
 import java.util.Vector;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;

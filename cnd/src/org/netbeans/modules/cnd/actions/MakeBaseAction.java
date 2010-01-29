@@ -60,8 +60,8 @@ import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerLineConvertor;
 import org.netbeans.modules.cnd.settings.MakeSettings;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainProject;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
+import org.netbeans.modules.cnd.toolchain.spi.ToolchainProject;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -208,7 +208,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
             }
         }
         if (set == null) {
-            set = CompilerSetManager.getDefault().getDefaultCompilerSet();
+            set = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
         }
         return set;
     }

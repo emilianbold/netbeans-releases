@@ -41,7 +41,6 @@
 package org.netbeans.modules.cnd.toolchain.api;
 
 import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;

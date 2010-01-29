@@ -56,7 +56,6 @@ import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
@@ -66,6 +65,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport.Worker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -93,6 +93,7 @@ class RemoteSyncActions {
 
     /** A task that activatedNodesCache */
     private static final RequestProcessor.Task clearCacheTask = RequestProcessor.getDefault().create(new Runnable() {
+        @Override
                 public void run() {
                     activatedNodesCache.set(null);
                 }
@@ -208,6 +209,7 @@ class RemoteSyncActions {
             }
         }
 
+        @Override
         public boolean cancel() {
             cancelled = true;
             Thread thread = workingThread;
@@ -264,6 +266,7 @@ class RemoteSyncActions {
         protected Worker createWorker(final Project project, final ExecutionEnvironment execEnv) {
             return new Worker() {
                 private final PathMap pathMap = HostInfoProvider.getMapper(execEnv);
+                @Override
                 public void process(File file, Writer err) throws PathMapperException, InterruptedException, ExecutionException, IOException {
                     String remotePath = pathMap.getRemotePath(file.getAbsolutePath(), false);
                     if (remotePath == null) {
@@ -275,6 +278,7 @@ class RemoteSyncActions {
                         throw new IOException(NbBundle.getMessage(RemoteSyncActions.class, "ERR_RC", Integer.valueOf(rc)));
                     }
                 }
+                @Override
                 public void close() {}
             };
         }
@@ -399,7 +403,7 @@ class RemoteSyncActions {
     }
 
     private static ExecutionEnvironment getEnv(Project project) {
-        ExecutionEnvironment developmentHost = CompilerSetManager.getDefaultExecutionEnvironment();
+        ExecutionEnvironment developmentHost = CompilerSetManagerAccessor.getDefaultExecutionEnvironment();
         if (project != null) {
             RemoteProject info = project.getLookup().lookup(RemoteProject.class);
             if (info != null) {

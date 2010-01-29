@@ -60,9 +60,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.ToolchainProject;
+import org.netbeans.modules.cnd.toolchain.spi.ToolchainProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
@@ -76,6 +75,7 @@ import org.netbeans.modules.cnd.builds.CMakeExecSupport;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -143,7 +143,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         if (project == null) {
             project = findInOpenedProject(fileObject);
         }
-        ExecutionEnvironment developmentHost = CompilerSetManager.getDefaultExecutionEnvironment();
+        ExecutionEnvironment developmentHost = CompilerSetManagerAccessor.getDefaultExecutionEnvironment();
         if (project != null) {
             RemoteProject info = project.getLookup().lookup(RemoteProject.class);
             if (info != null) {
@@ -207,7 +207,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         if (set == null) {
-            set = CompilerSetManager.getDefault().getDefaultCompilerSet();
+            set = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
         }
         if (set == null) {
             return false;
@@ -231,7 +231,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         if (set == null) {
-            set = CompilerSetManager.getDefault().getDefaultCompilerSet();
+            set = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
         }
         return set;
     }
@@ -253,7 +253,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         if (set == null) {
-            set = CompilerSetManager.getDefault().getDefaultCompilerSet();
+            set = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
         }
         String command = null;
         if (set != null) {
@@ -406,11 +406,11 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP; // FIXUP ???
     }
 
-    protected final static String getString(String key) {
+    protected static String getString(String key) {
         return NbBundle.getBundle(AbstractExecutorRunAction.class).getString(key);
     }
 
-    protected final static String getString(String key, String ... a1) {
+    protected static String getString(String key, String ... a1) {
         return NbBundle.getMessage(AbstractExecutorRunAction.class, key, a1);
     }
 

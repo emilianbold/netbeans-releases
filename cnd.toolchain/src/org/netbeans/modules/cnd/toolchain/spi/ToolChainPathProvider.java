@@ -39,19 +39,37 @@
 
 package org.netbeans.modules.cnd.toolchain.spi;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetProvider;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.openide.util.Lookup;
 
 /**
- * An SPI for creation CompilerSetProvider instances
- * @author Vladimir Kvashin
+ *
+ * @author Alexander Simon
  */
-public interface CompilerSetProviderFactoryImpl {
-    /**
-     * Creates a new instance of CompilerSetProvider
-     * for the given execution environment
-     * @param execEnv execution environment to create CompilerSetProvider for
-     * @return new CompilerSetProvider instance
-     */
-    public CompilerSetProvider createNew(ExecutionEnvironment execEnv);
+public abstract class ToolChainPathProvider {
+    private static final ToolChainPathProvider DEFAULT = new DefaultToolChainPathProvider();
+
+    public static ToolChainPathProvider getDefault() {
+	return DEFAULT;
+    }
+
+    public abstract String getPath(CompilerFlavor flavor);
+
+    private static final class DefaultToolChainPathProvider extends ToolChainPathProvider {
+        private final Lookup.Result<ToolChainPathProvider> res;
+        DefaultToolChainPathProvider() {
+            res = Lookup.getDefault().lookupResult(ToolChainPathProvider.class);
+        }
+
+	@Override
+	public String getPath(CompilerFlavor flavor) {
+	    for (ToolChainPathProvider service : res.allInstances()) {
+                String path = service.getPath(flavor);
+                if (path != null) {
+                    return path;
+                }
+	    }
+            return null;
+	}
+    }
 }

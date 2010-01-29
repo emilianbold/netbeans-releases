@@ -47,7 +47,6 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
 import java.util.List;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
@@ -78,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
@@ -839,7 +839,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         if (descriptorVersion < 46) {
             host = HostInfoUtils.LOCALHOST;
         } else {
-            host = CompilerSetManager.getDefaultDevelopmentHost();
+            host = CompilerSetManagerAccessor.getDefaultDevelopmentHost();
         }
         MakeConfiguration makeConfiguration = new MakeConfiguration(FileUtil.toFile(projectDirectory).getPath(), getString(value), confType, host);
         return makeConfiguration;

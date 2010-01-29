@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.toolchain.ui.api.ServerListUIEx;
 import org.netbeans.modules.cnd.toolchain.ui.api.ToolsCacheManager;
 import org.netbeans.modules.cnd.remote.ui.EditServerListDialog;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -82,7 +83,7 @@ public class RemoteServerListUI extends ServerListUIEx {
     protected boolean showServerListDialogImpl(AtomicReference<ExecutionEnvironment> selectedEnv) {
         ToolsCacheManager cacheManager = new ToolsCacheManager();
         for (ServerRecord record : ServerList.getRecords()) {
-            CompilerSetManager csm = CompilerSetManager.getDefault(record.getExecutionEnvironment());
+            CompilerSetManager csm = CompilerSetManagerAccessor.getDefault(record.getExecutionEnvironment());
             cacheManager.addCompilerSetManager(csm);
         }
         if (showServerListDialog(cacheManager, selectedEnv)) {

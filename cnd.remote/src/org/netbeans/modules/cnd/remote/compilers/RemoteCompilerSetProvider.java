@@ -43,10 +43,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetProvider;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -124,7 +124,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
             HostInfo hinfo = HostInfoUtils.getHostInfo(env);
             pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
             Process process = pb.call();
-            process.getOutputStream().write(CompilerSetManager.getRemoteScript(path).getBytes());
+            process.getOutputStream().write(CompilerSetManagerAccessor.getRemoteScript(path).getBytes());
             process.getOutputStream().close();
 
             List<String> lines = ProcessUtils.readProcessOutput(process);

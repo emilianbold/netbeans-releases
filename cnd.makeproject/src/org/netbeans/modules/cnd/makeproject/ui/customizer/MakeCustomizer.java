@@ -80,7 +80,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerRootNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
@@ -91,6 +90,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.DebuggerCustom
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DebuggerChooserNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -393,6 +393,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     // End of variables declaration//GEN-END:variables
 
     // HelpCtx.Provider implementation -----------------------------------------
+    @Override
     public HelpCtx getHelpCtx() {
         if (currentConfigurationNode != null) {
             return HelpCtx.findHelp(currentConfigurationNode);
@@ -453,6 +454,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             }
         }
 
+        @Override
         public ExplorerManager getExplorerManager() {
             return manager;
         }
@@ -507,6 +509,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
          */
         private class ManagerChangeListener implements PropertyChangeListener {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getSource() != manager) {
                     return;
@@ -739,7 +742,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 //                advancedNodes.add(node);
 //            }
 //        }
-        if (descriptions.size() == 0) {
+        if (descriptions.isEmpty()) {
             return null;
         }
         return new CustomizerNode(
@@ -1200,7 +1203,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     private CustomizerNode createCCompilerDescription(Project project, int compilerSetIdx,
             Item item, Folder folder, boolean isCompilerConfiguration) {
         ExecutionEnvironment execEnv = getSelectedHost();
-        CompilerSet csm = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx);
+        CompilerSet csm = CompilerSetManagerAccessor.getDefault(execEnv).getCompilerSet(compilerSetIdx);
         String compilerName = csm.getTool(BasicCompiler.CCompiler).getName();
         String compilerDisplayName = csm.getTool(BasicCompiler.CCompiler).getDisplayName();
         CustomizerNode cCompilerCustomizerNode = new CCompilerCustomizerNode(
@@ -1270,8 +1273,8 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     // CC Compiler Node
     private CustomizerNode createCCCompilerDescription(Project project, int compilerSetIdx, Item item, Folder folder, boolean isCompilerConfiguration) {
         ExecutionEnvironment execEnv = getSelectedHost();
-        String compilerName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.CCCompiler).getName();
-        String compilerDisplayName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.CCCompiler).getDisplayName();
+        String compilerName = CompilerSetManagerAccessor.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.CCCompiler).getName();
+        String compilerDisplayName = CompilerSetManagerAccessor.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.CCCompiler).getDisplayName();
         CustomizerNode ccCompilerCustomizerNode = new CCCompilerCustomizerNode(
                 compilerName,
                 compilerDisplayName,
@@ -1316,8 +1319,8 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     // Fortran Compiler Node
     private CustomizerNode createFortranCompilerDescription(Project project, int compilerSetIdx, Item item, boolean isCompilerConfiguration) {
         ExecutionEnvironment execEnv = getSelectedHost();
-        String compilerName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.FortranCompiler).getName();
-        String compilerDisplayName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.FortranCompiler).getDisplayName();
+        String compilerName = CompilerSetManagerAccessor.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.FortranCompiler).getName();
+        String compilerDisplayName = CompilerSetManagerAccessor.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.FortranCompiler).getDisplayName();
         CustomizerNode fortranCompilerCustomizerNode = new FortranCompilerCustomizerNode(
                 compilerName,
                 compilerDisplayName,
@@ -1354,8 +1357,8 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     // Assembler Compiler Node
     private CustomizerNode createAssemblerDescription(Project project, int compilerSetIdx, Item item, boolean isCompilerConfiguration) {
         ExecutionEnvironment execEnv = getSelectedHost();
-        String compilerName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.Assembler).getName();
-        String compilerDisplayName = CompilerSetManager.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.Assembler).getDisplayName();
+        String compilerName = CompilerSetManagerAccessor.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.Assembler).getName();
+        String compilerDisplayName = CompilerSetManagerAccessor.getDefault(execEnv).getCompilerSet(compilerSetIdx).getTool(BasicCompiler.Assembler).getDisplayName();
         CustomizerNode assemblerCustomizerNode = new AssemblerCustomizerNode(
                 compilerName,
                 compilerDisplayName,
@@ -1475,6 +1478,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
             setKeys(Collections.EMPTY_LIST);
         }
 
+        @Override
         protected Node[] createNodes(CustomizerNode key) {
             return new Node[]{new PropertyNode(key)};
         }

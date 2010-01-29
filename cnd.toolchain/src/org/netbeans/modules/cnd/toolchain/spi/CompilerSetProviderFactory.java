@@ -37,51 +37,21 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.api;
+package org.netbeans.modules.cnd.toolchain.spi;
 
-import java.io.IOException;
-import java.io.Writer;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * Sometimes we need to make process of setting up compiler set verbose.
- * This class allows to plug in a writer to report the process of
- * compiler set setup to
+ * An SPI for creation CompilerSetProvider instances
  * @author Vladimir Kvashin
  */
-public class CompilerSetReporter {
-
-    private static Writer writer;
-
+public interface CompilerSetProviderFactory {
     /**
-     * Sets a writer to report the process of compiler set setup to
-     * @param writer if null, no reporting occurs
+     * Creates a new instance of CompilerSetProvider
+     * for the given execution environment
+     * @param execEnv execution environment to create CompilerSetProvider for
+     * @return new CompilerSetProvider instance
      */
-    public static synchronized void setWriter(Writer writer) {
-        CompilerSetReporter.writer = writer;
-    }
-
-    /* package-local */
-    static void report(String msgKey) {
-        report(msgKey, true);
-    }
-
-    /* package-local */
-    static synchronized void report(String msgKey, boolean addLineFeed, Object... params) {
-        if (writer != null) {
-            try {
-                writer.write(NbBundle.getMessage(CompilerSetReporter.class, msgKey, params));
-                if (addLineFeed) {
-                    writer.write('\n');
-                }
-                writer.flush();
-            } catch (IOException ex) {
-            }
-        }
-    }
-
-    /* package-local */
-    static boolean canReport() {
-        return writer != null;
-    }
+    public CompilerSetProvider createNew(ExecutionEnvironment execEnv);
 }

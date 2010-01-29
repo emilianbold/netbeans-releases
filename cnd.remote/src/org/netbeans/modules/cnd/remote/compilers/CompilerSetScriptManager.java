@@ -42,9 +42,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.remote.support.RemoteConnectionSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -77,7 +77,7 @@ import org.openide.util.Exceptions;
                 HostInfo hinfo = HostInfoUtils.getHostInfo(executionEnvironment);
                 pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
                 Process process = pb.call();
-                process.getOutputStream().write(CompilerSetManager.getRemoteScript(null).getBytes());
+                process.getOutputStream().write(CompilerSetManagerAccessor.getRemoteScript(null).getBytes());
                 process.getOutputStream().close();
 
                 List<String> lines = ProcessUtils.readProcessOutput(process);

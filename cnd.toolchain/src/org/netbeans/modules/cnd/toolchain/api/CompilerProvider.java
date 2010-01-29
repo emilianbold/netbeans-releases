@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.toolchain.api;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
@@ -75,6 +74,7 @@ public abstract class CompilerProvider {
             res = Lookup.getDefault().lookupResult(CompilerProvider.class);
         }
 
+        @Override
         public Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
             for (CompilerProvider resolver : res.allInstances()) {
                 Tool out = resolver.createCompiler(env, flavor, kind, name, displayName, path);

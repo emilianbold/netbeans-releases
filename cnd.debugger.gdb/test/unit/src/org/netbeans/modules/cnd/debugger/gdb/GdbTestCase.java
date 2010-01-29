@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
@@ -107,7 +108,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         project_dir = new File(testapp_dir, testproj).getAbsolutePath();
         conf = new TestConfiguration(args);
         pae = new ProjectActionEvent(project, ProjectActionEvent.Type.DEBUG_STEPINTO, testapp, executable, conf, null, false);
-        CompilerSetManager.getDefault().getCompilerSet(0).getTool(Tool.DebuggerTool).setPath("/opt/csw/bin/gdb");
+        CompilerSetManagerAccessor.getDefault().getCompilerSet(0).getTool(Tool.DebuggerTool).setPath("/opt/csw/bin/gdb");
         dm.startDebugging(DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
             new Object[]{pae}));
         debugger = GdbDebugger.getGdbDebugger();
