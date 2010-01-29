@@ -78,8 +78,8 @@ public class CompilerSetManagerAccessorImpl {
     }
 
     /** Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault() */
-    public static CompilerSetManager create(ExecutionEnvironment env) {
-        CompilerSetManager newCsm = new CompilerSetManagerImpl(env);
+    public static CompilerSetManagerImpl create(ExecutionEnvironment env) {
+        CompilerSetManagerImpl newCsm = new CompilerSetManagerImpl(env);
         if (newCsm.getCompilerSets().size() == 1 && newCsm.getCompilerSets().get(0).getName().equals(CompilerSetImpl.None)) {
             newCsm.remove(newCsm.getCompilerSets().get(0));
         }

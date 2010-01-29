@@ -237,10 +237,16 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             log.log(Level.WARNING, "calling deepCopy() on uninitializad {0}", getClass().getSimpleName());
         }
         List<CompilerSet> setsCopy = new ArrayList<CompilerSet>();
+        CompilerSet copyOfDefaultCompilerSet = null;
         for (CompilerSet set : getCompilerSets()) {
-            setsCopy.add((CompilerSetImpl)set.createCopy());
+            final CompilerSetImpl copy = ((CompilerSetImpl) set).createCopy();
+            setsCopy.add(copy);
+            if (isDefaultCompilerSet(set)) {
+                copyOfDefaultCompilerSet = copy;
+            }
         }
         CompilerSetManagerImpl copy = new CompilerSetManagerImpl(executionEnvironment, setsCopy, this.platform);
+        copy.setDefault(copyOfDefaultCompilerSet);
         return copy;
     }
 
@@ -412,7 +418,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
 
     private void setDefaltCompilerSet() {
         for (CompilerSet cs : sets) {
-            if (cs.isDefault()) {
+            if (((CompilerSetImpl)cs).isDefault()) {
                 return;
             }
         }
@@ -839,8 +845,8 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         }
         CompilerFlavor flavor = CompilerFlavorImpl.toFlavor("SunStudio", platform); // NOI18N
         if (flavor != null) { // #158084 NPE
-            CompilerSetImpl bestCandidateCopy = ((CompilerSetImpl) bestCandidate).createCopy(
-                    flavor, bestCandidate.getDirectory(), "SunStudio", true, false); // NOI18N
+            CompilerSetImpl bestCandidateCopy = bestCandidate.createCopy(
+                    flavor, bestCandidate.getDirectory(), "SunStudio", true); // NOI18N
             addUnsafe(bestCandidateCopy);
         }
     }
@@ -1100,11 +1106,19 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     @Override
     public CompilerSet getDefaultCompilerSet() {
         for (CompilerSet cs : getCompilerSets()) {
-            if (cs.isDefault()) {
+            if (((CompilerSetImpl)cs).isDefault()) {
                 return cs;
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean isDefaultCompilerSet(CompilerSet cs) {
+        if (cs == null) {
+            return false;
+        }
+        return ((CompilerSetImpl)cs).isDefault();
     }
 
     @Override

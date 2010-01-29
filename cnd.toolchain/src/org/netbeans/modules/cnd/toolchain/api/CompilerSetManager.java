@@ -88,6 +88,8 @@ public abstract class CompilerSetManager {
 
     public abstract CompilerSet getDefaultCompilerSet();
 
+    public abstract boolean isDefaultCompilerSet(CompilerSet cs);
+
     public abstract ExecutionEnvironment getExecutionEnvironment();
 
     public abstract int getPlatform();
@@ -121,4 +123,5 @@ public abstract class CompilerSetManager {
             throw new UnsupportedOperationException("this class can not be overriden by clients");
         }
     }
+
 }

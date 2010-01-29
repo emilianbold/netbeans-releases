@@ -93,7 +93,7 @@ import org.openide.util.NbBundle;
         });
         boolean selected = false;
         for(CompilerSet cs : compilerSetManager.getCompilerSets()) {
-            if (cs.isDefault()) {
+            if (compilerSetManager.isDefaultCompilerSet(cs)) {
                 cbDefaultToolchain.setSelectedItem(cs);
                 selected = true;
                 break;
@@ -103,6 +103,7 @@ import org.openide.util.NbBundle;
             cbDefaultToolchain.setSelectedItem(0);
         }
         cbDefaultToolchain.addItemListener(new ItemListener() {
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 compilerSetManager.setDefault((CompilerSet) cbDefaultToolchain.getSelectedItem());
             }
