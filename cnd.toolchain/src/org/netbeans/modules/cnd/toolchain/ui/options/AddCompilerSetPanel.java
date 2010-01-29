@@ -104,8 +104,8 @@ import org.openide.util.NbBundle;
 
         setPreferredSize(new Dimension(800, 300));
 
-        tfBaseDirectory.getDocument().addDocumentListener(this);
-        tfName.getDocument().addDocumentListener(this);
+        tfBaseDirectory.getDocument().addDocumentListener(AddCompilerSetPanel.this);
+        tfName.getDocument().addDocumentListener(AddCompilerSetPanel.this);
     }
 
     @Override
