@@ -59,10 +59,12 @@ public class PlatformWindows extends Platform {
         super(NAME, "Windows", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
     }
     
+    @Override
     public LibraryItem.StdLibItem[] getStandardLibraries() {
         return standardLibrariesWindows;
     }
     
+    @Override
     public String getLibraryName(String baseName) {
         return "lib" + baseName + ".dll"; // NOI18N
     }
@@ -74,6 +76,7 @@ public class PlatformWindows extends Platform {
         return baseName + majorVersion + ".dll"; // NOI18N
     }
 
+    @Override
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
         if (libName.endsWith(".dll")) { // NOI18N
             int i = libName.indexOf(".dll"); // NOI18N
@@ -83,8 +86,10 @@ public class PlatformWindows extends Platform {
             if (libName.startsWith("lib") || libName.startsWith("cyg")) { // NOI18N
                 libName = libName.substring(3);
             }
-            return compilerSet.getLibrarySearchOption() + IpeUtils.escapeOddCharacters(libDir)
-                    + " " + compilerSet.getLibraryOption() + IpeUtils.escapeOddCharacters(libName); // NOI18N
+            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag()
+                    + IpeUtils.escapeOddCharacters(libDir)
+                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag()
+                    + IpeUtils.escapeOddCharacters(libName); // NOI18N
         } else {
             return IpeUtils.escapeOddCharacters(libPath);
         }

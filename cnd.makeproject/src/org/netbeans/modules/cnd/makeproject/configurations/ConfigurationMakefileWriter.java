@@ -442,7 +442,7 @@ public class ConfigurationMakefileWriter {
             String qmakeSpec = conf.getQmakeConfiguration().getQmakeSpec().getValue();
             if (qmakeSpec.length() == 0 && conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
                 // on Mac we force spec to macx-g++, otherwise qmake generates xcode project
-                qmakeSpec = compilerSet.getQmakeSpec(conf.getDevelopmentHost().getBuildPlatform());
+                CppUtils.getQmakeSpec(compilerSet, conf.getDevelopmentHost().getBuildPlatform());
             }
             if (0 < qmakeSpec.length()) {
                 qmakeSpec = "-spec " + qmakeSpec + " "; // NOI18N
@@ -493,7 +493,7 @@ public class ConfigurationMakefileWriter {
 
     public static void writeQTTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        String output = compilerSet.normalizeDriveLetter(getOutput(conf));
+        String output = CppUtils.normalizeDriveLetter(compilerSet, getOutput(conf));
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS} nbproject/qt-${CND_CONF}.mk\n"); // NOI18N
         bw.write("\t${MAKE} -f nbproject/qt-${CND_CONF}.mk " + output + "\n"); // NOI18N
@@ -501,7 +501,7 @@ public class ConfigurationMakefileWriter {
 
     public static void writeBuildTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        String output = compilerSet.normalizeDriveLetter(getOutput(conf));
+        String output = CppUtils.normalizeDriveLetter(compilerSet, getOutput(conf));
         bw.write("# Build Targets\n"); // NOI18N
         bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
         bw.write("\t${MAKE} " // NOI18N
@@ -511,10 +511,10 @@ public class ConfigurationMakefileWriter {
 
     public static void writeLinkTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        String output = compilerSet.normalizeDriveLetter(getOutput(conf));
+        String output = CppUtils.normalizeDriveLetter(compilerSet, getOutput(conf));
         LinkerConfiguration linkerConfiguration = conf.getLinkerConfiguration();
         CompilerSet cs = conf.getCompilerSet().getCompilerSet();
-        output = cs.normalizeDriveLetter(output);
+        output = CppUtils.normalizeDriveLetter(cs,output);
         String command = ""; // NOI18N
         if (linkerConfiguration.getTool().getModified()) {
             command += linkerConfiguration.getTool().getValue() + " "; // NOI18N
@@ -537,7 +537,7 @@ public class ConfigurationMakefileWriter {
         for (LibraryItem lib : linkerConfiguration.getLibrariesConfiguration().getValue()) {
             String libPath = lib.getPath();
             if (libPath != null && libPath.length() > 0) {
-                bw.write(output + ": " + IpeUtils.escapeOddCharacters(cs.normalizeDriveLetter(libPath)) + "\n\n"); // NOI18N
+                bw.write(output + ": " + IpeUtils.escapeOddCharacters(CppUtils.normalizeDriveLetter(cs,libPath)) + "\n\n"); // NOI18N
             }
         }
         bw.write(output + ": ${OBJECTFILES}\n"); // NOI18N
@@ -550,7 +550,7 @@ public class ConfigurationMakefileWriter {
 
     public static void writeArchiveTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        String output = compilerSet.normalizeDriveLetter(getOutput(conf));
+        String output = CppUtils.normalizeDriveLetter(compilerSet, getOutput(conf));
         ArchiverConfiguration archiverConfiguration = conf.getArchiverConfiguration();
         String command = "${AR}" + " "; // NOI18N
         command += archiverConfiguration.getOptions() + " "; // NOI18N
@@ -585,7 +585,7 @@ public class ConfigurationMakefileWriter {
                 if (compilerSet == null) {
                     continue;
                 }
-                file = IpeUtils.escapeOddCharacters(compilerSet.normalizeDriveLetter(items[i].getPath()));
+                file = IpeUtils.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet,items[i].getPath()));
                 command = ""; // NOI18N
                 comment = null;
                 additionalDep = null;
@@ -615,7 +615,7 @@ public class ConfigurationMakefileWriter {
                         } else {
                             command += compiler.getDescriptor().getOutputObjectFileFlags() + target + " "; // NOI18N
                         }
-                        command += IpeUtils.escapeOddCharacters(compilerSet.normalizeDriveLetter(items[i].getPath(true)));
+                        command += IpeUtils.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet,items[i].getPath(true)));
                     }
                     additionalDep = compilerConfiguration.getAdditionalDependencies().getValue();
                 } else if (itemConfiguration.getTool() == ToolKind.CustomTool.ordinal()) {

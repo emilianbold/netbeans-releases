@@ -282,7 +282,8 @@ public class QmakeProjectWriter {
             if (0 < buf.length()) {
                 buf.append(' '); // NOI18N
             }
-            OptionToString dynamicSearchVisitor = new OptionToString(compilerSet, compilerSet.getDynamicLibrarySearchOption());
+            OptionToString dynamicSearchVisitor = new OptionToString(compilerSet, 
+                    compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag());
             buf.append(configuration.getLinkerConfiguration().getDynamicSearch().toString(dynamicSearchVisitor));
         }
         return buf.toString();
@@ -318,7 +319,7 @@ public class QmakeProjectWriter {
         private String libFileToOptionsString(String path) {
             StringBuilder buf = new StringBuilder();
             if (compilerSet != null && isDynamicLib(path)) {
-                String searchOption = compilerSet.getDynamicLibrarySearchOption();
+                String searchOption = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag();
                 if (searchOption.length() == 0) {
                     // According to code in PlatformWindows and PlatformMacOSX,
                     // on Windows and MacOS the "-L" option is used
@@ -326,7 +327,7 @@ public class QmakeProjectWriter {
                     // Let's be consistent with that behavior. Detect this
                     // special case by empty dynamic_library_search
                     // and use the library_search option instead.
-                    searchOption = compilerSet.getLibrarySearchOption();
+                    searchOption = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag();
                 }
 
                 buf.append(searchOption);
@@ -355,7 +356,7 @@ public class QmakeProjectWriter {
         public String toString(String item) {
             if (0 < item.length()) {
                 if (compilerSet != null) {
-                    item = compilerSet.normalizeDriveLetter(item);
+                    item = CppUtils.normalizeDriveLetter(compilerSet, item);
                 }
                 return IpeUtils.quoteIfNecessary(item);
             } else {

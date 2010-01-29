@@ -336,7 +336,7 @@ import org.openide.util.NbBundle;
         } else {
             synchronized (lock) {
                 if (lastFoundRemoteCompilerSet != null){
-                    lastFoundRemoteCompilerSet.setName(compilerSetName);
+                    ((CompilerSetImpl)lastFoundRemoteCompilerSet).setName(compilerSetName);
                     return lastFoundRemoteCompilerSet;
                 }else{
                     return lastFoundRemoteCompilerSet;

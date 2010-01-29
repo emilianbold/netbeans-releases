@@ -64,14 +64,17 @@ public class PlatformSolaris  extends Platform {
         super(name, displayName, id);
     }
     
+    @Override
     public LibraryItem.StdLibItem[] getStandardLibraries() {
         return standardLibrariesSolaris;
     }
     
+    @Override
     public String getLibraryName(String baseName) {
         return "lib" + baseName + ".so"; // NOI18N
     }
     
+    @Override
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
         if (libName.endsWith(".so")) { // NOI18N
             int i = libName.indexOf(".so"); // NOI18N
@@ -81,9 +84,12 @@ public class PlatformSolaris  extends Platform {
             if (libName.startsWith("lib")) { // NOI18N
                 libName = libName.substring(3);
             }
-            return compilerSet.getDynamicLibrarySearchOption() + IpeUtils.escapeOddCharacters(libDir)
-                    + " " + compilerSet.getLibrarySearchOption() + IpeUtils.escapeOddCharacters(libDir) // NOI18N
-                    + " " + compilerSet.getLibraryOption() + IpeUtils.escapeOddCharacters(libName); // NOI18N
+            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag()
+                    + IpeUtils.escapeOddCharacters(libDir)
+                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag()
+                    + IpeUtils.escapeOddCharacters(libDir) // NOI18N
+                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag()
+                    + IpeUtils.escapeOddCharacters(libName); // NOI18N
         } else {
             return IpeUtils.escapeOddCharacters(libPath);
         }
