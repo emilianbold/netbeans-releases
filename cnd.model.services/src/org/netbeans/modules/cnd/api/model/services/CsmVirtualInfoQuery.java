@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.api.model.services;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -138,14 +137,10 @@ public abstract class CsmVirtualInfoQuery {
         private Collection<CsmMethod> getBaseDeclaration(CsmMethod method, boolean first) {
             Set<CharSequence> antilLoop = new HashSet<CharSequence>();
             CharSequence sig = method.getSignature();
-            Collection<CsmMethod> result = new ArrayList<CsmMethod>();
+            Set<CsmMethod> result = new HashSet<CsmMethod>();
             for(CsmInheritance inh : method.getContainingClass().getBaseClasses()) {
-                AtomicReference<CsmMethod> branchResult = new AtomicReference<CsmMethod>();
-                if (processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, branchResult, first)) {
-                    CsmMethod m = branchResult.get();
-                    CndUtils.assertTrue(m != null, "Branch result should not be null"); //NOI18N
-                    result.add(m);
-                }
+                processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, 
+                        new AtomicReference<CsmMethod>(), new AtomicReference<CsmMethod>(), result, first);
             }
             return result;
         }
@@ -159,36 +154,48 @@ public abstract class CsmVirtualInfoQuery {
          * @param first if true, returns first found method, otherwise the topmost one
          * @return true if method found and it is virtual, otherwise false
          */
-        private boolean processMethod(CharSequence sig, CsmClass cls, Set<CharSequence> antilLoop, AtomicReference<CsmMethod> result, boolean first){
+        private void processMethod(CharSequence sig, CsmClass cls, Set<CharSequence> antilLoop,
+                AtomicReference<CsmMethod> firstFound, AtomicReference<CsmMethod> lastFound,
+                Set<CsmMethod> result, boolean first) {
+
+            boolean theLastInHierarchy;
             if (cls == null || antilLoop.contains(cls.getQualifiedName())) {
-                return false;
-            }
-            antilLoop.add(cls.getQualifiedName());
-            for(CsmMember member : cls.getMembers()){
-                if (CsmKindUtilities.isMethod(member)) {
-                    CsmMethod method = (CsmMethod) member;
-                    if (CharSequenceKey.Comparator.compare(sig, method.getSignature()) == 0) {
-                        if (first) {
-                            if (result.get() == null) {
-                                result.set(method);
+                theLastInHierarchy = true;
+            } else {
+
+                antilLoop.add(cls.getQualifiedName());
+                for(CsmMember member : cls.getMembers()) {
+                    if (CsmKindUtilities.isMethod(member)) {
+                        CsmMethod method = (CsmMethod) member;
+                        if (CharSequenceKey.Comparator.compare(sig, method.getSignature()) == 0) {
+                            if (firstFound.get() == null) {
+                                firstFound.set(method);
                             }
-                        } else {
-                            result.set(method);
-                        }
-                        if (method.isVirtual()) {
-                            if (first) {
-                                return true;
+                            lastFound.set(method);
+                            if (method.isVirtual()) {
+                                if (first) {
+                                    result.add(firstFound.get());
+                                    return;
+                                }
                             }
                         }
                     }
                 }
+                theLastInHierarchy = cls.getBaseClasses().isEmpty();
+                for(CsmInheritance inh : cls.getBaseClasses()) {
+                    AtomicReference<CsmMethod> firstFound2 = new AtomicReference<CsmMethod>(firstFound.get());
+                    AtomicReference<CsmMethod> lastFound2 = new AtomicReference<CsmMethod>(lastFound.get());
+                    processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, firstFound2, lastFound2, result, first);
+                }
+
             }
-            for(CsmInheritance inh : cls.getBaseClasses()){
-                if( processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, result, first)) {
-                    return true;
+            if (theLastInHierarchy) {
+                CsmMethod m  = lastFound.get();
+                if (m != null && m.isVirtual()) {
+                    CndUtils.assertNotNull(firstFound.get(), "last found != null && first found == null ?!"); //NOI18N
+                    result.add(first ? firstFound.get() : m);
                 }
             }
-            return (result.get() != null && result.get().isVirtual());
         }
 
         @Override

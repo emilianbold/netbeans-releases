@@ -1,2 +1,2 @@
-32:OVERRIDES B1C1::v_foo proper_parent_multy.cc:22
-62:OVERRIDES B1::v_foo proper_parent_multy.cc:32,B2C2::v_foo proper_parent_multy.cc:39
+35:OVERRIDES B1C1::v_foo proper_parent_multy.cc:25
+65:OVERRIDES B1::v_foo proper_parent_multy.cc:35,B2C2::v_foo proper_parent_multy.cc:42,B2C3::v_foo proper_parent_multy.cc:46
