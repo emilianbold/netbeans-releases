@@ -120,7 +120,7 @@ public abstract class CompilerSetManager {
 
     protected CompilerSetManager() {
         if (!getClass().equals(CompilerSetManagerImpl.class)) {
-            throw new UnsupportedOperationException("this class can not be overriden by clients");
+            throw new UnsupportedOperationException("this class can not be overriden by clients"); // NOI18N
         }
     }
 
