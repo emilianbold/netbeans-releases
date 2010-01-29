@@ -65,10 +65,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
+import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -78,6 +81,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -236,6 +240,44 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 break;
             }
         }
+        
+        //try to find pu for the project
+        //nothing is selected based on previos selection, try to select based on persistence.xml
+        boolean puExists = false;
+        try {
+            puExists = ProviderUtil.persistenceExists(project);
+        } catch (InvalidPersistenceXmlException ex) {
+        }
+
+        if(puExists){
+            PUDataObject pud = null;
+            try {
+                pud = ProviderUtil.getPUDataObject(project);
+            } catch (InvalidPersistenceXmlException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            PersistenceUnit pu = (pud !=null && pud.getPersistence().getPersistenceUnit().length==1) ? pud.getPersistence().getPersistenceUnit()[0] : null;
+            if(pu !=null ){
+                if(withDatasources){
+                    String jtaDs = pu.getJtaDataSource();
+                    if(jtaDs !=null ){
+                        selectDatasource(jtaDs);
+                    }
+                    else {
+                        String nJtaDs = pu.getNonJtaDataSource();
+                        if(nJtaDs != null) {
+                            selectDatasource(nJtaDs);
+                        }
+                    }
+                } else {
+                    //try to find jdbc connection
+                    DatabaseConnection cn = ProviderUtil.getConnection(pu);
+                    if(cn != null){
+                        datasourceComboBox.setSelectedItem(cn);
+                    }
+                }
+            }
+        }
 
         // nothing got selected so far, so select the data source / connection
         // radio button, but don't select an actual data source or connection
@@ -317,12 +359,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
      * Tries to select the given connection and returns true if successful.
      */
     private boolean selectDbConnection(String name) {
-        DatabaseConnection dbconn = ConnectionManager.getDefault().getConnection(name);
-        if (dbconn == null || dbconn.getJDBCConnection() == null) {
+        DatabaseConnection dbcon = ConnectionManager.getDefault().getConnection(name);
+        if (dbcon == null || dbcon.getJDBCConnection() == null) {
             return false;
         }
-        datasourceComboBox.setSelectedItem(dbconn);
-        if (!dbconn.equals(datasourceComboBox.getSelectedItem())) {
+        datasourceComboBox.setSelectedItem(dbcon);
+        if (!dbcon.equals(datasourceComboBox.getSelectedItem())) {
             return false;
         }
         datasourceRadioButton.setSelected(true);
