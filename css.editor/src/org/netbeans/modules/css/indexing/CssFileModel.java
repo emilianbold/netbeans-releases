@@ -38,11 +38,11 @@
  */
 package org.netbeans.modules.css.indexing;
 
-import java.io.File;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -67,6 +67,9 @@ import org.openide.filesystems.FileObject;
  * @author marekfukala
  */
 public class CssFileModel {
+
+    private static final Logger LOGGER = Logger.getLogger(CssIndex.class.getSimpleName());
+    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
     private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)");
     
@@ -95,16 +98,6 @@ public class CssFileModel {
         snapshot = parserResult.getSnapshot();
         isParserBased = true;
         init(parserResult);
-    }
-
-    //usually index based model
-    CssFileModel(FileObject fileObject, Collection<String> classes, Collection<String> ids, Collection<String> htmlElements, Collection<String> imports ) {
-        this.fileObject = fileObject;
-        this.classes = createBlindEntries(classes);
-        this.ids = createBlindEntries(ids);
-        this.htmlElements = createBlindEntries(htmlElements);
-        this.imports = createBlindEntries(imports);
-        isParserBased = false;
     }
 
     public boolean isParserBased() {
@@ -168,14 +161,6 @@ public class CssFileModel {
         SimpleNodeUtil.visitChildren(parserResult.root(), new AstVisitor());
     }
 
-    private Collection<Entry> createBlindEntries(Collection<String> elements) {
-        Collection<Entry> entries = new ArrayList<Entry>(elements.size());
-        for(String elementName : elements) {
-            entries.add(new Entry(elementName, OffsetRange.NONE));
-        }
-        return entries;
-    }
-
     @Override
     public String toString() {
         StringBuffer buf = new StringBuffer(super.toString());
@@ -211,11 +196,14 @@ public class CssFileModel {
                     getImportsCollectionInstance().add(entry);
                 }
             } else if (node.kind() == CssParserTreeConstants.JJT_CLASS) {
-                getClassesCollectionInstance().add(new Entry(node.image(), new OffsetRange(node.startOffset(), node.endOffset())));
+                Entry e = createEntry(node.image(), new OffsetRange(node.startOffset(), node.endOffset()));
+                getClassesCollectionInstance().add(e);
             } else if (node.kind() == CssParserTreeConstants.JJTHASH) {
-                getIdsCollectionInstance().add(new Entry(node.image(), new OffsetRange(node.startOffset(), node.endOffset())));
+                Entry e = createEntry(node.image(), new OffsetRange(node.startOffset(), node.endOffset()));
+                getIdsCollectionInstance().add(e);
             } else if (node.kind() == CssParserTreeConstants.JJTELEMENTNAME) {
-                getHtmlElementsCollectionInstance().add(new Entry(node.image(), new OffsetRange(node.startOffset(), node.endOffset())));
+                Entry e = createEntry(node.image(), new OffsetRange(node.startOffset(), node.endOffset()));
+                getHtmlElementsCollectionInstance().add(e);
             }
 
         }
@@ -226,7 +214,7 @@ public class CssFileModel {
             if(token != null) {
                 String image = token.image;
                 boolean quoted = SimpleNodeUtil.isValueQuoted(image);
-                return new Entry(SimpleNodeUtil.unquotedValue(image),
+                return createEntry(SimpleNodeUtil.unquotedValue(image),
                         new OffsetRange(token.offset + (quoted ? 1 : 0),
                         token.offset + image.length() - (quoted ? 1 : 0)));
             }
@@ -241,7 +229,7 @@ public class CssFileModel {
                     boolean quoted = SimpleNodeUtil.isValueQuoted(content);
                     int from = m.start(groupIndex);
                     int to = m.end(groupIndex);
-                    return new Entry(SimpleNodeUtil.unquotedValue(content),
+                    return createEntry(SimpleNodeUtil.unquotedValue(content),
                         new OffsetRange(from + (quoted ? 1 : 0), to - (quoted ? 1 : 0)));
                 }
             }
@@ -250,16 +238,29 @@ public class CssFileModel {
         }
     }
 
+    public Entry createEntry(String name, OffsetRange range) {
+        int documentFrom = snapshot.getOriginalOffset(range.getStart());
+        int documentTo = snapshot.getOriginalOffset(range.getEnd());
+
+        if(documentFrom == -1 || documentTo == -1) {
+            LOGGER.info("Ast offset range " + range.toString() + 
+                    " cannot be properly mapped to source offset range: ["
+                    + documentFrom + "," + documentTo + "] in file " +
+                    CssFileModel.this.fileObject.getPath()); //NOI18N
+            return null;
+        }
+        return new Entry(name, range, new OffsetRange(documentFrom, documentTo));
+    }
+
     public class Entry {
         private String name;
         private OffsetRange astRange;
         private OffsetRange documentRange;
 
-        private Entry(String name, OffsetRange range) {
+        private Entry(String name, OffsetRange astRange, OffsetRange documentRange) {
             this.name = name;
-            this.astRange = range;
-            this.documentRange = new OffsetRange(snapshot.getOriginalOffset(range.getStart()),
-                    snapshot.getOriginalOffset(range.getEnd()));
+            this.astRange = astRange;
+            this.documentRange = documentRange;
         }
 
         public String getName() {
