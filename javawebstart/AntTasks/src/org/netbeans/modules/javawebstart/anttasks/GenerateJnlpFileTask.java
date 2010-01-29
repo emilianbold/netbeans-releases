@@ -66,6 +66,7 @@ public class GenerateJnlpFileTask extends Task {
     private static final String DEFAULT_APPLICATION_DESC = "${APPLICATION.DESC}";
     private static final String DEFAULT_APPLICATION_DESC_SHORT = "${APPLICATION.DESC.SHORT}";
     private static final String DEFAULT_JNLP_ICON = "${JNLP.ICONS}";
+    private static final String DEFAULT_JNLP_OFFLINE = "${JNLP.OFFLINE.ALLOWED}";
     private static final String JNLP_UPDATE = "${JNLP.UPDATE}";
     private static final String DEFAULT_JNLP_SECURITY = "${JNLP.SECURITY}";
     private static final String DEFAULT_JNLP_RESOURCES_RUNTIME = "${JNLP.RESOURCES.RUNTIME}";
@@ -281,6 +282,13 @@ public class GenerateJnlpFileTask extends Task {
                                     copyFile(new File(iconProp), destDir);
                                     String fileName = stripFilename(iconProp);
                                     informationElem.appendChild(createIconElement(docDom, fileName, "default"));
+                                }
+                            } else if (nodeValue.equals(DEFAULT_JNLP_OFFLINE)) {
+                                //Has to be here to keep compatibility with NB 6.8
+                                informationElem.removeChild(node);
+                                String offlineProp = getProperty("jnlp.offline-allowed", null); // property in project.properties
+                                if (offlineProp.equalsIgnoreCase("true")) {
+                                    informationElem.appendChild(docDom.createElement("offline-allowed"));
                                 }
                             }
                             break;
