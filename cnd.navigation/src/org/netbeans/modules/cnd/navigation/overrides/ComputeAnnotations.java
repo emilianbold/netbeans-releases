@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -90,7 +91,7 @@ public class ComputeAnnotations {
 
     private OverriddeAnnotation computeAnnotation(CsmFunction func, StyledDocument doc) {
         if (CsmKindUtilities.isMethod(func)) {
-            CsmMethod meth = (CsmMethod) func;
+            CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(func);
             final Collection<? extends CsmMethod> baseMethods = CsmVirtualInfoQuery.getDefault().getBaseDeclaration(meth);
             final Collection<? extends CsmMethod> overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverridenMethods(meth, false);
             if (OverriddeAnnotation.LOGGER.isLoggable(Level.FINEST)) {

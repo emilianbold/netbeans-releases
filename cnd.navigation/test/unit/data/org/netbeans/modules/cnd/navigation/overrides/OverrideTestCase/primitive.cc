@@ -20,7 +20,6 @@ class PrimitiveDescendant : PrimitiveAncestor {
     }
 };
 
-/*
 PrimitiveAncestor::PrimitiveAncestor(int) {
 }
 
@@ -38,4 +37,3 @@ void PrimitiveDescendant::v_func() {
 
 void PrimitiveDescendant::nv_func() {
 }
-*/
