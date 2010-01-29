@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -70,7 +70,7 @@ public class CompilerSetManagerEvents {
 
     public CompilerSetManagerEvents(ExecutionEnvironment env) {
         this.executionEnvironment = env;
-        this.isCodeModelInfoReady = ((CompilerSetManagerImpl)CompilerSetManagerAccessor.getDefault(executionEnvironment)).isComplete();
+        this.isCodeModelInfoReady = ((CompilerSetManagerImpl)CompilerSetManager.get(executionEnvironment)).isComplete();
     }
 
     private final ExecutionEnvironment executionEnvironment;

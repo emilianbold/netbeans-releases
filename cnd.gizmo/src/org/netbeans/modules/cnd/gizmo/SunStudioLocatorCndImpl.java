@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.dlight.spi.SunStudioLocator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -63,7 +63,7 @@ public final class SunStudioLocatorCndImpl implements SunStudioLocator {
     @Override
     public Collection<SunStudioDescription> getSunStudioLocations() {
         Collection<SunStudioDescription> result = new ArrayList<SunStudioDescription>();
-        List<CompilerSet> compilerCollections = env.isLocal() ? CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal()).getCompilerSets() : CompilerSetManagerAccessor.getDefault(env).getCompilerSets(); // NOI18N
+        List<CompilerSet> compilerCollections = env.isLocal() ? CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets() : CompilerSetManager.get(env).getCompilerSets(); // NOI18N
         if (compilerCollections.size() == 1 && compilerCollections.get(0).getName().equals(CompilerSet.None)) {
             return result;
         }

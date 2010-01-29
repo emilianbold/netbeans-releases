@@ -62,9 +62,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerSetFactory;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.toolchain.ui.api.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelModel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -150,11 +150,11 @@ public class GdbProfile implements ConfigurationAuxObject {
         
         if (csconf.isValid()) {
             csname = csconf.getOption();
-            cs = CompilerSetManagerAccessor.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(csname);
+            cs = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(csname);
         } else {
             csname = csconf.getOldName();
             cs = CompilerSetFactory.getCompilerSet(conf.getDevelopmentHost().getExecutionEnvironment(), csname, conf.getPlatformInfo().getPlatform());
-            CompilerSetManagerAccessor.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).add(cs);
+            CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).add(cs);
             csconf.setValid();
         }
         Tool debuggerTool = cs.getTool(ToolKind.DebuggerTool.ordinal());
@@ -204,7 +204,7 @@ public class GdbProfile implements ConfigurationAuxObject {
 //                    setGdbCommand(model.getGdbName());
 //                }
                 conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
-                cs = CompilerSetManagerAccessor.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(model.getSelectedCompilerSetName());
+                cs = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(model.getSelectedCompilerSetName());
                 return cs.getTool(ToolKind.DebuggerTool.ordinal()).getPath();
             }
         }

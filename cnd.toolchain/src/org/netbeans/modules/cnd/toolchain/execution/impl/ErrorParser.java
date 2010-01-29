@@ -45,8 +45,8 @@ import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.netbeans.modules.cnd.toolchain.spi.ErrorParserProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -108,7 +108,7 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
                 if (absPath1.startsWith("/usr/lib")) { // NOI18N
                     absPath2 = absPath1.substring(4);
                 }
-                List<CompilerSet> compilerSets = CompilerSetManagerAccessor.getDefault(execEnv).getCompilerSets();
+                List<CompilerSet> compilerSets = CompilerSetManager.get(execEnv).getCompilerSets();
                 for (CompilerSet set : compilerSets) {
                     Tool cCompiler = set.getTool(ToolKind.CCompiler.ordinal());
                     if (cCompiler != null) {

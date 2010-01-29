@@ -50,7 +50,7 @@ import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.ui.options.DownloadUtils;
 import org.netbeans.modules.cnd.toolchain.ui.api.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
@@ -145,7 +145,7 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
         ExecutionEnvironment env = model.getSelectedDevelopmentHost();
         if (env.isLocal()){
             if (cs == null) {
-                cs = CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
+                cs = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
             }
             if (cs != null) {
                 if (cs.isUrlPointer()){

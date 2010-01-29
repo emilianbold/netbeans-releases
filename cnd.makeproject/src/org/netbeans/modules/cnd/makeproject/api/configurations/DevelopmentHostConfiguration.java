@@ -48,7 +48,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
@@ -85,7 +85,7 @@ public class DevelopmentHostConfiguration {
         def = value;
         pcs = new PropertyChangeSupport(this);
 
-        int buildPlatform = CompilerSetManagerAccessor.getDefault(execEnv).getPlatform();
+        int buildPlatform = CompilerSetManager.get(execEnv).getPlatform();
         if (buildPlatform == -1) {
             // TODO: CompilerSet is not reliable about platform; it must be.
             buildPlatform = PlatformTypes.PLATFORM_NONE;
@@ -129,7 +129,7 @@ public class DevelopmentHostConfiguration {
     public boolean isConfigured() {
         // localhost is always STATE_COMPLETE so isLocalhost() is assumed
         // keeping track of online status takes more efforts and can miss sometimes
-        return !CompilerSetManagerAccessor.getDefault(getExecutionEnvironment()).isUninitialized();
+        return !CompilerSetManager.get(getExecutionEnvironment()).isUninitialized();
     }
 
     public int getValue() {
@@ -165,7 +165,7 @@ public class DevelopmentHostConfiguration {
         for (int i = 0; i < servers.size(); i++) {
             if (servers.get(i).equals(execEnv)) {
                 value = i;
-                setBuildPlatform(CompilerSetManagerAccessor.getDefault(execEnv).getPlatform());
+                setBuildPlatform(CompilerSetManager.get(execEnv).getPlatform());
                 if (getBuildPlatform() == -1) {
                     // TODO: CompilerSet is not reliable about platform; it must be.
                     setBuildPlatform(PlatformTypes.PLATFORM_NONE);
@@ -192,7 +192,7 @@ public class DevelopmentHostConfiguration {
                     @Override
                     public void run() {
                         value = newValue;
-                        setBuildPlatform(CompilerSetManagerAccessor.getDefault(currEnv).getPlatform());
+                        setBuildPlatform(CompilerSetManager.get(currEnv).getPlatform());
                         if (getBuildPlatform() == -1) {
                             // TODO: CompilerSet is not reliable about platform; it must be.
                             setBuildPlatform(PlatformTypes.PLATFORM_NONE);

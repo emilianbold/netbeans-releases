@@ -44,9 +44,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -77,10 +75,6 @@ public class CompilerSetManagerAccessorImpl {
      */
     public static CompilerSetManager getDefault(ExecutionEnvironment env) {
         return getDefaultImpl(env, true);
-    }
-
-    public static CompilerSetManager getDefault() {
-        return getDefault(ExecutionEnvironmentFactory.getLocal());
     }
 
     /** Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault() */
@@ -169,6 +163,6 @@ public class CompilerSetManagerAccessorImpl {
 
     /** Look up i18n strings here */
     private static String getString(String s) {
-        return NbBundle.getMessage(CompilerSetManagerAccessor.class, s);
+        return NbBundle.getMessage(CompilerSetManagerAccessorImpl.class, s);
     }
 }

@@ -46,8 +46,8 @@ import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.api.project.DefaultSystemSettings;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
@@ -69,7 +69,7 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings {
             default:
                 return null;
         }
-        CompilerSet compilerSet = CompilerSetManagerAccessor.getDefault(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
+        CompilerSet compilerSet = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
         Tool compiler = compilerSet.getTool(kind);
         if (compiler instanceof BasicCompiler) {
             return (BasicCompiler)compiler;
