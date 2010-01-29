@@ -1112,11 +1112,6 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         return null;
     }
 
-    /** Look up i18n strings here */
-    private static String getString(String s) {
-        return NbBundle.getMessage(CompilerSetManager.class, s);
-    }
-
     @Override
     public String toString() {
         StringBuilder out = new StringBuilder();
