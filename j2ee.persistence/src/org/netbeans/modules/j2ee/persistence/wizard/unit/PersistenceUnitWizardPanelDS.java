@@ -76,6 +76,10 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         super(project);
         initComponents();
         setTableGeneration(tg);
+       
+        if (ProviderUtil.isValidServerInstanceOrNone(project)){
+            connectDatasources();
+        }
         
         PersistenceProviderComboboxHelper comboHelper = new PersistenceProviderComboboxHelper(project);
         comboHelper.connect(providerCombo);
