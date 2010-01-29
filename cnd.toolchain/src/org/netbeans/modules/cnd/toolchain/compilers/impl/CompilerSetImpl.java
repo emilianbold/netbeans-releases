@@ -47,11 +47,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerProvider;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.BaseFolder;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CMakeDescriptor;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
@@ -173,16 +174,6 @@ public class CompilerSetImpl implements CompilerSet {
     }
 
     @Override
-    public boolean isGnuCompiler() {
-        return flavor.isGnuCompiler();
-    }
-
-    @Override
-    public boolean isSunCompiler() {
-        return flavor.isSunStudioCompiler();
-    }
-
-    @Override
     public CompilerFlavor getCompilerFlavor() {
         return flavor;
     }
@@ -227,7 +218,7 @@ public class CompilerSetImpl implements CompilerSet {
         if (findTool(kind) != null) {
             return null;
         }
-        Tool tool = compilerProvider.createCompiler(env, flavor, kind, name, Tool.getToolDisplayName(kind), path);
+        Tool tool = compilerProvider.createCompiler(env, flavor, kind, name, ToolKind.getTool(kind).getDisplayName(), path);
         if (!tools.contains(tool)) {
             tools.add(tool);
         }
@@ -241,7 +232,7 @@ public class CompilerSetImpl implements CompilerSet {
     }
 
     /*package-local*/ Tool addNewTool(ExecutionEnvironment env, String name, String path, int kind) {
-        Tool tool = compilerProvider.createCompiler(env, flavor, kind, name, Tool.getToolDisplayName(kind), path);
+        Tool tool = compilerProvider.createCompiler(env, flavor, kind, name, ToolKind.getTool(kind).getDisplayName(), path);
         tools.add(tool);
         tool.setCompilerSet(this);
         return tool;
@@ -265,7 +256,7 @@ public class CompilerSetImpl implements CompilerSet {
         Tool t;
         // Fixup: all tools should go here ....
         t = compilerProvider.createCompiler(ExecutionEnvironmentFactory.getLocal(),
-                getCompilerFlavor(), kind, "", Tool.getToolDisplayName(kind), ""); // NOI18N
+                getCompilerFlavor(), kind, "", ToolKind.getTool(kind).getDisplayName(), ""); // NOI18N
         t.setCompilerSet(this);
         synchronized( tools ) { // synchronize this only unpredictable tools modification
             tools.add(t);

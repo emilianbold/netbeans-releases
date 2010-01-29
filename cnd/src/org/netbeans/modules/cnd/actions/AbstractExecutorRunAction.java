@@ -60,7 +60,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.toolchain.spi.ToolchainProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.builds.CMakeExecSupport;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -212,7 +213,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         if (set == null) {
             return false;
         }
-        return set.isSunCompiler();
+        return set.getCompilerFlavor().isSunStudioCompiler();
     }
 
     protected static CompilerSet getCompilerSet(Node node ){
@@ -263,17 +264,17 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         if (command == null || command.length()==0) {
-            if (tool == Tool.MakeTool) {
+            if (tool == ToolKind.MakeTool.ordinal()) {
                 MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
                 if (mes != null) {
                     command = mes.getMakeCommand();
                 }
-            } else if (tool == Tool.QMakeTool) {
+            } else if (tool == ToolKind.QMakeTool.ordinal()) {
                 QMakeExecSupport mes = node.getCookie(QMakeExecSupport.class);
                 if (mes != null) {
                     command = mes.getQMakeCommand();
                 }
-            } else if (tool == Tool.CMakeTool) {
+            } else if (tool == ToolKind.CMakeTool.ordinal()) {
                 CMakeExecSupport mes = node.getCookie(CMakeExecSupport.class);
                 if (mes != null) {
                     command = mes.getCMakeCommand();
@@ -292,17 +293,17 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         File makefile = FileUtil.toFile(fileObject);
         // Build directory
         String bdir = null;
-        if (tool == Tool.MakeTool) {
+        if (tool == ToolKind.MakeTool.ordinal()) {
             MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
             if (mes != null) {
                 bdir = mes.getBuildDirectory();
             }
-        } else if (tool == Tool.QMakeTool) {
+        } else if (tool == ToolKind.QMakeTool.ordinal()) {
             QMakeExecSupport mes = node.getCookie(QMakeExecSupport.class);
             if (mes != null) {
                 bdir = mes.getRunDirectory();
             }
-        } else if (tool == Tool.CMakeTool) {
+        } else if (tool == ToolKind.CMakeTool.ordinal()) {
             CMakeExecSupport mes = node.getCookie(CMakeExecSupport.class);
             if (mes != null) {
                 bdir = mes.getRunDirectory();
@@ -317,12 +318,12 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
 
     protected static String[] getArguments(Node node, int tool) {
         String[] args = null;
-        if (tool == Tool.QMakeTool) {
+        if (tool == ToolKind.QMakeTool.ordinal()) {
             QMakeExecSupport mes = node.getCookie(QMakeExecSupport.class);
             if (mes != null) {
                 args = mes.getArguments();
             }
-        } else if (tool == Tool.CMakeTool) {
+        } else if (tool == ToolKind.CMakeTool.ordinal()) {
             CMakeExecSupport mes = node.getCookie(CMakeExecSupport.class);
             if (mes != null) {
                 args = mes.getArguments();

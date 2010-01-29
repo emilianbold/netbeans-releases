@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainManagerImpl;
 
 /**
  * Recognized (and prioritized) types of compiler sets
@@ -77,8 +76,7 @@ public final class CompilerFlavorImpl implements CompilerFlavor {
         ToolchainDescriptor d = getToolchainDescriptor();
         if (d != null) {
             for (String f : d.getFamily()) {
-                if ("GNU".equals(f)) {
-                    // NOI18N
+                if ("GNU".equals(f)) { // NOI18N
                     return true;
                 }
             }
@@ -91,8 +89,7 @@ public final class CompilerFlavorImpl implements CompilerFlavor {
         ToolchainDescriptor d = getToolchainDescriptor();
         if (d != null) {
             for (String f : d.getFamily()) {
-                if ("SunStudio".equals(f)) {
-                    // NOI18N
+                if ("SunStudio".equals(f)) { // NOI18N
                     return true;
                 }
             }
@@ -163,32 +160,23 @@ public final class CompilerFlavorImpl implements CompilerFlavor {
 
     public static String mapOldToNew(String flavor, int version) {
         if (version <= 43) {
-            if (flavor.equals("Sun")) {
-                // NOI18N
+            if (flavor.equals("Sun")) { // NOI18N
                 return "SunStudio"; // NOI18N
-            } else if (flavor.equals("SunExpress")) {
-                // NOI18N
+            } else if (flavor.equals("SunExpress")) { // NOI18N
                 return "SunStudioExpress"; // NOI18N
-            } else if (flavor.equals("Sun12")) {
-                // NOI18N
+            } else if (flavor.equals("Sun12")) { // NOI18N
                 return "SunStudio_12"; // NOI18N
-            } else if (flavor.equals("Sun11")) {
-                // NOI18N
+            } else if (flavor.equals("Sun11")) { // NOI18N
                 return "SunStudio_11"; // NOI18N
-            } else if (flavor.equals("Sun10")) {
-                // NOI18N
+            } else if (flavor.equals("Sun10")) { // NOI18N
                 return "SunStudio_10"; // NOI18N
-            } else if (flavor.equals("Sun9")) {
-                // NOI18N
+            } else if (flavor.equals("Sun9")) { // NOI18N
                 return "SunStudio_9"; // NOI18N
-            } else if (flavor.equals("Sun8")) {
-                // NOI18N
+            } else if (flavor.equals("Sun8")) { // NOI18N
                 return "SunStudio_8"; // NOI18N
-            } else if (flavor.equals("DJGPP")) {
-                // NOI18N
+            } else if (flavor.equals("DJGPP")) { // NOI18N
                 return "GNU"; // NOI18N
-            } else if (flavor.equals("Interix")) {
-                // NOI18N
+            } else if (flavor.equals("Interix")) { // NOI18N
                 return "GNU"; // NOI18N
             } else if (flavor.equals(CompilerSetImpl.UNKNOWN)) {
                 return "GNU"; // NOI18N

@@ -175,18 +175,18 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
         Map<String, String> tools = findTools();
         CompilerSet def = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
         if (useSunCompilers) {
-            if (def != null && def.isGnuCompiler()) {
+            if (def != null && def.getCompilerFlavor().isGnuCompiler()) {
                 for(CompilerSet set : CompilerSetManagerAccessor.getDefault().getCompilerSets()){
-                    if (set.isSunCompiler()) {
+                    if (set.getCompilerFlavor().isSunStudioCompiler()) {
                         CompilerSetManagerAccessor.getDefault().setDefault(set);
                         break;
                     }
                 }
             }
         } else {
-            if (def != null && def.isSunCompiler()) {
+            if (def != null && def.getCompilerFlavor().isSunStudioCompiler()) {
                 for(CompilerSet set : CompilerSetManagerAccessor.getDefault().getCompilerSets()){
-                    if (set.isGnuCompiler()) {
+                    if (set.getCompilerFlavor().isGnuCompiler()) {
                         CompilerSetManagerAccessor.getDefault().setDefault(set);
                         break;
                     }
@@ -194,7 +194,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             }
         }
         def = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
-        final boolean isSUN = def != null ? def.isSunCompiler() : false;
+        final boolean isSUN = def != null ? def.getCompilerFlavor().isSunStudioCompiler() : false;
         if (tools == null) {
             assertTrue("Please install required tools.", false);
             System.err.println("Test did not run because required tools do not found");

@@ -46,7 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -186,9 +186,9 @@ public class QmakeProjectWriter {
                 expandAndQuote(configuration.getQmakeConfiguration().getUiDir().getValue()));
 
         write(bw, Variable.QMAKE_CC, Operation.SET,
-                ConfigurationMakefileWriter.getCompilerName(configuration, Tool.CCompiler));
+                ConfigurationMakefileWriter.getCompilerName(configuration, ToolKind.CCompiler.ordinal()));
         write(bw, Variable.QMAKE_CXX, Operation.SET,
-                ConfigurationMakefileWriter.getCompilerName(configuration, Tool.CCCompiler));
+                ConfigurationMakefileWriter.getCompilerName(configuration, ToolKind.CCCompiler.ordinal()));
 
         CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
         OptionToString defineVisitor = new OptionToString(compilerSet, null);
@@ -300,6 +300,7 @@ public class QmakeProjectWriter {
             this.compilerSet = compilerSet;
         }
 
+        @Override
         public String toString(LibraryItem item) {
             switch (item.getType()) {
                 case LibraryItem.PROJECT_ITEM:
@@ -350,6 +351,7 @@ public class QmakeProjectWriter {
             this.compilerSet = compilerSet;
         }
 
+        @Override
         public String toString(String item) {
             if (0 < item.length()) {
                 if (compilerSet != null) {

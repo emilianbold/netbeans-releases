@@ -38,62 +38,42 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.cnd.toolchain.api;
 
-package org.netbeans.modules.cnd.toolchain.ui.options;
+import org.openide.util.NbBundle;
 
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.DefaultListModel;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
-
-/**
- * Manage a JList with both add and remove lists.
- *
- * @author gordon
- */
-/*package-local*/ final class AddRemoveListModel extends DefaultListModel {
+public enum ToolKind {
+    CCompiler, //0
+    CCCompiler, //1
+    FortranCompiler, //2
+    CustomTool, //3
+    Assembler, //4
+    MakeTool, //5
+    DebuggerTool, //6
+    QMakeTool, //7
+    CMakeTool, //8
+    UnknownTool; //9
     
-    private ArrayList<String> addList;
-    private ArrayList<Object> removeList;
-    
-    /** Creates a new instance of AddRemoveListModel */
-    public AddRemoveListModel() {
-        addList = new ArrayList<String>();
-        removeList = new ArrayList<Object>();
+    public String getDisplayName(){
+        return NbBundle.getBundle(ToolKind.class).getString(name());
     }
-    
-    public void addAddElement(String s) {
-        if (!contains(s)) {
-            for (int i = 0; i < getSize(); i++) {
-                Object o = elementAt(i);
-                if (o instanceof Tool) {
-                    Tool tool = (Tool) o;
-                    if (tool.getName().equals(s)) {
-                        return;
-                    }
-                }
+
+    public static ToolKind getTool(int ordinal){
+        for (ToolKind tool : ToolKind.values()){
+            if (tool.ordinal() == ordinal) {
+                return tool;
             }
-            addList.add(s);
-            addElement(s);
         }
+        return UnknownTool;
     }
-    
-    @Override
-    public Object remove(int idx) {
-        Object o = super.remove(idx);
-        if (addList.contains(o)) {
-            addList.remove(o);
-        } else {
-            removeList.add(o);
+
+    public static ToolKind getTool(String name){
+        for (ToolKind tool : ToolKind.values()){
+            if (tool.getDisplayName().equals(name)) {
+                return tool;
+            }
         }
-        return o;
+        return UnknownTool;
     }
-    
-    public List<String> getAddList() {
-        return addList;
-    }
-    
-    public List getRemoveList() {
-        return removeList;
-    }
+
 }

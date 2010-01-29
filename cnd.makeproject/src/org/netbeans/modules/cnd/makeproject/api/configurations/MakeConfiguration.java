@@ -50,7 +50,7 @@ import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
@@ -662,16 +662,16 @@ public class MakeConfiguration extends Configuration {
                         itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
-                if (itemConfiguration.getTool() == Tool.CCompiler) {
+                if (itemConfiguration.getTool() == ToolKind.CCompiler.ordinal()) {
                     hasCFiles = true;
                 }
-                if (itemConfiguration.getTool() == Tool.CCCompiler) {
+                if (itemConfiguration.getTool() == ToolKind.CCCompiler.ordinal()) {
                     hasCPPFiles = true;
                 }
-                if (itemConfiguration.getTool() == Tool.FortranCompiler) {
+                if (itemConfiguration.getTool() == ToolKind.FortranCompiler.ordinal()) {
                     hasFortranFiles = true;
                 }
-                if (itemConfiguration.getTool() == Tool.Assembler) {
+                if (itemConfiguration.getTool() == ToolKind.Assembler.ordinal()) {
                     hasAssemblerFiles = true;
                 }
             //            if (itemConfiguration.getTool() == Tool.AsmCompiler) {
@@ -851,7 +851,7 @@ public class MakeConfiguration extends Configuration {
      * Special version of IntConfiguration
      * Names are shifted one (because Makefile is not allowed as a choice anymore for managed projects)
      */
-    static class ManagedIntConfiguration extends IntConfiguration {
+    private final static class ManagedIntConfiguration extends IntConfiguration {
         public ManagedIntConfiguration(IntConfiguration master, int def, String[] names, String[] options) {
             super(master, def, names, options);
         }

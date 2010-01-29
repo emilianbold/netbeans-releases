@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.actions.QMakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -110,7 +111,7 @@ public class ReconfigureProject {
         CompilerSet2Configuration set = configuration.getCompilerSet();
         compilerSet = set.getCompilerSet();
         assert compilerSet != null;
-        isSunCompiler = compilerSet.isSunCompiler();
+        isSunCompiler = compilerSet.getCompilerFlavor().isSunStudioCompiler();
         Folder important = pdp.getConfigurationDescriptor().getExternalFileItems();
         for(Item item : important.getAllItemsAsArray()){
             DataObject dao = item.getDataObject();
@@ -156,6 +157,7 @@ public class ReconfigureProject {
     public void reconfigure(final String cFlags, final String cxxFlags, final String linkerFlags, final InputOutput io){
         if (SwingUtilities.isEventDispatchThread()){
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     reconfigure(cFlags, cxxFlags, linkerFlags, getRestOptions(), true, io);
                 }
@@ -226,11 +228,13 @@ public class ReconfigureProject {
                 }
             }
             ExecutionListener listener = new ExecutionListener() {
+                @Override
                 public void executionStarted(int pid) {
                     for(ExecutionListener listener : listeners){
                         listener.executionStarted(pid);
                     }
                 }
+                @Override
                 public void executionFinished(int rc) {
                     if (rc == 0) {
                         postClean(false);
@@ -242,7 +246,7 @@ public class ReconfigureProject {
                 }
             };
             if (TRACE) {
-                logger.log(Level.INFO, "#" + cmake.getPrimaryFile().getPath() + " " + arguments); // NOI18N
+                logger.log(Level.INFO, "#{0} {1}", new Object[]{cmake.getPrimaryFile().getPath(), arguments}); // NOI18N
             }
             if (canceled.get()) {
                 listener.executionFinished(-1);
@@ -260,11 +264,13 @@ public class ReconfigureProject {
                 }
             }
             ExecutionListener listener = new ExecutionListener() {
+                @Override
                 public void executionStarted(int pid) {
                     for(ExecutionListener listener : listeners){
                         listener.executionStarted(pid);
                     }
                 }
+                @Override
                 public void executionFinished(int rc) {
                     if (rc == 0) {
                         postClean(false);
@@ -276,7 +282,7 @@ public class ReconfigureProject {
                 }
             };
             if (TRACE) {
-                logger.log(Level.INFO, "#" + qmake.getPrimaryFile().getPath() + " " + arguments); // NOI18N
+                logger.log(Level.INFO, "#{0} {1}", new Object[]{qmake.getPrimaryFile().getPath(), arguments}); // NOI18N
             }
             if (canceled.get()) {
                 listener.executionFinished(-1);
@@ -296,11 +302,13 @@ public class ReconfigureProject {
                 }
             }
             ExecutionListener listener = new ExecutionListener() {
+                @Override
                 public void executionStarted(int pid) {
                     for(ExecutionListener listener : listeners){
                         listener.executionStarted(pid);
                     }
                 }
+                @Override
                 public void executionFinished(int rc) {
                     if (rc == 0) {
                         postClean(false);
@@ -312,7 +320,7 @@ public class ReconfigureProject {
                 }
             };
             if (TRACE) {
-                logger.log(Level.INFO, "#" + configure.getPrimaryFile().getPath() + " " + arguments); // NOI18N
+                logger.log(Level.INFO, "#{0} {1}", new Object[]{configure.getPrimaryFile().getPath(), arguments}); // NOI18N
             }
             if (canceled.get()) {
                 listener.executionFinished(-1);
@@ -328,6 +336,7 @@ public class ReconfigureProject {
 
     private void postClean(final boolean notifyStart) {
         ExecutionListener listener = new ExecutionListener() {
+            @Override
             public void executionStarted(int pid) {
                 if (notifyStart) {
                     for(ExecutionListener listener : listeners){
@@ -335,12 +344,13 @@ public class ReconfigureProject {
                     }
                 }
             }
+            @Override
             public void executionFinished(int rc) {
                 postMake();
             }
         };
         if (TRACE) {
-            logger.log(Level.INFO, "#make -f " + make.getPrimaryFile().getPath() + " clean"); // NOI18N
+            logger.log(Level.INFO, "#make -f {0} clean", make.getPrimaryFile().getPath()); // NOI18N
         }
         if (canceled.get()) {
             listener.executionFinished(-1);
@@ -352,7 +362,7 @@ public class ReconfigureProject {
     private void postMake(){
         String arguments = getConfigureArguments(make.getPrimaryFile().getPath(), null, cFlags, cxxFlags, linkerFlags, isSunCompiler());
         if (TRACE) {
-            logger.log(Level.INFO, "#make -f " + make.getPrimaryFile().getPath()); // NOI18N
+            logger.log(Level.INFO, "#make -f {0}", make.getPrimaryFile().getPath()); // NOI18N
         }
         Node node = make.getNodeDelegate();
         ExecutionSupport ses = node.getCookie(ExecutionSupport.class);
@@ -365,8 +375,10 @@ public class ReconfigureProject {
             }
         }
         ExecutionListener listener = new ExecutionListener() {
+            @Override
             public void executionStarted(int pid) {
             }
+            @Override
             public void executionFinished(int rc) {
                 for(ExecutionListener listener : listeners){
                     listener.executionFinished(rc);
@@ -605,7 +617,7 @@ public class ReconfigureProject {
     }
 
     private String getCCompilerName(){
-        String path = getToolPath(Tool.CCompiler);
+        String path = getToolPath(ToolKind.CCompiler.ordinal());
         if (path == null) {
             if (isSunCompiler()) {
                 return "cc"; // NOI18N
@@ -617,7 +629,7 @@ public class ReconfigureProject {
     }
 
     private String getCppCompilerName(){
-        String path = getToolPath(Tool.CCCompiler);
+        String path = getToolPath(ToolKind.CCCompiler.ordinal());
         if (path == null) {
             if (isSunCompiler()) {
                 return "CC"; // NOI18N

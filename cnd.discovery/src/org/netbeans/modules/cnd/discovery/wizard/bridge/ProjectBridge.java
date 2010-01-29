@@ -54,7 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
@@ -195,14 +195,14 @@ public class ProjectBridge {
             ItemConfiguration conf = (ItemConfiguration)pao;
             MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
             ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
-            switch(itemConfiguration.getTool()) {
-                case Tool.CCCompiler:
+            switch(ToolKind.getTool(itemConfiguration.getTool())) {
+                case CCCompiler:
                     itemConfiguration.setCCCompilerConfiguration(conf.getCCCompilerConfiguration());
                     break;
-                case Tool.CCompiler:
+                case CCompiler:
                     itemConfiguration.setCCompilerConfiguration(conf.getCCompilerConfiguration());
                     break;
-                case Tool.CustomTool:
+                case CustomTool:
                     itemConfiguration.setCustomToolConfiguration(conf.getCustomToolConfiguration());
                     break;
             }
@@ -377,8 +377,8 @@ public class ProjectBridge {
         if (itemConfiguration == null) {
             return;
         }
-        if (itemConfiguration.getTool() == Tool.CCCompiler || itemConfiguration.getTool() == Tool.CCompiler) {
-            itemConfiguration.setTool(Tool.CustomTool);
+        if (itemConfiguration.getTool() == ToolKind.CCCompiler.ordinal() || itemConfiguration.getTool() == ToolKind.CCompiler.ordinal()) {
+            itemConfiguration.setTool(ToolKind.CustomTool.ordinal());
         }
     }
 
@@ -389,12 +389,12 @@ public class ProjectBridge {
             return;
         }
         if (isCPP) {
-            if (itemConfiguration.getTool() != Tool.CCCompiler) {
-                itemConfiguration.setTool(Tool.CCCompiler);
+            if (itemConfiguration.getTool() != ToolKind.CCCompiler.ordinal()) {
+                itemConfiguration.setTool(ToolKind.CCCompiler.ordinal());
             }
         } else {
-            if (itemConfiguration.getTool() != Tool.CCompiler) {
-                itemConfiguration.setTool(Tool.CCompiler);
+            if (itemConfiguration.getTool() != ToolKind.CCompiler.ordinal()) {
+                itemConfiguration.setTool(ToolKind.CCompiler.ordinal());
             }
         }
     }
@@ -523,9 +523,9 @@ public class ProjectBridge {
             CompilerSet compilerSet = getCompilerSet();
             BasicCompiler compiler;
             if (isCPP) {
-                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
+                compiler = (BasicCompiler)compilerSet.getTool(ToolKind.CCCompiler.ordinal());
             } else {
-                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
+                compiler = (BasicCompiler)compilerSet.getTool(ToolKind.CCompiler.ordinal());
             }
             for(Object o :compiler.getSystemIncludeDirectories()){
                 String path = (String)o;
@@ -569,9 +569,9 @@ public class ProjectBridge {
             CompilerSet compilerSet = getCompilerSet();
             BasicCompiler compiler;
             if (isCPP) {
-                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
+                compiler = (BasicCompiler)compilerSet.getTool(ToolKind.CCCompiler.ordinal());
             } else {
-                compiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
+                compiler = (BasicCompiler)compilerSet.getTool(ToolKind.CCompiler.ordinal());
             }
             for(Object o :compiler.getSystemPreprocessorSymbols()){
                 String macro = (String)o;

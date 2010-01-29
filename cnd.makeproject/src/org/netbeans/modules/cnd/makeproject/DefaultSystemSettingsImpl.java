@@ -42,10 +42,11 @@ package org.netbeans.modules.cnd.makeproject;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.api.project.DefaultSystemSettings;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 
 /**
@@ -59,10 +60,10 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings {
         int kind;        
         switch (language) {
             case C:
-                kind = Tool.CCompiler;
+                kind = ToolKind.CCompiler.ordinal();
                 break;
             case CPP:
-                kind = Tool.CCCompiler;
+                kind = ToolKind.CCCompiler.ordinal();
                 break;
             default:
                 return null;

@@ -44,8 +44,9 @@ import org.netbeans.modules.cnd.actions.AbstractExecutorRunAction;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -200,7 +201,7 @@ public final class ConfigureUtils {
             if (buf.length() > 0) {
                 buf.append(' '); // NOI18N
             }
-            buf.append(key + flag);
+            buf.append(key).append(flag);
         }
     }
 
@@ -221,7 +222,7 @@ public final class ConfigureUtils {
 
     private static String getDefaultC(){
         CompilerSet def = CompilerSetManagerAccessor.getDefault(CompilerSetManagerAccessor.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
-        String cCompiler = getToolPath(def, Tool.CCompiler);
+        String cCompiler = getToolPath(def, ToolKind.CCompiler.ordinal());
         if (cCompiler != null) {
             return cCompiler;
         }
@@ -237,7 +238,7 @@ public final class ConfigureUtils {
 
     private static String getDefaultCpp(){
         CompilerSet def = CompilerSetManagerAccessor.getDefault(CompilerSetManagerAccessor.getDefaultExecutionEnvironment()).getDefaultCompilerSet();
-        String cppCompiler = getToolPath(def, Tool.CCCompiler);
+        String cppCompiler = getToolPath(def, ToolKind.CCCompiler.ordinal());
         if (cppCompiler != null) {
             return cppCompiler;
         }

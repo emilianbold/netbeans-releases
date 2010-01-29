@@ -68,7 +68,7 @@ public final class SunStudioLocatorCndImpl implements SunStudioLocator {
         }
 
         for (CompilerSet compilerSet : compilerCollections) {
-            if (!compilerSet.isSunCompiler()) {
+            if (!compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
                 continue;
             }
             String binDir = compilerSet.getDirectory();

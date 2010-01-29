@@ -131,7 +131,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         boolean hasSunStudio = false;
 
         for (CompilerSet cs : compilers) {
-            if (cs.isSunCompiler()) {
+            if (cs.getCompilerFlavor().isSunStudioCompiler()) {
                 hasSunStudio = true;
                 break;
             }

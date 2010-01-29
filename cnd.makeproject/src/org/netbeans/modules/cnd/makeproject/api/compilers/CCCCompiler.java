@@ -280,7 +280,7 @@ public abstract class CCCCompiler extends BasicCompiler {
         int defineIndex = line.indexOf("-D"); // NOI18N
         while (defineIndex >= 0) {
             String token;
-            int spaceIndex = line.indexOf(" ", defineIndex + 1); // NOI18N
+            int spaceIndex = line.indexOf(' ', defineIndex + 1); // NOI18N
             if (spaceIndex > 0) {
                 token = line.substring(defineIndex+2, spaceIndex);
                 if (defineIndex > 0 && line.charAt(defineIndex-1)=='"') {

@@ -65,32 +65,23 @@ public class CompilerFlavorAccessor {
 
     public static String mapOldToNew(String flavor, int version) {
         if (version <= 43) {
-            if (flavor.equals("Sun")) {
-                // NOI18N
+            if (flavor.equals("Sun")) { // NOI18N
                 return "SunStudio"; // NOI18N
-            } else if (flavor.equals("SunExpress")) {
-                // NOI18N
+            } else if (flavor.equals("SunExpress")) { // NOI18N
                 return "SunStudioExpress"; // NOI18N
-            } else if (flavor.equals("Sun12")) {
-                // NOI18N
+            } else if (flavor.equals("Sun12")) { // NOI18N
                 return "SunStudio_12"; // NOI18N
-            } else if (flavor.equals("Sun11")) {
-                // NOI18N
+            } else if (flavor.equals("Sun11")) { // NOI18N
                 return "SunStudio_11"; // NOI18N
-            } else if (flavor.equals("Sun10")) {
-                // NOI18N
+            } else if (flavor.equals("Sun10")) { // NOI18N
                 return "SunStudio_10"; // NOI18N
-            } else if (flavor.equals("Sun9")) {
-                // NOI18N
+            } else if (flavor.equals("Sun9")) { // NOI18N
                 return "SunStudio_9"; // NOI18N
-            } else if (flavor.equals("Sun8")) {
-                // NOI18N
+            } else if (flavor.equals("Sun8")) { // NOI18N
                 return "SunStudio_8"; // NOI18N
-            } else if (flavor.equals("DJGPP")) {
-                // NOI18N
+            } else if (flavor.equals("DJGPP")) { // NOI18N
                 return "GNU"; // NOI18N
-            } else if (flavor.equals("Interix")) {
-                // NOI18N
+            } else if (flavor.equals("Interix")) { // NOI18N
                 return "GNU"; // NOI18N
             } else if (flavor.equals(CompilerSetImpl.UNKNOWN)) {
                 return "GNU"; // NOI18N

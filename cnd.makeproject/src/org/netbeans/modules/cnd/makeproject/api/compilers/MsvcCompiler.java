@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.PredefinedMacro;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -74,7 +74,7 @@ public class MsvcCompiler extends GNUCCompiler {
 
     @Override
     public CompilerDescriptor getDescriptor() {
-        if (getKind() == Tool.CCCompiler) {
+        if (getKind() == ToolKind.CCCompiler.ordinal()) {
             return getFlavor().getToolchainDescriptor().getCpp();
         } else {
             return getFlavor().getToolchainDescriptor().getC();

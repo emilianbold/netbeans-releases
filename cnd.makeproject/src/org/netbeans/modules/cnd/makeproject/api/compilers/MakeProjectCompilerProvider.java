@@ -40,9 +40,10 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerProvider;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -63,45 +64,45 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
      */
     public Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         if (flavor.isSunStudioCompiler()) {
-            if (kind == Tool.CCompiler) {
+            if (kind == ToolKind.CCompiler.ordinal()) {
                 return SunCCompiler.create(env, flavor, kind, name, displayName, path);
-            } else if (kind == Tool.CCCompiler) {
+            } else if (kind == ToolKind.CCCompiler.ordinal()) {
                 return SunCCCompiler.create(env, flavor, kind, name, displayName, path);
-            } else if (kind == Tool.FortranCompiler) {
+            } else if (kind == ToolKind.FortranCompiler.ordinal()) {
                 return SunFortranCompiler.create(env, flavor, kind, name, displayName, path);
-            } else if (kind == Tool.MakeTool) {
+            } else if (kind == ToolKind.MakeTool.ordinal()) {
                 return SunMaketool.create(env, flavor, name, displayName, path);
-            } else if (kind == Tool.DebuggerTool) {
+            } else if (kind == ToolKind.DebuggerTool.ordinal()) {
                 return SunDebuggerTool.create(env, flavor, name, displayName, path);
-            } else if (kind == Tool.Assembler) {
+            } else if (kind == ToolKind.Assembler.ordinal()) {
                 return Assembler.create(env, flavor, kind, name, displayName, path);
             }
         } else /* if (flavor.isGnuCompiler()) */ { // Assume GNU (makeproject system doesn't handle Unknown)
-           if (kind == Tool.CCompiler) {
+           if (kind == ToolKind.CCompiler.ordinal()) {
                if ("MSVC".equals(flavor.toString())) { // NOI18N
                    return MsvcCompiler.create(env, flavor, kind, name, displayName, path);
                } else {
                    return GNUCCompiler.create(env, flavor, kind, name, displayName, path);
                }
-           } else if (kind == Tool.CCCompiler) {
+           } else if (kind == ToolKind.CCCompiler.ordinal()) {
                if ("MSVC".equals(flavor.toString())) { // NOI18N
                    return new MsvcCompiler(env, flavor, kind, name, displayName, path);
                } else {
                    return GNUCCCompiler.create(env, flavor, kind, name, displayName, path);
                }
-            } else if (kind == Tool.FortranCompiler) {
+            } else if (kind == ToolKind.FortranCompiler.ordinal()) {
                 return GNUFortranCompiler.create(env, flavor, kind, name, displayName, path);
-            } else if (kind == Tool.MakeTool) {
+            } else if (kind == ToolKind.MakeTool.ordinal()) {
                 return GNUMaketool.create(env, flavor, name, displayName, path);
-            } else if (kind == Tool.DebuggerTool) {
+            } else if (kind == ToolKind.DebuggerTool.ordinal()) {
                 return GNUDebuggerTool.create(env, flavor, name, displayName, path);
-            } else if (kind == Tool.Assembler) {
+            } else if (kind == ToolKind.Assembler.ordinal()) {
                 return Assembler.create(env, flavor, kind, name, displayName, path);
             }
         }
-        if (kind == Tool.CustomTool) {
+        if (kind == ToolKind.CustomTool.ordinal()) {
             return CustomTool.create(env);
-        } else if (kind == Tool.QMakeTool || kind == Tool.CMakeTool) {
+        } else if (kind == ToolKind.QMakeTool.ordinal() || kind == ToolKind.CMakeTool.ordinal()) {
             return GeneralTool.create(env, kind, flavor, name, displayName, path);
         }
         return null;

@@ -205,7 +205,7 @@ public class GizmoOptionsImpl implements ConfigurationAuxObject, GizmoOptions {
         List<CompilerSet> compilers = compilerSetManager.getCompilerSets();
         boolean hasSunStudio = false;
         for (CompilerSet cs : compilers) {
-            if (cs.isSunCompiler()) {
+            if (cs.getCompilerFlavor().isSunStudioCompiler()) {
                 hasSunStudio = true;
                 break;
             }

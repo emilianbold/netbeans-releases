@@ -48,7 +48,7 @@ import java.util.ArrayList;
 import org.netbeans.modules.cnd.toolchain.actions.BuildToolsAction;
 
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.openide.nodes.Sheet;
@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.settings.CppSettings;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetFactory;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.toolchain.ui.api.LocalToolsPanelModel;
@@ -156,7 +157,7 @@ public class GdbProfile implements ConfigurationAuxObject {
             CompilerSetManagerAccessor.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).add(cs);
             csconf.setValid();
         }
-        Tool debuggerTool = cs.getTool(Tool.DebuggerTool);
+        Tool debuggerTool = cs.getTool(ToolKind.DebuggerTool.ordinal());
         ExecutionEnvironment execEnv = null;
         if (debuggerTool != null) {
             String gdbPath = debuggerTool.getPath();
@@ -204,7 +205,7 @@ public class GdbProfile implements ConfigurationAuxObject {
 //                }
                 conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
                 cs = CompilerSetManagerAccessor.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(model.getSelectedCompilerSetName());
-                return cs.getTool(Tool.DebuggerTool).getPath();
+                return cs.getTool(ToolKind.DebuggerTool.ordinal()).getPath();
             }
         }
         return null;
