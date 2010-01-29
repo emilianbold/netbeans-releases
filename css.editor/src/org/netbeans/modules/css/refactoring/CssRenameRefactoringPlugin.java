@@ -112,6 +112,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             CssElementContext.Editor econtext = (CssElementContext.Editor) context;
             //get selected element in the editor
             SimpleNode element = econtext.getElement();
+            String elementImage = element.image();
 
             CssProjectSupport sup = CssProjectSupport.findFor(context.getFileObject());
             if (sup == null) {
@@ -119,7 +120,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             }
             CssIndex index = sup.getIndex();
             ModificationResult modificationResult = new ModificationResult();
-            
+
             if (element.kind() == CssParserTreeConstants.JJT_CLASS
                     || element.kind() == CssParserTreeConstants.JJTHASH) {
                 //class or id refactoring
@@ -174,12 +175,14 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
                         List<Difference> diffs = new ArrayList<Difference>();
                         for (Entry entry : entries) {
-                            diffs.add(new Difference(Difference.Kind.CHANGE,
-                                    editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
-                                    editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),
-                                    entry.getName(),
-                                    refactoring.getNewName(),
-                                    NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Selector"))); //NOI18N
+                            if (elementImage.equals(entry.getName())) {
+                                diffs.add(new Difference(Difference.Kind.CHANGE,
+                                        editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
+                                        editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),
+                                        entry.getName(),
+                                        refactoring.getNewName(),
+                                        NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Selector"))); //NOI18N
+                            }
                         }
                         modificationResult.addDifferences(file, diffs);
 
@@ -190,7 +193,22 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
             } else if (element.kind() == CssParserTreeConstants.JJTELEMENTNAME) {
                 //type selector: div
-                //we do refactor only elements in css files, and even this is questionable if makes much sense
+                //we do refactor only elements in the current css file, and even this is questionable if makes much sense
+                CssFileModel model = new CssFileModel(econtext.getParserResult());
+                List<Difference> diffs = new ArrayList<Difference>();
+                CloneableEditorSupport editor = Css.findCloneableEditorSupport(context.getFileObject());
+                for(Entry entry : model.getHtmlElements()) {
+                    if(elementImage.equals(entry.getName())) {
+                        diffs.add(new Difference(Difference.Kind.CHANGE,
+                                        editor.createPositionRef(entry.getDocumentRange().getStart(), Bias.Forward),
+                                        editor.createPositionRef(entry.getDocumentRange().getEnd(), Bias.Backward),
+                                        entry.getName(),
+                                        refactoring.getNewName(),
+                                        NbBundle.getMessage(CssRenameRefactoringPlugin.class, "MSG_Rename_Selector"))); //NOI18N
+                    }
+                }
+                modificationResult.addDifferences(context.getFileObject(), diffs);
+
             } else {
                 //other nodes which may appear under the simple selector node
                 //we do not refactor them
