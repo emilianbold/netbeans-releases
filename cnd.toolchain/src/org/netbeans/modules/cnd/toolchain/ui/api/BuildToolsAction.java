@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.toolchain.actions;
+package org.netbeans.modules.cnd.toolchain.ui.api;
 
 import java.awt.Dialog;
 import java.awt.Dimension;

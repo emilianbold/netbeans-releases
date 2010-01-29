@@ -45,7 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
-import org.netbeans.modules.cnd.toolchain.actions.BuildToolsAction;
+import org.netbeans.modules.cnd.toolchain.ui.api.BuildToolsAction;
 
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.ToolKind;
