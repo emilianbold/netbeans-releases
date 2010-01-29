@@ -839,7 +839,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         if (descriptorVersion < 46) {
             host = HostInfoUtils.LOCALHOST;
         } else {
-            host = CompilerSetManagerAccessor.getDefaultDevelopmentHost();
+            host = CppUtils.getDefaultDevelopmentHost();
         }
         MakeConfiguration makeConfiguration = new MakeConfiguration(FileUtil.toFile(projectDirectory).getPath(), getString(value), confType, host);
         return makeConfiguration;

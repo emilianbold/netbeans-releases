@@ -661,7 +661,6 @@ public final class CompilerSetManagerImpl implements CompilerSetManager {
         }
     }
 
-    @Override
     public void initCompilerSet(CompilerSet cs) {
         CompilerSetImpl impl = (CompilerSetImpl) cs;
         initCompilerSet(impl.getDirectory(), impl, false);

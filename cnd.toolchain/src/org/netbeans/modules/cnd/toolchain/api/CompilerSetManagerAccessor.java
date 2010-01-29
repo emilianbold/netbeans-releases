@@ -123,11 +123,6 @@ public class CompilerSetManagerAccessor {
         return ((CompilerSetManagerImpl)getDefaultImpl(execEnv, initialize)).deepCopy();
     }
 
-    /** TODO: deprecate and remove */
-    public static String getDefaultDevelopmentHost() {
-        return ExecutionEnvironmentFactory.toUniqueID(getDefaultExecutionEnvironment());
-    }
-
     public static ExecutionEnvironment getDefaultExecutionEnvironment() {
         return ServerList.getDefaultRecord().getExecutionEnvironment();
     }

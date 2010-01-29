@@ -42,9 +42,12 @@
 package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.util.ArrayList;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /** Miscellaneous utility classes useful for the C/C++/Fortran module */
 public class CppUtils {
@@ -166,6 +169,10 @@ public class CppUtils {
             }
         }
         return qmakespec;
+    }
+
+    public static String getDefaultDevelopmentHost() {
+        return ExecutionEnvironmentFactory.toUniqueID(ServerList.getDefaultRecord().getExecutionEnvironment());
     }
 
 }

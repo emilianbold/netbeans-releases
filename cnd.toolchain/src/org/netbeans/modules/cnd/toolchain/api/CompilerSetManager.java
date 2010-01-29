@@ -78,8 +78,6 @@ public interface CompilerSetManager {
 
     String getUniqueCompilerSetName(String baseName);
 
-    void initCompilerSet(CompilerSet cs);
-
     /**
      * CAUTION: this is a slow method. It should NOT be called from the EDT thread
      */

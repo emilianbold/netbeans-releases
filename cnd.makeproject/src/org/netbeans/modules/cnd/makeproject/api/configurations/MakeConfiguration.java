@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
@@ -123,11 +124,11 @@ public class MakeConfiguration extends Configuration {
 
     // Constructors
     public MakeConfiguration(MakeConfigurationDescriptor makeConfigurationDescriptor, String name, int configurationTypeValue) {
-        this(makeConfigurationDescriptor.getBaseDir(), name, configurationTypeValue, CompilerSetManagerAccessor.getDefaultDevelopmentHost());
+        this(makeConfigurationDescriptor.getBaseDir(), name, configurationTypeValue, CppUtils.getDefaultDevelopmentHost());
     }
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
-        this(baseDir, name, configurationTypeValue, CompilerSetManagerAccessor.getDefaultDevelopmentHost());
+        this(baseDir, name, configurationTypeValue, CppUtils.getDefaultDevelopmentHost());
     }
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String host) {
