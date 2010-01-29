@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ScannerDescriptor;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ScannerPattern;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.netbeans.modules.cnd.toolchain.spi.ErrorParserProvider;
 import org.netbeans.modules.cnd.toolchain.spi.ErrorParserProvider.Result;
 import org.netbeans.modules.cnd.toolchain.spi.ErrorParserProvider.Results;
@@ -155,7 +155,7 @@ public final class GCCErrorParser extends ErrorParser {
                 popLevel();
             }
             if (isEntered) {
-                if (!CompilerSetUtils.isPathAbsolute(directory)) {
+                if (!ToolUtils.isPathAbsolute(directory)) {
                     if (relativeTo != null) {
                         if (relativeTo.isFolder()) {
                             directory = relativeTo.getURL().getPath() + File.separator + directory;
@@ -174,7 +174,7 @@ public final class GCCErrorParser extends ErrorParser {
         }
         if (m.pattern() == GCC_DIRECTORY_CD) {
             String directory = m.group(1);
-            if (!CompilerSetUtils.isPathAbsolute(directory)) {
+            if (!ToolUtils.isPathAbsolute(directory)) {
                 if (relativeTo != null) {
                     if (relativeTo.isFolder()) {
                         directory = relativeTo.getURL().getPath() + File.separator + directory;
@@ -190,7 +190,7 @@ public final class GCCErrorParser extends ErrorParser {
         if (m.pattern() == GCC_DIRECTORY_MAKE_ALL) {
             FileObject relativeDir = relativesTo.peek();
             String directory = m.group(1);
-            if (!CompilerSetUtils.isPathAbsolute(directory)) {
+            if (!ToolUtils.isPathAbsolute(directory)) {
                 if (relativeDir != null) {
                     if (relativeDir.isFolder()) {
                         directory = relativeDir.getURL().getPath() + File.separator + directory;

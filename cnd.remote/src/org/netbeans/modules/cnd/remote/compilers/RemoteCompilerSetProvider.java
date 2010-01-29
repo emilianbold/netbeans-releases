@@ -43,7 +43,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetProvider;
+import org.netbeans.modules.cnd.toolchain.spi.CompilerSetProvider;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.toolchain.spi.ToolchainScriptGenerator;

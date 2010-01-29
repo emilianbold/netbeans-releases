@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerSetFactory;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerSetManagerEvents;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetProvider;
+import org.netbeans.modules.cnd.toolchain.spi.CompilerSetProvider;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.toolchain.api.ToolKind;
@@ -124,7 +124,7 @@ public final class CompilerSetManagerImpl implements CompilerSetManager {
             return;
         }
         if (executionEnvironment.isLocal()) {
-            platform = CompilerSetUtils.computeLocalPlatform();
+            platform = ToolUtils.computeLocalPlatform();
             initCompilerSets(Path.getPath());
         } else {
             final AtomicReference<Thread> threadRef = new AtomicReference<Thread>();
@@ -222,7 +222,7 @@ public final class CompilerSetManagerImpl implements CompilerSetManager {
     public int getPlatform() {
         if (platform < 0) {
             if (executionEnvironment.isLocal()) {
-                platform = CompilerSetUtils.computeLocalPlatform();
+                platform = ToolUtils.computeLocalPlatform();
             } else {
                 if (isPending()) {
                     log.log(Level.WARNING, "calling getPlatform() on uninitializad {0}", getClass().getSimpleName());
@@ -273,7 +273,7 @@ public final class CompilerSetManagerImpl implements CompilerSetManager {
         // path from default location
         Map<String, List<String>> map = d.getDefaultLocations();
         if (map != null) {
-            List<String> list = map.get(CompilerSetUtils.getPlatformName(getPlatform()));
+            List<String> list = map.get(ToolUtils.getPlatformName(getPlatform()));
             if (list != null) {
                 for (String p : list) {
                     dirs.add(new FolderDescriptor(p, true));
@@ -357,7 +357,7 @@ public final class CompilerSetManagerImpl implements CompilerSetManager {
                     // Don't look here.
                     continue;
                 }
-                if (!CompilerSetUtils.isPathAbsolute(path)) {
+                if (!ToolUtils.isPathAbsolute(path)) {
                     path = CndFileUtils.normalizeAbsolutePath(new File(path).getAbsolutePath());
                 }
                 File dir = new File(path);
@@ -396,7 +396,7 @@ public final class CompilerSetManagerImpl implements CompilerSetManager {
             }
             Map<String, List<String>> map = d.getDefaultLocations();
             if (map != null) {
-                String pname = CompilerSetUtils.getPlatformName(platform);
+                String pname = ToolUtils.getPlatformName(platform);
                 List<String> list = map.get(pname);
                 if (list != null ) {
                     for (String dir : list){
@@ -864,17 +864,17 @@ public final class CompilerSetManagerImpl implements CompilerSetManager {
                                 if ("$PATH".equals(method)){ // NOI18N
                                     if (env.isLocal()) {
                                         for(String name : descriptor.getNames()){
-                                            String path = CompilerSetUtils.findCommand(name);
+                                            String path = ToolUtils.findCommand(name);
                                             if (path != null) {
                                                 if (notSkipedName(cs, descriptor, path, name)) {
-                                                    return cs.addNewTool(env, CompilerSetUtils.getBaseName(path), path, tool);
+                                                    return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool);
                                                 }
                                             }
                                         }
                                      } else {
                                         String path = cs.getPathCandidate(tool);
                                         if (path != null) {
-                                            String name = CompilerSetUtils.getBaseName(path);
+                                            String name = ToolUtils.getBaseName(path);
                                             if (notSkipedName(cs, descriptor, path, name)) {
                                                 return cs.addNewTool(env, name, path, tool);
                                             }
@@ -885,10 +885,10 @@ public final class CompilerSetManagerImpl implements CompilerSetManager {
                                         for(String name : descriptor.getNames()){
                                             String dir = CompilerSetUtils.getCommandFolder(cs.getCompilerFlavor().getToolchainDescriptor());
                                             if (dir != null) {
-                                                String path = CompilerSetUtils.findCommand(name, dir); // NOI18N
+                                                String path = ToolUtils.findCommand(name, dir); // NOI18N
                                                 if (path != null) {
                                                     if (notSkipedName(cs, descriptor, path, name)) {
-                                                        return cs.addNewTool(env, CompilerSetUtils.getBaseName(path), path, tool);
+                                                        return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool);
                                                     }
                                                 }
                                             }
@@ -899,9 +899,9 @@ public final class CompilerSetManagerImpl implements CompilerSetManager {
                                 } else {
                                     if (env.isLocal()) {
                                         for(String name : descriptor.getNames()){
-                                            String path = CompilerSetUtils.findCommand(name, method);
+                                            String path = ToolUtils.findCommand(name, method);
                                             if (path != null) {
-                                                return cs.addNewTool(env, CompilerSetUtils.getBaseName(path), path, tool);
+                                                return cs.addNewTool(env, ToolUtils.getBaseName(path), path, tool);
                                             }
                                         }
                                     } else {

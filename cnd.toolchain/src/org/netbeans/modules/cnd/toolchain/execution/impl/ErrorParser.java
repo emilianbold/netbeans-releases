@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.netbeans.modules.cnd.toolchain.spi.ErrorParserProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -90,7 +90,7 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
     }
 
     protected FileObject resolveRelativePath(FileObject relativeDir, String relativePath) {
-        if (CompilerSetUtils.isPathAbsolute(relativePath)) {
+        if (ToolUtils.isPathAbsolute(relativePath)) {
             // NOI18N
             if (execEnv.isRemote() || Utilities.isWindows()) {
                 // See IZ 106841 for details.

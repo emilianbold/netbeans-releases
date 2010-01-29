@@ -48,9 +48,7 @@ import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerProvider;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Exceptions;
@@ -145,7 +143,7 @@ public final class CompilerSetPreferences {
         int pform = getPreferences().getInt(CSM + executionEnvironmentKey + SET_PLATFORM, -1);
         if (pform < 0) {
             if (env.isLocal()) {
-                pform = CompilerSetUtils.computeLocalPlatform();
+                pform = ToolUtils.computeLocalPlatform();
             }
         }
 
@@ -241,7 +239,7 @@ public final class CompilerSetPreferences {
             CompilerSetManagerImpl.completeCompilerSet(ExecutionEnvironmentFactory.getLocal(), cs, css);
             css.add(cs);
         }
-        CompilerSetManagerImpl csm = new CompilerSetManagerImpl(ExecutionEnvironmentFactory.getLocal(),  css, CompilerSetUtils.computeLocalPlatform());
+        CompilerSetManagerImpl csm = new CompilerSetManagerImpl(ExecutionEnvironmentFactory.getLocal(),  css, ToolUtils.computeLocalPlatform());
         return csm;
     }
 

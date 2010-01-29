@@ -60,8 +60,8 @@ import org.netbeans.modules.cnd.toolchain.spi.CompilerSetFactory;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetImpl;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.DialogDescriptor;
@@ -257,7 +257,7 @@ import org.openide.util.NbBundle;
 
         if (local) {
             File dirFile = new File(tfBaseDirectory.getText());
-            if (valid && !dirFile.exists() || !dirFile.isDirectory() || !CompilerSetUtils.isPathAbsolute(dirFile.getPath())) {
+            if (valid && !dirFile.exists() || !dirFile.isDirectory() || !ToolUtils.isPathAbsolute(dirFile.getPath())) {
                 valid = false;
                 lbError.setText(getString("BASE_INVALID"));
             }
@@ -273,7 +273,7 @@ import org.openide.util.NbBundle;
         cbFamily.setEnabled(valid);
         tfName.setEnabled(valid);
 
-        String compilerSetName = CompilerSetUtils.replaceOddCharacters(tfName.getText().trim(), '_');
+        String compilerSetName = ToolUtils.replaceOddCharacters(tfName.getText().trim(), '_');
         if (valid && compilerSetName.length() == 0 || compilerSetName.contains("|")) { // NOI18N
             valid = false;
             lbError.setText(getString("NAME_INVALID"));
@@ -323,7 +323,7 @@ import org.openide.util.NbBundle;
     }
 
     private String getCompilerSetName() {
-        return CompilerSetUtils.replaceOddCharacters(tfName.getText().trim(), '_');
+        return ToolUtils.replaceOddCharacters(tfName.getText().trim(), '_');
     }
 
     public CompilerSet getCompilerSet() {
