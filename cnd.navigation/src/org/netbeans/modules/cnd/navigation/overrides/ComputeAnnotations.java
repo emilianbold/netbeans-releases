@@ -121,7 +121,7 @@ public class ComputeAnnotations {
         sb.append(func.getClass().getSimpleName());
         sb.append(' ');
         sb.append(func.getQualifiedName());
-        sb.append(" [");
+        sb.append(" ["); // NOI18N
         sb.append(func.getContainingFile().getName());
         sb.append(':');
         sb.append(func.getStartPosition().getLine());
