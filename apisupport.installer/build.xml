@@ -14,7 +14,14 @@
          </copy>
 
          <copy todir="${cluster}/nbi/stub">
-             <fileset dir="${basedir}/stub"/>
+             <fileset dir="${basedir}/stub">
+                <exclude name="ext/engine/build/**"/>
+                <exclude name="ext/engine/dist/**"/>
+                <exclude name="ext/engine/nbproject/private/**"/>
+                <exclude name="ext/components/products/helloworld/build/**"/>
+                <exclude name="ext/components/products/helloworld/dist/**"/>
+                <exclude name="ext/components/products/helloworld/nbproject/private/**"/>
+             </fileset>
          </copy>
     </target>
 </project>
