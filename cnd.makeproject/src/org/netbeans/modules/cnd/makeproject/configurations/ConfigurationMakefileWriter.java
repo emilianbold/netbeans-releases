@@ -82,8 +82,8 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -148,7 +148,7 @@ public class ConfigurationMakefileWriter {
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration conf = (MakeConfiguration) confs[i];
             if (conf.getDevelopmentHost().isLocalhost() &&
-                    CompilerSetManagerAccessor.getDefault(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform() != conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue()) {
+                    CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getPlatform() != conf.getDevelopmentHost().getBuildPlatformConfiguration().getValue()) {
                 // add configurations if local host and target platform are different (don't have the right compiler set on this platform)
                 wrongPlatform.add(conf);
             }
@@ -162,7 +162,7 @@ public class ConfigurationMakefileWriter {
         }
         if (!wrongPlatform.isEmpty() && showWarning && MakeOptions.getInstance().getShowConfigurationWarning()) {
             ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(HostInfoUtils.LOCALHOST);
-            int platformID = CompilerSetManagerAccessor.getDefault(execEnv).getPlatform();
+            int platformID = CompilerSetManager.get(execEnv).getPlatform();
             Platform platform = Platforms.getPlatform(platformID);
             StringBuilder list = new StringBuilder();
             for (MakeConfiguration c : wrongPlatform) {

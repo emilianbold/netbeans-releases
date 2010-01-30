@@ -37,33 +37,28 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.api;
+package org.netbeans.modules.cnd.toolchain.compilers.impl;
 
-import org.netbeans.modules.cnd.toolchain.compilers.impl.NoCompilersPanel;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetImpl;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetPreferences;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainScriptGenerator;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
+import org.netbeans.modules.cnd.toolchain.spi.ToolchainScriptGenerator;
 import java.util.Collection;
 import java.util.HashMap;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author as204739
+ * @author Alexander Simon
  */
-public class CompilerSetManagerAccessor {
+public class CompilerSetManagerAccessorImpl {
 
     private static final HashMap<ExecutionEnvironment, CompilerSetManagerImpl> managers = new HashMap<ExecutionEnvironment, CompilerSetManagerImpl>();
     private static final Object MASTER_LOCK = new Object();
 
-    private CompilerSetManagerAccessor() {
+    private CompilerSetManagerAccessorImpl() {
     }
 
     /**
@@ -82,13 +77,9 @@ public class CompilerSetManagerAccessor {
         return getDefaultImpl(env, true);
     }
 
-    public static CompilerSetManager getDefault() {
-        return getDefault(ExecutionEnvironmentFactory.getLocal());
-    }
-
     /** Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault() */
-    public static CompilerSetManager create(ExecutionEnvironment env) {
-        CompilerSetManager newCsm = new CompilerSetManagerImpl(env);
+    public static CompilerSetManagerImpl create(ExecutionEnvironment env) {
+        CompilerSetManagerImpl newCsm = new CompilerSetManagerImpl(env);
         if (newCsm.getCompilerSets().size() == 1 && newCsm.getCompilerSets().get(0).getName().equals(CompilerSetImpl.None)) {
             newCsm.remove(newCsm.getCompilerSets().get(0));
         }
@@ -121,10 +112,6 @@ public class CompilerSetManagerAccessor {
 
     public static CompilerSetManager getDeepCopy(ExecutionEnvironment execEnv, boolean initialize) {
         return ((CompilerSetManagerImpl)getDefaultImpl(execEnv, initialize)).deepCopy();
-    }
-
-    public static ExecutionEnvironment getDefaultExecutionEnvironment() {
-        return ServerList.getDefaultRecord().getExecutionEnvironment();
     }
 
     private static CompilerSetManager getDefaultImpl(ExecutionEnvironment env, boolean initialize) {
@@ -176,7 +163,6 @@ public class CompilerSetManagerAccessor {
 
     /** Look up i18n strings here */
     private static String getString(String s) {
-        return NbBundle.getMessage(CompilerSetManagerAccessor.class, s);
+        return NbBundle.getMessage(CompilerSetManagerAccessorImpl.class, s);
     }
-
 }

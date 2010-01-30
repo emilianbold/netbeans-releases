@@ -160,16 +160,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         this.excluded = excluded;
         needSave = true;
     }
-
-    // Tool
-    public void setTool(String name) {
-//        if (genericName != null) {
-//            CompilerSet set = CompilerSetManager.getDefault(((MakeConfiguration)configuration).getDevelopmentHost().getName()).getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
-//            tool = set.getToolKind(genericName);
-//        }
-        setTool(ToolKind.getTool(name).ordinal());
-    }
-
+    
     public void setTool(int tool) {
         if (this.tool != tool){
             lastConfiguration = null;
@@ -183,10 +174,6 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         }
         return tool;
     }
-//    protected String getToolName() {
-//        CompilerSet set = CompilerSetManager.getDefault(((MakeConfiguration)configuration).getDevelopmentHost().getName()).getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
-//        return set.getTool(getTool()).getName();
-//    }
 
     protected String[] getToolNames() {
         return new String[]{ToolKind.CCompiler.getDisplayName(), ToolKind.CCCompiler.getDisplayName(),

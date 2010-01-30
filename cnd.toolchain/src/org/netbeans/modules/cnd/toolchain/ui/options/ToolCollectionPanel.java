@@ -62,7 +62,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.ToolKind;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.util.Path;
@@ -646,7 +646,7 @@ import org.openide.util.Utilities;
         version.append(tool.getDisplayName()).append(": "); // NOI18N
         if (isPathFieldValid(tf)) {
             String path = tf.getText();
-            if (!CompilerSetUtils.isPathAbsolute(path)) {
+            if (!ToolUtils.isPathAbsolute(path)) {
                 path = Path.findCommand(path);
             }
             String v = postVersionInfo(tool, path);

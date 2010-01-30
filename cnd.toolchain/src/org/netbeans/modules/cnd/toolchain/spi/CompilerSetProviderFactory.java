@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.toolchain.spi;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**

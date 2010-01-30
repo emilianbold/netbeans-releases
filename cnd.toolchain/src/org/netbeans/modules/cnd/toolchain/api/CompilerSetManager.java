@@ -41,53 +41,71 @@ package org.netbeans.modules.cnd.toolchain.api;
 
 import java.io.Writer;
 import java.util.List;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerAccessorImpl;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface CompilerSetManager {
-
+public abstract class CompilerSetManager {
+    /**
+     * Find or create a default CompilerSetManager for the given key. A default
+     * CSM is one which is active in the system. A non-default is one which gets
+     * created but has no affect unless its made default.
+     *
+     * For instance, the Build Tools tab (on C/C++ Tools->Options) creates a non-Default
+     * CSM and only makes it default if the OK button is pressed. If Cancel is pressed,
+     * it never becomes default.
+     *
+     * @param env specifies execution environment
+     * @return A default CompilerSetManager for the given key
+     */
+    public static CompilerSetManager get(ExecutionEnvironment env) {
+        return CompilerSetManagerAccessorImpl.getDefault(env);
+    }
     /**
      * Add a CompilerSet to this CompilerSetManager. Make sure it doesn't get added multiple times.
      *
      * @param cs The CompilerSet to (possibly) add
      */
-    void add(CompilerSet cs);
+    public abstract void add(CompilerSet cs);
 
-    List<CompilerSet> findRemoteCompilerSets(String path);
+    public abstract List<CompilerSet> findRemoteCompilerSets(String path);
 
-    void finishInitialization();
+    public abstract void finishInitialization();
 
-    CompilerSet getCompilerSet(CompilerFlavor flavor);
+    public abstract CompilerSet getCompilerSet(CompilerFlavor flavor);
 
-    CompilerSet getCompilerSet(String name);
+    public abstract CompilerSet getCompilerSet(String name);
 
-    CompilerSet getCompilerSet(int idx);
+    public abstract CompilerSet getCompilerSet(int idx);
 
-    List<String> getCompilerSetNames();
+    public abstract List<String> getCompilerSetNames();
 
-    List<CompilerSet> getCompilerSets();
+    public abstract List<CompilerSet> getCompilerSets();
 
-    CompilerSet getDefaultCompilerSet();
+    public abstract CompilerSet getDefaultCompilerSet();
 
-    ExecutionEnvironment getExecutionEnvironment();
+    public abstract boolean isDefaultCompilerSet(CompilerSet cs);
 
-    int getPlatform();
+    public abstract ExecutionEnvironment getExecutionEnvironment();
 
-    String getUniqueCompilerSetName(String baseName);
+    public abstract int getPlatform();
+
+    public abstract String getUniqueCompilerSetName(String baseName);
 
     /**
      * CAUTION: this is a slow method. It should NOT be called from the EDT thread
      */
-    void initialize(boolean save, boolean runCompilerSetDataLoader, Writer reporter);
+    public abstract void initialize(boolean save, boolean runCompilerSetDataLoader, Writer reporter);
 
-    boolean isEmpty();
+    public abstract boolean isEmpty();
 
-    boolean isPending();
+    public abstract boolean isPending();
 
-    boolean isUninitialized();
+    public abstract boolean isUninitialized();
 
     /**
      * Remove a CompilerSet from this CompilerSetManager. Use caution with this method. Its primary
@@ -96,8 +114,14 @@ public interface CompilerSetManager {
      *
      * @param cs The CompilerSet to (possibly) remove
      */
-    void remove(CompilerSet cs);
+    public abstract void remove(CompilerSet cs);
 
-    void setDefault(CompilerSet newDefault);
+    public abstract void setDefault(CompilerSet newDefault);
+
+    protected CompilerSetManager() {
+        if (!getClass().equals(CompilerSetManagerImpl.class)) {
+            throw new UnsupportedOperationException("this class can not be overriden by clients"); // NOI18N
+        }
+    }
 
 }

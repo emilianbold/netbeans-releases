@@ -39,8 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.toolchain.api;
+package org.netbeans.modules.cnd.toolchain.spi;
 
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.APIAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
 
@@ -82,7 +85,7 @@ public abstract class CompilerProvider {
                     return out;
                 }
             }
-            return Tool.createTool(env, flavor, kind, name, displayName, path);
+            return APIAccessor.get().createTool(env, flavor, kind, name, displayName, path);
         }
     }
 }

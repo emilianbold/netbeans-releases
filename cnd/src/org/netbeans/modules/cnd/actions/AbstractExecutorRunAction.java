@@ -75,10 +75,11 @@ import org.netbeans.modules.cnd.builds.CMakeExecSupport;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -144,7 +145,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         if (project == null) {
             project = findInOpenedProject(fileObject);
         }
-        ExecutionEnvironment developmentHost = CompilerSetManagerAccessor.getDefaultExecutionEnvironment();
+        ExecutionEnvironment developmentHost = ServerList.getDefaultRecord().getExecutionEnvironment();
         if (project != null) {
             RemoteProject info = project.getLookup().lookup(RemoteProject.class);
             if (info != null) {
@@ -208,7 +209,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         if (set == null) {
-            set = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
+            set = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
         }
         if (set == null) {
             return false;
@@ -232,7 +233,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         if (set == null) {
-            set = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
+            set = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
         }
         return set;
     }
@@ -254,7 +255,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
             }
         }
         if (set == null) {
-            set = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
+            set = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
         }
         String command = null;
         if (set != null) {

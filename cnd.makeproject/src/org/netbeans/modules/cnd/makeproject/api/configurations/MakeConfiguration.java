@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodePro
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Sheet;

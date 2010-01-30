@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.toolchain.actions;
+package org.netbeans.modules.cnd.toolchain.ui.api;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -51,12 +51,12 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.toolchain.ui.options.DownloadUtils;
 import org.netbeans.modules.cnd.toolchain.ui.api.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.toolchain.ui.options.ToolsPanel;
 import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelModel;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -145,7 +145,7 @@ public class BuildToolsAction extends CallableSystemAction implements PropertyCh
         ExecutionEnvironment env = model.getSelectedDevelopmentHost();
         if (env.isLocal()){
             if (cs == null) {
-                cs = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
+                cs = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
             }
             if (cs != null) {
                 if (cs.isUrlPointer()){

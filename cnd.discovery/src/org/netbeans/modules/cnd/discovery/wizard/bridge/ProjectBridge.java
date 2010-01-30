@@ -70,7 +70,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Utilities;
 
@@ -490,7 +489,7 @@ public class ProjectBridge {
     
     private CompilerSet getCompilerSet(){
         MakeConfiguration makeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
-        return CompilerSetManagerAccessor.getDefault(makeConfiguration.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
+        return CompilerSetManager.get(makeConfiguration.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
     }
 
     public String getCygwinDrive(){

@@ -47,8 +47,8 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 
@@ -106,7 +106,7 @@ import org.openide.util.NbBundle;
         boolean valid = true;
         lbError.setText(""); // NOI18N
         
-        String compilerSetName = CompilerSetUtils.replaceOddCharacters(tfName.getText().trim(), '_');
+        String compilerSetName = ToolUtils.replaceOddCharacters(tfName.getText().trim(), '_');
         if (valid && compilerSetName.length() == 0 || compilerSetName.contains("|")) { // NOI18N
             valid = false;
             lbError.setText(getString("NAME_INVALID"));
@@ -150,7 +150,7 @@ import org.openide.util.NbBundle;
     }
     
     public String getCompilerSetName() {
-        return CompilerSetUtils.replaceOddCharacters(tfName.getText().trim(), '_');
+        return ToolUtils.replaceOddCharacters(tfName.getText().trim(), '_');
     }
     
     /** This method is called from within the constructor to

@@ -40,6 +40,8 @@
 package org.netbeans.modules.cnd.toolchain.api;
 
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolDescriptor;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.APIAccessor;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Utilities;
 
@@ -49,6 +51,10 @@ import org.openide.util.Utilities;
  */
 public class Tool {
 
+    static {
+        APIAccessor.register(new APIAccessorImpl());
+    }
+    
     private final ExecutionEnvironment executionEnvironment;
     private CompilerFlavor flavor;
     private int kind;
@@ -136,7 +142,7 @@ public class Tool {
         if (p == null) {
         } else {
             path = p;
-            name = CompilerSetUtils.getBaseName(path);
+            name = ToolUtils.getBaseName(path);
         }
     }
 
@@ -167,5 +173,14 @@ public class Tool {
 
     public void setCompilerSet(CompilerSet compilerSet) {
         this.compilerSet = compilerSet;
+    }
+
+    private static final class APIAccessorImpl extends APIAccessor {
+
+        @Override
+        public Tool createTool(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+            return Tool.createTool(env, flavor, kind, name, displayName, path);
+        }
+
     }
 }

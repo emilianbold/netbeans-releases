@@ -59,7 +59,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.toolchain.actions.BuildToolsAction;
+import org.netbeans.modules.cnd.toolchain.ui.api.BuildToolsAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
@@ -103,8 +103,7 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ValidateInstrumentationProvider;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetFactory;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
+import org.netbeans.modules.cnd.toolchain.spi.CompilerSetFactory;
 import org.netbeans.modules.cnd.toolchain.ui.api.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelModel;
 import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelSupport;
@@ -364,7 +363,7 @@ public class MakeActionProvider implements ActionProvider {
                         }
                         record.validate(true);
                         // initialize compiler sets for remote host if needed
-                        CompilerSetManager csm = CompilerSetManagerAccessor.getDefault(record.getExecutionEnvironment());
+                        CompilerSetManager csm = CompilerSetManager.get(record.getExecutionEnvironment());
                         csm.initialize(true, true, null);
                     } catch (CancellationException ex) {
                         cancel();
@@ -1077,7 +1076,7 @@ public class MakeActionProvider implements ActionProvider {
         // Check build/run/debug platform vs. host platform
         int buildPlatformId = conf.getDevelopmentHost().getBuildPlatform();
         ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
-        int hostPlatformId = CompilerSetManagerAccessor.getDefault(execEnv).getPlatform();
+        int hostPlatformId = CompilerSetManager.get(execEnv).getPlatform();
         if (buildPlatformId != hostPlatformId) {
             if (!conf.isMakefileConfiguration()) {
                 Platform buildPlatform = Platforms.getPlatform(buildPlatformId);
@@ -1093,15 +1092,15 @@ public class MakeActionProvider implements ActionProvider {
         if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) { // NOI18N
             // Confiiguration was created with unknown tool set. Use the now default one.
             csname = csconf.getOption();
-            cs = CompilerSetManagerAccessor.getDefault(env).getCompilerSet(csname);
+            cs = CompilerSetManager.get(env).getCompilerSet(csname);
             if (cs == null) {
-                cs = CompilerSetManagerAccessor.getDefault(env).getDefaultCompilerSet();
+                cs = CompilerSetManager.get(env).getDefaultCompilerSet();
             }
             errs.add(NbBundle.getMessage(MakeActionProvider.class, "ERR_UnknownCompiler", csname)); // NOI18N
             runBTA = true;
         } else if (csconf.isValid()) {
             csname = csconf.getOption();
-            cs = CompilerSetManagerAccessor.getDefault(env).getCompilerSet(csname);
+            cs = CompilerSetManager.get(env).getCompilerSet(csname);
         } else {
             csname = csconf.getOldName();
             CompilerFlavor flavor = null;
@@ -1112,7 +1111,7 @@ public class MakeActionProvider implements ActionProvider {
                 flavor = CompilerFlavorAccessor.getUnknown(conf.getPlatformInfo().getPlatform());
             }
             cs = CompilerSetFactory.getCustomCompilerSet("", flavor, csconf.getOldName());
-            CompilerSetManagerAccessor.getDefault(env).add(cs);
+            CompilerSetManager.get(env).add(cs);
             csconf.setValid();
         }
 

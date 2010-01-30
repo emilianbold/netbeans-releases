@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -97,7 +96,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
 
     // we can't store CSM because it's dependent on devHostConfig name which is not persistent
     public CompilerSetManager getCompilerSetManager() {
-        return CompilerSetManagerAccessor.getDefault(dhconf.getExecutionEnvironment());
+        return CompilerSetManager.get(dhconf.getExecutionEnvironment());
     }
 
 //
@@ -160,7 +159,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         String s = getCompilerSetName().getValue();
         if (s != null) {
             int i = 0;
-            for (String csname : CompilerSetManagerAccessor.getDefault(dhconf.getExecutionEnvironment()).getCompilerSetNames()) {
+            for (String csname : CompilerSetManager.get(dhconf.getExecutionEnvironment()).getCompilerSetNames()) {
                 if (s.equals(csname)) {
                     return i;
                 }
@@ -326,12 +325,12 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         final ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hkey);
         final String oldName = oldNameMap.get(hkey);
         if (oldName != null) {
-            ocs = CompilerSetManagerAccessor.getDefault(env).getCompilerSet(oldName);
+            ocs = CompilerSetManager.get(env).getCompilerSet(oldName);
         } else {
-            ocs = CompilerSetManagerAccessor.getDefault(env).getDefaultCompilerSet();
+            ocs = CompilerSetManager.get(env).getDefaultCompilerSet();
         }
         if (ocs == null) {
-            ocs = CompilerSetManagerAccessor.getDefault(env).getCompilerSet(0);
+            ocs = CompilerSetManager.get(env).getCompilerSet(0);
         }
         if (ocs == null) {
             return;

@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.cnd.remote.compilers;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetProvider;
+import org.netbeans.modules.cnd.toolchain.spi.CompilerSetProvider;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerSetProviderFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 

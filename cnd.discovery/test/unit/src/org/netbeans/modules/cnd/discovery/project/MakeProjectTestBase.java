@@ -67,7 +67,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -173,27 +172,27 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
 
     public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder){
         Map<String, String> tools = findTools();
-        CompilerSet def = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
+        CompilerSet def = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
         if (useSunCompilers) {
             if (def != null && def.getCompilerFlavor().isGnuCompiler()) {
-                for(CompilerSet set : CompilerSetManagerAccessor.getDefault().getCompilerSets()){
+                for(CompilerSet set : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()){
                     if (set.getCompilerFlavor().isSunStudioCompiler()) {
-                        CompilerSetManagerAccessor.getDefault().setDefault(set);
+                        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
                         break;
                     }
                 }
             }
         } else {
             if (def != null && def.getCompilerFlavor().isSunStudioCompiler()) {
-                for(CompilerSet set : CompilerSetManagerAccessor.getDefault().getCompilerSets()){
+                for(CompilerSet set : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()){
                     if (set.getCompilerFlavor().isGnuCompiler()) {
-                        CompilerSetManagerAccessor.getDefault().setDefault(set);
+                        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
                         break;
                     }
                 }
             }
         }
-        def = CompilerSetManagerAccessor.getDefault().getDefaultCompilerSet();
+        def = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getDefaultCompilerSet();
         final boolean isSUN = def != null ? def.getCompilerFlavor().isSunStudioCompiler() : false;
         if (tools == null) {
             assertTrue("Please install required tools.", false);
@@ -258,9 +257,9 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                                         return "-spec macx-g++ QMAKE_CFLAGS=\"-g3 -gdwarf-2\" QMAKE_CXXFLAGS=\"-g3 -gdwarf-2\"";
                                     } else {
                                         if (Utilities.isWindows()) {
-                                            for (CompilerSet set : CompilerSetManagerAccessor.getDefault().getCompilerSets()){
+                                            for (CompilerSet set : CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets()){
                                                 if (set.getCompilerFlavor().getToolchainDescriptor().getName().startsWith("MinGW")) {
-                                                    CompilerSetManagerAccessor.getDefault().setDefault(set);
+                                                    CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).setDefault(set);
                                                     break;
                                                 }
                                             }

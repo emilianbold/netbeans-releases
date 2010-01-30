@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -255,7 +254,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         if (set != null) {
             list.add(set);
         }
-        CompilerSetManager csm = CompilerSetManagerAccessor.getDefault(execEnv);
+        CompilerSetManager csm = CompilerSetManager.get(execEnv);
         if (csm != null) {
             set = csm.getDefaultCompilerSet();
             if (set != null && !list.contains(set)) {

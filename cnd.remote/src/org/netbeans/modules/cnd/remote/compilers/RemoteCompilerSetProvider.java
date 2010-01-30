@@ -43,10 +43,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetProvider;
+import org.netbeans.modules.cnd.toolchain.spi.CompilerSetProvider;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManagerAccessor;
+import org.netbeans.modules.cnd.toolchain.spi.ToolchainScriptGenerator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -75,6 +75,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
         manager.runScript();
     }
     
+    @Override
     public int getPlatform() {
         String platform = manager.getPlatform();
         if (platform == null || platform.length() == 0) {
@@ -98,20 +99,25 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
         }
     }
 
+    @Override
     public boolean hasMoreCompilerSets() {
         return manager.hasMoreCompilerSets();
     }
 
+    @Override
     public String getNextCompilerSetData() {
         return manager.getNextCompilerSetData();
     }
 
+    @Override
     public Runnable createCompilerSetDataLoader(List<CompilerSet> sets) {
         return new Runnable() {
+            @Override
             public void run() {}
         };
     }
 
+    @Override
     public String[] getCompilerSetData(String path) {
         //RemoteCommandSupport rcs = new RemoteCommandSupport(env,
         //        CompilerSetManager.getRemoteScriptFile() + " " + path); //NOI18N
@@ -124,7 +130,7 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
             HostInfo hinfo = HostInfoUtils.getHostInfo(env);
             pb.setExecutable(hinfo.getShell()).setArguments("-s"); // NOI18N
             Process process = pb.call();
-            process.getOutputStream().write(CompilerSetManagerAccessor.getRemoteScript(path).getBytes());
+            process.getOutputStream().write(ToolchainScriptGenerator.generateScript(path).getBytes());
             process.getOutputStream().close();
 
             List<String> lines = ProcessUtils.readProcessOutput(process);
@@ -137,13 +143,13 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
             }
 
             if (status != 0) {
-               RemoteUtil.LOGGER.warning("CSSM.runScript: FAILURE "+status); // NOI18N
+               RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: FAILURE {0}", status); // NOI18N
                 ProcessUtils.logError(Level.ALL, RemoteUtil.LOGGER, process);
             } else {
                 return lines.toArray(new String[lines.size()]);
             }
         } catch (IOException ex) {
-            RemoteUtil.LOGGER.warning("CSSM.runScript: IOException [" + ex.getMessage() + "]"); // NOI18N
+            RemoteUtil.LOGGER.log(Level.WARNING, "CSSM.runScript: IOException [{0}]", ex.getMessage()); // NOI18N
         }
         return null;
     }
