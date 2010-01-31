@@ -36,15 +36,38 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.makefile.model;
 
 /**
  *
  * @author Alexey Vladykin
  */
-public interface MakefileAssignment extends MakefileElement {
+public final class MakefileAssignment implements MakefileElement {
 
-    String getMacroName();
+    private final String name;
+    private final String value;
 
-    String getMacroValue();
+    public MakefileAssignment(String name, String value) {
+        this.name = name;
+        this.value = value;
+    }
+
+    @Override
+    public Kind getKind() {
+        return Kind.ASSIGNMENT;
+    }
+
+    public String getMacroName() {
+        return name;
+    }
+
+    public String getMacroValue() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return name + " = " + value; // NOI18N
+    }
 }

@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.cnd.makefile.parser;
 
+import org.netbeans.modules.cnd.makefile.model.MakefileRule;
+import org.netbeans.modules.cnd.makefile.model.MakefileAssignment;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -129,7 +131,7 @@ public class MakefileParser extends Parser {
         return cancelled.get()? null : new MakefileModel(snapshot, makefileElements);
     }
 
-    private static AssignmentImpl createAssignment(TokenSequence<MakefileTokenId> tokenSequence) {
+    private static MakefileAssignment createAssignment(TokenSequence<MakefileTokenId> tokenSequence) {
         StringBuilder nameBuilder = new StringBuilder();
         NAME_LOOP: while (tokenSequence.moveNext()) {
             Token<MakefileTokenId> token = tokenSequence.token();
@@ -154,10 +156,10 @@ public class MakefileParser extends Parser {
             }
         }
 
-        return new AssignmentImpl(nameBuilder.toString().trim(), valueBuilder.toString());
+        return new MakefileAssignment(nameBuilder.toString().trim(), valueBuilder.toString());
     }
 
-    private static RuleImpl createRule(TokenSequence<MakefileTokenId> tokenSequence) {
+    private static MakefileRule createRule(TokenSequence<MakefileTokenId> tokenSequence) {
         StringBuilder nameBuilder = new StringBuilder();
 
         List<String> targets = new ArrayList<String>();
@@ -205,6 +207,6 @@ public class MakefileParser extends Parser {
             }
         }
 
-        return new RuleImpl(targets, prereqs);
+        return new MakefileRule(targets, prereqs);
     }
 }
