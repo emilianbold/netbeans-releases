@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -254,7 +253,7 @@ public final class ConfigureUtils {
         return cppCompiler;
     }
 
-    private static String getToolPath(CompilerSet compilerSet, ToolKindBase tool){
+    private static String getToolPath(CompilerSet compilerSet, ToolKind tool){
         if (compilerSet == null) {
             return null;
         }

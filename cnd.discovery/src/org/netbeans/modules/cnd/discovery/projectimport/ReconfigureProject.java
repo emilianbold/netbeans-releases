@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -83,7 +82,7 @@ import org.openide.windows.InputOutput;
  */
 public class ReconfigureProject {
     private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
-    private Logger logger = getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
+    private static final Logger logger = getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
     private final Project makeProject;
     private final ConfigurationDescriptorProvider pdp;
     private final boolean isSunCompiler;
@@ -644,7 +643,7 @@ public class ReconfigureProject {
         return path;
     }
 
-    private String getToolPath(ToolKindBase tool){
+    private String getToolPath(ToolKind tool){
         Tool compiler = compilerSet.findTool(tool);
         if (compiler == null) {
             return null;

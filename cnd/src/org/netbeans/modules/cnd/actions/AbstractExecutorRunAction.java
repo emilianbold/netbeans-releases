@@ -77,7 +77,6 @@ import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.execution41.org.openide.loaders.ExecutionSupport;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -239,7 +238,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return set;
     }
 
-    protected static String getCommand(Node node, Project project, ToolKindBase tool, String defaultName){
+    protected static String getCommand(Node node, Project project, ToolKind tool, String defaultName){
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         if (project == null) {
@@ -289,7 +288,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         return command;
     }
 
-    protected static String getBuildDirectory(Node node, ToolKindBase tool){
+    protected static String getBuildDirectory(Node node, ToolKind tool){
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         File makefile = FileUtil.toFile(fileObject);

@@ -62,7 +62,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.ToolKind;
-import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
@@ -585,7 +584,7 @@ import org.openide.util.Utilities;
         }
         Document doc = ev.getDocument();
         String title = (String) doc.getProperty(Document.TitleProperty);
-        ToolKindBase toolKind = ToolKind.UnknownTool;
+        ToolKind toolKind = ToolKind.UnknownTool;
         String toolPath = null;
         if (title.equals(MAKE_NAME)) {
             validateMakePathField();

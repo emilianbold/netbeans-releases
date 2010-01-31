@@ -504,7 +504,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             if (i > 0) {
                 name = name.substring(i+1);
             }
-            ToolKindBase kind = ToolKind.UnknownTool;
+            ToolKind kind = ToolKind.UnknownTool;
             if (tool.equals("c")){ // NOI18N
                 kind = ToolKind.CCompiler;
             } else if (tool.equals("cpp")){ // NOI18N
