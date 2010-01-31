@@ -427,4 +427,17 @@
         </folder>
     </folder>
 
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="text">
+                <folder name="x-make">
+                    <file name="NavigatorPanel.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.navigator.MakefileNavigatorPanel"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.spi.navigator.NavigatorPanel"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>
