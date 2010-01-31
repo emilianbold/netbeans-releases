@@ -55,7 +55,7 @@ public interface CompilerSet {
      * @param kind The type of tool to get
      * @return The Tool or null
      */
-    Tool findTool(int kind);
+    Tool findTool(ToolKindBase kind);
 
     CompilerFlavor getCompilerFlavor();
 
@@ -71,7 +71,7 @@ public interface CompilerSet {
      * @param kind The type of tool to get
      * @return The Tool or null
      */
-    Tool getTool(int kind);
+    Tool getTool(ToolKindBase kind);
 
     List<Tool> getTools();
 

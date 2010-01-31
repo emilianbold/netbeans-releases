@@ -57,14 +57,14 @@ public class Tool {
     
     private final ExecutionEnvironment executionEnvironment;
     private CompilerFlavor flavor;
-    private int kind;
+    private ToolKindBase kind;
     private String name;
     private String displayName;
     private String path;
     private CompilerSet compilerSet = null;
 
     /** Creates a new instance of GenericCompiler */
-    protected Tool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    protected Tool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
         this.executionEnvironment = executionEnvironment;
         this.flavor = flavor;
         this.kind = kind;
@@ -84,7 +84,7 @@ public class Tool {
         return copy;
     }
 
-    static Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    static Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
         return new Tool(executionEnvironment, flavor, kind, name, displayName, path);
     }
 
@@ -122,7 +122,7 @@ public class Tool {
     public void waitReady(boolean reset) {
     }
 
-    public int getKind() {
+    public ToolKindBase getKind() {
         return kind;
     }
 
@@ -178,7 +178,7 @@ public class Tool {
     private static final class APIAccessorImpl extends APIAccessor {
 
         @Override
-        public Tool createTool(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+        public Tool createTool(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
             return Tool.createTool(env, flavor, kind, name, displayName, path);
         }
 

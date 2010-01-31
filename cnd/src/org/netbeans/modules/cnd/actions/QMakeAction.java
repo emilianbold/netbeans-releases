@@ -129,12 +129,12 @@ public class QMakeAction extends AbstractExecutorRunAction {
         FileObject fileObject = dataObject.getPrimaryFile();
         File proFile = FileUtil.toFile(fileObject);
         // Build directory
-        String buildDir = getBuildDirectory(node,ToolKind.QMakeTool.ordinal());
+        String buildDir = getBuildDirectory(node,ToolKind.QMakeTool);
         // Executable
-        String executable = getCommand(node, project, ToolKind.QMakeTool.ordinal(), "qmake"); // NOI18N
+        String executable = getCommand(node, project, ToolKind.QMakeTool, "qmake"); // NOI18N
         // Arguments
         String arguments = proFile.getName();// + " " + getArguments(node, Tool.QMakeTool); // NOI18N
-        String[] args = getArguments(node, ToolKind.QMakeTool.ordinal()); // NOI18N
+        String[] args = getArguments(node, ToolKind.QMakeTool); // NOI18N
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         buildDir = convertToRemoteIfNeeded(execEnv, buildDir);

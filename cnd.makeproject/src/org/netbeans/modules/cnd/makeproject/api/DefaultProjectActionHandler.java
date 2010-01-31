@@ -219,7 +219,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 env.put(pi.getPathName(), path);
                 // Pass QMAKE from compiler set to the Makefile (IZ 174731)
                 if (conf.isQmakeConfiguration()) {
-                    String qmakePath = conf.getCompilerSet().getCompilerSet().getTool(ToolKind.QMakeTool.ordinal()).getPath();
+                    String qmakePath = conf.getCompilerSet().getCompilerSet().getTool(ToolKind.QMakeTool).getPath();
                     qmakePath = CppUtils.normalizeDriveLetter(conf.getCompilerSet().getCompilerSet(), qmakePath.replace('\\', '/')); // NOI18N
                     args.add("QMAKE=" + IpeUtils.escapeOddCharacters(qmakePath)); // NOI18N
                 }

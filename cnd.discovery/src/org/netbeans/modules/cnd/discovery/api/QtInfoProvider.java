@@ -146,7 +146,7 @@ public abstract class QtInfoProvider {
         private static String getQmakePath(MakeConfiguration conf) {
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             if (compilerSet != null) {
-                Tool qmakeTool = compilerSet.getTool(ToolKind.QMakeTool.ordinal());
+                Tool qmakeTool = compilerSet.getTool(ToolKind.QMakeTool);
                 if (qmakeTool != null && 0 < qmakeTool.getPath().length()) {
                     return qmakeTool.getPath();
                 }

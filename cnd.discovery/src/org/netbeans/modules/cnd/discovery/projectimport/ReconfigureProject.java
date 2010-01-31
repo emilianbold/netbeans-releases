@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import static java.util.logging.Logger.getLogger;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +68,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -81,7 +83,7 @@ import org.openide.windows.InputOutput;
  */
 public class ReconfigureProject {
     private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
-    private Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
+    private Logger logger = getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
     private final Project makeProject;
     private final ConfigurationDescriptorProvider pdp;
     private final boolean isSunCompiler;
@@ -173,8 +175,10 @@ public class ReconfigureProject {
             final AtomicInteger res = new AtomicInteger();
             final AtomicBoolean finished = new AtomicBoolean(false);
             ExecutionListener listener = new ExecutionListener() {
+                @Override
                 public void executionStarted(int pid) {
                 }
+                @Override
                 public void executionFinished(int rc) {
                     res.set(rc);
                     finished.set(true);
@@ -617,7 +621,7 @@ public class ReconfigureProject {
     }
 
     private String getCCompilerName(){
-        String path = getToolPath(ToolKind.CCompiler.ordinal());
+        String path = getToolPath(ToolKind.CCompiler);
         if (path == null) {
             if (isSunCompiler()) {
                 return "cc"; // NOI18N
@@ -629,7 +633,7 @@ public class ReconfigureProject {
     }
 
     private String getCppCompilerName(){
-        String path = getToolPath(ToolKind.CCCompiler.ordinal());
+        String path = getToolPath(ToolKind.CCCompiler);
         if (path == null) {
             if (isSunCompiler()) {
                 return "CC"; // NOI18N
@@ -640,7 +644,7 @@ public class ReconfigureProject {
         return path;
     }
 
-    private String getToolPath(int tool){
+    private String getToolPath(ToolKindBase tool){
         Tool compiler = compilerSet.findTool(tool);
         if (compiler == null) {
             return null;

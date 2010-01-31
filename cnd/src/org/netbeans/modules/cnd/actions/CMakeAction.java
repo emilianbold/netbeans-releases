@@ -126,12 +126,12 @@ public class CMakeAction extends AbstractExecutorRunAction {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         // Build directory
-        String buildDir = getBuildDirectory(node,ToolKind.CMakeTool.ordinal());
+        String buildDir = getBuildDirectory(node,ToolKind.CMakeTool);
         // Executable
-        String executable = getCommand(node, project, ToolKind.CMakeTool.ordinal(), "cmake"); // NOI18N
+        String executable = getCommand(node, project, ToolKind.CMakeTool, "cmake"); // NOI18N
         // Arguments
         //String arguments = proFile.getName();
-        String[] arguments =  getArguments(node, ToolKind.CMakeTool.ordinal()); // NOI18N
+        String[] arguments =  getArguments(node, ToolKind.CMakeTool); // NOI18N
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
         if (buildDir == null) {

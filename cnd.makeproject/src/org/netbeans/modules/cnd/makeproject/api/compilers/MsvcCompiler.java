@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.PredefinedMacro;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -53,7 +54,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 public class MsvcCompiler extends GNUCCompiler {
    /** Creates a new instance of GNUCCompiler */
-   protected MsvcCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+   protected MsvcCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
        super(env, flavor, kind, name, displayName, path);
    }
 
@@ -68,13 +69,13 @@ public class MsvcCompiler extends GNUCCompiler {
        return copy;
    }
 
-   public static MsvcCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+   public static MsvcCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
        return new MsvcCompiler(env, flavor, kind, name, displayName, path);
    }
 
     @Override
     public CompilerDescriptor getDescriptor() {
-        if (getKind() == ToolKind.CCCompiler.ordinal()) {
+        if (getKind() == ToolKind.CCCompiler) {
             return getFlavor().getToolchainDescriptor().getCpp();
         } else {
             return getFlavor().getToolchainDescriptor().getC();

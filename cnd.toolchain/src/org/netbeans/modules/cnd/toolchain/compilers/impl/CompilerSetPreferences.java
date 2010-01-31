@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.toolchain.spi.CompilerProvider;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Exceptions;
@@ -120,7 +121,7 @@ public final class CompilerSetPreferences {
                 for (Tool tool : tools) {
                     getPreferences().put(CSM + executionEnvironmentKey + TOOL_NAME + setCount + '.' + toolCount, tool.getName());
                     getPreferences().put(CSM + executionEnvironmentKey + TOOL_DISPLAYNAME + '-' + setCount + '.' + toolCount, tool.getDisplayName());
-                    getPreferences().putInt(CSM + executionEnvironmentKey + TOOL_KIND + setCount + '.' + toolCount, tool.getKind());
+                    getPreferences().putInt(CSM + executionEnvironmentKey + TOOL_KIND + setCount + '.' + toolCount, tool.getKind().ordinal());
                     getPreferences().put(CSM + executionEnvironmentKey + TOOL_PATH + setCount + '.' + toolCount, tool.getPath());
                     getPreferences().put(CSM + executionEnvironmentKey + TOOL_FLAVOR + setCount + '.' + toolCount, tool.getFlavor().toString());
                     toolCount++;
@@ -176,7 +177,7 @@ public final class CompilerSetPreferences {
                 if (toolFlavorName != null) {
                     toolFlavor = CompilerFlavorImpl.toFlavor(toolFlavorName, pform);
                 }
-                Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(env, toolFlavor, toolKind, "", toolDisplayName, toolPath);
+                Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(env, toolFlavor, ToolKind.getTool(toolKind), "", toolDisplayName, toolPath);
                 tool.setName(toolName);
                 cs.addTool(tool);
             }
@@ -232,7 +233,7 @@ public final class CompilerSetPreferences {
                     toolFlavor = CompilerFlavorImpl.toFlavor(toolFlavorName, PlatformTypes.getDefaultPlatform());
                 }
                 Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(ExecutionEnvironmentFactory.getLocal(),
-                        toolFlavor, toolKind, "", toolDisplayName, toolPath); //NOI18N
+                        toolFlavor, ToolKind.getTool(toolKind), "", toolDisplayName, toolPath); //NOI18N
                 tool.setName(toolName);
                 (cs).addTool(tool);
             }

@@ -134,9 +134,9 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         final FileObject fileObject = dataObject.getPrimaryFile();
         File makefile = FileUtil.toFile(fileObject);
         // Build directory
-        String buildDir = getBuildDirectory(node,ToolKind.MakeTool.ordinal());
+        String buildDir = getBuildDirectory(node,ToolKind.MakeTool);
         // Executable
-        String executable = getCommand(node, project, ToolKind.MakeTool.ordinal(), "make"); // NOI18N
+        String executable = getCommand(node, project, ToolKind.MakeTool, "make"); // NOI18N
         // Arguments
         String[] args;
         if (target.length() == 0) {

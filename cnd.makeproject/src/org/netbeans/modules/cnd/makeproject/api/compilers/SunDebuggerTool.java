@@ -50,7 +50,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 public class SunDebuggerTool extends Tool {
     
     private SunDebuggerTool(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
-        super(env, flavor, ToolKind.DebuggerTool.ordinal(), name, displayName, path); // NOI18N
+        super(env, flavor, ToolKind.DebuggerTool, name, displayName, path); // NOI18N
     }
     
     @Override

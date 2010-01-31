@@ -157,7 +157,7 @@ public class GdbProfile implements ConfigurationAuxObject {
             CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).add(cs);
             csconf.setValid();
         }
-        Tool debuggerTool = cs.getTool(ToolKind.DebuggerTool.ordinal());
+        Tool debuggerTool = cs.getTool(ToolKind.DebuggerTool);
         ExecutionEnvironment execEnv = null;
         if (debuggerTool != null) {
             String gdbPath = debuggerTool.getPath();
@@ -205,7 +205,7 @@ public class GdbProfile implements ConfigurationAuxObject {
 //                }
                 conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
                 cs = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(model.getSelectedCompilerSetName());
-                return cs.getTool(ToolKind.DebuggerTool.ordinal()).getPath();
+                return cs.getTool(ToolKind.DebuggerTool).getPath();
             }
         }
         return null;

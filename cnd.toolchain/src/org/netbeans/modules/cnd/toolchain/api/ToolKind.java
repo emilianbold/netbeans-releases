@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.toolchain.api;
 
 import org.openide.util.NbBundle;
 
-public enum ToolKind {
+public enum ToolKind implements ToolKindBase {
     CCompiler, //0
     CCCompiler, //1
     FortranCompiler, //2
@@ -54,6 +54,7 @@ public enum ToolKind {
     CMakeTool, //8
     UnknownTool; //9
     
+    @Override
     public String getDisplayName(){
         return NbBundle.getBundle(ToolKind.class).getString(name());
     }

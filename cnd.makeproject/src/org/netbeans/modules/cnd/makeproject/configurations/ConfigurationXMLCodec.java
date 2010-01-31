@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
@@ -246,7 +247,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     String excluded = atts.getValue(ItemXMLCodec.EXCLUDED_ATTR);
                     int tool = new Integer(atts.getValue(ItemXMLCodec.TOOL_ATTR)).intValue();
                     itemConfiguration.getExcluded().setValue(excluded.equals(TRUE_VALUE));
-                    itemConfiguration.setTool(tool);
+                    itemConfiguration.setTool(ToolKind.getTool(tool));
                 }
             } else {
                 System.err.println("Not found item: " + path);
@@ -505,7 +506,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentItemConfiguration.getExcluded().setValue(currentText.equals(TRUE_VALUE));
         } else if (element.equals(ItemXMLCodec.ITEM_TOOL_ELEMENT) || element.equals(ItemXMLCodec.TOOL_ELEMENT)) {
             int tool = new Integer(currentText).intValue();
-            currentItemConfiguration.setTool(tool);
+            currentItemConfiguration.setTool(ToolKind.getTool(tool));
         } else if (element.equals(CONFORMANCE_LEVEL_ELEMENT)) { // FIXUP: <= 21
         } else if (element.equals(COMPATIBILITY_MODE_ELEMENT)) { // FIXUP: <= 21
         } else if (element.equals(LIBRARY_LEVEL_ELEMENT)) {

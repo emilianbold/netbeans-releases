@@ -382,21 +382,21 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return mimeType;
     }
 
-    public int getDefaultTool() {
-        int tool;
+    public ToolKind getDefaultTool() {
+        ToolKind tool;
         String mimeType = getMIMEType();
         if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
-            tool = ToolKind.CCompiler.ordinal();
+            tool = ToolKind.CCompiler;
         } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
-            tool = ToolKind.CustomTool.ordinal();
+            tool = ToolKind.CustomTool;
         } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
-            tool = ToolKind.CCCompiler.ordinal();
+            tool = ToolKind.CCCompiler;
         } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
-            tool = ToolKind.FortranCompiler.ordinal();
+            tool = ToolKind.FortranCompiler;
         } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
-            tool = ToolKind.Assembler.ordinal();
+            tool = ToolKind.Assembler;
         } else {
-            tool = ToolKind.CustomTool.ordinal();
+            tool = ToolKind.CustomTool;
         }
         return tool;
     }
@@ -564,7 +564,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
      **/
     @Override
     public Language getLanguage() {
-        int tool;
+        ToolKind tool;
         Language language;
         ItemConfiguration itemConfiguration = null;
         MakeConfiguration makeConfiguration = getMakeConfiguration();
@@ -577,11 +577,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             tool = getDefaultTool();
         }
 
-        if (tool == ToolKind.CCompiler.ordinal()) {
+        if (tool == ToolKind.CCompiler) {
             language = NativeFileItem.Language.C;
-        } else if (tool == ToolKind.CCCompiler.ordinal()) {
+        } else if (tool == ToolKind.CCCompiler) {
             language = NativeFileItem.Language.CPP;
-        } else if (tool == ToolKind.FortranCompiler.ordinal()) {
+        } else if (tool == ToolKind.FortranCompiler) {
             language = NativeFileItem.Language.FORTRAN;
         } else if (hasHeaderOrSourceExtension(true, true)) {
             language = NativeFileItem.Language.C_HEADER;

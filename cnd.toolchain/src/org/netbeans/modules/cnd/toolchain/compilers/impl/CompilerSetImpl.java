@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerProvider;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.BaseFolder;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CMakeDescriptor;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
@@ -109,7 +109,7 @@ public class CompilerSetImpl implements CompilerSet {
     private StringBuilder directory = new StringBuilder(256);
     private final ArrayList<Tool> tools = new ArrayList<Tool>();
     private CompilerProvider compilerProvider;
-    private Map<Integer,String> pathSearch;
+    private Map<ToolKindBase,String> pathSearch;
     private boolean isSunStudioDefault;
 
     /** Creates a new instance of CompilerSet */
@@ -212,11 +212,11 @@ public class CompilerSetImpl implements CompilerSet {
         return displayName;
     }
 
-    /*package-local*/ Tool addTool(ExecutionEnvironment env, String name, String path, int kind) {
+    /*package-local*/ Tool addTool(ExecutionEnvironment env, String name, String path, ToolKindBase kind) {
         if (findTool(kind) != null) {
             return null;
         }
-        Tool tool = compilerProvider.createCompiler(env, flavor, kind, name, ToolKind.getTool(kind).getDisplayName(), path);
+        Tool tool = compilerProvider.createCompiler(env, flavor, kind, name, kind.getDisplayName(), path);
         if (!tools.contains(tool)) {
             tools.add(tool);
         }
@@ -229,8 +229,8 @@ public class CompilerSetImpl implements CompilerSet {
         tool.setCompilerSet(this);
     }
 
-    /*package-local*/ Tool addNewTool(ExecutionEnvironment env, String name, String path, int kind) {
-        Tool tool = compilerProvider.createCompiler(env, flavor, kind, name, ToolKind.getTool(kind).getDisplayName(), path);
+    /*package-local*/ Tool addNewTool(ExecutionEnvironment env, String name, String path, ToolKindBase kind) {
+        Tool tool = compilerProvider.createCompiler(env, flavor, kind, name, kind.getDisplayName(), path);
         tools.add(tool);
         tool.setCompilerSet(this);
         return tool;
@@ -243,7 +243,7 @@ public class CompilerSetImpl implements CompilerSet {
      * @return The Tool or null
      */
     @Override
-    public Tool getTool(int kind) {
+    public Tool getTool(ToolKindBase kind) {
         for (Tool tool : tools) {
             if (tool.getKind() == kind) {
                 return tool;
@@ -254,7 +254,7 @@ public class CompilerSetImpl implements CompilerSet {
         Tool t;
         // Fixup: all tools should go here ....
         t = compilerProvider.createCompiler(ExecutionEnvironmentFactory.getLocal(),
-                getCompilerFlavor(), kind, "", ToolKind.getTool(kind).getDisplayName(), ""); // NOI18N
+                getCompilerFlavor(), kind, "", kind.getDisplayName(), ""); // NOI18N
         t.setCompilerSet(this);
         synchronized( tools ) { // synchronize this only unpredictable tools modification
             tools.add(t);
@@ -270,7 +270,7 @@ public class CompilerSetImpl implements CompilerSet {
      * @return The Tool or null
      */
     @Override
-    public Tool findTool(int kind) {
+    public Tool findTool(ToolKindBase kind) {
         for (Tool tool : tools) {
             if (tool.getKind() == kind) {
                 return tool;
@@ -287,14 +287,14 @@ public class CompilerSetImpl implements CompilerSet {
         }
     }
 
-    /*package-local*/ void addPathCandidate(int tool, String path) {
+    /*package-local*/ void addPathCandidate(ToolKindBase tool, String path) {
         if (pathSearch == null){
-            pathSearch = new HashMap<Integer, String>();
+            pathSearch = new HashMap<ToolKindBase, String>();
         }
         pathSearch.put(tool, path);
     }
 
-    /*package-local*/String getPathCandidate(int tool){
+    /*package-local*/String getPathCandidate(ToolKindBase tool){
         if (pathSearch == null){
             return null;
         }

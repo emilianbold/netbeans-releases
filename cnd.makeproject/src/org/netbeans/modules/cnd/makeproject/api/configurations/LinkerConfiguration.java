@@ -330,10 +330,10 @@ public class LinkerConfiguration implements AllOptionsProvider {
         if (compilerSet != null) {
             linker = compilerSet == null ? null : compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker();
             if (conf.hasCPPFiles(configurationDescriptor)) {
-                BasicCompiler ccCompiler = (BasicCompiler) compilerSet.getTool(ToolKind.CCCompiler.ordinal());
+                BasicCompiler ccCompiler = (BasicCompiler) compilerSet.getTool(ToolKind.CCCompiler);
                 linkDriver = ccCompiler.getName();
             } else {
-                BasicCompiler cCompiler = (BasicCompiler) compilerSet.getTool(ToolKind.CCompiler.ordinal());
+                BasicCompiler cCompiler = (BasicCompiler) compilerSet.getTool(ToolKind.CCompiler);
                 linkDriver = cCompiler.getName();
             }
         }

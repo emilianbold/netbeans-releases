@@ -110,7 +110,7 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
                 }
                 List<CompilerSet> compilerSets = CompilerSetManager.get(execEnv).getCompilerSets();
                 for (CompilerSet set : compilerSets) {
-                    Tool cCompiler = set.getTool(ToolKind.CCompiler.ordinal());
+                    Tool cCompiler = set.getTool(ToolKind.CCompiler);
                     if (cCompiler != null) {
                         String includePrefix = cCompiler.getIncludeFilePathPrefix();
                         File file = new File(includePrefix + absPath1);

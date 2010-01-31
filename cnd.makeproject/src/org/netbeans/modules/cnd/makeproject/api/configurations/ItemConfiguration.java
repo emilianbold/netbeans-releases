@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -64,7 +65,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     private Item item;
     // General
     private BooleanConfiguration excluded;
-    private byte tool = -1;
+    private ToolKind tool = ToolKind.UnknownTool;
     // Tools
     private ConfigurationBase lastConfiguration;
 
@@ -106,7 +107,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public boolean isCompilerToolConfiguration() {
-        switch (ToolKind.getTool(getTool())) {
+        switch (getTool()) {
             case Assembler:
             case CCCompiler:
             case CCompiler:
@@ -117,7 +118,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public BasicCompilerConfiguration getCompilerConfiguration() {
-        switch (ToolKind.getTool(getTool())) {
+        switch (getTool()) {
             case Assembler:
                 return getAssemblerConfiguration();
             case CCCompiler:
@@ -161,16 +162,16 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         needSave = true;
     }
     
-    public void setTool(int tool) {
+    public void setTool(ToolKind tool) {
         if (this.tool != tool){
             lastConfiguration = null;
         }
-        this.tool = (byte)tool;
+        this.tool = tool;
    }
 
-    public int getTool() {
-        if (tool == -1) {
-            tool = (byte)item.getDefaultTool();
+    public ToolKind getTool() {
+        if (tool == ToolKind.UnknownTool) {
+            tool = item.getDefaultTool();
         }
         return tool;
     }
@@ -187,7 +188,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public synchronized CustomToolConfiguration getCustomToolConfiguration() {
-        if (getTool() == ToolKind.CustomTool.ordinal()) {
+        if (getTool() == ToolKind.CustomTool) {
             if (lastConfiguration == null) {
                 lastConfiguration = new CustomToolConfiguration();
             }
@@ -203,7 +204,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public synchronized CCompilerConfiguration getCCompilerConfiguration() {
-        if (getTool() == ToolKind.CCompiler.ordinal()) {
+        if (getTool() == ToolKind.CCompiler) {
             if (lastConfiguration == null) {
                 FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
                 if (folderConfiguration != null) {
@@ -224,7 +225,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public synchronized CCCompilerConfiguration getCCCompilerConfiguration() {
-        if (getTool() == ToolKind.CCCompiler.ordinal()) {
+        if (getTool() == ToolKind.CCCompiler) {
             if (lastConfiguration == null) {
                 FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
                 if (folderConfiguration != null) {
@@ -245,7 +246,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public synchronized FortranCompilerConfiguration getFortranCompilerConfiguration() {
-        if (getTool() == ToolKind.FortranCompiler.ordinal()) {
+        if (getTool() == ToolKind.FortranCompiler) {
             if (lastConfiguration == null) {
                 lastConfiguration = new FortranCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getFortranCompilerConfiguration());
             }
@@ -261,7 +262,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public synchronized AssemblerConfiguration getAssemblerConfiguration() {
-        if (getTool() == ToolKind.Assembler.ordinal()) {
+        if (getTool() == ToolKind.Assembler) {
             if (lastConfiguration == null) {
                 lastConfiguration = new AssemblerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getAssemblerConfiguration());
             }
@@ -325,7 +326,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         setItem(i.getItem());
         getExcluded().assign(i.getExcluded());
         setTool(i.getTool());
-        switch (ToolKind.getTool(getTool())) {
+        switch (getTool()) {
             case Assembler:
                 getAssemblerConfiguration().assign(i.getAssemblerConfiguration());
                 break;
@@ -355,7 +356,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         ItemConfiguration i = (ItemConfiguration) profileAuxObject;
         getExcluded().assign(i.getExcluded());
         setTool(i.getTool());
-        switch (ToolKind.getTool(getTool())) {
+        switch (getTool()) {
             case Assembler:
                 getAssemblerConfiguration().assign(i.getAssemblerConfiguration());
                 break;
@@ -390,7 +391,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 
         i.setExcluded(getExcluded().clone());
         i.setTool(getTool());
-        switch (ToolKind.getTool(getTool())) {
+        switch (getTool()) {
             case Assembler:
                 i.setAssemblerConfiguration(getAssemblerConfiguration().clone());
                 break;
@@ -478,14 +479,14 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 
         @Override
         public Integer getValue() {
-            return Integer.valueOf(getTool());
+            return Integer.valueOf(getTool().ordinal());
         }
 
         @Override
         public void setValue(Integer v) {
 //            String newTool = (String) v;
 //            setTool(newTool);
-            setTool(v);
+            setTool(ToolKind.getTool(v));
         }
 
         @Override

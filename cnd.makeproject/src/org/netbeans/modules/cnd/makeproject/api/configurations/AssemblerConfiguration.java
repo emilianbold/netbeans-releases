@@ -125,7 +125,7 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
     public Sheet getGeneralSheet(MakeConfiguration conf) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        BasicCompiler assemblerCompiler = compilerSet == null ? null : (BasicCompiler) compilerSet.getTool(ToolKind.Assembler.ordinal());
+        BasicCompiler assemblerCompiler = compilerSet == null ? null : (BasicCompiler) compilerSet.getTool(ToolKind.Assembler);
 
         Sheet.Set basicSet = getBasicSet();
         basicSet.remove("StripSymbols"); // NOI18N

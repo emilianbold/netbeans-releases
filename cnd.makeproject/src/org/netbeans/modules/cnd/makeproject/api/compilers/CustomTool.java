@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 public final class CustomTool extends Tool {
 
     private CustomTool(ExecutionEnvironment env) {
-        super(env, CompilerFlavorAccessor.getUnknown(PlatformTypes.getDefaultPlatform()), ToolKind.CustomTool.ordinal(), "", NbBundle.getMessage(CustomTool.class, "LBL_CustomTool"), null); // NOI18N
+        super(env, CompilerFlavorAccessor.getUnknown(PlatformTypes.getDefaultPlatform()), ToolKind.CustomTool, "", NbBundle.getMessage(CustomTool.class, "LBL_CustomTool"), null); // NOI18N
     }
 
     public static CustomTool create(ExecutionEnvironment env) {

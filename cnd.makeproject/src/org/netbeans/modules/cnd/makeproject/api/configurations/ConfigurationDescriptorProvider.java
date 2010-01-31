@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
@@ -311,7 +310,7 @@ public class ConfigurationDescriptorProvider {
                         ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
                         if (itemConfiguration != null && !itemConfiguration.getExcluded().getValue()) {
                             size++;
-                            switch (ToolKind.getTool(itemConfiguration.getTool())) {
+                            switch (itemConfiguration.getTool()) {
                                 case CCompiler:
                                     cLang = true;
                                     break;

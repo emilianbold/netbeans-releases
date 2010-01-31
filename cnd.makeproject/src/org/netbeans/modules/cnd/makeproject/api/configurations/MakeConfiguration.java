@@ -662,16 +662,16 @@ public class MakeConfiguration extends Configuration {
                         itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
-                if (itemConfiguration.getTool() == ToolKind.CCompiler.ordinal()) {
+                if (itemConfiguration.getTool() == ToolKind.CCompiler) {
                     hasCFiles = true;
                 }
-                if (itemConfiguration.getTool() == ToolKind.CCCompiler.ordinal()) {
+                if (itemConfiguration.getTool() == ToolKind.CCCompiler) {
                     hasCPPFiles = true;
                 }
-                if (itemConfiguration.getTool() == ToolKind.FortranCompiler.ordinal()) {
+                if (itemConfiguration.getTool() == ToolKind.FortranCompiler) {
                     hasFortranFiles = true;
                 }
-                if (itemConfiguration.getTool() == ToolKind.Assembler.ordinal()) {
+                if (itemConfiguration.getTool() == ToolKind.Assembler) {
                     hasAssemblerFiles = true;
                 }
             //            if (itemConfiguration.getTool() == Tool.AsmCompiler) {

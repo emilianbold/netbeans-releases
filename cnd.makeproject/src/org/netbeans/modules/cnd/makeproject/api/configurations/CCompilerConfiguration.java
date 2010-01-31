@@ -211,7 +211,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     public Sheet getGeneralSheet(MakeConfiguration conf, Folder folder) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        BasicCompiler cCompiler = compilerSet == null ? null : (BasicCompiler)compilerSet.getTool(ToolKind.CCompiler.ordinal());
+        BasicCompiler cCompiler = compilerSet == null ? null : (BasicCompiler)compilerSet.getTool(ToolKind.CCompiler);
         
         sheet.put(getSet());
         if (conf.isCompileConfiguration() && folder == null) {

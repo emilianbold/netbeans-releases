@@ -186,9 +186,9 @@ public class QmakeProjectWriter {
                 expandAndQuote(configuration.getQmakeConfiguration().getUiDir().getValue()));
 
         write(bw, Variable.QMAKE_CC, Operation.SET,
-                ConfigurationMakefileWriter.getCompilerName(configuration, ToolKind.CCompiler.ordinal()));
+                ConfigurationMakefileWriter.getCompilerName(configuration, ToolKind.CCompiler));
         write(bw, Variable.QMAKE_CXX, Operation.SET,
-                ConfigurationMakefileWriter.getCompilerName(configuration, ToolKind.CCCompiler.ordinal()));
+                ConfigurationMakefileWriter.getCompilerName(configuration, ToolKind.CCCompiler));
 
         CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
         OptionToString defineVisitor = new OptionToString(compilerSet, null);

@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -50,7 +51,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * @author Alexander Simon
  */
 public class GeneralTool extends Tool {
-    private GeneralTool(ExecutionEnvironment env, int kind, CompilerFlavor flavor, String name, String displayName, String path) {
+    private GeneralTool(ExecutionEnvironment env, ToolKindBase kind, CompilerFlavor flavor, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path); // NOI18N
     }
 
@@ -61,17 +62,16 @@ public class GeneralTool extends Tool {
         return copy;
     }
 
-    public static GeneralTool create(ExecutionEnvironment env, int kind, CompilerFlavor flavor, String name, String displayName, String path) {
+    public static GeneralTool create(ExecutionEnvironment env, ToolKindBase kind, CompilerFlavor flavor, String name, String displayName, String path) {
         return new GeneralTool(env, kind, flavor, name, displayName, path);
     }
 
     @Override
     public ToolDescriptor getDescriptor() {
-        switch (ToolKind.getTool(getKind())) {
-            case QMakeTool:
-                return getFlavor().getToolchainDescriptor().getQMake();
-            case CMakeTool:
-                return getFlavor().getToolchainDescriptor().getCMake();
+        if (getKind() == ToolKind.QMakeTool) {
+            return getFlavor().getToolchainDescriptor().getQMake();
+        } else if (getKind() == ToolKind.CMakeTool) {
+            return getFlavor().getToolchainDescriptor().getCMake();
         }
         return null;
     }

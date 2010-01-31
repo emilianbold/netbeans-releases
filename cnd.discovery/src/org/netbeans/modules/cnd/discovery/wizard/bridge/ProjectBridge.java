@@ -194,7 +194,7 @@ public class ProjectBridge {
             ItemConfiguration conf = (ItemConfiguration)pao;
             MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
             ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
-            switch(ToolKind.getTool(itemConfiguration.getTool())) {
+            switch(itemConfiguration.getTool()) {
                 case CCCompiler:
                     itemConfiguration.setCCCompilerConfiguration(conf.getCCCompilerConfiguration());
                     break;
@@ -376,8 +376,8 @@ public class ProjectBridge {
         if (itemConfiguration == null) {
             return;
         }
-        if (itemConfiguration.getTool() == ToolKind.CCCompiler.ordinal() || itemConfiguration.getTool() == ToolKind.CCompiler.ordinal()) {
-            itemConfiguration.setTool(ToolKind.CustomTool.ordinal());
+        if (itemConfiguration.getTool() == ToolKind.CCCompiler || itemConfiguration.getTool() == ToolKind.CCompiler) {
+            itemConfiguration.setTool(ToolKind.CustomTool);
         }
     }
 
@@ -388,12 +388,12 @@ public class ProjectBridge {
             return;
         }
         if (isCPP) {
-            if (itemConfiguration.getTool() != ToolKind.CCCompiler.ordinal()) {
-                itemConfiguration.setTool(ToolKind.CCCompiler.ordinal());
+            if (itemConfiguration.getTool() != ToolKind.CCCompiler) {
+                itemConfiguration.setTool(ToolKind.CCCompiler);
             }
         } else {
-            if (itemConfiguration.getTool() != ToolKind.CCompiler.ordinal()) {
-                itemConfiguration.setTool(ToolKind.CCompiler.ordinal());
+            if (itemConfiguration.getTool() != ToolKind.CCompiler) {
+                itemConfiguration.setTool(ToolKind.CCompiler);
             }
         }
     }
@@ -522,9 +522,9 @@ public class ProjectBridge {
             CompilerSet compilerSet = getCompilerSet();
             BasicCompiler compiler;
             if (isCPP) {
-                compiler = (BasicCompiler)compilerSet.getTool(ToolKind.CCCompiler.ordinal());
+                compiler = (BasicCompiler)compilerSet.getTool(ToolKind.CCCompiler);
             } else {
-                compiler = (BasicCompiler)compilerSet.getTool(ToolKind.CCompiler.ordinal());
+                compiler = (BasicCompiler)compilerSet.getTool(ToolKind.CCompiler);
             }
             for(Object o :compiler.getSystemIncludeDirectories()){
                 String path = (String)o;
@@ -568,9 +568,9 @@ public class ProjectBridge {
             CompilerSet compilerSet = getCompilerSet();
             BasicCompiler compiler;
             if (isCPP) {
-                compiler = (BasicCompiler)compilerSet.getTool(ToolKind.CCCompiler.ordinal());
+                compiler = (BasicCompiler)compilerSet.getTool(ToolKind.CCCompiler);
             } else {
-                compiler = (BasicCompiler)compilerSet.getTool(ToolKind.CCompiler.ordinal());
+                compiler = (BasicCompiler)compilerSet.getTool(ToolKind.CCompiler);
             }
             for(Object o :compiler.getSystemPreprocessorSymbols()){
                 String macro = (String)o;

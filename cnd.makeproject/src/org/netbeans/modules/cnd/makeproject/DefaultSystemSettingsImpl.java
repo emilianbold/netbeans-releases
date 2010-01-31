@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
@@ -58,13 +59,13 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.project.DefaultSystemSettings.class)
 public class DefaultSystemSettingsImpl extends DefaultSystemSettings {    
     private static BasicCompiler getDefaultCompiler(NativeFileItem.Language language) {
-        int kind;        
+        ToolKindBase kind;
         switch (language) {
             case C:
-                kind = ToolKind.CCompiler.ordinal();
+                kind = ToolKind.CCompiler;
                 break;
             case CPP:
-                kind = ToolKind.CCCompiler.ordinal();
+                kind = ToolKind.CCCompiler;
                 break;
             default:
                 return null;

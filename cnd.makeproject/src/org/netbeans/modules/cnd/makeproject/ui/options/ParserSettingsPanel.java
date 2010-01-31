@@ -226,11 +226,11 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         }
         // Show only the selected C and C++ compiler from the compiler collection
         ArrayList<Tool> toolSet = new ArrayList<Tool>();
-        Tool cCompiler = compilerCollection.getTool(ToolKind.CCompiler.ordinal());
+        Tool cCompiler = compilerCollection.getTool(ToolKind.CCompiler);
         if (cCompiler != null && cCompiler.getPath().length() > 0) {
             toolSet.add(cCompiler);
         }
-        Tool cppCompiler = compilerCollection.getTool(ToolKind.CCCompiler.ordinal());
+        Tool cppCompiler = compilerCollection.getTool(ToolKind.CCCompiler);
         if (cppCompiler != null && cppCompiler.getPath().length() > 0) {
             toolSet.add(cppCompiler);
         }

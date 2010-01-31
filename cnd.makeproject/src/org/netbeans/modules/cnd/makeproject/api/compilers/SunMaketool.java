@@ -50,7 +50,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 public final class SunMaketool extends Tool {
 
     private SunMaketool(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
-        super(env, flavor, ToolKind.MakeTool.ordinal(), name, displayName, path); // NOI18N
+        super(env, flavor, ToolKind.MakeTool, name, displayName, path); // NOI18N
     }
 
     @Override

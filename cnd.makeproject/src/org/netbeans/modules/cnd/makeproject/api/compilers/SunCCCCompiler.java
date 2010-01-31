@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
@@ -51,7 +52,7 @@ import org.openide.util.NbBundle;
 
 public abstract class SunCCCCompiler extends CCCCompiler {
     
-    protected SunCCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    protected SunCCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
     }
     
@@ -71,6 +72,7 @@ public abstract class SunCCCCompiler extends CCCCompiler {
         return null;
     }
     
+    @Override
     protected Pair getFreshSystemIncludesAndDefines() {
         Pair res = new Pair();
         try {
