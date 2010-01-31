@@ -38,25 +38,30 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.csl.core;
+package org.netbeans.modules.csl.api;
 
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
 /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
-public class SelectPreviousCamelCasePosition extends PreviousCamelCasePosition {
-    public static final String selectPreviousCamelCasePosition = "select-previous-camel-case-position"; //NOI18N
+public class PreviousCamelCasePosition extends AbstractCamelCasePosition {
+    public static final String previousCamelCasePosition = "previous-camel-case-position"; //NOI18N
 
-    public SelectPreviousCamelCasePosition(Action originalAction) {
-        this(selectPreviousCamelCasePosition, originalAction);
+    public PreviousCamelCasePosition(Action originalAction) {
+        this(previousCamelCasePosition, originalAction);
     }
 
-    protected SelectPreviousCamelCasePosition(String name, Action originalAction) {
+    protected PreviousCamelCasePosition(String name, Action originalAction) {
         super(name, originalAction);
     }
 
-    protected @Override void moveToNewOffset(JTextComponent textComponent, int offset) throws BadLocationException {
-        textComponent.getCaret().moveDot(offset);
+    protected int newOffset(JTextComponent textComponent) throws BadLocationException {
+        return CamelCaseOperations.previousCamelCasePosition(textComponent);
+    }
+
+    protected void moveToNewOffset(JTextComponent textComponent, int offset) throws BadLocationException {
+        textComponent.setCaretPosition(offset);
     }
 }
+

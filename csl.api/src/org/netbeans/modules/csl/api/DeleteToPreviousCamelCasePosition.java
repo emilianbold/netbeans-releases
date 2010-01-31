@@ -23,27 +23,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.csl.core;
+package org.netbeans.modules.csl.api;
 
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
 /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
-public class SelectNextCamelCasePosition extends NextCamelCasePosition {
-    public static final String selectNextCamelCasePosition = "select-next-camel-case-position"; //NOI18N
+public final class DeleteToPreviousCamelCasePosition extends SelectPreviousCamelCasePosition {
+    public static final String deletePreviousCamelCasePosition = "delete-previous-camel-case-position"; //NOI18N
 
-    public SelectNextCamelCasePosition(Action originalAction) {
-        this(selectNextCamelCasePosition, originalAction);
+    public DeleteToPreviousCamelCasePosition(Action originalAction) {
+        // XXX Why does this get called so many times?        
+        super(deletePreviousCamelCasePosition, originalAction);
     }
-
-    protected SelectNextCamelCasePosition(String name, Action originalAction) {
-        super(name, originalAction);
-    }
-
     protected @Override void moveToNewOffset(JTextComponent textComponent, int offset) throws BadLocationException {
-        textComponent.getCaret().moveDot(offset);
+        textComponent.getDocument().remove(offset, textComponent.getCaretPosition() - offset);
     }
 }
+
+

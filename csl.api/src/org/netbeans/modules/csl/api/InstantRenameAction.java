@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.csl.editor;
+package org.netbeans.modules.csl.api;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -51,8 +51,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.modules.csl.api.InstantRenamer;
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -61,7 +59,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.csl.editor.InstantRenamePerformer;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -93,7 +91,7 @@ public class InstantRenameAction extends BaseAction {
         super("in-place-refactoring", MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
     }
 
-    public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+    public @Override void actionPerformed(ActionEvent evt, final JTextComponent target) {
         try {
             final int caret = target.getCaretPosition();
             String ident = Utilities.getIdentifier(Utilities.getDocument(target), caret);
@@ -120,7 +118,7 @@ public class InstantRenameAction extends BaseAction {
             ParserManager.parse (
                 Collections.<Source> singleton (js), 
                 new UserTask () {
-                    public void run (ResultIterator resultIterator) throws Exception {
+                    public @Override void run (ResultIterator resultIterator) throws Exception {
                         Parser.Result result = resultIterator.getParserResult (target.getCaretPosition ());
                         if(!(result instanceof ParserResult)) {
                             return ;
