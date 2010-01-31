@@ -48,7 +48,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
 import org.netbeans.modules.cnd.makefile.model.MakefileAssignment;
 import org.netbeans.modules.cnd.makefile.model.MakefileElement;
-import org.netbeans.modules.cnd.makefile.model.MakefileElementKind;
 import org.netbeans.modules.cnd.makefile.model.MakefileRule;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Source;
@@ -81,27 +80,27 @@ public class MakefileParserTest extends NbTestCase {
         assertNotNull(elements);
 
         MakefileAssignment rm = (MakefileAssignment) elements.get(0);
-        assertEquals(MakefileElementKind.ASSIGNMENT, rm.getKind());
+        assertEquals(MakefileElement.Kind.ASSIGNMENT, rm.getKind());
         assertEquals("RM", rm.getMacroName());
         assertEquals("rm", rm.getMacroValue());
 
         MakefileAssignment cc = (MakefileAssignment) elements.get(1);
-        assertEquals(MakefileElementKind.ASSIGNMENT, cc.getKind());
+        assertEquals(MakefileElement.Kind.ASSIGNMENT, cc.getKind());
         assertEquals("CC", cc.getMacroName());
         assertEquals("gcc", cc.getMacroValue());
 
         MakefileRule buildConf = (MakefileRule) elements.get(2);
-        assertEquals(MakefileElementKind.RULE, buildConf.getKind());
+        assertEquals(MakefileElement.Kind.RULE, buildConf.getKind());
         assertEquals(Collections.singletonList(".build-conf"), buildConf.getTargets());
         assertEquals(Arrays.asList("$(BUILD_SUBPROJECTS)", "dist/Debug/GNU-Solaris-x86/quote_1"), buildConf.getPrerequisites());
 
         MakefileRule cleanConf = (MakefileRule) elements.get(3);
-        assertEquals(MakefileElementKind.RULE, cleanConf.getKind());
+        assertEquals(MakefileElement.Kind.RULE, cleanConf.getKind());
         assertEquals(Collections.singletonList(".clean-conf"), cleanConf.getTargets());
         assertEquals(Collections.emptyList(), cleanConf.getPrerequisites());
 
         MakefileRule done = (MakefileRule) elements.get(4);
-        assertEquals(MakefileElementKind.RULE, done.getKind());
+        assertEquals(MakefileElement.Kind.RULE, done.getKind());
         assertEquals(Collections.singletonList(".DONE"), done.getTargets());
         assertEquals(Collections.emptyList(), done.getPrerequisites());
 
