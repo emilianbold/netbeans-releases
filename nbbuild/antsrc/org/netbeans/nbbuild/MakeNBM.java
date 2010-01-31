@@ -323,6 +323,7 @@ public class MakeNBM extends Task {
     private Attributes englishAttr = null;
     private Path updaterJar;
     private FileSet executablesSet;
+    private boolean usePack200;
 
     /** Try to find and create localized info.xml files */
     public void setLocales(String s) {
@@ -344,6 +345,10 @@ public class MakeNBM extends Task {
     /** Name of resulting NBM file. */
     public void setFile(File file) {
         this.file = file;
+    }
+
+    public void setUsePack200(boolean usePack200) {
+        this.usePack200 = usePack200;
     }
 
     /** List of executable files in NBM concatinated by ${line.separator}. */
