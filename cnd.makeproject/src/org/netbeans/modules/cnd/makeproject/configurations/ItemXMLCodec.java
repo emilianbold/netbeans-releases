@@ -107,7 +107,7 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
         xes.elementOpen(ITEM_ELEMENT, new AttrValuePair[]{
             new AttrValuePair(PATH_ATTR, item.getItem().getPath()),
             new AttrValuePair(EXCLUDED_ATTR, "" + item.getExcluded().getValue()),
-            new AttrValuePair(TOOL_ATTR, "" + item.getTool()),
+            new AttrValuePair(TOOL_ATTR, "" + item.getTool().ordinal()),
         });
 //        if (item.getExcluded().getModified()) {
 //            xes.element(ITEM_EXCLUDED_ELEMENT, "" + item.getExcluded().getValue()); // NOI18N
