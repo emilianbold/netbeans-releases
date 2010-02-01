@@ -40,11 +40,13 @@
 package org.netbeans.modules.cnd.navigation.overrides;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Level;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -89,7 +91,12 @@ public class ComputeAnnotations {
         if (CsmKindUtilities.isMethod(func)) {
             CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(func);
             final Collection<? extends CsmMethod> baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
-            final Collection<? extends CsmMethod> overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverridenMethods(meth, false);
+            Collection<? extends CsmMethod> overriddenMethods;
+            if (!baseMethods.isEmpty() || CsmVirtualInfoQuery.getDefault().isVirtual(meth)) {
+                overriddenMethods = CsmVirtualInfoQuery.getDefault().getOverridenMethods(meth, false);
+            } else {
+                overriddenMethods = Collections.<CsmMethod>emptyList();
+            }
             if (OverriddeAnnotation.LOGGER.isLoggable(Level.FINEST)) {
                 OverriddeAnnotation.LOGGER.log(Level.FINEST, "Found {0} base decls for {1}", new Object[]{baseMethods.size(), toString(func)});
                 for (CsmMethod baseMethod : baseMethods) {
