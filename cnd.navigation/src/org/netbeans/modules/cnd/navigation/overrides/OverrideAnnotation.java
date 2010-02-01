@@ -73,13 +73,13 @@ import org.openide.util.NbBundle;
     protected CharSequence debugTypeStirng() {
         switch (type) {
             case OVERRIDES:
-                return "OVERRIDES";
+                return "OVERRIDES"; // NOI18N
             case IS_OVERRIDDEN:
-                return "OVERRIDDEN";
+                return "OVERRIDDEN"; // NOI18N
             case COMBINED:
-                return "OVERRIDES_AND_OVERRIDDEN";
+                return "OVERRIDES_AND_OVERRIDDEN"; // NOI18N
             default:
-                return "???";
+                return "???"; // NOI18N
         }
     }
 }
