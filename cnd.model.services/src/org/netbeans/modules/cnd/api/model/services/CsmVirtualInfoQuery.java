@@ -43,7 +43,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
@@ -140,7 +139,7 @@ public abstract class CsmVirtualInfoQuery {
             Set<CsmMethod> result = new HashSet<CsmMethod>();
             for(CsmInheritance inh : method.getContainingClass().getBaseClasses()) {
                 processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, 
-                        new AtomicReference<CsmMethod>(), new AtomicReference<CsmMethod>(), result, first);
+                            null, null, result, first);
             }
             return result;
         }
@@ -155,7 +154,7 @@ public abstract class CsmVirtualInfoQuery {
          * @return true if method found and it is virtual, otherwise false
          */
         private void processMethod(CharSequence sig, CsmClass cls, Set<CharSequence> antilLoop,
-                AtomicReference<CsmMethod> firstFound, AtomicReference<CsmMethod> lastFound,
+                CsmMethod firstFound, CsmMethod lastFound,
                 Set<CsmMethod> result, boolean first) {
 
             boolean theLastInHierarchy;
@@ -168,13 +167,13 @@ public abstract class CsmVirtualInfoQuery {
                     if (CsmKindUtilities.isMethod(member)) {
                         CsmMethod method = (CsmMethod) member;
                         if (CharSequenceKey.Comparator.compare(sig, method.getSignature()) == 0) {
-                            if (firstFound.get() == null) {
-                                firstFound.set(method);
+                            if (firstFound == null) {
+                                firstFound = method;
                             }
-                            lastFound.set(method);
+                            lastFound = method;
                             if (method.isVirtual()) {
                                 if (first) {
-                                    result.add(firstFound.get());
+                                    result.add(firstFound);
                                     return;
                                 }
                             }
@@ -183,17 +182,15 @@ public abstract class CsmVirtualInfoQuery {
                 }
                 theLastInHierarchy = cls.getBaseClasses().isEmpty();
                 for(CsmInheritance inh : cls.getBaseClasses()) {
-                    AtomicReference<CsmMethod> firstFound2 = new AtomicReference<CsmMethod>(firstFound.get());
-                    AtomicReference<CsmMethod> lastFound2 = new AtomicReference<CsmMethod>(lastFound.get());
-                    processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, firstFound2, lastFound2, result, first);
+                    processMethod(sig, CsmInheritanceUtilities.getCsmClass(inh), antilLoop, firstFound, lastFound, result, first);
                 }
 
             }
             if (theLastInHierarchy) {
-                CsmMethod m  = lastFound.get();
+                CsmMethod m  = lastFound;
                 if (m != null && m.isVirtual()) {
-                    CndUtils.assertNotNull(firstFound.get(), "last found != null && first found == null ?!"); //NOI18N
-                    result.add(first ? firstFound.get() : m);
+                    CndUtils.assertNotNull(firstFound, "last found != null && first found == null ?!"); //NOI18N
+                    result.add(first ? firstFound : m);
                 }
             }
         }
