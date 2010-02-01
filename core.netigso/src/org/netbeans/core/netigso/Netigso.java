@@ -46,6 +46,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -86,7 +88,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
 
     @Override
-    protected void prepare(Collection<? extends ModuleInfo> preregister) {
+    protected void prepare(Lookup lkp, Collection<? extends ModuleInfo> preregister) {
         if (framework == null) {
             readBundles();
             
@@ -95,7 +97,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
             activator = new NetigsoActivator();
             configMap.put("felix.bootdelegation.classloaders", activator); // NOI18N
-            FrameworkFactory frameworkFactory = Lookup.getDefault().lookup(FrameworkFactory.class);
+            FrameworkFactory frameworkFactory = lkp.lookup(FrameworkFactory.class);
             if (frameworkFactory == null) {
                 throw new IllegalStateException(
                         "Cannot find OSGi framework implementation." + // NOI18N
@@ -316,11 +318,15 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
 
     @Override
     public void flushCaches(DataOutputStream os) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Writer w = new OutputStreamWriter(os);
+        for (String s : registered) {
+            w.write(s);
+            w.write('\n');
+        }
+        w.close();
     }
 
     @Override
     public void cacheReady() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

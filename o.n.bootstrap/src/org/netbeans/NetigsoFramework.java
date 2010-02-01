@@ -48,6 +48,7 @@ import java.util.Set;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /** This class contains abstracted calls to OSGi provided by core.netigso
  * module. No other module can implement this class, except core.netigso.
@@ -65,6 +66,7 @@ public abstract class NetigsoFramework {
     /** Starts the framework.
      */
     protected abstract void prepare(
+        Lookup loadFrameworkFrom,
         Collection<? extends ModuleInfo> preregister
     );
 
@@ -96,20 +98,17 @@ public abstract class NetigsoFramework {
     private static List<Module> toEnable = new ArrayList<Module>();
 
     static NetigsoFramework getDefault() {
-        if (framework == null) {
-            framework = Lookup.getDefault().lookup(NetigsoFramework.class);
-            if (framework == null) {
-                throw new IllegalStateException("No NetigsoFramework found, is org.netbeans.core.netigso module enabled?"); // NOI18N
-            }
-        }
         return framework;
     }
 
     static void willEnable(List<Module> newlyEnabling) {
         toEnable.addAll(newlyEnabling);
+    }
+
+    static void turnOn(ClassLoader findNetigsoFrameworkIn) {
         boolean found = false;
         if (framework == null) {
-            for (Module m : newlyEnabling) {
+            for (Module m : toEnable) {
                 if (m instanceof NetigsoModule) {
                     found = true;
                 }
@@ -120,11 +119,13 @@ public abstract class NetigsoFramework {
         if (!found) {
             return;
         }
-        getDefault().prepare(toEnable);
+        final Lookup lkp = Lookups.metaInfServices(findNetigsoFrameworkIn);
+        framework = lkp.lookup(NetigsoFramework.class);
+        if (framework == null) {
+            throw new IllegalStateException("No NetigsoFramework found, is org.netbeans.core.netigso module enabled?"); // NOI18N
+        }
+        getDefault().prepare(lkp, toEnable);
         toEnable.clear();
-    }
-
-    static void turnOn() {
         delayedInit();
         if (framework != null) {
             framework.start();

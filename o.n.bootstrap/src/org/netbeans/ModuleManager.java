@@ -853,9 +853,7 @@ public final class ModuleManager {
                     installer.prepare(m);
                     ev.log(Events.PERF_END, "ModuleInstaller.prepare " + m.getCodeName() ); // NOI18N
                 }
-                NetigsoFramework.turnOn();
                 ev.log(Events.PERF_END, "module preparation" ); // NOI18N
-
             } catch (InvalidException ie) {
                 // Remember that there was a problem with this guy.
                 Module bad = ie.getModule();
@@ -927,6 +925,7 @@ public final class ModuleManager {
                 Util.err.fine("enable: no class loader yet, not appending");
             }
             Util.err.fine("enable: continuing to installation");
+            NetigsoFramework.turnOn(classLoader);
             installer.load(toEnable);
         }
         {
