@@ -112,7 +112,7 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
         private final DataObject dobj;
         private final CsmFile file;
         private final WeakReference<StyledDocument> weakDoc;
-        private final Collection<OverriddeAnnotation> annotations = new ArrayList<OverriddeAnnotation>();
+        private final Collection<BaseAnnotation> annotations = new ArrayList<BaseAnnotation>();
 
         private PhaseRunnerImpl(DataObject dobj,CsmFile file, Document doc){
             this.dobj = dobj;
@@ -141,18 +141,18 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
         }
 
         private void addAnnotations(CsmFile file, StyledDocument doc, DataObject dobj) {
-            final Collection<OverriddeAnnotation> toAdd = new ArrayList<OverriddeAnnotation>();
-            OverriddeAnnotation.LOGGER.log(Level.FINE, ">> Computing annotations for {0}", file);
+            final Collection<BaseAnnotation> toAdd = new ArrayList<BaseAnnotation>();
+            BaseAnnotation.LOGGER.log(Level.FINE, ">> Computing annotations for {0}", file);
             long time = System.currentTimeMillis();
-            ComputeAnnotations.getInstance(file).computeAnnotations(toAdd, doc, dobj);
+            ComputeAnnotations.getInstance(file, doc, dobj).computeAnnotations(toAdd);
             time = System.currentTimeMillis() - time;
-            OverriddeAnnotation.LOGGER.log(Level.FINE, "<< Computed sannotations for {0} in {1} ms", new Object[] { file, time });
-            final Collection<OverriddeAnnotation> toClear;
+            BaseAnnotation.LOGGER.log(Level.FINE, "<< Computed sannotations for {0} in {1} ms", new Object[] { file, time });
+            final Collection<BaseAnnotation> toClear;
             AnnotationsHolder.get(dobj.getPrimaryFile()).setNewAnnotations(toAdd);
         }
 
         private void clearAnnotations(StyledDocument doc, DataObject dobj) {
-            AnnotationsHolder.get(dobj.getPrimaryFile()).setNewAnnotations(Collections.<OverriddeAnnotation>emptyList());
+            AnnotationsHolder.get(dobj.getPrimaryFile()).setNewAnnotations(Collections.<BaseAnnotation>emptyList());
         }
 
 

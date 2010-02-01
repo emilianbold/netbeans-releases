@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,47 +31,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.navigation.switchfiles;
+package org.netbeans.modules.cnd.navigation.overrides;
 
-import java.io.File;
 import java.util.Collection;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
+import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
-public class CppSwitchTestCase extends TraceModelTestBase {
+/*package*/ class OverrideAnnotation extends BaseAnnotation {
 
-    public CppSwitchTestCase(String testName) {
-        super(testName);
+    public OverrideAnnotation(StyledDocument document, CsmFunction decl, Collection<? extends CsmOffsetableDeclaration> baseDecls, Collection<? extends CsmOffsetableDeclaration> descDecls) {
+        super(document, decl, baseDecls, descDecls);
     }
 
-    public void testTwoNamesakes() throws Exception {
-        String source = "welcome.cc"; // NOI18N
-        performTest("", source + ".dat", source + ".err"); // NOI18N
-    }
-
-    protected @Override void postTest(String[] args, Object... params) {
-        CsmProject project = getCsmProject();
-        Collection<CsmFile> files = project.getAllFiles();
-        assert files.size() > 0;
-        for (CsmFile csmFile : files) {
-            if (csmFile.getAbsolutePath().toString().indexOf("welcome.cc")!=-1) { //NOI18N
-                CsmFile f = CppSwitchAction.findHeader(csmFile);
-                assertNotNull("Correspondent header not found", f);
-                assertNotSame("Wrong header was found", f.getAbsolutePath().toString().indexOf("dir1" + File.separator +"welcome.h"), -1);
-            } else if (csmFile.getAbsolutePath().toString().indexOf("welcome.h")!=-1) { //NOI18N
-                CsmFile f = CppSwitchAction.findSource(csmFile);
-                assert f!=null && f.getAbsolutePath().toString().indexOf("welcome.cc")!=-1; //NOI18N
-            } else {
-                assert(false);
-            }
+    @Override
+    public String getShortDescription() {
+        if (baseUIDs.isEmpty() && !descUIDs.isEmpty()) {
+            return NbBundle.getMessage(getClass(), "LAB_IsOverriden");
+        } else if (!baseUIDs.isEmpty() && descUIDs.isEmpty()) {
+            return NbBundle.getMessage(getClass(), "LAB_Overrides",
+                    (baseUIDs.size() == 1) ? baseUIDs.iterator().next().getObject().getQualifiedName().toString() : "..."); //NOI18N
+        } else if (!baseUIDs.isEmpty() && !descUIDs.isEmpty()) {
+            return NbBundle.getMessage(getClass(), "LAB_OverridesAndIsOverriden");
+        } else { //both are empty
+            throw new IllegalArgumentException("Either overrides or overridden should be non empty"); //NOI18N
         }
     }
-    
+
+    @Override
+    protected CharSequence debugTypeStirng() {
+        switch (type) {
+            case OVERRIDES:
+                return "OVERRIDES";
+            case IS_OVERRIDDEN:
+                return "OVERRIDDEN";
+            case COMBINED:
+                return "OVERRIDES_AND_OVERRIDDEN";
+            default:
+                return "???";
+        }
+    }
 }
