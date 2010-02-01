@@ -734,7 +734,7 @@ public final class Kenai implements Comparable<Kenai> {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 79 * hash + (this.getUrl() != null ? this.getUrl().hashCode() : 0);
+        hash = 79 * hash + (this.getUrl() != null ? this.getUrl().toString().hashCode() : 0);
         return hash;
     }
 
