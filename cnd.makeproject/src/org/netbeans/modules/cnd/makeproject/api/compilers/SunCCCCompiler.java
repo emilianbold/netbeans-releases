@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -55,7 +56,7 @@ public abstract class SunCCCCompiler extends CCCCompiler {
     protected SunCCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
     }
-    
+
     protected String getCompilerStderrCommand() {
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null) {

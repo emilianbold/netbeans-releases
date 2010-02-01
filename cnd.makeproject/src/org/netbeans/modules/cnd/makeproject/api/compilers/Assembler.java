@@ -54,9 +54,7 @@ public class Assembler extends BasicCompiler {
 
     @Override
     public Assembler createCopy() {
-        Assembler copy = new Assembler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath());
-        copy.setName(getName());
-        return copy;
+        return new Assembler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
     }
 
     public static Assembler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {

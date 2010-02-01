@@ -177,8 +177,7 @@ public final class CompilerSetPreferences {
                 if (toolFlavorName != null) {
                     toolFlavor = CompilerFlavorImpl.toFlavor(toolFlavorName, pform);
                 }
-                Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(env, toolFlavor, ToolKind.getTool(toolKind), "", toolDisplayName, toolPath);
-                tool.setName(toolName);
+                Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(env, toolFlavor, ToolKind.getTool(toolKind), toolName, toolDisplayName, toolPath);
                 cs.addTool(tool);
             }
             css.add(cs);
@@ -233,9 +232,8 @@ public final class CompilerSetPreferences {
                     toolFlavor = CompilerFlavorImpl.toFlavor(toolFlavorName, PlatformTypes.getDefaultPlatform());
                 }
                 Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(ExecutionEnvironmentFactory.getLocal(),
-                        toolFlavor, ToolKind.getTool(toolKind), "", toolDisplayName, toolPath); //NOI18N
-                tool.setName(toolName);
-                (cs).addTool(tool);
+                        toolFlavor, ToolKind.getTool(toolKind), toolName, toolDisplayName, toolPath); //NOI18N
+                cs.addTool(tool);
             }
             CompilerSetManagerImpl.completeCompilerSet(ExecutionEnvironmentFactory.getLocal(), cs, css);
             css.add(cs);

@@ -55,9 +55,7 @@ public class GNUDebuggerTool extends Tool {
 
     @Override
     public GNUDebuggerTool createCopy() {
-        GNUDebuggerTool copy = new GNUDebuggerTool(getExecutionEnvironment(), getFlavor(), "", getDisplayName(), getPath());
-        copy.setName(getName());
-        return copy;
+        return new GNUDebuggerTool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
     }
 
     public static GNUDebuggerTool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {

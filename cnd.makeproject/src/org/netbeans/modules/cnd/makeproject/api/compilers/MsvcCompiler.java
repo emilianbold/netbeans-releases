@@ -60,8 +60,7 @@ public class MsvcCompiler extends GNUCCompiler {
 
    @Override
    public MsvcCompiler createCopy() {
-       MsvcCompiler copy = new MsvcCompiler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath()); // NOI18N
-       copy.setName(getName());
+       MsvcCompiler copy = new MsvcCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath()); // NOI18N
        if (isReady()) {
            copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
            copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());

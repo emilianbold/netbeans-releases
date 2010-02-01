@@ -1081,15 +1081,6 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     }
 
     @Override
-    public List<String> getCompilerSetNames() {
-        List<String> names = new ArrayList<String>();
-        for (CompilerSet cs : getCompilerSets()) {
-            names.add(cs.getName());
-        }
-        return names;
-    }
-
-    @Override
     public void setDefault(CompilerSet newDefault) {
         boolean set = false;
         for (CompilerSet cs : getCompilerSets()) {

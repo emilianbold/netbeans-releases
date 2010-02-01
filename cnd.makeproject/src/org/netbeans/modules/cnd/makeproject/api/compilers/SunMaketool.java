@@ -55,9 +55,7 @@ public final class SunMaketool extends Tool {
 
     @Override
     public SunMaketool createCopy() {
-        SunMaketool copy = new SunMaketool(getExecutionEnvironment(), getFlavor(), "", getDisplayName(), getPath());
-        copy.setName(getName());
-        return copy;
+        return new SunMaketool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
     }
 
     public static SunMaketool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {
