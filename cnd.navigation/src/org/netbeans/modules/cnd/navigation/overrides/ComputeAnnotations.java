@@ -41,6 +41,7 @@ package org.netbeans.modules.cnd.navigation.overrides;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -49,6 +50,8 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -61,16 +64,24 @@ import org.openide.loaders.DataObject;
  */
 public class ComputeAnnotations {
 
-    private static final ComputeAnnotations INSTANCE = new ComputeAnnotations();
-
-    private ComputeAnnotations() {
+    public static ComputeAnnotations getInstance(CsmFile csmFile) {
+        return new ComputeAnnotations(csmFile);
     }
 
-    public static ComputeAnnotations getInstance() {
-        return INSTANCE;
+    private final CsmProject csmProject;
+    private final CsmFile csmFile;
+    private Map<CsmUID<CsmClass>, Collection<CsmUID<CsmClass>>> hierarchy;
+
+    private ComputeAnnotations(CsmFile csmFile) {
+       this.csmFile = csmFile;
+       this.csmProject = csmFile.getProject();
     }
 
-    public void computeAnnotations(
+    public void computeAnnotations(Collection<OverriddeAnnotation> toAdd, StyledDocument doc, DataObject dobj) {
+        computeAnnotations(csmFile.getDeclarations(), toAdd, csmFile, doc, dobj);
+    }
+
+    private void computeAnnotations(
             Collection<? extends CsmOffsetableDeclaration> toProcess,
             Collection<OverriddeAnnotation> toAdd, CsmFile file, StyledDocument doc, DataObject dobj) {
 

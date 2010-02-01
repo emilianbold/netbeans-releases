@@ -144,7 +144,7 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
             final Collection<OverriddeAnnotation> toAdd = new ArrayList<OverriddeAnnotation>();
             OverriddeAnnotation.LOGGER.log(Level.FINE, ">> Computing annotations for {0}", file);
             long time = System.currentTimeMillis();
-            ComputeAnnotations.getInstance().computeAnnotations(file.getDeclarations(), toAdd, file, doc, dobj);
+            ComputeAnnotations.getInstance(file).computeAnnotations(toAdd, doc, dobj);
             time = System.currentTimeMillis() - time;
             OverriddeAnnotation.LOGGER.log(Level.FINE, "<< Computed sannotations for {0} in {1} ms", new Object[] { file, time });
             final Collection<OverriddeAnnotation> toClear;
