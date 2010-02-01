@@ -60,13 +60,7 @@ import org.openide.util.NbBundle;
 
     @Override
     public String getShortDescription() {
-        String text;
-        if(baseUIDs.size() == 1) {
-            text = baseUIDs.iterator().next().getObject().getQualifiedName().toString();
-        } else {
-            text = "..."; //NOI18N
-        }
-        return NbBundle.getMessage(getClass(), "LAB_Extends", text);
+        return NbBundle.getMessage(getClass(), "LAB_Extended");
     }
 
     @Override
