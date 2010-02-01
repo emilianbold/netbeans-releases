@@ -60,7 +60,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerSetFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -137,7 +136,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
                 "dist/Debug/.../libhello3lib." + libsuffix));
         conf.getLinkerConfiguration().getLibrariesConfiguration().add(projectItem);
 
-        CompilerFlavor flavor = CompilerFlavorAccessor.toFlavor(flavorName, platform);
+        CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);
         CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
         CompilerSet compilerSetold = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSet("MyCompilerSet");
         if (compilerSetold != null) {
@@ -204,7 +203,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         makeConfigurationDescriptor.init(conf);
         makeConfigurationDescriptor.getLogicalFolders().addItem(new Item("test.cc"));
 
-        CompilerFlavor flavor = CompilerFlavorAccessor.toFlavor(flavorName, platform);
+        CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);
         CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
         CompilerSet compilerSetold = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSet("MyCompilerSet");
         if (compilerSetold != null) {

@@ -51,7 +51,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -141,7 +140,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
             nm = name;
             fl = name;
         }
-        setValue(CompilerFlavorAccessor.mapOldToNew(nm, version), CompilerFlavorAccessor.mapOldToNew(fl, version));
+        setValue(CompilerSet2Configuration.mapOldToNew(nm, version), CompilerSet2Configuration.mapOldToNew(fl, version));
     }
 
     public void setValue(String name, String flavor) {
@@ -357,5 +356,32 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
                 }
             });
         }
+    }
+
+    private static String mapOldToNew(String flavor, int version) {
+        if (version <= 43) {
+            if (flavor.equals("Sun")) { // NOI18N
+                return "SunStudio"; // NOI18N
+            } else if (flavor.equals("SunExpress")) { // NOI18N
+                return "SunStudioExpress"; // NOI18N
+            } else if (flavor.equals("Sun12")) { // NOI18N
+                return "SunStudio_12"; // NOI18N
+            } else if (flavor.equals("Sun11")) { // NOI18N
+                return "SunStudio_11"; // NOI18N
+            } else if (flavor.equals("Sun10")) { // NOI18N
+                return "SunStudio_10"; // NOI18N
+            } else if (flavor.equals("Sun9")) { // NOI18N
+                return "SunStudio_9"; // NOI18N
+            } else if (flavor.equals("Sun8")) { // NOI18N
+                return "SunStudio_8"; // NOI18N
+            } else if (flavor.equals("DJGPP")) { // NOI18N
+                return "GNU"; // NOI18N
+            } else if (flavor.equals("Interix")) { // NOI18N
+                return "GNU"; // NOI18N
+            } else if (flavor.equals(CompilerSet.UNKNOWN)) {
+                return "GNU"; // NOI18N
+            }
+        }
+        return flavor;
     }
 }

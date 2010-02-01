@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescript
 /**
  * Recognized (and prioritized) types of compiler sets
  */
-public final class CompilerFlavorImpl implements CompilerFlavor {
+public final class CompilerFlavorImpl extends CompilerFlavor {
 
     private static final List<CompilerFlavorImpl> flavors = new ArrayList<CompilerFlavorImpl>();
     private static final Map<Integer, CompilerFlavorImpl> unknown = new HashMap<Integer, CompilerFlavorImpl>();

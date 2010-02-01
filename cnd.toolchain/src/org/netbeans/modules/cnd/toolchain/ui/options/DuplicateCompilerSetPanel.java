@@ -47,7 +47,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerFlavorImpl;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
         initComponents();
         this.csm = csm;
         
-        List<CompilerFlavor> list = CompilerFlavorAccessor.getFlavors(csm.getPlatform());
+        List<CompilerFlavor> list = CompilerFlavorImpl.getFlavors(csm.getPlatform());
         for (CompilerFlavor cf : list) {
             cbFamily.addItem(cf);
         }
