@@ -45,7 +45,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.makefile.model.MakefileRule;
 import org.openide.actions.OpenAction;
-import org.openide.actions.PropertiesAction;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
@@ -91,8 +90,7 @@ public final class MakefileTargetNode extends AbstractNode {
     @Override
     public SystemAction[] getActions(boolean context) {
         return new SystemAction[] {
-            SystemAction.get(OpenAction.class),
-            SystemAction.get(PropertiesAction.class)
+            SystemAction.get(OpenAction.class)
         };
     }
 

@@ -48,10 +48,12 @@ import org.netbeans.modules.cnd.makefile.model.MakefileElement;
 import org.netbeans.modules.cnd.makefile.model.MakefileRule;
 import org.netbeans.modules.cnd.makefile.parser.MakefileModel;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.ListView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * @author Alexey Vladykin
@@ -60,11 +62,14 @@ public class MakefileNavigatorPanelUI extends JPanel implements ExplorerManager.
 
     private final ExplorerManager manager;
     private final ListView view;
+    private final Lookup lookup;
 
     public MakefileNavigatorPanelUI() {
         super(new BorderLayout());
 
         manager = new ExplorerManager();
+        lookup = ExplorerUtils.createLookup(manager, getActionMap());
+
         view = new ListView();
         add(view, BorderLayout.CENTER);
     }
@@ -72,6 +77,10 @@ public class MakefileNavigatorPanelUI extends JPanel implements ExplorerManager.
     @Override
     public ExplorerManager getExplorerManager() {
         return manager;
+    }
+
+    public Lookup getLookup() {
+        return lookup;
     }
 
     public void setWaiting() {
