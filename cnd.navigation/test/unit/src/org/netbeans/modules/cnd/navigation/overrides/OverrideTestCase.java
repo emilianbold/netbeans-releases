@@ -94,7 +94,7 @@ public class OverrideTestCase extends ProjectBasedTestCase {
         CsmFile csmFile = getCsmFile(testSourceFile);
         assertNotNull(csmFile);
         List<OverriddeAnnotation> annotations = new ArrayList<OverriddeAnnotation>();
-        ComputeAnnotations.getInstance().computeAnnotations(csmFile.getDeclarations(), annotations, csmFile, doc, dao);
+        ComputeAnnotations.getInstance(csmFile).computeAnnotations(annotations, doc, dao);
         Collections.sort(annotations, new Comparator<OverriddeAnnotation>() {
             @Override
             public int compare(OverriddeAnnotation o1, OverriddeAnnotation o2) {
@@ -136,14 +136,14 @@ public class OverrideTestCase extends ProjectBasedTestCase {
             sb.append(' ');
             boolean first = true;
             for (OverriddeAnnotation.Element element : anno.getElements()) {
-                int gotoLine = element.method.getStartPosition().getLine();
-                String gotoFile = element.method.getContainingFile().getName().toString();
+                int gotoLine = element.declaration.getStartPosition().getLine();
+                String gotoFile = element.declaration.getContainingFile().getName().toString();
                 if (first) {
                     first = false;
                 } else {
                     sb.append(',');
                 }
-                sb.append(element.method.getQualifiedName());
+                sb.append(element.declaration.getQualifiedName());
                 sb.append(' ');
                 sb.append(gotoFile);
                 sb.append(':');

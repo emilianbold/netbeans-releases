@@ -67,6 +67,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -202,7 +203,7 @@ public class OverriddeAnnotation extends Annotation {
     }
 
     private static void openSource(Element element) {
-        CsmUtilities.openSource(element.method);
+        CsmUtilities.openSource(element.declaration);
     }
 
 
@@ -246,16 +247,21 @@ public class OverriddeAnnotation extends Annotation {
     /*package-local for test purposes*/
     static class Element implements Comparable<Element> {
 
-        public final CsmMethod method;
+        public final CsmOffsetableDeclaration declaration;
         public final Direction direction;
         
         public Element(CsmMethod method, Direction direction) {
-            this.method = method;
+            this.declaration = method;
+            this.direction = direction;
+        }
+
+        public Element(CsmClass cls, Direction direction) {
+            this.declaration = cls;
             this.direction = direction;
         }
 
         public String getDisplayName() {
-            return method.getQualifiedName().toString();
+            return declaration.getQualifiedName().toString();
         }
 
         private Image getBadge() {
@@ -270,7 +276,7 @@ public class OverriddeAnnotation extends Annotation {
         }
 
         public Icon getIcon() {
-            ImageIcon icon = CsmImageLoader.getIcon(method);
+            ImageIcon icon = CsmImageLoader.getIcon(declaration);
             Image badge = getBadge();
             if (badge == null) {
                 return icon;
@@ -281,7 +287,7 @@ public class OverriddeAnnotation extends Annotation {
 
         @Override
         public String toString() {
-            return method.getQualifiedName().toString();
+            return declaration.getQualifiedName().toString();
         }
 
         @Override
@@ -290,7 +296,7 @@ public class OverriddeAnnotation extends Annotation {
                 return -1;
             } else {
                 if (o.direction == this.direction) {
-                    return method.getQualifiedName().toString().compareTo(o.method.getQualifiedName().toString());
+                    return declaration.getQualifiedName().toString().compareTo(o.declaration.getQualifiedName().toString());
                 } else {
                     return this.direction == Direction.BASE ? -1 : 1;
                 }
@@ -299,6 +305,7 @@ public class OverriddeAnnotation extends Annotation {
     }
 
     private static class RendererImpl extends DefaultListCellRenderer {
+        @Override
         public Component getListCellRendererComponent(
                 JList list,
                 Object value,
@@ -346,6 +353,9 @@ public class OverriddeAnnotation extends Annotation {
             list.setModel(model);
             list.setSelectedIndex(0);
             list.setCellRenderer(new RendererImpl());
+            if (model.getSize() < 10) {
+                list.setVisibleRowCount(model.getSize());
+            }
 
             list.addKeyListener(new java.awt.event.KeyAdapter() {
                 @Override
