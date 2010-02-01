@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.text.NbDocument;
 
 /**
  *
@@ -66,23 +65,35 @@ public class OverrideTestCase extends ProjectBasedTestCase {
         super(testName);
     }
 
-    public void testPrimitive() throws Exception {
-        performTest("primitive.cc");
+    public void testPrimitiveOverrides() throws Exception {
+        performTest("primitive.cc", "\\d*:OVERRID.*", ".overrides.ref");
     }
 
-    public void testProperParentSingle() throws Exception {
-        performTest("proper_parent_single.cc"); // , "\\d*:OVERRIDES .*");
+    public void testProperOverridesParentSingle() throws Exception {
+        performTest("proper_parent_single.cc", "\\d*:OVERRID.*", ".overrides.ref");
     }
 
-    public void testProperParentMulty() throws Exception {
-        performTest("proper_parent_multy.cc"); // , "\\d*:OVERRIDES .*");
+    public void testProperOverridesParentMulty() throws Exception {
+        performTest("proper_parent_multy.cc", "\\d*:OVERRID.*", ".overrides.ref");
     }
 
-    private void performTest(String sourceFileName) throws Exception {
-        performTest(sourceFileName, null);
+    public void testPrimitiveClasses() throws Exception {
+        performTest("primitive.cc", "\\d*:INHERIT.*", ".extends.ref");
     }
 
-    private void performTest(String sourceFileName, String patternString) throws Exception {
+    public void testClassesSingleInh() throws Exception {
+        performTest("proper_parent_single.cc", "\\d*:INHERIT.*", ".extends.ref");
+    }
+
+    public void testClassesMultyInh() throws Exception {
+        performTest("proper_parent_multy.cc", "\\d*:INHERIT.*", ".extends.ref");
+    }
+
+    public void testSingleInhTree() throws Exception {
+        performTest("single_inh_tree.cc", "\\d*:INHERIT.*", ".extends.ref");
+    }
+
+    private void performTest(String sourceFileName, String patternString, String refPostfix) throws Exception {
         File testSourceFile = getDataFile(sourceFileName);
         assertNotNull(testSourceFile);
         StyledDocument doc = (StyledDocument) getBaseDocument(testSourceFile);
@@ -93,16 +104,16 @@ public class OverrideTestCase extends ProjectBasedTestCase {
         assertNotNull(dao);
         CsmFile csmFile = getCsmFile(testSourceFile);
         assertNotNull(csmFile);
-        List<OverriddeAnnotation> annotations = new ArrayList<OverriddeAnnotation>();
-        ComputeAnnotations.getInstance(csmFile).computeAnnotations(annotations, doc, dao);
-        Collections.sort(annotations, new Comparator<OverriddeAnnotation>() {
+        List<BaseAnnotation> annotations = new ArrayList<BaseAnnotation>();
+        ComputeAnnotations.getInstance(csmFile, doc, dao).computeAnnotations(annotations);
+        Collections.sort(annotations, new Comparator<BaseAnnotation>() {
             @Override
-            public int compare(OverriddeAnnotation o1, OverriddeAnnotation o2) {
+            public int compare(BaseAnnotation o1, BaseAnnotation o2) {
                 return o1.getPosition().getOffset() - o2.getPosition().getOffset();
             }
         });
 
-        String goldenFileName = sourceFileName + ".ref";
+        String goldenFileName = sourceFileName + refPostfix;
         String dataFileName = sourceFileName + ".dat";
         File workDir = getWorkDir();
         File output = new File(workDir, dataFileName); //NOI18N
@@ -125,30 +136,10 @@ public class OverrideTestCase extends ProjectBasedTestCase {
         }
     }
 
-    private void dumpAnnotations(Collection<OverriddeAnnotation> annotations, StyledDocument doc, PrintStream ps, String patternString) {
+    private void dumpAnnotations(Collection<BaseAnnotation> annotations, StyledDocument doc, PrintStream ps, String patternString) {
         Pattern pattern = (patternString == null) ? null : Pattern.compile(patternString);
-        for (OverriddeAnnotation anno : annotations) {
-            StringBuilder sb = new StringBuilder();
-            int line = NbDocument.findLineNumber(doc, anno.getPosition().getOffset()) + 1; // convert to 1-based
-            sb.append(line);
-            sb.append(':');
-            sb.append(anno.getType());
-            sb.append(' ');
-            boolean first = true;
-            for (OverriddeAnnotation.Element element : anno.getElements()) {
-                int gotoLine = element.declaration.getStartPosition().getLine();
-                String gotoFile = element.declaration.getContainingFile().getName().toString();
-                if (first) {
-                    first = false;
-                } else {
-                    sb.append(',');
-                }
-                sb.append(element.declaration.getQualifiedName());
-                sb.append(' ');
-                sb.append(gotoFile);
-                sb.append(':');
-                sb.append(gotoLine);
-            }
+        for (BaseAnnotation anno : annotations) {
+            CharSequence sb = anno.debugDump();
             if (pattern == null || pattern.matcher(sb).matches()) {
                 ps.printf("%s\n", sb);
             }
