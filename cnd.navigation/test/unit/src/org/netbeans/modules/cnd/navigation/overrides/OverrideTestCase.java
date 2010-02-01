@@ -71,11 +71,11 @@ public class OverrideTestCase extends ProjectBasedTestCase {
     }
 
     public void testProperParentSingle() throws Exception {
-        performTest("proper_parent_single.cc", "\\d*:OVERRIDES .*");
+        performTest("proper_parent_single.cc"); // , "\\d*:OVERRIDES .*");
     }
 
     public void testProperParentMulty() throws Exception {
-        performTest("proper_parent_multy.cc", "\\d*:OVERRIDES .*");
+        performTest("proper_parent_multy.cc"); // , "\\d*:OVERRIDES .*");
     }
 
     private void performTest(String sourceFileName) throws Exception {
@@ -103,8 +103,9 @@ public class OverrideTestCase extends ProjectBasedTestCase {
         });
 
         String goldenFileName = sourceFileName + ".ref";
+        String dataFileName = sourceFileName + ".dat";
         File workDir = getWorkDir();
-        File output = new File(workDir, goldenFileName); //NOI18N        
+        File output = new File(workDir, dataFileName); //NOI18N
         PrintStream streamOut = new PrintStream(output);
         dumpAnnotations(annotations, doc, streamOut, patternString);
         streamOut.close();

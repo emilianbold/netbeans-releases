@@ -44,12 +44,14 @@ made subject to such option by the copyright holder.
           "-//NetBeans//DTD annotation type 1.0//EN"
           "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
 <type name="org-netbeans-modules-cnd-override-is-overridden-combined"
-      description_key="LAB_IsOverridenAnnotation-override-is-overridden-combined"
-      localizing_bundle="org.netbeans.modules.cnd.navigation.resources.Bundle"
-      visible="true"
-      glyph="nbresloc:/org/netbeans/modules/cnd/navigation/resources/override-is-overridden-combined.png"/>
+        description_key="LAB_IsOverridenAnnotation-override-is-overridden-combined"
+        localizing_bundle="org.netbeans.modules.cnd.navigation.resources.Bundle"
+        visible="true"
+        glyph="nbresloc:/org/netbeans/modules/cnd/navigation/resources/combined-override-is-overridden.png">
+    <!--
     <combination tiptext_key="TP_COMBINED-override-is-overridden-combined">
         <combine annotationtype="org-netbeans-modules-cnd-is_overridden"/>
         <combine annotationtype="org-netbeans-modules-cnd-overrides"/>
     </combination>
+    -->
 </type>

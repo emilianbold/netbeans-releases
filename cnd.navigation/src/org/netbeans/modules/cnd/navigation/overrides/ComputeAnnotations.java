@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.loaders.DataObject;
-import org.openide.util.NbBundle;
 
 /**
  * A class that computes annotations -
@@ -76,10 +75,7 @@ public class ComputeAnnotations {
 
         for (CsmOffsetableDeclaration decl : toProcess) {
             if (CsmKindUtilities.isFunction(decl)) {
-                OverriddeAnnotation anno = computeAnnotation((CsmFunction) decl, doc);
-                if (anno != null) {
-                    toAdd.add(anno);
-                }
+                computeAnnotation((CsmFunction) decl, doc, toAdd);
             } else if (CsmKindUtilities.isClass(decl)) {
                 computeAnnotations(((CsmClass) decl).getMembers(), toAdd, file, doc, dobj);
 
@@ -89,7 +85,7 @@ public class ComputeAnnotations {
         }
     }
 
-    private OverriddeAnnotation computeAnnotation(CsmFunction func, StyledDocument doc) {
+    private void computeAnnotation(CsmFunction func, StyledDocument doc, Collection<OverriddeAnnotation> toAdd) {
         if (CsmKindUtilities.isMethod(func)) {
             CsmMethod meth = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration(func);
             final Collection<? extends CsmMethod> baseMethods = CsmVirtualInfoQuery.getDefault().getFirstBaseDeclarations(meth);
@@ -100,20 +96,11 @@ public class ComputeAnnotations {
                     OverriddeAnnotation.LOGGER.log(Level.FINEST, "    {0}", toString(baseMethod));
                 }
             }
-            if (!baseMethods.isEmpty()) {
-                boolean itself = baseMethods.size() == 1 && baseMethods.iterator().next().equals(func);
-                if (!itself) {
-                    CsmMethod m = baseMethods.iterator().next(); //TODO: XXX
-                    String desc = NbBundle.getMessage(getClass(), "LAB_Overrides", m.getQualifiedName().toString());
-                    return new OverriddeAnnotation(doc, func,  OverriddeAnnotation.AnnotationType.OVERRIDES, desc, baseMethods);
-                }
-            }
-            if (!overriddenMethods.isEmpty()) {
-                String desc = NbBundle.getMessage(getClass(), "LAB_IsOverriden");
-                return new OverriddeAnnotation(doc, func,  OverriddeAnnotation.AnnotationType.IS_OVERRIDDEN, desc, overriddenMethods);
+            baseMethods.remove(meth);
+            if (!baseMethods.isEmpty() || !overriddenMethods.isEmpty()) {
+                toAdd.add(new OverriddeAnnotation(doc, func, baseMethods, overriddenMethods));
             }
         }
-        return null;
     }
 
     private static CharSequence toString(CsmFunction func) {

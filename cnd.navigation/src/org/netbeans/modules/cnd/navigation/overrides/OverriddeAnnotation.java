@@ -50,7 +50,6 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -58,7 +57,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
@@ -73,6 +71,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.ui.PopupUtil;
 import org.openide.text.Annotation;
 import org.openide.text.NbDocument;
+import org.openide.util.NbBundle;
 
 /**
  * @author Vladimir Kvashin
@@ -82,7 +81,8 @@ public class OverriddeAnnotation extends Annotation {
 
     public enum AnnotationType {
         IS_OVERRIDDEN,
-        OVERRIDES
+        OVERRIDES,
+        COMBINED
     }
 
     /*package*/ static final Logger LOGGER = Logger.getLogger("cnd.overrides.annotations.logger"); // NOI18N
@@ -91,18 +91,35 @@ public class OverriddeAnnotation extends Annotation {
     private final Position pos;
     private final String shortDescription;
     private final AnnotationType type;
-    private final Collection<CsmUID<CsmMethod>> methodUIDs;
+    private final Collection<CsmUID<CsmMethod>> baseMethodUIDs;
+    private final Collection<CsmUID<CsmMethod>> descMethodUIDs;
     
-    public OverriddeAnnotation(StyledDocument document, CsmFunction func, AnnotationType type,
-            String shortDescription, Collection<? extends CsmMethod> methods) {
+    public OverriddeAnnotation(StyledDocument document, CsmFunction func,
+            Collection<? extends CsmMethod> baseMethods,
+            Collection<? extends CsmMethod> descMethods) {
         assert func != null;
         this.document = document;
         this.pos = new DeclarationPosition(func);
-        this.type = type;
-        this.shortDescription = shortDescription;
-        methodUIDs = new ArrayList<CsmUID<CsmMethod>>(methods.size());
-        for (CsmMethod m : methods) {
-            methodUIDs.add(UIDs.get(m));
+        if (baseMethods.isEmpty() && !descMethods.isEmpty()) {
+            type = AnnotationType.IS_OVERRIDDEN;
+            shortDescription = NbBundle.getMessage(getClass(), "LAB_IsOverriden");
+        } else if (!baseMethods.isEmpty() && descMethods.isEmpty()) {
+            type = AnnotationType.OVERRIDES;
+            shortDescription = NbBundle.getMessage(getClass(), "LAB_Overrides", 
+                    (baseMethods.size() == 1) ? baseMethods.iterator().next().getQualifiedName().toString() : "..."); //NOI18N
+        } else if (!baseMethods.isEmpty() && !descMethods.isEmpty()) {
+            type = AnnotationType.COMBINED;
+            shortDescription = NbBundle.getMessage(getClass(), "LAB_Combined");
+        } else { //both are empty
+            throw new IllegalArgumentException("Either overrides or overridden should be non empty"); //NOI18N
+        }
+        baseMethodUIDs = new ArrayList<CsmUID<CsmMethod>>(baseMethods.size());
+        for (CsmMethod m : baseMethods) {
+            baseMethodUIDs.add(UIDs.get(m));
+        }
+        descMethodUIDs = new ArrayList<CsmUID<CsmMethod>>(descMethods.size());
+        for (CsmMethod m : descMethods) {
+            descMethodUIDs.add(UIDs.get(m));
         }
     }
     
@@ -118,6 +135,8 @@ public class OverriddeAnnotation extends Annotation {
                 return "org-netbeans-modules-cnd-is_overridden"; //NOI18N
             case OVERRIDES:
                 return "org-netbeans-modules-cnd-overrides"; //NOI18N
+            case COMBINED:
+                return "org-netbeans-modules-cnd-override-is-overridden-combined"; //NOI18N
             default:
                 throw new IllegalStateException("Currently not implemented: " + type); //NOI18N
         }
@@ -142,7 +161,7 @@ public class OverriddeAnnotation extends Annotation {
     
     public String debugDump() {
         List<String> elementNames = new ArrayList<String>();
-        for(CsmUID<CsmMethod> uid : methodUIDs) {
+        for(CsmUID<CsmMethod> uid : baseMethodUIDs) {
             elementNames.add(uid.toString());
         }
         Collections.sort(elementNames);
@@ -167,7 +186,7 @@ public class OverriddeAnnotation extends Annotation {
         Collection<Element> elements = getElements();
         if (elements.size() == 1) {
             openSource(elements.iterator().next());
-        } else if (methodUIDs.size() > 1) {
+        } else if (elements.size() > 1) {
             String caption = getShortDescription();
             PopupUtil.showPopup(new Popup(caption, elements), caption, position.x, position.y, true, 0);
         } else {
@@ -186,9 +205,12 @@ public class OverriddeAnnotation extends Annotation {
      */
     /*package-local for test purposes*/ 
     List<Element> getElements() {
-        List<Element> elements = new ArrayList<Element>(methodUIDs.size());
-        for (CsmUID<CsmMethod> uid : methodUIDs) {
-            elements.add(new Element(uid.getObject()));
+        List<Element> elements = new ArrayList<Element>(baseMethodUIDs.size() + descMethodUIDs.size());
+        for (CsmUID<CsmMethod> uid : baseMethodUIDs) {
+            elements.add(new Element(uid.getObject(), Direction.BASE));
+        }
+        for (CsmUID<CsmMethod> uid : descMethodUIDs) {
+            elements.add(new Element(uid.getObject(), Direction.DESC));
         }
         Collections.sort(elements);
         return elements;
@@ -209,13 +231,20 @@ public class OverriddeAnnotation extends Annotation {
 
     }
 
+    private static enum Direction {
+        BASE,
+        DESC
+    }
+
     /*package-local for test purposes*/
     static class Element implements Comparable<Element> {
 
         public final CsmMethod method;
+        public final Direction direction;
         
-        public Element(CsmMethod method) {
+        public Element(CsmMethod method, Direction direction) {
             this.method = method;
+            this.direction = direction;
         }
 
         @Override
@@ -225,9 +254,16 @@ public class OverriddeAnnotation extends Annotation {
 
         @Override
         public int compareTo(Element o) {
-            return (o == null) ? -1 : method.getQualifiedName().toString().compareTo(o.method.getQualifiedName().toString());
+            if (o == null) {
+                return -1;
+            } else {
+                if (o.direction == this.direction) {
+                    return method.getQualifiedName().toString().compareTo(o.method.getQualifiedName().toString());
+                } else {
+                    return this.direction == Direction.BASE ? -1 : 1;
+                }
+            }
         }
-
     }
 
     private static class Popup extends JPanel implements FocusListener {
