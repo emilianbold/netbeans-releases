@@ -42,11 +42,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetImpl;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerAccessorImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
@@ -107,7 +108,7 @@ public final class ToolsCacheManager {
                 allCSMs.add(copiedManagers.get(copiedServer));
             }
         }
-        CompilerSetManager.setManagers(allCSMs);
+        CompilerSetManagerAccessorImpl.setManagers(allCSMs);
         copiedManagers.clear();
     }
 
@@ -165,8 +166,8 @@ public final class ToolsCacheManager {
     public synchronized CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env, boolean initialize) {
         CompilerSetManager out = copiedManagers.get(env);
         if (out == null) {
-            out = CompilerSetManager.getDeepCopy(env, initialize);
-            if (out.getCompilerSets().size() == 1 && out.getCompilerSets().get(0).getName().equals(CompilerSet.None)) {
+            out = CompilerSetManagerAccessorImpl.getDeepCopy(env, initialize);
+            if (out.getCompilerSets().size() == 1 && out.getCompilerSets().get(0).getName().equals(CompilerSetImpl.None)) {
                 out.remove(out.getCompilerSets().get(0));
             }
             copiedManagers.put(env, out);

@@ -83,10 +83,15 @@ public final class ToolchainManagerImpl {
     private static final boolean TRACE = Boolean.getBoolean("cnd.toolchain.personality.trace"); // NOI18N
     private static final boolean CREATE_SHADOW = Boolean.getBoolean("cnd.toolchain.personality.create_shadow"); // NOI18N
     public static final String CONFIG_FOLDER = "CND/ToolChain"; // NOI18N
+    private static final ToolchainManagerImpl manager = new ToolchainManagerImpl();
     private List<ToolchainDescriptor> descriptors = new ArrayList<ToolchainDescriptor>();
-    private Logger log = Logger.getLogger("cnd.toolchain.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("cnd.toolchain.logger"); // NOI18N
 
-    public ToolchainManagerImpl() {
+    public static final ToolchainManagerImpl getImpl() {
+        return manager;
+    }
+
+    private ToolchainManagerImpl() {
         initToolchainManager();
     }
 

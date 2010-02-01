@@ -54,10 +54,15 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
+import org.netbeans.modules.cnd.toolchain.spi.CompilerSetFactory;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetImpl;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.DialogDescriptor;
 import org.openide.util.Exceptions;
@@ -88,19 +93,19 @@ import org.openide.util.NbBundle;
             btBaseDirectory.setMnemonic(0);
         }
 
-        List<CompilerFlavor> list = CompilerFlavor.getFlavors(csm.getPlatform());
+        List<CompilerFlavor> list = CompilerFlavorAccessor.getFlavors(csm.getPlatform());
         for (CompilerFlavor cf : list) {
             cbFamily.addItem(cf);
         }
         // add unknown as well
-        cbFamily.addItem(CompilerFlavor.getUnknown(csm.getPlatform()));
+        cbFamily.addItem(CompilerFlavorAccessor.getUnknown(csm.getPlatform()));
         tfName.setText(""); // NOI18N
         validateData();
 
         setPreferredSize(new Dimension(800, 300));
 
-        tfBaseDirectory.getDocument().addDocumentListener(this);
-        tfName.getDocument().addDocumentListener(this);
+        tfBaseDirectory.getDocument().addDocumentListener(AddCompilerSetPanel.this);
+        tfName.getDocument().addDocumentListener(AddCompilerSetPanel.this);
     }
 
     @Override
@@ -133,11 +138,11 @@ import org.openide.util.NbBundle;
         if (local) {
             //This will be invoked in UI thread
             File dirFile = new File(tfBaseDirectory.getText());
-            List<CompilerFlavor> flavors = CompilerSet.getCompilerSetFlavor(dirFile.getAbsolutePath(), csm.getPlatform());
+            List<CompilerFlavor> flavors = CompilerSetFactory.getCompilerSetFlavor(dirFile.getAbsolutePath(), csm.getPlatform());
             if (flavors.size() > 0) {
                 cbFamily.setSelectedItem(flavors.get(0));
             } else {
-                cbFamily.setSelectedItem(CompilerFlavor.getUnknown(csm.getPlatform()));
+                cbFamily.setSelectedItem(CompilerFlavorAccessor.getUnknown(csm.getPlatform()));
             }
             updateDataFamily();
             if (!dialogDescriptor.isValid()) {
@@ -230,7 +235,7 @@ import org.openide.util.NbBundle;
     }
 
     private void updateDataFamily() {
-        CompilerSet.CompilerFlavor flavor = (CompilerSet.CompilerFlavor) cbFamily.getSelectedItem();
+        CompilerFlavor flavor = (CompilerFlavor) cbFamily.getSelectedItem();
         int n = 0;
         String suggestedName = null;
         while (true) {
@@ -252,7 +257,7 @@ import org.openide.util.NbBundle;
 
         if (local) {
             File dirFile = new File(tfBaseDirectory.getText());
-            if (valid && !dirFile.exists() || !dirFile.isDirectory() || !CompilerSetUtils.isPathAbsolute(dirFile.getPath())) {
+            if (valid && !dirFile.exists() || !dirFile.isDirectory() || !ToolUtils.isPathAbsolute(dirFile.getPath())) {
                 valid = false;
                 lbError.setText(getString("BASE_INVALID"));
             }
@@ -268,7 +273,7 @@ import org.openide.util.NbBundle;
         cbFamily.setEnabled(valid);
         tfName.setEnabled(valid);
 
-        String compilerSetName = CompilerSetUtils.replaceOddCharacters(tfName.getText().trim(), '_');
+        String compilerSetName = ToolUtils.replaceOddCharacters(tfName.getText().trim(), '_');
         if (valid && compilerSetName.length() == 0 || compilerSetName.contains("|")) { // NOI18N
             valid = false;
             lbError.setText(getString("NAME_INVALID"));
@@ -313,27 +318,26 @@ import org.openide.util.NbBundle;
         return tfBaseDirectory.getText();
     }
 
-    private CompilerSet.CompilerFlavor getFamily() {
-        return (CompilerSet.CompilerFlavor) cbFamily.getSelectedItem();
+    private CompilerFlavor getFamily() {
+        return (CompilerFlavor) cbFamily.getSelectedItem();
     }
 
     private String getCompilerSetName() {
-        return CompilerSetUtils.replaceOddCharacters(tfName.getText().trim(), '_');
+        return ToolUtils.replaceOddCharacters(tfName.getText().trim(), '_');
     }
 
     public CompilerSet getCompilerSet() {
         String compilerSetName = getCompilerSetName().trim();
         if (local) {
             String baseDirectory = getBaseDirectory();
-            CompilerSet.CompilerFlavor flavor = getFamily();
-
-            CompilerSet cs = CompilerSet.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavor, compilerSetName);
-            CompilerSetManager.getDefault().initCompilerSet(cs);
+            CompilerFlavor flavor = getFamily();
+            CompilerSet cs = CompilerSetFactory.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavor, compilerSetName);
+            ((CompilerSetManagerImpl)CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal())).initCompilerSet(cs);
             return cs;
         } else {
             synchronized (lock) {
                 if (lastFoundRemoteCompilerSet != null){
-                    lastFoundRemoteCompilerSet.setName(compilerSetName);
+                    ((CompilerSetImpl)lastFoundRemoteCompilerSet).setName(compilerSetName);
                     return lastFoundRemoteCompilerSet;
                 }else{
                     return lastFoundRemoteCompilerSet;

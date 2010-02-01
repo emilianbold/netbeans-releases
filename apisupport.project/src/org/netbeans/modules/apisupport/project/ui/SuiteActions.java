@@ -99,6 +99,11 @@ public final class SuiteActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction("run-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_jnlp"), null));
         actions.add(ProjectSensitiveActions.projectCommandAction("debug-jnlp", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_debug_jnlp"), null));
         actions.add(null);
+        if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V69) >= 0 && platform.getModule("org.netbeans.core.netigso") != null) {
+            actions.add(ProjectSensitiveActions.projectCommandAction("build-osgi", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_build_osgi"), null));
+            actions.add(ProjectSensitiveActions.projectCommandAction("run-osgi", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_run_osgi"), null));
+            actions.add(null);
+        }
         if (platform != null && platform.getHarnessVersion().compareTo(HarnessVersion.V55u1) >= 0) {
             actions.add(ProjectSensitiveActions.projectCommandAction("build-mac", NbBundle.getMessage(SuiteActions.class, "SUITE_ACTION_mac"), null));
             actions.add(null);
@@ -141,6 +146,8 @@ public final class SuiteActions implements ActionProvider {
             "build-jnlp", // NOI18N
             "run-jnlp", // NOI18N
             "debug-jnlp", // NOI18N
+            "build-osgi", // NOI18N
+            "run-osgi", // NOI18N
             "build-mac", // NOI18N
             "nbms", // NOI18N
             "profile", // NOI18N
@@ -250,12 +257,8 @@ public final class SuiteActions implements ActionProvider {
                 return null;
             }
             targetNames = new String[] {"debug-jnlp"}; // NOI18N
-        } else if (command.equals("build-mac")) { // NOI18N
-            targetNames = new String[] {"build-mac"}; // NOI18N
-        } else if (command.equals("nbms")) { // NOI18N
-            targetNames = new String[] {"nbms"}; // NOI18N
-        } else if (command.equals("profile")) { // NOI18N
-            targetNames = new String[] {"profile"}; // NOI18N
+        } else if (command.matches("build-osgi|run-osgi|build-mac|nbms|profile")) { // NOI18N
+            targetNames = new String[] {command}; // NOI18N
         } else {
             throw new IllegalArgumentException(command);
         }

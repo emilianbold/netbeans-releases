@@ -50,6 +50,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -134,20 +135,20 @@ public class OverriddeAnnotation extends Annotation {
     public String toString() {
         return "[IsOverriddenAnnotation: " + shortDescription + "]"; //NOI18N
     }
-    
+
     public Position getPosition() {
         return pos;
     }
     
     public String debugDump() {
-        List<String> elementNames = new ArrayList<String>();        
+        List<String> elementNames = new ArrayList<String>();
         for(CsmUID<CsmMethod> uid : methodUIDs) {
             elementNames.add(uid.toString());
         }
-        Collections.sort(elementNames);       
+        Collections.sort(elementNames);
         return "IsOverriddenAnnotation: type=" + type.name() + ", elements:" + elementNames.toString(); //NOI18N
     }
-    
+
     void mouseClicked(JTextComponent c, Point p) {
         Point position = new Point(p);        
         SwingUtilities.convertPointToScreen(position, c);        
@@ -162,16 +163,35 @@ public class OverriddeAnnotation extends Annotation {
 //        return methods;
 //    }
     
-    void performGoToAction(Point position) {
-        if (methodUIDs.size() == 1) {
-            CsmUtilities.openSource(methodUIDs.iterator().next().getObject());
+    private void performGoToAction(Point position) {
+        Collection<Element> elements = getElements();
+        if (elements.size() == 1) {
+            openSource(elements.iterator().next());
         } else if (methodUIDs.size() > 1) {
-//            CsmUtilities.openSource(methodUIDs.iterator().next().getObject()); //TODO: XXX
             String caption = getShortDescription();
-            PopupUtil.showPopup(new Popup(caption), caption, position.x, position.y, true, 0);
+            PopupUtil.showPopup(new Popup(caption, elements), caption, position.x, position.y, true, 0);
         } else {
             throw new IllegalStateException("method list should not be empty"); // NOI18N
         }
+    }
+
+    private static void openSource(Element element) {
+        CsmUtilities.openSource(element.method);
+    }
+
+
+    /**
+     * Gets a SORTED elements list
+     * @return
+     */
+    /*package-local for test purposes*/ 
+    List<Element> getElements() {
+        List<Element> elements = new ArrayList<Element>(methodUIDs.size());
+        for (CsmUID<CsmMethod> uid : methodUIDs) {
+            elements.add(new Element(uid.getObject()));
+        }
+        Collections.sort(elements);
+        return elements;
     }
 
     private static class DeclarationPosition implements Position {
@@ -189,25 +209,37 @@ public class OverriddeAnnotation extends Annotation {
 
     }
 
-    static class Element {
+    /*package-local for test purposes*/
+    static class Element implements Comparable<Element> {
+
         public final CsmMethod method;
+        
         public Element(CsmMethod method) {
             this.method = method;
         }
+
         @Override
         public String toString() {
             return method.getQualifiedName().toString();
         }
+
+        @Override
+        public int compareTo(Element o) {
+            return (o == null) ? -1 : method.getQualifiedName().toString().compareTo(o.method.getQualifiedName().toString());
+        }
+
     }
 
-    class Popup extends JPanel implements FocusListener {
+    private static class Popup extends JPanel implements FocusListener {
         
         private JLabel title;
         private JList list;
         private JScrollPane scrollPane;
+        private final Collection<Element> elements;
 
-        public Popup(String caption) {
+        public Popup(String caption, Collection<Element> elements) {
             super(new BorderLayout());
+            this.elements = elements;
 
             title = new JLabel(caption);
             title.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -219,8 +251,8 @@ public class OverriddeAnnotation extends Annotation {
             add(scrollPane, BorderLayout.CENTER);
 
             DefaultListModel model = new DefaultListModel();
-            for (CsmUID<CsmMethod> uid : methodUIDs) {
-                model.addElement(new Element(uid.getObject()));
+            for (Element element : elements) {
+                model.addElement(element);
             }
             list.setModel(model);
             list.setSelectedIndex(0);
@@ -250,7 +282,7 @@ public class OverriddeAnnotation extends Annotation {
         private void openSelected() {
             Element el = (Element) list.getSelectedValue();
             if (el != null) {
-                CsmUtilities.openSource(el.method);
+                openSource(el);
             }
             PopupUtil.hidePopup();
         }

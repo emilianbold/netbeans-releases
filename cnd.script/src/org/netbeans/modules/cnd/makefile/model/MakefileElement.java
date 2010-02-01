@@ -44,5 +44,13 @@ package org.netbeans.modules.cnd.makefile.model;
  */
 public interface MakefileElement {
 
-    MakefileElementKind getKind();
+    public static enum Kind {
+        RULE,
+        ASSIGNMENT
+    }
+
+    /**
+     * @return element kind
+     */
+    Kind getKind();
 }

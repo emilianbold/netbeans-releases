@@ -41,14 +41,15 @@
 
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public class GNUCCCompiler extends GNUCCCCompiler {
     
     /** Creates a new instance of GNUCCompiler */
-    protected GNUCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    protected GNUCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
     }
     
@@ -63,7 +64,7 @@ public class GNUCCCompiler extends GNUCCCCompiler {
         return copy;
     }
 
-    public static GNUCCCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    public static GNUCCCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
         return new GNUCCCompiler(env, flavor, kind, name, displayName, path);
     }
 

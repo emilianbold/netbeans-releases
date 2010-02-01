@@ -52,8 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.Test;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -61,6 +60,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.spi.CompilerSetFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 
@@ -134,13 +137,13 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
                 "dist/Debug/.../libhello3lib." + libsuffix));
         conf.getLinkerConfiguration().getLibrariesConfiguration().add(projectItem);
 
-        CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);
-        CompilerSet compilerSet = CompilerSet.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
-        CompilerSet compilerSetold = CompilerSetManager.getDefault().getCompilerSet("MyCompilerSet");
+        CompilerFlavor flavor = CompilerFlavorAccessor.toFlavor(flavorName, platform);
+        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
+        CompilerSet compilerSetold = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSet("MyCompilerSet");
         if (compilerSetold != null) {
-            CompilerSetManager.getDefault().remove(compilerSetold);
+            CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).remove(compilerSetold);
         }
-        CompilerSetManager.getDefault().add(compilerSet);
+        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).add(compilerSet);
         conf.getCompilerSet().setNameAndFlavor("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
 
@@ -176,7 +179,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
                     rw.close();
                     break;
                 }
-                result.append(line + "\n");
+                result.append(line).append("\n");
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -201,13 +204,13 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         makeConfigurationDescriptor.init(conf);
         makeConfigurationDescriptor.getLogicalFolders().addItem(new Item("test.cc"));
 
-        CompilerFlavor flavor = CompilerFlavor.toFlavor(flavorName, platform);
-        CompilerSet compilerSet = CompilerSet.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
-        CompilerSet compilerSetold = CompilerSetManager.getDefault().getCompilerSet("MyCompilerSet");
+        CompilerFlavor flavor = CompilerFlavorAccessor.toFlavor(flavorName, platform);
+        CompilerSet compilerSet = CompilerSetFactory.getCustomCompilerSet(folderBase.getAbsolutePath(), flavor, "MyCompilerSet");
+        CompilerSet compilerSetold = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSet("MyCompilerSet");
         if (compilerSetold != null) {
-            CompilerSetManager.getDefault().remove(compilerSetold);
+            CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).remove(compilerSetold);
         }
-        CompilerSetManager.getDefault().add(compilerSet);
+        CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).add(compilerSet);
         conf.getCompilerSet().setNameAndFlavor("MyCompilerSet|" + flavorName, 51);
         conf.getDevelopmentHost().setBuildPlatform(platform);
 
@@ -243,7 +246,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
                     rw.close();
                     break;
                 }
-                result.append(line + "\n");
+                result.append(line).append("\n");
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();

@@ -62,14 +62,17 @@ public class PlatformLinux extends Platform {
         super(NAME, "Linux x86", PlatformTypes.PLATFORM_LINUX); // NOI18N
     }
     
+    @Override
     public LibraryItem.StdLibItem[] getStandardLibraries() {
         return standardLibrariesLinux;
     }
     
+    @Override
     public String getLibraryName(String baseName) {
         return "lib" + baseName + ".so"; // NOI18N // NOI18N
     }
     
+    @Override
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
         if (libName.endsWith(".so")) { // NOI18N
             int i = libName.indexOf(".so"); // NOI18N
@@ -79,9 +82,13 @@ public class PlatformLinux extends Platform {
             if (libName.startsWith("lib")) { // NOI18N
                 libName = libName.substring(3);
             }
-            return compilerSet.getDynamicLibrarySearchOption() + IpeUtils.escapeOddCharacters(libDir)
-                    + " " + compilerSet.getLibrarySearchOption() + IpeUtils.escapeOddCharacters(libDir) // NOI18N
-                    + " " + compilerSet.getLibraryOption() + IpeUtils.escapeOddCharacters(libName); // NOI18N
+
+            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag()
+                    + IpeUtils.escapeOddCharacters(libDir)
+                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag() // NOI18N
+                    + IpeUtils.escapeOddCharacters(libDir)
+                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
+                    + IpeUtils.escapeOddCharacters(libName);
         } else {
             return IpeUtils.escapeOddCharacters(libPath);
         }

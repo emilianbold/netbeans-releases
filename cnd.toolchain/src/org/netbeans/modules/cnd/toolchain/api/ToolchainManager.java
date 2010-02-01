@@ -40,22 +40,12 @@ package org.netbeans.modules.cnd.toolchain.api;
 
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainManagerImpl;
 
 /**
  *
  * @author Alexander Simon
  */
 public final class ToolchainManager {
-    private static final ToolchainManagerImpl manager = new ToolchainManagerImpl();
-
-    /*package-local*/ static final ToolchainManagerImpl getImpl() {
-        return manager;
-    }
-
-    private ToolchainManager() {
-    }
-
     public interface ToolchainDescriptor {
 
         String getFileName();

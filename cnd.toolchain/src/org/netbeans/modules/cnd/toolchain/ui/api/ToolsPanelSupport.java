@@ -42,7 +42,7 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.openide.util.WeakSet;
 
 /**
@@ -58,7 +58,7 @@ public class ToolsPanelSupport {
     }
 
     public static boolean supportedMake(String name) {
-        name = CompilerSetUtils.getBaseName(name);
+        name = ToolUtils.getBaseName(name);
         return !name.toLowerCase().equals("mingw32-make.exe"); // NOI18N
     }
 

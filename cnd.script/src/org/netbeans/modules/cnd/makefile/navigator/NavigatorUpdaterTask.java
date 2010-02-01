@@ -52,10 +52,10 @@ public class NavigatorUpdaterTask extends ParserResultTask<MakefileModel> {
 
     @Override
     public void run(MakefileModel result, SchedulerEvent event) {
-        System.out.println(result.getSnapshot().getSource().getFileObject());
-        for (MakefileElement e : result.getElements()) {
-            System.out.println(e);
-        }
+//        System.out.println(result.getSnapshot().getSource().getFileObject());
+//        for (MakefileElement e : result.getElements()) {
+//            System.out.println(e);
+//        }
     }
 
     @Override

@@ -44,7 +44,6 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetReporter;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
@@ -113,7 +112,7 @@ public class HostValidatorImpl implements HostValidator {
             record.init(null);
         }
         if (record.isOnline()) {
-            CompilerSetReporter.setWriter(new Writer() {
+            Writer reporter = new Writer() {
 
                 @Override
                 public void write(char[] cbuf, int off, int len) throws IOException {
@@ -128,9 +127,9 @@ public class HostValidatorImpl implements HostValidator {
                 @Override
                 public void close() throws IOException {
                 }
-            });
+            };
             final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env, false);
-            csm.initialize(false, false);
+            csm.initialize(false, false, reporter);
             runOnFinish = new Runnable() {
                 @Override
                 public void run() {
@@ -142,7 +141,6 @@ public class HostValidatorImpl implements HostValidator {
             writer.write(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.ErrConn")
                     + '\n' + record.getReason()); //NOI18N
         }
-        CompilerSetReporter.setWriter(null);
         if (alreadyOnline) {
             writer.write('\n' + NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected2"));
         }

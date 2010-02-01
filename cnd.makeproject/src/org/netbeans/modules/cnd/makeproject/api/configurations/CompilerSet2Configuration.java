@@ -46,12 +46,12 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -96,7 +96,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
 
     // we can't store CSM because it's dependent on devHostConfig name which is not persistent
     public CompilerSetManager getCompilerSetManager() {
-        return CompilerSetManager.getDefault(dhconf.getExecutionEnvironment());
+        return CompilerSetManager.get(dhconf.getExecutionEnvironment());
     }
 
 //
@@ -132,7 +132,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     public void setNameAndFlavor(String name, int version) {
         String nm;
         String fl;
-        int index = name.indexOf("|"); // NOI18N
+        int index = name.indexOf('|'); // NOI18N
         if (index > 0) {
             nm = name.substring(0, index);
             fl = name.substring(index+1);
@@ -141,7 +141,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
             nm = name;
             fl = name;
         }
-        setValue(CompilerFlavor.mapOldToNew(nm, version), CompilerFlavor.mapOldToNew(fl, version));
+        setValue(CompilerFlavorAccessor.mapOldToNew(nm, version), CompilerFlavorAccessor.mapOldToNew(fl, version));
     }
 
     public void setValue(String name, String flavor) {
@@ -159,7 +159,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         String s = getCompilerSetName().getValue();
         if (s != null) {
             int i = 0;
-            for (String csname : CompilerSetManager.getDefault(dhconf.getExecutionEnvironment()).getCompilerSetNames()) {
+            for (String csname : CompilerSetManager.get(dhconf.getExecutionEnvironment()).getCompilerSetNames()) {
                 if (s.equals(csname)) {
                     return i;
                 }
@@ -318,18 +318,19 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         this.flavor = flavor;
     }
 
+    @Override
     public void propertyChange(final PropertyChangeEvent evt) {
         CompilerSet ocs = null;
         String hkey = ((DevelopmentHostConfiguration) evt.getNewValue()).getHostKey();
         final ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hkey);
         final String oldName = oldNameMap.get(hkey);
         if (oldName != null) {
-            ocs = CompilerSetManager.getDefault(env).getCompilerSet(oldName);
+            ocs = CompilerSetManager.get(env).getCompilerSet(oldName);
         } else {
-            ocs = CompilerSetManager.getDefault(env).getDefaultCompilerSet();
+            ocs = CompilerSetManager.get(env).getDefaultCompilerSet();
         }
         if (ocs == null) {
-            ocs = CompilerSetManager.getDefault(env).getCompilerSet(0);
+            ocs = CompilerSetManager.get(env).getCompilerSet(0);
         }
         if (ocs == null) {
             return;
@@ -343,6 +344,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
             setValue(ocs.getName());
             final CompilerSet focs = ocs;
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     ServerRecord record = ServerList.get(env);
                     if (record != null) {

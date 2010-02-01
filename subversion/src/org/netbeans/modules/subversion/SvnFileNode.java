@@ -63,6 +63,8 @@ public class SvnFileNode {
     private String relativePath;
     private String copy;
     private boolean copyScanned;
+    private Boolean fileFlag;
+    private String mimeType;
 
     public SvnFileNode(File file) {
         this.file = FileUtil.normalizeFile(file);
@@ -81,11 +83,13 @@ public class SvnFileNode {
         return file;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         return o instanceof SvnFileNode && file.equals(((SvnFileNode) o).file);
     }
 
+    @Override
     public int hashCode() {
         return file.hashCode();
     }
@@ -130,5 +134,19 @@ public class SvnFileNode {
             copyScanned = true;
         }
         return copy;
+    }
+
+    public boolean isFile () {
+        if (fileFlag == null) {
+            fileFlag = file.isFile();
+        }
+        return fileFlag;
+    }
+
+    public String getMimeType () {
+        if (isFile() && mimeType == null) {
+            mimeType = SvnUtils.getMimeType(file);
+        }
+        return mimeType;
     }
 }

@@ -45,7 +45,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -125,7 +125,7 @@ public class AssemblerConfiguration extends BasicCompilerConfiguration implement
     public Sheet getGeneralSheet(MakeConfiguration conf) {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        BasicCompiler assemblerCompiler = compilerSet == null ? null : (BasicCompiler) compilerSet.getTool(Tool.Assembler);
+        BasicCompiler assemblerCompiler = compilerSet == null ? null : (BasicCompiler) compilerSet.getTool(ToolKind.Assembler);
 
         Sheet.Set basicSet = getBasicSet();
         basicSet.remove("StripSymbols"); // NOI18N

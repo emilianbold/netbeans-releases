@@ -69,7 +69,6 @@ import org.netbeans.modules.cnd.actions.CMakeAction;
 import org.netbeans.modules.cnd.actions.MakeAction;
 import org.netbeans.modules.cnd.actions.QMakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
@@ -81,6 +80,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.api.utils.AllSourceFileFilter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -530,7 +530,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private void downloadRemoteFile(File file){
         if (file != null && !file.exists()) {
-            ExecutionEnvironment developmentHost = CompilerSetManager.getDefaultExecutionEnvironment();
+            ExecutionEnvironment developmentHost = ServerList.getDefaultRecord().getExecutionEnvironment();
             if (developmentHost.isRemote()) {
                 String remoteFile = HostInfoProvider.getMapper(developmentHost).getRemotePath(file.getAbsolutePath());
                 try {

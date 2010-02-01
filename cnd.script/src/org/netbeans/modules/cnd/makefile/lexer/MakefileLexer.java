@@ -87,9 +87,11 @@ import org.netbeans.spi.lexer.TokenFactory;
             "endif")); // NOI18N
 
     private static enum State {
-        NORMAL,
         AT_LINE_START,
-        AFTER_TAB
+        AFTER_LINE_START,
+        AFTER_TAB_OR_SEMICOLON,
+        AFTER_EQUALS,
+        AFTER_COLON
     }
 
     private final LexerRestartInfo<MakefileTokenId> info;
@@ -105,58 +107,123 @@ import org.netbeans.spi.lexer.TokenFactory;
         Token<MakefileTokenId> token;
         switch (state) {
 
-            case NORMAL:
-                token = readToken(false);
-                if (token != null) {
-                    switch (token.id()) {
-                        case NEW_LINE:
-                            state = State.AT_LINE_START;
-                            break;
-                    }
-                }
-                break;
-
             case AT_LINE_START:
-                token = readToken(true);
+                token = readToken(true, true, true, false);
                 if (token != null) {
                     switch (token.id()) {
                         case NEW_LINE:
                             // remain in AT_LINE_START state
                             break;
                         case TAB:
-                            state = State.AFTER_TAB;
+                            state = State.AFTER_TAB_OR_SEMICOLON;
                             break;
+                        case EQUALS:
+                        case COLON_EQUALS:
+                        case PLUS_EQUALS:
+                            state = State.AFTER_EQUALS;
+                            break;
+                        case COLON:
+                            state = State.AFTER_COLON;
+                            break;
+                        case SEMICOLON:
+                            throw new IllegalStateException("Internal error"); // NOI18N
                         default:
-                            state = State.NORMAL;
+                            state = State.AFTER_LINE_START;
                     }
                 }
                 break;
 
-            case AFTER_TAB:
-                token = readShell();
+            case AFTER_LINE_START:
+                token = readToken(false, true, true, false);
+                if (token != null) {
+                    switch (token.id()) {
+                        case NEW_LINE:
+                            state = State.AT_LINE_START;
+                            break;
+                        case EQUALS:
+                        case COLON_EQUALS:
+                        case PLUS_EQUALS:
+                            state = State.AFTER_EQUALS;
+                            break;
+                        case COLON:
+                            state = State.AFTER_COLON;
+                            break;
+                        case TAB:
+                        case SEMICOLON:
+                            throw new IllegalStateException("Internal error"); // NOI18N
+                        default:
+                            // remain in AFTER_LINE_START state
+                    }
+                }
+                break;
+
+            case AFTER_TAB_OR_SEMICOLON:
+                token = readWhitespaceOrModifierOrShell();
                 if (token == null) {
-                    token = readToken(false);
+                    token = readToken(false, false, false, false);
                     if (token != null) {
                         switch (token.id()) {
                             case NEW_LINE:
                                 state = State.AT_LINE_START;
                                 break;
                             default:
-                                state = State.NORMAL;
+                                throw new IllegalStateException("Internal error"); // NOI18N
                         }
                     }
                 }
                 break;
 
+            case AFTER_EQUALS:
+                token = readToken(false, false, false, false);
+                if (token != null) {
+                    switch (token.id()) {
+                        case NEW_LINE:
+                            state = State.AT_LINE_START;
+                            break;
+                        case TAB:
+                        case COLON:
+                        case EQUALS:
+                        case COLON_EQUALS:
+                        case PLUS_EQUALS:
+                        case SEMICOLON:
+                            throw new IllegalStateException("Internal error"); // NOI18N
+                        default:
+                            // remain in AFTER_EQUALS state
+                    }
+                }
+                break;
+
+            case AFTER_COLON:
+                token = readToken(false, false, false, true);
+                if (token != null) {
+                    switch (token.id()) {
+                        case NEW_LINE:
+                            state = State.AT_LINE_START;
+                            break;
+                        case SEMICOLON:
+                            state = State.AFTER_TAB_OR_SEMICOLON;
+                            break;
+                        case TAB:
+                        case COLON:
+                        case EQUALS:
+                        case COLON_EQUALS:
+                        case PLUS_EQUALS:
+                            throw new IllegalStateException("Internal error"); // NOI18N
+                        default:
+                            // remain in AFTER_EQUALS state
+                    }
+                }
+                break;
+
             default:
-                throw new IllegalStateException("Internal lexer error"); // NOI18N
+                throw new IllegalStateException("Internal error"); // NOI18N
         }
         return token;
     }
 
     @Override
     public Object state() {
-        return state == State.AT_LINE_START? null : state.ordinal();
+        return state == State.AT_LINE_START ? null : state.ordinal();
     }
 
     @Override
@@ -164,14 +231,17 @@ import org.netbeans.spi.lexer.TokenFactory;
     }
 
 
-    private Token<MakefileTokenId> readToken(boolean atLineStart) {
+    private Token<MakefileTokenId> readToken(boolean wantTab, boolean wantColon, boolean wantEquals, boolean wantSemicolon) {
         LexerInput input = info.input();
         TokenFactory<MakefileTokenId> factory = info.tokenFactory();
 
         switch (input.read()) {
 
-            case '\t': // tab has special meaning only at line start
-                if (atLineStart) {
+            case LexerInput.EOF:
+                return null;
+
+            case '\t':
+                if (wantTab) {
                     return factory.createToken(MakefileTokenId.TAB);
                 } else {
                     consumeWhitespace(input);
@@ -183,7 +253,7 @@ import org.netbeans.spi.lexer.TokenFactory;
                 return factory.createToken(MakefileTokenId.WHITESPACE);
 
             case '#':
-                consumeAnythingTillEndOfLine(input, false);
+                consumeAnythingTillEndOfLine(input);
                 return factory.createToken(MakefileTokenId.COMMENT);
 
             case '\r':
@@ -197,52 +267,181 @@ import org.netbeans.spi.lexer.TokenFactory;
                 return readMacro(input, factory);
 
             case ':':
-                if (input.read() != '=') {
+                if (input.read() == '=' && wantEquals) {
+                    return factory.createToken(MakefileTokenId.COLON_EQUALS);
+                } else if (wantColon) {
                     input.backup(1);
+                    return factory.createToken(MakefileTokenId.COLON);
+                } else {
+                    consumeBare(input, wantColon, wantEquals, wantSemicolon);
+                    return factory.createToken(MakefileTokenId.BARE);
                 }
-                return factory.createToken(MakefileTokenId.SEPARATOR);
+
+            case '+':
+                if (input.read() == '=' && wantEquals) {
+                    return factory.createToken(MakefileTokenId.PLUS_EQUALS);
+                } else {
+                    input.backup(1);
+                    consumeBare(input, wantColon, wantEquals, wantSemicolon);
+                    return factory.createToken(MakefileTokenId.BARE);
+                }
 
             case '=':
-                return factory.createToken(MakefileTokenId.SEPARATOR);
+                if (wantEquals) {
+                    return factory.createToken(MakefileTokenId.EQUALS);
+                } else {
+                    consumeBare(input, wantColon, wantEquals, wantSemicolon);
+                    return factory.createToken(MakefileTokenId.BARE);
+                }
 
-            case LexerInput.EOF:
-                return null;
+            case ';':
+                if (wantSemicolon) {
+                    return factory.createToken(MakefileTokenId.SEMICOLON);
+                } else {
+                    consumeBare(input, wantColon, wantEquals, wantSemicolon);
+                    return factory.createToken(MakefileTokenId.BARE);
+                }
+
+            case '\\':
+                if (0 < consumeNewline(input)) {
+                    return factory.createToken(MakefileTokenId.ESCAPED_NEW_LINE);
+                } else {
+                    consumeEscape(input);
+                    consumeBare(input, wantColon, wantEquals, wantSemicolon);
+                    return factory.createToken(MakefileTokenId.BARE);
+                }
 
             default:
-                input.backup(1);
-                return readOther(input, factory);
+                consumeBare(input, wantColon, wantEquals, wantSemicolon);
+                return createBareOrKeyword(input.readText().toString(), factory);
         }
     }
 
-    private Token<MakefileTokenId> readShell() {
-        LexerInput input = info.input();
-        if (consumeAnythingTillEndOfLine(input, true)) {
-            return info.tokenFactory().createToken(MakefileTokenId.SHELL);
-        } else {
-            return null;
-        }
-    }
-
-    private static void consumeWhitespace(LexerInput input) {
+    private void consumeBare(LexerInput input, boolean wantColon, boolean wantEquals, boolean wantSemicolon) {
         for (;;) {
             switch (input.read()) {
-                case '\t':
                 case ' ':
-                    // proceed
+                case '\t':
+                    input.backup(1);
+                    return;
+
+                case ':':
+                    if (wantColon) {
+                        input.backup(1);
+                        return;
+                    } else if (wantEquals && input.read() == '=') {
+                        input.backup(2);
+                        return;
+                    }
                     break;
-                default:
+
+                case '+':
+                    if (wantEquals && input.read() == '=') {
+                        input.backup(2);
+                        return;
+                    }
+                    break;
+
+                case '=':
+                    if (wantEquals) {
+                        input.backup(1);
+                        return;
+                    }
+                    break;
+
+                case ';':
+                    if (wantSemicolon) {
+                        input.backup(1);
+                        return;
+                    }
+                    break;
+
+                case '\\':
+                    int consumed = consumeNewline(input);
+                    if (0 < consumed) {
+                        input.backup(1 + consumed);
+                        return;
+                    } else {
+                        consumeEscape(input);
+                    }
+                    break;
+
+                case LexerInput.EOF:
+                case '\r':
+                case '\n':
+                case '#':
+                case '$':
                     input.backup(1);
                     return;
             }
         }
     }
 
+    private Token<MakefileTokenId> readWhitespaceOrModifierOrShell() {
+        LexerInput input = info.input();
+        TokenFactory<MakefileTokenId> factory = info.tokenFactory();
+
+        switch (input.read()) {
+            case '@':
+            case '-':
+            case '+':
+                return factory.createToken(MakefileTokenId.SHELL_MODIFIER);
+            case ' ':
+            case '\t':
+                consumeWhitespace(input);
+                return factory.createToken(MakefileTokenId.WHITESPACE);
+            default:
+                input.backup(1);
+        }
+
+        if (consumeAnythingTillEndOfLine(input)) {
+            return factory.createToken(MakefileTokenId.SHELL);
+        } else {
+            return null;
+        }
+    }
+
+    private static void consumeEscape(LexerInput input) {
+        switch (input.read()) {
+            case ':':
+                switch (input.read()) {
+                    case '=':
+                        input.backup(2);
+                        break;
+                    default:
+                        input.backup(1);
+                }
+                break;
+
+            case ' ':
+            case '\t':
+                return;
+
+            default:
+                input.backup(1);
+        }
+    }
+
+    private static boolean consumeWhitespace(LexerInput input) {
+        int consumed = 0;
+        for (;;) {
+            switch (input.read()) {
+                case '\t':
+                case ' ':
+                    ++consumed;
+                    break;
+                default:
+                    input.backup(1);
+                    return 0 < consumed;
+            }
+        }
+    }
+
     /**
      * @param input
-     * @param consumeEscapedNewlines
      * @return <code>true</code> if consumed at least one character
      */
-    private static boolean consumeAnythingTillEndOfLine(LexerInput input, boolean consumeEscapedNewlines) {
+    private static boolean consumeAnythingTillEndOfLine(LexerInput input) {
         int consumed = 0;
         for (;;) {
             switch (input.read()) {
@@ -253,10 +452,7 @@ import org.netbeans.spi.lexer.TokenFactory;
                     return 0 < consumed;
 
                 case '\\':
-                    ++consumed;
-                    if (consumeEscapedNewlines) {
-                        consumed += consumeNewline(input);
-                    }
+                    consumed += 1 + consumeNewline(input);
                     break;
 
                 default:
@@ -320,9 +516,7 @@ import org.netbeans.spi.lexer.TokenFactory;
                     break;
 
                 case '\\':
-                    if (consumeNewline(input) == 0) {
-                        input.read(); // skip any character after backslash
-                    }
+                    consumeNewline(input);
                     break;
 
                 case LexerInput.EOF:
@@ -339,42 +533,7 @@ import org.netbeans.spi.lexer.TokenFactory;
         }
     }
 
-    private static Token<MakefileTokenId> readOther(LexerInput input, TokenFactory<MakefileTokenId> factory) {
-        if (input.read() == '\\' && 0 < consumeNewline(input)) {
-            return factory.createToken(MakefileTokenId.ESCAPED_NEW_LINE);
-        } else {
-
-            input.backup(1);
-            for (;;) {
-                int c = input.read();
-                switch (c) {
-                    case '\\':
-                        int consumed = consumeNewline(input);
-                        if (0 < consumed) {
-                            input.backup(1 + consumed);
-                            return createToken(input.readText().toString(), factory);
-                        } else {
-                            input.read();
-                        }
-                        break;
-
-                    case LexerInput.EOF:
-                    case ' ':
-                    case '\t':
-                    case '\r':
-                    case '\n':
-                    case ':':
-                    case '=':
-                    case '$':
-                    case '#':
-                        input.backup(1);
-                        return createToken(input.readText().toString(), factory);
-                }
-            }
-        }
-    }
-
-    private static Token<MakefileTokenId> createToken(String text, TokenFactory<MakefileTokenId> factory) {
+    private static Token<MakefileTokenId> createBareOrKeyword(String text, TokenFactory<MakefileTokenId> factory) {
         if (SPECIAL_TARGETS.contains(text)) {
             return factory.createToken(MakefileTokenId.SPECIAL_TARGET);
         } else if (KEYWORDS.contains(text)) {

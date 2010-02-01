@@ -157,12 +157,12 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         String binDir = compilerSet.getDirectory();
         String demangle_utility = SS_FAMILIY;
-        if (compilerSet.isGnuCompiler()) {
+        if (compilerSet.getCompilerFlavor().isGnuCompiler()) {
             demangle_utility = GNU_FAMILIY;
         }
         String dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
         targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
-        targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER, compilerSet.isGnuCompiler() ? CppSymbolDemanglerFactoryImpl.CPPCompiler.GNU.toString() : CppSymbolDemanglerFactoryImpl.CPPCompiler.SS.toString());
+        targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER, compilerSet.getCompilerFlavor().isGnuCompiler() ? CppSymbolDemanglerFactoryImpl.CPPCompiler.GNU.toString() : CppSymbolDemanglerFactoryImpl.CPPCompiler.SS.toString());
         targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER_BIN_PATH, binDir);
         targetConf.setWorkingDirectory(runDirectory);
         int consoleType = pae.getProfile().getConsoleType().getValue();

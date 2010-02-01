@@ -54,7 +54,9 @@ made subject to such option by the copyright holder.
                 </file>
                 <folder name="text">
                     <folder name="x-java">
-                        <file name="org-netbeans-modules-web-core-syntax-indent-JspJavaIndentTaskFactory.instance"/>
+                        <file name="org-netbeans-modules-web-core-syntax-indent-JspJavaIndentTaskFactory.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
+                        </file>
                         <folder name="CodeTemplates">
                             <folder name="Defaults">
                                 <file name="codetemplates.shadow">
@@ -90,10 +92,18 @@ made subject to such option by the copyright holder.
                         <attr name="scrollable" boolvalue="false"/>
                     </file>
                 </folder>
-                <file name="org-netbeans-modules-web-core-syntax-indent-JspIndentTaskFactory.instance"/>
-                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
-                <file name="org-netbeans-modules-web-core-syntax-EmbeddedSectionsHighlighting$Factory.instance"/>
-                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
+                <file name="org-netbeans-modules-web-core-syntax-indent-JspIndentTaskFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
+                </file>
+                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-web-core-syntax-EmbeddedSectionsHighlighting$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
                 <file name="org-netbeans-modules-csl-core-GsfParserFactory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.csl.core.GsfParserFactory.create"/>
@@ -179,12 +189,20 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
-                <file name="org-netbeans-modules-web-core-syntax-JspParserFactory.instance"/>
-                <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance"/>
-                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance"/>
+                <file name="org-netbeans-modules-web-core-syntax-JspParserFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.ParserFactory"/>
+                </file>
+                <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
+                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
             </folder>
             <folder name="x-el">
-                <file name="org-netbeans-modules-web-core-syntax-indent-ExpressionLanguageIndentTaskFactory.instance"/>
+                <file name="org-netbeans-modules-web-core-syntax-indent-ExpressionLanguageIndentTaskFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
+                </file>
             </folder>
             <folder name="x-tag">
                 <file name="TagImportProcesor.instance">
@@ -208,10 +226,18 @@ made subject to such option by the copyright holder.
                         <attr name="scrollable" boolvalue="false"/>
                     </file>
                 </folder>
-                <file name="org-netbeans-modules-web-core-syntax-indent-JspIndentTaskFactory.instance"/>
-                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance"/>
-                <file name="org-netbeans-modules-web-core-syntax-EmbeddedSectionsHighlighting$Factory.instance"/>
-                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
+                <file name="org-netbeans-modules-web-core-syntax-indent-JspIndentTaskFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
+                </file>
+                <file name="org-netbeans-modules-html-editor-coloring-EmbeddingHighlightsLayerFactory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-web-core-syntax-EmbeddedSectionsHighlighting$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
+                <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.highlighting.HighlightsLayerFactory"/>
+                </file>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.syntax.resources.Bundle"/>
                 <folder name="FontsColors">
                     <folder name="NetBeans">
@@ -285,8 +311,12 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
-                <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance"/>
-                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance"/>
+                <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
+                <file name="org-netbeans-modules-web-core-syntax-gsf-JspEmbeddingProvider$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
+                </file>
             </folder>
         </folder>
     </folder>

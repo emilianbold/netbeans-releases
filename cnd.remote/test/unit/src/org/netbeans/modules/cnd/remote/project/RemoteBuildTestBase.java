@@ -198,7 +198,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         ServerRecord record = ServerList.get(execEnv);
         assertNotNull(record);
-        final CompilerSetManager csm = CompilerSetManager.getDefault(execEnv);
+        final CompilerSetManager csm = CompilerSetManager.get(execEnv);
         for (CompilerSet cset : csm.getCompilerSets()) {
             if (cset.getName().equals(name)) {
                 csm.setDefault(cset);

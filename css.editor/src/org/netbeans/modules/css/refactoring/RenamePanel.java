@@ -165,6 +165,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         textCheckBox.getAccessibleContext().setAccessibleDescription(textCheckBox.getText());
 
         org.openide.awt.Mnemonics.setLocalizedText(updateReferencesCheckBox, org.openide.util.NbBundle.getBundle(RenamePanel.class).getString("LBL_RenameWithoutRefactoring")); // NOI18N
+        updateReferencesCheckBox.setEnabled(false);
         updateReferencesCheckBox.setMargin(new java.awt.Insets(2, 2, 0, 2));
         updateReferencesCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
