@@ -299,6 +299,7 @@ public class OverriddeAnnotation extends Annotation {
     }
 
     private static class RendererImpl extends DefaultListCellRenderer {
+        @Override
         public Component getListCellRendererComponent(
                 JList list,
                 Object value,
@@ -346,6 +347,9 @@ public class OverriddeAnnotation extends Annotation {
             list.setModel(model);
             list.setSelectedIndex(0);
             list.setCellRenderer(new RendererImpl());
+            if (model.getSize() < 10) {
+                list.setVisibleRowCount(model.getSize());
+            }
 
             list.addKeyListener(new java.awt.event.KeyAdapter() {
                 @Override
