@@ -278,8 +278,7 @@ public final class CreateTestsAction extends NodeAction {
         final ConfigFiles configFiles = PhpUnit.getConfigFiles(phpProject, false);
         final String paramSkeleton = PhpUnit.hasValidVersion(phpUnit) ? PhpUnit.PARAM_SKELETON : PhpUnit.PARAM_SKELETON_OLD;
         final File sourceFile = FileUtil.toFile(sourceFo);
-        final File parent = FileUtil.toFile(sourceFo.getParent());
-        final File workingDirectory = phpUnit.getWorkingDirectory(configFiles, parent);
+        final File workingDirectory = phpUnit.getWorkingDirectory(configFiles, FileUtil.toFile(sourceFo.getParent()));
 
         // find out the name of a class(es)
         EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
@@ -299,7 +298,7 @@ public final class CreateTestsAction extends NodeAction {
                 toOpen.add(testFile);
                 continue;
             }
-            final File generatedFile = getGeneratedFile(className, parent);
+            final File generatedFile = getGeneratedFile(className, workingDirectory);
 
             // test does not exist yet
             Future<Integer> result = generateSkeleton(phpUnit, configFiles, phpClass.getFullyQualifiedName(), sourceFo, workingDirectory, paramSkeleton);
