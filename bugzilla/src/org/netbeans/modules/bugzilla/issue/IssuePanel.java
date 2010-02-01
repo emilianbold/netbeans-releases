@@ -329,6 +329,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if(issue.getRepository() instanceof KenaiRepository) {
                 String productName = ((KenaiRepository)issue.getRepository()).getProductName();
                 selectInCombo(productCombo, productName, true);
+            } else {
+                productCombo.setSelectedIndex(0);
             }
         }
     }
