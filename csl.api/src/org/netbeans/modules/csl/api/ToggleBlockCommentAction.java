@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.csl.editor;
+package org.netbeans.modules.csl.api;
 
 import java.awt.event.ActionEvent;
 import javax.swing.text.BadLocationException;

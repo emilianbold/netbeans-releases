@@ -25,21 +25,25 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.csl.core;
+package org.netbeans.modules.csl.api;
 
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
 /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
-public final class DeleteToNextCamelCasePosition extends SelectNextCamelCasePosition {
-    public static final String deleteNextCamelCasePosition = "delete-next-camel-case-position"; //NOI18N
+public class SelectNextCamelCasePosition extends NextCamelCasePosition {
+    public static final String selectNextCamelCasePosition = "select-next-camel-case-position"; //NOI18N
 
-    public DeleteToNextCamelCasePosition(Action originalAction) {
-        super(deleteNextCamelCasePosition, originalAction);
+    public SelectNextCamelCasePosition(Action originalAction) {
+        this(selectNextCamelCasePosition, originalAction);
+    }
+
+    protected SelectNextCamelCasePosition(String name, Action originalAction) {
+        super(name, originalAction);
     }
 
     protected @Override void moveToNewOffset(JTextComponent textComponent, int offset) throws BadLocationException {
-        textComponent.getDocument().remove(textComponent.getCaretPosition(), offset - textComponent.getCaretPosition());
+        textComponent.getCaret().moveDot(offset);
     }
 }
