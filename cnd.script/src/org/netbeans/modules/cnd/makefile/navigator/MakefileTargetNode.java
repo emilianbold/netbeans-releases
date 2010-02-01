@@ -74,6 +74,16 @@ public final class MakefileTargetNode extends AbstractNode {
     }
 
     @Override
+    public String getHtmlDisplayName() {
+        String displayName = getDisplayName();
+        if (0 < displayName.length() && displayName.charAt(0) == '.') {
+            return "<font color=\"!controlShadow\">" + displayName + "</font>"; // NOI18N
+        } else {
+            return null;
+        }
+    }
+
+    @Override
     public Action getPreferredAction() {
         return SystemAction.get(OpenAction.class);
     }
