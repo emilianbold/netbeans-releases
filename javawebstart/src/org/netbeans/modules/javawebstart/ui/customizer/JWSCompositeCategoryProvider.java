@@ -184,7 +184,7 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
             try {
                 OutputStream os = masterFile.getOutputStream(lock);
                 PrintWriter writer = new PrintWriter(os);
-                writer.println("<jnlp spec=\"1.0+\" href=\"launch.jnlp\">");
+                writer.println("<jnlp spec=\"1.0+\" codebase=\"${jnlp.codebase}\" href=\"launch.jnlp\">");
                 writer.println("    <information>");
                 writer.println("        <title>${APPLICATION.TITLE}</title>");
                 writer.println("        <vendor>${APPLICATION.VENDOR}</vendor>");

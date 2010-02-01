@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -45,7 +46,12 @@ public class CopyTemplatePageTask extends Task {
             put (JNLP_APPLET_CLASS, new PropertyValue("jnlp.applet.class", ""));//NOI18N
             put (JNLP_VM_VERSION, new PropertyValue("javac.target", "1.6"));    //NOI18N
             put (JNLP_VM_VERSION, new PropertyValue("javac.target", "1.6"));    //NOI18N
-            put (JNLP_APPLET_PARAMS, new PropertyMap("jnlp.applet.param","name","value"));   //NOI18N
+            put (JNLP_APPLET_PARAMS, new PropertyMap("jnlp.applet.param","name","value",
+                    new HashMap<String, String>() {
+                        {
+                            put("jnlp_href","jnlp.file");   //NOI18N
+                        }
+            }));   //NOI18N
         }
     };
 
@@ -161,11 +167,14 @@ public class CopyTemplatePageTask extends Task {
         private final String prefix;
         private final String key;
         private final String value;
+        private final Map<String,String> additionalProps;
 
-        public PropertyMap(final String prefix, final String key, final String value) {
+        public PropertyMap(final String prefix, final String key, final String value,
+                final Map<String,String> additionalProps) {
             this.prefix = prefix;
             this.key = key;
             this.value = value;
+            this.additionalProps = additionalProps;
         }
 
         public String call() throws Exception {
@@ -179,17 +188,24 @@ public class CopyTemplatePageTask extends Task {
                     final String kv = entry.getValue();
                     final String valueKey = prefix + '.'+ m.group(1) +'.' + value;  //NOI18N
                     final String vv = getProperty(valueKey, ""); //NOI18N
-                    if (sb.length() > 0) {
-                        sb.append(", ");    //NOI18N
-                    }
-                    sb.append(kv);
-                    sb.append(':'); //NOI18N
-                    sb.append('"');
-                    sb.append(vv);
-                    sb.append('"');
+                    addProperty(sb,kv,vv);
                 }
             }
+            for (Map.Entry<String,String> prop : additionalProps.entrySet()) {
+                addProperty(sb, prop.getKey(), getProperty(prop.getValue(), "")); //NOI18N
+            }
             return sb.toString();
+        }
+
+        private void addProperty(final StringBuilder sb, final String kv, final String vv) {
+            if (sb.length() > 0) {
+                sb.append(", ");    //NOI18N
+            }
+            sb.append(kv);
+            sb.append(':'); //NOI18N
+            sb.append('"');
+            sb.append(vv);
+            sb.append('"'); //NOI18N
         }
 
     }
