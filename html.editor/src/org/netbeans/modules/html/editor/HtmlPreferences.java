@@ -55,6 +55,7 @@ public class HtmlPreferences {
 
     private static boolean autocompleQuotesAfterEQS;
     private static boolean autocompleQuotes;
+    private static boolean completionOffersEndTagAfterLt;
 
     private static AtomicBoolean initialized = new AtomicBoolean(false);
     private static Preferences preferences;
@@ -67,6 +68,9 @@ public class HtmlPreferences {
             }
             if (settingName == null || HtmlCompletionOptionsPanel.HTML_AUTOCOMPLETE_QUOTES.equals(settingName)) {
                 autocompleQuotes = preferences.getBoolean(HtmlCompletionOptionsPanel.HTML_AUTOCOMPLETE_QUOTES, HtmlCompletionOptionsPanel.HTML_AUTOCOMPLETE_QUOTES_DEFAULT);
+            }
+            if (settingName == null || HtmlCompletionOptionsPanel.HTML_COMPLETION_END_TAG_ADTER_LT.equals(settingName)) {
+                completionOffersEndTagAfterLt = preferences.getBoolean(HtmlCompletionOptionsPanel.HTML_COMPLETION_END_TAG_ADTER_LT, HtmlCompletionOptionsPanel.HTML_COMPLETION_END_TAG_ADTER_LT_DEFAULT);
             }
         }
     };
@@ -101,6 +105,16 @@ public class HtmlPreferences {
     public static boolean autocompleteQuotes() {
         lazyIntialize();
         return autocompleQuotes;
+    }
+
+    /**
+     * Html code completion offers end tags after less than character
+     *
+     * @return true if enabled
+     */
+    public static boolean completionOffersEndTagAfterLt() {
+        lazyIntialize();
+        return completionOffersEndTagAfterLt;
     }
     
 }

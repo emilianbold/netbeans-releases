@@ -26,8 +26,9 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="autocompleteQuotesAfterEQSCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="autocompleteQuotesCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="completionOffersEndTagAfterLt" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="178" max="32767" attributes="0"/>
+              <EmptySpace pref="173" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -38,7 +39,9 @@
               <Component id="autocompleteQuotesAfterEQSCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="autocompleteQuotesCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="337" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="completionOffersEndTagAfterLt" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="314" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -62,6 +65,16 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="autocompleteQuotesCheckBoxActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="completionOffersEndTagAfterLt">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/html/editor/Bundle.properties" key="HtmlCompletionOptionsPanel.completionOffersEndTagAfterLt.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="completionOffersEndTagAfterLtActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

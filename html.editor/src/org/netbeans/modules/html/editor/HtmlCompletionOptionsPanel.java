@@ -60,6 +60,8 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
     public static final boolean HTML_AUTOCOMPLETE_QUOTES_AFTER_EQS_DEFAULT = true;
     public static final String HTML_AUTOCOMPLETE_QUOTES = "htmlAutocompleteQuotes"; //NOI18N
     public static final boolean HTML_AUTOCOMPLETE_QUOTES_DEFAULT = true;
+    public static final String HTML_COMPLETION_END_TAG_ADTER_LT = "htmlCompletionOffersEndTagsAfterLt"; //NOI18N
+    public static final boolean HTML_COMPLETION_END_TAG_ADTER_LT_DEFAULT = false;
 
     private Preferences preferences;
 
@@ -69,6 +71,7 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
         initComponents();
         autocompleteQuotesAfterEQSCheckBox.setSelected(preferences.getBoolean(HTML_AUTOCOMPLETE_QUOTES_AFTER_EQS, HTML_AUTOCOMPLETE_QUOTES_AFTER_EQS_DEFAULT));
         autocompleteQuotesCheckBox.setSelected(preferences.getBoolean(HTML_AUTOCOMPLETE_QUOTES, HTML_AUTOCOMPLETE_QUOTES_DEFAULT));
+        completionOffersEndTagAfterLt.setSelected(preferences.getBoolean(HTML_COMPLETION_END_TAG_ADTER_LT, HTML_COMPLETION_END_TAG_ADTER_LT_DEFAULT));
     }
 
     /** This method is called from within the constructor to
@@ -82,6 +85,7 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
 
         autocompleteQuotesAfterEQSCheckBox = new javax.swing.JCheckBox();
         autocompleteQuotesCheckBox = new javax.swing.JCheckBox();
+        completionOffersEndTagAfterLt = new javax.swing.JCheckBox();
 
         setPreferredSize(new java.awt.Dimension(550, 400));
 
@@ -99,6 +103,13 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
             }
         });
 
+        completionOffersEndTagAfterLt.setText(org.openide.util.NbBundle.getMessage(HtmlCompletionOptionsPanel.class, "HtmlCompletionOptionsPanel.completionOffersEndTagAfterLt.text")); // NOI18N
+        completionOffersEndTagAfterLt.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                completionOffersEndTagAfterLtActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -107,8 +118,9 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(autocompleteQuotesAfterEQSCheckBox)
-                    .add(autocompleteQuotesCheckBox))
-                .addContainerGap(178, Short.MAX_VALUE))
+                    .add(autocompleteQuotesCheckBox)
+                    .add(completionOffersEndTagAfterLt))
+                .addContainerGap(173, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -117,24 +129,29 @@ public class HtmlCompletionOptionsPanel extends javax.swing.JPanel {
                 .add(autocompleteQuotesAfterEQSCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(autocompleteQuotesCheckBox)
-                .addContainerGap(337, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(completionOffersEndTagAfterLt)
+                .addContainerGap(314, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void autocompleteQuotesAfterEQSCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autocompleteQuotesAfterEQSCheckBoxActionPerformed
-        // TODO add your handling code here:
         preferences.putBoolean(HTML_AUTOCOMPLETE_QUOTES_AFTER_EQS, autocompleteQuotesAfterEQSCheckBox.isSelected());
     }//GEN-LAST:event_autocompleteQuotesAfterEQSCheckBoxActionPerformed
 
     private void autocompleteQuotesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autocompleteQuotesCheckBoxActionPerformed
-        // TODO add your handling code here:
         preferences.putBoolean(HTML_AUTOCOMPLETE_QUOTES, autocompleteQuotesCheckBox.isSelected());
     }//GEN-LAST:event_autocompleteQuotesCheckBoxActionPerformed
+
+    private void completionOffersEndTagAfterLtActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_completionOffersEndTagAfterLtActionPerformed
+        preferences.putBoolean(HTML_COMPLETION_END_TAG_ADTER_LT, completionOffersEndTagAfterLt.isSelected());
+    }//GEN-LAST:event_completionOffersEndTagAfterLtActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox autocompleteQuotesAfterEQSCheckBox;
     private javax.swing.JCheckBox autocompleteQuotesCheckBox;
+    private javax.swing.JCheckBox completionOffersEndTagAfterLt;
     // End of variables declaration//GEN-END:variables
 
     public static PreferencesCustomizer.Factory getCustomizerFactory() {
