@@ -97,7 +97,6 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
     protected @Override void setUp() throws Exception {
         Locale.setDefault(Locale.US);
         clearWorkDir();
-        NetigsoModuleFactory.clear();
 
         
         data = new File(getDataDir(), "jars");
@@ -176,7 +175,8 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
 
 
     static Bundle findBundle(String cnb) throws Exception {
-        for (Bundle b : NetigsoModuleFactory.getContainer().getBundleContext().getBundles()) {
+        Bundle[] arr = new Bundle[0]; //Netigso.getContainer().getBundleContext().getBundles();
+        for (Bundle b : arr) {
             if (cnb.equals(b.getSymbolicName())) {
                 return b;
             }

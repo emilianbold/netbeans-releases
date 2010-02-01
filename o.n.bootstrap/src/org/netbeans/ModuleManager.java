@@ -799,6 +799,7 @@ public final class ModuleManager {
             Dependency failedPackageDep = null;
             try {
                 ev.log(Events.PERF_START, "module preparation" ); // NOI18N
+                NetigsoFramework.willEnable(toEnable);
                 for (Module m: toEnable) {
                     fallback.addFirst(m);
                     Util.err.fine("enable: bringing up: " + m);
@@ -852,6 +853,7 @@ public final class ModuleManager {
                     installer.prepare(m);
                     ev.log(Events.PERF_END, "ModuleInstaller.prepare " + m.getCodeName() ); // NOI18N
                 }
+                NetigsoFramework.start();
                 ev.log(Events.PERF_END, "module preparation" ); // NOI18N
 
             } catch (InvalidException ie) {

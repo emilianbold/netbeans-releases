@@ -2,7 +2,6 @@ package org.netbeans.core.netigso;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -10,21 +9,32 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.ProxyClassLoader;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
 import org.openide.util.NbCollections;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.launch.Framework;
 
 final class NetigsoLoader extends ProxyClassLoader {
     private static final Logger LOG = Logger.getLogger(NetigsoLoader.class.getName());
     private Bundle bundle;
 
-    NetigsoLoader() {
+    NetigsoLoader(Framework framework, ModuleInfo m, File jar) {
         super(new ClassLoader[0], true);
-    }
 
-    void init(Bundle bundle) {
-        this.bundle = bundle;
+        Bundle b = null;
+        for (Bundle bb : framework.getBundleContext().getBundles()) {
+            if (bb.getSymbolicName().equals(m.getCodeNameBase())) {
+                b = bb;
+                break;
+            }
+        }
+        if (b == null) {
+            throw new IllegalStateException("Not found bundle:" + m.getCodeNameBase());
+        }
+
+        this.bundle = b;
         Set<String> pkgs = new HashSet<String>();
         Enumeration en = bundle.findEntries("", "", true);
         while (en.hasMoreElements()) {
@@ -39,7 +49,7 @@ final class NetigsoLoader extends ProxyClassLoader {
 
     @Override
     public URL findResource(String name) {
-        NetigsoModuleFactory.start();
+        //Netigso.start();
         Bundle b = bundle;
         if (b == null) {
             LOG.log(Level.WARNING, "Trying to load resource before initialization finished {0}", name);
@@ -50,7 +60,7 @@ final class NetigsoLoader extends ProxyClassLoader {
 
     @Override
     public Enumeration<URL> findResources(String name) {
-        NetigsoModuleFactory.start();
+        //Netigso.start();
         Bundle b = bundle;
         if (b == null) {
             LOG.log(Level.WARNING, "Trying to load resource before initialization finished {0}", name);
@@ -75,8 +85,8 @@ final class NetigsoLoader extends ProxyClassLoader {
         try {
             return b.loadClass(name);
         } catch (ClassNotFoundException ex) {
-            if (NetigsoModule.LOG.isLoggable(Level.FINEST)) {
-                NetigsoModule.LOG.log(Level.FINEST, "No class found in " + this, ex);
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINEST, "No class found in " + this, ex);
             }
             return null;
         }

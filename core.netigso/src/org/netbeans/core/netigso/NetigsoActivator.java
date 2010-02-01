@@ -79,7 +79,7 @@ final class NetigsoActivator extends HashMap<Bundle,ClassLoader> {
     }
 
     static void register(Module m) {
-        NetigsoModule.LOG.log(Level.FINER, "register module {0}", m.getCodeNameBase());
+        Netigso.LOG.log(Level.FINER, "register module {0}", m.getCodeNameBase());
         all.add(m);
     }
 

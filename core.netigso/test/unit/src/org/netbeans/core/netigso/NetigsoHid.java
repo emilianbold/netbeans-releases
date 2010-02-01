@@ -81,7 +81,7 @@ public class NetigsoHid extends SetupHid {
     protected @Override void setUp() throws Exception {
         Locale.setDefault(Locale.US);
         clearWorkDir();
-        NetigsoModuleFactory.clear();
+//        NetigsoModuleFactory.clear();
         
         data = new File(getDataDir(), "jars");
         jars = new File(getWorkDir(), "jars");

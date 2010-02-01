@@ -1,4 +1,4 @@
-package org.netbeans.core.netigso;
+package org.netbeans;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,22 +8,16 @@ import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.Events;
-import org.netbeans.InvalidException;
-import org.netbeans.Module;
-import org.netbeans.ModuleManager;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
 
+/** Special module for representing OSGi bundles 
+ * @author Jaroslav Tulach
+ */
 final class NetigsoModule extends Module {
     static final Logger LOG = Logger.getLogger(NetigsoModule.class.getPackage().getName());
 
     private File jar;
-    private Bundle bundle;
-    private NetigsoLoader loader;
     private Manifest manifest;
 
     public NetigsoModule(Manifest mani, File jar, ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
@@ -102,9 +96,11 @@ final class NetigsoModule extends Module {
     }
 
     final void start() throws IOException {
-        if (bundle != null) {
-            return;
-        }
+        ProxyClassLoader pcl = (ProxyClassLoader)classloader;
+        pcl.append(new ClassLoader[] {
+            NetigsoFramework.getDefault().createLoader(this, this.jar)
+        });
+        /*
         Bundle b = null;
         try {
             BundleContext bc = NetigsoModuleFactory.getContainer().getBundleContext();
@@ -116,43 +112,49 @@ final class NetigsoModule extends Module {
             throw (IOException)new IOException("Cannot start " + jar).initCause(ex);
         }
         bundle = b;
+         */
     }
 
     @Override
     protected void classLoaderUp(Set<Module> parents) throws IOException {
-        loader = new NetigsoLoader();
-        NetigsoModuleFactory.classLoaderUp(this);
+        assert classloader == null;
+        classloader = new ProxyClassLoader(new ClassLoader[0], false);
+        NetigsoFramework.classLoaderUp(this);
     }
 
     @Override
     protected void classLoaderDown() {
         NetigsoModule.LOG.log(Level.FINE, "classLoaderDown {0}", getCodeNameBase()); // NOI18N
-        if (bundle == null) {
-            NetigsoModuleFactory.classLoaderDown(this);
+        ProxyClassLoader pcl = (ProxyClassLoader)classloader;
+        ClassLoader l = pcl.firstParent();
+        if (l == null) {
+            NetigsoFramework.classLoaderDown(this);
             return;
         }
+        NetigsoFramework.getDefault().stopLoader(this, l);
+        /*
         assert bundle.getState() == Bundle.ACTIVE;
         try {
             bundle.stop();
         } catch (BundleException ex) {
             throw new IllegalStateException(ex);
-        }
-        loader = null;
+        */
+        classloader = null;
     }
 
     @Override
     public ClassLoader getClassLoader() throws IllegalArgumentException {
-        if (loader == null) {
+        if (classloader == null) {
             try {
                 classLoaderUp(null);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-        if (loader == null) {
+        if (classloader == null) {
             throw new IllegalArgumentException("No classloader for " + getCodeNameBase()); // NOI18N
         }
-        return loader;
+        return classloader;
     }
 
     @Override
