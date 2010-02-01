@@ -14,37 +14,14 @@ import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
 import org.openide.util.NbCollections;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.launch.Framework;
 
 final class NetigsoLoader extends ProxyClassLoader {
     private static final Logger LOG = Logger.getLogger(NetigsoLoader.class.getName());
-    private Bundle bundle;
+    final Bundle bundle;
 
-    NetigsoLoader(Framework framework, ModuleInfo m, File jar) {
+    NetigsoLoader(Bundle b, ModuleInfo m, File jar) {
         super(new ClassLoader[0], true);
-
-        Bundle b = null;
-        for (Bundle bb : framework.getBundleContext().getBundles()) {
-            if (bb.getSymbolicName().equals(m.getCodeNameBase())) {
-                b = bb;
-                break;
-            }
-        }
-        if (b == null) {
-            throw new IllegalStateException("Not found bundle:" + m.getCodeNameBase());
-        }
-
         this.bundle = b;
-        Set<String> pkgs = new HashSet<String>();
-        Enumeration en = bundle.findEntries("", "", true);
-        while (en.hasMoreElements()) {
-            URL url = (URL)en.nextElement();
-            if (url.getFile().startsWith("/META-INF")) {
-                continue;
-            }
-            pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
-        }
-        addCoveredPackages(pkgs);
     }
 
     @Override
@@ -119,8 +96,8 @@ final class NetigsoLoader extends ProxyClassLoader {
     public String toString() {
         Bundle b = bundle;
         if (b == null) {
-            return "Netigso[uninitialized]";
+            return "uninitialized";
         }
-        return "Netigso[" + b.getLocation() + "]";
+        return b.getLocation();
     }
 }

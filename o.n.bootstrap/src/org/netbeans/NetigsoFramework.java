@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -63,16 +64,25 @@ public abstract class NetigsoFramework {
 
     /** Starts the framework.
      */
-    protected abstract void start(
+    protected abstract void prepare(
         Collection<? extends ModuleInfo> preregister
     );
+
+    /** Start the OSGi framework */
+    protected abstract void start();
 
     /** Shutdowns the framework */
     protected abstract void shutdown();
 
     /** Initializes a classloader for given module.
+     * @parma m the module description
+     * @param pcl proxy classloader that shall be configured
+     * @param jar the module JAR file
+     * @return set of covered packages
      */
-    protected abstract ClassLoader createLoader(ModuleInfo m, File jar);
+    protected abstract Set<String> createLoader(
+        ModuleInfo m, ProxyClassLoader pcl, File jar
+    ) throws IOException;
 
     /** Deinitializes a classloader for given module */
     protected abstract void stopLoader(ModuleInfo m, ClassLoader loader);
@@ -108,10 +118,10 @@ public abstract class NetigsoFramework {
         if (!found) {
             return;
         }
-        getDefault().start(toEnable);
+        getDefault().prepare(toEnable);
     }
 
-    static void start() {
+    static void turnOn() {
         List<NetigsoModule> init;
         synchronized (NetigsoFramework.class) {
             init = toInit;
@@ -127,6 +137,7 @@ public abstract class NetigsoFramework {
                 Exceptions.printStackTrace(ex);
             }
         }
+        getDefault().start();
     }
 
 
@@ -152,5 +163,4 @@ public abstract class NetigsoFramework {
         }
         framework = null;
     }
-
 }

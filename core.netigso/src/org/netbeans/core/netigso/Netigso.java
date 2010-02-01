@@ -46,7 +46,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -56,12 +58,13 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.NetigsoFramework;
+import org.netbeans.ProxyClassLoader;
 import org.netbeans.Stamps;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
@@ -79,7 +82,7 @@ public class Netigso extends NetigsoFramework implements Stamps.Updater {
     private Framework framework;
 
     @Override
-    protected void start(Collection<? extends ModuleInfo> preregister) {
+    protected void prepare(Collection<? extends ModuleInfo> preregister) {
         assert framework == null;
         if (framework == null) {
             Map<String, Object> configMap = new HashMap<String, Object>();
@@ -114,18 +117,69 @@ public class Netigso extends NetigsoFramework implements Stamps.Updater {
     }
 
     @Override
+    protected void start() {
+        try {
+            framework.start();
+        } catch (BundleException ex) {
+            LOG.log(Level.WARNING, "Cannot start Container" + framework, ex);
+        }
+    }
+
+    @Override
     protected void shutdown() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    protected ClassLoader createLoader(ModuleInfo m, File jar) {
-        return new NetigsoLoader(framework, m, jar);
+    protected Set<String> createLoader(ModuleInfo m, ProxyClassLoader pcl, File jar) throws IOException {
+        try {
+            Bundle b = null;
+            if (registered.add(m.getCodeNameBase())) {
+                BundleContext bc = framework.getBundleContext();
+                LOG.log(Level.FINE, "Installing bundle {0}", jar);
+                b = bc.installBundle(jar.toURI().toURL().toExternalForm());
+            } else {
+                for (Bundle bb : framework.getBundleContext().getBundles()) {
+                    if (bb.getSymbolicName().equals(m.getCodeNameBase())) {
+                        b = bb;
+                        break;
+                    }
+                }
+            }
+            if (b == null) {
+                throw new IOException("Not found bundle:" + m.getCodeNameBase());
+            }
+            ClassLoader l = new NetigsoLoader(b, m, jar);
+            Set<String> pkgs = new HashSet<String>();
+            Enumeration en = b.findEntries("", "", true);
+            while (en.hasMoreElements()) {
+                URL url = (URL) en.nextElement();
+                if (url.getFile().startsWith("/META-INF")) {
+                    continue;
+                }
+                pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
+            }
+            pcl.append(new ClassLoader[]{ l });
+            LOG.log(Level.FINE, "Starting bundle {0}", m.getCodeNameBase());
+            b.start();
+            return pkgs;
+        } catch (BundleException ex) {
+            throw (IOException) new IOException("Cannot start " + jar).initCause(ex);
+        }
     }
 
     @Override
     protected void stopLoader(ModuleInfo m, ClassLoader loader) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        NetigsoLoader nl = (NetigsoLoader)loader;
+        Bundle b = nl.bundle;
+        try {
+            assert b != null;
+            assert b.getState() == Bundle.ACTIVE;
+            LOG.log(Level.FINE, "Stopping bundle {0}", m.getCodeNameBase());
+            b.stop();
+        } catch (BundleException ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
     //

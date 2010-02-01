@@ -2,7 +2,9 @@ package org.netbeans;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.Manifest;
@@ -97,28 +99,14 @@ final class NetigsoModule extends Module {
 
     final void start() throws IOException {
         ProxyClassLoader pcl = (ProxyClassLoader)classloader;
-        pcl.append(new ClassLoader[] {
-            NetigsoFramework.getDefault().createLoader(this, this.jar)
-        });
-        /*
-        Bundle b = null;
-        try {
-            BundleContext bc = NetigsoModuleFactory.getContainer().getBundleContext();
-            LOG.log(Level.FINE, "Installing bundle {0}", jar);
-            b = bc.installBundle(jar.toURI().toURL().toExternalForm());
-            loader.init(b);
-            b.start();
-        } catch (BundleException ex) {
-            throw (IOException)new IOException("Cannot start " + jar).initCause(ex);
-        }
-        bundle = b;
-         */
+        Set<String> pkgs = NetigsoFramework.getDefault().createLoader(this, pcl, this.jar);
+        pcl.addCoveredPackages(pkgs);
     }
 
     @Override
     protected void classLoaderUp(Set<Module> parents) throws IOException {
         assert classloader == null;
-        classloader = new ProxyClassLoader(new ClassLoader[0], false);
+        classloader = new DelegateCL();
         NetigsoFramework.classLoaderUp(this);
     }
 
@@ -132,13 +120,6 @@ final class NetigsoModule extends Module {
             return;
         }
         NetigsoFramework.getDefault().stopLoader(this, l);
-        /*
-        assert bundle.getState() == Bundle.ACTIVE;
-        try {
-            bundle.stop();
-        } catch (BundleException ex) {
-            throw new IllegalStateException(ex);
-        */
         classloader = null;
     }
 
@@ -192,5 +173,44 @@ final class NetigsoModule extends Module {
             return null;
         }
         return s.replaceFirst(";.*$", "");
+    }
+
+    private static final class DelegateCL extends ProxyClassLoader {
+        public DelegateCL() {
+            super(new ClassLoader[0], false);
+        }
+
+        private ProxyClassLoader delegate() {
+            ClassLoader l = firstParent();
+            assert l != null;
+            return (ProxyClassLoader)l;
+        }
+
+        @Override
+        public URL findResource(String name) {
+            return delegate().findResource(name);
+        }
+
+        @Override
+        public Enumeration<URL> findResources(String name) throws IOException {
+            return delegate().findResources(name);
+        }
+
+        @Override
+        protected Class<?> doLoadClass(String pkg, String name) {
+            return delegate().doLoadClass(pkg, name);
+        }
+
+        @Override
+        protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            return delegate().loadClass(name, resolve);
+        }
+
+
+        @Override
+        public String toString() {
+            ClassLoader l = firstParent();
+            return l == null ? "Netigso[uninitialized]" : "Netigso[" + l.toString() + "]"; // NOI18N
+        }
     }
 }
