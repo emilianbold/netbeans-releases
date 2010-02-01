@@ -159,6 +159,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         // would be displayed before the wizard dialog.
         sourceSchemaUpdateEnabled = true;
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 updateSourceSchema();
             }
@@ -216,7 +217,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 // only if a database connection can be found for it and we can
                 // connect to that connection without displaying a dialog
                 if (withDatasources) {
-                    if (selectDatasource(tableSourceName)) {
+                    if (selectDatasource(tableSourceName, false)) {
                         return;
                     }
                 }
@@ -261,12 +262,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 if(withDatasources){
                     String jtaDs = pu.getJtaDataSource();
                     if(jtaDs !=null ){
-                        selectDatasource(jtaDs);
+                        selectDatasource(jtaDs, true);
                     }
                     else {
                         String nJtaDs = pu.getNonJtaDataSource();
                         if(nJtaDs != null) {
-                            selectDatasource(nJtaDs);
+                            selectDatasource(nJtaDs, true);
                         }
                     }
                 } else {
@@ -320,8 +321,9 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
     /**
      * Tries to select the given data source and returns true if successful.
+     * @param skipChecks if need just to select without verifications
      */
-    private boolean selectDatasource(String jndiName) {
+    private boolean selectDatasource(String jndiName, boolean skipChecks) {
         JPADataSourceProvider dsProvider = project.getLookup().lookup(JPADataSourceProvider.class);
         if (dsProvider == null){
             return false;
@@ -343,12 +345,25 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         if (dbconns.size() == 0) {
             return false;
         }
-        DatabaseConnection dbconn = dbconns.get(0);
-        if (dbconn.getJDBCConnection() == null) {
-            return false;
+        if(!skipChecks){
+            DatabaseConnection dbcon = dbconns.get(0);
+            if (dbcon.getJDBCConnection() == null) {
+                return false;
+            }
         }
-        datasourceComboBox.setSelectedItem(datasource);
-        if (!datasource.equals(datasourceComboBox.getSelectedItem())) {
+        boolean selected = false;
+        for(int i=0; i<datasourceComboBox.getItemCount(); i++){
+            Object item = datasourceComboBox.getItemAt(i);
+            JPADataSource jpaDS = dsProvider != null ? dsProvider.toJPADataSource(item) : null;
+            if(jpaDS!=null){
+                if(datasource.getJndiName().equals(jpaDS.getJndiName()) && datasource.getUrl().equals(jpaDS.getUrl()) && datasource.getUsername().equals(jpaDS.getUsername())){
+                    datasourceComboBox.setSelectedIndex(i);
+                    selected = true;
+                    break;
+                }
+            }
+        }
+        if (!selected) {
             return false;
         }
         datasourceRadioButton.setSelected(true);
@@ -375,12 +390,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
      * Tries to select the given dbschema file and returns true if successful.
      */
     private boolean selectDBSchemaFile(String name) {
-        FileObject dbschemaFile = FileUtil.toFileObject(new File(name));
-        if (dbschemaFile == null) {
+        FileObject dbschemaFl = FileUtil.toFileObject(new File(name));
+        if (dbschemaFl == null) {
             return false;
         }
-        dbschemaComboBox.setSelectedItem(dbschemaFile);
-        if (!dbschemaFile.equals(dbschemaComboBox.getSelectedItem())) {
+        dbschemaComboBox.setSelectedItem(dbschemaFl);
+        if (!dbschemaFl.equals(dbschemaComboBox.getSelectedItem())) {
             return false;
         }
         dbschemaRadioButton.setSelected(true);
@@ -823,6 +838,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
     private final class TablesPanel extends JPanel {
 
+        @Override
         public void doLayout() {
             super.doLayout();
 
@@ -877,6 +893,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             title = wizardTitle;
         }
 
+        @Override
         public DatabaseTablesPanel getComponent() {
             if (component == null) {
                 component = new DatabaseTablesPanel();
@@ -885,6 +902,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             return component;
         }
 
+        @Override
         public HelpCtx getHelp() {
             if (cmp) {
                 return new HelpCtx("org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp." + DatabaseTablesPanel.class.getSimpleName()); // NOI18N
@@ -893,14 +911,17 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public void addChangeListener(ChangeListener listener) {
             changeSupport.addChangeListener(listener);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener listener) {
             changeSupport.removeChangeListener(listener);
         }
 
+        @Override
         public void readSettings(WizardDescriptor settings) {
             wizardDescriptor = settings;
             wizardDescriptor.putProperty("NewFileWizard_Title", title); // NOI18N
@@ -920,6 +941,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public boolean isValid() {
             if (!ProviderUtil.isValidServerInstanceOrNone(project)) {
                 setErrorMessage(NbBundle.getMessage(DatabaseTablesPanel.class, "ERR_MissingServer"));
@@ -932,6 +954,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                 if (!waitingForScan) {
                     waitingForScan = true;
                     RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
+                        @Override
                         public void run() {
                             // TODO: RETOUCHE
                             //                            JavaMetamodel.getManager().waitScanFinished();
@@ -972,6 +995,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             return true;
         }
 
+        @Override
         public void storeSettings(WizardDescriptor settings) {
             RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
 
@@ -988,6 +1012,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
             helper.setTableClosure(getComponent().getTableClosure());
         }
 
+        @Override
         public void stateChanged(ChangeEvent event) {
             changeSupport.fireChange();
         }
