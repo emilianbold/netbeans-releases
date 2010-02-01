@@ -38,7 +38,8 @@
  */
 package org.netbeans.modules.cnd.makefile.navigator;
 
-import org.netbeans.modules.cnd.makefile.model.MakefileElement;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.makefile.parser.MakefileModel;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -48,14 +49,24 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
  *
  * @author Alexey Vladykin
  */
-public class NavigatorUpdaterTask extends ParserResultTask<MakefileModel> {
+public final class NavigatorUpdaterTask extends ParserResultTask<MakefileModel> {
+
+    private final AtomicReference<MakefileNavigatorPanelUI> navigatorPanelRef;
+
+    public NavigatorUpdaterTask(AtomicReference<MakefileNavigatorPanelUI> navigatorPanelRef) {
+        this.navigatorPanelRef = navigatorPanelRef;
+    }
 
     @Override
-    public void run(MakefileModel result, SchedulerEvent event) {
-//        System.out.println(result.getSnapshot().getSource().getFileObject());
-//        for (MakefileElement e : result.getElements()) {
-//            System.out.println(e);
-//        }
+    public void run(final MakefileModel result, SchedulerEvent event) {
+        final MakefileNavigatorPanelUI navigatorPanel = navigatorPanelRef.get();
+        if (navigatorPanel != null) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    navigatorPanel.setModel(result);
+                }
+            });
+        }
     }
 
     @Override
@@ -70,6 +81,6 @@ public class NavigatorUpdaterTask extends ParserResultTask<MakefileModel> {
 
     @Override
     public void cancel() {
-        //throw new UnsupportedOperationException("Not supported yet.");
+        //this task is too short to be cancelled
     }
 }
