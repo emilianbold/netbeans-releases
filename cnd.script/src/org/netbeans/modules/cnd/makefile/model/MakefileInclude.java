@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.makefile.model;
 
+import java.util.Collections;
+import java.util.List;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -46,29 +48,17 @@ import org.openide.util.Parameters;
  *
  * @author Alexey Vladykin
  */
-public final class MakefileAssignment extends MakefileElement {
+public final class MakefileInclude extends MakefileElement {
 
-    private final String name;
-    private final String value;
+    private final List<String> includes;
 
-    public MakefileAssignment(FileObject file, int startOffset, int endOffset, String name, String value) {
-        super(Kind.ASSIGNMENT, file, startOffset, endOffset);
-        Parameters.notNull("name", name);
-        Parameters.notNull("value", value);
-        this.name = name;
-        this.value = value;
+    public MakefileInclude(Kind kind, FileObject file, int startOffset, int endOffset, List<String> includes) {
+        super(kind, file, startOffset, endOffset);
+        Parameters.notNull("includes", includes);
+        this.includes = Collections.unmodifiableList(includes);
     }
 
-    public String getMacroName() {
-        return name;
-    }
-
-    public String getMacroValue() {
-        return value;
-    }
-
-    @Override
-    public String toString() {
-        return name + " = " + value; // NOI18N
+    public List<String> getIncludes() {
+        return includes;
     }
 }

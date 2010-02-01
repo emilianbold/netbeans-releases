@@ -39,68 +39,68 @@
 
 package org.netbeans.modules.cnd.makefile.navigator;
 
-import java.awt.BorderLayout;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.JPanel;
-import org.netbeans.modules.cnd.makefile.model.MakefileElement;
+import javax.swing.Action;
+import javax.swing.text.StyledDocument;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.makefile.model.MakefileRule;
-import org.netbeans.modules.cnd.makefile.parser.MakefileModel;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.ListView;
+import org.openide.actions.OpenAction;
+import org.openide.actions.PropertiesAction;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import org.openide.text.Line;
+import org.openide.util.Exceptions;
+import org.openide.util.actions.SystemAction;
 
 /**
+ *
  * @author Alexey Vladykin
  */
-public class MakefileNavigatorPanelUI extends JPanel implements ExplorerManager.Provider {
+public final class MakefileTargetNode extends AbstractNode {
 
-    private final ExplorerManager manager;
-    private final ListView view;
+    private final MakefileRule rule;
 
-    public MakefileNavigatorPanelUI() {
-        super(new BorderLayout());
-
-        manager = new ExplorerManager();
-        view = new ListView();
-        add(view, BorderLayout.CENTER);
+    public MakefileTargetNode(MakefileRule rule, String targetName) {
+        super(Children.LEAF);
+        this.rule = rule;
+        setName(targetName);
+        setIconBaseWithExtension("org/netbeans/modules/cnd/script/resources/TargetIcon.gif"); // NOI18N
+        getCookieSet().add(new TargetOpenCookie());
     }
 
     @Override
-    public ExplorerManager getExplorerManager() {
-        return manager;
+    public Action getPreferredAction() {
+        return SystemAction.get(OpenAction.class);
     }
 
-    public void setWaiting() {
-        // TODO: manager.setRootContext(new AbstractNode(new WaitingChildren()));
+    @Override
+    public SystemAction[] getActions(boolean context) {
+        return new SystemAction[] {
+            SystemAction.get(OpenAction.class),
+            SystemAction.get(PropertiesAction.class)
+        };
     }
 
-    public void setModel(MakefileModel model) {
-        manager.setRootContext(new AbstractNode(new MakefileElementChildren(model)));
-    }
+    private class TargetOpenCookie implements OpenCookie {
 
-    private static class MakefileElementChildren extends Children.Keys<MakefileElement> {
-
-        public MakefileElementChildren(MakefileModel model) {
-            setKeys(model == null ? Collections.<MakefileElement>emptyList() : model.getElements());
-        }
-
-        @Override
-        protected Node[] createNodes(MakefileElement key) {
-            if (key.getKind() == MakefileElement.Kind.RULE) {
-                List<Node> list = new ArrayList<Node>();
-                MakefileRule rule = (MakefileRule) key;
-                for (String target : rule.getTargets()) {
-                    if (0 < target.length()) {
-                        list.add(new MakefileTargetNode(rule, target));
-                    }
+        public void open() {
+            FileObject fobj = rule.getContainingFile();
+            try {
+                DataObject dobj = DataObject.find(fobj);
+                EditorCookie editorCookie = dobj.getCookie(EditorCookie.class);
+                LineCookie lineCookie = dobj.getCookie(LineCookie.class);
+                if (editorCookie != null && lineCookie != null) {
+                    StyledDocument doc = editorCookie.openDocument();
+                    int line = Utilities.getLineOffset((BaseDocument) doc, rule.getStartOffset());
+                    lineCookie.getLineSet().getCurrent(line).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
                 }
-                return list.toArray(new Node[list.size()]);
-            } else {
-                return new Node[] {};
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }

@@ -39,18 +39,59 @@
 
 package org.netbeans.modules.cnd.makefile.model;
 
+import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
+
 /**
  * @author Alexey Vladykin
  */
-public interface MakefileElement {
+public abstract class MakefileElement {
 
     public static enum Kind {
         RULE,
-        ASSIGNMENT
+        ASSIGNMENT,
+        INCLUDE
+    }
+
+    private final Kind kind;
+    private final FileObject file;
+    private final int startOffset;
+    private final int endOffset;
+
+    protected MakefileElement(Kind kind, FileObject file, int startOffset, int endOffset) {
+        Parameters.notNull("kind", kind);
+        Parameters.notNull("file", file);
+        this.kind = kind;
+        this.file = file;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
     }
 
     /**
      * @return element kind
      */
-    Kind getKind();
+    public final Kind getKind() {
+        return kind;
+    }
+
+    /**
+     * @return file containing this element
+     */
+    public final FileObject getContainingFile() {
+        return file;
+    }
+
+    /**
+     * @return element start offset in containing file
+     */
+    public final int getStartOffset() {
+        return startOffset;
+    }
+
+    /**
+     * @return element end offset in containing file
+     */
+    public final int getEndOffset() {
+        return endOffset;
+    }
 }
