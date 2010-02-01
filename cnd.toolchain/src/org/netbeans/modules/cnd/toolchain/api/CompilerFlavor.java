@@ -40,23 +40,37 @@
 package org.netbeans.modules.cnd.toolchain.api;
 
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerFlavorImpl;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface CompilerFlavor {
+public abstract class CompilerFlavor {
 
-    String getCommandFolder(int platform);
+    public static CompilerFlavor getUnknown(int platform) {
+        return CompilerFlavorImpl.getUnknown(platform);
+    }
 
-    ToolchainDescriptor getToolchainDescriptor();
+    public static CompilerFlavor toFlavor(String name, int platform) {
+        return CompilerFlavorImpl.toFlavor(name, platform);
+    }
 
-    boolean isCygwinCompiler();
+    public abstract String getCommandFolder(int platform);
 
-    boolean isGnuCompiler();
+    public abstract ToolchainDescriptor getToolchainDescriptor();
 
-    boolean isMinGWCompiler();
+    public abstract boolean isCygwinCompiler();
 
-    boolean isSunStudioCompiler();
+    public abstract boolean isGnuCompiler();
 
+    public abstract boolean isMinGWCompiler();
+
+    public abstract boolean isSunStudioCompiler();
+
+    protected CompilerFlavor() {
+        if (!getClass().equals(CompilerFlavorImpl.class)) {
+            throw new UnsupportedOperationException("this class can not be overriden by clients"); // NOI18N
+        }
+    }
 }

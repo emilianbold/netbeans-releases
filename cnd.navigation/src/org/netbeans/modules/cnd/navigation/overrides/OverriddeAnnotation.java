@@ -41,7 +41,9 @@
 package org.netbeans.modules.cnd.navigation.overrides;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -53,7 +55,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -67,10 +72,12 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.ui.PopupUtil;
 import org.openide.text.Annotation;
 import org.openide.text.NbDocument;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -247,6 +254,31 @@ public class OverriddeAnnotation extends Annotation {
             this.direction = direction;
         }
 
+        public String getDisplayName() {
+            return method.getQualifiedName().toString();
+        }
+
+        private Image getBadge() {
+            switch (direction) {
+                case BASE:
+                    return ImageUtilities.loadImage("/org/netbeans/modules/cnd/navigation/resources/overrides-badge.png");
+                case DESC:
+                    return ImageUtilities.loadImage("/org/netbeans/modules/cnd/navigation/resources/is-overridden-badge.png");
+                default:
+                    return null;
+            }
+        }
+
+        public Icon getIcon() {
+            ImageIcon icon = CsmImageLoader.getIcon(method);
+            Image badge = getBadge();
+            if (badge == null) {
+                return icon;
+            } else {
+                return ImageUtilities.image2Icon(ImageUtilities.mergeImages(icon.getImage(), badge, 16, 0));
+            }
+        }
+
         @Override
         public String toString() {
             return method.getQualifiedName().toString();
@@ -266,6 +298,26 @@ public class OverriddeAnnotation extends Annotation {
         }
     }
 
+    private static class RendererImpl extends DefaultListCellRenderer {
+        public Component getListCellRendererComponent(
+                JList list,
+                Object value,
+                int index,
+                boolean isSelected,
+                boolean cellHasFocus) {
+            Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+            if (value instanceof Element) {
+                Element element = (Element) value;
+                setIcon(element.getIcon());
+                setText(element.getDisplayName());
+            }
+
+            return c;
+        }
+    }
+
+
     private static class Popup extends JPanel implements FocusListener {
         
         private JLabel title;
@@ -279,6 +331,7 @@ public class OverriddeAnnotation extends Annotation {
 
             title = new JLabel(caption);
             title.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+            title.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
             add(title, BorderLayout.NORTH);
 
             list = new JList();
@@ -292,6 +345,7 @@ public class OverriddeAnnotation extends Annotation {
             }
             list.setModel(model);
             list.setSelectedIndex(0);
+            list.setCellRenderer(new RendererImpl());
 
             list.addKeyListener(new java.awt.event.KeyAdapter() {
                 @Override
@@ -312,7 +366,6 @@ public class OverriddeAnnotation extends Annotation {
 
             list.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             addFocusListener(this);
-            setBorder(BorderFactory.createEtchedBorder());
         }
 
         private void openSelected() {

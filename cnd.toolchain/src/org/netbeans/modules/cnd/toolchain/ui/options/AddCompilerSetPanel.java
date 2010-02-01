@@ -55,10 +55,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerSetFactory;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetImpl;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerFlavorImpl;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
@@ -93,12 +93,12 @@ import org.openide.util.NbBundle;
             btBaseDirectory.setMnemonic(0);
         }
 
-        List<CompilerFlavor> list = CompilerFlavorAccessor.getFlavors(csm.getPlatform());
+        List<CompilerFlavor> list = CompilerFlavorImpl.getFlavors(csm.getPlatform());
         for (CompilerFlavor cf : list) {
             cbFamily.addItem(cf);
         }
         // add unknown as well
-        cbFamily.addItem(CompilerFlavorAccessor.getUnknown(csm.getPlatform()));
+        cbFamily.addItem(CompilerFlavor.getUnknown(csm.getPlatform()));
         tfName.setText(""); // NOI18N
         validateData();
 
@@ -142,7 +142,7 @@ import org.openide.util.NbBundle;
             if (flavors.size() > 0) {
                 cbFamily.setSelectedItem(flavors.get(0));
             } else {
-                cbFamily.setSelectedItem(CompilerFlavorAccessor.getUnknown(csm.getPlatform()));
+                cbFamily.setSelectedItem(CompilerFlavor.getUnknown(csm.getPlatform()));
             }
             updateDataFamily();
             if (!dialogDescriptor.isValid()) {

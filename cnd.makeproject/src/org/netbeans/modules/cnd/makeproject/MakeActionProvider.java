@@ -102,7 +102,6 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ValidateInstrumentationProvider;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.CompilerFlavorAccessor;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerSetFactory;
 import org.netbeans.modules.cnd.toolchain.ui.api.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelModel;
@@ -1105,10 +1104,10 @@ public class MakeActionProvider implements ActionProvider {
             csname = csconf.getOldName();
             CompilerFlavor flavor = null;
             if (csconf.getFlavor() != null) {
-                flavor = CompilerFlavorAccessor.toFlavor(csconf.getFlavor(), conf.getPlatformInfo().getPlatform());
+                flavor = CompilerFlavor.toFlavor(csconf.getFlavor(), conf.getPlatformInfo().getPlatform());
             }
             if (flavor == null) {
-                flavor = CompilerFlavorAccessor.getUnknown(conf.getPlatformInfo().getPlatform());
+                flavor = CompilerFlavor.getUnknown(conf.getPlatformInfo().getPlatform());
             }
             cs = CompilerSetFactory.getCustomCompilerSet("", flavor, csconf.getOldName());
             CompilerSetManager.get(env).add(cs);
