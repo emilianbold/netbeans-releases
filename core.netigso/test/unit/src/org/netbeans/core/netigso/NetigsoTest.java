@@ -65,7 +65,7 @@ public class NetigsoTest extends NetigsoHid {
 
     public static Test suite() {
         Test t = null;
-        t = new NetigsoTest("testFactoryCreatesOurModulesWithDeps");
+//        t = new NetigsoTest("testFactoryCreatesOurModulesWithDeps");
         if (t == null) {
             t = new NbTestSuite(NetigsoTest.class);
         }

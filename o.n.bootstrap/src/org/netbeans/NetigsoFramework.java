@@ -162,5 +162,6 @@ public abstract class NetigsoFramework {
             framework.shutdown();
         }
         framework = null;
+        toInit = new ArrayList<NetigsoModule>();
     }
 }

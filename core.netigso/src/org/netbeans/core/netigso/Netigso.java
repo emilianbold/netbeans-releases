@@ -78,17 +78,18 @@ import org.osgi.framework.launch.FrameworkFactory;
 public class Netigso extends NetigsoFramework implements Stamps.Updater {
     static final Logger LOG = Logger.getLogger(Netigso.class.getName());
 
-    private NetigsoActivator activator;
     private Framework framework;
 
     @Override
     protected void prepare(Collection<? extends ModuleInfo> preregister) {
         assert framework == null;
         if (framework == null) {
+            readBundles();
+            
             Map<String, Object> configMap = new HashMap<String, Object>();
             final String cache = getNetigsoCache().getPath();
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
-            activator = new NetigsoActivator();
+            NetigsoActivator activator = new NetigsoActivator();
             configMap.put("felix.bootdelegation.classloaders", activator);
             FrameworkFactory frameworkFactory = Lookup.getDefault().lookup(FrameworkFactory.class);
             if (frameworkFactory == null) {
@@ -127,7 +128,16 @@ public class Netigso extends NetigsoFramework implements Stamps.Updater {
 
     @Override
     protected void shutdown() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+            framework.stop();
+            framework.waitForStop(10000);
+            framework = null;
+            registered.clear();
+        } catch (InterruptedException ex) {
+            LOG.log(Level.WARNING, "Wait for shutdown failed" + framework, ex);
+        } catch (BundleException ex) {
+            LOG.log(Level.WARNING, "Cannot start Container" + framework, ex);
+        }
     }
 
     @Override
@@ -174,7 +184,7 @@ public class Netigso extends NetigsoFramework implements Stamps.Updater {
         Bundle b = nl.bundle;
         try {
             assert b != null;
-            assert b.getState() == Bundle.ACTIVE;
+            assert b.getState() == Bundle.ACTIVE : "Wrong state: " + b.getState() + " for " + m.getCodeNameBase();
             LOG.log(Level.FINE, "Stopping bundle {0}", m.getCodeNameBase());
             b.stop();
         } catch (BundleException ex) {
