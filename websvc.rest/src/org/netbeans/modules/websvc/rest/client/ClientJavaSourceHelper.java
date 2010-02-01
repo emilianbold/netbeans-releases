@@ -305,22 +305,23 @@ public class ClientJavaSourceHelper {
     }
 
     private static List<MethodTree> createHttpMethods(WorkingCopy copy, HttpMethod httpMethod) {
-        String path = httpMethod.getPath();
         List<MethodTree> httpMethods = new ArrayList<MethodTree>();
         String method = httpMethod.getType();
         if (RestConstants.GET_ANNOTATION.equals(method)) { //GET
             boolean found = false;
             String produces = httpMethod.getProduceMime();
             if (produces.length() > 0) {
+                boolean multipleMimeTypes = produces.contains(","); //NOI18N
                 for (HttpMimeType mimeType : HttpMimeType.values()) {
                     if (produces.contains(mimeType.getMimeType())) {
-                        httpMethods.add(createHttpGETMethod(copy, mimeType, httpMethod.getReturnType(), path));
+                        String methodName = httpMethod.getName() + (multipleMimeTypes ? "_"+mimeType.name() : ""); //NOI18N
+                        httpMethods.add(createHttpGETMethod(copy, httpMethod, mimeType, multipleMimeTypes));
                         found = true;
                     }
                 }
             }
             if (!found) {
-                httpMethods.add(createHttpGETMethod(copy, null, httpMethod.getReturnType(), path));
+                httpMethods.add(createHttpGETMethod(copy, httpMethod, null, false));
             }
         } else if ( RestConstants.PUT_ANNOTATION.equals(method) ||
                     RestConstants.POST_ANNOTATION.equals(method) ||
@@ -329,22 +330,27 @@ public class ClientJavaSourceHelper {
             boolean found = false;
             String consumes = httpMethod.getConsumeMime();
             if (consumes.length() > 0) { //NOI18N
+                boolean multipleMimeTypes = consumes.contains(","); //NOI18N
                 for (HttpMimeType mimeType : HttpMimeType.values()) {
                     if (consumes.contains(mimeType.getMimeType())) {
-                        httpMethods.add(createHttpPOSTMethod(copy, method, mimeType, httpMethod.getReturnType(), path));
+                        httpMethods.add(createHttpPOSTMethod(copy, httpMethod, mimeType, multipleMimeTypes));
                         found = true;
                     }
                 }
             }
             if (!found) {
-                httpMethods.add(createHttpPOSTMethod(copy, method, null, httpMethod.getReturnType(), path));
+                httpMethods.add(createHttpPOSTMethod(copy, httpMethod, null, false));
             }
         }
 
         return httpMethods;
     }
 
-    private static MethodTree createHttpGETMethod(WorkingCopy copy, HttpMimeType mimeType, String responseType, String path) {
+    private static MethodTree createHttpGETMethod(WorkingCopy copy, HttpMethod httpMethod, HttpMimeType mimeType, boolean multipleMimeTypes) {
+        String responseType = httpMethod.getReturnType();
+        String path = httpMethod.getPath();
+        String methodName = httpMethod.getName() + (multipleMimeTypes ? "_"+mimeType.name() : ""); //NOI18N
+
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
         ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
@@ -353,6 +359,7 @@ public class ClientJavaSourceHelper {
         ExpressionTree responseTree = null;
         String bodyParam = ""; //NOI18N
         List<TypeParameterTree> typeParams =  null;
+
         if ("java.lang.String".equals(responseType)) { //NOI18N
             responseTree = maker.Identifier("String"); //NOI18N
             bodyParam="String.class"; //NOI18N
@@ -380,7 +387,7 @@ public class ClientJavaSourceHelper {
                 "}"; //NOI18N
             return maker.Method (
                     methodModifier,
-                    "get"+(mimeType == null ? "" : mimeType.name()), //NOI18N
+                    methodName,
                     responseTree,
                     typeParams,
                     paramList,
@@ -403,7 +410,7 @@ public class ClientJavaSourceHelper {
                     "}"; //NOI18N
             return maker.Method (
                     methodModifier,
-                    "get"+(mimeType == null ? "" : mimeType.name()), //NOI18N
+                    methodName,
                     responseTree,
                     typeParams,
                     paramList,
@@ -557,8 +564,12 @@ public class ClientJavaSourceHelper {
                 "/"+applicationPath + uri; //NOI18N
     }
 
-    private static MethodTree createHttpPOSTMethod(WorkingCopy copy, String httpMethod, HttpMimeType requestMimeType, String responseType, String path) {
-        String methodPrefix = httpMethod.toLowerCase();
+    private static MethodTree createHttpPOSTMethod(WorkingCopy copy, HttpMethod httpMethod, HttpMimeType requestMimeType, boolean multipleMimeTypes) {
+        String methodPrefix = httpMethod.getType().toLowerCase();
+        String responseType = httpMethod.getReturnType();
+        String path = httpMethod.getPath();
+        String methodName = httpMethod.getName() + (multipleMimeTypes ? "_"+requestMimeType.name() : ""); //NOI18N
+
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
         ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
@@ -586,8 +597,8 @@ public class ClientJavaSourceHelper {
         } else {
             responseTree = maker.Identifier("T"); //NOI18N
             ret = "return "; //NOI18N
-            bodyParam1="requestType"; //NOI18N
-            classParam = maker.Variable(paramModifier, "requestType", maker.Identifier("Class<T>"), null); //NOI18N
+            bodyParam1="responseType"; //NOI18N
+            classParam = maker.Variable(paramModifier, "responseType", maker.Identifier("Class<T>"), null); //NOI18N
             typeParams = Collections.<TypeParameterTree>singletonList(maker.TypeParameter("T", Collections.<ExpressionTree>emptyList()));
         }
 
@@ -598,7 +609,7 @@ public class ClientJavaSourceHelper {
             paramList.add(classParam);
         }
         String bodyParam2 = "";
-        if (!RestConstants.DELETE_ANNOTATION.equals(httpMethod) || requestMimeType != null) {
+        if (!RestConstants.DELETE_ANNOTATION.equals(httpMethod.getType()) || requestMimeType != null) {
             VariableTree objectParam = maker.Variable(paramModifier, "requestEntity", maker.Identifier("Object"), null); //NOI18N
             paramList.add(objectParam);
             bodyParam2=(bodyParam1.length() > 0 ? ", " : "") + "requestEntity"; //NOI18N
@@ -617,7 +628,7 @@ public class ClientJavaSourceHelper {
                 "}"; //NOI18N
             return maker.Method (
                     methodModifier,
-                    methodPrefix+(requestMimeType == null ? "" : requestMimeType.name()), //NOI18N
+                    methodName,
                     responseTree,
                     typeParams,
                     paramList,
@@ -642,7 +653,7 @@ public class ClientJavaSourceHelper {
                     "}"; //NOI18N
             return maker.Method (
                     methodModifier,
-                    methodPrefix+(requestMimeType == null ? "" : requestMimeType.name()), //NOI18N
+                    methodName,
                     responseTree,
                     typeParams,
                     paramList,
