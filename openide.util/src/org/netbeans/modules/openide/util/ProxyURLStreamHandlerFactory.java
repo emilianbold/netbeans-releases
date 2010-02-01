@@ -49,25 +49,23 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.URLStreamHandlerRegistration;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * @see URLStreamHandlerRegistration
  */
+@ServiceProvider(service=URLStreamHandlerFactory.class)
 public final class ProxyURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
     /** prevents GC only */
     private final Map<String, Lookup.Result<URLStreamHandler>> results = new HashMap<String, Lookup.Result<URLStreamHandler>>();
     private final Map<String, URLStreamHandler> handlers = new HashMap<String, URLStreamHandler>();
 
-    /** for lookup */
-    public ProxyURLStreamHandlerFactory() {}
-
-    public synchronized URLStreamHandler createURLStreamHandler(final String protocol) {
+    public @Override synchronized URLStreamHandler createURLStreamHandler(final String protocol) {
         if (!results.containsKey(protocol)) {
             final Lookup.Result<URLStreamHandler> result = Lookups.forPath(URLStreamHandlerRegistrationProcessor.REGISTRATION_PREFIX + protocol).lookupResult(URLStreamHandler.class);
             LookupListener listener = new LookupListener() {
-
-                public void resultChanged(LookupEvent ev) {
+                public @Override void resultChanged(LookupEvent ev) {
                     synchronized (ProxyURLStreamHandlerFactory.this) {
                         Collection<? extends URLStreamHandler> instances = result.allInstances();
                         handlers.put(protocol, instances.isEmpty() ? null : instances.iterator().next());
