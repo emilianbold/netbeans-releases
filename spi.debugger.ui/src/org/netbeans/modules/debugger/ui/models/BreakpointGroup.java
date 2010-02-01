@@ -69,6 +69,9 @@ public class BreakpointGroup {
 
     static enum Group { NO, CUSTOM, LANGUAGE, TYPE, PROJECT, FILE, NESTED }
 
+    static final String PROP_FROM_OPEN_PROJECTS = "fromOpenProjects";       // NOI18N
+    static final String PROP_FROM_CURRENT_SESSION_PROJECTS = "fromCurrentSessionProjects";  // NOI18N
+
     private BreakpointGroup parent;
     private String name;
     private Object id;
@@ -139,8 +142,8 @@ public class BreakpointGroup {
     static Object[] createGroups(Properties props) {
         //props.addPropertyChangeListener(null);
         String[] groupNames = (String[]) props.getArray("Grouping", new String[] { Group.CUSTOM.name() });
-        boolean openProjectsOnly = props.getBoolean("fromOpenProjects", true);
-        boolean sessionProjectsOnly = props.getBoolean("fromCurrentSessionProjects", true);
+        boolean openProjectsOnly = props.getBoolean(PROP_FROM_OPEN_PROJECTS, true);
+        boolean sessionProjectsOnly = props.getBoolean(PROP_FROM_CURRENT_SESSION_PROJECTS, true);
         Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
         if (groupNames.length == 0 || groupNames[0].equals(Group.NO.name())) {
             return bs;
