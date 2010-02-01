@@ -178,7 +178,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         int h = (int) panel.getPreferredSize().getHeight();
         h = h + table.getRowMargin();
         if (table.getRowHeight(row) < h) {
-            table.setRowHeight(row, h);
+            table.setRowHeight(h);
         } 
     }
 
@@ -219,6 +219,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
     private void addParentAction(int row, int column, JLabel label, final NbJiraIssue issue) {
         issueTable.addCellAction(row, column, label.getBounds(), new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 String id = issue.getParentID();
                 NbJiraIssue parent = (NbJiraIssue) issue.getRepository().getIssueCache().getIssue(id);
@@ -267,16 +268,22 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             super.paint(g);
         }
         /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        @Override
         public void invalidate() {}
         /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        @Override
         public void validate() {}
         /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        @Override
         public void revalidate() {}
         /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        @Override
         public void repaint(long tm, int x, int y, int width, int height) {}
         /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        @Override
         public void repaint(Rectangle r) { }
         /** overriden to no-op. {@see javax.swing.table.DefaultTableCellRenderer} for more information.*/
+        @Override
         public void repaint() {}
     }
 
@@ -307,6 +314,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
             }
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             int[] rows;
             int[] heights;
