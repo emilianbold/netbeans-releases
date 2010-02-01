@@ -79,6 +79,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     static final Logger LOG = Logger.getLogger(Netigso.class.getName());
 
     private Framework framework;
+    private NetigsoActivator activator;
 
     Framework getFramework() {
         return framework;
@@ -92,8 +93,8 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             Map<String, Object> configMap = new HashMap<String, Object>();
             final String cache = getNetigsoCache().getPath();
             configMap.put(Constants.FRAMEWORK_STORAGE, cache);
-            NetigsoActivator activator = new NetigsoActivator();
-            configMap.put("felix.bootdelegation.classloaders", activator);
+            activator = new NetigsoActivator();
+            configMap.put("felix.bootdelegation.classloaders", activator); // NOI18N
             FrameworkFactory frameworkFactory = Lookup.getDefault().lookup(FrameworkFactory.class);
             if (frameworkFactory == null) {
                 throw new IllegalStateException(
@@ -109,13 +110,13 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             }
             new NetigsoServices(framework);
             LOG.finer("OSGi Container initialized"); // NOI18N
-
-            for (ModuleInfo mi : preregister) {
-                try {
-                    fakeOneModule(mi);
-                } catch (IOException ex) {
-                    LOG.log(Level.WARNING, "Cannot fake " + mi.getCodeName(), ex);
-                }
+        }
+        activator.register(preregister);
+        for (ModuleInfo mi : preregister) {
+            try {
+                fakeOneModule(mi);
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, "Cannot fake " + mi.getCodeName(), ex);
             }
         }
     }
