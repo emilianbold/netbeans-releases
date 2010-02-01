@@ -51,9 +51,9 @@ import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
  *
  * @author Sergey Grinev
  */
-public class CppSwitchTestCase extends TraceModelTestBase {
+public class CppSwitchTest extends TraceModelTestBase {
 
-    public CppSwitchTestCase(String testName) {
+    public CppSwitchTest(String testName) {
         super(testName);
     }
 

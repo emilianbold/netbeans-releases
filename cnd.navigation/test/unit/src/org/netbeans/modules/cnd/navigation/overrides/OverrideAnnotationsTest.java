@@ -59,9 +59,9 @@ import org.openide.loaders.DataObject;
  *
  * @author Vladimir Kvashin
  */
-public class OverrideTestCase extends ProjectBasedTestCase {
+public class OverrideAnnotationsTest extends ProjectBasedTestCase {
 
-    public OverrideTestCase(String testName) {
+    public OverrideAnnotationsTest(String testName) {
         super(testName);
     }
 
