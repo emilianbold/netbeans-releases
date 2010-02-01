@@ -90,6 +90,7 @@ import org.netbeans.spi.lexer.TokenFactory;
         AT_LINE_START,
         AFTER_LINE_START,
         AFTER_TAB_OR_SEMICOLON,
+        IN_SHELL,
         AFTER_EQUALS,
         AFTER_COLON
     }
@@ -158,17 +159,38 @@ import org.netbeans.spi.lexer.TokenFactory;
                 break;
 
             case AFTER_TAB_OR_SEMICOLON:
-                token = readWhitespaceOrModifierOrShell();
-                if (token == null) {
-                    token = readToken(false, false, false, false);
-                    if (token != null) {
-                        switch (token.id()) {
-                            case NEW_LINE:
-                                state = State.AT_LINE_START;
-                                break;
-                            default:
-                                throw new IllegalStateException("Internal error"); // NOI18N
-                        }
+                token = readTokenInShell(true);
+                if (token != null) {
+                    switch (token.id()) {
+                        case NEW_LINE:
+                            state = State.AT_LINE_START;
+                            break;
+                        case SHELL:
+                        case MACRO:
+                            state = State.IN_SHELL;
+                            break;
+                        case WHITESPACE:
+                            // remain in AFTER_TAB_OR_SEMICOLON state
+                            break;
+                        default:
+                            throw new IllegalStateException("Internal error"); // NOI18N
+                    }
+                }
+                break;
+
+            case IN_SHELL:
+                token = readTokenInShell(false);
+                if (token != null) {
+                    switch (token.id()) {
+                        case NEW_LINE:
+                            state = State.AT_LINE_START;
+                            break;
+                        case SHELL:
+                        case MACRO:
+                            // remain in IN_SHELL state
+                            break;
+                        default:
+                            throw new IllegalStateException("Internal error"); // NOI18N
                     }
                 }
                 break;
@@ -253,7 +275,7 @@ import org.netbeans.spi.lexer.TokenFactory;
                 return factory.createToken(MakefileTokenId.WHITESPACE);
 
             case '#':
-                consumeAnythingTillEndOfLine(input);
+                consumeAnythingTillEndOfLine(input, false);
                 return factory.createToken(MakefileTokenId.COMMENT);
 
             case '\r':
@@ -377,25 +399,28 @@ import org.netbeans.spi.lexer.TokenFactory;
         }
     }
 
-    private Token<MakefileTokenId> readWhitespaceOrModifierOrShell() {
+    private Token<MakefileTokenId> readTokenInShell(boolean wantWhitespace) {
         LexerInput input = info.input();
         TokenFactory<MakefileTokenId> factory = info.tokenFactory();
 
         switch (input.read()) {
-            case '@':
-            case '-':
-            case '+':
-                return factory.createToken(MakefileTokenId.SHELL_MODIFIER);
+            case '$':
+                return readMacro(input, factory);
             case ' ':
             case '\t':
-                consumeWhitespace(input);
-                return factory.createToken(MakefileTokenId.WHITESPACE);
-            default:
-                input.backup(1);
+                if (wantWhitespace) {
+                    consumeWhitespace(input);
+                    return factory.createToken(MakefileTokenId.WHITESPACE);
+                }
+                break;
         }
 
-        if (consumeAnythingTillEndOfLine(input)) {
+        input.backup(1);
+
+        if (consumeAnythingTillEndOfLine(input, true)) {
             return factory.createToken(MakefileTokenId.SHELL);
+        } else if (0 < consumeNewline(input)) {
+            return factory.createToken(MakefileTokenId.NEW_LINE);
         } else {
             return null;
         }
@@ -441,7 +466,7 @@ import org.netbeans.spi.lexer.TokenFactory;
      * @param input
      * @return <code>true</code> if consumed at least one character
      */
-    private static boolean consumeAnythingTillEndOfLine(LexerInput input) {
+    private static boolean consumeAnythingTillEndOfLine(LexerInput input, boolean wantMacro) {
         int consumed = 0;
         for (;;) {
             switch (input.read()) {
@@ -453,6 +478,13 @@ import org.netbeans.spi.lexer.TokenFactory;
 
                 case '\\':
                     consumed += 1 + consumeNewline(input);
+                    break;
+
+                case '$':
+                    if (wantMacro) {
+                        input.backup(1);
+                        return 0 < consumed;
+                    }
                     break;
 
                 default:
