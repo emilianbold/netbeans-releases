@@ -142,7 +142,7 @@ public class ReportPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.jLabel5.text_1")); // NOI18N
 
-        jPasswordField1.setText(exSettings.getPasswd());
+        jPasswordField1.setText(new String(exSettings.getPasswd()));
 
         rememberCheckBox.setSelected(exSettings.rememberPasswd());
         org.openide.awt.Mnemonics.setLocalizedText(rememberCheckBox, org.openide.util.NbBundle.getMessage(ReportPanel.class, "jCheckBox1.text")); // NOI18N
@@ -179,10 +179,10 @@ public class ReportPanel extends javax.swing.JPanel {
                             .addComponent(jLabel5))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPasswordField1, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
-                            .addComponent(loginField, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
+                            .addComponent(jPasswordField1, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
+                            .addComponent(loginField, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
                             .addComponent(rememberCheckBox)
-                            .addComponent(asAGuestCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE))
+                            .addComponent(asAGuestCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel10)
@@ -193,13 +193,13 @@ public class ReportPanel extends javax.swing.JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel9)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(summaryField, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE))
+                                .addComponent(summaryField, javax.swing.GroupLayout.DEFAULT_SIZE, 542, Short.MAX_VALUE))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel2)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel6)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(jLabel7, javax.swing.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE))
                             .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE))
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -209,10 +209,10 @@ public class ReportPanel extends javax.swing.JPanel {
                         .addGap(11, 11, 11))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel8)
-                        .addContainerGap(143, Short.MAX_VALUE))
+                        .addContainerGap(178, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(oomInfo)
-                        .addContainerGap(44, Short.MAX_VALUE))))
+                        .addContainerGap(72, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -231,7 +231,7 @@ public class ReportPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -297,9 +297,9 @@ public class ReportPanel extends javax.swing.JPanel {
             boolean rememberPasswd = rememberCheckBox.isSelected();
             exSettings.setRememberPasswd(rememberPasswd);
             if (rememberPasswd){
-                exSettings.setPasswd(getPasswd());
+                exSettings.setPasswd(getPasswdChars());
             }else{
-                exSettings.setPasswd("");   //NOI18N
+                exSettings.setPasswd(new char[0]);   //NOI18N
             }
         }
         
@@ -312,11 +312,15 @@ public class ReportPanel extends javax.swing.JPanel {
         }
 
         public String getPasswd(){
+            return new String(getPasswdChars());
+        }
+
+        public char[] getPasswdChars(){
             char[] passwd = jPasswordField1.getPassword();
             if (passwd.length > PasswdEncryption.MAX_ENCRYPTION_LENGHT){
                 passwd = copyOf(passwd, PasswdEncryption.MAX_ENCRYPTION_LENGHT);
             }
-            return new String(passwd);
+            return passwd;
         }
 
         public static char[] copyOf(char[] original, int newLength) {
