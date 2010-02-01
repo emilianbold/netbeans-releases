@@ -101,7 +101,7 @@ public class RESTClientGenerator implements CodeGenerator {
 
         RESTExplorerPanel explorerPanel = new RESTExplorerPanel();
         DialogDescriptor descriptor = new DialogDescriptor(explorerPanel,
-                NbBundle.getMessage(RESTClientGenerator.class,"TTL_SelectRESTResource")); //NOI18N
+                NbBundle.getMessage(RESTClientGenerator.class,"TTL_RESTResources")); //NOI18N
         explorerPanel.setDescriptor(descriptor);
         if (DialogDisplayer.getDefault().notify(descriptor).equals(NotifyDescriptor.OK_OPTION)) {
             Node resourceNode = explorerPanel.getSelectedService();
