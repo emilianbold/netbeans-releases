@@ -98,6 +98,7 @@ public class MakefileNavigatorPanelUI extends JPanel implements ExplorerManager.
                     if (0 < target.length()) {
                         AbstractNode node = new AbstractNode(Children.LEAF);
                         node.setName(target);
+                        node.setIconBaseWithExtension("org/netbeans/modules/cnd/script/resources/TargetIcon.gif"); // NOI18N
                         list.add(node);
                     }
                 }
