@@ -220,19 +220,19 @@ public class CompilerSetImpl implements CompilerSet {
         if (!tools.contains(tool)) {
             tools.add(tool);
         }
-        tool.setCompilerSet(this);
+        APIAccessor.get().setCompilerSet(tool, this);
         return tool;
     }
 
     /*package-local*/ void addTool(Tool tool) {
         tools.add(tool);
-        tool.setCompilerSet(this);
+        APIAccessor.get().setCompilerSet(tool, this);
     }
 
     /*package-local*/ Tool addNewTool(ExecutionEnvironment env, String name, String path, ToolKindBase kind) {
         Tool tool = compilerProvider.createCompiler(env, flavor, kind, name, kind.getDisplayName(), path);
         tools.add(tool);
-        tool.setCompilerSet(this);
+        APIAccessor.get().setCompilerSet(tool, this);
         return tool;
     }
 
@@ -255,7 +255,7 @@ public class CompilerSetImpl implements CompilerSet {
         // Fixup: all tools should go here ....
         t = compilerProvider.createCompiler(ExecutionEnvironmentFactory.getLocal(),
                 getCompilerFlavor(), kind, "", kind.getDisplayName(), ""); // NOI18N
-        t.setCompilerSet(this);
+        APIAccessor.get().setCompilerSet(t, this);
         synchronized( tools ) { // synchronize this only unpredictable tools modification
             tools.add(t);
         }

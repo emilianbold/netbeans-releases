@@ -55,9 +55,7 @@ public class SunDebuggerTool extends Tool {
     
     @Override
     public SunDebuggerTool createCopy() {
-        SunDebuggerTool copy = new SunDebuggerTool(getExecutionEnvironment(), getFlavor(), "", getDisplayName(), getPath());
-        copy.setName(getName());
-        return copy;
+        return new SunDebuggerTool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
     }
 
     public static SunDebuggerTool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {

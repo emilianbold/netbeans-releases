@@ -55,9 +55,7 @@ public class SunFortranCompiler extends BasicCompiler {
     
     @Override
     public SunFortranCompiler createCopy() {
-        SunFortranCompiler copy = new SunFortranCompiler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath());
-        copy.setName(getName());
-        return copy;
+        return new SunFortranCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
     }
 
     public String getMTLevelOptions(int value) {

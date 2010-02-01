@@ -57,9 +57,7 @@ public class GeneralTool extends Tool {
 
     @Override
     public GeneralTool createCopy() {
-        GeneralTool copy = new GeneralTool(getExecutionEnvironment(), getKind(), getFlavor(),  "", getDisplayName(), getPath());
-        copy.setName(getName());
-        return copy;
+        return new GeneralTool(getExecutionEnvironment(), getKind(), getFlavor(),  getName(), getDisplayName(), getPath());
     }
 
     public static GeneralTool create(ExecutionEnvironment env, ToolKindBase kind, CompilerFlavor flavor, String name, String displayName, String path) {

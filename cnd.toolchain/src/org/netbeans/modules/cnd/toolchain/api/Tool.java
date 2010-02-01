@@ -56,12 +56,12 @@ public class Tool {
     }
     
     private final ExecutionEnvironment executionEnvironment;
-    private CompilerFlavor flavor;
-    private ToolKindBase kind;
+    private final CompilerFlavor flavor;
+    private final ToolKindBase kind;
     private String name;
-    private String displayName;
+    private final String displayName;
     private String path;
-    private CompilerSet compilerSet = null;
+    private CompilerSet compilerSet;
 
     /** Creates a new instance of GenericCompiler */
     protected Tool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
@@ -71,7 +71,6 @@ public class Tool {
         this.name = name;
         this.displayName = displayName;
         this.path = path;
-        compilerSet = null;
     }
 
     public ToolDescriptor getDescriptor() {
@@ -79,12 +78,6 @@ public class Tool {
     }
 
     public Tool createCopy() {
-        Tool copy = new Tool(executionEnvironment, flavor, kind, "", displayName, path);
-        copy.setName(getName());
-        return copy;
-    }
-
-    static Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
         return new Tool(executionEnvironment, flavor, kind, name, displayName, path);
     }
 
@@ -126,10 +119,6 @@ public class Tool {
         return kind;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getName() {
         return name;
     }
@@ -139,8 +128,7 @@ public class Tool {
     }
 
     public void setPath(String p) {
-        if (p == null) {
-        } else {
+        if (p != null) {
             path = p;
             name = ToolUtils.getBaseName(path);
         }
@@ -148,16 +136,6 @@ public class Tool {
 
     public String getDisplayName() {
         return displayName;
-    }
-
-    @Override
-    public String toString() {
-        String n = getName();
-        if (Utilities.isWindows() && n.endsWith(".exe")) { // NOI18N
-            return n.substring(0, n.length() - 4);
-        } else {
-            return n;
-        }
     }
 
     public String getIncludeFilePathPrefix() {
@@ -171,8 +149,22 @@ public class Tool {
         return compilerSet;
     }
 
-    public void setCompilerSet(CompilerSet compilerSet) {
+    @Override
+    public String toString() {
+        String n = getName();
+        if (Utilities.isWindows() && n.endsWith(".exe")) { // NOI18N
+            return n.substring(0, n.length() - 4);
+        } else {
+            return n;
+        }
+    }
+
+    private void setCompilerSet(CompilerSet compilerSet) {
         this.compilerSet = compilerSet;
+    }
+
+    private static Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+        return new Tool(executionEnvironment, flavor, kind, name, displayName, path);
     }
 
     private static final class APIAccessorImpl extends APIAccessor {
@@ -182,5 +174,9 @@ public class Tool {
             return Tool.createTool(env, flavor, kind, name, displayName, path);
         }
 
+        @Override
+        public void setCompilerSet(Tool tool, CompilerSet cs) {
+            tool.setCompilerSet(cs);
+        }
     }
 }

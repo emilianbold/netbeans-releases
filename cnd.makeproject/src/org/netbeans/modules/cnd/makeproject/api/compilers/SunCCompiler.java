@@ -60,8 +60,7 @@ public class SunCCompiler extends SunCCCCompiler {
     
     @Override
     public SunCCompiler createCopy() {
-        SunCCompiler copy = new SunCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath());
-        copy.setName(getName());
+        SunCCompiler copy = new SunCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
         if (isReady()) {
             copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
             copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());

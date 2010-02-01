@@ -82,8 +82,6 @@ public abstract class CompilerSetManager {
 
     public abstract CompilerSet getCompilerSet(int idx);
 
-    public abstract List<String> getCompilerSetNames();
-
     public abstract List<CompilerSet> getCompilerSets();
 
     public abstract CompilerSet getDefaultCompilerSet();

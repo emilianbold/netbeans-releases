@@ -54,9 +54,7 @@ public class GNUFortranCompiler extends BasicCompiler {
     
     @Override
     public GNUFortranCompiler createCopy() {
-        GNUFortranCompiler copy = new GNUFortranCompiler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath());
-        copy.setName(getName());
-        return copy;
+        return new GNUFortranCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
     }
 
     public static GNUFortranCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {

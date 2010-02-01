@@ -55,9 +55,7 @@ public class GNUMaketool extends Tool {
     
     @Override
     public GNUMaketool createCopy() {
-        GNUMaketool copy = new GNUMaketool(getExecutionEnvironment(), getFlavor(), "", getDisplayName(), getPath());
-        copy.setName(getName());
-        return copy;
+        return new GNUMaketool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
     }
 
     public static GNUMaketool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {
