@@ -192,8 +192,12 @@ public class GenerateJnlpFileTask extends Task {
             codebaseProp = getProject().getProperty("jnlp.codebase.user"); // property in project.properties
         }
         log("jnlp.codebase.url = " + codebaseProp, Project.MSG_VERBOSE);
-        if (codebaseProp != null && codebaseAttr.equals(DEFAULT_JNLP_CODEBASE)) { // default value => replace
-            ((Element) jnlpElem).setAttribute("codebase", codebaseProp);
+        if (codebaseAttr.equals(DEFAULT_JNLP_CODEBASE)) {   // default value => replace
+            if (codebaseTypeProp.equals("no.codebase")) {   //NOI18N
+                ((Element)jnlpElem).removeAttribute("codebase");    //NOI18N
+            } else if (codebaseProp != null) {
+                ((Element) jnlpElem).setAttribute("codebase", codebaseProp);
+            }
         }
         
         String hrefAttr = ((Element) jnlpElem).getAttribute("href");
