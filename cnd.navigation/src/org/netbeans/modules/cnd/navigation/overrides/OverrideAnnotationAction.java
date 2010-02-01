@@ -112,7 +112,7 @@ public class OverrideAnnotationAction extends AbstractAction {
             final Annotations annotations = ((BaseDocument) doc).getAnnotations();
             //final Map<String, List<ElementDescription>> caption2Descriptions = new LinkedHashMap<String, List<ElementDescription>>();
             final AtomicReference<Point> point = new AtomicReference<Point>();
-            final AtomicReference<OverriddeAnnotation> anno = new AtomicReference<OverriddeAnnotation>();
+            final AtomicReference<BaseAnnotation> anno = new AtomicReference<BaseAnnotation>();
             doc.render(new Runnable() {
                 @Override
                 public void run() {
@@ -124,7 +124,7 @@ public class OverrideAnnotationAction extends AbstractAction {
                         if (desc == null) {
                             return ;
                         }
-                        Collection<OverriddeAnnotation> annos;
+                        Collection<BaseAnnotation> annos;
 
                         if (COMBINED_TYPES.contains(desc.getAnnotationType())) {
                             annos = findAnnotations(comp, startOffset, endOffset);
@@ -132,7 +132,7 @@ public class OverrideAnnotationAction extends AbstractAction {
                             annos = Collections.singletonList(findAnnotation(comp, desc, startOffset, endOffset));
                         }
 
-                        for (OverriddeAnnotation a : annos) {
+                        for (BaseAnnotation a : annos) {
                             if (a != null) {
                                 anno.set(a);
                                 point.set(comp.modelToView(startOffset).getLocation());
@@ -153,7 +153,7 @@ public class OverrideAnnotationAction extends AbstractAction {
         return false;
     }
 
-    private List<OverriddeAnnotation> findAnnotations(JTextComponent component, int startOffset, int endOffset) {
+    private List<BaseAnnotation> findAnnotations(JTextComponent component, int startOffset, int endOffset) {
         FileObject file = getFile(component);
         if (file == null) {
             if (ErrorManager.getDefault().isLoggable(ErrorManager.WARNING)) {
@@ -164,12 +164,12 @@ public class OverrideAnnotationAction extends AbstractAction {
 
         AnnotationsHolder ah = AnnotationsHolder.get(file);
         if (ah == null) {
-            OverriddeAnnotation.LOGGER.log(Level.INFO, "component={0} does not have attached AnnotationsHolder", component); //NOI18N
+            BaseAnnotation.LOGGER.log(Level.INFO, "component={0} does not have attached AnnotationsHolder", component); //NOI18N
             return null;
         }
 
-        List<OverriddeAnnotation> annotations = new LinkedList<OverriddeAnnotation>();
-        for(OverriddeAnnotation a : ah.getAttachedAnnotations()) {
+        List<BaseAnnotation> annotations = new LinkedList<BaseAnnotation>();
+        for(BaseAnnotation a : ah.getAttachedAnnotations()) {
             int offset = a.getPosition().getOffset();
             if (startOffset <= offset && offset <= endOffset) {
                 annotations.add(a);
@@ -178,7 +178,7 @@ public class OverrideAnnotationAction extends AbstractAction {
         return annotations;
     }
 
-    private OverriddeAnnotation findAnnotation(JTextComponent component, AnnotationDesc desc, int startOffset, int endOffset) {
+    private BaseAnnotation findAnnotation(JTextComponent component, AnnotationDesc desc, int startOffset, int endOffset) {
         FileObject file = getFile(component);
         if (file == null) {
             if (ErrorManager.getDefault().isLoggable(ErrorManager.WARNING)) {
@@ -189,11 +189,11 @@ public class OverrideAnnotationAction extends AbstractAction {
 
         AnnotationsHolder ah = AnnotationsHolder.get(file);
         if (ah == null) {
-            OverriddeAnnotation.LOGGER.log(Level.INFO, "component={0} does not have attached a IsOverriddenAnnotationHandler", component); //NOI18N
+            BaseAnnotation.LOGGER.log(Level.INFO, "component={0} does not have attached a IsOverriddenAnnotationHandler", component); //NOI18N
             return null;
         }
 
-        for(OverriddeAnnotation a : ah.getAttachedAnnotations()) {
+        for(BaseAnnotation a : ah.getAttachedAnnotations()) {
             int offset = a.getPosition().getOffset();
             if (startOffset <= offset && offset <= endOffset) {
                 if (desc.getShortDescription().equals(a.getShortDescription())) {

@@ -68,7 +68,6 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -79,12 +78,11 @@ import org.netbeans.modules.cnd.utils.ui.PopupUtil;
 import org.openide.text.Annotation;
 import org.openide.text.NbDocument;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 
 /**
  * @author Vladimir Kvashin
  */
-public class OverriddeAnnotation extends Annotation {
+/*package*/ abstract class BaseAnnotation extends Annotation {
 
 
     public enum AnnotationType {
@@ -95,50 +93,44 @@ public class OverriddeAnnotation extends Annotation {
 
     /*package*/ static final Logger LOGGER = Logger.getLogger("cnd.overrides.annotations.logger"); // NOI18N
 
-    private final StyledDocument document;
-    private final Position pos;
-    private final String shortDescription;
-    private final AnnotationType type;
-    private final Collection<CsmUID<CsmMethod>> baseMethodUIDs;
-    private final Collection<CsmUID<CsmMethod>> descMethodUIDs;
+    protected final StyledDocument document;
+    protected final Position pos;
+    protected final AnnotationType type;
+    protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> baseUIDs;
+    protected final Collection<CsmUID<? extends CsmOffsetableDeclaration>> descUIDs;
     
-    public OverriddeAnnotation(StyledDocument document, CsmFunction func,
-            Collection<? extends CsmMethod> baseMethods,
-            Collection<? extends CsmMethod> descMethods) {
-        assert func != null;
+    protected BaseAnnotation(StyledDocument document, CsmOffsetableDeclaration decl,
+            Collection<? extends CsmOffsetableDeclaration> baseDecls,
+            Collection<? extends CsmOffsetableDeclaration> descDecls) {
+        assert decl != null;
         this.document = document;
-        this.pos = new DeclarationPosition(func);
-        if (baseMethods.isEmpty() && !descMethods.isEmpty()) {
+        this.pos = new DeclarationPosition(decl);
+        if (baseDecls.isEmpty() && !descDecls.isEmpty()) {
             type = AnnotationType.IS_OVERRIDDEN;
-            shortDescription = NbBundle.getMessage(getClass(), "LAB_IsOverriden");
-        } else if (!baseMethods.isEmpty() && descMethods.isEmpty()) {
+        } else if (!baseDecls.isEmpty() && descDecls.isEmpty()) {
             type = AnnotationType.OVERRIDES;
-            shortDescription = NbBundle.getMessage(getClass(), "LAB_Overrides", 
-                    (baseMethods.size() == 1) ? baseMethods.iterator().next().getQualifiedName().toString() : "..."); //NOI18N
-        } else if (!baseMethods.isEmpty() && !descMethods.isEmpty()) {
+        } else if (!baseDecls.isEmpty() && !descDecls.isEmpty()) {
             type = AnnotationType.COMBINED;
-            shortDescription = NbBundle.getMessage(getClass(), "LAB_Combined");
         } else { //both are empty
             throw new IllegalArgumentException("Either overrides or overridden should be non empty"); //NOI18N
         }
-        baseMethodUIDs = new ArrayList<CsmUID<CsmMethod>>(baseMethods.size());
-        for (CsmMethod m : baseMethods) {
-            baseMethodUIDs.add(UIDs.get(m));
+        baseUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(baseDecls.size());
+        for (CsmOffsetableDeclaration d : baseDecls) {
+            baseUIDs.add(UIDs.get(d));
         }
-        descMethodUIDs = new ArrayList<CsmUID<CsmMethod>>(descMethods.size());
-        for (CsmMethod m : descMethods) {
-            descMethodUIDs.add(UIDs.get(m));
+        descUIDs = new ArrayList<CsmUID<? extends CsmOffsetableDeclaration>>(descDecls.size());
+        for (CsmOffsetableDeclaration d : descDecls) {
+            descUIDs.add(UIDs.get(d));
         }
     }
     
-    @Override
-    public String getShortDescription() {
-        return shortDescription;
+    public AnnotationType getType() {
+        return type;
     }
 
     @Override
     public String getAnnotationType() {
-        switch(type) {
+        switch(getType()) {
             case IS_OVERRIDDEN:
                 return "org-netbeans-modules-cnd-is_overridden"; //NOI18N
             case OVERRIDES:
@@ -160,30 +152,45 @@ public class OverriddeAnnotation extends Annotation {
     
     @Override
     public String toString() {
-        return "[IsOverriddenAnnotation: " + shortDescription + "]"; //NOI18N
+        return "[IsOverriddenAnnotation: " + getShortDescription() + "]"; //NOI18N
     }
 
     public Position getPosition() {
         return pos;
     }
-    
-    public String debugDump() {
-        List<String> elementNames = new ArrayList<String>();
-        for(CsmUID<CsmMethod> uid : baseMethodUIDs) {
-            elementNames.add(uid.toString());
+
+    protected abstract CharSequence debugTypeStirng();
+
+    /** for test/debugging purposes */
+    public CharSequence debugDump() {
+        StringBuilder sb = new StringBuilder();
+        int line = NbDocument.findLineNumber(document, getPosition().getOffset()) + 1; // convert to 1-based
+        sb.append(line);
+        sb.append(':');
+        sb.append(debugTypeStirng());
+        sb.append(' ');
+        boolean first = true;
+        for (BaseAnnotation.Element element : getElements()) {
+            int gotoLine = element.declaration.getStartPosition().getLine();
+            String gotoFile = element.declaration.getContainingFile().getName().toString();
+            if (first) {
+                first = false;
+            } else {
+                sb.append(',');
+            }
+            sb.append(element.declaration.getQualifiedName());
+            sb.append(' ');
+            sb.append(gotoFile);
+            sb.append(':');
+            sb.append(gotoLine);
         }
-        Collections.sort(elementNames);
-        return "IsOverriddenAnnotation: type=" + type.name() + ", elements:" + elementNames.toString(); //NOI18N
+        return sb;
     }
 
     void mouseClicked(JTextComponent c, Point p) {
         Point position = new Point(p);        
         SwingUtilities.convertPointToScreen(position, c);        
         performGoToAction(position);
-    }
-
-    public AnnotationType getType() {
-        return type;
     }
 
 //    public Collection<? extends CsmMethod> getDeclarations() {
@@ -213,11 +220,11 @@ public class OverriddeAnnotation extends Annotation {
      */
     /*package-local for test purposes*/ 
     List<Element> getElements() {
-        List<Element> elements = new ArrayList<Element>(baseMethodUIDs.size() + descMethodUIDs.size());
-        for (CsmUID<CsmMethod> uid : baseMethodUIDs) {
+        List<Element> elements = new ArrayList<Element>(baseUIDs.size() + descUIDs.size());
+        for (CsmUID<? extends CsmOffsetableDeclaration> uid : baseUIDs) {
             elements.add(new Element(uid.getObject(), Direction.BASE));
         }
-        for (CsmUID<CsmMethod> uid : descMethodUIDs) {
+        for (CsmUID<? extends CsmOffsetableDeclaration> uid : descUIDs) {
             elements.add(new Element(uid.getObject(), Direction.DESC));
         }
         Collections.sort(elements);
@@ -250,6 +257,11 @@ public class OverriddeAnnotation extends Annotation {
         public final CsmOffsetableDeclaration declaration;
         public final Direction direction;
         
+        public Element(CsmOffsetableDeclaration decl, Direction direction) {
+            this.declaration = decl;
+            this.direction = direction;
+        }
+
         public Element(CsmMethod method, Direction direction) {
             this.declaration = method;
             this.direction = direction;
