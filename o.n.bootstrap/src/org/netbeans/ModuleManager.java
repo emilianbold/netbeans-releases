@@ -1595,6 +1595,7 @@ public final class ModuleManager {
                 Util.err.log(Level.WARNING, null, e);
             }
         }
+        NetigsoFramework.shutdownFramework();
         installer.close(sortedModules);
         return true;
     }
