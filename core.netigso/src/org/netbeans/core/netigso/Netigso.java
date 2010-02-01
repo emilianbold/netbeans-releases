@@ -75,14 +75,17 @@ import org.osgi.framework.launch.FrameworkFactory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @ServiceProvider(service = NetigsoFramework.class)
-public class Netigso extends NetigsoFramework implements Stamps.Updater {
+public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     static final Logger LOG = Logger.getLogger(Netigso.class.getName());
 
     private Framework framework;
 
+    Framework getFramework() {
+        return framework;
+    }
+
     @Override
     protected void prepare(Collection<? extends ModuleInfo> preregister) {
-        assert framework == null;
         if (framework == null) {
             readBundles();
             
@@ -119,6 +122,9 @@ public class Netigso extends NetigsoFramework implements Stamps.Updater {
 
     @Override
     protected void start() {
+        if (framework.getState() == Bundle.ACTIVE) {
+            return;
+        }
         try {
             framework.start();
         } catch (BundleException ex) {

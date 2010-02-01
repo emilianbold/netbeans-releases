@@ -93,6 +93,7 @@ public abstract class NetigsoFramework {
 
     private static NetigsoFramework framework;
     private static List<NetigsoModule> toInit = new ArrayList<NetigsoModule>();
+    private static List<Module> toEnable = new ArrayList<Module>();
 
     static NetigsoFramework getDefault() {
         if (framework == null) {
@@ -104,10 +105,11 @@ public abstract class NetigsoFramework {
         return framework;
     }
 
-    static void willEnable(List<Module> toEnable) {
+    static void willEnable(List<Module> newlyEnabling) {
+        toEnable.addAll(newlyEnabling);
         boolean found = false;
         if (framework == null) {
-            for (Module m : toEnable) {
+            for (Module m : newlyEnabling) {
                 if (m instanceof NetigsoModule) {
                     found = true;
                 }
@@ -119,15 +121,23 @@ public abstract class NetigsoFramework {
             return;
         }
         getDefault().prepare(toEnable);
+        toEnable.clear();
     }
 
     static void turnOn() {
+        delayedInit();
+        if (framework != null) {
+            framework.start();
+        }
+    }
+
+    private static boolean delayedInit() {
         List<NetigsoModule> init;
         synchronized (NetigsoFramework.class) {
             init = toInit;
             toInit = null;
             if (init == null || init.isEmpty()) {
-                return;
+                return true;
             }
         }
         for (NetigsoModule nm : init) {
@@ -137,9 +147,8 @@ public abstract class NetigsoFramework {
                 Exceptions.printStackTrace(ex);
             }
         }
-        getDefault().start();
+        return false;
     }
-
 
     static synchronized void classLoaderUp(NetigsoModule nm) throws IOException {
         if (toInit != null) {
@@ -163,5 +172,6 @@ public abstract class NetigsoFramework {
         }
         framework = null;
         toInit = new ArrayList<NetigsoModule>();
+        toEnable.clear();
     }
 }
