@@ -389,9 +389,9 @@ public class ArchetypeWizardUtils {
             resultSet.add(fDir);
             processProjectFolder(fDir);
             // Look for nested projects to open as well:
-            Enumeration e = fDir.getFolders(true);
+            Enumeration<? extends FileObject> e = fDir.getFolders(true);
             while (e.hasMoreElements()) {
-                FileObject subfolder = (FileObject) e.nextElement();
+                FileObject subfolder = e.nextElement();
                 if (ProjectManager.getDefault().isProject(subfolder)) {
                     resultSet.add(subfolder);
                     processProjectFolder(subfolder);
@@ -425,6 +425,7 @@ public class ArchetypeWizardUtils {
                 }
                 //see #163529 for reasoning
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         watch.downloadDependencyAndJavadocSource();
                     }
@@ -460,6 +461,7 @@ public class ArchetypeWizardUtils {
         FileObject pomFO = FileUtil.toFileObject(new File(projDir, "pom.xml")); //NOI18N
         if (pomFO != null) {
             ModelOperation<POMModel> op = new ModelOperation<POMModel> () {
+                @Override
                 public void performOperation(POMModel model) {
                     model.getProject().setName(newName);
                 }
