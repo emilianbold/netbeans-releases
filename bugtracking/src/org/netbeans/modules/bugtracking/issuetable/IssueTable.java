@@ -128,15 +128,12 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
      * @return
      */
     public Filter[] getDefinedFilters() {
-        if(filters == null) {
-            filters = new Filter[] {
-                Filter.getAllFilter(query),
-                Filter.getNotSeenFilter(),
-                Filter.getObsoleteDateFilter(query),
-                Filter.getAllButObsoleteDateFilter(query)
-            };
-        }
         return filters;
+    }
+
+    private void initFilters() {
+        filters = new Filter[]{Filter.getAllFilter(query), Filter.getNotSeenFilter(query), Filter.getObsoleteDateFilter(query), Filter.getAllButObsoleteDateFilter(query)};
+        filter = filters[0]; // preset the first filter as default
     }
 
     private static final Comparator<IssueProperty> NodeComparator = new Comparator<IssueProperty>() {
@@ -170,6 +167,8 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         tableModel = new NodeTableModel();
         sorter = new TableSorter(tableModel);
         
+        initFilters();
+
         sorter.setColumnComparator(Node.Property.class, NodeComparator);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
