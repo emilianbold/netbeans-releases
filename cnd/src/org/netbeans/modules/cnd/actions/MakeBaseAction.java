@@ -82,7 +82,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
 
     @Override
     protected boolean accept(DataObject object) {
-        return object.getCookie(MakeExecSupport.class) != null;
+        return object != null && object.getCookie(MakeExecSupport.class) != null;
     }
 
     @Override
