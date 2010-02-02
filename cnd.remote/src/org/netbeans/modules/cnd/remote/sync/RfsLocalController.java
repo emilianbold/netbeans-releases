@@ -25,7 +25,6 @@ class RfsLocalController implements Runnable {
 
     private final BufferedReader requestReader;
     private final PrintWriter responseStream;
-    private final String remoteDir;
     private final File[] files;
     private final ExecutionEnvironment execEnv;
     private final PrintWriter err;
@@ -37,13 +36,12 @@ class RfsLocalController implements Runnable {
         WRITTEN
     }
 
-    public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] files, String remoteDir,
+    public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] files,
             BufferedReader requestStreamReader, PrintWriter responseStreamWriter, PrintWriter err,
             FileData fileData) {
         super();
         this.execEnv = executionEnvironment;
         this.files = files;
-        this.remoteDir = remoteDir;
         this.requestReader = requestStreamReader;
         this.responseStream = responseStreamWriter;
         this.err = err;
