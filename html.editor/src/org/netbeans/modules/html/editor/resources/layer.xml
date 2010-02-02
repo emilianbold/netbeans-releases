@@ -318,16 +318,6 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
         <folder name="Editor">
-            <folder name="MarkOccurrences">
-                <folder name="text">
-                    <folder name="x-java">
-                        <file name="JavaMarkOccurences.instance">
-                            <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
-                            <attr name="instanceCreate" newvalue="org.netbeans.modules.java.editor.options.MarkOccurencesOptionsPanelController"/>
-                        </file>
-                    </folder>
-                </folder>
-            </folder>
             <folder name="CodeCompletion">
                 <folder name="text">
                     <folder name="html">
