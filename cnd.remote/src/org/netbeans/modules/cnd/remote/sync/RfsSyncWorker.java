@@ -253,17 +253,13 @@ import org.openide.util.RequestProcessor;
 
     @Override
     public void shutdown() {
-        shutdownImpl();
+        remoteControllerCleanup();
+        localControllerCleanup();
     }
 
     @Override
     public boolean cancel() {
         return false;
-    }
-
-    private void shutdownImpl() {
-        remoteControllerCleanup();
-        localControllerCleanup();
     }
 
     private void localControllerCleanup() {
