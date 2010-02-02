@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
 /*package-local*/ final class AddCompilerSetPanel extends javax.swing.JPanel implements DocumentListener {
 
     private DialogDescriptor dialogDescriptor = null;
-    private final CompilerSetManager csm;
+    private final CompilerSetManagerImpl csm;
     private final boolean local;
     private final Object lock = new Object();
     private final Object remoteCompilerCheckExecutorLock = new Object();
@@ -84,8 +84,8 @@ import org.openide.util.NbBundle;
     /** Creates new form AddCompilerSetPanel */
     public AddCompilerSetPanel(CompilerSetManager csm) {
         initComponents();
-        this.csm = csm;
-        this.local = csm.getExecutionEnvironment().isLocal();
+        this.csm = (CompilerSetManagerImpl) csm;
+        this.local = ((CompilerSetManagerImpl)csm).getExecutionEnvironment().isLocal();
 
         if (!local) {
             // we can't have Browse button for remote, so we use it to validate path on remote host

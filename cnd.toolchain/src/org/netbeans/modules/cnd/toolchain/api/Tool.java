@@ -81,11 +81,11 @@ public class Tool {
         return new Tool(executionEnvironment, flavor, kind, name, displayName, path);
     }
 
-    public ExecutionEnvironment getExecutionEnvironment() {
+    public final ExecutionEnvironment getExecutionEnvironment() {
         return executionEnvironment;
     }
 
-    public CompilerFlavor getFlavor() {
+    public final CompilerFlavor getFlavor() {
         return flavor;
     }
 
@@ -115,26 +115,19 @@ public class Tool {
     public void waitReady(boolean reset) {
     }
 
-    public ToolKindBase getKind() {
+    public final ToolKindBase getKind() {
         return kind;
     }
 
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
-    public String getPath() {
+    public final String getPath() {
         return path;
     }
 
-    public void setPath(String p) {
-        if (p != null) {
-            path = p;
-            name = ToolUtils.getBaseName(path);
-        }
-    }
-
-    public String getDisplayName() {
+    public final String getDisplayName() {
         return displayName;
     }
 
@@ -145,7 +138,7 @@ public class Tool {
         throw new UnsupportedOperationException();
     }
 
-    public CompilerSet getCompilerSet() {
+    public final CompilerSet getCompilerSet() {
         return compilerSet;
     }
 
@@ -156,6 +149,13 @@ public class Tool {
             return n.substring(0, n.length() - 4);
         } else {
             return n;
+        }
+    }
+
+    private void setPath(String p) {
+        if (p != null) {
+            path = p;
+            name = ToolUtils.getBaseName(path);
         }
     }
 
@@ -177,6 +177,11 @@ public class Tool {
         @Override
         public void setCompilerSet(Tool tool, CompilerSet cs) {
             tool.setCompilerSet(cs);
+        }
+
+        @Override
+        public void setToolPath(Tool tool, String p) {
+            tool.setPath(p);
         }
     }
 }

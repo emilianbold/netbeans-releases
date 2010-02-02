@@ -56,18 +56,44 @@ public abstract class CompilerFlavor {
         return CompilerFlavorImpl.toFlavor(name, platform);
     }
 
+    /**
+     *
+     * @param platform The Platform kind.
+     * @return The path to folder where unix-like commands are located. Defined for Windows platform.
+     */
     public abstract String getCommandFolder(int platform);
 
+    /**
+     *
+     * @return The tool collection descriptor that loaded from xml file from folder CND/ToolChain/ in file system
+     */
     public abstract ToolchainDescriptor getToolchainDescriptor();
 
-    public abstract boolean isCygwinCompiler();
-
+    /**
+     *
+     * @return True if tool chain like to GNU compilers
+     */
     public abstract boolean isGnuCompiler();
 
-    public abstract boolean isMinGWCompiler();
-
+    /**
+     *
+     * @return True if tool chain like to SunStudio compilers
+     */
     public abstract boolean isSunStudioCompiler();
 
+    /**
+     *
+     * @return True if tool chain like to Windows Cygwin compilers
+     */
+    public abstract boolean isCygwinCompiler();
+
+    /**
+     *
+     * @return True if tool chain like to Windows MinGW compilers
+     */
+    public abstract boolean isMinGWCompiler();
+
+    
     protected CompilerFlavor() {
         if (!getClass().equals(CompilerFlavorImpl.class)) {
             throw new UnsupportedOperationException("this class can not be overriden by clients"); // NOI18N

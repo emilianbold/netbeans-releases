@@ -62,6 +62,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.APIAccessor;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.netbeans.modules.cnd.toolchain.ui.api.ToolsPanelSupport;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
@@ -172,23 +173,23 @@ import org.openide.util.Utilities;
             return;
         }
         if (force) {
-            cs.getTool(ToolKind.CCompiler).setPath(tfCPath.getText());
-            cs.getTool(ToolKind.CCCompiler).setPath(tfCppPath.getText());
-            cs.getTool(ToolKind.FortranCompiler).setPath(tfFortranPath.getText());
-            cs.getTool(ToolKind.Assembler).setPath(tfAsPath.getText());
-            cs.getTool(ToolKind.MakeTool).setPath(tfMakePath.getText());
-            cs.getTool(ToolKind.DebuggerTool).setPath(tfDebuggerPath.getText());
-            cs.getTool(ToolKind.QMakeTool).setPath(tfQMakePath.getText());
-            cs.getTool(ToolKind.CMakeTool).setPath(tfCMakePath.getText());
+            APIAccessor.get().setToolPath(cs.getTool(ToolKind.CCompiler),tfCPath.getText());
+            APIAccessor.get().setToolPath(cs.getTool(ToolKind.CCCompiler),tfCppPath.getText());
+            APIAccessor.get().setToolPath(cs.getTool(ToolKind.FortranCompiler),tfFortranPath.getText());
+            APIAccessor.get().setToolPath(cs.getTool(ToolKind.Assembler),tfAsPath.getText());
+            APIAccessor.get().setToolPath(cs.getTool(ToolKind.MakeTool),tfMakePath.getText());
+            APIAccessor.get().setToolPath(cs.getTool(ToolKind.DebuggerTool),tfDebuggerPath.getText());
+            APIAccessor.get().setToolPath(cs.getTool(ToolKind.QMakeTool),tfQMakePath.getText());
+            APIAccessor.get().setToolPath(cs.getTool(ToolKind.CMakeTool),tfCMakePath.getText());
         } else {
-            cs.findTool(ToolKind.CCompiler).setPath(tfCPath.getText());
-            cs.findTool(ToolKind.CCCompiler).setPath(tfCppPath.getText());
-            cs.findTool(ToolKind.FortranCompiler).setPath(tfFortranPath.getText());
-            cs.findTool(ToolKind.Assembler).setPath(tfAsPath.getText());
-            cs.findTool(ToolKind.MakeTool).setPath(tfMakePath.getText());
-            cs.findTool(ToolKind.DebuggerTool).setPath(tfDebuggerPath.getText());
-            cs.findTool(ToolKind.QMakeTool).setPath(tfQMakePath.getText());
-            cs.findTool(ToolKind.CMakeTool).setPath(tfCMakePath.getText());
+            APIAccessor.get().setToolPath(cs.findTool(ToolKind.CCompiler),tfCPath.getText());
+            APIAccessor.get().setToolPath(cs.findTool(ToolKind.CCCompiler),tfCppPath.getText());
+            APIAccessor.get().setToolPath(cs.findTool(ToolKind.FortranCompiler),tfFortranPath.getText());
+            APIAccessor.get().setToolPath(cs.findTool(ToolKind.Assembler),tfAsPath.getText());
+            APIAccessor.get().setToolPath(cs.findTool(ToolKind.MakeTool),tfMakePath.getText());
+            APIAccessor.get().setToolPath(cs.findTool(ToolKind.DebuggerTool),tfDebuggerPath.getText());
+            APIAccessor.get().setToolPath(cs.findTool(ToolKind.QMakeTool),tfQMakePath.getText());
+            APIAccessor.get().setToolPath(cs.findTool(ToolKind.CMakeTool),tfCMakePath.getText());
         }
     }
 
@@ -620,7 +621,7 @@ import org.openide.util.Utilities;
             toolPath = tfCMakePath.getText();
         }
         if (userChange && toolKind != ToolKind.UnknownTool) {
-            manager.getCurrentCompilerSet().getTool(toolKind).setPath(toolPath);
+            APIAccessor.get().setToolPath(manager.getCurrentCompilerSet().getTool(toolKind),toolPath);
             manager.fireCompilerSetChange();
             manager.fireCompilerSetModified();
         }

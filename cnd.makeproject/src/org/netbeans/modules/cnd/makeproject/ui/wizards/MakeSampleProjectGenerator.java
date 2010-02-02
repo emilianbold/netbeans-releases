@@ -196,7 +196,7 @@ public class MakeSampleProjectGenerator {
         LogRecord logRecord = new LogRecord(Level.INFO, ConfigurationDescriptorProvider.USG_PROJECT_CREATE_CND);
         logRecord.setLoggerName(logger.getName());
         String host;
-        if (compilerSetManager.getExecutionEnvironment().isLocal()) {
+        if (env.isLocal()) {
             host = "LOCAL"; // NOI18N
         } else {
             host = "REMOTE"; // NOI18N

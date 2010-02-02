@@ -47,7 +47,6 @@ import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerProvider;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -102,7 +101,7 @@ public final class CompilerSetPreferences {
         }
     }
 
-    public static void saveToDisk(CompilerSetManager manager) {
+    public static void saveToDisk(CompilerSetManagerImpl manager) {
         if (!manager.getCompilerSets().isEmpty()) {
             getPreferences().putDouble(CSM + VERSION, csm_version);
             String executionEnvironmentKey = ExecutionEnvironmentFactory.toUniqueID(manager.getExecutionEnvironment());
