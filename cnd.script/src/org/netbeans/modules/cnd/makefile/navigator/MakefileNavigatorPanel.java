@@ -82,7 +82,7 @@ public class MakefileNavigatorPanel implements NavigatorPanel {
 
     @Override
     public Lookup getLookup() {
-        return getComponent().getLookup();
+        return null;
     }
 
     private static String getMessage(String key) {
