@@ -78,6 +78,10 @@ public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiat
     public static SimpleWizardIterator createOSGiIterator() {
         return new SimpleWizardIterator(ArchetypeWizardUtils.OSGI_ARCH);
     }
+
+    public static SimpleWizardIterator createNbModuleOSGiIterator() {
+        return new SimpleWizardIterator(ArchetypeWizardUtils.NB_MODULE_OSGI_ARCH);
+    }
     
     private WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {
         return new WizardDescriptor.Panel[] {
