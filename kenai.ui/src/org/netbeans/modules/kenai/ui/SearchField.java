@@ -61,6 +61,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.ui.nodes.AddInstanceAction;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -224,7 +225,7 @@ public class SearchField extends JPanel implements ActionListener {
             pm.add(item);
         }
 
-        JMenuItem item = new JMenuItem("add new");
+        JMenuItem item = new JMenuItem(NbBundle.getMessage(KenaiComboModel.class, "CTL_AddNew"));
         item.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 AddInstanceAction addInstanceAction = new AddInstanceAction();
