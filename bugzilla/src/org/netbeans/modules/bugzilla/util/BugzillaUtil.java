@@ -181,7 +181,7 @@ public class BugzillaUtil {
     }
 
     public static boolean showIssueType(BugzillaRepository repo) {
-        return isNbRepository(repo) || !(repo instanceof KenaiRepository);
+        return isNbRepository(repo);
     }
 
 }
