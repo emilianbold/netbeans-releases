@@ -67,13 +67,13 @@ import org.openide.util.NbBundle;
     protected CharSequence debugTypeStirng() {
         switch (type) {
             case OVERRIDES:
-                return "INHERITS";
+                return "INHERITS"; // NOI18N
             case IS_OVERRIDDEN:
-                return "INHERITED";
+                return "INHERITED"; // NOI18N
             case COMBINED:
-                return "INHERITS_AND_INHERITED";
+                return "INHERITS_AND_INHERITED"; // NOI18N
             default:
-                return "???";
+                return "???"; // NOI18N
         }
     }
 
