@@ -65,11 +65,13 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
         super(ast, file, scope);
     }
 
-    public CsmStatement.Kind getKind() {
+    @Override
+    public final CsmStatement.Kind getKind() {
         return CsmStatement.Kind.DECLARATION;
     }
 
-    public List<CsmDeclaration> getDeclarators() {
+    @Override
+    public final List<CsmDeclaration> getDeclarators() {
         if (declarators == null || this.declarators == EMPTY) {
             render();
             //RepositoryUtils.setSelfUIDs(declarators);
