@@ -58,7 +58,8 @@ import org.openide.util.Lookup;
 /**
  * @author Alexey Vladykin
  */
-public class MakefileNavigatorPanelUI extends JPanel implements ExplorerManager.Provider {
+public class MakefileNavigatorPanelUI extends JPanel
+        implements ExplorerManager.Provider, Lookup.Provider {
 
     private final ExplorerManager manager;
     private final ListView view;
@@ -79,6 +80,7 @@ public class MakefileNavigatorPanelUI extends JPanel implements ExplorerManager.
         return manager;
     }
 
+    @Override
     public Lookup getLookup() {
         return lookup;
     }

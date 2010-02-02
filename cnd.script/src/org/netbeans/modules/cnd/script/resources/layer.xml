@@ -359,6 +359,11 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.indent.spi.IndentTask$Factory"/>
                 </file>
 
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.editor.MakefileKit"/>
+                    <attr name="instanceOf" stringvalue="javax.swing.text.EditorKit"/>
+                </file>
+
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="codeTemplates.xml" url="makefileCodeTemplates.xml"/>

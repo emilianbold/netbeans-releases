@@ -36,56 +36,30 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makefile.navigator;
 
-import org.netbeans.spi.navigator.NavigatorPanel;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.cnd.makefile.editor;
+
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.NbEditorKit;
 
 /**
+ * Forces Unix-style end-of-line for Makefiles.
+ *
  * @author Alexey Vladykin
  */
-public class MakefileNavigatorPanel implements NavigatorPanel {
+public class MakefileKit extends NbEditorKit {
 
-    private MakefileNavigatorPanelUI panel;
-
-    public MakefileNavigatorPanel() {
+    @Override
+    public Document createDefaultDocument() {
+        Document doc = super.createDefaultDocument();
+        doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);
+        return doc;
     }
 
     @Override
-    public String getDisplayName() {
-        return getMessage("navigator.title"); // NOI18N
-    }
-
-    @Override
-    public String getDisplayHint() {
-        return getMessage("navigator.hint"); // NOI18N
-    }
-
-    @Override
-    public MakefileNavigatorPanelUI getComponent() {
-        if (panel == null) {
-            panel = new MakefileNavigatorPanelUI();
-        }
-        return panel;
-    }
-
-    @Override
-    public void panelActivated(Lookup context) {
-        NavigatorUpdaterTaskFactory.getInstance().setNavigatorPanel(getComponent());
-    }
-
-    @Override
-    public void panelDeactivated() {
-        NavigatorUpdaterTaskFactory.getInstance().setNavigatorPanel(null);
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return null;
-    }
-
-    private static String getMessage(String key) {
-        return NbBundle.getMessage(MakefileNavigatorPanel.class, key);
+    public String getContentType() {
+        return MIMENames.MAKEFILE_MIME_TYPE;
     }
 }

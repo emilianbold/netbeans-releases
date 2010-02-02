@@ -116,13 +116,13 @@ public class MakefileParser extends Parser {
                 case COLON_EQUALS:
                     tokenSequence.moveIndex(startIndex);
                     makefileElements.add(createAssignment(fobj, tokenSequence));
-                    startIndex = tokenSequence.index();
+                    startIndex = tokenSequence.index() + 1;
                     break;
 
                 case COLON:
                     tokenSequence.moveIndex(startIndex);
                     makefileElements.add(createRule(fobj, tokenSequence));
-                    startIndex = tokenSequence.index();
+                    startIndex = tokenSequence.index() + 1;
                     break;
 
                 case COMMENT:
