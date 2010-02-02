@@ -101,8 +101,8 @@ public class ClassIndexTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-//        clearWorkDir();
-        clearAllButCaches ();        
+        clearWorkDir();
+//        clearAllButCaches ();
         
         File cache = new File(getWorkDir(), "cache");       //NOI18N
         cache.mkdirs();
@@ -159,7 +159,7 @@ public class ClassIndexTest extends NbTestCase {
         index.getPackageNames("org", true, EnumSet.of(ClassIndex.SearchScope.SOURCE));
         final CIL testListener = new CIL ();
         index.addClassIndexListener(testListener);
-        
+
         Set<EventType> et = EnumSet.of(EventType.TYPES_ADDED);
         testListener.setExpectedEvents (et);
         createFile ("foo/A.java", "package foo;\n public class A {}");
