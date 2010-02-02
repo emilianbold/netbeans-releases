@@ -362,11 +362,5 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
             return super.isValid();
         }
 
-        @Override
-        public boolean isFinishPanel() {
-            return isValid();
-        }
-
-
     }
 }

@@ -53,9 +53,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.html.HTML;
+import org.netbeans.lib.uihandler.NBBugzillaAccessor;
 import org.netbeans.modules.uihandler.Installer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -351,10 +356,33 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         return tmpFile.toURI().toURL();
     }
 
+    @Override
     public void hyperlinkUpdate(HyperlinkEvent e) {
-        if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(e.getURL());
+        if (!HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+            return;
         }
+        NBBugzillaAccessor accessor = Lookup.getDefault().lookup(NBBugzillaAccessor.class);
+        if (accessor != null){
+            AttributeSet ats = e.getSourceElement().getAttributes();
+            Object attribute = ats.getAttribute(HTML.getTag("a"));
+            if (attribute instanceof SimpleAttributeSet) {
+                SimpleAttributeSet attributeSet = (SimpleAttributeSet) attribute;
+                Object bugId = attributeSet.getAttribute(HTML.getAttributeKey("id"));
+                if (bugId != null){
+                    try{
+                        Integer.parseInt(bugId.toString());
+                        LOG.log(Level.FINE, "Open issue {0}", bugId);
+                        accessor.openIssue(bugId.toString());
+                        return;
+                    }catch(NumberFormatException nfe){
+                        LOG.log(Level.INFO, "Invalid id attribute", nfe);
+                    }
+                }
+            }
+        } else {
+            LOG.log(Level.INFO, "Bugzilla Accessor not found");
+        }
+        HtmlBrowser.URLDisplayer.getDefault().showURL(e.getURL());
     }
 
     final static class ResolvableHelper implements Serializable {
