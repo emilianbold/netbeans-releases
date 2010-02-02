@@ -694,6 +694,18 @@ public class MakeNBM extends Task {
                             }
                         }
                     }
+                    if(doPackage) {
+                        //if both <filename>.jar and <filename>.jad exist - skip it
+                        //if both <filename>.jar and <filename>.jar.pack.gz exist - skip it                        
+                        for (String f : files) {
+                            if(f.equals(files[i].substring(0, files[i].lastIndexOf(".jar")) + ".jad") ||
+                                    f.equals(files[i] + ".pack.gz")) {
+                                doPackage = false;
+                                break;
+                            }
+                        }
+
+                    }
                     if (doPackage) {
                         File targetFile = new File(productDir, files[i] + ".pack.gz");
                         try {
