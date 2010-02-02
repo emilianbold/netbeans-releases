@@ -54,7 +54,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  *
  * @author Alexander Simon
  */
-public class CompilerSetFactory {
+public final class CompilerSetFactory {
 
     private CompilerSetFactory() {
     }

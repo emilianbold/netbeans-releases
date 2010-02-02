@@ -54,10 +54,14 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  *
  * @author Sergey Grinev
  */
-public class CompilerSetManagerEvents {
+public final class CompilerSetManagerEvents {
 
     private static final Map<ExecutionEnvironment, CompilerSetManagerEvents> map =
             new HashMap<ExecutionEnvironment, CompilerSetManagerEvents>();
+
+    private final ExecutionEnvironment executionEnvironment;
+    private boolean isCodeModelInfoReady;
+    private List<Runnable> tasks = new ArrayList<Runnable>();
 
     public static synchronized CompilerSetManagerEvents get(ExecutionEnvironment env) {
         CompilerSetManagerEvents instance = map.get(env);
@@ -72,11 +76,6 @@ public class CompilerSetManagerEvents {
         this.executionEnvironment = env;
         this.isCodeModelInfoReady = ((CompilerSetManagerImpl)CompilerSetManager.get(executionEnvironment)).isComplete();
     }
-
-    private final ExecutionEnvironment executionEnvironment;
-
-    private boolean isCodeModelInfoReady;
-    private List<Runnable> tasks = new ArrayList<Runnable>();
 
     public void runOnCodeModelReadiness(Runnable task) {
         if (executionEnvironment.isLocal() || isCodeModelInfoReady) {

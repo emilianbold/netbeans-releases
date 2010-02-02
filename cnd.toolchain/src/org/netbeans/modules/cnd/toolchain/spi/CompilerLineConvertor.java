@@ -64,7 +64,7 @@ import org.openide.util.Exceptions;
  *
  * @author Alexander Simon
  */
-public class CompilerLineConvertor implements LineConvertor {
+public final class CompilerLineConvertor implements LineConvertor {
 
     private final List<ErrorParser> parsers = new ArrayList<ErrorParser>();
 

@@ -55,6 +55,9 @@ import org.openide.windows.OutputListener;
  * @author Alexander Simon
  */
 public abstract class ErrorParserProvider {
+    public static final Result NO_RESULT = new NoResult();
+    public static final Result REMOVE_LINE = new RemoveLine();
+
     private static final ErrorParserProvider DEFAULT = new DefaultErrorParserProvider();
     
     public static ErrorParserProvider getDefault() {
@@ -63,9 +66,6 @@ public abstract class ErrorParserProvider {
 
     public abstract ErrorParser getErorParser(CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo);
     public abstract String getID();
-
-    public static final Result NO_RESULT = new NoResult();
-    public static final Result REMOVE_LINE = new RemoveLine();
 
     public interface ErrorParser {
 	Result handleLine(String line) throws IOException;
