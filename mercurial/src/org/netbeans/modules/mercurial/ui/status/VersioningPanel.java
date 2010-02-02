@@ -177,6 +177,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         mercurial.getFileStatusCache().addPropertyChangeListener(this);        
         mercurial.addPropertyChangeListener(this);
         explorerManager.addPropertyChangeListener(this);
+        mercurial.addPropertyChangeListener(syncTable);
         reScheduleRefresh(0);   // the view does not listen for changes when it is not visible
     }
     
@@ -185,6 +186,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         mercurial.getFileStatusCache().removePropertyChangeListener(this);
         mercurial.removePropertyChangeListener(this);
         explorerManager.removePropertyChangeListener(this);
+        mercurial.removePropertyChangeListener(syncTable);
         super.removeNotify();
     }
     
