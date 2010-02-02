@@ -36,51 +36,29 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makefile.navigator;
 
-import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.makefile.parser.MakefileModel;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
+package org.netbeans.modules.cnd.makefile.model;
+
+import java.util.Collections;
+import java.util.List;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Alexey Vladykin
  */
-public final class NavigatorUpdaterTask extends ParserResultTask<MakefileModel> {
+public final class MakefileInclude extends MakefileElement {
 
-    private final AtomicReference<MakefileNavigatorPanelUI> navigatorPanelRef;
+    private final List<String> includes;
 
-    public NavigatorUpdaterTask(AtomicReference<MakefileNavigatorPanelUI> navigatorPanelRef) {
-        this.navigatorPanelRef = navigatorPanelRef;
+    public MakefileInclude(Kind kind, FileObject file, int startOffset, int endOffset, List<String> includes) {
+        super(kind, file, startOffset, endOffset);
+        Parameters.notNull("includes", includes);
+        this.includes = Collections.unmodifiableList(includes);
     }
 
-    @Override
-    public void run(final MakefileModel result, SchedulerEvent event) {
-        final MakefileNavigatorPanelUI navigatorPanel = navigatorPanelRef.get();
-        if (navigatorPanel != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    navigatorPanel.setModel(result);
-                }
-            });
-        }
-    }
-
-    @Override
-    public int getPriority() {
-        return Integer.MAX_VALUE;
-    }
-
-    @Override
-    public Class<? extends Scheduler> getSchedulerClass() {
-        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
-    }
-
-    @Override
-    public void cancel() {
-        //this task is too short to be cancelled
+    public List<String> getIncludes() {
+        return includes;
     }
 }

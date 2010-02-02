@@ -44,15 +44,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JPanel;
-import org.netbeans.modules.cnd.makefile.model.MakefileAssignment;
 import org.netbeans.modules.cnd.makefile.model.MakefileElement;
 import org.netbeans.modules.cnd.makefile.model.MakefileRule;
 import org.netbeans.modules.cnd.makefile.parser.MakefileModel;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.ListView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * @author Alexey Vladykin
@@ -61,11 +62,14 @@ public class MakefileNavigatorPanelUI extends JPanel implements ExplorerManager.
 
     private final ExplorerManager manager;
     private final ListView view;
+    private final Lookup lookup;
 
     public MakefileNavigatorPanelUI() {
         super(new BorderLayout());
 
         manager = new ExplorerManager();
+        lookup = ExplorerUtils.createLookup(manager, getActionMap());
+
         view = new ListView();
         add(view, BorderLayout.CENTER);
     }
@@ -73,6 +77,10 @@ public class MakefileNavigatorPanelUI extends JPanel implements ExplorerManager.
     @Override
     public ExplorerManager getExplorerManager() {
         return manager;
+    }
+
+    public Lookup getLookup() {
+        return lookup;
     }
 
     public void setWaiting() {
@@ -96,17 +104,10 @@ public class MakefileNavigatorPanelUI extends JPanel implements ExplorerManager.
                 MakefileRule rule = (MakefileRule) key;
                 for (String target : rule.getTargets()) {
                     if (0 < target.length()) {
-                        AbstractNode node = new AbstractNode(Children.LEAF);
-                        node.setName(target);
-                        list.add(node);
+                        list.add(new MakefileTargetNode(rule, target));
                     }
                 }
                 return list.toArray(new Node[list.size()]);
-            } else if (key.getKind() == MakefileElement.Kind.ASSIGNMENT) {
-                MakefileAssignment assign = (MakefileAssignment) key;
-                AbstractNode node = new AbstractNode(Children.LEAF);
-                node.setName(assign.getMacroName());
-                return new Node[]{node};
             } else {
                 return new Node[] {};
             }

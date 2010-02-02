@@ -40,6 +40,7 @@ package org.netbeans.modules.cnd.makefile.navigator;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
@@ -48,10 +49,30 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
  *
  * @author Alexey Vladykin
  */
-public class NavigatorUpdaterTaskFactory extends TaskFactory {
+public final class NavigatorUpdaterTaskFactory extends TaskFactory {
+
+    private static NavigatorUpdaterTaskFactory instance;
+
+    public static synchronized NavigatorUpdaterTaskFactory getInstance() {
+        if (instance == null) {
+            instance = new NavigatorUpdaterTaskFactory();
+        }
+        return instance;
+    }
+
+
+    private final AtomicReference<MakefileNavigatorPanelUI> navigatorPanelRef;
+
+    public NavigatorUpdaterTaskFactory() {
+        navigatorPanelRef = new AtomicReference<MakefileNavigatorPanelUI>();
+    }
+
+    public void setNavigatorPanel(MakefileNavigatorPanelUI navigatorPanel) {
+        navigatorPanelRef.set(navigatorPanel);
+    }
 
     @Override
     public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        return Collections.singletonList(new NavigatorUpdaterTask());
+        return Collections.singletonList(new NavigatorUpdaterTask(navigatorPanelRef));
     }
 }
