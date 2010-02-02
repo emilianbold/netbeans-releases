@@ -333,13 +333,13 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
                     if (decl) {
                         // in declaration add parameter
                         newText.append(pi.getType()).append(" ").append(pi.getName()); // NOI18N
-                        if (def && refactoring.isUseDefaultValueOnlyInFunctionDefinition()) {
+                        if (!def && refactoring.isUseDefaultValueOnlyInFunctionDeclaration()) {
                             newText.append(" = ").append(pi.getDefaultValue()); // NOI18N
                         } else {
                             newText.append(" /* = ").append(pi.getDefaultValue()).append(" */"); // NOI18N
                         }
                         wereChanges = true;
-                    } else if (!refactoring.isUseDefaultValueOnlyInFunctionDefinition()) {
+                    } else if (!refactoring.isUseDefaultValueOnlyInFunctionDeclaration()) {
                         // in reference add default value
                         newText.append(pi.getDefaultValue());
                         wereChanges = true;
