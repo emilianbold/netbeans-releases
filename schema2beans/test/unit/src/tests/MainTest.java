@@ -74,62 +74,62 @@ public class MainTest extends NbTestCase {
         stm.setJavaType("int");
         bg.addSchemaTypeMapping(stm);
         config.addReadBeanGraphs(bg);
-        
+
         generalTest("TestInvoice", true, config);
     }
-    
+
     public void testBookXMLSchema() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestBookXMLSchema", true, false, false);
     }
-    
+
     public void testBook() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestBook");
     }
-    
+
     public void testDupInternalNames() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestDupInternalNames", true, true, true);
     }
-    
+
     public void testEvents() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestEvents");
     }
-    
+
     public void testMerge() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestMerge");
     }
-    
+
     public void testAttr() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestAttr", false, false, true);
     }
-    
+
     public void testMdd() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestMdd");
     }
-    
+
     public void testValid() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestValid");
     }
-    
+
     public void testFind() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestFind");
     }
-    
+
     public void testVeto() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestVeto");
     }
-    
+
     public void testContrivedApp() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestContrivedApp");
     }
-    
+
     public void testEncoding() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestEncoding");
     }
-    
+
     public void testExceptions() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestExceptions");
     }
-    
+
     public void testEmpty() throws IOException, Schema2BeansException, InterruptedException {
         generalTest("TestEmpty");
     }
@@ -250,7 +250,7 @@ public class MainTest extends NbTestCase {
         config.setDumpToString(true);
         generalTest("TestMergeExtendBaseBean", false, config);
     }
-    
+
     public void testBeanWrapper() throws IOException, Schema2BeansException, InterruptedException {
         String testName = "TestBeanWrapper";
         try {
@@ -514,6 +514,42 @@ public class MainTest extends NbTestCase {
     protected void tearDown() {
         compareReferenceFiles();
     }
+
+    // XXX: temporarily overriding compareReferenceFiles() to dump differences as
+    // I do not know what problem there is on javaee continual tester as there is
+    // no access to diff files
+    public void compareReferenceFiles(String testFilename, String goldenFilename, String diffFilename) {
+        try {
+            File goldenFile = getGoldenFile(goldenFilename);
+            File testFile = new File(getWorkDir(),testFilename);
+            File diffFile = new File(getWorkDir(),diffFilename);
+            String message = "Files differ";
+            if(System.getProperty("xtest.home") == null) {
+                // show location of diff file only when run without XTest (run file in IDE)
+                message += "; check "+diffFile;
+            }
+            try {
+            assertFile(message, testFile, goldenFile, diffFile);
+            } catch (AssertionFileFailedError e) {
+                BufferedReader diffFileReader = new BufferedReader(new FileReader(diffFile));
+                StringBuffer diff = new StringBuffer();
+                try {
+                    String ss = diffFileReader.readLine();
+                    while (ss != null) {
+                        diff.append(ss+"\n");
+                        ss = diffFileReader.readLine();
+                    }
+                } finally {
+                    diffFileReader.close();
+                }
+                throw new AssertionFileFailedError("DIFF: "+diffFile.toString()+"\n"+diff.toString(), e.getDiffFile());
+
+            }
+        } catch (IOException ioe) {
+            fail("Could not obtain working direcory");
+        }
+    }
+
 
     public void ref(File f) throws IOException {
         Reader r = new FileReader(f);
