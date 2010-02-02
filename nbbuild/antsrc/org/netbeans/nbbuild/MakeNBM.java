@@ -831,20 +831,26 @@ public class MakeNBM extends Task {
 	}
     }
 
-   private boolean isSigned(final JarFile jar) throws IOException {
-       Enumeration<JarEntry> entries = jar.entries();
-       boolean signatureInfoPresent = false;
-       boolean signatureFilePresent = false;
-       while(entries.hasMoreElements()) {
-           String entryName = entries.nextElement().getName();
-           if(entryName.startsWith("META-INF/")) {
-               if(entryName.endsWith(".RSA") || entryName.endsWith(".DSA")) {
-                   signatureFilePresent= true;
-               } else if(entryName.endsWith(".SF")) {
-                    signatureFilePresent= true;                  
-               }
+    private boolean isSigned(final JarFile jar) throws IOException {
+        Enumeration<JarEntry> entries = jar.entries();
+        boolean signatureInfoPresent = false;
+        boolean signatureFilePresent = false;
+        while (entries.hasMoreElements()) {
+            String entryName = entries.nextElement().getName();
+            if (entryName.startsWith("META-INF/")) {
+                if (entryName.endsWith(".RSA") || entryName.endsWith(".DSA")) {
+                    signatureFilePresent = true;
+                    if (signatureInfoPresent) {
+                        break;
+                    }
+                } else if (entryName.endsWith(".SF")) {
+                    signatureInfoPresent = true;
+                    if (signatureFilePresent) {
+                        break;
+                    }
+                }
             }
-       }
+        }
         return signatureFilePresent && signatureInfoPresent;
     }
 
