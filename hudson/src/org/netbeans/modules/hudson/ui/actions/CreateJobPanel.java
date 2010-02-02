@@ -421,6 +421,7 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
             if (value == null) {
                 return super.getListCellRendererComponent(list, null, index, isSelected, cellHasFocus);
             }
+            assert value instanceof HudsonInstance : "#180088: got " + value + " of " + value.getClass();
             return super.getListCellRendererComponent(list, ((HudsonInstance) value).getName(), index, isSelected, cellHasFocus);
         }
     }
