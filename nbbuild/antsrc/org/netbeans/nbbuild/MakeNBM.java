@@ -830,15 +830,22 @@ public class MakeNBM extends Task {
 	}
     }
 
+   private boolean isSigned(final JarFile jar) throws IOException {
+        return jar.getEntry("META-INF/SUN_MICR.RSA") != null &&
+                jar.getEntry("META-INF/SUN_MICR.RSA") != null;
+    }
+
    private boolean pack200(final File sourceFile, final File targetFile) throws IOException {
        OutputStream outputStream = null;
        JarFile jarFile = null;
        boolean result = false;
         try {
             jarFile = new JarFile(sourceFile);
-            outputStream = new GZIPOutputStream(new FileOutputStream(targetFile));
-            packer.pack(jarFile, outputStream);
-            result = true;            
+            if(!isSigned(jarFile)) {
+                outputStream = new GZIPOutputStream(new FileOutputStream(targetFile));
+                packer.pack(jarFile, outputStream);
+                result = true;
+            }
         } finally {
             if(jarFile!=null) {
                 try {
