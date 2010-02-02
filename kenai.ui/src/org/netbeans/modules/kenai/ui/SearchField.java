@@ -260,6 +260,7 @@ public class SearchField extends JPanel implements ActionListener {
         if (k!=null) {
             selected = (Kenai) k;
             setTooltip();
+            leftIcon.setIcon(selected.getIcon());
         }
         for (ActionListener l:listenerList.getListeners(ActionListener.class)) {
             l.actionPerformed(e);

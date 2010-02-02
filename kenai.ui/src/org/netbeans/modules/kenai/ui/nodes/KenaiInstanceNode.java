@@ -77,6 +77,10 @@ public class KenaiInstanceNode extends AbstractNode implements PropertyChangeLis
         return ImageUtilities.icon2Image(kenaiInstance.getIcon());
     }
 
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
 
     @Override
     public Action[] getActions(boolean context) {
