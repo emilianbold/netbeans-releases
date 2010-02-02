@@ -121,7 +121,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     private Task storeColumnsTask;
     private final StoreColumnsHandler storeColumnsWidthHandler;
     private final JButton colsButton;
-    private boolean initialized;
+    private boolean savedQueryInitialized;
 
     /**
      * Returns the issue table filters
@@ -458,7 +458,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
      * @param columns array of column names, they must be one of SyncFileNode.COLUMN_NAME_XXXXX constants.
      */
     public final void initColumns() {
-        if(initialized) {
+        if(savedQueryInitialized) {
             return;
         }
         setModelProperties(query);
@@ -472,7 +472,9 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
             }
         }
         setDefaultColumnSizes();
-        initialized = true;
+        if(query.isSaved()) {
+            savedQueryInitialized = true;
+        }
     }
 
     private void setModelProperties(Query query) {
