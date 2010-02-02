@@ -406,7 +406,7 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
 
     private static class ProjectRenderer extends DefaultListCellRenderer {
         public @Override Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if (value == null) {
+            if (value == null || /* #180088 */ value instanceof String) {
                 return super.getListCellRendererComponent(list, null, index, isSelected, cellHasFocus);
             }
             ProjectInformation info = ProjectUtils.getInformation((Project) value);
@@ -418,10 +418,9 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
 
     private static class ServerRenderer extends DefaultListCellRenderer {
         public @Override Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if (value == null) {
+            if (value == null || /* #180088 */ value instanceof String) {
                 return super.getListCellRendererComponent(list, null, index, isSelected, cellHasFocus);
             }
-            assert value instanceof HudsonInstance : "#180088: got " + value + " of " + value.getClass();
             return super.getListCellRendererComponent(list, ((HudsonInstance) value).getName(), index, isSelected, cellHasFocus);
         }
     }
