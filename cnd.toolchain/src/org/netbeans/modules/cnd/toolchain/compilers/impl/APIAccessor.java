@@ -82,4 +82,7 @@ public abstract class APIAccessor {
     public abstract Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path);
 
     public abstract void setCompilerSet(Tool tool, CompilerSet cs);
+
+    public abstract void setToolPath(Tool tool, String p);
+
 }

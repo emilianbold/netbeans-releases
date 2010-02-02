@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,53 +34,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb;
+package org.netbeans.modules.cnd.toolchain.compilers.impl;
 
-import junit.framework.TestCase;
-import org.junit.Test;
-import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
+import org.netbeans.modules.cnd.toolchain.spi.CompilerSetManagerEvents;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Egor Ushakov
+ * @author as204739
  */
-public class PathComparisonTestCase extends TestCase {
+public abstract class SPIAccessor {
 
-    /*@Test
-    public void testPathComparisonCase() {
-        assert GdbUtils.compareUnixPaths("C:\\a", "c:\\A");
+    private static SPIAccessor INSTANCE;
+
+    public static synchronized SPIAccessor get() {
+        if (INSTANCE == null) {
+            Class<?> c = CompilerSetManagerEvents.class;
+            try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                // ignore
+            }
+        }
+
+        assert INSTANCE != null : "There is no SPI package accessor available!"; //NOI18N
+        return INSTANCE;
     }
 
-    @Test
-    public void testWinPathComparisonTrim() {
-        assert GdbUtils.compareUnixPaths("   /cygdrive/c/a   ", " /cygdrive/c/a      ");
+    /**
+     * Register the accessor. The method can only be called once
+     * - othewise it throws IllegalStateException.
+     *
+     * @param accessor instance.
+     */
+    public static void register(SPIAccessor accessor) {
+        if (INSTANCE != null) {
+            throw new IllegalStateException("Already registered"); // NOI18N
+        }
+        INSTANCE = accessor;
     }
 
-    @Test
-    public void testWinPathComparisonNormal() {
-        assert GdbUtils.compareUnixPaths("/cygdrive/c/./a", "c:\\a");
-    }
+    public abstract void runTasks(CompilerSetManagerEvents event);
 
-    @Test
-    public void testWinPathComparisonNormal2() {
-        assert GdbUtils.compareUnixPaths("/cygdrive/c/../c/a", "c:\\temp\\..\\a");
-    }
-
-    @Test
-    public void testWinPathComparisonSpace() {
-        assert GdbUtils.compareUnixPaths("C:\\dir space\\a", "/cygdrive/c/dir space/a");
-    }
-
-    @Test
-    public void testWinPathComparisonSeparators() {
-        assert GdbUtils.compareUnixPaths("C:/temp/test/SubProjects/hello3lib/hello3.cc", "c:\\temp\\test\\SubProjects\\hello3lib/hello3.cc");
-    }*/
-
-    @Test
-    public void testUnixPathComparisonNormal() {
-        assert GdbUtils.compareUnixPaths("/tmp/./a", "/tmp/../tmp/a");
-    }
+    public abstract CompilerSetManagerEvents createEvent(ExecutionEnvironment env);
 }

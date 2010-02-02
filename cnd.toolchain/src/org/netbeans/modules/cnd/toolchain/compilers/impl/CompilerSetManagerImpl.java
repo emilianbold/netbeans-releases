@@ -251,7 +251,6 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         return copy;
     }
 
-    @Override
     public String getUniqueCompilerSetName(String baseName) {
         int n = 0;
         String suggestedName = baseName;
@@ -444,7 +443,6 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         }
     }
 
-    @Override
     public List<CompilerSet> findRemoteCompilerSets(String path) {
         ServerRecord record = ServerList.get(executionEnvironment);
         assert record != null;
@@ -648,23 +646,10 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
 
     @Override
     public void finishInitialization() {
-        CompilerSetProvider provider = CompilerSetProviderFactoryImpl.createNew(executionEnvironment);
-        List<CompilerSet> setsCopy = new ArrayList<CompilerSet>(sets);
-        Runnable compilerSetDataLoader = provider.createCompilerSetDataLoader(setsCopy);
-        CndUtils.assertFalse(compilerSetDataLoader == null);
-        if (compilerSetDataLoader != null) {
-            RequestProcessor.Task task = RequestProcessor.getDefault().create(compilerSetDataLoader);
-            task.addTaskListener(new TaskListener() {
-                @Override
-                public void taskFinished(org.openide.util.Task task) {
-                    log.log(Level.FINE, "Code Model Ready for {0}", CompilerSetManagerImpl.this.toString());
-                    // FIXUP: this server has been probably deleted; TODO: provide return statis from loader
-                    if (!ServerList.get(executionEnvironment).isDeleted()) {
-                        CompilerSetManagerEvents.get(executionEnvironment).runTasks();
-                    }
-                }
-            });
-            task.schedule(0);
+        log.log(Level.FINE, "Code Model Ready for {0}", CompilerSetManagerImpl.this.toString());
+        // FIXUP: this server has been probably deleted; TODO: provide return statis from loader
+        if (!ServerList.get(executionEnvironment).isDeleted()) {
+            SPIAccessor.get().runTasks(CompilerSetManagerEvents.get(executionEnvironment));
         }
     }
 
@@ -1127,7 +1112,6 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         return out.toString();
     }
 
-    @Override
     public ExecutionEnvironment getExecutionEnvironment() {
         return executionEnvironment;
     }

@@ -51,33 +51,61 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
+ * Makefile lexer. Works with
+ * <a href="http://www.opengroup.org/onlinepubs/009695399/utilities/make.html">standard makefiles</a>
+ * and some extensions.
+ *
  * @author Jan Jancura
  * @author Alexey Vladykin
  */
 /*package*/ final class MakefileLexer implements Lexer<MakefileTokenId> {
 
     private static final Set<String> SPECIAL_TARGETS = new HashSet<String>(Arrays.asList(
+            // standard
             ".DEFAULT", // NOI18N
-            ".DONE", // NOI18N
-            ".FAILED", // NOI18N
-            ".GET_POSIX", // NOI18N
             ".IGNORE", // NOI18N
-            ".INIT", // NOI18N
-            ".KEEP_STATE", // NOI18N
-            ".KEEP_STATE_FILE", // NOI18N
-            ".MAKE_VERSION", // NOI18N
-            ".NO_PARALLEL", // NOI18N
-            ".PARALLEL", // NOI18N
-            ".PHONY", // NOI18N
             ".POSIX", // NOI18N
             ".PRECIOUS", // NOI18N
             ".SCCS_GET", // NOI18N
-            ".SCCS_GET_POSIX", // NOI18N
             ".SILENT", // NOI18N
             ".SUFFIXES", // NOI18N
-            ".WAIT")); // NOI18N
 
+            // gmake extensions
+            // http://www.gnu.org/software/automake/manual/make/Special-Targets.html
+            ".PHONY", // NOI18N
+            ".INTERMEDIATE", // NOI18N
+            ".SECONDARY", // NOI18N
+            ".SECONDEXPANSION", // NOI18N
+            ".DELETE_ON_ERROR", // NOI18N
+            ".LOW_RESOLUTION_TIME", // NOI18N
+            ".EXPORT_ALL_VARIABLES", // NOI18N
+            ".NOTPARALLEL", // NOI18N
+
+            // dmake extensions
+            // http://docs.sun.com/source/820-4180/man1/dmake.1.html
+            ".KEEP_STATE", // NOI18N
+            ".KEEP_STATE_FILE", // NOI18N
+            ".NO_PARALLEL", // NOI18N
+            ".PARALLEL", // NOI18N
+            ".LOCAL", // NOI18N
+            ".WAIT", // NOI18N
+
+            // other extensions
+            ".DONE", // NOI18N
+            ".FAILED", // NOI18N
+            ".GET_POSIX", // NOI18N
+            ".INIT", // NOI18N
+            ".MAKE_VERSION", // NOI18N
+            ".SCCS_GET_POSIX")); // NOI18N
+
+    /**
+     * All keywords are extensions of the standard.
+     */
     private static final Set<String> KEYWORDS = new HashSet<String>(Arrays.asList(
+            // gmake
+            "override", // NOI18N
+            "define", // NOI18N
+            "endef", // NOI18N
             "include", // NOI18N
             "ifdef", // NOI18N
             "ifndef", // NOI18N
@@ -440,6 +468,7 @@ import org.netbeans.spi.lexer.TokenFactory;
 
             case ' ':
             case '\t':
+            case '#':
                 return;
 
             default:

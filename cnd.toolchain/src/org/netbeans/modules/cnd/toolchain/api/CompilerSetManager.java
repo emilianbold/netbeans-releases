@@ -72,8 +72,6 @@ public abstract class CompilerSetManager {
      */
     public abstract void add(CompilerSet cs);
 
-    public abstract List<CompilerSet> findRemoteCompilerSets(String path);
-
     public abstract void finishInitialization();
 
     public abstract CompilerSet getCompilerSet(CompilerFlavor flavor);
@@ -88,11 +86,7 @@ public abstract class CompilerSetManager {
 
     public abstract boolean isDefaultCompilerSet(CompilerSet cs);
 
-    public abstract ExecutionEnvironment getExecutionEnvironment();
-
     public abstract int getPlatform();
-
-    public abstract String getUniqueCompilerSetName(String baseName);
 
     /**
      * CAUTION: this is a slow method. It should NOT be called from the EDT thread

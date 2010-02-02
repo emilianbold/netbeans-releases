@@ -110,7 +110,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private boolean customizeDebugger;
     private ExecutionEnvironment execEnv;
     private static ToolsPanel instance = null;
-    private CompilerSetManager csm;
+    private CompilerSetManagerImpl csm;
     private CompilerSet currentCompilerSet;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
@@ -144,7 +144,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     }
 
     private void initializeLong() {
-        csm = ToolsPanelSupport.getToolsCacheManager().getCompilerSetManagerCopy(execEnv, true);
+        csm = (CompilerSetManagerImpl) ToolsPanelSupport.getToolsCacheManager().getCompilerSetManagerCopy(execEnv, true);
     }
 
     ToolsPanelModel getModel(){
@@ -210,7 +210,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         }
 
         AddCompilerSetPanel panel = new AddCompilerSetPanel(csm);
-        String title = isRemoteHostSelected() ? getString("NEW_TOOL_SET_TITLE_REMOTE", ExecutionEnvironmentFactory.toUniqueID(csm.getExecutionEnvironment())) : getString("NEW_TOOL_SET_TITLE");
+        String title = isRemoteHostSelected() ? getString("NEW_TOOL_SET_TITLE_REMOTE", 
+                ExecutionEnvironmentFactory.toUniqueID(csm.getExecutionEnvironment())) : getString("NEW_TOOL_SET_TITLE");
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
         panel.setDialogDescriptor(dialogDescriptor);
         boolean oldHostValid = ToolsPanelSupport.getToolsCacheManager().isDevHostValid(execEnv);

@@ -39,9 +39,6 @@
 
 package org.netbeans.modules.cnd.toolchain.spi;
 
-import java.util.List;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-
 /**
  * @author gordonp
  * @author vkvashin
@@ -58,5 +55,4 @@ public interface CompilerSetProvider {
 
     String[] getCompilerSetData(String path);
 
-    Runnable createCompilerSetDataLoader(List<CompilerSet> sets);
 }

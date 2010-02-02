@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,53 +34,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb;
+package org.netbeans.modules.cnd.toolchain.compilers.impl;
 
-import junit.framework.TestCase;
-import org.junit.Test;
-import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
+
 
 /**
  *
- * @author Egor Ushakov
+ * @author Alexander Simon
  */
-public class PathComparisonTestCase extends TestCase {
+public final class ToolchainProxy {
 
-    /*@Test
-    public void testPathComparisonCase() {
-        assert GdbUtils.compareUnixPaths("C:\\a", "c:\\A");
+    private ToolchainProxy() {
     }
 
-    @Test
-    public void testWinPathComparisonTrim() {
-        assert GdbUtils.compareUnixPaths("   /cygdrive/c/a   ", " /cygdrive/c/a      ");
+    public static void setToolPath(Tool tool, String p) {
+        APIAccessor.get().setToolPath(tool, p);
     }
 
-    @Test
-    public void testWinPathComparisonNormal() {
-        assert GdbUtils.compareUnixPaths("/cygdrive/c/./a", "c:\\a");
-    }
-
-    @Test
-    public void testWinPathComparisonNormal2() {
-        assert GdbUtils.compareUnixPaths("/cygdrive/c/../c/a", "c:\\temp\\..\\a");
-    }
-
-    @Test
-    public void testWinPathComparisonSpace() {
-        assert GdbUtils.compareUnixPaths("C:\\dir space\\a", "/cygdrive/c/dir space/a");
-    }
-
-    @Test
-    public void testWinPathComparisonSeparators() {
-        assert GdbUtils.compareUnixPaths("C:/temp/test/SubProjects/hello3lib/hello3.cc", "c:\\temp\\test\\SubProjects\\hello3lib/hello3.cc");
-    }*/
-
-    @Test
-    public void testUnixPathComparisonNormal() {
-        assert GdbUtils.compareUnixPaths("/tmp/./a", "/tmp/../tmp/a");
-    }
 }

@@ -225,7 +225,7 @@ public class MakefileLexerTest extends NbTestCase {
     }
 
     public void testEscapes() {
-        String text = "a\\:=b\nc\\=d\ne\\+=f\n\\:all\\::\n\techo $(a\\) $(c\\) $(e\\)";
+        String text = "a\\:=b\nc\\=d\ne\\+=f\n\\:all\\::\\#\n\techo $(a\\) $(c\\) $(e\\)";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, new MakefileLanguageHierarchy().language());
         TokenSequence<?> ts = hi.tokenSequence();
 
@@ -243,6 +243,7 @@ public class MakefileLexerTest extends NbTestCase {
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.BARE, "\\:all\\:");
         assertNextTokenEquals(ts, MakefileTokenId.COLON, ":");
+        assertNextTokenEquals(ts, MakefileTokenId.BARE, "\\#");
         assertNextTokenEquals(ts, MakefileTokenId.NEW_LINE, "\n");
         assertNextTokenEquals(ts, MakefileTokenId.TAB, "\t");
         assertNextTokenEquals(ts, MakefileTokenId.SHELL, "echo ");
