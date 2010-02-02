@@ -663,7 +663,6 @@ public class MakeNBM extends Task {
  	ZipFileSet fs = new ZipFileSet();
         List <String> moduleFiles = new ArrayList <String>();
  	fs.setDir( productDir );
-        log("... setting dir to : " + productDir);
         String [] filesForPackaging = null;
         if(usePack200 && pack200excludes!=null && !pack200excludes.equals("")) {
             FileSet pack200Files = new FileSet();
@@ -675,14 +674,12 @@ public class MakeNBM extends Task {
             }
             DirectoryScanner ds = pack200Files.getDirectoryScanner();
             ds.scan();
-            filesForPackaging = ds.getIncludedFiles();
-            log("... files for packaging: " + Arrays.toString(filesForPackaging))   ;
+            filesForPackaging = ds.getIncludedFiles();            
         }
 
         List<File> packedFiles = new ArrayList<File>();
         for (int i = 0; i < files.length; i++) {
             if (usePack200) {
-                log("... using pack200 compression");
                 File sourceFile = new File(productDir, files[i]);
                 if (sourceFile.isFile() && sourceFile.getName().endsWith(".jar")) {
 
@@ -700,18 +697,19 @@ public class MakeNBM extends Task {
                         File targetFile = new File(productDir, files[i] + ".pack.gz");
                         try {
                             if (pack200(sourceFile, targetFile)) {
-                                log("... file " + files[i] + " was pack200-ed");
                                 packedFiles.add(targetFile);
                                 files[i] = files[i] + ".pack.gz";
                             }
                         } catch (IOException e) {
-                            new BuildException("Can`t pack file " + sourceFile, e);
+                            if(targetFile.exists()) {
+                                targetFile.delete();
+                            }
+                            log("Can`t pack file " + sourceFile, e, Project.MSG_WARN);
                         }
                     }
                 }
             }
 
-            log("... adding file " + files[i] + ", exist = " + new File(productDir, files[i]).exists());
             fs.createInclude().setName(files[i]);
             moduleFiles.add(files[i]);
         }
@@ -833,7 +831,6 @@ public class MakeNBM extends Task {
     }
 
    private boolean pack200(final File sourceFile, final File targetFile) throws IOException {
-       log("... packing file " + sourceFile + " to " + targetFile);
        OutputStream outputStream = null;
        JarFile jarFile = null;
        boolean result = false;
