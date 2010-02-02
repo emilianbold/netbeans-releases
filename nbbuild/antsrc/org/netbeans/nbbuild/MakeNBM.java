@@ -56,9 +56,9 @@ import java.net.URI;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -67,6 +67,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Pack200;
 import java.util.jar.Pack200.Packer;
@@ -831,8 +832,20 @@ public class MakeNBM extends Task {
     }
 
    private boolean isSigned(final JarFile jar) throws IOException {
-        return jar.getEntry("META-INF/SUN_MICR.RSA") != null &&
-                jar.getEntry("META-INF/SUN_MICR.RSA") != null;
+       Enumeration<JarEntry> entries = jar.entries();
+       boolean signatureInfoPresent = false;
+       boolean signatureFilePresent = false;
+       while(entries.hasMoreElements()) {
+           String entryName = entries.nextElement().getName();
+           if(entryName.startsWith("META-INF/")) {
+               if(entryName.endsWith(".RSA") || entryName.endsWith(".DSA")) {
+                   signatureFilePresent= true;
+               } else if(entryName.endsWith(".SF")) {
+                    signatureFilePresent= true;                  
+               }
+            }
+       }
+        return signatureFilePresent && signatureInfoPresent;
     }
 
    private boolean pack200(final File sourceFile, final File targetFile) throws IOException {
