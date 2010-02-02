@@ -350,7 +350,7 @@
                 </file>
 
                 <file name="NavigatorUpdaterTaskFactory.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.navigator.NavigatorUpdaterTaskFactory"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makefile.navigator.NavigatorUpdaterTaskFactory.getInstance"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
 

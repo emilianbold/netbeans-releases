@@ -74,11 +74,6 @@ public enum MakefileTokenId implements TokenId {
     TAB("tab"), // NOI18N
 
     /**
-     * Shell command modifier: <code>@</code>, <code>-</code>, <code>+</code>
-     */
-    SHELL_MODIFIER("shell_modifier"), // NOI18N
-
-    /**
      * Shell command, unlexed.
      */
     SHELL("shell"), // NOI18N

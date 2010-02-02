@@ -57,6 +57,5 @@ made subject to such option by the copyright holder.
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="shell" default="identifier"/>
-    <fontcolor name="shell_modifier" default="identifier"/>
 
 </fontscolors>

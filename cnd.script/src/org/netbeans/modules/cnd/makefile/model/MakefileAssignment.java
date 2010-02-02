@@ -39,23 +39,24 @@
 
 package org.netbeans.modules.cnd.makefile.model;
 
+import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
+
 /**
  *
  * @author Alexey Vladykin
  */
-public final class MakefileAssignment implements MakefileElement {
+public final class MakefileAssignment extends MakefileElement {
 
     private final String name;
     private final String value;
 
-    public MakefileAssignment(String name, String value) {
+    public MakefileAssignment(FileObject file, int startOffset, int endOffset, String name, String value) {
+        super(Kind.ASSIGNMENT, file, startOffset, endOffset);
+        Parameters.notNull("name", name);
+        Parameters.notNull("value", value);
         this.name = name;
         this.value = value;
-    }
-
-    @Override
-    public Kind getKind() {
-        return Kind.ASSIGNMENT;
     }
 
     public String getMacroName() {

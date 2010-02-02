@@ -38,36 +38,18 @@
  */
 package org.netbeans.modules.cnd.makefile.navigator;
 
-import java.util.Collections;
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.makefile.parser.MakefileModel;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.navigator.NavigatorPanel;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * @author Alexey Vladykin
  */
-public class MakefileNavigatorPanel implements NavigatorPanel, LookupListener {
+public class MakefileNavigatorPanel implements NavigatorPanel {
 
-    private Lookup.Result<FileObject> lookupResult;
     private MakefileNavigatorPanelUI panel;
-    private final UpdaterTask updaterTask;
 
     public MakefileNavigatorPanel() {
-        updaterTask = new UpdaterTask();
     }
 
     @Override
@@ -81,7 +63,7 @@ public class MakefileNavigatorPanel implements NavigatorPanel, LookupListener {
     }
 
     @Override
-    public JComponent getComponent() {
+    public MakefileNavigatorPanelUI getComponent() {
         if (panel == null) {
             panel = new MakefileNavigatorPanelUI();
         }
@@ -90,79 +72,20 @@ public class MakefileNavigatorPanel implements NavigatorPanel, LookupListener {
 
     @Override
     public void panelActivated(Lookup context) {
-        lookupResult = context.lookupResult(FileObject.class);
-        lookupResult.addLookupListener(this);
-        scheduleUpdate(findMakefile(lookupResult));
+        NavigatorUpdaterTaskFactory.getInstance().setNavigatorPanel(getComponent());
     }
 
     @Override
     public void panelDeactivated() {
-        lookupResult.removeLookupListener(this);
-        scheduleUpdate(null);
+        NavigatorUpdaterTaskFactory.getInstance().setNavigatorPanel(null);
     }
 
     @Override
     public Lookup getLookup() {
-        return null;
-    }
-
-    @Override
-    public void resultChanged(LookupEvent ev) {
-        scheduleUpdate(findMakefile(lookupResult));
-    }
-
-    private void scheduleUpdate(final FileObject makefile) {
-        if (makefile != null) {
-            uiSetWaiting();
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    Source source = Source.create(makefile);
-                    try {
-                        ParserManager.parse(Collections.singletonList(source), updaterTask);
-                    } catch (ParseException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            });
-        } else {
-            uiSetModel(null);
-        }
-    }
-
-    private void uiSetWaiting() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                panel.setWaiting();
-            }
-        });
-    }
-
-    private void uiSetModel(final MakefileModel model) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                panel.setModel(model);
-            }
-        });
-    }
-
-    private FileObject findMakefile(Lookup.Result<FileObject> result) {
-        for (FileObject file : result.allInstances()) {
-            if (file.getMIMEType().equals(MIMENames.MAKEFILE_MIME_TYPE)) {
-                return file;
-            }
-        }
-        return null;
+        return getComponent().getLookup();
     }
 
     private static String getMessage(String key) {
         return NbBundle.getMessage(MakefileNavigatorPanel.class, key);
-    }
-
-    private class UpdaterTask extends UserTask {
-        @Override
-        public void run(ResultIterator resultIterator) throws ParseException {
-            Result r = resultIterator.getParserResult();
-            uiSetModel((MakefileModel) r);
-        }
     }
 }
