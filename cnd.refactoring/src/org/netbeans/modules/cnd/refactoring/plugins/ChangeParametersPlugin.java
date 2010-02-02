@@ -185,7 +185,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
     }
 
     /**
-     * Returns list of problems. For the change method signature, there are two
+     * Returns list of problems. For the change function signature, there are two
      * possible warnings - if the method is overriden or if it overrides
      * another method.
      *
