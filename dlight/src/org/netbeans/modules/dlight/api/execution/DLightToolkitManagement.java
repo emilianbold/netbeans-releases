@@ -148,6 +148,7 @@ public final class DLightToolkitManagement {
      * or stop {@link #stopSession(org.netbeans.modules.dlight.api.execution.DLightToolkitManagement.DLightSessionHandler) } session.
      * @deprecated use #createSession(DLightSessionConfiguration)
      */
+    @Deprecated
     public Future<DLightSessionHandler> createSession(
             final DLightTarget target,
             final String configurationName) {
@@ -162,6 +163,7 @@ public final class DLightToolkitManagement {
      * @return
      * @deprecated use #createSession(DLightSessionConfiguration)
      */
+    @Deprecated
     public Future<DLightSessionHandler> createSession(
             final DLightTarget target,
             final String configurationName,
@@ -172,6 +174,7 @@ public final class DLightToolkitManagement {
         sessionConfiguration.setSessionName(sessionName);
         return DLightExecutorService.submit(new Callable<DLightSessionHandler>() {
 
+            @Override
             public DLightSessionHandler call() throws Exception {
                 return toolkitManager.createSession(sessionConfiguration);
             }
@@ -185,6 +188,7 @@ public final class DLightToolkitManagement {
      * @return
      * @deprecated use #createSession(DLightSessionConfiguration)
      */
+    @Deprecated
     public Future<DLightSessionHandler> createSession(
             final DLightTarget target,
             final DLightConfiguration configuration) {
@@ -199,6 +203,7 @@ public final class DLightToolkitManagement {
      * @return
      * @deprecated use #createSession(DLightSessionConfiguration)
      */
+    @Deprecated
     public Future<DLightSessionHandler> createSession(
             final DLightTarget target,
             final DLightConfiguration configuration,
@@ -209,6 +214,7 @@ public final class DLightToolkitManagement {
         sessionConfiguration.setSessionName(sessionName);
         return DLightExecutorService.submit(new Callable<DLightSessionHandler>() {
 
+            @Override
             public DLightSessionHandler call() throws Exception {
                 return toolkitManager.createSession(sessionConfiguration);
             }
@@ -218,6 +224,7 @@ public final class DLightToolkitManagement {
     public Future<DLightSessionHandler> createSession(final DLightSessionConfiguration sessionConfiguration) {
         return DLightExecutorService.submit(new Callable<DLightSessionHandler>() {
 
+            @Override
             public DLightSessionHandler call() throws Exception {
                 return toolkitManager.createSession(sessionConfiguration);
             }

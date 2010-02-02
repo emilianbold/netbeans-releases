@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,63 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.toolchain.api;
 
-import java.util.ResourceBundle;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolDescriptor;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.APIAccessor;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
+/**
+ *
+ * @author Alexander Simon
+ */
 public class Tool {
 
-    // Compiler types
-    public static final int CCompiler = 0;
-    public static final int CCCompiler = 1;
-    public static final int FortranCompiler = 2;
-    public static final int CustomTool = 3;
-    public static final int Assembler = 4;
-    public static final int MakeTool = 5;
-    public static final int DebuggerTool = 6;
-    public static final int QMakeTool = 7;
-    public static final int CMakeTool = 8;
-    private static final String[] TOOL_NAMES = {
-        getString("CCompiler"), // NOI18N
-        getString("CCCompiler"), // NOI18N
-        getString("FortranCompiler"), // NOI18N
-        getString("CustomBuildTool"), // NOI18N
-        getString("Assembler"), // NOI18N
-        getString("MakeTool"), // NOI18N
-        getString("DebuggerTool"), // NOI18N
-        getString("QMakeTool"), // NOI18N
-        getString("CMakeTool"), // NOI18N
-    };
-    private static final String[] COMPILER_TOOL_NAMES = {
-        getString("CCompiler"), // NOI18N
-        getString("CCCompiler"), // NOI18N
-        getString("FortranCompiler"), // NOI18N
-        getString("Assembler"), // NOI18N // Noy yet
-        getString("CustomBuildTool"), // NOI18N
-    };
+    static {
+        APIAccessor.register(new APIAccessorImpl());
+    }
+    
     private final ExecutionEnvironment executionEnvironment;
-    private CompilerFlavor flavor;
-    private int kind;
+    private final CompilerFlavor flavor;
+    private final ToolKindBase kind;
     private String name;
-    private String displayName;
+    private final String displayName;
     private String path;
-    private CompilerSet compilerSet = null;
+    private CompilerSet compilerSet;
 
     /** Creates a new instance of GenericCompiler */
-    protected Tool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    protected Tool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
         this.executionEnvironment = executionEnvironment;
         this.flavor = flavor;
         this.kind = kind;
         this.name = name;
         this.displayName = displayName;
         this.path = path;
-        compilerSet = null;
     }
 
     public ToolDescriptor getDescriptor() {
@@ -101,22 +78,8 @@ public class Tool {
     }
 
     public Tool createCopy() {
-        Tool copy = new Tool(executionEnvironment, flavor, kind, "", displayName, path);
-        copy.setName(getName());
-        return copy;
-    }
-
-    public static Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         return new Tool(executionEnvironment, flavor, kind, name, displayName, path);
     }
-
-//    public String getHostKey() {
-//        if (executionEnvironment.isLocal()) {
-//            return CompilerSetManager.LOCALHOST; // executionEnvironment.getHost();
-//        } else {
-//            return executionEnvironment.getUser() + '@' + executionEnvironment.getHost();
-//        }
-//    }
 
     public ExecutionEnvironment getExecutionEnvironment() {
         return executionEnvironment;
@@ -152,12 +115,8 @@ public class Tool {
     public void waitReady(boolean reset) {
     }
 
-    public int getKind() {
+    public ToolKindBase getKind() {
         return kind;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getName() {
@@ -169,31 +128,9 @@ public class Tool {
     }
 
     public void setPath(String p) {
-        if (p == null) {
-        } else {
+        if (p != null) {
             path = p;
-            name = CompilerSetUtils.getBaseName(path);
-        }
-    }
-
-    public static String[] getCompilerToolNames() {
-        return COMPILER_TOOL_NAMES;
-    }
-
-    public static int getTool(String name) {
-        for (int i = 0; i < TOOL_NAMES.length; i++) {
-            if (TOOL_NAMES[i].equals(name)) {
-                return i;
-            }
-        }
-        return 0; // ????
-    }
-
-    public static String getName(int kind) {
-        if (kind >= 0 && kind <= TOOL_NAMES.length) {
-            return TOOL_NAMES[kind];
-        } else {
-            return null;
+            name = ToolUtils.getBaseName(path);
         }
     }
 
@@ -201,8 +138,15 @@ public class Tool {
         return displayName;
     }
 
-    public static String getToolDisplayName(int kind) {
-        return TOOL_NAMES[kind];
+    public String getIncludeFilePathPrefix() {
+        // TODO: someone put this here only because OutputWindowWriter in core
+        // wants to get information about compilers which are defined in makeprojects.
+        // abstract Tool shouldn't care about include paths for compilers
+        throw new UnsupportedOperationException();
+    }
+
+    public CompilerSet getCompilerSet() {
+        return compilerSet;
     }
 
     @Override
@@ -215,27 +159,24 @@ public class Tool {
         }
     }
 
-    public String getIncludeFilePathPrefix() {
-        // TODO: someone put this here only because OutputWindowWriter in core
-        // wants to get information about compilers which are defined in makeprojects.
-        // abstract Tool shouldn't care about include paths for compilers
-        throw new UnsupportedOperationException();
-    }
-
-    private static ResourceBundle bundle = null;
-
-    protected static String getString(String s) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(Tool.class);
-        }
-        return bundle.getString(s);
-    }
-
-    public CompilerSet getCompilerSet() {
-        return compilerSet;
-    }
-
-    public void setCompilerSet(CompilerSet compilerSet) {
+    private void setCompilerSet(CompilerSet compilerSet) {
         this.compilerSet = compilerSet;
+    }
+
+    private static Tool createTool(ExecutionEnvironment executionEnvironment, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+        return new Tool(executionEnvironment, flavor, kind, name, displayName, path);
+    }
+
+    private static final class APIAccessorImpl extends APIAccessor {
+
+        @Override
+        public Tool createTool(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+            return Tool.createTool(env, flavor, kind, name, displayName, path);
+        }
+
+        @Override
+        public void setCompilerSet(Tool tool, CompilerSet cs) {
+            tool.setCompilerSet(cs);
+        }
     }
 }

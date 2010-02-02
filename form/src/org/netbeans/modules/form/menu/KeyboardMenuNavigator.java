@@ -277,6 +277,7 @@ public class KeyboardMenuNavigator extends KeyAdapter {
     }
     
     private class KeyboardFinishListener implements InPlaceEditLayer.FinishListener {
+        @Override
         public void editingFinished(boolean changed) {
             if(menuEditLayer.isVisible()) {
                 menuEditLayer.glassLayer.requestFocusInWindow();

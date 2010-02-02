@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.libs.felix
+OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/felix/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Provides: org.osgi.framework.launch.FrameworkFactory
+AutoUpdate-Show-In-Client: false
+

@@ -119,6 +119,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             kenai = (Kenai) kenaiCombo.getModel().getSelectedItem();
         } else {
             kenai = prjAndFeature.kenaiProject.getKenai();
+            kenaiCombo.setSelectedItem(kenai);
         }
 
         refreshUsername();
@@ -416,7 +417,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 
     private void browseKenaiButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseKenaiButtonActionPerformed
         
-        KenaiSearchPanel browsePanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.BROWSE, false);
+        KenaiSearchPanel browsePanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.BROWSE, false, kenai);
         String title = NbBundle.getMessage(GetSourcesFromKenaiPanel.class,
                 "GetSourcesFromKenaiPanel.BrowseKenaiProjectsTitle"); // NOI18N
         DialogDescriptor dialogDesc = new KenaiDialogDescriptor(browsePanel, title, true, null);

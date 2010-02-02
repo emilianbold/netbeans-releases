@@ -160,7 +160,7 @@ import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.PreviewableFix;
 import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.csl.core.GsfEditorKitFactory;
+import org.netbeans.modules.csl.core.CslEditorKit;
 import org.netbeans.modules.csl.core.GsfIndentTaskFactory;
 import org.netbeans.modules.csl.core.GsfReformatTaskFactory;
 import org.netbeans.modules.csl.core.LanguageRegistry;
@@ -2068,8 +2068,7 @@ public abstract class CslTestBase extends NbTestCase {
         org.netbeans.modules.csl.core.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
         assertNotNull(language);
         if (!language.useCustomEditorKit()) {
-            GsfEditorKitFactory factory = new GsfEditorKitFactory(language);
-            return factory.kit();
+            return new CslEditorKit(mimeType);
         }
         fail("Must override getEditorKit() for useCustomEditorKit languages");
         return null;
@@ -3993,6 +3992,49 @@ public abstract class CslTestBase extends NbTestCase {
         assertDescriptionMatches(relFilePath, fixed, true, ".fixed");
     }
     
+    @SuppressWarnings("unchecked")
+    protected final void ensureRegistered(AstRule hint) throws Exception {
+        org.netbeans.modules.csl.core.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
+        assertNotNull(language.getHintsProvider());
+        GsfHintsManager hintsManager = language.getHintsManager();
+        Map<?, List<? extends AstRule>> hints = (Map<?, List<? extends AstRule>>)hintsManager.getHints();
+        Set<?> kinds = hint.getKinds();
+        for (Object nodeType : kinds) {
+            List<? extends AstRule> rules = hints.get(nodeType);
+            assertNotNull(rules);
+            boolean found = false;
+            for (AstRule rule : rules) {
+                if (rule.getClass() == hint.getClass()) {
+                    found  = true;
+                    break;
+                }
+            }
+
+            assertTrue(found);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected final void ensureRegistered(ErrorRule hint) throws Exception {
+        org.netbeans.modules.csl.core.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
+        assertNotNull(language.getHintsProvider());
+        GsfHintsManager hintsManager = language.getHintsManager();
+        Map<?, List<? extends ErrorRule>> hints = (Map<?, List<? extends ErrorRule>>)hintsManager.getErrors();
+        Set<?> kinds = hint.getCodes();
+        for (Object codes : kinds) {
+            List<? extends ErrorRule> rules = hints.get(codes);
+            assertNotNull(rules);
+            boolean found = false;
+            for (ErrorRule rule : rules) {
+                if (rule.getClass() == hint.getClass()) {
+                    found  = true;
+                    break;
+                }
+            }
+
+            assertTrue(found);
+        }
+    }
 //    public void ensureRegistered(AstRule hint) throws Exception {
 //        Map<Integer, List<AstRule>> hints = JsRulesManager.getInstance().getHints();
 //        Set<Integer> kinds = hint.getKinds();

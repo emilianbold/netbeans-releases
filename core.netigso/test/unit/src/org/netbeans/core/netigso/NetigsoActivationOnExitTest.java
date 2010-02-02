@@ -81,9 +81,6 @@ public class NetigsoActivationOnExitTest extends SetupHid {
         ud.mkdirs();
         System.setProperty("netbeans.user", ud.getPath());
         
-        NetigsoModuleFactory.clear();
-
-
         data = new File(getDataDir(), "jars");
         jars = new File(getWorkDir(), "jars");
         jars.mkdirs();

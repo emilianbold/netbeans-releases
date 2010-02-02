@@ -59,7 +59,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.apisupport.project.EvaluatorTest;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -913,7 +912,7 @@ public class ClassPathProviderImplTest extends TestBase {
         assertEquals("right COMPILE classpath after changing project.xml again", expectedRoots, urlsOfCp(cp));
     }
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    /* XXX cannot be run in binary dist, requires sources, and depends on module dep details; should test against fake platform
     public void testExecuteClasspathChanges() throws Exception {
         ClassPath cp = ClassPath.getClassPath(copyOfMiscDir.getFileObject("src"), ClassPath.EXECUTE);
         Set<String> expectedRoots = new TreeSet<String>();
@@ -930,6 +929,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/" + TestBase.CLUSTER_PLATFORM + "/lib/org-openide-util.jar"));
         assertEquals("right EXECUTE classpath after changing project.xml", expectedRoots, urlsOfCp(cp));
     }
+     */
 
     public void testExecuteCPOnClassesDir() throws Exception {
         InstalledFileLocatorImpl.registerDestDir(destDirF);

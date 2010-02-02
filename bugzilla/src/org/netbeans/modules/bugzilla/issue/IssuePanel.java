@@ -267,8 +267,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         for (String keyword : kws) {
             keywords.add(keyword.toUpperCase());
         }
-        boolean isNbRepository = BugzillaUtil.isNbRepository(issue.getRepository());
-        boolean showQAContact = isNbRepository || !(issue.getBugzillaRepository() instanceof KenaiRepository);
+        boolean showQAContact = BugzillaUtil.showQAContact(issue.getBugzillaRepository());
         if (qaContactLabel.isVisible() != showQAContact) {
             GroupLayout layout = (GroupLayout)getLayout();
             JLabel temp = new JLabel();
@@ -277,11 +276,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             qaContactLabel.setVisible(showQAContact);
             qaContactField.setVisible(showQAContact);
         }
-        boolean showStatusWhiteboard = isNbRepository || !(issue.getBugzillaRepository() instanceof KenaiRepository);
+        boolean showStatusWhiteboard = BugzillaUtil.showStatusWhiteboard(issue.getBugzillaRepository());
         statusWhiteboardLabel.setVisible(showStatusWhiteboard);
         statusWhiteboardField.setVisible(showStatusWhiteboard);
         statusWhiteboardWarning.setVisible(showStatusWhiteboard);
-        boolean showIssueType = BugzillaUtil.isNbRepository(issue.getRepository());
+        boolean showIssueType = BugzillaUtil.showIssueType(issue.getBugzillaRepository());
         issueTypeLabel.setVisible(false);
         issueTypeCombo.setVisible(showIssueType);
         issueTypeWarning.setVisible(showIssueType);
@@ -330,6 +329,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if(issue.getRepository() instanceof KenaiRepository) {
                 String productName = ((KenaiRepository)issue.getRepository()).getProductName();
                 selectInCombo(productCombo, productName, true);
+            } else {
+                productCombo.setSelectedIndex(0);
             }
         }
     }

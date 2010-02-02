@@ -48,11 +48,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -92,6 +93,7 @@ public abstract class QtInfoProvider {
          * @param conf  Qt project configuration
          * @return list of include directories, may be empty if qmake is not found
          */
+        @Override
         public List<String> getQtIncludeDirectories(MakeConfiguration conf) {
             String baseDir = getBaseQtIncludeDir(conf);
             List<String> result;
@@ -144,7 +146,7 @@ public abstract class QtInfoProvider {
         private static String getQmakePath(MakeConfiguration conf) {
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             if (compilerSet != null) {
-                Tool qmakeTool = compilerSet.getTool(Tool.QMakeTool);
+                Tool qmakeTool = compilerSet.getTool(ToolKind.QMakeTool);
                 if (qmakeTool != null && 0 < qmakeTool.getPath().length()) {
                     return qmakeTool.getPath();
                 }

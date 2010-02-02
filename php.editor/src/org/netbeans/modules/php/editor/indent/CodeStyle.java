@@ -90,6 +90,10 @@ public final class CodeStyle {
         return preferences.getInt(continuationIndentSize, getDefaultAsInt(continuationIndentSize));
     }
 
+    public int getItemsInArrayDeclarationIndentSize() {
+        return preferences.getInt(itemsInArrayDeclarationIndentSize, getDefaultAsInt(itemsInArrayDeclarationIndentSize));
+    }
+
     public int getInitialIndent(){
         return preferences.getInt(initialIndent, getDefaultAsInt(initialIndent));
     }

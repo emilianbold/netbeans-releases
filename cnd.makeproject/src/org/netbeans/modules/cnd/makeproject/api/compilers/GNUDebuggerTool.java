@@ -41,22 +41,21 @@
 
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.DebuggerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public class GNUDebuggerTool extends Tool {
 
     private GNUDebuggerTool(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
-        super(env, flavor, DebuggerTool, name, displayName, path); // NOI18N
+        super(env, flavor, ToolKind.DebuggerTool, name, displayName, path); // NOI18N
     }
 
     @Override
     public GNUDebuggerTool createCopy() {
-        GNUDebuggerTool copy = new GNUDebuggerTool(getExecutionEnvironment(), getFlavor(), "", getDisplayName(), getPath());
-        copy.setName(getName());
-        return copy;
+        return new GNUDebuggerTool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
     }
 
     public static GNUDebuggerTool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {

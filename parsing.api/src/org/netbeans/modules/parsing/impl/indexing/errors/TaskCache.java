@@ -217,8 +217,8 @@ public class TaskCache {
 
         if (modified) {
             c.toRefresh.add(currentFile = new URL(currentFile, "."));
-            
-            while (!root.equals(currentFile)) {
+            final String relativePath = i.getRelativePath();
+            for (int depth = relativePath.split("/").length-1; depth>0; depth--) {  //NOI18N
                 currentFile = new URL(currentFile, "..");
                 c.toRefresh.add(currentFile);
             }

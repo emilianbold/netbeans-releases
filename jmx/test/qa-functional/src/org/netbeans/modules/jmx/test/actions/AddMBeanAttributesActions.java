@@ -134,7 +134,7 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
     
     public void test2() {
@@ -146,7 +146,7 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_1);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
     
     public void test3() {
@@ -161,7 +161,7 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         addAttributesTest(jmio, className, interfaceName);
     }
@@ -182,7 +182,7 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(SIMPLE_1);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
     
     public void test5() {
@@ -197,7 +197,7 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(DYNAMIC_1);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertFalse(isMenuItemEnabled(jmio));
     }
     
     public void test6() {
@@ -215,7 +215,7 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertTrue(jmio.isEnabled());
+        assertTrue(isMenuItemEnabled2(jmio));
         
         addAttributesTest(jmio, className, interfaceName);
     }

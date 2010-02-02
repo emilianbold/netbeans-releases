@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.toolchain.api;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
@@ -63,7 +62,7 @@ public final class CompilerSetUtils {
      */
     public static String getCygwinBase() {
         if (cygwinBase == null) {
-            ToolchainManagerImpl tcm = ToolchainManager.getImpl();
+            ToolchainManagerImpl tcm = ToolchainManagerImpl.getImpl();
             ToolchainDescriptor td = tcm.getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
             if (td != null) {
                 String cygwinBin = tcm.getBaseFolder(td, PlatformTypes.PLATFORM_WINDOWS);
@@ -103,7 +102,7 @@ public final class CompilerSetUtils {
         if (res != null) {
             return res;
         }
-        ToolchainManagerImpl tcm = ToolchainManager.getImpl();
+        ToolchainManagerImpl tcm = ToolchainManagerImpl.getImpl();
         for(ToolchainDescriptor td : tcm.getToolchains(PlatformTypes.PLATFORM_WINDOWS)){
             if (td != null) {
                 res = getCommandDir(td);
@@ -125,7 +124,7 @@ public final class CompilerSetUtils {
         if (td != null) {
             String dir = commandsFolders.get(td);
             if (dir == null) {
-                ToolchainManagerImpl tcm = ToolchainManager.getImpl();
+                ToolchainManagerImpl tcm = ToolchainManagerImpl.getImpl();
                 String msysBin = tcm.getCommandFolder(td, PlatformTypes.PLATFORM_WINDOWS);
                 if (msysBin != null) {
                     dir = msysBin.replace("\\", "/"); // NOI18N
@@ -141,126 +140,4 @@ public final class CompilerSetUtils {
         return null;
     }
 
-    static String getPlatformName(int platform) {
-        switch (platform) {
-            case PlatformTypes.PLATFORM_LINUX:
-                return "linux"; // NOI18N
-            case PlatformTypes.PLATFORM_SOLARIS_SPARC:
-                return "sun_sparc"; // NOI18N
-            case PlatformTypes.PLATFORM_SOLARIS_INTEL:
-                return "sun_intel"; // NOI18N
-            case PlatformTypes.PLATFORM_WINDOWS:
-                return "windows"; // NOI18N
-            case PlatformTypes.PLATFORM_MACOSX:
-                return "mac"; // NOI18N
-            default:
-                return "none"; // NOI18N
-        }
-    }
-
-    public static int computeLocalPlatform() {
-        String os = System.getProperty("os.name"); // NOI18N
-
-        if (os.equals("SunOS")) { // NOI18N
-            return System.getProperty("os.arch").equals("x86") ? PlatformTypes.PLATFORM_SOLARIS_INTEL : PlatformTypes.PLATFORM_SOLARIS_SPARC; // NOI18N
-        } else if (os.startsWith("Windows ")) { // NOI18N
-            return PlatformTypes.PLATFORM_WINDOWS;
-        } else if (os.toLowerCase().contains("linux")) { // NOI18N
-            return PlatformTypes.PLATFORM_LINUX;
-        } else if (os.toLowerCase().contains("mac") || os.startsWith("Darwin")) { // NOI18N
-            return PlatformTypes.PLATFORM_MACOSX;
-        } else {
-            return PlatformTypes.PLATFORM_GENERIC;
-        }
-    }
-
-    static String findCommand(String name) {
-        String path = Path.findCommand(name);
-        if (path == null) {
-            String dir = CompilerSetUtils.getCommandFolder(null);
-            if (dir != null) {
-                path = findCommand(name, dir); // NOI18N
-            }
-        }
-        return path;
-    }
-
-    static String findCommand(String cmd, String dir) {
-        File file;
-        String cmd2 = null;
-        if (cmd.length() > 0) {
-            if (Utilities.isWindows() && !cmd.endsWith(".exe")) { // NOI18N
-                cmd2 = cmd + ".exe"; // NOI18N
-            }
-
-            file = new File(dir, cmd);
-            if (file.exists()) {
-                return file.getAbsolutePath();
-            } else {
-                if (Utilities.isWindows() && cmd.endsWith(".exe")){// NOI18N
-                    File file2 = new File(dir, cmd+".lnk");// NOI18N
-                    if (file2.exists()) {
-                        return file.getAbsolutePath();
-                    }
-                }
-            }
-            if (cmd2 != null) {
-                file = new File(dir, cmd2);
-                if (file.exists()) {
-                    return file.getAbsolutePath();
-                }
-                File file2 = new File(dir, cmd2+".lnk");// NOI18N
-                if (file2.exists()) {
-                    return file.getAbsolutePath();
-                }
-            }
-        }
-        return null;
-    }
-
-    /** Same as the C library basename function: given a path, return
-     * its filename.
-     */
-    public static final String getBaseName(String path) {
-        int sep = path.lastIndexOf('/');
-        if (sep == -1) {
-            sep = path.lastIndexOf('\\');
-        }
-        if (sep != -1) {
-            return path.substring(sep + 1);
-        }
-        return path;
-    }
-
-    public static boolean isPathAbsolute(String path) {
-        if (path == null || path.length() == 0) {
-            return false;
-        } else if (path.charAt(0) == '/') {
-            return true;
-        } else if (path.charAt(0) == '\\') {
-            return true;
-        } else if (path.indexOf(':') > 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static String replaceOddCharacters(String s, char replaceChar) {
-        int n = s.length();
-        StringBuilder ret = new StringBuilder(n);
-        for (int i = 0; i < n; i++) {
-            char c = s.charAt(i);
-            if ((c == ' ') || (c == '\t') ||
-                    (c == ':') || (c == '\'') ||
-                    (c == '*') || (c == '\"') ||
-                    (c == '[') || (c == ']') ||
-                    (c == '(') || (c == ')')) {
-                ret.append(replaceChar);
-            } else {
-                ret.append(c);
-            }
-        }
-        return ret.toString();
-    }
 }

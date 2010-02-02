@@ -63,14 +63,17 @@ public class PlatformMacOSX extends Platform {
         super(NAME, "Mac OS X", PlatformTypes.PLATFORM_MACOSX); // NOI18N
     }
     
+    @Override
     public LibraryItem.StdLibItem[] getStandardLibraries() {
         return standardLibrariesLinux;
     }
     
+    @Override
     public String getLibraryName(String baseName) {
         return "lib" + baseName + "." + LIBRARY_SUFFIX; // NOI18N
     }
     
+    @Override
     public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
         if (libName.endsWith("." + LIBRARY_SUFFIX)) { // NOI18N
             int i = libName.indexOf("." + LIBRARY_SUFFIX); // NOI18N
@@ -80,8 +83,10 @@ public class PlatformMacOSX extends Platform {
             if (libName.startsWith("lib")) { // NOI18N
                 libName = libName.substring(3);
             }
-            return compilerSet.getLibrarySearchOption() + IpeUtils.escapeOddCharacters(libDir)
-                    + " " + compilerSet.getLibraryOption() + IpeUtils.escapeOddCharacters(libName); // NOI18N
+            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag()
+                    + IpeUtils.escapeOddCharacters(libDir)
+                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
+                    + IpeUtils.escapeOddCharacters(libName);
         } else {
             return IpeUtils.escapeOddCharacters(libPath);
         }

@@ -48,6 +48,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,6 +77,8 @@ import org.netbeans.modules.websvc.rest.model.api.HttpMethod;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
+import org.netbeans.modules.websvc.rest.model.api.SubResourceLocator;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
@@ -119,8 +122,22 @@ public class ClientJavaSourceHelper {
         RestServiceDescription desc = resourceNode.getLookup().lookup(RestServiceDescription.class);
         List<RestMethodDescription> methods =  desc.getMethods();
         String uriTemplate = desc.getUriTemplate();
+        PathFormat pf = null;
+        if (uriTemplate.length() == 0) { // subresource locator
+            // find recursively the root resource
+            RootResourcePath rootResourcePath = getRootResourcePath(resourceNode, desc.getClassName(), "");
+            uriTemplate = rootResourcePath.getRootPath();
+            pf = rootResourcePath.getPathFormat();
+        }
         if (!uriTemplate.startsWith("/")) {
             uriTemplate = "/"+uriTemplate;
+        }
+        if (uriTemplate.endsWith("/")) {
+            uriTemplate = uriTemplate.substring(0, uriTemplate.length()-1);
+        }
+        // subresource locator is detected by string constant
+        if (pf != null && pf.getArguments().length == 0 && pf.getPattern().length() > 0) {
+            uriTemplate = uriTemplate+"/"+pf.getPattern();
         }
         Project prj = resourceNode.getLookup().lookup(Project.class);
         String resourceUri =
@@ -131,7 +148,8 @@ public class ClientJavaSourceHelper {
                 JavaSource.forFileObject(targetFo),
                 desc.getName(),
                 resourceUri,
-                methods);
+                methods,
+                pf);
     }
 
 
@@ -139,7 +157,8 @@ public class ClientJavaSourceHelper {
             JavaSource source,
             final String resourceName,
             final String resourceUri,
-            final List<RestMethodDescription> restMethodDesc) {
+            final List<RestMethodDescription> restMethodDesc,
+            final PathFormat pf) {
         try {
             ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
 
@@ -149,7 +168,7 @@ public class ClientJavaSourceHelper {
 
                     ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
                     String className = resourceName+"_JerseyClient"; //NOI18N
-                    ClassTree modifiedTree = ClientJavaSourceHelper.addJerseyClientClass(copy, tree, className, resourceUri, restMethodDesc);
+                    ClassTree modifiedTree = ClientJavaSourceHelper.addJerseyClientClass(copy, tree, className, resourceUri, restMethodDesc, pf);
 
                     copy.rewrite(tree, modifiedTree);
                 }
@@ -161,11 +180,12 @@ public class ClientJavaSourceHelper {
         }
     }
 
-    public static ClassTree addJerseyClientClass (
+    private static ClassTree addJerseyClientClass (
             WorkingCopy copy,
             ClassTree tree, String className,
             String resourceURI,
-            List<RestMethodDescription> restMethodDesc) {
+            List<RestMethodDescription> restMethodDesc,
+            PathFormat pf) {
 
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree modifs = maker.Modifiers(Collections.<Modifier>singleton(Modifier.STATIC));
@@ -199,19 +219,71 @@ public class ClientJavaSourceHelper {
 
         // add constructor
         ModifiersTree emtyModifier = maker.Modifiers(Collections.<Modifier>emptySet());
-        TypeElement clientEl = copy.getElements().getTypeElement("com.sun.jersey.api.client.Client");
+        TypeElement clientEl = copy.getElements().getTypeElement("com.sun.jersey.api.client.Client"); // NOI18N
+        boolean isSubresource = (pf != null && pf.getArguments().length>0);
+
+        List<VariableTree> paramList = new ArrayList<VariableTree>();
+        if (isSubresource) {
+            for (String arg : pf.getArguments()) {
+                Tree argTypeTree = maker.Identifier("String"); //NOI18N
+                ModifiersTree fieldModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+                VariableTree argFieldTree = maker.Variable(fieldModifier, arg, argTypeTree, null); //NOI18N
+                paramList.add(argFieldTree);
+            }
+        }
+
+        String subresourceExpr = (isSubresource ? "    String subresourcePath = "+getPathExpression(pf)+";" : ""); //NOI18N
+        String resURI = (isSubresource ? "RESOURCE_URI+\"/\"+subresourcePath" : "RESOURCE_URI"); //NOI18N
         String body =
                 "{"+ //NOI18N
                 "   client = new "+(clientEl == null ? "com.sun.jersey.api.client.":"")+"Client();"+ //NOI18N
-                "   webResource = client.resource(RESOURCE_URI);"+ //NOI18N
+                subresourceExpr +
+                "   webResource = client.resource("+resURI+");"+ //NOI18N
                 "}"; //NOI18N
         MethodTree constructorTree = maker.Constructor (
                 emtyModifier,
                 Collections.<TypeParameterTree>emptyList(),
-                Collections.<VariableTree>emptyList(),
+                paramList,
                 Collections.<ExpressionTree>emptyList(),
                 body);
         modifiedInnerClass = maker.addClassMember(modifiedInnerClass, constructorTree);
+
+        // add setSubresourcaPath() method for SubresourceLocators
+        if (isSubresource) {
+            ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
+//            paramList = new ArrayList<VariableTree>();
+//            for (String arg : pf.getArguments()) {
+//                Tree argTypeTree = maker.Identifier("String"); //NOI18N
+//                ModifiersTree fieldModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+//                VariableTree argFieldTree = maker.Variable(fieldModifier, arg, argTypeTree, null); //NOI18N
+//                paramList.add(argFieldTree);
+//            }
+            body =
+                "{"+ //NOI18N
+                "   String subresourcePath = "+getPathExpression(pf)+";"+ //NOI18N
+                "   webResource = client.resource(RESOURCE_URI+\"/\"+subresourcePath);"+ //NOI18N
+                "}"; //NOI18N
+            MethodTree methodTree = maker.Method (
+                    methodModifier,
+                    "setSubresourcePath", //NOI18N
+                    JavaSourceHelper.createTypeTree(copy, "void"), //NOI18N
+                    Collections.<TypeParameterTree>emptyList(),
+                    paramList,
+                    Collections.<ExpressionTree>emptyList(),
+                    body,
+                    null); //NOI18N
+            modifiedInnerClass = maker.addClassMember(modifiedInnerClass, methodTree);
+        }
+
+        // add wrappers for http methods (GET/POST/PUT/DELETE)
+        for (RestMethodDescription methodDesc : restMethodDesc) {
+            if (methodDesc instanceof HttpMethod) {
+                List<MethodTree> httpMethods = createHttpMethods(copy, (HttpMethod)methodDesc);
+                for (MethodTree httpMethod : httpMethods) {
+                    modifiedInnerClass = maker.addClassMember(modifiedInnerClass, httpMethod);
+                }
+            }
+        }
 
         // add close()
         ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
@@ -228,37 +300,28 @@ public class ClientJavaSourceHelper {
                 null); //NOI18N
         modifiedInnerClass = maker.addClassMember(modifiedInnerClass, methodTree);
 
-        //
-        for (RestMethodDescription methodDesc : restMethodDesc) {
-            if (methodDesc instanceof HttpMethod) {
-                List<MethodTree> httpMethods = createHttpMethods(copy, (HttpMethod)methodDesc);
-                for (MethodTree httpMethod : httpMethods) {
-                    modifiedInnerClass = maker.addClassMember(modifiedInnerClass, httpMethod);
-                }
-            }
-        }
-
         ClassTree modifiedTree = tree;
         return maker.addClassMember(modifiedTree, modifiedInnerClass);
     }
 
     private static List<MethodTree> createHttpMethods(WorkingCopy copy, HttpMethod httpMethod) {
-        String path = httpMethod.getPath();
         List<MethodTree> httpMethods = new ArrayList<MethodTree>();
         String method = httpMethod.getType();
         if (RestConstants.GET_ANNOTATION.equals(method)) { //GET
             boolean found = false;
             String produces = httpMethod.getProduceMime();
             if (produces.length() > 0) {
+                boolean multipleMimeTypes = produces.contains(","); //NOI18N
                 for (HttpMimeType mimeType : HttpMimeType.values()) {
                     if (produces.contains(mimeType.getMimeType())) {
-                        httpMethods.add(createHttpGETMethod(copy, mimeType, httpMethod.getReturnType(), path));
+                        String methodName = httpMethod.getName() + (multipleMimeTypes ? "_"+mimeType.name() : ""); //NOI18N
+                        httpMethods.add(createHttpGETMethod(copy, httpMethod, mimeType, multipleMimeTypes));
                         found = true;
                     }
                 }
             }
             if (!found) {
-                httpMethods.add(createHttpGETMethod(copy, null, httpMethod.getReturnType(), path));
+                httpMethods.add(createHttpGETMethod(copy, httpMethod, null, false));
             }
         } else if ( RestConstants.PUT_ANNOTATION.equals(method) ||
                     RestConstants.POST_ANNOTATION.equals(method) ||
@@ -267,22 +330,27 @@ public class ClientJavaSourceHelper {
             boolean found = false;
             String consumes = httpMethod.getConsumeMime();
             if (consumes.length() > 0) { //NOI18N
+                boolean multipleMimeTypes = consumes.contains(","); //NOI18N
                 for (HttpMimeType mimeType : HttpMimeType.values()) {
                     if (consumes.contains(mimeType.getMimeType())) {
-                        httpMethods.add(createHttpPOSTMethod(copy, method, mimeType, httpMethod.getReturnType(), path));
+                        httpMethods.add(createHttpPOSTMethod(copy, httpMethod, mimeType, multipleMimeTypes));
                         found = true;
                     }
                 }
             }
             if (!found) {
-                httpMethods.add(createHttpPOSTMethod(copy, method, null, httpMethod.getReturnType(), path));
+                httpMethods.add(createHttpPOSTMethod(copy, httpMethod, null, false));
             }
         }
 
         return httpMethods;
     }
 
-    private static MethodTree createHttpGETMethod(WorkingCopy copy, HttpMimeType mimeType, String responseType, String path) {
+    private static MethodTree createHttpGETMethod(WorkingCopy copy, HttpMethod httpMethod, HttpMimeType mimeType, boolean multipleMimeTypes) {
+        String responseType = httpMethod.getReturnType();
+        String path = httpMethod.getPath();
+        String methodName = httpMethod.getName() + (multipleMimeTypes ? "_"+mimeType.name() : ""); //NOI18N
+
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
         ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
@@ -291,6 +359,7 @@ public class ClientJavaSourceHelper {
         ExpressionTree responseTree = null;
         String bodyParam = ""; //NOI18N
         List<TypeParameterTree> typeParams =  null;
+
         if ("java.lang.String".equals(responseType)) { //NOI18N
             responseTree = maker.Identifier("String"); //NOI18N
             bodyParam="String.class"; //NOI18N
@@ -318,7 +387,7 @@ public class ClientJavaSourceHelper {
                 "}"; //NOI18N
             return maker.Method (
                     methodModifier,
-                    "get"+(mimeType == null ? "" : mimeType.name()), //NOI18N
+                    methodName,
                     responseTree,
                     typeParams,
                     paramList,
@@ -341,7 +410,7 @@ public class ClientJavaSourceHelper {
                     "}"; //NOI18N
             return maker.Method (
                     methodModifier,
-                    "get"+(mimeType == null ? "" : mimeType.name()), //NOI18N
+                    methodName,
                     responseTree,
                     typeParams,
                     paramList,
@@ -483,14 +552,24 @@ public class ClientJavaSourceHelper {
                 contextRoot = contextRoot.substring(1);
             }
         }
-
+        String applicationPath = "resources"; //NOI18N
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        if (restSupport != null) {
+            try {
+                applicationPath = restSupport.getApplicationPath();
+            } catch (IOException ex) {}
+        }
         return "http://" + hostName + ":" + portNumber + "/" + //NOI18N
                 (contextRoot != null && !contextRoot.equals("") ? contextRoot : "") + //NOI18N
-                "/resources" + uri; //NOI18N
+                "/"+applicationPath + uri; //NOI18N
     }
 
-    private static MethodTree createHttpPOSTMethod(WorkingCopy copy, String httpMethod, HttpMimeType requestMimeType, String responseType, String path) {
-        String methodPrefix = httpMethod.toLowerCase();
+    private static MethodTree createHttpPOSTMethod(WorkingCopy copy, HttpMethod httpMethod, HttpMimeType requestMimeType, boolean multipleMimeTypes) {
+        String methodPrefix = httpMethod.getType().toLowerCase();
+        String responseType = httpMethod.getReturnType();
+        String path = httpMethod.getPath();
+        String methodName = httpMethod.getName() + (multipleMimeTypes ? "_"+requestMimeType.name() : ""); //NOI18N
+
         TreeMaker maker = copy.getTreeMaker();
         ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC));
         ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
@@ -518,8 +597,8 @@ public class ClientJavaSourceHelper {
         } else {
             responseTree = maker.Identifier("T"); //NOI18N
             ret = "return "; //NOI18N
-            bodyParam1="requestType"; //NOI18N
-            classParam = maker.Variable(paramModifier, "requestType", maker.Identifier("Class<T>"), null); //NOI18N
+            bodyParam1="responseType"; //NOI18N
+            classParam = maker.Variable(paramModifier, "responseType", maker.Identifier("Class<T>"), null); //NOI18N
             typeParams = Collections.<TypeParameterTree>singletonList(maker.TypeParameter("T", Collections.<ExpressionTree>emptyList()));
         }
 
@@ -530,7 +609,7 @@ public class ClientJavaSourceHelper {
             paramList.add(classParam);
         }
         String bodyParam2 = "";
-        if (!RestConstants.DELETE_ANNOTATION.equals(httpMethod) || requestMimeType != null) {
+        if (!RestConstants.DELETE_ANNOTATION.equals(httpMethod.getType()) || requestMimeType != null) {
             VariableTree objectParam = maker.Variable(paramModifier, "requestEntity", maker.Identifier("Object"), null); //NOI18N
             paramList.add(objectParam);
             bodyParam2=(bodyParam1.length() > 0 ? ", " : "") + "requestEntity"; //NOI18N
@@ -549,7 +628,7 @@ public class ClientJavaSourceHelper {
                 "}"; //NOI18N
             return maker.Method (
                     methodModifier,
-                    methodPrefix+(requestMimeType == null ? "" : requestMimeType.name()), //NOI18N
+                    methodName,
                     responseTree,
                     typeParams,
                     paramList,
@@ -574,7 +653,7 @@ public class ClientJavaSourceHelper {
                     "}"; //NOI18N
             return maker.Method (
                     methodModifier,
-                    methodPrefix+(requestMimeType == null ? "" : requestMimeType.name()), //NOI18N
+                    methodName,
                     responseTree,
                     typeParams,
                     paramList,
@@ -582,5 +661,87 @@ public class ClientJavaSourceHelper {
                     body,
                     null); //NOI18N
         }
+    }
+
+    static class RootResourcePath {
+        private PathFormat pathFormat;
+        private String rootPath;
+
+        public RootResourcePath() {
+        }
+
+        public RootResourcePath(PathFormat pathFormat, String rootPath) {
+            this.pathFormat = pathFormat;
+            this.rootPath = rootPath;
+        }
+
+        public PathFormat getPathFormat() {
+            return pathFormat;
+        }
+
+        public void setPathFormat(PathFormat pathFormat) {
+            this.pathFormat = pathFormat;
+        }
+
+        public String getRootPath() {
+            return rootPath;
+        }
+
+        public void setRootPath(String rootPath) {
+            this.rootPath = rootPath;
+        }
+    }
+
+    private static RootResourcePath getRootResourcePath(Node resourceNode, String resourceClass, String uriTemplate) {
+        String resourceUri = uriTemplate.startsWith("/") ? uriTemplate.substring(1) : uriTemplate; //NOI18N
+        if (resourceUri.endsWith("/")) { //NOI18N
+            resourceUri = resourceUri.substring(0, resourceUri.length()-1);
+        }
+        Node projectNode = resourceNode.getParentNode();
+        if (projectNode != null) {
+            for (Node sibling : projectNode.getChildren().getNodes()) {
+                if (resourceNode != sibling) {
+                    RestServiceDescription desc = sibling.getLookup().lookup(RestServiceDescription.class);
+                    if (desc != null) {
+                        for (RestMethodDescription m : desc.getMethods()) {
+                            if (m instanceof SubResourceLocator) {
+                                SubResourceLocator resourceLocator = (SubResourceLocator)m;
+                                if (resourceClass.equals(resourceLocator.getReturnType())) {
+                                    // detect resource locator uri
+                                    String resourceLocatorUri = resourceLocator.getUriTemplate();
+                                    if (resourceLocatorUri.endsWith("/")) { //NOI18N
+                                        resourceLocatorUri = resourceLocatorUri.substring(0, resourceLocatorUri.length()-1);
+                                    }
+                                    if (resourceLocatorUri.startsWith("/")) { //NOI18N
+                                        resourceLocatorUri = resourceLocatorUri.substring(1);
+                                    }
+
+                                    String parentResourceUri = desc.getUriTemplate();
+                                    if (parentResourceUri.length() > 0) {
+                                        // found root resource
+                                        String subresourceUri = null;
+                                        if (resourceLocatorUri.length() > 0) {
+                                            if (resourceUri.length() > 0) {
+                                                subresourceUri = resourceLocatorUri+"/"+resourceUri;
+                                            } else {
+                                                subresourceUri = resourceLocatorUri;
+                                            }
+                                        } else {
+                                            subresourceUri = resourceUri;
+                                        }
+                                        PathFormat pf = getPathFormat(subresourceUri);
+                                        return new RootResourcePath(pf, parentResourceUri);
+                                    } else {
+                                        // searching recursively for
+                                        return getRootResourcePath(sibling, desc.getClassName(), resourceLocatorUri+"/"+uriTemplate); //NOI8N
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return new RootResourcePath(getPathFormat(uriTemplate), uriTemplate);
     }
 }

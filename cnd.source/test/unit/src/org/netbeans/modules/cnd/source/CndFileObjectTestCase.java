@@ -57,6 +57,11 @@ public class CndFileObjectTestCase extends NbTestCase {
         super(testName);
     }
 
+    @Override
+    protected int timeOut() {
+        return 500000;
+    }
+
     public void testCFileObject() throws Exception {
         File newFile = new File(super.getWorkDir(), "file.c"); // NOI18N
         newFile.createNewFile();

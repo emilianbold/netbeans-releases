@@ -62,7 +62,7 @@ import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.toolchain.spi.CompilerLineConvertor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -102,6 +103,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
     // second is in canCancel
     private static final boolean RUN_REMOTE_IN_OUTPUT_WINDOW = true;
 
+    @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
         this.pae = pae;
     }
@@ -120,9 +122,11 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         return pae.getProfile().getEnvironment().getenv();
     }
 
+    @Override
     public void execute(final InputOutput io) {
         if (SwingUtilities.isEventDispatchThread()) {
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     _execute(io);
                 }
@@ -215,8 +219,8 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 env.put(pi.getPathName(), path);
                 // Pass QMAKE from compiler set to the Makefile (IZ 174731)
                 if (conf.isQmakeConfiguration()) {
-                    String qmakePath = conf.getCompilerSet().getCompilerSet().getTool(Tool.QMakeTool).getPath();
-                    qmakePath = conf.getCompilerSet().getCompilerSet().normalizeDriveLetter(qmakePath.replace('\\', '/')); // NOI18N
+                    String qmakePath = conf.getCompilerSet().getCompilerSet().getTool(ToolKind.QMakeTool).getPath();
+                    qmakePath = CppUtils.normalizeDriveLetter(conf.getCompilerSet().getCompilerSet(), qmakePath.replace('\\', '/')); // NOI18N
                     args.add("QMAKE=" + IpeUtils.escapeOddCharacters(qmakePath)); // NOI18N
                 }
             }
@@ -312,22 +316,27 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         }
     }
 
+    @Override
     public void addExecutionListener(ExecutionListener l) {
         if (!listeners.contains(l)) {
             listeners.add(l);
         }
     }
 
+    @Override
     public void removeExecutionListener(ExecutionListener l) {
         listeners.remove(l);
     }
 
+    @Override
     public boolean canCancel() {
         return true;
     }
 
+    @Override
     public void cancel() {
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 Future<Integer> et = executorTask;
                 if (et != null) {
@@ -337,12 +346,14 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         });
     }
 
+    @Override
     public void executionStarted(int pid) {
         for (ExecutionListener l : listeners) {
             l.executionStarted(pid);
         }
     }
 
+    @Override
     public void executionFinished(int rc) {
         for (ExecutionListener l : listeners) {
             l.executionFinished(rc);
@@ -354,7 +365,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         return NbBundle.getBundle(DefaultProjectActionHandler.class).getString(s);
     }
 
-    protected final static String getString(String key, String ... a1) {
+    protected static String getString(String key, String ... a1) {
         return NbBundle.getMessage(DefaultProjectActionHandler.class, key, a1);
     }
 
@@ -380,6 +391,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             this.rcfile = rcfile;
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             if (!(e instanceof NativeProcessChangeEvent)) {
                 return;
@@ -411,6 +423,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 {
                     closeOutputListener();
                     postRunnable = new Runnable() {
+                    @Override
                         public void run() {
                             StringBuilder res = new StringBuilder();
                             res.append(MessageFormat.format(getString("TERMINATED"), actionName.toUpperCase())); // NOI18N
@@ -437,6 +450,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 {
                     closeOutputListener();
                     postRunnable = new Runnable() {
+                    @Override
                         public void run() {
                             StringBuilder res = new StringBuilder();
                             res.append(MessageFormat.format(getString("FAILED"), actionName.toUpperCase())); // NOI18N
@@ -463,6 +477,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 {
                     closeOutputListener();
                     postRunnable = new Runnable() {
+                    @Override
                         public void run() {
                             StringBuilder res = new StringBuilder();
                             int rc = readReturnCode(rcfile, process.exitValue());
@@ -490,6 +505,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             }
         }
 
+        @Override
         public void run() {
             if (postRunnable != null) {
                 postRunnable.run();
@@ -543,6 +559,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             return rc;
         }
 
+        @Override
         public LineConvertor newLineConvertor() {
             return new LineConvertor() {
                 @Override
@@ -585,15 +602,15 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
             long minutes = seconds/60;
             long hours = minutes/60;
             if (hours > 0) {
-                res.append(" " + hours + getString("HOUR")); // NOI18N
+                res.append(" ").append(hours).append(getString("HOUR")); // NOI18N
             }
             if (minutes > 0) {
-                res.append(" " + (minutes-hours*60) + getString("MINUTE")); // NOI18N
+                res.append(" ").append(minutes - hours * 60).append(getString("MINUTE")); // NOI18N
             }
             if (seconds > 0) {
-                res.append(" " + (seconds-minutes*60) + getString("SECOND")); // NOI18N
+                res.append(" ").append(seconds - minutes * 60).append(getString("SECOND")); // NOI18N
             } else {
-                res.append(" " + (millis-seconds*1000) + getString("MILLISECOND")); // NOI18N
+                res.append(" ").append(millis - seconds * 1000).append(getString("MILLISECOND")); // NOI18N
             }
             return res.toString();
         }

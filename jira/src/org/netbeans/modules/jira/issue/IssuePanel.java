@@ -55,7 +55,6 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -595,7 +594,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             // Created field
             String createdFormat = bundle.getString("IssuePanel.createdField.format"); // NOI18N
             String reporter = config.getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
-            String creation = dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true);
+            String creation = JiraUtils.dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true);
             String createdTxt = MessageFormat.format(createdFormat, creation, reporter);
             createdField.setText(createdTxt);
             fixPrefSize(createdField);
@@ -644,9 +643,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(assigneeField, assignee, NbJiraIssue.IssueField.ASSIGNEE);
             reloadField(assigneeCombo, assignee, NbJiraIssue.IssueField.ASSIGNEE);
             reloadField(environmentArea, issue.getFieldValue(NbJiraIssue.IssueField.ENVIRONMENT), NbJiraIssue.IssueField.ENVIRONMENT);
-            reloadField(updatedField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true), NbJiraIssue.IssueField.MODIFICATION);
+            reloadField(updatedField, JiraUtils.dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.MODIFICATION), true), NbJiraIssue.IssueField.MODIFICATION);
             fixPrefSize(updatedField);
-            reloadField(dueField, dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE)), NbJiraIssue.IssueField.DUE);
+            reloadField(dueField, JiraUtils.dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.DUE)), NbJiraIssue.IssueField.DUE);
 
             // Work-log
             String originalEstimateTxt = issue.getFieldValue(NbJiraIssue.IssueField.INITIAL_ESTIMATE);
@@ -936,31 +935,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             versions.add(config.getVersionById(projectId, id));
         }
         return versions;
-    }
-
-    private String dateByMillis(String text, boolean includeTime) {
-        if (text.trim().length() > 0) {
-            try {
-                long millis = Long.parseLong(text);
-                DateFormat format = includeTime ? DateFormat.getDateTimeInstance() : DateFormat.getDateInstance();
-                return format.format(new Date(millis));
-            } catch (NumberFormatException nfex) {
-                nfex.printStackTrace();
-            }
-        }
-        return ""; // NOI18N
-    }
-
-    private Date dateByMillis(String text) {
-        if (text.trim().length() > 0) {
-            try {
-                long millis = Long.parseLong(text);
-                return new Date(millis);
-            } catch (NumberFormatException nfex) {
-                nfex.printStackTrace();
-            }
-        }
-        return null;
     }
 
     private int toInt(String text) {

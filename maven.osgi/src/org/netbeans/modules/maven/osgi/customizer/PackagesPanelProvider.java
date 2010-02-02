@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.osgi.customizer;
 
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -53,13 +54,20 @@ import org.openide.util.Lookup;
 @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-maven", position=350)
 public class PackagesPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
+    @Override
     public Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                ModelHandle.PANEL_COMPILE,
-                org.openide.util.NbBundle.getMessage(PackagesPanelProvider.class, "TIT_Packages"),
-                null);
+        Project project = context.lookup(Project.class);
+        NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
+        if (NbMavenProject.TYPE_OSGI.equalsIgnoreCase(watcher.getPackagingType())) {
+            return ProjectCustomizer.Category.create(
+                    ModelHandle.PANEL_COMPILE,
+                    org.openide.util.NbBundle.getMessage(PackagesPanelProvider.class, "TIT_Packages"),
+                    null);
+        }
+        return null;
     }
 
+    @Override
     public JComponent createComponent(Category category, Lookup context) {
         ModelHandle handle = context.lookup(ModelHandle.class);
         Project prj = context.lookup(Project.class);

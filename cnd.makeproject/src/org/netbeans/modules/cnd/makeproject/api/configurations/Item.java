@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
@@ -194,6 +194,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals("name")) { // NOI18N
             // File has been renamed
@@ -247,6 +248,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return file;
     }
 
+    @Override
     public File getFile() {
         // let's try to use normalized, not canonical paths
         return getNormalizedFile();
@@ -380,21 +382,21 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return mimeType;
     }
 
-    public int getDefaultTool() {
-        int tool;
+    public ToolKind getDefaultTool() {
+        ToolKind tool;
         String mimeType = getMIMEType();
         if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
-            tool = Tool.CCompiler;
+            tool = ToolKind.CCompiler;
         } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
-            tool = Tool.CustomTool;
+            tool = ToolKind.CustomTool;
         } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
-            tool = Tool.CCCompiler;
+            tool = ToolKind.CCCompiler;
         } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
-            tool = Tool.FortranCompiler;
+            tool = ToolKind.FortranCompiler;
         } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
-            tool = Tool.Assembler;
+            tool = ToolKind.Assembler;
         } else {
-            tool = Tool.CustomTool;
+            tool = ToolKind.CustomTool;
         }
         return tool;
     }
@@ -414,6 +416,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return makeConfigurationDescriptor.getActiveConfiguration();
     }
 
+    @Override
     public NativeProject getNativeProject() {
         Folder curFolder = getFolder();
         if (curFolder != null) {
@@ -425,6 +428,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return null;
     }
 
+    @Override
     public List<String> getSystemIncludePaths() {
         List<String> vec = new ArrayList<String>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
@@ -448,6 +452,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return vec;
     }
 
+    @Override
     public List<String> getUserIncludePaths() {
         List<String> vec = new ArrayList<String>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
@@ -488,6 +493,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return vec;
     }
 
+    @Override
     public List<String> getSystemMacroDefinitions() {
         List<String> vec = new ArrayList<String>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
@@ -511,6 +517,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return vec;
     }
 
+    @Override
     public List<String> getUserMacroDefinitions() {
         List<String> vec = new ArrayList<String>();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
@@ -555,8 +562,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     /**
      * NativeFileItem interface
      **/
+    @Override
     public Language getLanguage() {
-        int tool;
+        ToolKind tool;
         Language language;
         ItemConfiguration itemConfiguration = null;
         MakeConfiguration makeConfiguration = getMakeConfiguration();
@@ -569,11 +577,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             tool = getDefaultTool();
         }
 
-        if (tool == Tool.CCompiler) {
+        if (tool == ToolKind.CCompiler) {
             language = NativeFileItem.Language.C;
-        } else if (tool == Tool.CCCompiler) {
+        } else if (tool == ToolKind.CCCompiler) {
             language = NativeFileItem.Language.CPP;
-        } else if (tool == Tool.FortranCompiler) {
+        } else if (tool == ToolKind.FortranCompiler) {
             language = NativeFileItem.Language.FORTRAN;
         } else if (hasHeaderOrSourceExtension(true, true)) {
             language = NativeFileItem.Language.C_HEADER;
@@ -587,6 +595,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     /**
      * NativeFileItem interface
      **/
+    @Override
     public LanguageFlavor getLanguageFlavor() {
         return NativeFileItem.LanguageFlavor.GENERIC;
     }
@@ -594,6 +603,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     /**
      * NativeFileItem interface
      **/
+    @Override
     public boolean isExcluded() {
         ItemConfiguration itemConfiguration = getItemConfiguration(getMakeConfiguration());
         if (itemConfiguration != null) {

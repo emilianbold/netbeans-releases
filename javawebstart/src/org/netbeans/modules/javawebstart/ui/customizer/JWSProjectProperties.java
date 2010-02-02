@@ -119,6 +119,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     public static final String CB_TYPE_LOCAL = "local";
     public static final String CB_TYPE_WEB = "web";
     public static final String CB_TYPE_USER = "user";
+    public static final String CB_NO_CODEBASE = "no.codebase";
     
     public static final String DEFAULT_APPLET_WIDTH = "300";
     public static final String DEFAULT_APPLET_HEIGHT = "300";
@@ -442,24 +443,24 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     
     public class CodebaseComboBoxModel extends DefaultComboBoxModel {
         
-        String localLabel = NbBundle.getBundle(JWSProjectProperties.class).getString("LBL_CB_Combo_Local");
-        String webLabel = NbBundle.getBundle(JWSProjectProperties.class).getString("LBL_CB_Combo_Web");
-        String userLabel = NbBundle.getBundle(JWSProjectProperties.class).getString("LBL_CB_Combo_User");
-        Object visItems[] = new Object[] { localLabel, webLabel, userLabel };
-        String cbItems[] = new String[] { CB_TYPE_LOCAL, CB_TYPE_WEB, CB_TYPE_USER };
+        final String localLabel = NbBundle.getBundle(JWSProjectProperties.class).getString("LBL_CB_Combo_Local");
+        final String webLabel = NbBundle.getBundle(JWSProjectProperties.class).getString("LBL_CB_Combo_Web");
+        final String userLabel = NbBundle.getBundle(JWSProjectProperties.class).getString("LBL_CB_Combo_User");
+        final String noCodeBaseLabel = NbBundle.getMessage(JWSProjectProperties.class, "LBL_CB_No_Codebase");
+        final String visItems[] = new String[] { noCodeBaseLabel, localLabel, webLabel, userLabel};
+        final String cbItems[] = new String[] { CB_NO_CODEBASE, CB_TYPE_LOCAL, CB_TYPE_WEB, CB_TYPE_USER};
         
         public CodebaseComboBoxModel() {
             super();
-            addElement(visItems[0]);
-            addElement(visItems[1]);
-            addElement(visItems[2]);
+            for (String visItem : visItems) {
+                addElement(visItem);
+            }
             String propValue = evaluator.getProperty(JNLP_CBASE_TYPE);
-            if (cbItems[2].equals(propValue)) {
-                setSelectedItem(visItems[2]);
-            } else if (cbItems[1].equals(propValue)) {
-                setSelectedItem(visItems[1]);
-            } else {
-                setSelectedItem(visItems[0]);
+            for (int i=0; i<cbItems.length; i++) {
+                if (cbItems[i].equals(propValue)) {
+                    setSelectedItem(visItems[i]);
+                    break;
+                }
             }
         }
         
