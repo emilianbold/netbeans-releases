@@ -133,7 +133,7 @@ public class IncludePathNodeFactory implements NodeFactory {
 
     private static class IncludePathChildFactory extends ChildFactory<Node> {
 
-        private PhpProject project;
+        private final PhpProject project;
 
         public IncludePathChildFactory(PhpProject project) {
             this.project = project;
