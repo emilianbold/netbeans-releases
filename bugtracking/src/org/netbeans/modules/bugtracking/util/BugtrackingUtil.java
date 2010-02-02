@@ -59,6 +59,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
@@ -76,6 +77,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.SwingConstants;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -714,7 +716,7 @@ public class BugtrackingUtil {
         // XXX dummy implementation
         String url = repo.getUrl();
         return isNbRepository(url);
-}
+    }
 
     public static boolean isNbRepository(String url) {
         boolean ret = netbeansUrlPattern.matcher(url).matches();
@@ -727,4 +729,42 @@ public class BugtrackingUtil {
         }
         return url.startsWith(nbUrl);
     }
+
+    /**
+     *
+     * @param password
+     * @param prefix
+     * @param user
+     * @param url
+     * @throws MissingResourceException
+     */
+    public static void savePassword(String password, String prefix, String user, String url) throws MissingResourceException {
+        if (password != null && !password.trim().equals("")) {                  // NOI18N
+            Keyring.save(getPasswordKey(prefix, user, url), password.toCharArray(), NbBundle.getMessage(BugtrackingUtil.class, "password_keyring_description", url)); // NOI18N
+        } else {
+            Keyring.delete(getPasswordKey(prefix, user, url));
+        }
+    }
+
+    /**
+     *
+     * @param scrambledPassword
+     * @param keyPrefix
+     * @param url
+     * @param user
+     * @return
+     */
+    public static char[] readPassword(String scrambledPassword, String keyPrefix, String user, String url) {
+        if (!scrambledPassword.equals("")) {                                    // NOI18N
+            return BugtrackingUtil.descramble(scrambledPassword).toCharArray();
+        } else {
+            char[] password = Keyring.read(getPasswordKey(keyPrefix, user, url));
+            return password != null ? password : new char[0];
+        }
+    }
+    
+    private static String getPasswordKey(String prefix, String user, String url) {
+        return (prefix != null ? prefix + "-" : "") + user + "@" + url;         // NOI18N
+    }
+
 }
