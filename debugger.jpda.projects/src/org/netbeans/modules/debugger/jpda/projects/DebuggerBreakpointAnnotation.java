@@ -58,12 +58,12 @@ import org.openide.util.NbBundle;
  */
 public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
 
-    private Line        line;
-    private String      type;
-    private JPDABreakpoint breakpoint;
+    private final Line        line;
+    private final String      type;
+    private final Breakpoint  breakpoint;
 
 
-    DebuggerBreakpointAnnotation (String type, Line line, JPDABreakpoint breakpoint) {
+    DebuggerBreakpointAnnotation (String type, Line line, Breakpoint breakpoint) {
         this.type = type;
         this.line = line;
         this.breakpoint = breakpoint;

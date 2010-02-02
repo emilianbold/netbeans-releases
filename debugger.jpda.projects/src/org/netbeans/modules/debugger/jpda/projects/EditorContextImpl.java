@@ -99,6 +99,7 @@ import javax.lang.model.util.Elements;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.tools.Diagnostic;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
@@ -294,12 +295,12 @@ public class EditorContextImpl extends EditorContext {
         Line l =  LineTranslations.getTranslations().getLine (
             url,
             lineNumber,
-            (timeStamp instanceof JPDABreakpoint) ? null : timeStamp
+            (timeStamp instanceof Breakpoint) ? null : timeStamp
         );
         if (l == null) return null;
         Annotation annotation;
-        if (timeStamp instanceof JPDABreakpoint) {
-            annotation = new DebuggerBreakpointAnnotation(annotationType, l, (JPDABreakpoint) timeStamp);
+        if (timeStamp instanceof Breakpoint) {
+            annotation = new DebuggerBreakpointAnnotation(annotationType, l, (Breakpoint) timeStamp);
         } else {
             annotation = new DebuggerAnnotation (annotationType, l, thread);
         }
