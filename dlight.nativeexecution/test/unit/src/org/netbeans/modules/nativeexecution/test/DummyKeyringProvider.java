@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,69 +34,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.nativeexecution.support;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.zip.CRC32;
-import java.util.zip.Checksum;
-import org.openide.util.Exceptions;
+package org.netbeans.modules.nativeexecution.test;
+
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.spi.keyring.KeyringProvider;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Alexander Simon
  */
-public final class Encrypter {
+@ServiceProvider(service=KeyringProvider.class, position=0)
+public class DummyKeyringProvider implements KeyringProvider {
+    private Map<String,char[]> cache = new HashMap<String,char[]>();
 
-    private Encrypter() {
+    @Override
+    public boolean enabled() {
+        return true;
     }
 
-    public static boolean checkCRC32(String fname, long checksum) {
-        return checksum == getFileChecksum(fname);
+    @Override
+    public char[] read(String key) {
+        char[] copy =  cache.get(key);
+        if (copy == null) {
+            return null;
+        }
+        char[] password = new char[copy.length];
+        System.arraycopy(copy, 0, password, 0, copy.length);
+        return password;
     }
 
-    private static long getFileChecksum(String fname) {
-        File file = new File(fname);
-        if (file == null || !file.exists()) {
-            return -1;
-        }
+    @Override
+    public void save(String key, char[] password, String description) {
+        char[] copy = new char[password.length];
+        System.arraycopy(password, 0, copy, 0, password.length);
+        cache.put(key, copy);
+    }
 
-        Checksum checksum = new CRC32();
-
-        BufferedInputStream is = null;
-
-        try {
-            is = new BufferedInputStream(new FileInputStream(file));
-        } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        if (is == null) {
-            return -1;
-        }
-
-        byte[] bytes = new byte[1024];
-        int len = 0;
-
-        try {
-            while ((len = is.read(bytes)) >= 0) {
-                checksum.update(bytes, 0, len);
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } finally {
-            try {
-                is.close();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        return checksum.getValue();
+    @Override
+    public void delete(String key) {
+        cache.remove(key);
     }
 }
+

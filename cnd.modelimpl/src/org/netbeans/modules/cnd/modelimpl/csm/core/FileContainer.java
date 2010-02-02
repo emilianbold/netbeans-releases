@@ -638,7 +638,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
 
         //@Deprecated
-        private final synchronized APTPreprocHandler.State getState() {
+        private synchronized APTPreprocHandler.State getState() {
             return getStatePairs().iterator().next().state;
         }
 
@@ -714,7 +714,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
          * Sets (replaces) new conditions state for the existent pair
          * @return true in the case of success, otherwise (if no ppState found) false
          */
-        public boolean setParsedPCState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
+        public final synchronized boolean setParsedPCState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
             assert state != null : "state should not be null"; //NOI18N
             if (state == null) {
                 return false;
@@ -761,7 +761,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             if (yetOneMore != null && yetOneMore.state != null && !yetOneMore.state.isCleaned()) {
                 yetOneMore = new PreprocessorStatePair(APTHandlersSupport.createCleanPreprocState(yetOneMore.state), yetOneMore.pcState);
             }
-            if (pairs.size() == 0) {
+            if (pairs.isEmpty()) {
                 data = yetOneMore;
             } else {
                 ArrayList<PreprocessorStatePair> newData = new ArrayList<PreprocessorStatePair>(pairs.size()+1);
@@ -893,7 +893,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
     }
     
-    private static final CharSequence getCanonicalKey(CharSequence fileKey) {
+    private static CharSequence getCanonicalKey(CharSequence fileKey) {
         try {
             CharSequence res = new File(fileKey.toString()).getCanonicalPath();
             res = FilePathCache.getManager().getString(res);
