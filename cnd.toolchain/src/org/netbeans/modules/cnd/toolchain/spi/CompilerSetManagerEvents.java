@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.SPIAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -55,6 +56,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  * @author Sergey Grinev
  */
 public final class CompilerSetManagerEvents {
+
+    static {
+        SPIAccessor.register(new SPIAccessorImpl());
+    }
 
     private static final Map<ExecutionEnvironment, CompilerSetManagerEvents> map =
             new HashMap<ExecutionEnvironment, CompilerSetManagerEvents>();
@@ -72,11 +77,6 @@ public final class CompilerSetManagerEvents {
         return instance;
     }
 
-    public CompilerSetManagerEvents(ExecutionEnvironment env) {
-        this.executionEnvironment = env;
-        this.isCodeModelInfoReady = ((CompilerSetManagerImpl)CompilerSetManager.get(executionEnvironment)).isComplete();
-    }
-
     public void runOnCodeModelReadiness(Runnable task) {
         if (executionEnvironment.isLocal() || isCodeModelInfoReady) {
             task.run();
@@ -85,7 +85,12 @@ public final class CompilerSetManagerEvents {
         }
     }
 
-    public void runTasks() {
+    private CompilerSetManagerEvents(ExecutionEnvironment env) {
+        this.executionEnvironment = env;
+        this.isCodeModelInfoReady = ((CompilerSetManagerImpl)CompilerSetManager.get(executionEnvironment)).isComplete();
+    }
+
+    private void runTasks() {
         isCodeModelInfoReady = true;
         if (tasks != null) {
             for (Runnable task : tasks) {
@@ -93,5 +98,18 @@ public final class CompilerSetManagerEvents {
             }
         }
         tasks = null;
+    }
+
+    private static final class SPIAccessorImpl extends SPIAccessor {
+
+        @Override
+        public void runTasks(CompilerSetManagerEvents event) {
+            event.runTasks();
+        }
+
+        @Override
+        public CompilerSetManagerEvents createEvent(ExecutionEnvironment env) {
+            return new CompilerSetManagerEvents(env);
+        }
     }
 }

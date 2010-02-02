@@ -649,7 +649,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         log.log(Level.FINE, "Code Model Ready for {0}", CompilerSetManagerImpl.this.toString());
         // FIXUP: this server has been probably deleted; TODO: provide return statis from loader
         if (!ServerList.get(executionEnvironment).isDeleted()) {
-            CompilerSetManagerEvents.get(executionEnvironment).runTasks();
+            SPIAccessor.get().runTasks(CompilerSetManagerEvents.get(executionEnvironment));
         }
     }
 
