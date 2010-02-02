@@ -231,10 +231,10 @@ public abstract class CompletionResultItem implements CompletionItem {
             String tokenText = token.text().toString();
             boolean isCaretAfterTag =
                 (tokenText.startsWith(CompletionUtil.END_TAG_PREFIX) &&
-                (textPos == tokenOffset + 2))
+                (textPos == tokenOffset + CompletionUtil.END_TAG_PREFIX.length()))
                 ||
                 (tokenText.startsWith(CompletionUtil.TAG_FIRST_CHAR) &&
-                (textPos == tokenOffset + 1));
+                (textPos == tokenOffset + CompletionUtil.TAG_FIRST_CHAR.length()));
             if (! isCaretAfterTag) {
                 return primaryText;
             }

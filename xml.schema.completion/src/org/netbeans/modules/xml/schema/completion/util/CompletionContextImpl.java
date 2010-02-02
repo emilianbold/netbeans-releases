@@ -241,17 +241,20 @@ public class CompletionContextImpl extends CompletionContext {
     public boolean initContext() {
         try {
             int id = token.getTokenID().getNumericID();
-            switch ( id) {
+            switch (id) {
                 //user enters < character
                 case XMLDefaultTokenContext.TEXT_ID:
-                    String chars = token.getImage().trim();
+                    String chars = token.getImage().trim(),
+                           previousTokenText = token.getPrevious().getImage().trim();
                     if(chars != null && chars.startsWith("&")) {
                         completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                         break;
                     }                    
-                    if(chars != null && chars.equals("") &&
-                       token.getPrevious().getImage().trim().equals("/>")) {
-                        completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                    if (chars != null && chars.equals("") && //previousTokenText.equals("/>")) {
+                        previousTokenText.endsWith(">")) {
+                        //completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                        completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
+                        pathFromRoot = getPathFromRoot(element);
                         break;
                     }                    
                     if(chars != null && chars.startsWith("<")) {
@@ -260,19 +263,22 @@ public class CompletionContextImpl extends CompletionContext {
                         pathFromRoot = getPathFromRoot(element);
                         break;
                     }
-                    if(chars != null &&
-                       token.getPrevious().getImage().trim().equals(">")) {
+                    if (chars != null && previousTokenText.equals(">")) {
                         if(!chars.equals("") && !chars.equals(">"))
                             typedChars = chars;
                         pathFromRoot = getPathFromRoot(element);
                         completionType = CompletionType.COMPLETION_TYPE_ELEMENT_VALUE;
                         break;
                     }
-                    if(chars != null && !chars.equals("<") &&
-                       token.getPrevious().getImage().trim().equals(">")) {
+                    if (chars != null && !chars.equals("<") && previousTokenText.equals(">")) {
                         completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                         break;
                     }
+                    break;
+
+                case XMLDefaultTokenContext.BLOCK_COMMENT_ID:
+                    completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
+                    pathFromRoot = getPathFromRoot(element);
                     break;
 
                 //start tag of an element
@@ -281,23 +287,26 @@ public class CompletionContextImpl extends CompletionContext {
                         completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                         break;
                     }
-                    if(element instanceof EmptyTag) {
-                        if(token != null &&
-                           token.getImage().trim().equals("/>")) {
+                    if (element instanceof EmptyTag) {
+                        /*
+                        if (token != null &&
+                            token.getImage().trim().equals("/>")) {
                             completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                             break;
                         }
-                        EmptyTag tag = (EmptyTag)element;
-                        if(element.getElementOffset() + 1 == this.completionAtOffset) {
+                        */
+                        EmptyTag tag = (EmptyTag) element;
+                        if ((element.getElementOffset() + 1 == completionAtOffset) ||
+                            (token.getOffset() + token.getImage().length() == completionAtOffset)) {
                             completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
                             pathFromRoot = getPathFromRoot(element.getPrevious());
                             break;
                         }
-                        if(completionAtOffset > element.getElementOffset() + 1 &&
-                           completionAtOffset <= (element.getElementOffset() + 1 +
+                        if (completionAtOffset > element.getElementOffset() + 1 &&
+                            completionAtOffset <= (element.getElementOffset() + 1 +
                                                   tag.getTagName().length())) {
                             completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
-                            int index = completionAtOffset-element.getElementOffset()-1;
+                            int index = completionAtOffset - element.getElementOffset() - 1;
                             typedChars = index < 0 ? tag.getTagName() :
                                 tag.getTagName().substring(0, index);
                             pathFromRoot = getPathFromRoot(element.getPrevious());
