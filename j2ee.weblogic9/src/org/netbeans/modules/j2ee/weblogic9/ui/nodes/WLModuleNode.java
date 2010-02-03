@@ -42,11 +42,17 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import java.awt.Image;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.OpenModuleUrlAction;
+import org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions.OpenModuleUrlCookie;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
@@ -60,11 +66,21 @@ import org.openide.util.actions.SystemAction;
  */
 public class WLModuleNode extends AbstractNode {
 
+    private static final Logger LOGGER = Logger.getLogger(WLModuleNode.class.getName());
+
     private final ModuleType moduleType;
 
-    public WLModuleNode(String name, Lookup lookup, ModuleType moduleType, boolean stopped) {
+    private final boolean stopped;
+
+    private final String url;
+
+    public WLModuleNode(String name, Lookup lookup,
+            ModuleType moduleType, boolean stopped, String url) {
         super(Children.LEAF);
         this.moduleType = moduleType;
+        this.stopped = stopped;
+        this.url = url;
+
         if (stopped) {
             setDisplayName(name + " " + "[" // NOI18N
                     + NbBundle.getMessage(WLModuleNode.class, "LBL_Stopped")
@@ -72,10 +88,18 @@ public class WLModuleNode extends AbstractNode {
         } else {
             setDisplayName(name);
         }
+        if (url != null) {
+            getCookieSet().add(new OpenModuleUrlCookieImpl(url));
+        }
     }
 
     @Override
     public Action[] getActions(boolean context) {
+        if (url != null && !stopped) {
+            return new SystemAction[] {
+                SystemAction.get(OpenModuleUrlAction.class),
+            };
+        }
         return new SystemAction[] {};
     }
 
@@ -97,16 +121,21 @@ public class WLModuleNode extends AbstractNode {
         return getIcon(type);
     }
 
-//    private static class OpenURLActionCookieImpl implements OpenURLActionCookie {
-//
-//        private String url;
-//
-//        public OpenURLActionCookieImpl(String url) {
-//            this.url = url;
-//        }
-//
-//        public String getWebURL() {
-//            return url;
-//        }
-//    }
+    private static class OpenModuleUrlCookieImpl implements OpenModuleUrlCookie {
+
+        private final String url;
+
+        public OpenModuleUrlCookieImpl(String url) {
+            this.url = url;
+        }
+
+        @Override
+        public void openUrl() {
+            try {
+                URLDisplayer.getDefault().showURL(new URL(url));
+            } catch (MalformedURLException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+    }
 }
