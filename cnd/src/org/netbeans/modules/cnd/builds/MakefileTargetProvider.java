@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,49 +31,37 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makefile.loaders;
+package org.netbeans.modules.cnd.builds;
 
-
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
+import java.io.IOException;
+import java.util.Set;
 import org.openide.nodes.Node;
-import org.openide.nodes.CookieSet;
-
-import org.netbeans.modules.cnd.builds.MakeExecSupport;
-import org.netbeans.modules.cnd.makefile.parser.MakefileTargetProviderImpl;
-import org.openide.loaders.MultiDataObject;
-import org.openide.text.DataEditorSupport;
-import org.openide.util.Lookup;
 
 /**
- *  Represents a Makefile object in the Repository.
+ * Retrieves list of targets from a makefile.
+ *
+ * @author Alexey Vladykin
  */
-public class MakefileDataObject extends MultiDataObject {
+public interface MakefileTargetProvider extends Node.Cookie {
 
-    /** Serial version number */
-    static final long serialVersionUID = -5853234372530618782L;
+    /**
+     * Preferred targets are runnable, but not all runnable targets are preferred.
+     * Usually there are too many runnable targets to show them all.
+     *
+     * @return list of preferred targets, never <code>null</code>
+     * @throws IOException if file operation fails
+     */
+    Set<String> getPreferredTargets() throws IOException;
 
-    /** Constructor for this class */
-    public MakefileDataObject(FileObject pf, MakefileDataLoader loader)
-		throws DataObjectExistsException {
-	super(pf, loader);
-
-        CookieSet cookies = getCookieSet();
-        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
-	cookies.add(new MakeExecSupport(getPrimaryEntry()));
-        cookies.add(new MakefileTargetProviderImpl(getPrimaryFile()));
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
-    }
-
-    /** Create the delegate node */
-    @Override
-    protected Node createNodeDelegate() {
-	return new MakefileDataNode(this);
-    }
+    /**
+     * @return list of all runnable targets, never <code>null</code>
+     * @throws IOException if file operation fails
+     */
+    Set<String> getRunnableTargets() throws IOException;
 }

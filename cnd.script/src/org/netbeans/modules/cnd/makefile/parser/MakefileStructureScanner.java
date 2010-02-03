@@ -48,6 +48,7 @@ import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import org.netbeans.modules.cnd.makefile.model.AbstractMakefileElement;
 import org.netbeans.modules.cnd.makefile.model.MakefileRule;
+import org.netbeans.modules.cnd.makefile.model.MakefileUtils;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -116,7 +117,11 @@ public final class MakefileStructureScanner implements StructureScanner {
         @Override
         public String getHtml(HtmlFormatter formatter) {
             final String name = getName();
-            final boolean shaded = 0 < name.length() && name.charAt(0) == '.';
+            final boolean bold = MakefileUtils.isPreferredTarget(name);
+            final boolean shaded = !MakefileUtils.isRunnableTarget(name);
+            if (bold) {
+                formatter.emphasis(true);
+            }
             if (shaded) {
                 formatter.appendHtml("<font color=\""); // NOI18N
                 formatter.appendHtml(getShadedColor());
@@ -125,6 +130,9 @@ public final class MakefileStructureScanner implements StructureScanner {
             formatter.appendText(getName());
             if (shaded) {
                 formatter.appendHtml("</font>"); // NOI18N
+            }
+            if (bold) {
+                formatter.emphasis(false);
             }
             return formatter.getText();
         }
