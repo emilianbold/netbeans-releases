@@ -61,11 +61,7 @@ import org.openide.util.Lookup;
 public class FSWrapper {
 
     public static Iterable<? extends ClassWrapper> listClasses() {
-        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-
-        if (loader == null) {
-            loader = FSWrapper.class.getClassLoader();
-        }
+        ClassLoader loader = FSWrapper.class.getClassLoader();
 
         List<ClassWrapper> result = new LinkedList<ClassWrapper>();
         FileObject main = FileUtil.getConfigFile("org-netbeans-modules-java-hints/code-hints/");
