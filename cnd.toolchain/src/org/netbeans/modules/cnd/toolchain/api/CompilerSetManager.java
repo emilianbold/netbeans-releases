@@ -65,20 +65,8 @@ public abstract class CompilerSetManager {
     public static CompilerSetManager get(ExecutionEnvironment env) {
         return CompilerSetManagerAccessorImpl.getDefault(env);
     }
-    /**
-     * Add a CompilerSet to this CompilerSetManager. Make sure it doesn't get added multiple times.
-     *
-     * @param cs The CompilerSet to (possibly) add
-     */
-    public abstract void add(CompilerSet cs);
-
-    public abstract void finishInitialization();
-
-    public abstract CompilerSet getCompilerSet(CompilerFlavor flavor);
 
     public abstract CompilerSet getCompilerSet(String name);
-
-    public abstract CompilerSet getCompilerSet(int idx);
 
     public abstract List<CompilerSet> getCompilerSets();
 
@@ -93,20 +81,13 @@ public abstract class CompilerSetManager {
      */
     public abstract void initialize(boolean save, boolean runCompilerSetDataLoader, Writer reporter);
 
+    public abstract void finishInitialization();
+
     public abstract boolean isEmpty();
 
     public abstract boolean isPending();
 
     public abstract boolean isUninitialized();
-
-    /**
-     * Remove a CompilerSet from this CompilerSetManager. Use caution with this method. Its primary
-     * use is to remove temporary CompilerSets which were added to represent missing compiler sets. In
-     * that context, they're removed immediately after showing the ToolsPanel after project open.
-     *
-     * @param cs The CompilerSet to (possibly) remove
-     */
-    public abstract void remove(CompilerSet cs);
 
     public abstract void setDefault(CompilerSet newDefault);
 

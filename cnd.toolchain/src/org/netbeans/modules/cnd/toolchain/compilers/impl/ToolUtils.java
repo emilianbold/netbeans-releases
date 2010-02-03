@@ -39,12 +39,11 @@
 
 package org.netbeans.modules.cnd.toolchain.compilers.impl;
 
-import org.netbeans.modules.cnd.toolchain.api.*;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.ToolchainDescriptor;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolchainManagerImpl;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.openide.util.Utilities;
 

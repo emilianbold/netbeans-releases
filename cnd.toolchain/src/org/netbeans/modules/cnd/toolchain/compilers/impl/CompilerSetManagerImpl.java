@@ -87,7 +87,6 @@ import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
-import org.openide.util.TaskListener;
 
 /**
  * Manage a set of CompilerSets. The CompilerSets are dynamically created based on which compilers
@@ -990,7 +989,6 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
      *
      * @param cs The CompilerSet to (possibly) add
      */
-    @Override
     public void add(CompilerSet cs) {
         if (sets.size() == 1 && sets.get(0).getName().equals(CompilerSetImpl.None)) {
             sets.remove(0);
@@ -1025,17 +1023,11 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
      *
      * @param cs The CompilerSet to (possibly) remove
      */
-    @Override
     public void remove(CompilerSet cs) {
         int idx = sets.indexOf(cs);
         if (idx >= 0) {
             sets.remove(idx);
         }
-    }
-
-    @Override
-    public CompilerSet getCompilerSet(CompilerFlavor flavor) {
-        return getCompilerSet(flavor.toString());
     }
 
     @Override
@@ -1048,7 +1040,6 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         return null;
     }
 
-    @Override
     public CompilerSet getCompilerSet(int idx) {
         //waitForCompletion();
         if (isPending()) {

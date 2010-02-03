@@ -1201,8 +1201,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     // C Compiler Node
     private CustomizerNode createCCompilerDescription(Project project, int compilerSetIdx,
             Item item, Folder folder, boolean isCompilerConfiguration) {
-        ExecutionEnvironment execEnv = getSelectedHost();
-        CompilerSet csm = CompilerSetManager.get(execEnv).getCompilerSet(compilerSetIdx);
+        CompilerSet csm = CompilerSetManager.get(getSelectedHost()).getCompilerSets().get(compilerSetIdx);
         String compilerName = csm.getTool(ToolKind.CCompiler).getName();
         String compilerDisplayName = csm.getTool(ToolKind.CCompiler).getDisplayName();
         CustomizerNode cCompilerCustomizerNode = new CCompilerCustomizerNode(
@@ -1271,9 +1270,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
     // CC Compiler Node
     private CustomizerNode createCCCompilerDescription(Project project, int compilerSetIdx, Item item, Folder folder, boolean isCompilerConfiguration) {
-        ExecutionEnvironment execEnv = getSelectedHost();
-        String compilerName = CompilerSetManager.get(execEnv).getCompilerSet(compilerSetIdx).getTool(ToolKind.CCCompiler).getName();
-        String compilerDisplayName = CompilerSetManager.get(execEnv).getCompilerSet(compilerSetIdx).getTool(ToolKind.CCCompiler).getDisplayName();
+        final CompilerSet cs = CompilerSetManager.get(getSelectedHost()).getCompilerSets().get(compilerSetIdx);
+        String compilerName = cs.getTool(ToolKind.CCCompiler).getName();
+        String compilerDisplayName = cs.getTool(ToolKind.CCCompiler).getDisplayName();
         CustomizerNode ccCompilerCustomizerNode = new CCCompilerCustomizerNode(
                 compilerName,
                 compilerDisplayName,
@@ -1318,8 +1317,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
     // Fortran Compiler Node
     private CustomizerNode createFortranCompilerDescription(Project project, int compilerSetIdx, Item item, boolean isCompilerConfiguration) {
         ExecutionEnvironment execEnv = getSelectedHost();
-        String compilerName = CompilerSetManager.get(execEnv).getCompilerSet(compilerSetIdx).getTool(ToolKind.FortranCompiler).getName();
-        String compilerDisplayName = CompilerSetManager.get(execEnv).getCompilerSet(compilerSetIdx).getTool(ToolKind.FortranCompiler).getDisplayName();
+        final CompilerSet cs = CompilerSetManager.get(execEnv).getCompilerSets().get(compilerSetIdx);
+        String compilerName = cs.getTool(ToolKind.FortranCompiler).getName();
+        String compilerDisplayName = cs.getTool(ToolKind.FortranCompiler).getDisplayName();
         CustomizerNode fortranCompilerCustomizerNode = new FortranCompilerCustomizerNode(
                 compilerName,
                 compilerDisplayName,
@@ -1355,9 +1355,9 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
 
     // Assembler Compiler Node
     private CustomizerNode createAssemblerDescription(Project project, int compilerSetIdx, Item item, boolean isCompilerConfiguration) {
-        ExecutionEnvironment execEnv = getSelectedHost();
-        String compilerName = CompilerSetManager.get(execEnv).getCompilerSet(compilerSetIdx).getTool(ToolKind.Assembler).getName();
-        String compilerDisplayName = CompilerSetManager.get(execEnv).getCompilerSet(compilerSetIdx).getTool(ToolKind.Assembler).getDisplayName();
+        final CompilerSet cs = CompilerSetManager.get(getSelectedHost()).getCompilerSets().get(compilerSetIdx);
+        String compilerName = cs.getTool(ToolKind.Assembler).getName();
+        String compilerDisplayName = cs.getTool(ToolKind.Assembler).getDisplayName();
         CustomizerNode assemblerCustomizerNode = new AssemblerCustomizerNode(
                 compilerName,
                 compilerDisplayName,

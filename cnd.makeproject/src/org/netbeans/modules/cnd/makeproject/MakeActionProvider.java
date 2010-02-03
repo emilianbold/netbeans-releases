@@ -1109,8 +1109,7 @@ public class MakeActionProvider implements ActionProvider {
             if (flavor == null) {
                 flavor = CompilerFlavor.getUnknown(conf.getPlatformInfo().getPlatform());
             }
-            cs = CompilerSetFactory.getCustomCompilerSet("", flavor, csconf.getOldName());
-            CompilerSetManager.get(env).add(cs);
+            cs = CompilerSetFactory.getCompilerSet(env, flavor, csname);
             csconf.setValid();
         }
 

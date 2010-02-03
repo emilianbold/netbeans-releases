@@ -110,7 +110,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         project_dir = new File(testapp_dir, testproj).getAbsolutePath();
         conf = new TestConfiguration(args);
         pae = new ProjectActionEvent(project, ProjectActionEvent.Type.DEBUG_STEPINTO, testapp, executable, conf, null, false);
-        Tool tool = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSet(0).getTool(ToolKind.DebuggerTool);
+        Tool tool = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets().get(0).getTool(ToolKind.DebuggerTool);
         ToolchainProxy.setToolPath(tool, "/opt/csw/bin/gdb");
         dm.startDebugging(DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
             new Object[]{pae}));

@@ -38,145 +38,38 @@
  */
 package org.netbeans.modules.cnd.toolchain.ui.api;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
-import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetImpl;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerAccessorImpl;
-import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSetManager;
+import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManagerImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 
 /**
  *
  * @author Sergey Grinev
  */
-public final class ToolsCacheManager {
+public abstract class ToolsCacheManager {
 
-    private ServerUpdateCache serverUpdateCache;
-    private HashMap<ExecutionEnvironment, CompilerSetManager> copiedManagers =
-            new HashMap<ExecutionEnvironment, CompilerSetManager>();
+    public abstract ServerUpdateCache getServerUpdateCache();
 
-    public ToolsCacheManager() {
+    public abstract void setHosts(Collection<? extends ServerRecord> list);
+
+    public abstract CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env, boolean initialize);
+
+    public abstract void addCompilerSetManager(CompilerSetManager newCsm);
+
+    public abstract void setDefaultRecord(ServerRecord defaultRecord);
+
+    public abstract void applyChanges();
+
+    public static ToolsCacheManager get(){
+        return new ToolsCacheManagerImpl();
     }
 
-    public ServerUpdateCache getServerUpdateCache() {
-        return serverUpdateCache;
-    }
-
-    public Collection<? extends ServerRecord> getHosts() {
-        if (serverUpdateCache != null) {
-            return serverUpdateCache.getHosts();
-        } else if (isRemoteAvailable()) {
-            return ServerList.getRecords();
-        } else {
-            return null;
+    protected ToolsCacheManager() {
+        if (!getClass().equals(ToolsCacheManagerImpl.class)) {
+            throw new UnsupportedOperationException("this class can not be overriden by clients"); // NOI18N
         }
-    }
-
-    public ServerRecord getDefaultHostRecord() {
-        if (serverUpdateCache != null) {
-            return serverUpdateCache.getDefaultRecord();
-        } else {
-            return ServerList.getDefaultRecord();
-        }
-    }
-
-    public void setHosts(Collection<? extends ServerRecord> list) {
-        if (serverUpdateCache == null) {
-            serverUpdateCache = new ServerUpdateCache();
-        }
-        serverUpdateCache.setHosts(list);
-    }
-
-    public void setDefaultRecord(ServerRecord defaultRecord) {
-        serverUpdateCache.setDefaultRecord(defaultRecord);
-    }
-
-    public boolean hasCache() {
-        return serverUpdateCache != null;
-    }
-
-    private void saveCompileSetManagers(List<ExecutionEnvironment> liveServers) {
-        Collection<CompilerSetManager> allCSMs = new ArrayList<CompilerSetManager>();
-        for (ExecutionEnvironment copiedServer : copiedManagers.keySet()) {
-            if (liveServers == null || liveServers.contains(copiedServer)) {
-                allCSMs.add(copiedManagers.get(copiedServer));
-            }
-        }
-        CompilerSetManagerAccessorImpl.setManagers(allCSMs);
-        copiedManagers.clear();
-    }
-
-    public void applyChanges() {
-        applyChanges(ServerList.get(ExecutionEnvironmentFactory.getLocal()));
-    }
-    
-    public void applyChanges(ServerRecord selectedRecord) {
-        List<ExecutionEnvironment> liveServers = null;
-        if (isRemoteAvailable()) {
-            if (serverUpdateCache != null) {
-                liveServers = new ArrayList<ExecutionEnvironment>();
-                ServerList.set(serverUpdateCache.getHosts(), serverUpdateCache.getDefaultRecord());
-                for (ServerRecord rec : serverUpdateCache.getHosts()) {
-                    liveServers.add(rec.getExecutionEnvironment());
-                }
-                serverUpdateCache = null;
-            } else {
-                ServerList.setDefaultRecord(selectedRecord);
-            }
-        }
-
-        saveCompileSetManagers(liveServers);
-    }
-
-    public void clear() {
-        serverUpdateCache = null;
-        copiedManagers.clear();
-    }
-
-    //TODO: we should be ensured already....check
-    public void ensureHostSetup(ExecutionEnvironment env) {
-        if (env != null) {
-            ServerList.get(env); // this will ensure the remote host is setup
-        }
-    }
-
-    public boolean isDevHostValid(ExecutionEnvironment env) {
-        if (isRemoteAvailable()) {
-            ServerRecord record = ServerList.get(env);
-            return record != null && record.isOnline();
-        } else {
-            return false;
-        }
-    }
-
-    public boolean isRemoteAvailable() {
-        return true;
-    }
-
-    public ExecutionEnvironment getDefaultHostEnvironment() {
-        return ServerList.getDefaultRecord().getExecutionEnvironment();
-    }
-
-    public synchronized CompilerSetManager getCompilerSetManagerCopy(ExecutionEnvironment env, boolean initialize) {
-        CompilerSetManager out = copiedManagers.get(env);
-        if (out == null) {
-            out = CompilerSetManagerAccessorImpl.getDeepCopy(env, initialize);
-            if (out.getCompilerSets().size() == 1 && out.getCompilerSets().get(0).getName().equals(CompilerSetImpl.None)) {
-                out.remove(out.getCompilerSets().get(0));
-            }
-            copiedManagers.put(env, out);
-        }
-        return out;
-    }
-
-    public void addCompilerSetManager(CompilerSetManager newCsm) {
-        copiedManagers.put(((CompilerSetManagerImpl)newCsm).getExecutionEnvironment(), newCsm);
     }
 }

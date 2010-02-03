@@ -109,9 +109,9 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private ToolsPanelModel model = null;
     private boolean customizeDebugger;
     private ExecutionEnvironment execEnv;
-    private static ToolsPanel instance = null;
     private CompilerSetManagerImpl csm;
     private CompilerSet currentCompilerSet;
+    private ToolsCacheManagerImpl tcm = (ToolsCacheManagerImpl) ToolsPanelSupport.getToolsCacheManager();
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     /** Creates new form ToolsPanel */
@@ -119,15 +119,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         initComponents();
         setName("TAB_ToolsTab"); // NOI18N (used as a pattern...)
         changed = false;
-        instance = ToolsPanel.this;
         currentCompilerSet = null;
-        if (ToolsPanelSupport.getToolsCacheManager().isRemoteAvailable()) {
-            execEnv = ToolsPanelSupport.getToolsCacheManager().getDefaultHostEnvironment();
-            btEditDevHost.setEnabled(true);
-            cbDevHost.setEnabled(true);
-        } else {
-            execEnv = ExecutionEnvironmentFactory.getLocal();
-        }
+        execEnv = ServerList.getDefaultRecord().getExecutionEnvironment();
+        btEditDevHost.setEnabled(true);
+        cbDevHost.setEnabled(true);
 
         lstDirlist.setCellRenderer(new MyCellRenderer());
 
@@ -156,9 +151,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     }
 
     private void initializeUI() {
-        if (instance == null) {
-            instance = this;
-        }
         changingCompilerSet = true;
         if (model == null) {
             model = new GlobalToolsPanelModel();
@@ -168,7 +160,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         ExecutionEnvironment selectedEnv = model.getSelectedDevelopmentHost();
         ServerRecord selectedRec = null;
 
-        Collection<? extends ServerRecord> hostList = ToolsPanelSupport.getToolsCacheManager().getHosts();
+        Collection<? extends ServerRecord> hostList = tcm.getHosts();
         if (hostList != null) {
             cbDevHost.removeAllItems();
             for (ServerRecord rec : hostList) {
@@ -184,7 +176,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         if (selectedRec != null) {
             cbDevHost.setSelectedItem(selectedRec);
         } else {
-            cbDevHost.setSelectedItem(ToolsPanelSupport.getToolsCacheManager().getDefaultHostRecord());
+            cbDevHost.setSelectedItem(tcm.getDefaultHostRecord());
         }
 
         cbDevHost.setRenderer(new MyDevHostListCellRenderer());
@@ -214,10 +206,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
                 ExecutionEnvironmentFactory.toUniqueID(csm.getExecutionEnvironment())) : getString("NEW_TOOL_SET_TITLE");
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, title);
         panel.setDialogDescriptor(dialogDescriptor);
-        boolean oldHostValid = ToolsPanelSupport.getToolsCacheManager().isDevHostValid(execEnv);
+        boolean oldHostValid = ToolsUtils.isDevHostValid(execEnv);
         DialogDisplayer.getDefault().notify(dialogDescriptor);
         if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION) {
-            boolean newHostValid = ToolsPanelSupport.getToolsCacheManager().isDevHostValid(execEnv);
+            boolean newHostValid = ToolsUtils.isDevHostValid(execEnv);
             if (oldHostValid != newHostValid) {
                 // we didn't add the collection, but host changed its valid state
                 dataValid();
@@ -279,7 +271,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         if (!execEnv.equals(getSelectedRecord().getExecutionEnvironment())) {
             log.fine("TP.itemStateChanged: About to update");
             changed = true;
-            if (!ToolsPanelSupport.getToolsCacheManager().hasCache()) {
+            if (!tcm.hasCache()) {
                 List<ServerRecord> nulist = new ArrayList<ServerRecord>(cbDevHost.getItemCount());
                 for (int i = 0; i < cbDevHost.getItemCount(); i++) {
                     nulist.add((ServerRecord) cbDevHost.getItemAt(i));
@@ -440,7 +432,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         getToolCollectionPanel().preChangeCompilerSet(cs);
         if (cs == null) {
             String errorMsg = "";
-            if (!ToolsPanelSupport.getToolsCacheManager().isDevHostValid(execEnv)) {
+            if (!ToolsUtils.isDevHostValid(execEnv)) {
                 errorMsg = NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", execEnv.toString());
             }
             lblErrors.setText("<html>" + errorMsg + "</html>"); //NOI18N
@@ -476,22 +468,15 @@ public final class ToolsPanel extends JPanel implements ActionListener,
                 model.setSelectedCompilerSetName(cs.getName());
             }
             currentCompilerSet = cs;
-            ToolsPanelSupport.getToolsCacheManager().applyChanges((ServerRecord) cbDevHost.getSelectedItem());
+            tcm.applyChanges((ServerRecord) cbDevHost.getSelectedItem());
         }
         getToolCollectionPanel().applyChanges();
-        instance = null; // remove the global instance
     }
 
     /** What to do if user cancels the dialog (nothing) */
     public void cancel() {
-        ToolsPanelSupport.getToolsCacheManager().clear();
+        tcm.clear();
         changed = false;
-        instance = null; // remove the global instance
-    }
-
-    //TODO: get rid of this...
-    public static ToolsPanel getToolsPanel() {
-        return instance;
     }
 
     public CompilerSet getCurrentCompilerSet() {
@@ -528,7 +513,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         } else {
             boolean csmValid = csm.getCompilerSets().size() > 0;
             boolean isToolsValid = getToolCollectionPanel().isToolsValid();
-            boolean devhostValid = ToolsPanelSupport.getToolsCacheManager().isDevHostValid(execEnv);
+            boolean devhostValid = ToolsUtils.isDevHostValid(execEnv);
 
             if (csmValid && isToolsValid && devhostValid) {
                 if (valid != ValidState.VALID) {
@@ -657,15 +642,15 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             cbDevHost.removeItemListener(this);
             log.fine("TP.editDevHosts: Removing all items from cbDevHost");
             cbDevHost.removeAllItems();
-            log.log(Level.FINE, "TP.editDevHosts: Adding {0} items to cbDevHost", ToolsPanelSupport.getToolsCacheManager().getHosts().size());
-            for (ServerRecord rec : ToolsPanelSupport.getToolsCacheManager().getHosts()) {
+            log.log(Level.FINE, "TP.editDevHosts: Adding {0} items to cbDevHost", tcm.getHosts().size());
+            for (ServerRecord rec : tcm.getHosts()) {
                 log.log(Level.FINE, "    Adding {0}", rec);
                 cbDevHost.addItem(rec);
             }
             log.log(Level.FINE, "TP.editDevHosts: cbDevHost has {0} items", cbDevHost.getItemCount());
-            log.log(Level.FINE, "TP.editDevHosts: getDefaultHostRecord returns {0}", ToolsPanelSupport.getToolsCacheManager().getDefaultHostRecord());
-            cbDevHost.setSelectedItem(ToolsPanelSupport.getToolsCacheManager().getDefaultHostRecord());
-            ToolsPanelSupport.getToolsCacheManager().ensureHostSetup(getSelectedRecord().getExecutionEnvironment());
+            log.log(Level.FINE, "TP.editDevHosts: getDefaultHostRecord returns {0}", tcm.getDefaultHostRecord());
+            cbDevHost.setSelectedItem(tcm.getDefaultHostRecord());
+            ToolsUtils.ensureHostSetup(getSelectedRecord().getExecutionEnvironment());
             cbDevHost.addItemListener(this);
             onNewDevHostSelected();
         }
@@ -962,14 +947,14 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
     }
 
-    private static class MyDevHostListCellRenderer extends DefaultListCellRenderer {
+    private class MyDevHostListCellRenderer extends DefaultListCellRenderer {
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             ServerRecord rec = (ServerRecord) value;
             label.setText(rec.getDisplayName());
-            if (value != null && value.equals(ToolsPanelSupport.getToolsCacheManager().getDefaultHostRecord())) {
+            if (value != null && value.equals(tcm.getDefaultHostRecord())) {
                 label.setFont(label.getFont().deriveFont(Font.BOLD));
             }
             return label;

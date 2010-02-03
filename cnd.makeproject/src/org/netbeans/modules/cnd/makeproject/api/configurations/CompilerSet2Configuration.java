@@ -79,7 +79,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
         String csName = (cs == null) ? null : cs.getName();
         if (csName == null || csName.length() == 0) {
             if (getCompilerSetManager().getCompilerSets().size() > 0) {
-                csName = getCompilerSetManager().getCompilerSet(0).getName();
+                csName = getCompilerSetManager().getCompilerSets().get(0).getName();
             } else {
                 if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
                     csName = "Sun"; // NOI18N
@@ -329,7 +329,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
             ocs = CompilerSetManager.get(env).getDefaultCompilerSet();
         }
         if (ocs == null) {
-            ocs = CompilerSetManager.get(env).getCompilerSet(0);
+            ocs = CompilerSetManager.get(env).getCompilerSets().get(0);
         }
         if (ocs == null) {
             return;

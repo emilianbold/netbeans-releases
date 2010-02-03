@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,69 +31,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.ui.options;
+package org.netbeans.modules.cnd.toolchain.execution.impl;
 
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
-import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.compilers.impl.SPIAccessor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-@OptionsPanelController.SubRegistration(
-    id=CndUIConstants.TOOLS_OPTIONS_CND_TOOLS_ID,
-    location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID,
-    displayName="#TAB_ToolsTab", // NOI18N
-    position=100
-)
-public final class ToolsPanelController extends OptionsPanelController {
-
-    private ToolsPanel panel = new ToolsPanel();
-
-    @Override
-    public void update() {
-        panel.update();
-}
-
-    @Override
-    public void applyChanges() {
-        panel.applyChanges();
-    }
-    
-    @Override
-    public void cancel() {
-        panel.cancel();
-    }
-    
-    @Override
-    public boolean isValid() {
-        return !panel.isChanged() || panel.dataValid();
-    }
-    
-    @Override
-    public boolean isChanged() {
-        return panel.isChanged();
-    }
-    
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("cnd.optionsDialog"); // NOI18N
-    }
-    
-    @Override
-    public JComponent getComponent(Lookup masterLookup) {
-        return panel;
+/**
+ *
+ * @author as204739
+ */
+public class ToolchainSPIAccessor {
+    private ToolchainSPIAccessor() {
     }
 
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        panel.addPropertyChangeListener(l);
+    public static void add(ExecutionEnvironment env, CompilerSet cs) {
+        SPIAccessor.get().add(env, cs);
     }
 
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        panel.removePropertyChangeListener(l);
+    public static void remove(ExecutionEnvironment env, CompilerSet cs) {
+        SPIAccessor.get().remove(env, cs);
     }
+
 }

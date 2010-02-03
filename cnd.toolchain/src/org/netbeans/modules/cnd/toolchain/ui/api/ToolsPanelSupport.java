@@ -43,6 +43,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.ToolUtils;
+import org.netbeans.modules.cnd.toolchain.ui.options.ToolsCacheManagerImpl;
 import org.openide.util.WeakSet;
 
 /**
@@ -51,7 +52,7 @@ import org.openide.util.WeakSet;
  */
 public class ToolsPanelSupport {
     private static CompilerSet currentCompilerSet;
-    private static final ToolsCacheManager cacheManager = new ToolsCacheManager();
+    private static final ToolsCacheManagerImpl cacheManager = (ToolsCacheManagerImpl) ToolsCacheManager.get();
 
     public static ToolsCacheManager getToolsCacheManager() {
         return cacheManager;

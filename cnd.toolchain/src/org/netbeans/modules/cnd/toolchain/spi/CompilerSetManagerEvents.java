@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.cnd.toolchain.spi;
 
+import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.CompilerSetManagerImpl;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -110,6 +111,16 @@ public final class CompilerSetManagerEvents {
         @Override
         public CompilerSetManagerEvents createEvent(ExecutionEnvironment env) {
             return new CompilerSetManagerEvents(env);
+        }
+
+        @Override
+        public void add(ExecutionEnvironment env, CompilerSet cs) {
+            ((CompilerSetManagerImpl)CompilerSetManagerImpl.get(env)).add(cs);
+        }
+
+        @Override
+        public void remove(ExecutionEnvironment env, CompilerSet cs) {
+            ((CompilerSetManagerImpl)CompilerSetManagerImpl.get(env)).remove(cs);
         }
     }
 }
