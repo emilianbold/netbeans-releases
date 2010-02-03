@@ -179,7 +179,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         if (borderColor == null) borderColor = UIManager.getColor("controlShadow"); // NOI18N
         component.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
 
-        ImageIcon ic = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/openide/explorer/columns.gif", true));
+        ImageIcon ic = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/columns_16.png", true));
         colsButton = new javax.swing.JButton(ic);
         colsButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TreeTableView.class, "ACN_ColumnsSelector")); //NOI18N
         colsButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TreeTableView.class, "ACD_ColumnsSelector")); //NOI18N
