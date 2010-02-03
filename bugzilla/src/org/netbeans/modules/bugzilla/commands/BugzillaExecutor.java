@@ -45,6 +45,7 @@ import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
+import org.apache.commons.httpclient.RedirectException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
@@ -70,6 +71,7 @@ public class BugzillaExecutor {
     private static final String HTTP_ERROR_NOT_FOUND         = "http error: not found";         // NOI18N
     private static final String INVALID_USERNAME_OR_PASSWORD = "invalid username or password";  // NOI18N
     private static final String REPOSITORY_LOGIN_FAILURE     = "unable to login to";            // NOI18N
+    private static final String KENAI_LOGIN_REDIRECT         = "/people/login?original_uri=";   // NOI18N
     private static final String COULD_NOT_BE_FOUND           = "could not be found";            // NOI18N
     private static final String REPOSITORY                   = "repository";                    // NOI18N
     private static final String MIDAIR_COLLISION             = "mid-air collision occurred while submitting to"; // NOI18N
@@ -298,6 +300,10 @@ public class BugzillaExecutor {
             if(errormsg != null) {
                 return new LoginHandler(ce, errormsg, executor, repository);
             }
+            errormsg = getKenaiRedirectError(ce);
+            if(errormsg != null) {
+                return new LoginHandler(ce, errormsg, executor, repository);
+            }
             errormsg = getNotFoundError(ce);
             if(errormsg != null) {
                 return new NotFoundHandler(ce, errormsg, executor, repository);
@@ -324,6 +330,21 @@ public class BugzillaExecutor {
                          (msg.startsWith(REPOSITORY) && msg.endsWith(COULD_NOT_BE_FOUND)))
                 {
                     return NbBundle.getMessage(BugzillaExecutor.class, "MSG_UNABLE_LOGIN_TO_REPOSITORY");   // NOI18N
+                }
+            }            
+            return null;
+        }
+
+        private static String getKenaiRedirectError(CoreException ce) {
+            IStatus status = ce.getStatus();
+            if(status == null) {
+                return null;
+            }
+            Throwable cause = status.getException();
+            if(cause != null && cause instanceof RedirectException) {
+                String msg = cause.getMessage();
+                if(msg.contains(KENAI_LOGIN_REDIRECT)) {
+                    return NbBundle.getMessage(BugzillaExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD"); // NOI18N
                 }
             }
             return null;
