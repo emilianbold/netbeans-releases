@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.remote.sync.download.HostUpdates;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -30,6 +31,7 @@ class RfsLocalController implements Runnable {
     private final PrintWriter err;
     private final FileData fileData;
     private final RemotePathMap mapper;
+    private final Set<File> remoteUpdates;
     
     private static enum RequestKind {
         REQUEST,
@@ -47,6 +49,7 @@ class RfsLocalController implements Runnable {
         this.err = err;
         this.fileData = fileData;
         this.mapper = RemotePathMap.getPathMap(execEnv);
+        this.remoteUpdates = new HashSet<File>();
     }
 
     private void respond_ok() {
@@ -100,6 +103,7 @@ class RfsLocalController implements Runnable {
                     File localFile = new File(localFilePath);
                     if (kind == RequestKind.WRITTEN) {
                         fileData.setState(localFile, FileState.UNCONTROLLED);
+                        remoteUpdates.add(localFile);
                         RemoteUtil.LOGGER.finest("LC: uncontrolled " + localFile);
                     } else {
                         CndUtils.assertTrue(kind == RequestKind.REQUEST, "kind should be RequestKind.REQUEST, but is " + kind);
@@ -144,6 +148,11 @@ class RfsLocalController implements Runnable {
 
     void shutdown() {
         fileData.store();
+        if (CndUtils.getBoolean("cnd.remote.upload.updates", false)) {
+            if (!remoteUpdates.isEmpty()) {
+                HostUpdates.register(remoteUpdates, execEnv);
+            }
+        }
     }
 
     private static class FileGatheringInfo {
