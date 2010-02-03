@@ -233,7 +233,7 @@ public class HostUpdates {
 
     private void showConfirmDialog() {
         final Collection<FileInfo> unconfirmed = getByState(FileState.UNCONFIRMED);
-        if (JOptionPane.showConfirmDialog(null, "Download?", "Download",
+        if (JOptionPane.showConfirmDialog(null, "Download?", "Download", // NOI18N
                 JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
             synchronized (lock) {
                 for (FileInfo info : unconfirmed) {
