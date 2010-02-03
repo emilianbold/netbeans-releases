@@ -147,6 +147,36 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         updateLineNumber();
         super.fixed ();
     }
+
+    @Override
+    protected boolean isApplicable() {
+        LineBreakpoint breakpoint = getBreakpoint();
+        String[] preferredSourceRoot = new String[] { null };
+        String sourcePath = getDebugger().getEngineContext().getRelativePath(breakpoint.getURL(), '/', true);
+        if (sourcePath == null) {
+            return false;
+        }
+        boolean isInSources = false;
+        {
+            String srcRoot = getSourceRoot();
+            if (srcRoot != null) {
+                String[] sourceRoots = getDebugger().getEngineContext().getSourceRoots();
+                for (int i = 0; i < sourceRoots.length; i++) {
+                    if (srcRoot.equals(sourceRoots[i])) {
+                        isInSources = true;
+                    }
+                }
+            }
+        }
+        // Test if className exists in project sources:
+        if (!isInSources) {
+            return false;
+        }
+        if (isInSources && !isEnabled(sourcePath, preferredSourceRoot)) {
+            return false;
+        }
+        return true;
+    }
     
     protected void setRequests () {
         LineBreakpoint breakpoint = getBreakpoint();
