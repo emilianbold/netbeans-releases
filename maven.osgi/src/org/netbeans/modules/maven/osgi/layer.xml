@@ -4,6 +4,7 @@
     <folder name="Templates">
         <folder name="OSGI">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.osgi.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mavaven/osgi/templates/new_OSGi_file_16.png"/>
             <attr name="position" intvalue="723"/>
             <file name="Activator.java" url="templates/activator.java.template">
                 <attr name="position" intvalue="100"/>
@@ -12,6 +13,7 @@
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.osgi.Bundle"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.maven.osgi.ActivatorIterator" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mavaven/osgi/templates/new_OSGi_file_16.png"/>
                 <attr name="templateCategory" stringvalue="osgi"/>
             </file>
         </folder>
