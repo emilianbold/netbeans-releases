@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -229,8 +229,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         Iterator<NativeFileItem> iter = nativeFileIetms.iterator();
         while (iter.hasNext()) {
             NativeFileItem nativeFileIetm = iter.next();
-            ToolKind tool = ((Item) nativeFileIetm).getDefaultTool();
-            if (tool == ToolKind.CustomTool
+            PredefinedToolKind tool = ((Item) nativeFileIetm).getDefaultTool();
+            if (tool == PredefinedToolKind.CustomTool
                 // check of mime type is better to support headers without extensions
                 && !MIMENames.HEADER_MIME_TYPE.equals(((Item) nativeFileIetm).getMIMEType())) {
                 continue; // IZ 87407
@@ -416,8 +416,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             }
 
             if ((newItemConf.getExcluded().getValue() ^ oldItemConf.getExcluded().getValue()) &&
-                    (newItemConf.getTool() == ToolKind.CCompiler ||
-                    newItemConf.getTool() == ToolKind.CCCompiler ||
+                    (newItemConf.getTool() == PredefinedToolKind.CCompiler ||
+                    newItemConf.getTool() == PredefinedToolKind.CCCompiler ||
                     items[i].hasHeaderOrSourceExtension(true, true))) {
                 if (newItemConf.getExcluded().getValue()) {
                     // excluded
@@ -433,8 +433,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 continue;
             }
 
-            if (newItemConf.getTool() == ToolKind.CCompiler) {
-                if (oldItemConf.getTool() != ToolKind.CCompiler) {
+            if (newItemConf.getTool() == PredefinedToolKind.CCompiler) {
+                if (oldItemConf.getTool() != PredefinedToolKind.CCompiler) {
                     list.add(items[i]);
                     continue;
                 }
@@ -447,8 +447,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     continue;
                 }
             }
-            if (newItemConf.getTool() == ToolKind.CCCompiler) {
-                if (oldItemConf.getTool() != ToolKind.CCCompiler) {
+            if (newItemConf.getTool() == PredefinedToolKind.CCCompiler) {
+                if (oldItemConf.getTool() != PredefinedToolKind.CCCompiler) {
                     list.add(items[i]);
                     continue;
                 }
@@ -530,13 +530,13 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             items = folder.getAllItemsAsArray();
         } else if (item != null) {
             ItemConfiguration itemConfiguration = item.getItemConfiguration(getMakeConfiguration()); //ItemConfiguration)getMakeConfiguration().getAuxObject(ItemConfiguration.getId(item.getPath()));
-            if (itemConfiguration.getTool() == ToolKind.CCompiler) {
+            if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                 cIncludeDirectories = itemConfiguration.getCCompilerConfiguration().getIncludeDirectories();
                 cInheritIncludes = itemConfiguration.getCCompilerConfiguration().getInheritIncludes();
                 cInheritMacros = itemConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
                 cPpreprocessorOption = itemConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
             }
-            if (itemConfiguration.getTool() == ToolKind.CCCompiler) {
+            if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                 ccIncludeDirectories = itemConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
                 ccInheritIncludes = itemConfiguration.getCCCompilerConfiguration().getInheritIncludes();
                 ccPreprocessorOption = itemConfiguration.getCCCompilerConfiguration().getPreprocessorConfiguration();
@@ -610,8 +610,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     deleted.add(items[i]);
                     continue;
                 }
-                if ((cFiles && itemConfiguration.getTool() == ToolKind.CCompiler) ||
-                        (ccFiles && itemConfiguration.getTool() == ToolKind.CCCompiler) ||
+                if ((cFiles && itemConfiguration.getTool() == PredefinedToolKind.CCompiler) ||
+                        (ccFiles && itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) ||
                         items[i].hasHeaderOrSourceExtension(cFiles, ccFiles)) {
                     list.add(items[i]);
                 }
@@ -661,7 +661,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             if (compilerSet == null) {
                 return vec;
             }
-            BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(ToolKind.CCCompiler);
+            BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
             if (compiler != null) {
                 vec.addAll(compiler.getSystemIncludeDirectories());
             }
@@ -712,7 +712,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             if (compilerSet == null) {
                 return vec;
             }
-            BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(ToolKind.CCCompiler);
+            BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
             if (compiler != null) {
                 vec.addAll(compiler.getSystemPreprocessorSymbols());
             }

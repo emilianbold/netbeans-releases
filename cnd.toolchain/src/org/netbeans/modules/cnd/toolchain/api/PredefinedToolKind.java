@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,37 +37,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.toolchain.api;
 
-package org.netbeans.modules.cnd.makefile.parser;
+import org.openide.util.NbBundle;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.cnd.makefile.model.MakefileElement;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.Parser;
-
-/**
- * @author Alexey Vladykin
- */
-public class MakefileModel extends Parser.Result {
-
-    private final List<MakefileElement> elements;
-
-    public MakefileModel(Snapshot snapshot, List<MakefileElement> elements) {
-        super(snapshot);
-        this.elements = Collections.unmodifiableList(elements);
-    }
-
-    public List<MakefileElement> getElements() {
-        return elements;
-    }
-
+public enum PredefinedToolKind implements ToolKind {
+    CCompiler, //0
+    CCCompiler, //1
+    FortranCompiler, //2
+    CustomTool, //3
+    Assembler, //4
+    MakeTool, //5
+    DebuggerTool, //6
+    QMakeTool, //7
+    CMakeTool, //8
+    UnknownTool; //9
+    
     @Override
-    protected void invalidate() {
+    public String getDisplayName(){
+        return NbBundle.getBundle(PredefinedToolKind.class).getString(name());
     }
+
+    public static PredefinedToolKind getTool(int ordinal){
+        for (PredefinedToolKind tool : PredefinedToolKind.values()){
+            if (tool.ordinal() == ordinal) {
+                return tool;
+            }
+        }
+        return UnknownTool;
+    }
+
+    public static PredefinedToolKind getTool(String name){
+        for (PredefinedToolKind tool : PredefinedToolKind.values()){
+            if (tool.getDisplayName().equals(name)) {
+                return tool;
+            }
+        }
+        return UnknownTool;
+    }
+
 }

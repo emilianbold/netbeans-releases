@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodePro
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -64,7 +64,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     private Item item;
     // General
     private BooleanConfiguration excluded;
-    private ToolKind tool = ToolKind.UnknownTool;
+    private PredefinedToolKind tool = PredefinedToolKind.UnknownTool;
     // Tools
     private ConfigurationBase lastConfiguration;
 
@@ -161,24 +161,24 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         needSave = true;
     }
     
-    public void setTool(ToolKind tool) {
+    public void setTool(PredefinedToolKind tool) {
         if (this.tool != tool){
             lastConfiguration = null;
         }
         this.tool = tool;
    }
 
-    public ToolKind getTool() {
-        if (tool == ToolKind.UnknownTool) {
+    public PredefinedToolKind getTool() {
+        if (tool == PredefinedToolKind.UnknownTool) {
             tool = item.getDefaultTool();
         }
         return tool;
     }
 
     protected String[] getToolNames() {
-        return new String[]{ToolKind.CCompiler.getDisplayName(), ToolKind.CCCompiler.getDisplayName(),
-                            ToolKind.FortranCompiler.getDisplayName(), ToolKind.Assembler.getDisplayName(),
-                            ToolKind.CustomTool.getDisplayName()};
+        return new String[]{PredefinedToolKind.CCompiler.getDisplayName(), PredefinedToolKind.CCCompiler.getDisplayName(),
+                            PredefinedToolKind.FortranCompiler.getDisplayName(), PredefinedToolKind.Assembler.getDisplayName(),
+                            PredefinedToolKind.CustomTool.getDisplayName()};
     }
 
     // Custom Tool
@@ -187,7 +187,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public synchronized CustomToolConfiguration getCustomToolConfiguration() {
-        if (getTool() == ToolKind.CustomTool) {
+        if (getTool() == PredefinedToolKind.CustomTool) {
             if (lastConfiguration == null) {
                 lastConfiguration = new CustomToolConfiguration();
             }
@@ -203,7 +203,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public synchronized CCompilerConfiguration getCCompilerConfiguration() {
-        if (getTool() == ToolKind.CCompiler) {
+        if (getTool() == PredefinedToolKind.CCompiler) {
             if (lastConfiguration == null) {
                 FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
                 if (folderConfiguration != null) {
@@ -224,7 +224,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public synchronized CCCompilerConfiguration getCCCompilerConfiguration() {
-        if (getTool() == ToolKind.CCCompiler) {
+        if (getTool() == PredefinedToolKind.CCCompiler) {
             if (lastConfiguration == null) {
                 FolderConfiguration folderConfiguration = item.getFolder().getFolderConfiguration(configuration);
                 if (folderConfiguration != null) {
@@ -245,7 +245,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public synchronized FortranCompilerConfiguration getFortranCompilerConfiguration() {
-        if (getTool() == ToolKind.FortranCompiler) {
+        if (getTool() == PredefinedToolKind.FortranCompiler) {
             if (lastConfiguration == null) {
                 lastConfiguration = new FortranCompilerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getFortranCompilerConfiguration());
             }
@@ -261,7 +261,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public synchronized AssemblerConfiguration getAssemblerConfiguration() {
-        if (getTool() == ToolKind.Assembler) {
+        if (getTool() == PredefinedToolKind.Assembler) {
             if (lastConfiguration == null) {
                 lastConfiguration = new AssemblerConfiguration(((MakeConfiguration) configuration).getBaseDir(), ((MakeConfiguration) configuration).getAssemblerConfiguration());
             }
@@ -485,7 +485,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         public void setValue(Integer v) {
 //            String newTool = (String) v;
 //            setTool(newTool);
-            setTool(ToolKind.getTool(v));
+            setTool(PredefinedToolKind.getTool(v));
         }
 
         @Override
@@ -514,7 +514,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         @Override
         public String getAsText() {
             int val = ((Integer) getValue()).intValue();
-            return ToolKind.getTool(val).getDisplayName();
+            return PredefinedToolKind.getTool(val).getDisplayName();
 //            CompilerSet set = CompilerSetManager.getDefault(((MakeConfiguration)configuration).getDevelopmentHost().getName()).getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
 //            return set.getTool(val).getGenericName();
         }
@@ -522,7 +522,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         @Override
         public void setAsText(String text) throws java.lang.IllegalArgumentException {
 //            setValue(text);
-            setValue(ToolKind.getTool(text));
+            setValue(PredefinedToolKind.getTool(text));
         }
 
         @Override

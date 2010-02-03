@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
@@ -382,21 +382,21 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return mimeType;
     }
 
-    public ToolKind getDefaultTool() {
-        ToolKind tool;
+    public PredefinedToolKind getDefaultTool() {
+        PredefinedToolKind tool;
         String mimeType = getMIMEType();
         if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
-            tool = ToolKind.CCompiler;
+            tool = PredefinedToolKind.CCompiler;
         } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
-            tool = ToolKind.CustomTool;
+            tool = PredefinedToolKind.CustomTool;
         } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
-            tool = ToolKind.CCCompiler;
+            tool = PredefinedToolKind.CCCompiler;
         } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
-            tool = ToolKind.FortranCompiler;
+            tool = PredefinedToolKind.FortranCompiler;
         } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
-            tool = ToolKind.Assembler;
+            tool = PredefinedToolKind.Assembler;
         } else {
-            tool = ToolKind.CustomTool;
+            tool = PredefinedToolKind.CustomTool;
         }
         return tool;
     }
@@ -564,7 +564,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
      **/
     @Override
     public Language getLanguage() {
-        ToolKind tool;
+        PredefinedToolKind tool;
         Language language;
         ItemConfiguration itemConfiguration = null;
         MakeConfiguration makeConfiguration = getMakeConfiguration();
@@ -577,11 +577,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             tool = getDefaultTool();
         }
 
-        if (tool == ToolKind.CCompiler) {
+        if (tool == PredefinedToolKind.CCompiler) {
             language = NativeFileItem.Language.C;
-        } else if (tool == ToolKind.CCCompiler) {
+        } else if (tool == PredefinedToolKind.CCCompiler) {
             language = NativeFileItem.Language.CPP;
-        } else if (tool == ToolKind.FortranCompiler) {
+        } else if (tool == PredefinedToolKind.FortranCompiler) {
             language = NativeFileItem.Language.FORTRAN;
         } else if (hasHeaderOrSourceExtension(true, true)) {
             language = NativeFileItem.Language.C_HEADER;

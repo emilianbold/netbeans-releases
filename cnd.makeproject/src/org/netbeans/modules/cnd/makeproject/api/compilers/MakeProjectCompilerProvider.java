@@ -43,8 +43,8 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerProvider;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolKind;
-import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -64,47 +64,47 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
      * could be deferred to makeproject.
      */
     @Override
-    public Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+    public Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         if (flavor.isSunStudioCompiler()) {
-            if (kind == ToolKind.CCompiler) {
+            if (kind == PredefinedToolKind.CCompiler) {
                 return SunCCompiler.create(env, flavor, kind, name, displayName, path);
-            } else if (kind == ToolKind.CCCompiler) {
+            } else if (kind == PredefinedToolKind.CCCompiler) {
                 return SunCCCompiler.create(env, flavor, kind, name, displayName, path);
-            } else if (kind == ToolKind.FortranCompiler) {
+            } else if (kind == PredefinedToolKind.FortranCompiler) {
                 return SunFortranCompiler.create(env, flavor, kind, name, displayName, path);
-            } else if (kind == ToolKind.MakeTool) {
+            } else if (kind == PredefinedToolKind.MakeTool) {
                 return SunMaketool.create(env, flavor, name, displayName, path);
-            } else if (kind == ToolKind.DebuggerTool) {
+            } else if (kind == PredefinedToolKind.DebuggerTool) {
                 return SunDebuggerTool.create(env, flavor, name, displayName, path);
-            } else if (kind == ToolKind.Assembler) {
+            } else if (kind == PredefinedToolKind.Assembler) {
                 return Assembler.create(env, flavor, kind, name, displayName, path);
             }
         } else /* if (flavor.isGnuCompiler()) */ { // Assume GNU (makeproject system doesn't handle Unknown)
-           if (kind == ToolKind.CCompiler) {
+           if (kind == PredefinedToolKind.CCompiler) {
                if ("MSVC".equals(flavor.toString())) { // NOI18N
                    return MsvcCompiler.create(env, flavor, kind, name, displayName, path);
                } else {
                    return GNUCCompiler.create(env, flavor, kind, name, displayName, path);
                }
-           } else if (kind == ToolKind.CCCompiler) {
+           } else if (kind == PredefinedToolKind.CCCompiler) {
                if ("MSVC".equals(flavor.toString())) { // NOI18N
                    return new MsvcCompiler(env, flavor, kind, name, displayName, path);
                } else {
                    return GNUCCCompiler.create(env, flavor, kind, name, displayName, path);
                }
-            } else if (kind == ToolKind.FortranCompiler) {
+            } else if (kind == PredefinedToolKind.FortranCompiler) {
                 return GNUFortranCompiler.create(env, flavor, kind, name, displayName, path);
-            } else if (kind == ToolKind.MakeTool) {
+            } else if (kind == PredefinedToolKind.MakeTool) {
                 return GNUMaketool.create(env, flavor, name, displayName, path);
-            } else if (kind == ToolKind.DebuggerTool) {
+            } else if (kind == PredefinedToolKind.DebuggerTool) {
                 return GNUDebuggerTool.create(env, flavor, name, displayName, path);
-            } else if (kind == ToolKind.Assembler) {
+            } else if (kind == PredefinedToolKind.Assembler) {
                 return Assembler.create(env, flavor, kind, name, displayName, path);
             }
         }
-        if (kind == ToolKind.CustomTool) {
+        if (kind == PredefinedToolKind.CustomTool) {
             return CustomTool.create(env);
-        } else if (kind == ToolKind.QMakeTool || kind == ToolKind.CMakeTool) {
+        } else if (kind == PredefinedToolKind.QMakeTool || kind == PredefinedToolKind.CMakeTool) {
             return GeneralTool.create(env, kind, flavor, name, displayName, path);
         }
         return null;

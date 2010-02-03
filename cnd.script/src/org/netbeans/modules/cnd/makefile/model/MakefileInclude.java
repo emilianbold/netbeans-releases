@@ -41,6 +41,8 @@ package org.netbeans.modules.cnd.makefile.model;
 
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -48,17 +50,33 @@ import org.openide.util.Parameters;
  *
  * @author Alexey Vladykin
  */
-public final class MakefileInclude extends MakefileElement {
+public final class MakefileInclude extends AbstractMakefileElement {
 
     private final List<String> includes;
 
-    public MakefileInclude(Kind kind, FileObject file, int startOffset, int endOffset, List<String> includes) {
-        super(kind, file, startOffset, endOffset);
+    public MakefileInclude(List<String> includes, FileObject file, int startOffset, int endOffset) {
+        super(ElementKind.KEYWORD, first(includes), file, startOffset, endOffset);
         Parameters.notNull("includes", includes);
         this.includes = Collections.unmodifiableList(includes);
     }
 
     public List<String> getIncludes() {
         return includes;
+    }
+
+    @Override
+    public boolean signatureEquals(ElementHandle that) {
+        return that instanceof MakefileInclude
+                && that.getKind() == this.getKind()
+                && that.getName().equals(this.getName());
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder("INCLUDE"); // NOI18N
+        for (String file : includes) {
+            buf.append(' ').append(file);
+        }
+        return buf.toString();
     }
 }

@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.LinkerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.LibrariesNodeProp;
@@ -330,10 +330,10 @@ public class LinkerConfiguration implements AllOptionsProvider {
         if (compilerSet != null) {
             linker = compilerSet == null ? null : compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker();
             if (conf.hasCPPFiles(configurationDescriptor)) {
-                BasicCompiler ccCompiler = (BasicCompiler) compilerSet.getTool(ToolKind.CCCompiler);
+                BasicCompiler ccCompiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
                 linkDriver = ccCompiler.getName();
             } else {
-                BasicCompiler cCompiler = (BasicCompiler) compilerSet.getTool(ToolKind.CCompiler);
+                BasicCompiler cCompiler = (BasicCompiler) compilerSet.getTool(PredefinedToolKind.CCompiler);
                 linkDriver = cCompiler.getName();
             }
         }

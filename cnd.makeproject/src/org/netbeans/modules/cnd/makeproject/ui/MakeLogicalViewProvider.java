@@ -73,7 +73,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -1819,12 +1819,12 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             //Image original = Utilities.loadImage("org/openide/loaders/instanceObject.gif"); // NOI18N
             //Image original = Utilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"); // NOI18N
             Image original;
-            ToolKind tool = item.getDefaultTool();
-            if (tool == ToolKind.CCompiler) {
+            PredefinedToolKind tool = item.getDefaultTool();
+            if (tool == PredefinedToolKind.CCompiler) {
                 original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/CSrcIcon.gif"); // NOI18N
-            } else if (tool == ToolKind.CCCompiler) {
+            } else if (tool == PredefinedToolKind.CCCompiler) {
                 original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"); // NOI18N
-            } else if (tool == ToolKind.FortranCompiler) {
+            } else if (tool == PredefinedToolKind.FortranCompiler) {
                 original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/FortranSrcIcon.gif"); // NOI18N
             } else {
                 original = ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/unknown.gif"); // NOI18N

@@ -36,51 +36,29 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makefile.navigator;
 
-import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.makefile.parser.MakefileModel;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
+package org.netbeans.modules.cnd.toolchain.ui.options;
+
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Alexey Vladykin
+ * @author Alexander Simon
  */
-public final class NavigatorUpdaterTask extends ParserResultTask<MakefileModel> {
-
-    private final AtomicReference<MakefileNavigatorPanelUI> navigatorPanelRef;
-
-    public NavigatorUpdaterTask(AtomicReference<MakefileNavigatorPanelUI> navigatorPanelRef) {
-        this.navigatorPanelRef = navigatorPanelRef;
+public class ToolsUtils {
+    private ToolsUtils() {
     }
 
-    @Override
-    public void run(final MakefileModel result, SchedulerEvent event) {
-        final MakefileNavigatorPanelUI navigatorPanel = navigatorPanelRef.get();
-        if (navigatorPanel != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    navigatorPanel.setModel(result);
-                }
-            });
+    //TODO: we should be ensured already....check
+    public static void ensureHostSetup(ExecutionEnvironment env) {
+        if (env != null) {
+            ServerList.get(env); // this will ensure the remote host is setup
         }
     }
-
-    @Override
-    public int getPriority() {
-        return Integer.MAX_VALUE;
-    }
-
-    @Override
-    public Class<? extends Scheduler> getSchedulerClass() {
-        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
-    }
-
-    @Override
-    public void cancel() {
-        //this task is too short to be cancelled
+    public static boolean isDevHostValid(ExecutionEnvironment env) {
+        ServerRecord record = ServerList.get(env);
+        return record != null && record.isOnline();
     }
 }

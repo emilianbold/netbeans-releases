@@ -43,14 +43,14 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import org.netbeans.modules.cnd.toolchain.api.Tool;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.MakeDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public class GNUMaketool extends Tool {
     
     private GNUMaketool(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
-        super(env, flavor, ToolKind.MakeTool, name, displayName, path); // NOI18N
+        super(env, flavor, PredefinedToolKind.MakeTool, name, displayName, path); // NOI18N
     }
     
     @Override

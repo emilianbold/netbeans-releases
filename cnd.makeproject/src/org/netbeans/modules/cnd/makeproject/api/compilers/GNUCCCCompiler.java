@@ -42,7 +42,7 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import java.io.BufferedReader;
 import java.io.IOException;
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
  */
 public abstract class GNUCCCCompiler extends CCCCompiler {
 
-    public GNUCCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+    public GNUCCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
     }
 

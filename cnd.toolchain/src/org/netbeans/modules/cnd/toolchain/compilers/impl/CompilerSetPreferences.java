@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerProvider;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Exceptions;
@@ -176,7 +176,7 @@ public final class CompilerSetPreferences {
                 if (toolFlavorName != null) {
                     toolFlavor = CompilerFlavorImpl.toFlavor(toolFlavorName, pform);
                 }
-                Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(env, toolFlavor, ToolKind.getTool(toolKind), toolName, toolDisplayName, toolPath);
+                Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(env, toolFlavor, PredefinedToolKind.getTool(toolKind), toolName, toolDisplayName, toolPath);
                 cs.addTool(tool);
             }
             css.add(cs);
@@ -231,7 +231,7 @@ public final class CompilerSetPreferences {
                     toolFlavor = CompilerFlavorImpl.toFlavor(toolFlavorName, PlatformTypes.getDefaultPlatform());
                 }
                 Tool tool = CompilerSetPreferences.getCompilerProvider().createCompiler(ExecutionEnvironmentFactory.getLocal(),
-                        toolFlavor, ToolKind.getTool(toolKind), toolName, toolDisplayName, toolPath); //NOI18N
+                        toolFlavor, PredefinedToolKind.getTool(toolKind), toolName, toolDisplayName, toolPath); //NOI18N
                 cs.addTool(tool);
             }
             CompilerSetManagerImpl.completeCompilerSet(ExecutionEnvironmentFactory.getLocal(), cs, css);

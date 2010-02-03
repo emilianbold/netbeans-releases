@@ -36,43 +36,41 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makefile.navigator;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.concurrent.atomic.AtomicReference;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
+package org.netbeans.modules.cnd.makefile.model;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
  * @author Alexey Vladykin
  */
-public final class NavigatorUpdaterTaskFactory extends TaskFactory {
+public final class MakefileUtils {
 
-    private static NavigatorUpdaterTaskFactory instance;
+    private MakefileUtils() {}
 
-    public static synchronized NavigatorUpdaterTaskFactory getInstance() {
-        if (instance == null) {
-            instance = new NavigatorUpdaterTaskFactory();
-        }
-        return instance;
+    private static final Set<String> PREFERRED_TARGETS = new HashSet<String>(Arrays.asList(
+            // see http://www.gnu.org/prep/standards/html_node/Standard-Targets.html
+            "all", // NOI18N
+            "install", // NOI18N
+            "uninstall", // NOI18N
+            "clean", // NOI18N
+            "distclean", // NOI18N
+            "dist", // NOI18N
+            "check", // NOI18N
+
+            // targets written by CND
+            "build", // NOI18N
+            "clobber", // NOI18N
+            "help")); // NOI18N
+
+    public static boolean isPreferredTarget(String target) {
+        return PREFERRED_TARGETS.contains(target);
     }
 
-
-    private final AtomicReference<MakefileNavigatorPanelUI> navigatorPanelRef;
-
-    public NavigatorUpdaterTaskFactory() {
-        navigatorPanelRef = new AtomicReference<MakefileNavigatorPanelUI>();
-    }
-
-    public void setNavigatorPanel(MakefileNavigatorPanelUI navigatorPanel) {
-        navigatorPanelRef.set(navigatorPanel);
-    }
-
-    @Override
-    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        return Collections.singletonList(new NavigatorUpdaterTask(navigatorPanelRef));
+    public static boolean isRunnableTarget(String target) {
+        return 0 < target.length() && target.charAt(0) != '.' && !target.contains("%"); // NOI18N
     }
 }

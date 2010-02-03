@@ -36,62 +36,50 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makefile;
 
-package org.netbeans.modules.cnd.makefile.model;
-
-import org.openide.filesystems.FileObject;
-import org.openide.util.Parameters;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
+import org.netbeans.modules.cnd.makefile.parser.MakefileParser;
+import org.netbeans.modules.cnd.makefile.parser.MakefileStructureScanner;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  * @author Alexey Vladykin
  */
-public abstract class MakefileElement {
+@LanguageRegistration(mimeType = "text/x-make", useCustomEditorKit = true)
+public class MakefileLanguageConfig extends DefaultLanguageConfig {
 
-    public static enum Kind {
-        RULE,
-        ASSIGNMENT,
-        INCLUDE
+    @Override
+    public String getDisplayName() {
+        return "Makefile"; // NOI18N
     }
 
-    private final Kind kind;
-    private final FileObject file;
-    private final int startOffset;
-    private final int endOffset;
-
-    protected MakefileElement(Kind kind, FileObject file, int startOffset, int endOffset) {
-        Parameters.notNull("kind", kind);
-        Parameters.notNull("file", file);
-        this.kind = kind;
-        this.file = file;
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
+    @Override
+    public String getLineCommentPrefix() {
+        return "#"; // NOI18N
     }
 
-    /**
-     * @return element kind
-     */
-    public final Kind getKind() {
-        return kind;
+    @Override
+    public Language<MakefileTokenId> getLexerLanguage() {
+        return MakefileTokenId.language();
     }
 
-    /**
-     * @return file containing this element
-     */
-    public final FileObject getContainingFile() {
-        return file;
+    @Override
+    public Parser getParser() {
+        return new MakefileParser();
     }
 
-    /**
-     * @return element start offset in containing file
-     */
-    public final int getStartOffset() {
-        return startOffset;
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
     }
 
-    /**
-     * @return element end offset in containing file
-     */
-    public final int getEndOffset() {
-        return endOffset;
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new MakefileStructureScanner();
     }
 }

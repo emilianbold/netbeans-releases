@@ -37,16 +37,39 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.toolchain.api;
+package org.netbeans.modules.cnd.makefile.parser;
+
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.cnd.makefile.model.AbstractMakefileElement;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.util.Parameters;
 
 /**
- *
- * @author Alexander Simon
+ * @author Alexey Vladykin
  */
-public interface ToolKindBase {
-    int ordinal();
+public class MakefileParseResult extends ParserResult {
 
-    String name();
-    
-    String getDisplayName();
+    private final List<? extends AbstractMakefileElement> elements;
+
+    public MakefileParseResult(Snapshot snapshot, List<? extends AbstractMakefileElement> elements) {
+        super(snapshot);
+        Parameters.notNull("elements", elements);
+        this.elements = Collections.unmodifiableList(elements);
+    }
+
+    public List<? extends AbstractMakefileElement> getElements() {
+        return elements;
+    }
+
+    @Override
+    public List<? extends Error> getDiagnostics() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    protected void invalidate() {
+    }
 }

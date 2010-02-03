@@ -156,6 +156,10 @@ public class CndUtils {
         assertFalse(SwingUtilities.isEventDispatchThread(), "Should not be called from UI thread"); //NOI18N
     }
 
+    public static final void assertUiThread() {
+        assertTrue(SwingUtilities.isEventDispatchThread(), "Should be called only from UI thread"); //NOI18N
+    }
+
     public static void assertNormalized(File file) {
         if (isDebugMode()) {
             File normFile = CndFileUtils.normalizeFile(file);
