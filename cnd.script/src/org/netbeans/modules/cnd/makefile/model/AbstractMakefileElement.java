@@ -36,56 +36,82 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makefile.navigator;
 
-import org.netbeans.spi.navigator.NavigatorPanel;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.cnd.makefile.model;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Parameters;
 
 /**
  * @author Alexey Vladykin
  */
-public class MakefileNavigatorPanel implements NavigatorPanel {
+public abstract class AbstractMakefileElement implements ElementHandle {
 
-    private MakefileNavigatorPanelUI panel;
+    private final ElementKind kind;
+    private final String name;
+    private final FileObject file;
+    private final int startOffset;
+    private final int endOffset;
 
-    public MakefileNavigatorPanel() {
+    protected AbstractMakefileElement(ElementKind kind, String name, FileObject file, int startOffset, int endOffset) {
+        Parameters.notNull("kind", kind);
+        Parameters.notNull("file", file);
+        this.kind = kind;
+        this.name = name;
+        this.file = file;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
     }
 
     @Override
-    public String getDisplayName() {
-        return getMessage("navigator.title"); // NOI18N
+    public final String getMimeType() {
+        return MIMENames.MAKEFILE_MIME_TYPE;
     }
 
     @Override
-    public String getDisplayHint() {
-        return getMessage("navigator.hint"); // NOI18N
+    public final ElementKind getKind() {
+        return kind;
     }
 
     @Override
-    public MakefileNavigatorPanelUI getComponent() {
-        if (panel == null) {
-            panel = new MakefileNavigatorPanelUI();
+    public final String getName() {
+        return name;
+    }
+
+    @Override
+    public final Set<Modifier> getModifiers() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public final String getIn() {
+        return null; // ???
+    }
+
+    @Override
+    public final FileObject getFileObject() {
+        return file;
+    }
+
+    @Override
+    public final OffsetRange getOffsetRange(ParserResult result) {
+        return new OffsetRange(startOffset, endOffset);
+    }
+
+    protected static String first(Collection<String> items) {
+        if (items.isEmpty()) {
+            return ""; // NOI18N
+        } else {
+            return items.iterator().next();
         }
-        return panel;
-    }
-
-    @Override
-    public void panelActivated(Lookup context) {
-        NavigatorUpdaterTaskFactory.getInstance().setNavigatorPanel(getComponent());
-    }
-
-    @Override
-    public void panelDeactivated() {
-        NavigatorUpdaterTaskFactory.getInstance().setNavigatorPanel(null);
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return null;
-    }
-
-    private static String getMessage(String key) {
-        return NbBundle.getMessage(MakefileNavigatorPanel.class, key);
     }
 }

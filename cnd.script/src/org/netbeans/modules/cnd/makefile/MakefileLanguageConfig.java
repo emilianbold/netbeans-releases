@@ -36,43 +36,50 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makefile.navigator;
+package org.netbeans.modules.cnd.makefile;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.concurrent.atomic.AtomicReference;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
+import org.netbeans.modules.cnd.makefile.parser.MakefileParser;
+import org.netbeans.modules.cnd.makefile.parser.MakefileStructureScanner;
+import org.netbeans.modules.csl.api.StructureScanner;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.parsing.spi.Parser;
 
 /**
- *
  * @author Alexey Vladykin
  */
-public final class NavigatorUpdaterTaskFactory extends TaskFactory {
+@LanguageRegistration(mimeType = "text/x-make", useCustomEditorKit = true)
+public class MakefileLanguageConfig extends DefaultLanguageConfig {
 
-    private static NavigatorUpdaterTaskFactory instance;
-
-    public static synchronized NavigatorUpdaterTaskFactory getInstance() {
-        if (instance == null) {
-            instance = new NavigatorUpdaterTaskFactory();
-        }
-        return instance;
-    }
-
-
-    private final AtomicReference<MakefileNavigatorPanelUI> navigatorPanelRef;
-
-    public NavigatorUpdaterTaskFactory() {
-        navigatorPanelRef = new AtomicReference<MakefileNavigatorPanelUI>();
-    }
-
-    public void setNavigatorPanel(MakefileNavigatorPanelUI navigatorPanel) {
-        navigatorPanelRef.set(navigatorPanel);
+    @Override
+    public String getDisplayName() {
+        return "Makefile"; // NOI18N
     }
 
     @Override
-    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-        return Collections.singletonList(new NavigatorUpdaterTask(navigatorPanelRef));
+    public String getLineCommentPrefix() {
+        return "#"; // NOI18N
+    }
+
+    @Override
+    public Language<MakefileTokenId> getLexerLanguage() {
+        return MakefileTokenId.language();
+    }
+
+    @Override
+    public Parser getParser() {
+        return new MakefileParser();
+    }
+
+    @Override
+    public boolean hasStructureScanner() {
+        return true;
+    }
+
+    @Override
+    public StructureScanner getStructureScanner() {
+        return new MakefileStructureScanner();
     }
 }
