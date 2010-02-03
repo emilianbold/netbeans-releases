@@ -421,12 +421,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     }// </editor-fold>//GEN-END:initComponents
 
     private void descriptionHyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_descriptionHyperlinkUpdate
-        if (EventType.ACTIVATED == evt.getEventType() && evt.getURL() != null) {
-            HtmlBrowser.URLDisplayer displayer = HtmlBrowser.URLDisplayer.getDefault();
-            if (displayer != null) {
-                displayer.showURL(evt.getURL());
-            }
-        }
+        if (EventType.ACTIVATED == evt.getEventType() && evt.getURL() != null)
+            HtmlBrowser.URLDisplayer.getDefault().showURL(evt.getURL());
     }//GEN-LAST:event_descriptionHyperlinkUpdate
     
     private URL getDescription (DataObject dobj) {
