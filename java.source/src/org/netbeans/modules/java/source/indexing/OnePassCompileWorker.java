@@ -41,6 +41,7 @@ package org.netbeans.modules.java.source.indexing;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.util.CancelAbort;
 import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.CouplingAbort;
@@ -56,6 +57,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -95,6 +99,7 @@ final class OnePassCompileWorker extends CompileWorker {
         final LMListener mem = new LMListener();
         final DiagnosticListenerImpl dc = new DiagnosticListenerImpl();
         LinkedList<Pair<CompilationUnitTree, CompileTuple>> units = new LinkedList<Pair<CompilationUnitTree, CompileTuple>>();
+        HashMap<JavaFileObject, Pair<CompilationUnitTree, CompileTuple>> jfo2units = new HashMap<JavaFileObject, Pair<CompilationUnitTree, CompileTuple>>();
         JavacTaskImpl jt = null;
 
         for (CompileTuple tuple : files) {
@@ -105,6 +110,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 if (mem.isLowMemory()) {
                     jt = null;
                     units = null;
+                    jfo2units = null;
                     dc.cleanDiagnostics();
                     System.gc();
                 }
@@ -116,8 +122,11 @@ final class OnePassCompileWorker extends CompileWorker {
                     }, APTUtils.get(context.getRoot()));
                 }
                 for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
-                    if (units != null)
-                        units.add(Pair.<CompilationUnitTree, CompileTuple>of(cut, tuple));
+                    if (units != null) {
+                        Pair<CompilationUnitTree, CompileTuple> unit = Pair.<CompilationUnitTree, CompileTuple>of(cut, tuple);
+                        units.add(unit);
+                        jfo2units.put(tuple.jfo, unit);
+                    }
                     computeFQNs(file2FQNs, cut, tuple);
                 }
                 Log.instance(jt.getContext()).nerrors = 0;
@@ -145,6 +154,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 else {
                     jt = null;
                     units = null;
+                    jfo2units = null;
                     dc.cleanDiagnostics();
                     System.gc();
                 }
@@ -157,8 +167,15 @@ final class OnePassCompileWorker extends CompileWorker {
 
         CompileTuple active = null;
         try {
-            for (Pair<CompilationUnitTree, CompileTuple> unit : units) {
+            while(!units.isEmpty()) {
+                if (context.isCancelled()) {
+                    return null;
+                }
+                Pair<CompilationUnitTree, CompileTuple> unit = units.removeFirst();
                 active = unit.second;
+                if (finished.contains(active.indexable)) {
+                    continue;
+                }
                 if (mem.isLowMemory()) {
                     units = null;
                     System.gc();
@@ -168,10 +185,31 @@ final class OnePassCompileWorker extends CompileWorker {
                 fileManager.handleOption("apt-origin", Collections.singletonList(active.indexable.getURL().toString()).iterator()); //NOI18N
                 try {
                     types = jt.enterTrees(Collections.singletonList(unit.first));
+                    boolean yield = false;
+                    for (TypeElement te : types) {
+                        ClassSymbol cSym = (ClassSymbol)te;
+                        TypeMirror sup = null;
+                        while((sup = cSym.getSuperclass()) != null && sup.getKind() == TypeKind.DECLARED) {
+                            cSym = (ClassSymbol) ((DeclaredType) sup).asElement();
+                            Pair<CompilationUnitTree, CompileTuple> u = jfo2units.get(cSym.sourcefile);
+                            if (u != null && !finished.contains(u.second.indexable)) {
+                                if (!yield) {
+                                    units.addFirst(unit);
+                                }
+                                units.addFirst(u);
+                                yield = true;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    if (yield) {
+                        continue;
+                    }
                 } finally {
                     fileManager.handleOption("apt-origin", Collections.singletonList("").iterator()); //NOI18N
-                    JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
                 }
+                JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), aptGenerated);
                 if (mem.isLowMemory()) {
                     units = null;
                     System.gc();

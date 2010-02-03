@@ -436,7 +436,7 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     public static void verifySourceLevel(URL root, String sourceLevel) throws IOException {
-        if (JavaIndex.ensureAttributeValue(root, SOURCE_LEVEL_ROOT, sourceLevel)) {
+        if (!sourceLevel.equals(JavaIndex.getAttribute(root, SOURCE_LEVEL_ROOT, sourceLevel))) {
             JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
             IndexingManager.getDefault().refreshIndex(root, null);
         }
