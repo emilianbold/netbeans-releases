@@ -44,6 +44,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.event.FocusEvent;
@@ -65,6 +66,9 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -145,6 +149,66 @@ public class OverridesPopup extends JPanel implements FocusListener {
         }
     }
 
+    private static class RenderComponent extends JLabel {
+
+        private final Item item;
+        private final boolean selected;
+        private final boolean hasFocus;
+        private final JList list;
+
+        public RenderComponent(Item item, boolean selected, boolean hasFocus, JList list) {
+            super(item.getDisplayName(), item.getIcon(), SwingConstants.LEFT);
+            this.item = item;
+            this.selected = selected;
+            this.list = list;
+            this.hasFocus = hasFocus;
+            setOpaque(true);
+            if (selected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            setEnabled(true);
+            setFont(list.getFont());
+            Border border = null;
+            border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
+            if (hasFocus) {
+                if (selected) {
+                    border = UIManager.getBorder("List.focusSelectedCellHighlightBorder");
+                }
+                if (border == null) {
+                    border = UIManager.getBorder("List.focusCellHighlightBorder");
+                }
+            } else {
+                border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
+            }
+            Border outer;
+            if (item.kind == Kind.MAIN) {
+                outer = BorderFactory.createEmptyBorder(0, 6, 3, 6);
+            } else {
+                outer = BorderFactory.createEmptyBorder(0, 6, 0, 6);
+            }
+            border = BorderFactory.createCompoundBorder(border, outer);
+            setBorder(border);
+        }
+
+        public @Override void paintComponent(Graphics g) {
+            if (selected) {
+                super.paintComponent(g);
+            } else {
+                super.paintComponent(g);
+            }
+            if (item.kind == Kind.MAIN) {
+                g.setColor(Color.gray);
+                int h = getHeight();
+                h -= 2;
+                g.drawLine(0, h, getWidth(), h);
+            }
+        }
+    }
+
     private static class RendererImpl extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(
@@ -153,15 +217,12 @@ public class OverridesPopup extends JPanel implements FocusListener {
                 int index,
                 boolean isSelected,
                 boolean cellHasFocus) {
-            Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
             if (value instanceof Item) {
-                Item element = (Item) value;
-                setIcon(element.getIcon());
-                setText(element.getDisplayName());
-                    }
-
-            return c;
+                return new RenderComponent((Item) value, isSelected, cellHasFocus, list);
+            } else {
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
         }
     }
 
@@ -195,7 +256,7 @@ public class OverridesPopup extends JPanel implements FocusListener {
         add(title, BorderLayout.NORTH);
 
         list = new JList();
-        list.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+        //list.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
         scrollPane = new JScrollPane(list);
         add(scrollPane, BorderLayout.CENTER);
 
