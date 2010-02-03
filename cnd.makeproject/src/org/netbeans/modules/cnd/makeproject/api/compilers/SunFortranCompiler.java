@@ -42,14 +42,14 @@
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public class SunFortranCompiler extends BasicCompiler {
     
     /** Creates a new instance of SunCCompiler */
-    private SunFortranCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+    private SunFortranCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
     }
     
@@ -66,7 +66,7 @@ public class SunFortranCompiler extends BasicCompiler {
         return ""; // NOI18N
     }
 
-    public static SunFortranCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+    public static SunFortranCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         return new SunFortranCompiler(env, flavor, kind, name, displayName, path);
     }
 

@@ -48,7 +48,7 @@ import java.util.ArrayList;
 import org.netbeans.modules.cnd.toolchain.ui.api.BuildToolsAction;
 
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.openide.nodes.Sheet;
@@ -157,7 +157,7 @@ public final class GdbProfile implements ConfigurationAuxObject {
             cs = CompilerSetFactory.getCompilerSet(conf.getDevelopmentHost().getExecutionEnvironment(), flavor, csname);
             csconf.setValid();
         }
-        Tool debuggerTool = cs.getTool(ToolKind.DebuggerTool);
+        Tool debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
         ExecutionEnvironment execEnv = null;
         if (debuggerTool != null) {
             String gdbPath = debuggerTool.getPath();
@@ -205,7 +205,7 @@ public final class GdbProfile implements ConfigurationAuxObject {
 //                }
                 conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
                 cs = CompilerSetManager.get(conf.getDevelopmentHost().getExecutionEnvironment()).getCompilerSet(model.getSelectedCompilerSetName());
-                return cs.getTool(ToolKind.DebuggerTool).getPath();
+                return cs.getTool(PredefinedToolKind.DebuggerTool).getPath();
             }
         }
         return null;

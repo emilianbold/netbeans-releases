@@ -82,7 +82,7 @@ import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ConfSelectorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -782,24 +782,24 @@ public class MakeActionProvider implements ActionProvider {
                     if (itemConfiguration.getExcluded().getValue()) {
                         return false;
                     }
-                    if (itemConfiguration.getTool() == ToolKind.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
+                    if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
                         return false;
                     }
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
                     String outputFile = null;
-                    if (itemConfiguration.getTool() == ToolKind.CCompiler) {
+                    if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
                         CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
                         outputFile = cCompilerConfiguration.getOutputFile(item, conf, true);
-                    } else if (itemConfiguration.getTool() == ToolKind.CCCompiler) {
+                    } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
                         CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
                         outputFile = ccCompilerConfiguration.getOutputFile(item, conf, true);
-                    } else if (itemConfiguration.getTool() == ToolKind.FortranCompiler) {
+                    } else if (itemConfiguration.getTool() == PredefinedToolKind.FortranCompiler) {
                         FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
                         outputFile = fortranCompilerConfiguration.getOutputFile(item, conf, true);
-                    } else if (itemConfiguration.getTool() == ToolKind.Assembler) {
+                    } else if (itemConfiguration.getTool() == PredefinedToolKind.Assembler) {
                         AssemblerConfiguration assemblerConfiguration = itemConfiguration.getAssemblerConfiguration();
                         outputFile = assemblerConfiguration.getOutputFile(item, conf, true);
-                    } else if (itemConfiguration.getTool() == ToolKind.CustomTool) {
+                    } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
                         CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                         outputFile = customToolConfiguration.getOutputs().getValue();
                     }
@@ -885,7 +885,7 @@ public class MakeActionProvider implements ActionProvider {
                 Item item = getProjectDescriptor().getProjectItems()[i];
                 ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);
                 if (!itemConfiguration.getExcluded().getValue() &&
-                        (itemConfiguration.getTool() != ToolKind.CustomTool || itemConfiguration.getCustomToolConfiguration().getCommandLine().getValue().length() > 0)) {
+                        (itemConfiguration.getTool() != PredefinedToolKind.CustomTool || itemConfiguration.getCustomToolConfiguration().getCommandLine().getValue().length() > 0)) {
                     ret = true;
                     break;
                 }
@@ -985,7 +985,7 @@ public class MakeActionProvider implements ActionProvider {
                 if (itemConfiguration.getExcluded().getValue()) {
                     return false;
                 }
-                if (itemConfiguration.getTool() == ToolKind.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
+                if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
                     return false;
                 }
                 if (conf.isMakefileConfiguration()) {
@@ -1027,7 +1027,7 @@ public class MakeActionProvider implements ActionProvider {
         String cmd = null;
         CompilerSet cs = conf.getCompilerSet().getCompilerSet();
         if (cs != null) {
-            cmd = cs.getTool(ToolKind.MakeTool).getPath();
+            cmd = cs.getTool(PredefinedToolKind.MakeTool).getPath();
         } else {
             assert false;
             cmd = "make"; // NOI18N
@@ -1113,12 +1113,12 @@ public class MakeActionProvider implements ActionProvider {
             csconf.setValid();
         }
 
-        Tool cTool = cs.getTool(ToolKind.CCompiler);
-        Tool cppTool = cs.getTool(ToolKind.CCCompiler);
-        Tool fTool = cs.getTool(ToolKind.FortranCompiler);
-        Tool asTool = cs.getTool(ToolKind.Assembler);
-        Tool makeTool = cs.getTool(ToolKind.MakeTool);
-        Tool qmakeTool = cs.getTool(ToolKind.QMakeTool);
+        Tool cTool = cs.getTool(PredefinedToolKind.CCompiler);
+        Tool cppTool = cs.getTool(PredefinedToolKind.CCCompiler);
+        Tool fTool = cs.getTool(PredefinedToolKind.FortranCompiler);
+        Tool asTool = cs.getTool(PredefinedToolKind.Assembler);
+        Tool makeTool = cs.getTool(PredefinedToolKind.MakeTool);
+        Tool qmakeTool = cs.getTool(PredefinedToolKind.QMakeTool);
 
         if (cancelled.get()) {
             return false;

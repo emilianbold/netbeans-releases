@@ -46,7 +46,7 @@ import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.xml.sax.Attributes;
 
 public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
@@ -113,13 +113,13 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
 //            xes.element(ITEM_EXCLUDED_ELEMENT, "" + item.getExcluded().getValue()); // NOI18N
 //        }
 //        xes.element(ITEM_TOOL_ELEMENT, "" + item.getTool()); // NOI18N
-        if (item.getTool() == ToolKind.CCompiler) {
+        if (item.getTool() == PredefinedToolKind.CCompiler) {
             CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, item.getCCompilerConfiguration());
-        } else if (item.getTool() == ToolKind.CCCompiler) {
+        } else if (item.getTool() == PredefinedToolKind.CCCompiler) {
             CommonConfigurationXMLCodec.writeCCCompilerConfiguration(xes, item.getCCCompilerConfiguration());
-        } else if (item.getTool() == ToolKind.FortranCompiler) {
+        } else if (item.getTool() == PredefinedToolKind.FortranCompiler) {
             CommonConfigurationXMLCodec.writeFortranCompilerConfiguration(xes, item.getFortranCompilerConfiguration());
-        } else if (item.getTool() == ToolKind.CustomTool) {
+        } else if (item.getTool() == PredefinedToolKind.CustomTool) {
             CommonConfigurationXMLCodec.writeCustomToolConfiguration(xes, item.getCustomToolConfiguration());
         }
         xes.elementClose(ITEM_ELEMENT);

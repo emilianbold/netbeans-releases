@@ -49,7 +49,7 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger.State;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.CndBreakpoint;
@@ -110,7 +110,7 @@ public abstract class GdbTestCase extends CndBaseTestCase implements ContextProv
         project_dir = new File(testapp_dir, testproj).getAbsolutePath();
         conf = new TestConfiguration(args);
         pae = new ProjectActionEvent(project, ProjectActionEvent.Type.DEBUG_STEPINTO, testapp, executable, conf, null, false);
-        Tool tool = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets().get(0).getTool(ToolKind.DebuggerTool);
+        Tool tool = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal()).getCompilerSets().get(0).getTool(PredefinedToolKind.DebuggerTool);
         ToolchainProxy.setToolPath(tool, "/opt/csw/bin/gdb");
         dm.startDebugging(DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
             new Object[]{pae}));

@@ -76,6 +76,8 @@ public abstract class CompilerSetManager {
 
     public abstract int getPlatform();
 
+    public abstract void setDefault(CompilerSet newDefault);
+
     /**
      * CAUTION: this is a slow method. It should NOT be called from the EDT thread
      */
@@ -88,8 +90,6 @@ public abstract class CompilerSetManager {
     public abstract boolean isPending();
 
     public abstract boolean isUninitialized();
-
-    public abstract void setDefault(CompilerSet newDefault);
 
     protected CompilerSetManager() {
         if (!getClass().equals(CompilerSetManagerImpl.class)) {

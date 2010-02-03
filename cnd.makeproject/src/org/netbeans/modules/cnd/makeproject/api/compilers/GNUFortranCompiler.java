@@ -42,13 +42,13 @@
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
-import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 public class GNUFortranCompiler extends BasicCompiler {
     /** Creates a new instance of GNUCCompiler */
-    private GNUFortranCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+    private GNUFortranCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path); // NOI18N
     }
     
@@ -57,7 +57,7 @@ public class GNUFortranCompiler extends BasicCompiler {
         return new GNUFortranCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
     }
 
-    public static GNUFortranCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+    public static GNUFortranCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         return new GNUFortranCompiler(env, flavor, kind, name, displayName, path);
     }
     

@@ -48,7 +48,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -146,7 +146,7 @@ public abstract class QtInfoProvider {
         private static String getQmakePath(MakeConfiguration conf) {
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             if (compilerSet != null) {
-                Tool qmakeTool = compilerSet.getTool(ToolKind.QMakeTool);
+                Tool qmakeTool = compilerSet.getTool(PredefinedToolKind.QMakeTool);
                 if (qmakeTool != null && 0 < qmakeTool.getPath().length()) {
                     return qmakeTool.getPath();
                 }

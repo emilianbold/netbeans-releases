@@ -43,7 +43,7 @@ package org.netbeans.modules.cnd.toolchain.spi;
 
 import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.Tool;
-import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
 import org.netbeans.modules.cnd.toolchain.compilers.impl.APIAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
@@ -55,7 +55,7 @@ import org.openide.util.Lookup;
 public abstract class CompilerProvider {
     private static final CompilerProvider INSTANCE = new Default();
     
-    public abstract Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path);
+    public abstract Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path);
 
     protected CompilerProvider() {
     }
@@ -79,7 +79,7 @@ public abstract class CompilerProvider {
         }
 
         @Override
-        public Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
+        public Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
             for (CompilerProvider resolver : res.allInstances()) {
                 Tool out = resolver.createCompiler(env, flavor, kind, name, displayName, path);
                 if (out != null) {

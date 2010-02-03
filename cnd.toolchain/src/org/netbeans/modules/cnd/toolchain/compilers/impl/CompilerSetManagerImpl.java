@@ -75,8 +75,8 @@ import org.netbeans.modules.cnd.toolchain.spi.CompilerSetManagerEvents;
 import org.netbeans.modules.cnd.toolchain.spi.CompilerSetProvider;
 import org.netbeans.modules.cnd.toolchain.api.CompilerSetUtils;
 import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.toolchain.api.ToolKind;
-import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.cnd.toolchain.spi.ToolChainPathProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
@@ -501,41 +501,41 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             if (i > 0) {
                 name = name.substring(i+1);
             }
-            ToolKind kind = ToolKind.UnknownTool;
+            PredefinedToolKind kind = PredefinedToolKind.UnknownTool;
             if (tool.equals("c")){ // NOI18N
-                kind = ToolKind.CCompiler;
+                kind = PredefinedToolKind.CCompiler;
             } else if (tool.equals("cpp")){ // NOI18N
-                kind = ToolKind.CCCompiler;
+                kind = PredefinedToolKind.CCCompiler;
             } else if (tool.equals("fortran")){ // NOI18N
-                kind = ToolKind.FortranCompiler;
+                kind = PredefinedToolKind.FortranCompiler;
             } else if (tool.equals("assembler")){ // NOI18N
-                kind = ToolKind.Assembler;
+                kind = PredefinedToolKind.Assembler;
             } else if (tool.equals("make")){ // NOI18N
-                kind = ToolKind.MakeTool;
+                kind = PredefinedToolKind.MakeTool;
             } else if (tool.equals("debugger")){ // NOI18N
-                kind = ToolKind.DebuggerTool;
+                kind = PredefinedToolKind.DebuggerTool;
             } else if (tool.equals("cmake")){ // NOI18N
-                kind = ToolKind.CMakeTool;
+                kind = PredefinedToolKind.CMakeTool;
             } else if (tool.equals("qmake")){ // NOI18N
-                kind = ToolKind.QMakeTool;
+                kind = PredefinedToolKind.QMakeTool;
             } else if (tool.equals("c(PATH)")){ // NOI18N
-                cs.addPathCandidate(ToolKind.CCompiler, p);
+                cs.addPathCandidate(PredefinedToolKind.CCompiler, p);
             } else if (tool.equals("cpp(PATH)")){ // NOI18N
-                cs.addPathCandidate(ToolKind.CCCompiler, p);
+                cs.addPathCandidate(PredefinedToolKind.CCCompiler, p);
             } else if (tool.equals("fortran(PATH)")){ // NOI18N
-                cs.addPathCandidate(ToolKind.FortranCompiler, p);
+                cs.addPathCandidate(PredefinedToolKind.FortranCompiler, p);
             } else if (tool.equals("assembler(PATH)")){ // NOI18N
-                cs.addPathCandidate(ToolKind.Assembler, p);
+                cs.addPathCandidate(PredefinedToolKind.Assembler, p);
             } else if (tool.equals("make(PATH)")){ // NOI18N
-                cs.addPathCandidate(ToolKind.MakeTool, p);
+                cs.addPathCandidate(PredefinedToolKind.MakeTool, p);
             } else if (tool.equals("debugger(PATH)")){ // NOI18N
-                cs.addPathCandidate(ToolKind.DebuggerTool, p);
+                cs.addPathCandidate(PredefinedToolKind.DebuggerTool, p);
             } else if (tool.equals("cmake(PATH)")){ // NOI18N
-                cs.addPathCandidate(ToolKind.CMakeTool, p);
+                cs.addPathCandidate(PredefinedToolKind.CMakeTool, p);
             } else if (tool.equals("qmake(PATH)")){ // NOI18N
-                cs.addPathCandidate(ToolKind.QMakeTool, p);
+                cs.addPathCandidate(PredefinedToolKind.QMakeTool, p);
             }
-            if (kind != ToolKind.UnknownTool) {
+            if (kind != PredefinedToolKind.UnknownTool) {
                 cs.addTool(executionEnvironment, name, p, kind);
             }
         }
@@ -664,38 +664,38 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         if (d != null && ToolchainManagerImpl.getImpl().isMyFolder(path, d, getPlatform(), known)) {
             CompilerDescriptor compiler = d.getC();
             if (compiler != null && !compiler.skipSearch()) {
-                initCompiler(ToolKind.CCompiler, path, cs, compiler.getNames());
+                initCompiler(PredefinedToolKind.CCompiler, path, cs, compiler.getNames());
             }
             compiler = d.getCpp();
             if (compiler != null && !compiler.skipSearch()) {
-                initCompiler(ToolKind.CCCompiler, path, cs, compiler.getNames());
+                initCompiler(PredefinedToolKind.CCCompiler, path, cs, compiler.getNames());
             }
             compiler = d.getFortran();
             if (compiler != null && !compiler.skipSearch()) {
-                initCompiler(ToolKind.FortranCompiler, path, cs, compiler.getNames());
+                initCompiler(PredefinedToolKind.FortranCompiler, path, cs, compiler.getNames());
             }
             compiler = d.getAssembler();
             if (compiler != null && !compiler.skipSearch()) {
-                initCompiler(ToolKind.Assembler, path, cs, compiler.getNames());
+                initCompiler(PredefinedToolKind.Assembler, path, cs, compiler.getNames());
             }
             if (d.getMake() != null && !d.getMake().skipSearch()){
-                initCompiler(ToolKind.MakeTool, path, cs, d.getMake().getNames());
+                initCompiler(PredefinedToolKind.MakeTool, path, cs, d.getMake().getNames());
             }
             if (d.getDebugger() != null && !d.getDebugger().skipSearch()){
-                initCompiler(ToolKind.DebuggerTool, path, cs, d.getDebugger().getNames());
+                initCompiler(PredefinedToolKind.DebuggerTool, path, cs, d.getDebugger().getNames());
             }
             if (d.getQMake() != null && !d.getQMake().skipSearch()){
-                initCompiler(ToolKind.QMakeTool, path, cs, d.getQMake().getNames());
+                initCompiler(PredefinedToolKind.QMakeTool, path, cs, d.getQMake().getNames());
             }
             if (d.getCMake() != null && !d.getCMake().skipSearch()){
-                initCompiler(ToolKind.CMakeTool, path, cs, d.getCMake().getNames());
+                initCompiler(PredefinedToolKind.CMakeTool, path, cs, d.getCMake().getNames());
             }
             return true;
         }
         return false;
     }
 
-    private void initCompiler(ToolKindBase kind, String path, CompilerSetImpl cs, String[] names) {
+    private void initCompiler(ToolKind kind, String path, CompilerSetImpl cs, String[] names) {
         File dir = new File(path);
         if (cs.findTool(kind) != null) {
             // Only one tool of each kind in a cs
@@ -836,7 +836,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         }
     }
 
-    private static Tool autoComplete(ExecutionEnvironment env, CompilerSetImpl cs, List<CompilerSet> sets, ToolDescriptor descriptor, ToolKindBase tool){
+    private static Tool autoComplete(ExecutionEnvironment env, CompilerSetImpl cs, List<CompilerSet> sets, ToolDescriptor descriptor, ToolKind tool){
         if (descriptor != null && !cs.isUrlPointer()) {
             AlternativePath[] paths = descriptor.getAlternativePath();
             if (paths != null && paths.length > 0) {
@@ -958,29 +958,29 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         //    // do not complete empty tool
         //    return;
         //}
-        if (cs.findTool(ToolKind.CCompiler) == null) {
-            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getC(), ToolKind.CCompiler);
+        if (cs.findTool(PredefinedToolKind.CCompiler) == null) {
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getC(), PredefinedToolKind.CCompiler);
         }
-        if (cs.findTool(ToolKind.CCCompiler) == null) {
-            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getCpp(), ToolKind.CCCompiler);
+        if (cs.findTool(PredefinedToolKind.CCCompiler) == null) {
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getCpp(), PredefinedToolKind.CCCompiler);
         }
-        if (cs.findTool(ToolKind.FortranCompiler) == null) {
-            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getFortran(), ToolKind.FortranCompiler);
+        if (cs.findTool(PredefinedToolKind.FortranCompiler) == null) {
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getFortran(), PredefinedToolKind.FortranCompiler);
         }
-        if (cs.findTool(ToolKind.Assembler) == null) {
-            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getAssembler(), ToolKind.Assembler);
+        if (cs.findTool(PredefinedToolKind.Assembler) == null) {
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getAssembler(), PredefinedToolKind.Assembler);
         }
-        if (cs.findTool(ToolKind.MakeTool) == null) {
-            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getMake(), ToolKind.MakeTool);
+        if (cs.findTool(PredefinedToolKind.MakeTool) == null) {
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getMake(), PredefinedToolKind.MakeTool);
         }
-        if (cs.findTool(ToolKind.DebuggerTool) == null) {
-            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getDebugger(), ToolKind.DebuggerTool);
+        if (cs.findTool(PredefinedToolKind.DebuggerTool) == null) {
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getDebugger(), PredefinedToolKind.DebuggerTool);
         }
-        if (cs.findTool(ToolKind.QMakeTool) == null) {
-            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getQMake(), ToolKind.QMakeTool);
+        if (cs.findTool(PredefinedToolKind.QMakeTool) == null) {
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getQMake(), PredefinedToolKind.QMakeTool);
         }
-        if (cs.findTool(ToolKind.CMakeTool) == null) {
-            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getCMake(), ToolKind.CMakeTool);
+        if (cs.findTool(PredefinedToolKind.CMakeTool) == null) {
+            autoComplete(env, cs, sets, cs.getCompilerFlavor().getToolchainDescriptor().getCMake(), PredefinedToolKind.CMakeTool);
         }
     }
 
