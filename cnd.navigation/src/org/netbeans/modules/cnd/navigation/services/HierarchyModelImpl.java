@@ -91,6 +91,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
         }
     }
     
+    @Override
     public Map<CsmClass,Set<CsmClass>> getModel(){
         return myMap;
     }
@@ -185,14 +186,17 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
         }
     }
 
+    @Override
     public Action[] getDefaultActions() {
         return actions;
     }
 
+    @Override
     public Action getCloseWindowAction() {
         return close;
     }
 
+    @Override
     public void setCloseWindowAction(Action close) {
         this.close = close;
     }

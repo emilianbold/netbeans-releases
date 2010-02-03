@@ -85,7 +85,7 @@ public class Mercurial {
     public static final String MERCURIAL_OUTPUT_TAB_TITLE = org.openide.util.NbBundle.getMessage(Mercurial.class, "CTL_Mercurial_DisplayName"); // NOI18N
     public static final String CHANGESET_STR = "changeset:"; // NOI18N
 
-    static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
+    public static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
     static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged"; // NOI18N
     public static final String PROP_CHANGESET_CHANGED = "changesetChanged"; // NOI18N
 

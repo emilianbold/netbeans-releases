@@ -65,7 +65,7 @@ public class HostSetupTest extends RemoteTestBase {
     public void testHostSetup() throws Exception {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         setupHost(execEnv);
-        CompilerSetManager csm = CompilerSetManager.getDefault(execEnv);
+        CompilerSetManager csm = CompilerSetManager.get(execEnv);
         final List<CompilerSet> compilerSets = csm.getCompilerSets();
         dumpCompilerSets(execEnv, compilerSets);
 

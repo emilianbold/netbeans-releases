@@ -82,7 +82,7 @@ public class RemoteServerListUI extends ServerListUIEx {
     protected boolean showServerListDialogImpl(AtomicReference<ExecutionEnvironment> selectedEnv) {
         ToolsCacheManager cacheManager = new ToolsCacheManager();
         for (ServerRecord record : ServerList.getRecords()) {
-            CompilerSetManager csm = CompilerSetManager.getDefault(record.getExecutionEnvironment());
+            CompilerSetManager csm = CompilerSetManager.get(record.getExecutionEnvironment());
             cacheManager.addCompilerSetManager(csm);
         }
         if (showServerListDialog(cacheManager, selectedEnv)) {

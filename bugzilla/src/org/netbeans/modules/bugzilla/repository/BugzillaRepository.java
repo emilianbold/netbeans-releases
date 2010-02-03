@@ -406,6 +406,18 @@ public class BugzillaRepository extends Repository {
         return queries;
     }
 
+    public void setAuthentication(String user, String password, String httpUser, String httpPassword) {
+        String shortLoginEnabled = taskRepository.getProperty(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN);
+        setTaskRepository(
+                name,
+                taskRepository.getUrl(),
+                user != null ? user : "",                                       // NOI18N
+                password != null ? password : "",                               // NOI18N
+                httpUser != null ? httpUser : "",                               // NOI18N
+                httpPassword != null ? httpPassword : "",                       // NOI18N
+                "true".equals(shortLoginEnabled));                              // NOI18N
+    }
+
     protected void setTaskRepository(String name, String url, String user, String password, String httpUser, String httpPassword, boolean shortLoginEnabled) {
         HashMap<String, Object> oldAttributes = createAttributesMap();
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);

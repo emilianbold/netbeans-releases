@@ -39,6 +39,7 @@
 package org.netbeans.modules.css.refactoring;
 
 import java.util.Collection;
+import javax.swing.text.Document;
 import org.netbeans.modules.css.gsf.api.CssParserResult;
 import org.netbeans.modules.css.parser.CssParserTreeConstants;
 import org.netbeans.modules.css.parser.SimpleNode;
@@ -132,6 +133,10 @@ public abstract class CssElementContext {
 	    return SimpleNodeUtil.findDescendant(root, astOffset);
 	}
 
+        public Document getDocument() {
+            return result.getSnapshot().getSource().getDocument(false);
+        }
+
 	public CssParserResult getParserResult() {
 	    return result;
 	}
@@ -157,6 +162,10 @@ public abstract class CssElementContext {
 	    return element;
 	}
 
+        public SimpleNode getSimpleSelectorElement() {
+            return  SimpleNodeUtil.getAncestorByType(getElement(), CssParserTreeConstants.JJTSIMPLESELECTOR);
+        }
+
 	@Override
 	public String getElementName() {
 	    return getElement().image();
@@ -164,7 +173,7 @@ public abstract class CssElementContext {
 
 	@Override
 	public boolean isRefactoringAllowed() {
-	    return null != SimpleNodeUtil.getAncestorByType(getElement(), CssParserTreeConstants.JJTSIMPLESELECTOR);
+	    return null != getSimpleSelectorElement();
 	}
     }
 }

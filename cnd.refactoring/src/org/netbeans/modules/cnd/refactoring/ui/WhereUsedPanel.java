@@ -238,7 +238,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             labelText = getString("DSC_MethodUsages", functionDisplayName, displayClassName); // NOI18N
             CsmVirtualInfoQuery query = CsmVirtualInfoQuery.getDefault();
             if (query.isVirtual(method)) {
-                Collection<CsmMethod> baseMethods = query.getBaseDeclaration(method);
+                Collection<CsmMethod> baseMethods = query.getTopmostBaseDeclarations(method);
                 // use only the first for now
                 baseVirtualMethod = baseMethods.isEmpty() ? null : baseMethods.iterator().next();
                 assert baseVirtualMethod != null : "virtual method must have start virtual declaration";

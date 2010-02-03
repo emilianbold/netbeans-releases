@@ -77,7 +77,7 @@ public class CssProjectSupport {
 	    if (p == null) {
 		return null;
 	    }
-	    ClassPath classPath = ClassPath.getClassPath(p.getProjectDirectory(), ClassPath.SOURCE);
+	    ClassPath classPath = ClassPath.getClassPath(fo, ClassPath.SOURCE);
 	    if (classPath == null) {
 		return null;
 	    }
@@ -86,8 +86,8 @@ public class CssProjectSupport {
 		if (instance == null) {
 		    instance = new CssProjectSupport(p, classPath);
 		    INSTANCIES.put(p, instance);
-		    return instance;
 		}
+                return instance;
 	    }
 	} catch (IOException ex) {
 	    Exceptions.printStackTrace(ex);

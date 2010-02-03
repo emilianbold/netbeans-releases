@@ -254,7 +254,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         if (set != null) {
             list.add(set);
         }
-        CompilerSetManager csm = CompilerSetManager.getDefault(execEnv);
+        CompilerSetManager csm = CompilerSetManager.get(execEnv);
         if (csm != null) {
             set = csm.getDefaultCompilerSet();
             if (set != null && !list.contains(set)) {

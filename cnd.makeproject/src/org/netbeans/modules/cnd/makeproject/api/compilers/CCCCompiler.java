@@ -50,11 +50,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -71,7 +72,7 @@ public abstract class CCCCompiler extends BasicCompiler {
     private volatile Pair compilerDefinitions;
     private static File emptyFile = null;
     
-    protected CCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    protected CCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
     }
 
@@ -280,7 +281,7 @@ public abstract class CCCCompiler extends BasicCompiler {
         int defineIndex = line.indexOf("-D"); // NOI18N
         while (defineIndex >= 0) {
             String token;
-            int spaceIndex = line.indexOf(" ", defineIndex + 1); // NOI18N
+            int spaceIndex = line.indexOf(' ', defineIndex + 1); // NOI18N
             if (spaceIndex > 0) {
                 token = line.substring(defineIndex+2, spaceIndex);
                 if (defineIndex > 0 && line.charAt(defineIndex-1)=='"') {

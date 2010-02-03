@@ -11,7 +11,7 @@
     <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
-    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -30,7 +30,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="addButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="spTab" alignment="1" pref="789" max="32767" attributes="0"/>
+                          <Component id="spTab" alignment="1" pref="871" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="1" pref="1" max="1" attributes="0"/>
                   </Group>
@@ -38,14 +38,14 @@
                       <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
                       <Component id="lCheckPeriod" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="cbCheckPeriod" pref="533" max="32767" attributes="0"/>
+                      <Component id="cbCheckPeriod" pref="548" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
                       <Component id="bProxy" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lGeneral" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jSeparatorAdvanced" pref="738" max="32767" attributes="0"/>
+                      <Component id="jSeparatorAdvanced" pref="792" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lConnection" min="-2" max="-2" attributes="0"/>

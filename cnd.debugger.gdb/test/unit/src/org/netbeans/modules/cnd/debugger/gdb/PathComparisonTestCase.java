@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.debugger.gdb;
 
 import junit.framework.TestCase;
 import org.junit.Test;
-import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 
 /**

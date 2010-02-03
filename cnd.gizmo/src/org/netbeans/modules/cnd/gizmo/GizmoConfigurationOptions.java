@@ -124,13 +124,13 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         }
 
         //if we have sun studio compiler along compiler collections presentedCompiler
-        CompilerSetManager compilerSetManager = CompilerSetManager.getDefault(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
+        CompilerSetManager compilerSetManager = CompilerSetManager.get(((MakeConfiguration) activeConfiguration).getDevelopmentHost().getExecutionEnvironment());
         List<CompilerSet> compilers = compilerSetManager.getCompilerSets();
 
         boolean hasSunStudio = false;
 
         for (CompilerSet cs : compilers) {
-            if (cs.isSunCompiler()) {
+            if (cs.getCompilerFlavor().isSunStudioCompiler()) {
                 hasSunStudio = true;
                 break;
             }
@@ -261,7 +261,7 @@ public class GizmoConfigurationOptions implements DLightConfigurationOptions {
         }
     }
 
-    private final void notifyListeners(String toolName, boolean isEnabled) {
+    private void notifyListeners(String toolName, boolean isEnabled) {
         synchronized (this) {
             for (DLightConfigurationOptionsListener l : listeners) {
                 l.dlightToolEnabling(toolName, isEnabled);

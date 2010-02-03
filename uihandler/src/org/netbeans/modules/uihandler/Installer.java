@@ -1105,7 +1105,7 @@ public class Installer extends ModuleInstall implements Runnable {
             h.progress(10);
         }
         
-        conn.setReadTimeout(20000);
+        conn.setReadTimeout(60000);
         conn.setDoOutput(true);
         conn.setDoInput(true);
         conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=--------konec<>bloku");

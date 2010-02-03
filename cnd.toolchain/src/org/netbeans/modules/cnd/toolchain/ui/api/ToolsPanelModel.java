@@ -91,7 +91,7 @@ public abstract class ToolsPanelModel {
         resetCompilerSetName(name);
     }
 
-    public static final void resetCompilerSetName(String name) {
+    public static void resetCompilerSetName(String name) {
         String n = getCompilerSetNameImpl();
         if (n == null || !n.equals(name)) {
             NbPreferences.forModule(ToolsPanelModel.class).put(PROP_COMPILER_SET_NAME, name);

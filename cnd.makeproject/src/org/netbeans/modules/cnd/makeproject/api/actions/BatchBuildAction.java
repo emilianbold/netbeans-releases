@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.actions;
 
 import javax.swing.Action;
@@ -50,26 +49,34 @@ import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.util.NbBundle;
 
-public class BatchBuildAction {
-    protected static final String actionName = NbBundle.getBundle(BatchBuildAction.class).getString("BatchBuildActionName");
-    
+public final class BatchBuildAction {
+
+    private static final String actionName = NbBundle.getBundle(BatchBuildAction.class).getString("BatchBuildActionName");
+
+    private BatchBuildAction() {
+    }
+
     public static Action MainBatchBuildAction() {
         return MainProjectSensitiveActions.mainProjectSensitiveAction(new BatchBuildActionPerformer(), actionName, null);
     }
-}
 
-class BatchBuildActionPerformer implements ProjectActionPerformer {
+    private static class BatchBuildActionPerformer implements ProjectActionPerformer {
 
-    public boolean enable(Project project) {
-        boolean ret = false;
-        if (project != null)
-            ret = project.getLookup().lookup(ConfigurationDescriptorProvider.class) != null;
-        return ret;
+        @Override
+        public boolean enable(Project project) {
+            boolean ret = false;
+            if (project != null) {
+                ret = project.getLookup().lookup(ConfigurationDescriptorProvider.class) != null;
+            }
+            return ret;
+        }
+
+        @Override
+        public void perform(Project project) {
+            Action action = MainProjectSensitiveActions.mainProjectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, BatchBuildAction.actionName, null);
+            JButton jButton = new JButton(action);
+            jButton.doClick();
+        }
     }
 
-    public void perform(Project project) {
-        Action action = MainProjectSensitiveActions.mainProjectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, BatchBuildAction.actionName, null);
-        JButton jButton = new JButton(action);
-        jButton.doClick();
-    }
 }

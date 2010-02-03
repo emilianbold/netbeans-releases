@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2010 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -98,6 +98,7 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.queries.AccessibilityQueryImpl;
+import org.netbeans.modules.apisupport.project.queries.AnnotationProcessingQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.AntArtifactProviderImpl;
@@ -116,6 +117,7 @@ import org.netbeans.modules.apisupport.project.ui.ModuleOperations;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.HarnessVersion;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
@@ -291,6 +293,7 @@ public final class NbModuleProject implements Project {
         ic.add(UILookupMergerSupport.createRecommendedTemplatesMerger());
         ic.add(new TemplateAttributesProvider(getHelper(), getModuleType() == NbModuleType.NETBEANS_ORG));
         ic.add(new FileEncodingQueryImpl());
+        ic.add(new AnnotationProcessingQueryImpl());
 
         if (getModuleType() == NbModuleType.SUITE_COMPONENT) {
             ic.add(new SuiteProviderImpl());
@@ -312,11 +315,11 @@ public final class NbModuleProject implements Project {
     /**
      * Get the minimum harness version required to work with this module.
      */
-    public int getMinimumHarnessVersion() {
+    public HarnessVersion getMinimumHarnessVersion() {
         if (helper.createAuxiliaryConfiguration().getConfigurationFragment(NbModuleProjectType.NAME_SHARED, NbModuleProjectType.NAMESPACE_SHARED_2, true) != null) {
-            return NbPlatform.HARNESS_VERSION_50;
+            return HarnessVersion.V50;
         } else {
-            return NbPlatform.HARNESS_VERSION_55u1;
+            return HarnessVersion.V55u1;
         }
     }
 
@@ -848,7 +851,7 @@ public final class NbModuleProject implements Project {
     
     public void refreshBuildScripts(boolean checkForProjectXmlModified, NbPlatform customPlatform) throws IOException {
         String buildImplPath =
-                    customPlatform.getHarnessVersion() <= NbPlatform.HARNESS_VERSION_65
+                    customPlatform.getHarnessVersion().compareTo(HarnessVersion.V65) <= 0
                     || eval.getProperty(SuiteProperties.CLUSTER_PATH_PROPERTY) == null
                     ? "build-impl-65.xsl" : "build-impl.xsl";    // NOI18N
         genFilesHelper.refreshBuildScript(

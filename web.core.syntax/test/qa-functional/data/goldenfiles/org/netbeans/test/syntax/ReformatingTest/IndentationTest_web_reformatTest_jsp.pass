@@ -10,15 +10,15 @@
                      class="java.lang.String"/>
 
         <%
-        int j = 3;
-        switch(j){
-    case 10:
-break;
-    case 20:
-break;
-default:
+                    int j = 3;
+                    switch (j) {
+                        case 10:
+                            break;
+                        case 20:
+                            break;
+                        default:
 
-}
+                    }
 
         %>
         <form name="localeForm" action="index.jsp" method="post">
@@ -35,9 +35,7 @@ default:
                                     <option selected>${localeString}</option>
                                 </c:when>
                                 <c:otherwise>
-                                    <%= 
-                                                         "AHOJ"
-                                    %>
+                                    <%="AHOJ"%>
                                     <option>${localeString}</option>
                                 </c:otherwise>
                             </c:choose>
@@ -60,9 +58,9 @@ default:
                              value="${locales.selectedLocale}"/>
             <b>Date: </b>${date.date}
         </c:if>
-        <%! public int fce(int a, int b, int c){/*COMMENT */
-            return 0;
-           }
+        <%! public int fce(int a, int b, int c) {/*COMMENT */
+                return 0;
+            }
         %>
 
         <%

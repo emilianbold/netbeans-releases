@@ -43,7 +43,8 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.ToolKindBase;
 import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.ErrorManager;
@@ -52,14 +53,13 @@ public class SunCCCompiler extends SunCCCCompiler {
     /** 
      * Creates a new instance of SunCCCompiler
      */
-    protected SunCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    protected SunCCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
         super(env, flavor, kind, name, displayName, path);
     }
     
     @Override
     public SunCCCompiler createCopy() {
-        SunCCCompiler copy = new SunCCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), "", getDisplayName(), getPath());
-        copy.setName(getName());
+        SunCCCompiler copy = new SunCCCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
         if (isReady()) {
             copy.setSystemIncludeDirectories(getSystemIncludeDirectories());
             copy.setSystemPreprocessorSymbols(getSystemPreprocessorSymbols());
@@ -67,7 +67,7 @@ public class SunCCCompiler extends SunCCCCompiler {
         return copy;
     }
 
-    public static SunCCCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
+    public static SunCCCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKindBase kind, String name, String displayName, String path) {
         return new SunCCCompiler(env, flavor, kind, name, displayName, path);
     }
 
@@ -86,7 +86,7 @@ public class SunCCCompiler extends SunCCCCompiler {
                 int includeIndex = line.indexOf("-I"); // NOI18N
                 while (includeIndex > 0) {
                     String token;
-                    int spaceIndex = line.indexOf(" ", includeIndex + 1); // NOI18N
+                    int spaceIndex = line.indexOf(' ', includeIndex + 1); // NOI18N
                     if (spaceIndex > 0) {
                         token = line.substring(includeIndex+2, spaceIndex);
                     } else {

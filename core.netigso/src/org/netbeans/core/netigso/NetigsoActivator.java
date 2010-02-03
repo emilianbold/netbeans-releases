@@ -42,12 +42,12 @@ package org.netbeans.core.netigso;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
-import org.netbeans.Module;
 import org.openide.modules.ModuleInfo;
 import org.osgi.framework.Bundle;
 
@@ -56,7 +56,7 @@ import org.osgi.framework.Bundle;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class NetigsoActivator extends HashMap<Bundle,ClassLoader> {
-    private static final Set<Module> all = new CopyOnWriteArraySet<Module>();
+    private final Set<ModuleInfo> all = new CopyOnWriteArraySet<ModuleInfo>();
 
     public NetigsoActivator() {
     }
@@ -78,9 +78,9 @@ final class NetigsoActivator extends HashMap<Bundle,ClassLoader> {
         return null;
     }
 
-    static void register(Module m) {
-        NetigsoModule.LOG.log(Level.FINER, "register module {0}", m.getCodeNameBase());
-        all.add(m);
+    void register(Collection<? extends ModuleInfo> m) {
+        Netigso.LOG.log(Level.FINER, "register module {0}", m);
+        all.addAll(m);
     }
 
     private static final class DelegateLoader extends ClassLoader {

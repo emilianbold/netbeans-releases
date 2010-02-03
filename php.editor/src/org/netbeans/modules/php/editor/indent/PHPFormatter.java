@@ -239,9 +239,9 @@ public class PHPFormatter implements Formatter {
         final BaseDocument doc = (BaseDocument) context.document();
         final String openingBraceStyle = CodeStyle.get(doc).getOpeningBraceStyle();
 
-        if (FmtOptions.OBRACE_PRESERVE.equals(openingBraceStyle)){
-            return;
-        }
+//        if (FmtOptions.OBRACE_PRESERVE.equals(openingBraceStyle)){
+//            return;
+//        }
 
         doc.runAtomic(new Runnable() {
 

@@ -46,10 +46,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -57,15 +56,11 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import junit.framework.Test;
 import org.netbeans.Events;
 import org.netbeans.JarClassLoader;
-import org.netbeans.MockModuleInstaller;
-import org.netbeans.MockEvents;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.SetupHid;
-import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -81,7 +76,9 @@ public class NetigsoHid extends SetupHid {
     protected @Override void setUp() throws Exception {
         Locale.setDefault(Locale.US);
         clearWorkDir();
-        NetigsoModuleFactory.clear();
+        Method m = Class.forName("org.netbeans.NetigsoFramework").getDeclaredMethod("shutdownFramework");
+        m.setAccessible(true);
+        m.invoke(null);
         
         data = new File(getDataDir(), "jars");
         jars = new File(getWorkDir(), "jars");

@@ -127,6 +127,7 @@ class CategorySelector extends JPanel implements ExplorerManager.Provider {
     }
 
     // ExplorerManager.Provider
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
