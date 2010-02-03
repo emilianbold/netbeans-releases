@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,53 +39,53 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.weblogic9.ui.nodes.actions;
+package org.netbeans.modules.php.editor;
 
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Petr Hejl
+ * @author Radek Matous
  */
-public class RefreshModulesAction extends NodeAction {
+public class PHPCodeCompletion178955Test extends PHPTestBase {
 
-    @Override
-    protected boolean enable(org.openide.nodes.Node[] nodes) {
-        RefreshModulesCookie cookie;
-        for (int i = 0; i < nodes.length; i++) {
-            cookie = nodes[i].getCookie(RefreshModulesCookie.class);
-            if (cookie == null) {
-                return false;
-            }
-        }
+    public PHPCodeCompletion178955Test(String testName) {
+        super(testName);
+    }
 
-        return true;
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests178955/tests178955.php", "/*use case 1*/$foo->^", false);
+    }
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests178955/tests178955.php", "/*use case 2*/$foo->^", false);
+    }
+    public void testUseCase3() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests178955/tests178955.php", "/*use case 3*/$foo->^", false);
+    }
+    public void testUseCase4() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests178955/tests178955.php", "/*use case 4*/$foo->^", false);
+    }
+    public void testUseCase5() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests178955/tests178955.php", "/*use case 5*/$foo->^", false);
+    }
+    public void testUseCase6() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests178955/tests178955.php", "/*use case 6*/$foo->^", false);
     }
 
     @Override
-    public String getName() {
-        return NbBundle.getMessage(RefreshModulesAction.class, "LBL_RefreshModulesAction"); // NOI18N
-    }
-
-    @Override
-    protected void performAction(org.openide.nodes.Node[] nodes) {
-        for (int i = 0; i < nodes.length; i++) {
-            RefreshModulesCookie cookie = nodes[i].getCookie(RefreshModulesCookie.class);
-            if (cookie != null) {
-                cookie.refresh();
-            }
-        }
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    @Override
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests178955"))
+            })
+        );
     }
 }

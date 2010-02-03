@@ -95,7 +95,7 @@ public class WLModuleChildFactory
             if (modules != null) {
                 for (TargetModuleID module : modules) {
                     toPopulate.add(new WLModuleNode(module.getModuleID(), lookup, moduleType,
-                            stoopedByName.contains(module.getModuleID())));
+                            stoopedByName.contains(module.getModuleID()), module.getWebURL()));
                 }
             }
 

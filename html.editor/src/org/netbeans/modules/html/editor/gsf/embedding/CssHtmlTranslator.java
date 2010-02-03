@@ -43,6 +43,7 @@ package org.netbeans.modules.html.editor.gsf.embedding;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -51,6 +52,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -63,7 +65,6 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
 
     private static final Logger LOGGER = Logger.getLogger(CssHtmlTranslator.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-
     public static final String CSS_MIME_TYPE = "text/x-css"; //NOI18N
     public static final String HTML_MIME_TYPE = "text/html"; //NOI18N
 
@@ -76,12 +77,17 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
         extractCssFromHTML(snapshot, ts, state, embeddings);
         return embeddings;
     }
-
     //internal state names for the html code analyzer
-    protected static final String END_OF_LAST_SEQUENCE = "end_of_last_sequence";
-    protected static final String IN_STYLE = "in_style";
-    protected static final String IN_INLINED_STYLE = "in_inlined_style";
-    private static final String QUTE_CUT = "quote_cut";
+    protected static final String END_OF_LAST_SEQUENCE = "end_of_last_sequence"; //NOI18N
+    protected static final String IN_STYLE = "in_style"; //NOI18N
+    protected static final String IN_INLINED_STYLE = "in_inlined_style"; //NOI18N
+    private static final String QUTE_CUT = "quote_cut"; //NOI18N
+    //TODO rewrite the whole embedding provider to the parser based version so
+    //we do not have to parse what's already parsed - like the <link ... /> tag
+    private static final String LINK_TAG_NAME = "link"; //NOI18N
+    private static final String HREF_ATTR_NAME = "href"; //NOI18N
+    private static final String HREF_ATTR_REL = "rel"; //NOI18N
+    private static final String HREF_ATTR_TYPE = "type"; //NOI18N
 
     /** @param ts An HTML token sequence always positioned at the beginning. */
     protected void extractCssFromHTML(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, HashMap<String, Object> state, List<Embedding> embeddings) {
@@ -93,7 +99,7 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                 //jumped into style
                 int sourceStart = ts.offset();
                 int sourceEnd = sourceStart + htmlToken.length();
-                embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE ));
+                embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE));
             } else {
                 //jumped out of the style
                 state.remove(IN_STYLE);
@@ -137,12 +143,16 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
 
                     //TokenSequence<? extends HTMLTokenId> ts = ts.subSequence(ts.offset());
                     //ts.moveStart();
+                    boolean isLinkTag = LINK_TAG_NAME.equals(htmlToken.text().toString().toLowerCase(Locale.ENGLISH));
+                    String currentAttributeName = null;
                     while (ts.moveNext()) {
                         Token<? extends HTMLTokenId> t = ts.token();
                         TokenId id = t.id();
 
                         if (id == HTMLTokenId.TAG_CLOSE_SYMBOL) {
                             break;
+                        } else if (id == HTMLTokenId.ARGUMENT) {
+                            currentAttributeName = t.text().toString();
                         } else if (id == HTMLTokenId.VALUE_CSS) {
                             //found inlined css
                             int sourceStart = ts.offset();
@@ -160,12 +170,39 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                                 text = text.substring(0, text.length() - 1);
                             }
 
-                            embeddings.add(snapshot.create("\n SELECTOR {\n\t", CSS_MIME_TYPE));
-                            embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE));
+                            //determine the inlined css type
+                            String valueCssType = (String) t.getProperty(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY);
+                            if (valueCssType != null) {
+                                //XXX we do not support templating code in the value!
+                                //class or id attribute value - generate fake selector with # or . prefix
+                                StringBuilder buf = new StringBuilder();
+                                buf.append("\n ");
+                                buf.append(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType) ? "." : "#");
+                                embeddings.add(snapshot.create(buf.toString(), CSS_MIME_TYPE));
+                                embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE));
+                                embeddings.add(snapshot.create("{}", CSS_MIME_TYPE));
 
-                            state.put(IN_INLINED_STYLE, Boolean.TRUE);
+                            } else {
+                                //style attribute value - wrap with a fake selector
+                                embeddings.add(snapshot.create("\n SELECTOR {\n\t", CSS_MIME_TYPE));
+                                embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, CSS_MIME_TYPE));
 
-                            break;
+                                state.put(IN_INLINED_STYLE, Boolean.TRUE);
+
+                                break;
+                            }
+                        } else if (id == HTMLTokenId.VALUE) {
+                            if (isLinkTag && HREF_ATTR_NAME.equals(currentAttributeName.toLowerCase(Locale.ENGLISH))) {
+                                String unquotedValue = Utils.unquotedValue(t.text().toString().toString());
+                                //found href value, generate virtual css import
+                                StringBuilder buf = new StringBuilder();
+                                buf.append("@import \""); //NOI18N
+                                buf.append(unquotedValue);
+                                buf.append("\";"); //NOI18N
+                                //insert the import at the beginning of the virtual source
+                                embeddings.add(0, snapshot.create(buf, CSS_MIME_TYPE));
+
+                            }
                         }
 
                     }
@@ -174,5 +211,4 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
         }
 
     }
-
 }
