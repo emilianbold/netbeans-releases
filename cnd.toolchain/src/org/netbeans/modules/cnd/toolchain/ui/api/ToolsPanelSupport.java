@@ -58,9 +58,9 @@ public class ToolsPanelSupport {
         return cacheManager;
     }
 
-    public static boolean supportedMake(String name) {
+    public static boolean isUnsupportedMake(String name) {
         name = ToolUtils.getBaseName(name);
-        return !name.toLowerCase().equals("mingw32-make.exe"); // NOI18N
+        return name.toLowerCase().equals("mingw32-make.exe"); // NOI18N
     }
 
     private static Set<ChangeListener> listenerChanged = new WeakSet<ChangeListener>();

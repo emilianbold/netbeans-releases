@@ -1128,7 +1128,7 @@ public class MakeActionProvider implements ActionProvider {
         // Check for a valid make program
         if (conf.getDevelopmentHost().isLocalhost()) {
             file = new File(makeTool.getPath());
-            if ((!exists(makeTool.getPath(), pi) && Path.findCommand(makeTool.getPath()) == null) || !ToolsPanelSupport.supportedMake(file.getPath())) {
+            if ((!exists(makeTool.getPath(), pi) && Path.findCommand(makeTool.getPath()) == null) || ToolsPanelSupport.isUnsupportedMake(file.getPath())) {
                 runBTA = true;
             }
         } else {

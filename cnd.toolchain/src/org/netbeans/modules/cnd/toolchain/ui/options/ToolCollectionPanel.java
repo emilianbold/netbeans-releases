@@ -417,7 +417,7 @@ import org.openide.util.Utilities;
         if (txt.length() == 0) {
             return false;
         }
-        return ToolsPanelSupport.supportedMake(txt);
+        return !ToolsPanelSupport.isUnsupportedMake(txt);
     }
 
     boolean isToolsValid() {
