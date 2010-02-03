@@ -40,29 +40,14 @@
  */
 package org.netbeans.modules.cnd.navigation.overrides;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Image;
+import org.netbeans.modules.cnd.modelutil.OverridesPopup;
 import java.awt.Point;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
@@ -70,12 +55,10 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
-import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.ui.PopupUtil;
 import org.openide.text.Annotation;
 import org.openide.text.NbDocument;
-import org.openide.util.ImageUtilities;
 
 /**
  * @author Vladimir Kvashin
@@ -168,15 +151,33 @@ import org.openide.util.ImageUtilities;
         sb.append(debugTypeStirng());
         sb.append(' ');
         boolean first = true;
-        for (BaseAnnotation.Element element : getElements()) {
-            int gotoLine = element.declaration.getStartPosition().getLine();
-            String gotoFile = element.declaration.getContainingFile().getName().toString();
+
+        Comparator<? super CsmOffsetableDeclaration> comparator = new Comparator<CsmOffsetableDeclaration>() {
+            @Override
+            public int compare(CsmOffsetableDeclaration o1, CsmOffsetableDeclaration o2) {
+                return o1.getQualifiedName().toString().compareTo(o2.getQualifiedName().toString());
+            }
+
+        };
+        List<? extends CsmOffsetableDeclaration> baseDecls = toDeclarations(baseUIDs);
+        Collections.sort(baseDecls, comparator);
+
+        List<? extends CsmOffsetableDeclaration> descDecls = toDeclarations(descUIDs);
+        Collections.sort(descDecls, comparator);
+
+        List<CsmOffsetableDeclaration> allDecls = new ArrayList<CsmOffsetableDeclaration>();
+        allDecls.addAll(baseDecls);
+        allDecls.addAll(descDecls);
+
+        for (CsmOffsetableDeclaration decl : allDecls) {
+            int gotoLine = decl.getStartPosition().getLine();
+            String gotoFile = decl.getContainingFile().getName().toString();
             if (first) {
                 first = false;
             } else {
                 sb.append(',');
             }
-            sb.append(element.declaration.getQualifiedName());
+            sb.append(decl.getQualifiedName());
             sb.append(' ');
             sb.append(gotoFile);
             sb.append(':');
@@ -196,38 +197,30 @@ import org.openide.util.ImageUtilities;
 //    }
     
     private void performGoToAction(Point position) {
-        Collection<Element> elements = getElements();
-        if (elements.size() == 1) {
-            openSource(elements.iterator().next());
-        } else if (elements.size() > 1) {
+        if (baseUIDs.size() + descUIDs.size() == 1) {
+            CsmUID<? extends CsmOffsetableDeclaration> uid =
+                    baseUIDs.isEmpty() ? descUIDs.iterator().next() : baseUIDs.iterator().next();
+            CsmUtilities.openSource(uid.getObject());
+        } else if (baseUIDs.size() + descUIDs.size() > 1) {
             String caption = getShortDescription();
-            PopupUtil.showPopup(new Popup(caption, elements), caption, position.x, position.y, true, 0);
+            OverridesPopup popup = new OverridesPopup(caption, toDeclarations(baseUIDs), toDeclarations(descUIDs));
+            PopupUtil.showPopup(popup, caption, position.x, position.y, true, 0);
         } else {
             throw new IllegalStateException("method list should not be empty"); // NOI18N
         }
     }
 
-    private static void openSource(Element element) {
-        CsmUtilities.openSource(element.declaration);
+    private static List<? extends CsmOffsetableDeclaration> toDeclarations(Collection<CsmUID<? extends CsmOffsetableDeclaration>> uids) {
+        List<CsmOffsetableDeclaration> decls = new ArrayList<CsmOffsetableDeclaration>(uids.size());
+        for (CsmUID<? extends CsmOffsetableDeclaration> uid : uids) {
+            CsmOffsetableDeclaration decl = uid.getObject();
+            if (decl != null) {
+                decls.add(decl);
+            }
+        }
+        return decls;
     }
 
-
-    /**
-     * Gets a SORTED elements list
-     * @return
-     */
-    /*package-local for test purposes*/ 
-    List<Element> getElements() {
-        List<Element> elements = new ArrayList<Element>(baseUIDs.size() + descUIDs.size());
-        for (CsmUID<? extends CsmOffsetableDeclaration> uid : baseUIDs) {
-            elements.add(new Element(uid.getObject(), Direction.BASE));
-        }
-        for (CsmUID<? extends CsmOffsetableDeclaration> uid : descUIDs) {
-            elements.add(new Element(uid.getObject(), Direction.DESC));
-        }
-        Collections.sort(elements);
-        return elements;
-    }
 
     private static class DeclarationPosition implements Position {
 
@@ -243,158 +236,4 @@ import org.openide.util.ImageUtilities;
         }
 
     }
-
-    private static enum Direction {
-        BASE,
-        DESC
-    }
-
-    /*package-local for test purposes*/
-    static class Element implements Comparable<Element> {
-
-        public final CsmOffsetableDeclaration declaration;
-        public final Direction direction;
-        
-        public Element(CsmOffsetableDeclaration decl, Direction direction) {
-            this.declaration = decl;
-            this.direction = direction;
-        }
-
-        public String getDisplayName() {
-            return declaration.getQualifiedName().toString();
-        }
-
-        private Image getBadge() {
-            switch (direction) {
-                case BASE:
-                    return ImageUtilities.loadImage("/org/netbeans/modules/cnd/navigation/resources/overrides-badge.png");
-                case DESC:
-                    return ImageUtilities.loadImage("/org/netbeans/modules/cnd/navigation/resources/is-overridden-badge.png");
-                default:
-                    return null;
-            }
-        }
-
-        public Icon getIcon() {
-            ImageIcon icon = CsmImageLoader.getIcon(declaration);
-            Image badge = getBadge();
-            if (badge == null) {
-                return icon;
-            } else {
-                return ImageUtilities.image2Icon(ImageUtilities.mergeImages(icon.getImage(), badge, 16, 0));
-            }
-        }
-
-        @Override
-        public String toString() {
-            return declaration.getQualifiedName().toString();
-        }
-
-        @Override
-        public int compareTo(Element o) {
-            if (o == null) {
-                return -1;
-            } else {
-                if (o.direction == this.direction) {
-                    return declaration.getQualifiedName().toString().compareTo(o.declaration.getQualifiedName().toString());
-                } else {
-                    return this.direction == Direction.BASE ? -1 : 1;
-                }
-            }
-        }
-    }
-
-    private static class RendererImpl extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(
-                JList list,
-                Object value,
-                int index,
-                boolean isSelected,
-                boolean cellHasFocus) {
-            Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-
-            if (value instanceof Element) {
-                Element element = (Element) value;
-                setIcon(element.getIcon());
-                setText(element.getDisplayName());
-            }
-
-            return c;
-        }
-    }
-
-
-    private static class Popup extends JPanel implements FocusListener {
-        
-        private JLabel title;
-        private JList list;
-        private JScrollPane scrollPane;
-        private final Collection<Element> elements;
-
-        public Popup(String caption, Collection<Element> elements) {
-            super(new BorderLayout());
-            this.elements = elements;
-
-            title = new JLabel(caption);
-            title.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-            title.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
-            add(title, BorderLayout.NORTH);
-
-            list = new JList();
-            list.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
-            scrollPane = new JScrollPane(list);
-            add(scrollPane, BorderLayout.CENTER);
-
-            DefaultListModel model = new DefaultListModel();
-            for (Element element : elements) {
-                model.addElement(element);
-            }
-            list.setModel(model);
-            list.setSelectedIndex(0);
-            list.setCellRenderer(new RendererImpl());
-            if (model.getSize() < 10) {
-                list.setVisibleRowCount(model.getSize());
-            }
-
-            list.addKeyListener(new java.awt.event.KeyAdapter() {
-                @Override
-                public void keyPressed(java.awt.event.KeyEvent evt) {
-                    if (evt.getKeyCode() == KeyEvent.VK_ENTER && evt.getModifiers() == 0) {
-                        openSelected();
-                    }
-                }
-            });
-            list.addMouseListener(new java.awt.event.MouseAdapter() {
-                @Override
-                public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 1) {
-                        openSelected();
-                    }
-                }
-            });
-
-            list.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            addFocusListener(this);
-        }
-
-        private void openSelected() {
-            Element el = (Element) list.getSelectedValue();
-            if (el != null) {
-                openSource(el);
-            }
-            PopupUtil.hidePopup();
-        }
-
-        @Override
-        public void focusGained(FocusEvent arg0) {
-            list.requestFocus();
-            list.requestFocusInWindow();
-        }
-
-        @Override
-        public void focusLost(FocusEvent arg0) {
-        }
-    }
-
 }
