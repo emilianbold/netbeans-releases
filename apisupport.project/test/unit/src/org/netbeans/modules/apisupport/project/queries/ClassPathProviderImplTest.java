@@ -58,7 +58,6 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -665,8 +664,7 @@ public class ClassPathProviderImplTest extends TestBase {
         }
     }
 
-    @RandomlyFails
-    // not randomly failing, but fails without NB sources
+    // XXX fails without NB sources
     public void testRecursiveScanOptimization() throws Exception {
         FileObject src = nbRoot().getFileObject("apisupport.project/test/unit/src");
         assertNotNull("apisupport.project/test/unit/src", src);

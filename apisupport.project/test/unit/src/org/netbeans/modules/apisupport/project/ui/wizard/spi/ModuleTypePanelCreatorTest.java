@@ -43,7 +43,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JComponent;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.ui.wizard.TypeChooserPanelImpl;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -106,7 +105,7 @@ public class ModuleTypePanelCreatorTest extends TestBase {
         assertTrue("panel updated event type received", l.isPanelUpdatedEvent());
     }
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testPanelDisabledForNbOrg(){
         WizardDescriptor wizardDescriptor = new WizardDescriptor() {};
         JComponent typeChooserPanel = ModuleTypePanel.createComponent(wizardDescriptor);
@@ -138,7 +137,7 @@ public class ModuleTypePanelCreatorTest extends TestBase {
                 (NbPlatform)wizardDescriptor.getProperty(TypeChooserPanelImpl.ACTIVE_NB_PLATFORM));
     }
 
-    @RandomlyFails // not random, cannot be run in binary dist, requires sources; XXX test against fake platform
+    // XXX cannot be run in binary dist, requires sources; test against fake platform
     public void testIsNetBeansOrgProperty() {
         WizardDescriptor wizardDescriptor = new WizardDescriptor() {};
         JComponent typeChooserPanel = ModuleTypePanel.createComponent(wizardDescriptor);
