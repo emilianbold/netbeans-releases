@@ -375,7 +375,7 @@ public final class ClasspathInfo {
             usagesQuery = new ClassIndex (
                     this.bootClassPath,
                     this.compileClassPath,
-                    this.cachedSrcClassPath);
+                    this.cachedUserSrcClassPath);
         }
         return usagesQuery;
     }
