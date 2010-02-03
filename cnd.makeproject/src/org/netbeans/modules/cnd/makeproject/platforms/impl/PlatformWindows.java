@@ -39,59 +39,60 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.platforms;
+package org.netbeans.modules.cnd.makeproject.platforms.impl;
 
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 
-public abstract class Platform {
-    
-    private String name;
-    private String displayName;
-    private int id;
-    
-    public Platform(String name, String displayName, int id) {
-        this.name = name;
-        this.displayName = displayName;
-        this.id = id;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public String getDisplayName() {
-        return displayName;
-    }
-    
-    public int getId() {
-        return id;
-    }
-    
-    public abstract LibraryItem.StdLibItem[] getStandardLibraries();
-    
-    public abstract String getLibraryName(String baseName);
+public class PlatformWindows extends Platform {
+    public static final String NAME = "Windows"; // NOI18N
 
-    /**
-     * File name that qmake would generate on current platform
-     * given <code>TARGET=baseName</code> and <code>VERSION=version</code>.
-     *
-     * @param baseName
-     * @param version
-     * @return
-     */
+    private static final LibraryItem.StdLibItem[] standardLibrariesWindows = {
+        StdLibraries.getStandardLibary("Mathematics"), // NOI18N
+        StdLibraries.getStandardLibary("DataCompression"), // NOI18N
+        StdLibraries.getStandardLibary("PosixThreads"), // NOI18N
+    };
+    
+    public PlatformWindows() {
+        super(NAME, "Windows", PlatformTypes.PLATFORM_WINDOWS); // NOI18N
+    }
+    
+    @Override
+    public LibraryItem.StdLibItem[] getStandardLibraries() {
+        return standardLibrariesWindows;
+    }
+    
+    @Override
+    public String getLibraryName(String baseName) {
+        return "lib" + baseName + ".dll"; // NOI18N
+    }
+
+    @Override
     public String getQtLibraryName(String baseName, String version) {
-        return getLibraryName(baseName) + "." + version; // NOI18N
+        int dot = version.indexOf('.'); // NOI18N
+        String majorVersion = 0 <= dot? version.substring(0, dot) : version;
+        return baseName + majorVersion + ".dll"; // NOI18N
     }
 
-    public abstract String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet);
-    
-    public LibraryItem.StdLibItem getStandardLibrarie(String name) {
-        for (int i = 0; i < getStandardLibraries().length; i++) {
-            if (getStandardLibraries()[i].getName().equals(name)) {
-                return getStandardLibraries()[i];
+    @Override
+    public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
+        if (libName.endsWith(".dll")) { // NOI18N
+            int i = libName.indexOf(".dll"); // NOI18N
+            if (i > 0) {
+                libName = libName.substring(0, i);
             }
+            if (libName.startsWith("lib") || libName.startsWith("cyg")) { // NOI18N
+                libName = libName.substring(3);
+            }
+            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag()
+                    + IpeUtils.escapeOddCharacters(libDir)
+                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
+                    + IpeUtils.escapeOddCharacters(libName);
+        } else {
+            return IpeUtils.escapeOddCharacters(libPath);
         }
-        return null;
     }
 }

@@ -39,59 +39,59 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.platforms;
+package org.netbeans.modules.cnd.makeproject.platforms.impl;
 
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import org.netbeans.modules.cnd.toolchain.api.PlatformTypes;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 
-public abstract class Platform {
-    
-    private String name;
-    private String displayName;
-    private int id;
-    
-    public Platform(String name, String displayName, int id) {
-        this.name = name;
-        this.displayName = displayName;
-        this.id = id;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public String getDisplayName() {
-        return displayName;
-    }
-    
-    public int getId() {
-        return id;
-    }
-    
-    public abstract LibraryItem.StdLibItem[] getStandardLibraries();
-    
-    public abstract String getLibraryName(String baseName);
+public class PlatformLinux extends Platform {
+    public static final String NAME = "Linux-x86"; // NOI18N
 
-    /**
-     * File name that qmake would generate on current platform
-     * given <code>TARGET=baseName</code> and <code>VERSION=version</code>.
-     *
-     * @param baseName
-     * @param version
-     * @return
-     */
-    public String getQtLibraryName(String baseName, String version) {
-        return getLibraryName(baseName) + "." + version; // NOI18N
-    }
-
-    public abstract String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet);
+    private static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
+        StdLibraries.getStandardLibary("Motif"), // NOI18N
+        StdLibraries.getStandardLibary("Mathematics"), // NOI18N
+        StdLibraries.getStandardLibary("DataCompression"), // NOI18N
+        StdLibraries.getStandardLibary("PosixThreads"), // NOI18N
+        StdLibraries.getStandardLibary("Curses"), // NOI18N
+        StdLibraries.getStandardLibary("DynamicLinking"), // NOI18N
+    };
     
-    public LibraryItem.StdLibItem getStandardLibrarie(String name) {
-        for (int i = 0; i < getStandardLibraries().length; i++) {
-            if (getStandardLibraries()[i].getName().equals(name)) {
-                return getStandardLibraries()[i];
+    public PlatformLinux() {
+        super(NAME, "Linux x86", PlatformTypes.PLATFORM_LINUX); // NOI18N
+    }
+    
+    @Override
+    public LibraryItem.StdLibItem[] getStandardLibraries() {
+        return standardLibrariesLinux;
+    }
+    
+    @Override
+    public String getLibraryName(String baseName) {
+        return "lib" + baseName + ".so"; // NOI18N // NOI18N
+    }
+    
+    @Override
+    public String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet) {
+        if (libName.endsWith(".so")) { // NOI18N
+            int i = libName.indexOf(".so"); // NOI18N
+            if (i > 0) {
+                libName = libName.substring(0, i);
             }
+            if (libName.startsWith("lib")) { // NOI18N
+                libName = libName.substring(3);
+            }
+
+            return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag()
+                    + IpeUtils.escapeOddCharacters(libDir)
+                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag() // NOI18N
+                    + IpeUtils.escapeOddCharacters(libDir)
+                    + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
+                    + IpeUtils.escapeOddCharacters(libName);
+        } else {
+            return IpeUtils.escapeOddCharacters(libPath);
         }
-        return null;
     }
 }

@@ -39,59 +39,32 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.platforms;
+package org.netbeans.modules.cnd.makeproject.compilers.impl;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.netbeans.modules.cnd.toolchain.api.Tool;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
+import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.MakeDescriptor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-public abstract class Platform {
-    
-    private String name;
-    private String displayName;
-    private int id;
-    
-    public Platform(String name, String displayName, int id) {
-        this.name = name;
-        this.displayName = displayName;
-        this.id = id;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public String getDisplayName() {
-        return displayName;
-    }
-    
-    public int getId() {
-        return id;
-    }
-    
-    public abstract LibraryItem.StdLibItem[] getStandardLibraries();
-    
-    public abstract String getLibraryName(String baseName);
+/*package*/ final class SunMaketool extends Tool {
 
-    /**
-     * File name that qmake would generate on current platform
-     * given <code>TARGET=baseName</code> and <code>VERSION=version</code>.
-     *
-     * @param baseName
-     * @param version
-     * @return
-     */
-    public String getQtLibraryName(String baseName, String version) {
-        return getLibraryName(baseName) + "." + version; // NOI18N
+    private SunMaketool(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) { // GRP - FIXME
+        super(env, flavor, PredefinedToolKind.MakeTool, name, displayName, path); // NOI18N
     }
 
-    public abstract String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet);
-    
-    public LibraryItem.StdLibItem getStandardLibrarie(String name) {
-        for (int i = 0; i < getStandardLibraries().length; i++) {
-            if (getStandardLibraries()[i].getName().equals(name)) {
-                return getStandardLibraries()[i];
-            }
-        }
-        return null;
+    @Override
+    public SunMaketool createCopy() {
+        return new SunMaketool(getExecutionEnvironment(), getFlavor(), getName(), getDisplayName(), getPath());
     }
+
+    public static SunMaketool create(ExecutionEnvironment env, CompilerFlavor flavor, String name, String displayName, String path) {
+        return new SunMaketool(env, flavor, name, displayName, path);
+    }
+
+    @Override
+    public MakeDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getMake();
+    }
+
 }

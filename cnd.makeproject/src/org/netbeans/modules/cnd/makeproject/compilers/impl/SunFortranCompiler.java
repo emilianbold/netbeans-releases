@@ -39,59 +39,40 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.platforms;
+package org.netbeans.modules.cnd.makeproject.compilers.impl;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
+import org.netbeans.modules.cnd.toolchain.api.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.api.ToolKind;
+import org.netbeans.modules.cnd.toolchain.api.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-public abstract class Platform {
+public final class SunFortranCompiler extends BasicCompiler {
     
-    private String name;
-    private String displayName;
-    private int id;
-    
-    public Platform(String name, String displayName, int id) {
-        this.name = name;
-        this.displayName = displayName;
-        this.id = id;
+    /** Creates a new instance of SunCCompiler */
+    private SunFortranCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+        super(env, flavor, kind, name, displayName, path);
     }
     
-    public String getName() {
-        return name;
-    }
-    
-    public String getDisplayName() {
-        return displayName;
-    }
-    
-    public int getId() {
-        return id;
-    }
-    
-    public abstract LibraryItem.StdLibItem[] getStandardLibraries();
-    
-    public abstract String getLibraryName(String baseName);
-
-    /**
-     * File name that qmake would generate on current platform
-     * given <code>TARGET=baseName</code> and <code>VERSION=version</code>.
-     *
-     * @param baseName
-     * @param version
-     * @return
-     */
-    public String getQtLibraryName(String baseName, String version) {
-        return getLibraryName(baseName) + "." + version; // NOI18N
+    @Override
+    public SunFortranCompiler createCopy() {
+        return new SunFortranCompiler(getExecutionEnvironment(), getFlavor(), getKind(), getName(), getDisplayName(), getPath());
     }
 
-    public abstract String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet);
-    
-    public LibraryItem.StdLibItem getStandardLibrarie(String name) {
-        for (int i = 0; i < getStandardLibraries().length; i++) {
-            if (getStandardLibraries()[i].getName().equals(name)) {
-                return getStandardLibraries()[i];
-            }
+    public String getMTLevelOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getMultithreadingFlags() != null && compiler.getMultithreadingFlags().length > value){
+            return compiler.getMultithreadingFlags()[value];
         }
-        return null;
+        return ""; // NOI18N
+    }
+
+    public static SunFortranCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+        return new SunFortranCompiler(env, flavor, kind, name, displayName, path);
+    }
+
+    @Override
+    public CompilerDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getFortran();
     }
 }

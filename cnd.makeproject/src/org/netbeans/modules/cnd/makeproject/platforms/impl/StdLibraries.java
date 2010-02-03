@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2009 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2009 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,61 +31,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.api.platforms;
+package org.netbeans.modules.cnd.makeproject.platforms.impl;
 
-import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
+import java.util.HashMap;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.openide.util.NbBundle;
 
-public abstract class Platform {
-    
-    private String name;
-    private String displayName;
-    private int id;
-    
-    public Platform(String name, String displayName, int id) {
-        this.name = name;
-        this.displayName = displayName;
-        this.id = id;
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public String getDisplayName() {
-        return displayName;
-    }
-    
-    public int getId() {
-        return id;
-    }
-    
-    public abstract LibraryItem.StdLibItem[] getStandardLibraries();
-    
-    public abstract String getLibraryName(String baseName);
+/**
+ *
+ * @author Alexander Simon
+ */
+/*package-local*/ class StdLibraries {
+    private static final HashMap<String, LibraryItem.StdLibItem> libraries = new HashMap<String, LibraryItem.StdLibItem>();
 
-    /**
-     * File name that qmake would generate on current platform
-     * given <code>TARGET=baseName</code> and <code>VERSION=version</code>.
-     *
-     * @param baseName
-     * @param version
-     * @return
-     */
-    public String getQtLibraryName(String baseName, String version) {
-        return getLibraryName(baseName) + "." + version; // NOI18N
+    static {
+        addLibrary("Motif", new String[] {"Xm", "Xt", "Xext", "X11"}); // NOI18N
+        addLibrary("Mathematics", new String[] {"m"}); // NOI18N
+        addLibrary("Yacc", new String[] {"y"}); // NOI18N
+        addLibrary("Lex", new String[] {"l"}); // NOI18N
+        addLibrary("SocketsNetworkServices", new String[] {"socket", "nsl"}); // NOI18N
+        addLibrary("SolarisThreads", new String[] {"thread"}); // NOI18N
+        addLibrary("DataCompression", new String[] {"z"}); // NOI18N
+        addLibrary("PosixThreads", new String[] {"pthread"}); // NOI18N
+        addLibrary("Posix4", new String[] {"posix4"}); // NOI18N
+        addLibrary("Internationalization", new String[] {"intl"}); // NOI18N
+        addLibrary("PatternMatching", new String[] {"gen"}); // NOI18N
+        addLibrary("Curses", new String[] {"curses"}); // NOI18N
+        addLibrary("DynamicLinking", new String[] {"dl"}); // NOI18N
     }
 
-    public abstract String getLibraryLinkOption(String libName, String libDir, String libPath, CompilerSet compilerSet);
-    
-    public LibraryItem.StdLibItem getStandardLibrarie(String name) {
-        for (int i = 0; i < getStandardLibraries().length; i++) {
-            if (getStandardLibraries()[i].getName().equals(name)) {
-                return getStandardLibraries()[i];
-            }
-        }
-        return null;
+    public static LibraryItem.StdLibItem getStandardLibary(String id) {
+        return libraries.get(id);
+    }
+
+    private static void addLibrary(String id, String[] libs) {
+        LibraryItem.StdLibItem item = new LibraryItem.StdLibItem(id, NbBundle.getBundle(StdLibraries.class).getString("StdLib."+id), libs); // NOI18N
+        libraries.put(item.getName(), item);
+    }
+
+    private StdLibraries() {
     }
 }
