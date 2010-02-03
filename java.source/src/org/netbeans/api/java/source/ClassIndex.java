@@ -478,7 +478,7 @@ public final class ClassIndex {
             for (URL srcRoot : srcRoots) {
                 oldState.add (srcRoot);
                 ClassIndexImpl ci = ClassIndexManager.getDefault().getUsagesQuery(srcRoot);
-                if (ci != null && !queries.contains(ci)) {
+                if (ci != null) {
                     ci.addClassIndexImplListener(spiListener);
                     queries.add (ci);
                 }
