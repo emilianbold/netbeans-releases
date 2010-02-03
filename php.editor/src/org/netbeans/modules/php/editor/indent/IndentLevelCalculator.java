@@ -116,17 +116,16 @@ public class IndentLevelCalculator extends DefaultTreePathVisitor {
 
         TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, node.getStartOffset());
         ts.move(node.getStartOffset());
-        ts.moveNext();
-        ts.moveNext();
-        int start = ts.offset();
-        ts = LexUtilities.getPHPTokenSequence(doc, node.getEndOffset());
-        ts.move(node.getEndOffset());
-        ts.movePrevious();
-        ts.movePrevious();
-        
-        int end = ts.offset() + ts.token().length();
-        addIndentLevel(start, indentSize);
-        addIndentLevel(end, -1 * indentSize);  
+        if (ts.moveNext() && ts.moveNext()) {
+	    int start = ts.offset();
+	    ts = LexUtilities.getPHPTokenSequence(doc, node.getEndOffset());
+	    ts.move(node.getEndOffset());
+	    ts.movePrevious();
+	    ts.movePrevious();
+	    int end = ts.offset() + ts.token().length();
+	    addIndentLevel(start, indentSize);
+	    addIndentLevel(end, -1 * indentSize);
+	}
     }
 
     @Override
