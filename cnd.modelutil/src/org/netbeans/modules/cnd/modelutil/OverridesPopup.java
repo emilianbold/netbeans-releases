@@ -86,14 +86,14 @@ public class OverridesPopup extends JPanel implements FocusListener {
     }
 
     /*package-local for test purposes*/
-    private static class Element implements Comparable<Element> {
+    private static class Item implements Comparable<Item> {
 
         public final CsmOffsetableDeclaration declaration;
-        public final Kind direction;
+        public final Kind kind;
 
-        public Element(CsmOffsetableDeclaration decl, Kind direction) {
+        public Item(CsmOffsetableDeclaration decl, Kind direction) {
             this.declaration = decl;
-            this.direction = direction;
+            this.kind = direction;
         }
 
         public String getDisplayName() {
@@ -101,7 +101,7 @@ public class OverridesPopup extends JPanel implements FocusListener {
         }
 
         private Image getBadge() {
-            switch (direction) {
+            switch (kind) {
                 case BASE:
                     return ImageUtilities.loadImage("org/netbeans/modules/cnd/modelutil/resources/overrides-badge.png");
                 case DESC:
@@ -132,14 +132,14 @@ public class OverridesPopup extends JPanel implements FocusListener {
         }
 
         @Override
-        public int compareTo(Element o) {
+        public int compareTo(Item o) {
             if (o == null) {
                 return -1;
             } else {
-                if (o.direction == this.direction) {
+                if (o.kind == this.kind) {
                     return declaration.getQualifiedName().toString().compareTo(o.declaration.getQualifiedName().toString());
                 } else {
-                    return this.direction == Kind.BASE ? -1 : 1;
+                    return this.kind == Kind.BASE ? -1 : 1;
                 }
             }
         }
@@ -155,11 +155,11 @@ public class OverridesPopup extends JPanel implements FocusListener {
                 boolean cellHasFocus) {
             Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-            if (value instanceof Element) {
-                Element element = (Element) value;
+            if (value instanceof Item) {
+                Item element = (Item) value;
                 setIcon(element.getIcon());
                 setText(element.getDisplayName());
-            }
+                    }
 
             return c;
         }
@@ -168,7 +168,7 @@ public class OverridesPopup extends JPanel implements FocusListener {
     private JLabel title;
     private JList list;
     private JScrollPane scrollPane;
-    private final List<Element> elements;
+    private final List<Item> elements;
     private final CsmOffsetableDeclaration mainDeclaration;
     private final boolean gotoDefinitions;
 
@@ -187,7 +187,7 @@ public class OverridesPopup extends JPanel implements FocusListener {
         this.mainDeclaration = mainDeclaration;
         this.gotoDefinitions = gotoDefinitions;
         
-        this.elements = new ArrayList<Element>();
+        this.elements = new ArrayList<Item>();
 
         title = new JLabel(caption);
         title.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -200,18 +200,18 @@ public class OverridesPopup extends JPanel implements FocusListener {
         add(scrollPane, BorderLayout.CENTER);
 
         for (CsmOffsetableDeclaration decl : baseDeclarations) {
-            elements.add(new Element(decl, Kind.BASE));
+            elements.add(new Item(decl, Kind.BASE));
         }
         for (CsmOffsetableDeclaration decl : descendantDeclarations) {
-            elements.add(new Element(decl, Kind.DESC));
+            elements.add(new Item(decl, Kind.DESC));
         }
         Collections.sort(elements);
 
         DefaultListModel model = new DefaultListModel();
         if (mainDeclaration != null) {
-            model.addElement(new Element(mainDeclaration, Kind.MAIN));
+            model.addElement(new Item(mainDeclaration, Kind.MAIN));
         }
-        for (Element element : elements) {
+        for (Item element : elements) {
             model.addElement(element);
         }
         list.setModel(model);
@@ -243,7 +243,7 @@ public class OverridesPopup extends JPanel implements FocusListener {
     }
 
     private void openSelected() {
-        Element el = (Element) list.getSelectedValue();
+        Item el = (Item) list.getSelectedValue();
         if (el != null) {
             CsmOffsetableDeclaration decl = el.declaration;
             if (gotoDefinitions) {
