@@ -102,6 +102,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         Icon ei = tvui.getExpandedIcon();
         Icon ci = tvui.getCollapsedIcon();
 
+        setBoldFont(byDetailsLabel);
+        setBoldFont(byOtherLabel);
+        setBoldFont(byPeopleLabel);
+        setBoldFont(byTextLabel);
+
         byTextContainer.add(byTextPanel);
         byDetailsContainer.add(byDetailsPanel);
         byPeopleContainer.add(byAttributesPanel);
@@ -1453,6 +1458,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
     public void focusLost(FocusEvent e) {
         // do nothing
+    }
+
+    private void setBoldFont(JLabel label) {
+        Font f = label.getFont().deriveFont(Font.BOLD);
+        label.setFont(f);
     }
 
     // XXX reuse with bugzilla

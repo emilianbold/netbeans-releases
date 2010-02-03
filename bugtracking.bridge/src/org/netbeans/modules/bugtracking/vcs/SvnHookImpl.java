@@ -184,12 +184,13 @@ public class SvnHookImpl extends SvnHook {
                         message},
                     new StringBuffer(),
                     null).toString();
-
-            LOG.log(Level.FINER, " svn commit hook message '" + msg + "'");     // NOI18N
-            issue.addComment(msg, isResolveSelected());
         }
-
-        issue.open();
+        if(isLinkSelected() || isResolveSelected()) {
+            LOG.log(Level.FINER, " svn commit hook message '" + msg + "', resolved " + isResolveSelected());     // NOI18N
+            issue.addComment(msg, isResolveSelected());
+            issue.open();
+        }
+        
         LOG.log(Level.FINE, "svn commit hook end for " + file);                 // NOI18N
         VCSHooksConfig.logHookUsage("SVN", getSelectedRepository());            // NOI18N
     }

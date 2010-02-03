@@ -121,21 +121,19 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     private Task storeColumnsTask;
     private final StoreColumnsHandler storeColumnsWidthHandler;
     private final JButton colsButton;
+    private boolean savedQueryInitialized;
 
     /**
      * Returns the issue table filters
      * @return
      */
     public Filter[] getDefinedFilters() {
-        if(filters == null) {
-            filters = new Filter[] {
-                Filter.getAllFilter(query),
-                Filter.getNotSeenFilter(),
-                Filter.getObsoleteDateFilter(query),
-                Filter.getAllButObsoleteDateFilter(query)
-            };
-        }
         return filters;
+    }
+
+    private void initFilters() {
+        filters = new Filter[]{Filter.getAllFilter(query), Filter.getNotSeenFilter(query), Filter.getObsoleteDateFilter(query), Filter.getAllButObsoleteDateFilter(query)};
+        filter = filters[0]; // preset the first filter as default
     }
 
     private static final Comparator<IssueProperty> NodeComparator = new Comparator<IssueProperty>() {
@@ -169,6 +167,8 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         tableModel = new NodeTableModel();
         sorter = new TableSorter(tableModel);
         
+        initFilters();
+
         sorter.setColumnComparator(Node.Property.class, NodeComparator);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
@@ -457,6 +457,9 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
      * @param columns array of column names, they must be one of SyncFileNode.COLUMN_NAME_XXXXX constants.
      */
     public final void initColumns() {
+        if(savedQueryInitialized) {
+            return;
+        }
         setModelProperties(query);
         if(descriptors.length > 0) {
             sorter.setSortingStatus(0, TableSorter.ASCENDING); // default sorting by first column
@@ -468,6 +471,9 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
             }
         }
         setDefaultColumnSizes();
+        if(query.isSaved()) {
+            savedQueryInitialized = true;
+        }
     }
 
     private void setModelProperties(Query query) {
