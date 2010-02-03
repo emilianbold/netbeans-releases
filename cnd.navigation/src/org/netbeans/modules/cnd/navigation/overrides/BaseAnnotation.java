@@ -67,8 +67,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -259,16 +257,6 @@ import org.openide.util.ImageUtilities;
         
         public Element(CsmOffsetableDeclaration decl, Direction direction) {
             this.declaration = decl;
-            this.direction = direction;
-        }
-
-        public Element(CsmMethod method, Direction direction) {
-            this.declaration = method;
-            this.direction = direction;
-        }
-
-        public Element(CsmClass cls, Direction direction) {
-            this.declaration = cls;
             this.direction = direction;
         }
 
