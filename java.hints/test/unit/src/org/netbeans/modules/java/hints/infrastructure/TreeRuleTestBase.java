@@ -53,6 +53,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
@@ -256,6 +257,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
 
         for (int i = 0; i < before.length(); i++) {
             LOG.info("testing position " + i + " at " + before.charAt(i));
+            SourceUtils.waitScanFinished();
             clearWorkDir();
             performAnalysisTest("test/Test.java", before, i);
 }
@@ -269,6 +271,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
 
         for (int i = 0; i < before.length(); i++) {
             LOG.info("testing position " + i + " at " + before.charAt(i));
+            SourceUtils.waitScanFinished();
             clearWorkDir();
             performAnalysisTest("test/Test.java", before, i);
         }
@@ -282,6 +285,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
 
         for (int i = 0; i < before.length(); i++) {
             LOG.info("testing position " + i + " at " + before.charAt(i));
+            SourceUtils.waitScanFinished();
             clearWorkDir();
             performAnalysisTest("test/Test.java", before, i);
         }
@@ -296,6 +300,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
 
         for (int i = 0; i < before.length(); i++) {
             LOG.info("testing position " + i + " at " + before.charAt(i));
+            SourceUtils.waitScanFinished();
             clearWorkDir();
             performAnalysisTest("test/Test.java", before, i);
         }
