@@ -39,56 +39,49 @@
 
 package org.netbeans.modules.web.core.syntax.completion;
 
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.jsp.lexer.JspTokenId;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.java.preprocessorbridge.spi.ImportProcessor;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public abstract class JspTagLibImportProcessor implements ImportProcessor {
+public class Util {
+    public static int findPositionForJspDirective(BaseDocument doc){
+        int insertPos = 0;
+        TokenHierarchy<?> th = TokenHierarchy.get(doc);
+        TokenSequence<JspTokenId> ts = th.tokenSequence(JspTokenId.language());
 
-    public void addImport(Document document, final String fqn) {
-        final BaseDocument doc = (BaseDocument)document;
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                doc.runAtomic(new Runnable() {
-                    public void run() {
-                        try {
-                            processDocument(doc, fqn);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
+        ts.moveStart();
+
+        while (ts.moveNext() && (ts.token().id() == JspTokenId.COMMENT || ts.token().id() == JspTokenId.EOL)){
+            insertPos = ts.offset() + ts.token().length();
+        }
+
+        TokenSequence<HTMLTokenId> tsHTML = ts.embedded(HTMLTokenId.language());
+
+        if (tsHTML != null){
+            tsHTML.moveStart();
+
+            while (tsHTML.moveNext() && (tsHTML.token().id() == HTMLTokenId.WS || tsHTML.token().id() == HTMLTokenId.EOL
+                    || tsHTML.token().id() == HTMLTokenId.TEXT && isWsToken(tsHTML.token().text()))) {
+                insertPos = tsHTML.offset() + tsHTML.token().length();
             }
-        });
-    }
-
-    protected abstract String createImportDirective(String fqn);
-
-    private void processDocument(BaseDocument doc, final String fqn) throws BadLocationException {
-        int insertPos = Util.findPositionForJspDirective(doc);
-        doc.insertString(insertPos, createImportDirective(fqn), null);
-    }
-
-    public static class JspImportProcessor extends JspTagLibImportProcessor{
-
-        @Override
-        protected String createImportDirective(String fqn) {
-            return "<%@page import=\"" + fqn + "\"%>\n";
         }
+
+        return insertPos;
     }
 
-    public static class TagImportProcessor extends JspTagLibImportProcessor{
-
-        @Override
-        protected String createImportDirective(String fqn) {
-            return "<%@tag import=\"" + fqn + "\"%>\n";
+    private static boolean isWsToken(CharSequence text) {
+        for (int i = 0; i < text.length(); i++) {
+            if (!Character.isWhitespace(text.charAt(i))){
+                return false;
+            }
         }
+
+        return true;
     }
 }
