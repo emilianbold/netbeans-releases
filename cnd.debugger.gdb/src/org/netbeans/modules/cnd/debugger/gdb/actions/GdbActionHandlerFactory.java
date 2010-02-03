@@ -42,12 +42,10 @@
 package org.netbeans.modules.cnd.debugger.gdb.actions;
 
 import org.netbeans.modules.cnd.toolchain.api.CompilerSet;
-import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
 import org.netbeans.modules.cnd.debugger.common.actions.CndDebuggerActionHandlerFactory;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandlerFactory;
-import org.netbeans.modules.cnd.makeproject.api.compilers.GNUDebuggerTool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.openide.util.lookup.ServiceProvider;
