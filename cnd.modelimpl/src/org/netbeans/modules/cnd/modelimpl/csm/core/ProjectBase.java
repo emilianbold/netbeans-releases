@@ -1266,7 +1266,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    private static final boolean TRACE_FILE = false;
+    private static final boolean TRACE_FILE = (TraceFlags.TRACE_FILE_NAME != null);
     /**
      * called to inform that file was #included from another file with specific preprocHandler
      *
@@ -1409,7 +1409,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean,
                                 clean ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
                         csmFile.setAPTCacheEntry(preprocHandler, aptCacheEntry, clean);
-                        if (TraceFlags.TRACE_PC_STATE || TraceFlags.TRACE_PC_STATE_COMPARISION) {
+                        if (TRACE_FILE && FileImpl.traceFile(file) &&
+                                (TraceFlags.TRACE_PC_STATE || TraceFlags.TRACE_PC_STATE_COMPARISION)) {
                             traceIncludeStates("scheduling", csmFile, newState, pcState, clean, // NOI18N
                                     statesToParse, statesToKeep);
                         }
