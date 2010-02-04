@@ -41,6 +41,7 @@ package org.netbeans.modules.java.source.indexing;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.util.CancelAbort;
@@ -50,11 +51,15 @@ import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -84,9 +89,11 @@ final class MultiPassCompileWorker extends CompileWorker {
 
     ParsingOutput compile(ParsingOutput previous, final Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
         final LinkedList<CompileTuple> toProcess = new LinkedList<CompileTuple>();
+        final HashMap<JavaFileObject, CompileTuple> jfo2tuples = new HashMap<JavaFileObject, CompileTuple>();
         for (CompileTuple i : files) {
             if (!previous.finishedFiles.contains(i.indexable)) {
                 toProcess.add(i);
+                jfo2tuples.put(i.jfo, i);
             }
         }
         if (toProcess.isEmpty()) {
@@ -126,7 +133,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                 if (active == null) {
                     if (!toProcess.isEmpty()) {
                         active = toProcess.removeFirst();
-                        if (active == null)
+                        if (active == null || previous.finishedFiles.contains(active.indexable))
                             continue;
                         isBigFile = false;
                     } else {
@@ -169,10 +176,32 @@ final class MultiPassCompileWorker extends CompileWorker {
                 fileManager.handleOption("apt-origin", Collections.singletonList(active.indexable.getURL().toString()).iterator()); //NOI18N
                 try {
                     types = jt.enterTrees(trees);
+                    boolean yield = false;
+                    for (TypeElement te : types) {
+                        ClassSymbol cSym = (ClassSymbol)te;
+                        TypeMirror sup = null;
+                        while((sup = cSym.getSuperclass()) != null && sup.getKind() == TypeKind.DECLARED) {
+                            cSym = (ClassSymbol) ((DeclaredType) sup).asElement();
+                            CompileTuple u = jfo2tuples.get(cSym.sourcefile);
+                            if (u != null && !previous.finishedFiles.contains(u.indexable)) {
+                                if (!yield) {
+                                    toProcess.addFirst(active);
+                                }
+                                toProcess.addFirst(u);
+                                yield = true;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    if (yield) {
+                        active = null;
+                        continue;
+                    }
                 } finally {
                     fileManager.handleOption("apt-origin", Collections.singletonList("").iterator()); //NOI18N
-                    JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), previous.aptGenerated);
                 }
+                JavaCustomIndexer.addAptGenerated(context, javaContext, active.indexable.getRelativePath(), previous.aptGenerated);
                 if (mem.isLowMemory()) {
                     dumpSymFiles(fileManager, jt);
                     mem.isLowMemory();
