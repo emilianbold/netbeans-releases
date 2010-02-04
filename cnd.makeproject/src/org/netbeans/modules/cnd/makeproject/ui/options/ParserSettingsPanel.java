@@ -44,7 +44,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import javax.swing.JList;
 import org.netbeans.modules.cnd.toolchain.api.PredefinedToolKind;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
+import org.netbeans.modules.cnd.makeproject.compilers.impl.CCCCompiler;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;

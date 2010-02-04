@@ -48,7 +48,7 @@ import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
-import org.netbeans.modules.cnd.makeproject.api.compilers.CCCCompiler;
+import org.netbeans.modules.cnd.makeproject.compilers.impl.CCCCompiler;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

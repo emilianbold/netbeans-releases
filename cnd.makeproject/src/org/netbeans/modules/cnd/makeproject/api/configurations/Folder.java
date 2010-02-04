@@ -72,9 +72,11 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
 
 public class Folder implements FileChangeListener, ChangeListener {
+    public enum Kind {SOURCE_LOGICAL_FOLDER, SOURCE_DISK_FOLDER, IMPORTANT_FILES_FOLDER, TEST_LOGICAL_FOLDER, TEST};
 
     public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
     public static final String DEFAULT_FOLDER_DISPLAY_NAME = getString("NewFolderName");
+    public static final String DEFAULT_TEST_FOLDER_DISPLAY_NAME = getString("NewTestFolderName");
     private MakeConfigurationDescriptor configurationDescriptor;
     private final String name;
     private String displayName;
@@ -87,6 +89,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     private String root;
     private final static Logger log = Logger.getLogger("makeproject.folder"); // NOI18N
     private static boolean checkedLogging = checkLogging();
+    private Kind kind;
 
     public Folder(MakeConfigurationDescriptor configurationDescriptor, Folder parent, String name, String displayName, boolean projectFiles) {
         this.configurationDescriptor = configurationDescriptor;
@@ -95,6 +98,14 @@ public class Folder implements FileChangeListener, ChangeListener {
         this.displayName = displayName;
         this.projectFiles = projectFiles;
         this.items = new ArrayList<Object>();
+    }
+
+    private void setKind(Kind kind) {
+        this.kind = kind;
+    }
+
+    public Kind getKind() {
+        return kind;
     }
 
     public void setRoot(String root) {
@@ -316,6 +327,18 @@ public class Folder implements FileChangeListener, ChangeListener {
             }
         }
         return false;
+    }
+
+    public boolean isTestLogicalFolder() {
+        return getKind() == Kind.TEST_LOGICAL_FOLDER;
+    }
+
+    public boolean isTestRootFolder() {
+        return isTestLogicalFolder() && getName().equals(MakeConfigurationDescriptor.TEST_FILES_FOLDER);
+    }
+
+    public boolean isTest() {
+        return getKind() == Kind.TEST;
     }
 
     public ArrayList<Object> getElements() {
@@ -542,7 +565,32 @@ public class Folder implements FileChangeListener, ChangeListener {
         return folderConfiguration;
     }
 
+    public String suggestedTestFolderName() {
+        return suggestedName(DEFAULT_TEST_FOLDER_DISPLAY_NAME);
+    }
+
+    public String suggestedFolderName() {
+        return suggestedName(DEFAULT_FOLDER_DISPLAY_NAME);
+    }
+    
+    public String suggestedName(String template) {
+        String aNname;
+        String aDisplayName;
+        for (int i = 1;; i++) {
+            aNname = DEFAULT_FOLDER_NAME + i;
+            aDisplayName = template + " " + i; // NOI18N
+            if (findFolderByName(aNname) == null) {
+                break;
+            }
+        }
+        return aDisplayName;
+    }
+
     public Folder addNewFolder(boolean projectFiles) {
+        return addNewFolder(projectFiles, getKind());
+    }
+
+    public Folder addNewFolder(boolean projectFiles, Kind kind) {
         String aNname;
         String aDisplayName;
         for (int i = 1;; i++) {
@@ -552,12 +600,35 @@ public class Folder implements FileChangeListener, ChangeListener {
                 break;
             }
         }
-        return addNewFolder(aNname, aDisplayName, projectFiles); // NOI18N
+        return addNewFolder(aNname, aDisplayName, projectFiles, kind); // NOI18N
     }
 
-    public Folder addNewFolder(String name, String displayName, boolean projectFiles) {
+    public Folder addNewFolder(String name, String displayName, boolean projectFiles, String kindText) {
+        Kind k = null;
+        if (kindText != null) {
+            if (kindText.equals("IMPORTANT_FILES_FOLDER")) { // NOI18N
+                k = Kind.IMPORTANT_FILES_FOLDER;
+            }
+            else if (kindText.equals("SOURCE_DISK_FOLDER")) { // NOI18N
+                k = Kind.SOURCE_DISK_FOLDER;
+            }
+            else if (kindText.equals("SOURCE_LOGICAL_FOLDER")) { // NOI18N
+                k = Kind.SOURCE_LOGICAL_FOLDER;
+            }
+            else if (kindText.equals("TEST")) { // NOI18N
+                k = Kind.TEST;
+            }
+            else if (kindText.equals("TEST_LOGICAL_FOLDER")) { // NOI18N
+                k = Kind.TEST_LOGICAL_FOLDER;
+            }
+        }
+        return addNewFolder(name, displayName, projectFiles, k);
+    }
+
+    public Folder addNewFolder(String name, String displayName, boolean projectFiles, Kind kind) {
         Folder newFolder = new Folder(getConfigurationDescriptor(), this, name, displayName, projectFiles);
         addFolder(newFolder, true);
+        newFolder.setKind(kind);
         return newFolder;
     }
 
